@@ -341,12 +341,16 @@ function roll() {
             }
 
             if (highestChance >= 99999999) {
-                playSound(document.getElementById('100mSound'));
+                if (biome === 'limbo') {
+                    playSound(document.getElementById('limbo99mSound'));
+                } else {
+                    playSound(document.getElementById('100mSound'));
+                }
             } else if (highestChance >= 10000000) {
                 playSound(document.getElementById('10mSound'));
-            } else if (highestChance >= 100000) {
+            } else if (highestChance >= 1000000) {
                 playSound(document.getElementById('100kSound'));
-            } else if (highestChance >= 10000) {
+            } else if (highestChance >= 100000) {
                 playSound(document.getElementById('10kSound'));
             } else if (highestChance >= 1000) {
                 playSound(document.getElementById('1kSound'));
