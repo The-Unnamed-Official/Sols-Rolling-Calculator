@@ -64,9 +64,14 @@
                         <span class="resource-card__label">Discord ID Hub</span>
                         <span class="resource-card__meta">API search tools</span>
                     </a>
-                    <a class="resource-card" href="https://discord.gg/nolifers" target="_blank" rel="noopener">
+                    <a class="resource-card resource-card--nolifers" href="https://discord.gg/nolifers" target="_blank" rel="noopener">
                         <span class="resource-card__label">Nolifers Discord</span>
                         <span class="resource-card__meta">Community server</span>
+                        <span class="resource-card__arrow-cluster" aria-hidden="true">
+                            <span class="resource-card__arrow">➜</span>
+                            <span class="resource-card__arrow">➜</span>
+                            <span class="resource-card__arrow">➜</span>
+                        </span>
                     </a>
                     <a class="resource-card" href="https://github.com/The-Unnamed-Official/Sols-Rolling-Calculator/tree/Published" target="_blank" rel="noopener">
                         <span class="resource-card__label">Project Repository</span>
@@ -89,6 +94,7 @@
                 <div class="results__viewport" id="result-text" role="status" aria-live="polite">
                     Configure your parameters and launch a simulation to see results.
                 </div>
+                <p class="results__tip"><span class="results__tip-label">[Tip]:</span> Get Lucky</p>
             </main>
 
             <aside class="panel panel--controls" aria-labelledby="controls-title">
@@ -103,24 +109,28 @@
 
                 <section class="control-group">
                     <h3 class="control-group__title">Luck Multipliers</h3>
-                    <label class="field" for="vip-select">
+                    <label class="field field--select" for="vip-select">
                         <span class="field__label">VIP Luck</span>
-                        <select id="vip-select" class="field__input">
-                            <option value="1">None</option>
-                            <option value="1.2">VIP or VIP+</option>
-                            <option value="1.3">VIP and VIP+</option>
-                        </select>
+                        <span class="field__select-shell">
+                            <select id="vip-select" class="field__input">
+                                <option value="1">None</option>
+                                <option value="1.2">VIP or VIP+</option>
+                                <option value="1.3">VIP and VIP+</option>
+                            </select>
+                        </span>
                     </label>
-                    <div id="dave-luck-container" class="field" style="display:none;">
+                    <div id="dave-luck-container" class="field field--select" style="display:none;">
                         <label class="field__label" for="dave-luck-select">Dave's Luck</label>
-                        <select id="dave-luck-select" class="field__input">
-                            <option value="1">None</option>
-                            <option value="1.2">Dave's Luck 1</option>
-                            <option value="1.4">Dave's Luck 2</option>
-                            <option value="1.6">Dave's Luck 3</option>
-                            <option value="1.8">Dave's Luck 4</option>
-                            <option value="2">Dave's Luck 5</option>
-                        </select>
+                        <span class="field__select-shell">
+                            <select id="dave-luck-select" class="field__input">
+                                <option value="1">None</option>
+                                <option value="1.2">Dave's Luck 1</option>
+                                <option value="1.4">Dave's Luck 2</option>
+                                <option value="1.6">Dave's Luck 3</option>
+                                <option value="1.8">Dave's Luck 4</option>
+                                <option value="2">Dave's Luck 5</option>
+                            </select>
+                        </span>
                     </div>
                     <div id="xyz-luck-container" class="field field--switch">
                         <span class="field__label">XYZ Luck (2×)</span>
@@ -157,25 +167,27 @@
                             <button class="ui-button ui-button--minor" type="button" onclick="resetRolls()">Reset</button>
                         </div>
                     </label>
-                    <label class="field" for="biome-select">
+                    <label class="field field--select" for="biome-select">
                         <span class="field__label">Biome</span>
-                        <select id="biome-select" class="field__input">
-                            <option value="normal">Normal</option>
-                            <option value="day">Day</option>
-                            <option value="night">Night</option>
-                            <option value="rainy">Rainy</option>
-                            <option value="windy">Windy</option>
-                            <option value="snowy">Snowy</option>
-                            <option value="sandstorm">Sandstorm</option>
-                            <option value="hell">Hell</option>
-                            <option value="starfall">Starfall</option>
-                            <option value="corruption">Corruption</option>
-                            <option value="null">NULL</option>
-                            <option value="dreamspace">Dreamspace</option>
-                            <option value="glitch">Glitch</option>
-                            <option value="limbo">LIMBO</option>
-                            <option value="blazing">Blazing Sun</option>
-                        </select>
+                        <span class="field__select-shell">
+                            <select id="biome-select" class="field__input">
+                                <option value="normal">Normal</option>
+                                <option value="day">Day</option>
+                                <option value="night">Night</option>
+                                <option value="rainy">Rainy</option>
+                                <option value="windy">Windy</option>
+                                <option value="snowy">Snowy</option>
+                                <option value="sandstorm">Sandstorm</option>
+                                <option value="hell">Hell</option>
+                                <option value="starfall">Starfall</option>
+                                <option value="corruption">Corruption</option>
+                                <option value="null">NULL</option>
+                                <option value="dreamspace">Dreamspace</option>
+                                <option value="glitch">Glitch</option>
+                                <option value="limbo">LIMBO</option>
+                                <option value="blazing">Blazing Sun</option>
+                            </select>
+                        </span>
                     </label>
                     <div class="quick-actions">
                         <button class="ui-button ui-button--ghost" type="button" onclick="setGlitch()">Set Glitch</button>
