@@ -670,24 +670,36 @@ body {
 }
 
 .aura-effect-equinox {
-    color: transparent !important;
-    background: linear-gradient(90deg, #000 0%, #000 50%, #fff 50%, #fff 100%);
-    background-size: 200% 100%;
-    -webkit-background-clip: text;
-    background-clip: text;
-    animation: aura-equinox-shift 0.7s linear infinite, aura-equinox-pulse 0.55s ease-in-out infinite;
-    text-shadow: 0 0 10px rgba(255, 255, 255, 0.45);
+    color: #f4f6ff !important;
+    font-style: italic;
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+    padding: 0.1em 0.3em;
+    transform: skewX(-8deg);
+    text-shadow:
+        0 0 4px rgba(255, 255, 255, 0.65),
+        0 0 14px rgba(240, 244, 255, 0.35),
+        2px 2px 0 rgba(8, 12, 24, 0.7),
+        3px 3px 8px rgba(0, 0, 0, 0.55);
 }
 
-@keyframes aura-equinox-shift {
-    0% { background-position: 0% 0%; }
-    50% { background-position: 100% 0%; }
-    100% { background-position: 0% 0%; }
+.aura-effect-equinox::before,
+.aura-effect-equinox::after {
+    content: '';
+    position: absolute;
+    inset: 50% auto auto 0;
+    width: 55%;
+    height: 2px;
+    background: linear-gradient(90deg, rgba(255, 255, 255, 0.65), rgba(120, 164, 224, 0));
+    transform: translateY(-50%) skewX(20deg);
+    pointer-events: none;
+    opacity: 0.55;
 }
 
-@keyframes aura-equinox-pulse {
-    0%, 100% { transform: scale(1); }
-    50% { transform: scale(1.12); }
+.aura-effect-equinox::after {
+    inset: 50% 0 auto auto;
+    transform: translateY(-50%) skewX(-20deg);
+    background: linear-gradient(270deg, rgba(255, 255, 255, 0.65), rgba(120, 164, 224, 0));
 }
 
 @keyframes logo-spin {
