@@ -18,7 +18,8 @@ function Random(min, max) {
     return Math.floor(getRand() * (max - min + 1)) + min;
 }
 
-let soundEnabled = false;
+let rollingSoundEnabled = false;
+let uiSoundEnabled = false;
 let cutscenesEnabled = false;
 let videoPlaying = false;
 
@@ -94,8 +95,17 @@ function isMobileDevice() {
         || (navigator.msMaxTouchPoints > 0);
 }
 
-function playSound(audioElement) {
-    if (!soundEnabled || videoPlaying || !audioElement) return;
+function isSoundCategoryEnabled(category) {
+    if (category === 'ui') return uiSoundEnabled;
+    return rollingSoundEnabled;
+}
+
+function playSound(audioElement, category = 'rolling') {
+    if (!audioElement) return;
+
+    if (!isSoundCategoryEnabled(category)) return;
+
+    if (category !== 'ui' && videoPlaying) return;
 
     const dataset = audioElement.dataset || {};
     const baseVolumeRaw = dataset.volume ?? '0.1';
@@ -114,6 +124,8 @@ function playSound(audioElement) {
     const sourceUrl = resolveMediaSourceUrl(audioElement);
 
     const playViaElement = () => {
+        if (!isSoundCategoryEnabled(category)) return;
+        if (category !== 'ui' && videoPlaying) return;
         const newAudio = audioElement.cloneNode();
         newAudio.muted = false;
         newAudio.loop = false;
@@ -129,7 +141,8 @@ function playSound(audioElement) {
 
     if (context && sourceUrl) {
         const playBuffer = buffer => {
-            if (!buffer || !soundEnabled || videoPlaying) return;
+            if (!buffer || !isSoundCategoryEnabled(category)) return;
+            if (category !== 'ui' && videoPlaying) return;
             const activeContext = resumeAudioContext();
             if (!activeContext) {
                 playViaElement();
@@ -186,7 +199,7 @@ function playSound(audioElement) {
 }
 
 function toggleSound() {
-    soundEnabled = !soundEnabled;
+    rollingSoundEnabled = !rollingSoundEnabled;
     const bgMusic = document.getElementById('bgMusic');
     const soundToggle = document.getElementById('soundToggle');
     bgMusic.volume = 0.02;
@@ -194,9 +207,9 @@ function toggleSound() {
         bgMusic.setAttribute('data-current-src', bgMusic.src);
     }
 
-    if (soundEnabled) {
+    if (rollingSoundEnabled) {
         resumeAudioContext();
-        playSound(document.getElementById('clickSound'));
+        playSound(document.getElementById('clickSound'), 'ui');
         bgMusic.muted = false;
         bgMusic.play();
     } else {
@@ -206,8 +219,23 @@ function toggleSound() {
     }
 
     if (soundToggle) {
-        soundToggle.textContent = soundEnabled ? 'Sound: On' : 'Sound: Off';
-        soundToggle.setAttribute('aria-pressed', soundEnabled);
+        soundToggle.textContent = rollingSoundEnabled ? 'Rolling Sound: On' : 'Rolling Sound: Off';
+        soundToggle.setAttribute('aria-pressed', rollingSoundEnabled);
+    }
+}
+
+function toggleUiSound() {
+    uiSoundEnabled = !uiSoundEnabled;
+    resumeAudioContext();
+
+    const uiSoundToggle = document.getElementById('uiSoundToggle');
+    if (uiSoundToggle) {
+        uiSoundToggle.textContent = uiSoundEnabled ? 'UI Sound: On' : 'UI Sound: Off';
+        uiSoundToggle.setAttribute('aria-pressed', uiSoundEnabled);
+    }
+
+    if (uiSoundEnabled) {
+        playSound(document.getElementById('clickSound'), 'ui');
     }
 }
 
@@ -215,13 +243,13 @@ function toggleCutscenes() {
     cutscenesEnabled = !cutscenesEnabled;
     const cutsceneToggle = document.getElementById('cutsceneToggle');
     if (cutsceneToggle) {
-        cutsceneToggle.textContent = cutscenesEnabled ? 'Cutscenes: On' : 'Cutscenes: Off';
+        cutsceneToggle.textContent = cutscenesEnabled ? 'Cutscenes (Fullscreen recommended): On' : 'Cutscenes (Fullscreen recommended): Off';
         cutsceneToggle.setAttribute('aria-pressed', cutscenesEnabled ? 'true' : 'false');
     }
 
     const clickSound = document.getElementById('clickSound');
     if (clickSound) {
-        playSound(clickSound);
+        playSound(clickSound, 'ui');
     }
 
     if (!cutscenesEnabled) {
@@ -274,7 +302,7 @@ function applyBiomeTheme(biome) {
     if (bgMusic) {
         const currentSrc = bgMusic.getAttribute('data-current-src');
         const shouldUpdateMusic = currentSrc !== assets.music;
-        const wasPlaying = soundEnabled && !bgMusic.paused;
+        const wasPlaying = rollingSoundEnabled && !bgMusic.paused;
 
         if (shouldUpdateMusic) {
             bgMusic.pause();
@@ -337,30 +365,30 @@ function updateLuckValue() {
 
 function resetLuck() {
     document.getElementById('luck').value = 1;
-    playSound(document.getElementById('clickSound'));
+    playSound(document.getElementById('clickSound'), 'ui');
     updateLuckValue();
 }
 
 function resetRolls() {
     document.getElementById('rolls').value = 1;
-    playSound(document.getElementById('clickSound'));
+    playSound(document.getElementById('clickSound'), 'ui');
 }
 
 function setGlitch() {
     document.getElementById('biome-select').value = 'glitch';
-    playSound(document.getElementById('clickSound'));
+    playSound(document.getElementById('clickSound'), 'ui');
     handleBiomeUI();
 }
 
 function setLimbo() {
     document.getElementById('biome-select').value = 'limbo';
-    playSound(document.getElementById('clickSound'));
+    playSound(document.getElementById('clickSound'), 'ui');
     handleBiomeUI();
 }
 
 function resetBiome() {
     document.getElementById('biome-select').value = 'normal';
-    playSound(document.getElementById('clickSound'));
+    playSound(document.getElementById('clickSound'), 'ui');
     handleBiomeUI();
 }
 
@@ -409,16 +437,16 @@ document.addEventListener('DOMContentLoaded', () => {
     const clickSound = document.getElementById('clickSound');
     const hoverSound = document.getElementById('hoverSound');
     buttons.forEach(button => {
-        button.addEventListener('click', () => playSound(clickSound));
-        button.addEventListener('mouseenter', () => playSound(hoverSound));
+        button.addEventListener('click', () => playSound(clickSound, 'ui'));
+        button.addEventListener('mouseenter', () => playSound(hoverSound, 'ui'));
     });
     inputs.forEach(input => {
-        input.addEventListener('click', () => playSound(clickSound));
-        input.addEventListener('mouseenter', () => playSound(hoverSound));
+        input.addEventListener('click', () => playSound(clickSound, 'ui'));
+        input.addEventListener('mouseenter', () => playSound(hoverSound, 'ui'));
     });
     selects.forEach(select => {
-        select.addEventListener('change', () => playSound(clickSound));
-        select.addEventListener('mouseenter', () => playSound(hoverSound));
+        select.addEventListener('change', () => playSound(clickSound, 'ui'));
+        select.addEventListener('mouseenter', () => playSound(hoverSound, 'ui'));
     });
     document.getElementById('vip-select').addEventListener('change', updateLuckValue);
     const xyzToggle = document.getElementById('xyz-luck');
@@ -444,13 +472,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const soundToggle = document.getElementById('soundToggle');
     if (soundToggle) {
-        soundToggle.textContent = 'Sound: Off';
+        soundToggle.textContent = 'Rolling Sound: Off';
         soundToggle.setAttribute('aria-pressed', 'false');
+    }
+
+    const uiSoundToggle = document.getElementById('uiSoundToggle');
+    if (uiSoundToggle) {
+        uiSoundToggle.textContent = 'UI Sound: Off';
+        uiSoundToggle.setAttribute('aria-pressed', 'false');
     }
 
     const cutsceneToggle = document.getElementById('cutsceneToggle');
     if (cutsceneToggle) {
-        cutsceneToggle.textContent = 'Cutscenes: Off';
+        cutsceneToggle.textContent = 'Cutscenes (Fullscreen recommended): Off';
         cutsceneToggle.setAttribute('aria-pressed', 'false');
     }
 
@@ -472,7 +506,7 @@ function playAuraVideo(videoId) {
             if (bgMusic && !bgMusic.paused) {
                 bgMusic.pause();
                 setTimeout(() => {
-                    if (soundEnabled) bgMusic.play();
+                    if (rollingSoundEnabled) bgMusic.play();
                 }, 500);
             }
             resolve();
@@ -502,7 +536,7 @@ function playAuraVideo(videoId) {
             return;
         }
 
-        if (soundEnabled) {
+        if (rollingSoundEnabled) {
             configureMediaElementGain(video);
         }
 
@@ -518,7 +552,7 @@ function playAuraVideo(videoId) {
         video.style.display = 'block';
         skipButton.style.display = 'block';
         video.currentTime = 0;
-        video.muted = !soundEnabled;
+        video.muted = !rollingSoundEnabled;
 
         let cleanedUp = false;
         const cleanup = () => {
@@ -530,7 +564,7 @@ function playAuraVideo(videoId) {
             video.style.display = 'none';
             overlay.style.display = 'none';
             skipButton.style.display = 'none';
-            if (bgMusic && wasPlaying && soundEnabled) {
+            if (bgMusic && wasPlaying && rollingSoundEnabled) {
                 bgMusic.play().catch(() => {});
             }
             video.onended = null;

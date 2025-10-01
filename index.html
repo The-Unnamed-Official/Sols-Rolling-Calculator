@@ -34,6 +34,12 @@
     <video id="pixelation-cs" class="aura-video" preload="auto">
         <source src="files/pixelationCutscene.webm" type="video/webm">
     </video>
+    <video id="dreammetric-cs" class="aura-video" preload="auto">
+        <source src="files/dreammetricCutscene.webm" type="video/webm">
+    </video>
+    <video id="oppression-cs" class="aura-video" preload="auto">
+        <source src="files/oppressionCutscene.webm" type="video/webm">
+    </video>
 
     <div id="video-overlay" class="video-overlay" aria-hidden="true"></div>
 
@@ -49,8 +55,9 @@
                 </div>
             </div>
             <div class="header__controls">
-                <button class="ui-toggle" id="soundToggle" type="button" onclick="toggleSound()" aria-pressed="false">Sound: Off</button>
-                <button class="ui-toggle" id="cutsceneToggle" type="button" onclick="toggleCutscenes()" aria-pressed="false">Cutscenes: Off</button>
+                <button class="ui-toggle" id="soundToggle" type="button" onclick="toggleSound()" aria-pressed="false">Rolling Sound: Off</button>
+                <button class="ui-toggle" id="uiSoundToggle" type="button" onclick="toggleUiSound()" aria-pressed="false">UI Sound: Off</button>
+                <button class="ui-toggle" id="cutsceneToggle" type="button" onclick="toggleCutscenes()" aria-pressed="false">Cutscenes (Fullscreen recommended): Off</button>
             </div>
         </header>
 
@@ -64,6 +71,10 @@
                     <a class="resource-card" href="https://discord-id-hub.info" target="_blank" rel="noopener">
                         <span class="resource-card__label">Discord ID Hub</span>
                         <span class="resource-card__meta">API search tools</span>
+                    </a>
+                    <a class="resource-card" href="https://www.discord.gg/m6k7Jagm3v" target="_blank" rel="noopener">
+                        <span class="resource-card__label">Unnamed's RNG Server</span>
+                        <span class="resource-card__meta">Join the community</span>
                     </a>
                     <a class="resource-card resource-card--nolifers" href="https://discord.gg/nolifers" target="_blank" rel="noopener">
                         <span class="resource-card__label">Nolifers Discord</span>
