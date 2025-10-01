@@ -22,8 +22,72 @@ let soundEnabled = false;
 let cutscenesEnabled = false;
 let videoPlaying = false;
 
+const audioBufferCache = new Map();
+const audioBufferPromises = new Map();
+const mediaElementGainMap = new WeakMap();
+let audioContextInstance = null;
+
+function ensureAudioContext() {
+    if (typeof window === 'undefined') return null;
+    if (!audioContextInstance) {
+        const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+        if (!AudioContextClass) return null;
+        audioContextInstance = new AudioContextClass();
+    }
+    return audioContextInstance;
+}
+
+function resumeAudioContext() {
+    const context = ensureAudioContext();
+    if (context && context.state === 'suspended') {
+        context.resume().catch(() => {});
+    }
+    return context;
+}
+
+function resolveMediaSourceUrl(element) {
+    if (!element) return null;
+    const rawSrc = element.getAttribute('src') || element.currentSrc;
+    if (!rawSrc) return null;
+    try {
+        return new URL(rawSrc, window.location.href).href;
+    } catch (err) {
+        return rawSrc;
+    }
+}
+
+function configureMediaElementGain(element) {
+    if (!element) return;
+    const dataset = element.dataset || {};
+    const gainValueRaw = dataset.gain ?? dataset.boost ?? dataset.volume;
+    if (gainValueRaw === undefined) return;
+
+    let gainValue = Number.parseFloat(gainValueRaw);
+    if (!Number.isFinite(gainValue) || gainValue <= 0) return;
+
+    const context = resumeAudioContext();
+    if (context) {
+        try {
+            let entry = mediaElementGainMap.get(element);
+            if (!entry) {
+                const source = context.createMediaElementSource(element);
+                const gainNode = context.createGain();
+                source.connect(gainNode).connect(context.destination);
+                entry = { gainNode };
+                mediaElementGainMap.set(element, entry);
+            }
+            entry.gainNode.gain.value = gainValue;
+            return;
+        } catch (error) {
+            console.warn('Unable to configure media element gain', error);
+        }
+    }
+
+    element.volume = Math.max(0, Math.min(gainValue, 1));
+}
+
 function isMobileDevice() {
-    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) 
+    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
         || (window.matchMedia("(max-width: 768px)").matches)
         || ('ontouchstart' in window)
         || (navigator.maxTouchPoints > 0)
@@ -31,15 +95,94 @@ function isMobileDevice() {
 }
 
 function playSound(audioElement) {
-    if (!soundEnabled || videoPlaying) return;
-    
-    const newAudio = audioElement.cloneNode();
-    newAudio.muted = false;
-    newAudio.volume = 0.1;
-    newAudio.loop = false;
-    newAudio.play();
+    if (!soundEnabled || videoPlaying || !audioElement) return;
 
-    newAudio.onended = () => newAudio.remove();
+    const dataset = audioElement.dataset || {};
+    const baseVolumeRaw = dataset.volume ?? '0.1';
+    const boostRaw = dataset.boost ?? '1';
+
+    let baseVolume = Number.parseFloat(baseVolumeRaw);
+    let boost = Number.parseFloat(boostRaw);
+
+    if (!Number.isFinite(baseVolume)) baseVolume = 0.1;
+    if (!Number.isFinite(boost)) boost = 1;
+
+    const gainValue = Math.max(0, baseVolume * boost);
+    if (gainValue === 0) return;
+
+    const context = resumeAudioContext();
+    const sourceUrl = resolveMediaSourceUrl(audioElement);
+
+    const playViaElement = () => {
+        const newAudio = audioElement.cloneNode();
+        newAudio.muted = false;
+        newAudio.loop = false;
+        newAudio.volume = Math.max(0, Math.min(gainValue, 1));
+        const cleanup = () => newAudio.remove();
+        newAudio.addEventListener('ended', cleanup, { once: true });
+        newAudio.addEventListener('error', cleanup, { once: true });
+        const playPromise = newAudio.play();
+        if (playPromise && typeof playPromise.catch === 'function') {
+            playPromise.catch(cleanup);
+        }
+    };
+
+    if (context && sourceUrl) {
+        const playBuffer = buffer => {
+            if (!buffer || !soundEnabled || videoPlaying) return;
+            const activeContext = resumeAudioContext();
+            if (!activeContext) {
+                playViaElement();
+                return;
+            }
+            const gainNode = activeContext.createGain();
+            gainNode.gain.value = gainValue;
+            const source = activeContext.createBufferSource();
+            source.buffer = buffer;
+            source.connect(gainNode).connect(activeContext.destination);
+            source.start();
+        };
+
+        const cachedBuffer = audioBufferCache.get(sourceUrl);
+        if (cachedBuffer) {
+            playBuffer(cachedBuffer);
+            return;
+        }
+
+        let pending = audioBufferPromises.get(sourceUrl);
+        if (!pending) {
+            pending = fetch(sourceUrl)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`Failed to fetch audio: ${response.status}`);
+                    }
+                    return response.arrayBuffer();
+                })
+                .then(arrayBuffer => context.decodeAudioData(arrayBuffer))
+                .then(buffer => {
+                    audioBufferCache.set(sourceUrl, buffer);
+                    audioBufferPromises.delete(sourceUrl);
+                    return buffer;
+                })
+                .catch(error => {
+                    console.error('Audio buffer error:', error);
+                    audioBufferPromises.delete(sourceUrl);
+                    return null;
+                });
+            audioBufferPromises.set(sourceUrl, pending);
+        }
+
+        pending.then(buffer => {
+            if (!buffer) {
+                playViaElement();
+                return;
+            }
+            playBuffer(buffer);
+        });
+        return;
+    }
+
+    playViaElement();
 }
 
 function toggleSound() {
@@ -52,6 +195,7 @@ function toggleSound() {
     }
 
     if (soundEnabled) {
+        resumeAudioContext();
         playSound(document.getElementById('clickSound'));
         bgMusic.muted = false;
         bgMusic.play();
@@ -356,6 +500,10 @@ function playAuraVideo(videoId) {
         if (!video) {
             resolve();
             return;
+        }
+
+        if (soundEnabled) {
+            configureMediaElementGain(video);
         }
 
         videoPlaying = true;
