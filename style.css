@@ -48,7 +48,7 @@ body {
     position: fixed;
     inset: 0;
     background-color: var(--bg-base);
-    background-image: url("files/SolsBgImage.jpg");
+    background-image: var(--biome-background, url("files/normalBiomeImage.jpg"));
     background-position: center top;
     background-repeat: no-repeat;
     background-size: 100% 100%;
