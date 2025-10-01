@@ -57,10 +57,10 @@ body {
 .ui-backdrop__veil {
     position: absolute;
     inset: 0;
-    background: radial-gradient(circle at 20% 20%, rgba(30, 80, 180, 0.28), transparent 62%),
-                radial-gradient(circle at 80% 15%, rgba(18, 42, 110, 0.22), transparent 58%),
-                linear-gradient(135deg, rgba(2, 6, 16, 0.62), rgba(1, 4, 12, 0.7));
-    backdrop-filter: blur(2px);
+    background: radial-gradient(circle at 20% 20%, rgba(30, 80, 180, 0.28), transparent 42%),
+                radial-gradient(circle at 80% 15%, rgba(18, 42, 110, 0.22), transparent 28%),
+                linear-gradient(135deg, rgba(2, 6, 16, 0.42), rgba(1, 4, 12, 0.5));
+    backdrop-filter: blur(5px);
 }
 
 .ui-shell {
@@ -497,7 +497,7 @@ body {
 .field__select-shell {
     position: relative;
     display: block;
-    width: 100%;
+    width: 160px;
 }
 
 .field--select select.field__input {
