@@ -19,6 +19,7 @@
     --corner-size: 28px;
     --corner-thickness: 2px;
     --font-base: 'Sarpanch', 'Segoe UI', sans-serif;
+    --ui-scale-desktop: 0.88;
 }
 
 * {
@@ -40,6 +41,7 @@ body {
     align-items: stretch;
     padding: clamp(16px, 3vw, 32px);
     position: relative;
+    overflow-x: hidden;
 }
 
 .ui-backdrop {
@@ -106,7 +108,7 @@ body {
 
 .ui-header {
     display: flex;
-    align-items: flex-start;
+    align-items: center;
     justify-content: space-between;
     gap: clamp(16px, 3vw, 32px);
 }
@@ -169,7 +171,21 @@ body {
     flex-wrap: nowrap;
     gap: 12px;
     margin-left: auto;
-    align-self: flex-start;
+    align-items: center;
+}
+
+@media (min-width: 1200px) {
+    .ui-shell {
+        margin-inline: auto;
+        zoom: var(--ui-scale-desktop);
+    }
+
+    @supports not (zoom: 1) {
+        .ui-shell {
+            transform: scale(var(--ui-scale-desktop));
+            transform-origin: top center;
+        }
+    }
 }
 
 .ui-toggle {
