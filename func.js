@@ -47,6 +47,9 @@ function toggleSound() {
     const bgMusic = document.getElementById('bgMusic');
     const soundToggle = document.getElementById('soundToggle');
     bgMusic.volume = 0.02;
+    if (bgMusic && !bgMusic.getAttribute('data-current-src')) {
+        bgMusic.setAttribute('data-current-src', bgMusic.src);
+    }
 
     if (soundEnabled) {
         playSound(document.getElementById('clickSound'));
@@ -90,6 +93,62 @@ let currentLuck = 1;
 let lastVipMultiplier = 1;
 let lastXyzMultiplier = 1;
 let lastDaveMultiplier = 1;
+
+const biomeAssets = {
+    normal: { image: 'files/normalBiomeImage.jpg', music: 'files/normalBiomeMusic.mp3' },
+    day: { image: 'files/dayBiomeImage.jpg', music: 'files/dayBiomeMusic.mp3' },
+    night: { image: 'files/nightBiomeImage.jpg', music: 'files/nightBiomeMusic.mp3' },
+    rainy: { image: 'files/rainyBiomeImage.jpg', music: 'files/rainyBiomeMusic.mp3' },
+    windy: { image: 'files/windyBiomeImage.jpg', music: 'files/windyBiomeMusic.mp3' },
+    snowy: { image: 'files/snowyBiomeImage.jpg', music: 'files/winterBiomeMusic.mp3' },
+    sandstorm: { image: 'files/sandstormBiomeImage.jpg', music: 'files/sandstormBiomeMusic.mp3' },
+    hell: { image: 'files/hellBiomeImage.jpg', music: 'files/hellBiomeMusic.mp3' },
+    starfall: { image: 'files/starfallBiomeImage.jpg', music: 'files/starfallBiomeMusic.mp3' },
+    corruption: { image: 'files/corruptionBiomeImage.jpg', music: 'files/corruptionBiomeMusic.mp3' },
+    null: { image: 'files/nullBiomeImage.jpg', music: 'files/nullBiomeMusic.mp3' },
+    dreamspace: { image: 'files/dreamspaceBiomeImage.jpg', music: 'files/dreamspaceBiomeMusic.mp3' },
+    glitch: { image: 'files/glitchBiomeImage.jpg', music: 'files/glitchBiomeMusic.mp3' },
+    limbo: { image: 'files/limboImage.jpg', music: 'files/limboMusic.mp3' },
+    blazing: { image: 'files/blazingBiomeImage.jpg', music: 'files/blazingBiomeMusic.mp3' }
+};
+
+function applyBiomeTheme(biome) {
+    const assetKey = Object.prototype.hasOwnProperty.call(biomeAssets, biome) ? biome : 'normal';
+    const assets = biomeAssets[assetKey];
+
+    const root = document.documentElement;
+    if (root) {
+        root.style.setProperty('--biome-background', `url("${assets.image}")`);
+    }
+
+    const backdrop = document.querySelector('.ui-backdrop');
+    if (backdrop) {
+        backdrop.style.backgroundImage = `url("${assets.image}")`;
+    }
+
+    const bgMusic = document.getElementById('bgMusic');
+    if (bgMusic) {
+        const currentSrc = bgMusic.getAttribute('data-current-src');
+        const shouldUpdateMusic = currentSrc !== assets.music;
+        const wasPlaying = soundEnabled && !bgMusic.paused;
+
+        if (shouldUpdateMusic) {
+            bgMusic.pause();
+            bgMusic.currentTime = 0;
+            bgMusic.src = assets.music;
+            bgMusic.setAttribute('data-current-src', assets.music);
+            bgMusic.load();
+        }
+
+        if (wasPlaying && (shouldUpdateMusic || bgMusic.paused)) {
+            bgMusic.muted = false;
+            const playPromise = bgMusic.play();
+            if (playPromise && typeof playPromise.catch === 'function') {
+                playPromise.catch(() => {});
+            }
+        }
+    }
+}
 
 function setLuck(value) {
     baseLuck = value;
@@ -195,6 +254,7 @@ function handleBiomeUI() {
             });
         }
     }
+    applyBiomeTheme(biome);
     updateLuckValue();
 }
 
