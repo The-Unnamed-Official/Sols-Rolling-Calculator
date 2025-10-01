@@ -2,109 +2,132 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Rolling Simulator</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sols Rolling Simulator</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=General+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <audio id="bgMusic" loop muted src="crossingthoseislands.mp3" type="audio/mpeg"></audio>
-    <audio id="rollSound" loop muted src="Sols_Roll.mp3" type="audio/mpeg"></audio>
-    <audio id="clickSound" loop muted src="Sols_Click.mp3" type="audio/mpeg"></audio>
-    <audio id="hoverSound" loop muted src="Sols_Hover.mp3" type="audio/mpeg"></audio>
-    <audio id="1kSound" loop muted src="1k+_Roll.ogg" type="audio/ogg"></audio>
-    <audio id="10kSound" loop muted src="10k+_Roll.ogg" type="audio/ogg"></audio>
-    <audio id="100kSound" loop muted src="100k+_Roll.ogg" type="audio/ogg"></audio>
-    <audio id="10mSound" loop muted src="10m+_Roll.ogg" type="audio/ogg"></audio>
-    <audio id="100mSound" loop muted src="100m+_Roll.ogg" type="audio/ogg"></audio>
+    <div class="site-bg" aria-hidden="true">
+        <div class="site-bg__glow"></div>
+        <div class="site-bg__orb site-bg__orb--one"></div>
+        <div class="site-bg__orb site-bg__orb--two"></div>
+        <div class="site-bg__mesh"></div>
+    </div>
+
+    <audio id="bgMusic" loop muted src="files/SolsBgMusic.mp3" type="audio/mpeg"></audio>
+    <audio id="rollSound" loop muted src="files/SolsRollSound.mp3" type="audio/mpeg"></audio>
+    <audio id="clickSound" loop muted src="files/SolsClickSound.mp3" type="audio/mpeg"></audio>
+    <audio id="hoverSound" loop muted src="files/SolsHoverSound.mp3" type="audio/mpeg"></audio>
+    <audio id="1kSound" loop muted src="files/1_000Roll.ogg" type="audio/ogg"></audio>
+    <audio id="10kSound" loop muted src="files/10_000Roll.ogg" type="audio/ogg"></audio>
+    <audio id="100kSound" loop muted src="files/100_000Roll.ogg" type="audio/ogg"></audio>
+    <audio id="10mSound" loop muted src="files/10_000_000Roll.ogg" type="audio/ogg"></audio>
+    <audio id="100mSound" loop muted src="files/100_000_000Roll.ogg" type="audio/ogg"></audio>
+
     <video id="equinox-cs" class="aura-video" preload="auto">
-        <source src="equinox.webm" type="video/webm">
+        <source src="files/equinoxCutscene.webm" type="video/webm">
     </video>
     <video id="lumi-cs" class="aura-video" preload="auto">
-        <source src="lumi.webm" type="video/webm">
+        <source src="files/luminosityCutscene.webm" type="video/webm">
     </video>
     <video id="pixelation-cs" class="aura-video" preload="auto">
-        <source src="pixelation.webm" type="video/webm">
+        <source src="files/pixelationCutscene.webm" type="video/webm">
     </video>
-    <video id="dreamscape-cs" class="aura-video" preload="auto">
-        <source src="dreamscape.webm" type="video/webm">
-    </video>
-    <video id="aegis-cs" class="aura-video" preload="auto">
-        <source src="aegis.webm" type="video/webm">
-    </video>
-    <video id="ruinswithered-cs" class="aura-video" preload="auto">
-        <source src="ruinswithered.webm" type="video/webm">
-    </video>
-    <div id="video-overlay" class="video-overlay"></div>
-    <div class="page-layout">
-        <div class="luck-sidebar">
-            <h2>Luck Settings</h2>
-            <div class="luck-multipliers" id="luck-multipliers">
-                <label for="vip-select">VIP Luck</label>
-                <select id="vip-select" class="input">
-                    <option value="1">None</option>
-                    <option value="1.2">VIP or VIP+</option>
-                    <option value="1.3">VIP and VIP+</option>
-                </select>
-                <div id="dave-luck-container" style="display:none;">
-                    <label for="dave-luck-select">Dave's Luck</label>
-                    <select id="dave-luck-select" class="input">
-                        <option value="1">None</option>
-                        <option value="1.2">Dave's Luck 1</option>
-                        <option value="1.4">Dave's Luck 2</option>
-                        <option value="1.6">Dave's Luck 3</option>
-                        <option value="1.8">Dave's Luck 4</option>
-                        <option value="2">Dave's Luck 5</option>
-                    </select>
+
+    <div id="video-overlay" class="video-overlay" aria-hidden="true"></div>
+
+    <div class="app-container">
+        <header class="site-hero">
+            <nav class="site-hero__nav">
+                <div class="brand">
+                    <span class="brand__mark">
+                        <img src="files/logo.png" alt="Sols Rolling Simulator logo">
+                    </span>
+                    <div class="brand__text">
+                        <p class="brand__title">Sols Rolling Simulator</p>
+                        <p class="brand__subtitle">Probability planner for the dedicated grinder</p>
+                    </div>
                 </div>
-                <div id="xyz-luck-container">
-                    <label for="xyz-luck">XYZ luck (2x)</label>
-                    <input type="checkbox" id="xyz-luck" class="styled-checkbox">
+                <button class="chip chip--sound" id="soundToggle" onclick="toggleSound()" aria-pressed="false">Sound: Off</button>
+            </nav>
+            <div class="site-hero__content">
+                <p class="eyebrow">Ultra-fast testing • Cross-platform ready • Community trusted</p>
+                <h1 class="site-hero__title">Plan every roll with clarity.</h1>
+                <p class="site-hero__body">Track biome boosts, luck stacks, and breakthrough bonuses with a workspace that flexes beautifully from pocket screens to ultra-wide setups.</p>
+                <div class="hero-actions">
+                    <a class="button button--primary" href="https://discord-id-hub.info" target="_blank" rel="noopener">Explore Discord ID Hub</a>
+                    <a class="button button--ghost" href="https://github.com/The-Unnamed-Official/Sols-Rolling-Calculator/tree/Published" target="_blank" rel="noopener">View Calculator Repository</a>
+                </div>
+                <div class="hero-meta">
+                    <span class="tag">v1.3 · 2025/10/01</span>
+                    <span class="tag tag--outline">crafted by @not.unnamed</span>
                 </div>
             </div>
-            <div class="luck-presets" id="luck-presets">
-                <button onclick="setLuck(700000)">Pump King's Blood (700,000x)</button>
-                <button onclick="setLuck(600000)">Oblivion Potion / Godlike + Bound + Heavenly (600,000x)</button>
-                <button onclick="setLuck(400000)">Godlike Potion (400,000x)</button>
-                <button id="void-heart-btn" style="display:none;" onclick="setLuck(300000)">Void Heart (300,000x)</button>
-                <button onclick="setLuck(200000)">Heavenly + Bound (200,000x)</button>
-                <button onclick="setLuck(150000)">Heavenly Potion (150,000x)</button>
-                <button onclick="setLuck(50000)">Potion of Bound (50,000x)</button>
-            </div>
-        </div>
-        <div class="main-content">
-            <div class="container">
-                <div class="top">
-                    <a href="../" class="back-button">Back</a>
-                    <button class="play-sound" id="soundToggle" onclick="toggleSound()">Sound</button>
+        </header>
+
+        <main class="layout">
+            <section class="panel cluster" aria-labelledby="setup-heading">
+                <div class="panel__header">
+                    <h2 id="setup-heading">Simulation controls</h2>
+                    <p>Dial in your luck multipliers and biome context before launching a batch of rolls.</p>
                 </div>
-                <h1>Rolling Simulator</h1>
-                <div class="version-info">
-                    <small class="version">v.1.2.5 - 2025/09/30</small>
-                    <small class="credits">made by @catwhore</small>
-                </div>
-                <div class="inputs">
-                    <div class="input-with-button">
-                        <label for="luck-input">Luck:</label>
-                        <div class="input-group">
-                            <input class="luck-input" type="number" id="luck" placeholder="Luck" min="1" required>
-                            <button class="input-button" onclick="resetLuck()">Reset</button>
+                <div class="cluster__grid">
+                    <div class="card">
+                        <h3>Luck multipliers</h3>
+                        <div class="field-group">
+                            <label class="field" for="vip-select">
+                                <span class="field__label">VIP Luck</span>
+                                <select id="vip-select" class="input">
+                                    <option value="1">None</option>
+                                    <option value="1.2">VIP or VIP+</option>
+                                    <option value="1.3">VIP and VIP+</option>
+                                </select>
+                            </label>
+                            <div id="dave-luck-container" class="field" style="display:none;">
+                                <label class="field__label" for="dave-luck-select">Dave's Luck</label>
+                                <select id="dave-luck-select" class="input">
+                                    <option value="1">None</option>
+                                    <option value="1.2">Dave's Luck 1</option>
+                                    <option value="1.4">Dave's Luck 2</option>
+                                    <option value="1.6">Dave's Luck 3</option>
+                                    <option value="1.8">Dave's Luck 4</option>
+                                    <option value="2">Dave's Luck 5</option>
+                                </select>
+                            </div>
+                            <div id="xyz-luck-container" class="field field--toggle">
+                                <span class="field__label">XYZ Luck (2×)</span>
+                                <label class="toggle">
+                                    <input type="checkbox" id="xyz-luck" class="styled-checkbox">
+                                    <span class="toggle__track"></span>
+                                    <span class="toggle__label">Enable XYZ booster</span>
+                                </label>
+                            </div>
                         </div>
                     </div>
-                    
-                    <div class="input-with-button">
-                        <label for="rolls-input">Amount of Rolls:</label>
-                        <div class="input-group">
-                            <input class="rolls-input" type="number" id="rolls" min="1" max="100000000" placeholder="Rolls" required>
-                            <button class="input-button" onclick="resetRolls()">Reset</button>
+
+                    <div class="card">
+                        <h3>Run parameters</h3>
+                        <div class="field-group field-group--split">
+                            <label class="field" for="luck">
+                                <span class="field__label">Luck</span>
+                                <div class="input-group">
+                                    <input class="input" type="number" id="luck" placeholder="Enter total luck" min="1" required>
+                                    <button class="chip chip--small" type="button" onclick="resetLuck()">Reset</button>
+                                </div>
+                            </label>
+                            <label class="field" for="rolls">
+                                <span class="field__label">Amount of rolls</span>
+                                <div class="input-group">
+                                    <input class="input" type="number" id="rolls" min="1" max="100000000" placeholder="Roll count" required>
+                                    <button class="chip chip--small" type="button" onclick="resetRolls()">Reset</button>
+                                </div>
+                            </label>
                         </div>
-                    </div>
-                    
-                    <div class="input-with-button">
-                        <label for="biome-select">Biome:</label>
-                        <div class="input-group">
+                        <label class="field" for="biome-select">
+                            <span class="field__label">Biome</span>
                             <select id="biome-select" class="input">
                                 <option value="normal">Normal</option>
                                 <option value="day">Day</option>
@@ -122,35 +145,78 @@
                                 <option value="limbo">LIMBO</option>
                                 <option value="blazing">Blazing Sun</option>
                             </select>
-                        </div>
-                        <div class="input-group">
-                            <button class="input-button" onclick="setGlitch()">Set Glitch</button>
-                            <button class="input-button" onclick="setLimbo()">Set Limbo</button>
-                            <button class="input-button" onclick="resetBiome()">Reset</button>
+                        </label>
+                        <div class="button-row">
+                            <button class="chip" type="button" onclick="setGlitch()">Set Glitch</button>
+                            <button class="chip" type="button" onclick="setLimbo()">Set Limbo</button>
+                            <button class="chip" type="button" onclick="resetBiome()">Reset Biome</button>
                         </div>
                     </div>
                 </div>
-            </div>
-            <div class="roll-container">
-                <button class="roll-button" onclick="roll()">Roll</button>
-                <label for="roll-button">JavaScript Rolling? Slightly faster but worse randomness</label>
-                <input type="checkbox" id="cbx" class="styled-checkbox">
-            </div>
-        </div>
-        <div class="result-container">
-            <div class="progress-container" style="display: none;">
-                <div class="progress-bar">
-                    <div class="progress-fill"></div>
+
+                <div class="launch">
+                    <div class="launch__text">
+                        <h3>Execute rolls</h3>
+                        <p>Simulate drop chances with the deterministic RNG path tuned for accurate testing.</p>
+                    </div>
+                    <button class="button button--primary roll-button" type="button" onclick="roll()">Start rolling</button>
                 </div>
-                <div class="progress-text">0%</div>
-            </div>
-            <div class="result" id="result">
-                <h2>Results</h2>
-                <p id="result-text"></p>
-            </div>
-        </div>
+
+                <div class="card presets">
+                    <div class="presets__header">
+                        <h3>Quick luck presets</h3>
+                        <p>Select a community favorite loadout to instantly configure multipliers.</p>
+                    </div>
+                    <div class="presets__grid" id="luck-presets">
+                        <button type="button" onclick="setLuck(700000)">Pump King's Blood (700,000×)</button>
+                        <button type="button" onclick="setLuck(600000)">Oblivion Potion / Godlike + Bound + Heavenly (600,000×)</button>
+                        <button type="button" onclick="setLuck(400000)">Godlike Potion (400,000×)</button>
+                        <button type="button" id="void-heart-btn" style="display:none;" onclick="setLuck(300000)">Void Heart (300,000×)</button>
+                        <button type="button" onclick="setLuck(200000)">Heavenly + Bound (200,000×)</button>
+                        <button type="button" onclick="setLuck(150000)">Bound + Heavenly (150,000×)</button>
+                        <button type="button" onclick="setLuck(100000)">Heavenly Potion (100,000×)</button>
+                        <button type="button" onclick="setLuck(70000)">Bound Potion (70,000×)</button>
+                        <button type="button" onclick="setLuck(40000)">Lucky Brew (40,000×)</button>
+                    </div>
+                </div>
+            </section>
+
+            <aside class="panel results" aria-labelledby="results-heading">
+                <div class="panel__header">
+                    <h2 id="results-heading">Roll insights</h2>
+                    <p>Live updates on XP, rare finds, and aura cutscenes.</p>
+                </div>
+                <div class="progress-container" style="display:none;">
+                    <div class="progress-bar">
+                        <div class="progress-fill"></div>
+                    </div>
+                    <div class="progress-text">0%</div>
+                </div>
+                <div class="results__output" id="result-text" role="status" aria-live="polite">Configure your run and launch a simulation to see detailed outcomes here.</div>
+                <div class="results__cards">
+                    <div class="results-card">
+                        <h3>Other Resources from The Unnamed</h3>
+                        <ul>
+                            <li><a href="https://discord-id-hub.info" target="_blank" rel="noopener">Discord ID Hub API search</a></li>
+                            <li><a href="https://github.com/The-Unnamed-Official/Sols-Rolling-Calculator/tree/Published" target="_blank" rel="noopener">Public repository</a></li>
+                            <li><a href="https://discord.gg/nolifers" target="_blank" rel="noopener">Join the Nolifers Discord</a></li>
+                        </ul>
+                    </div>
+                    <div class="results-card">
+                        <h3>Playback &amp; ambience</h3>
+                        <p>Cutscenes and soundscapes automatically adapt to your rare pulls. Toggle audio above for an immersive grind.</p>
+                    </div>
+                </div>
+            </aside>
+        </main>
+
+        <footer class="site-footer">
+            <p>Built for strategists everywhere. Optimized for desktops, tablets, and phones.</p>
+            <p class="site-footer__small">&copy; <span id="year"></span> Sols Rolling Simulator • Crafted by @not.unnamed</p>
+        </footer>
     </div>
-<script src="functions.js"></script>  
-<script src="script.js"></script>
+
+    <script src="func.js"></script>
+    <script src="script.js"></script>
 </body>
 </html>
