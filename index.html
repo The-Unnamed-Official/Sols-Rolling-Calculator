@@ -132,8 +132,17 @@
                     </div>
                 </section>
 
-                <section class="control-group">
-                    <h3 class="control-group__title">Run Parameters</h3>
+            </aside>
+
+        </div>
+
+        <div class="ui-subgrid">
+            <section class="panel panel--parameters" aria-labelledby="parameters-title">
+                <header class="panel__header">
+                    <h2 class="panel__title" id="parameters-title">Run Parameters</h2>
+                    <p class="panel__subtitle">Tune your luck totals, roll counts, and biome.</p>
+                </header>
+                <div class="control-group">
                     <label class="field" for="luck">
                         <span class="field__label">Luck Total</span>
                         <div class="field__combo">
@@ -173,10 +182,15 @@
                         <button class="ui-button ui-button--ghost" type="button" onclick="setLimbo()">Set Limbo</button>
                         <button class="ui-button ui-button--ghost" type="button" onclick="resetBiome()">Reset Biome</button>
                     </div>
-                </section>
+                </div>
+            </section>
 
-                <section class="control-group">
-                    <h3 class="control-group__title">Quick Presets</h3>
+            <section class="panel panel--presets" aria-labelledby="presets-title">
+                <header class="panel__header">
+                    <h2 class="panel__title" id="presets-title">Quick Presets</h2>
+                    <p class="panel__subtitle">Instantly configure popular luck setups.</p>
+                </header>
+                <div class="control-group control-group--presets">
                     <div class="preset-grid" id="luck-presets">
                         <button type="button" onclick="setLuck(700000)">Pump King's Blood 700,000×</button>
                         <button type="button" onclick="setLuck(600000)">Oblivion / Godlike + Bound + Heavenly 600,000×</button>
@@ -187,9 +201,8 @@
                         <button type="button" onclick="setLuck(50000)">Bound Potion 50,000×</button>
                         <button type="button" onclick="setLuck(10000)">Popping Potion / Potion of Dune 10,000×</button>
                     </div>
-                </section>
-
-            </aside>
+                </div>
+            </section>
         </div>
 
         <footer class="panel ui-footer" role="contentinfo">
