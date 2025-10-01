@@ -193,6 +193,7 @@ body {
     display: grid;
     grid-template-columns: minmax(220px, 260px) minmax(420px, 1fr) minmax(320px, 360px);
     gap: clamp(16px, 2vw, 24px);
+    align-items: start;
 }
 
 .panel--results {
@@ -362,6 +363,17 @@ body {
 .field__combo {
     display: flex;
     gap: 10px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.field__combo .field__input {
+    min-width: 0;
+}
+
+.field__combo .ui-button {
+    flex-shrink: 0;
+    white-space: nowrap;
 }
 
 .field__input {
