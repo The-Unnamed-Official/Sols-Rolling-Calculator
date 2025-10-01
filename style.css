@@ -101,7 +101,7 @@ body {
 
 .ui-header {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     justify-content: space-between;
     gap: clamp(16px, 3vw, 32px);
 }
@@ -110,6 +110,7 @@ body {
     display: flex;
     align-items: center;
     gap: clamp(12px, 2vw, 20px);
+    flex: 1 1 auto;
 }
 
 .brand__mark {
@@ -158,8 +159,10 @@ body {
 
 .header__controls {
     display: flex;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
     gap: 12px;
+    margin-left: auto;
+    align-self: flex-start;
 }
 
 .ui-toggle {
@@ -192,6 +195,19 @@ body {
 .ui-layout {
     display: grid;
     grid-template-columns: minmax(220px, 260px) minmax(420px, 1fr) minmax(320px, 360px);
+    grid-template-areas: "side results controls";
+    gap: clamp(16px, 2vw, 24px);
+    align-items: start;
+}
+
+.panel--side { grid-area: side; }
+.panel--results { grid-area: results; }
+.panel--controls { grid-area: controls; }
+
+.ui-subgrid {
+    margin-top: clamp(16px, 2vw, 24px);
+    display: grid;
+    grid-template-columns: repeat(2, minmax(280px, 1fr));
     gap: clamp(16px, 2vw, 24px);
     align-items: start;
 }
@@ -209,6 +225,13 @@ body {
 }
 
 .panel--side {
+    display: flex;
+    flex-direction: column;
+    gap: clamp(14px, 2vw, 20px);
+}
+
+.panel--parameters,
+.panel--presets {
     display: flex;
     flex-direction: column;
     gap: clamp(14px, 2vw, 20px);
@@ -681,6 +704,7 @@ body {
         0 0 14px rgba(240, 244, 255, 0.35),
         2px 2px 0 rgba(8, 12, 24, 0.7),
         3px 3px 8px rgba(0, 0, 0, 0.55);
+    animation: aura-equinox-flash 0.6s steps(2, jump-none) infinite;
 }
 
 .aura-effect-equinox::before,
@@ -694,12 +718,41 @@ body {
     transform: translateY(-50%) skewX(20deg);
     pointer-events: none;
     opacity: 0.55;
+    animation: aura-equinox-glint 0.6s steps(2, jump-none) infinite;
 }
 
 .aura-effect-equinox::after {
     inset: 50% 0 auto auto;
     transform: translateY(-50%) skewX(-20deg);
     background: linear-gradient(270deg, rgba(255, 255, 255, 0.65), rgba(120, 164, 224, 0));
+}
+
+@keyframes aura-equinox-flash {
+    0%, 45% {
+        color: #f4f6ff !important;
+        text-shadow:
+            0 0 6px rgba(255, 255, 255, 0.75),
+            0 0 18px rgba(240, 244, 255, 0.45),
+            2px 2px 0 rgba(8, 12, 24, 0.7),
+            3px 3px 10px rgba(0, 0, 0, 0.6);
+    }
+    55%, 100% {
+        color: #05060a !important;
+        text-shadow:
+            0 0 12px rgba(255, 255, 255, 0.7),
+            0 0 24px rgba(180, 200, 255, 0.35),
+            -2px -2px 0 rgba(246, 248, 255, 0.6),
+            -3px -3px 12px rgba(120, 160, 220, 0.35);
+    }
+}
+
+@keyframes aura-equinox-glint {
+    0%, 45% {
+        opacity: 0.6;
+    }
+    55%, 100% {
+        opacity: 0.18;
+    }
 }
 
 @keyframes logo-spin {
@@ -712,12 +765,12 @@ body {
         grid-template-columns: minmax(240px, 320px) 1fr;
         grid-template-areas:
             "side results"
-            "controls controls";
+            "controls results";
     }
 
-    .panel--side { grid-area: side; }
-    .panel--results { grid-area: results; }
-    .panel--controls { grid-area: controls; }
+    .header__controls {
+        flex-wrap: wrap;
+    }
 }
 
 @media (max-width: 900px) {
@@ -729,33 +782,49 @@ body {
         grid-template-columns: 1fr;
         grid-template-areas: none;
     }
+
+    .header__controls {
+        width: 100%;
+        justify-content: center;
+        margin-left: 0;
+        align-self: center;
+        flex-wrap: wrap;
+    }
+
+    .ui-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .brand__meta {
+        text-align: center;
+    }
+
+    .brand__title,
+    .brand__subtitle,
+    .panel__title,
+    .panel__subtitle {
+        text-align: center;
+    }
 }
 
 .panel--side,
 .panel--results,
-.panel--controls {
+.panel--parameters,
+.panel--presets {
     grid-area: auto;
 }
 
-.ui-header {
-    flex-direction: column;
-    align-items: flex-start;
+@media (max-width: 1180px) {
+    .ui-subgrid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
 }
 
-.header__controls {
-    width: 100%;
-    justify-content: center;
-}
-
-.brand__meta {
-    text-align: center;
-}
-
-.brand__title,
-.brand__subtitle,
-.panel__title,
-.panel__subtitle {
-    text-align: center;
+@media (max-width: 900px) {
+    .ui-subgrid {
+        grid-template-columns: 1fr;
+    }
 }
 
 @media (max-width: 620px) {
