@@ -361,24 +361,26 @@ function roll() {
             for (let aura of auras) {
                 if (aura.wonCount > 0) {
                     let rarityClass = getRarityClass(aura, biome);
+                    let specialClass = getAuraStyleClass(aura);
+                    let classAttr = [rarityClass, specialClass].filter(Boolean).join(' ');
                     if (btAuras[aura.name]) {
                         let btName = aura.name.replace(
                             /-\s*[\d,]+/,
                             `- ${btAuras[aura.name].btChance.toLocaleString()}`
                         );
                         resultEntries.push({
-                            label: `<span class="${rarityClass}">[Native] ${btName} | Times Rolled: ${btAuras[aura.name].count.toLocaleString()}</span>`,
+                            label: `<span class="${classAttr}">[Native] ${btName} | Times Rolled: ${btAuras[aura.name].count.toLocaleString()}</span>`,
                             chance: btAuras[aura.name].btChance
                         });
                         if (aura.wonCount > btAuras[aura.name].count) {
                             resultEntries.push({
-                                label: `<span class="${rarityClass}">${aura.name} | Times Rolled: ${(aura.wonCount - btAuras[aura.name].count).toLocaleString()}</span>`,
+                                label: `<span class="${classAttr}">${aura.name} | Times Rolled: ${(aura.wonCount - btAuras[aura.name].count).toLocaleString()}</span>`,
                                 chance: aura.chance
                             });
                         }
                     } else {
                         resultEntries.push({
-                            label: `<span class="${rarityClass}">${aura.name} | Times Rolled: ${aura.wonCount.toLocaleString()}</span>`,
+                            label: `<span class="${classAttr}">${aura.name} | Times Rolled: ${aura.wonCount.toLocaleString()}</span>`,
                             chance: aura.chance
                         });
                     }

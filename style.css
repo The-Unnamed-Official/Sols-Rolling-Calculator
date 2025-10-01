@@ -523,9 +523,7 @@ body {
     letter-spacing: 0.32em;
     text-transform: uppercase;
     color: #d9ff9d;
-    background:
-        linear-gradient(var(--accent), var(--accent)) top center / 60% var(--corner-thickness) no-repeat,
-        linear-gradient(180deg, rgba(10, 20, 6, 0.95), rgba(8, 18, 14, 0.92));
+    background: linear-gradient(180deg, rgba(10, 20, 6, 0.95), rgba(8, 18, 14, 0.92));
     border: 1px solid rgba(164, 255, 140, 0.55);
     border-radius: 12px;
     box-shadow: inset 0 0 24px rgba(120, 255, 150, 0.18), 0 16px 28px rgba(0, 0, 0, 0.45);
@@ -536,7 +534,6 @@ body {
 }
 
 .roll-button::after {
-    content: 'Execute Simulation';
     position: absolute;
     bottom: 6px;
     left: 50%;
@@ -629,6 +626,69 @@ body {
 .rarity-transcendent { color: #afeeee; text-shadow: 1px 1px 2px #000; }
 .rarity-challenged { color: #000000; text-shadow: -1px -1px 0 #fff, 1px -1px 0 #fff, -1px 1px 0 #fff, 1px 1px 0 #fff; }
 .rarity-limbo { color: #000; text-shadow: 0 0 2px #aaa, 0 0 4px #aaa, 1px 1px 0 #aaa, -1px -1px 0 #aaa; }
+
+.aura-effect-pixelation,
+.aura-effect-luminosity,
+.aura-effect-equinox {
+    display: inline-block;
+    position: relative;
+}
+
+.aura-effect-pixelation {
+    color: #ff004c;
+    animation: aura-pixelation-rgb 0.75s linear infinite, aura-pixelation-sway 1.1s ease-in-out infinite;
+    text-shadow: 0 0 10px rgba(255, 255, 255, 0.55);
+}
+
+@keyframes aura-pixelation-rgb {
+    0% { color: #ff004c; }
+    33% { color: #00fffb; }
+    66% { color: #7bff00; }
+    100% { color: #ff004c; }
+}
+
+@keyframes aura-pixelation-sway {
+    0% { transform: rotate(-6deg); }
+    50% { transform: rotate(6deg); }
+    100% { transform: rotate(-6deg); }
+}
+
+.aura-effect-luminosity {
+    color: transparent !important;
+    background: linear-gradient(120deg, #f7fdff 0%, #6ad6ff 40%, #e4f7ff 70%, #ffffff 100%);
+    background-size: 200% 200%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    animation: aura-luminosity-gradient 1.6s ease-in-out infinite;
+    text-shadow: 0 0 18px rgba(142, 230, 255, 0.85);
+}
+
+@keyframes aura-luminosity-gradient {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+.aura-effect-equinox {
+    color: transparent !important;
+    background: linear-gradient(90deg, #000 0%, #000 50%, #fff 50%, #fff 100%);
+    background-size: 200% 100%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    animation: aura-equinox-shift 0.7s linear infinite, aura-equinox-pulse 0.55s ease-in-out infinite;
+    text-shadow: 0 0 10px rgba(255, 255, 255, 0.45);
+}
+
+@keyframes aura-equinox-shift {
+    0% { background-position: 0% 0%; }
+    50% { background-position: 100% 0%; }
+    100% { background-position: 0% 0%; }
+}
+
+@keyframes aura-equinox-pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.12); }
+}
 
 @keyframes logo-spin {
     from { transform: rotate(0deg); }

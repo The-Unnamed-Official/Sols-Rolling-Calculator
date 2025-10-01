@@ -379,3 +379,12 @@ function getRarityClass(aura, biome) {
     return 'rarity-basic';
 }
 
+function getAuraStyleClass(aura) {
+    if (!aura) return '';
+    const name = typeof aura === 'string' ? aura : aura.name;
+    if (!name) return '';
+    if (name.startsWith('Pixelation')) return 'aura-effect-pixelation';
+    if (name.startsWith('Luminosity')) return 'aura-effect-luminosity';
+    if (name.startsWith('Equinox')) return 'aura-effect-equinox';
+    return '';
+}
