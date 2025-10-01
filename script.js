@@ -168,6 +168,8 @@ const auras = [
     { name: "Nothing - 1", chance: 1, exclusiveTo: ["limbo"] },
 ];
 
+const cutscenePriority = ["equinox-cs", "lumi-cs", "pixelation-cs"];
+
 auras.forEach(aura => {
     aura.wonCount = 0;
 });
@@ -218,9 +220,9 @@ function roll() {
 
     let btAuras = {};
 
-    const progressContainer = document.querySelector('.progress-container');
-    const progressFill = document.querySelector('.progress-fill');
-    const progressText = document.querySelector('.progress-text');
+    const progressContainer = document.querySelector('.progress');
+    const progressFill = document.querySelector('.progress__fill');
+    const progressText = document.querySelector('.progress__value');
     progressContainer.style.display = total >= 100000 ? 'grid' : 'none';
     progressFill.style.width = '0%';
     progressText.textContent = '0%';
@@ -314,16 +316,20 @@ function roll() {
                 brandMark.classList.remove('brand__mark--spinning');
             }
             isRolling = false;
-            
+
             const endTime = performance.now();
             const executionTime = ((endTime - startTime) / 1000).toFixed(0);
 
-            if (total === 1) {
-                for (let aura of auras) {
-                    if (aura.wonCount > 0 && aura.cutscene && !isMobileDevice()) {
-                        playAuraVideo(aura.cutscene);
-                        break;
+            if (cutscenesEnabled) {
+                const cutsceneQueue = [];
+                for (const videoId of cutscenePriority) {
+                    const aura = auras.find(entry => entry.cutscene === videoId);
+                    if (aura && aura.wonCount > 0) {
+                        cutsceneQueue.push(videoId);
                     }
+                }
+                if (cutsceneQueue.length > 0) {
+                    playAuraSequence(cutsceneQueue);
                 }
             }
 
