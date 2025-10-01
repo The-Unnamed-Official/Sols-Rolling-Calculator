@@ -243,7 +243,7 @@ function toggleCutscenes() {
     cutscenesEnabled = !cutscenesEnabled;
     const cutsceneToggle = document.getElementById('cutsceneToggle');
     if (cutsceneToggle) {
-        cutsceneToggle.textContent = cutscenesEnabled ? 'Cutscenes: On' : 'Cutscenes: Off';
+        cutsceneToggle.textContent = cutscenesEnabled ? 'Cutscenes (Fullscreen recommended): On' : 'Cutscenes (Fullscreen recommended): Off';
         cutsceneToggle.setAttribute('aria-pressed', cutscenesEnabled ? 'true' : 'false');
     }
 
@@ -484,7 +484,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const cutsceneToggle = document.getElementById('cutsceneToggle');
     if (cutsceneToggle) {
-        cutsceneToggle.textContent = 'Cutscenes: Off';
+        cutsceneToggle.textContent = 'Cutscenes (Fullscreen recommended): Off';
         cutsceneToggle.setAttribute('aria-pressed', 'false');
     }
 
