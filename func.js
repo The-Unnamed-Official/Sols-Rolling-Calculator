@@ -18,10 +18,6 @@ function Random(min, max) {
     return Math.floor(getRand() * (max - min + 1)) + min;
 }
 
-function jsRandom(min, max) {
-    return Math.floor(Math.random() * (max - min + 1)) + min;
-}
-
 let soundEnabled = false;
 let videoPlaying = false;
 
@@ -50,7 +46,7 @@ function toggleSound() {
     const bgMusic = document.getElementById('bgMusic');
     const soundToggle = document.getElementById('soundToggle');
     bgMusic.volume = 0.02;
-    
+
     if (soundEnabled) {
         playSound(document.getElementById('clickSound'));
         bgMusic.muted = false;
@@ -59,6 +55,11 @@ function toggleSound() {
         bgMusic.muted = true;
         bgMusic.pause();
         bgMusic.currentTime = 0;
+    }
+
+    if (soundToggle) {
+        soundToggle.textContent = soundEnabled ? 'Sound: On' : 'Sound: Off';
+        soundToggle.setAttribute('aria-pressed', soundEnabled);
     }
 }
 
@@ -178,7 +179,7 @@ function handleBiomeUI() {
 document.addEventListener('DOMContentLoaded', () => {
     const buttons = document.querySelectorAll('button');
     const inputs = document.querySelectorAll('input');
-    const backButton = document.querySelector('.back-button');
+    const selects = document.querySelectorAll('select');
     const clickSound = document.getElementById('clickSound');
     const hoverSound = document.getElementById('hoverSound');
     buttons.forEach(button => {
@@ -189,10 +190,15 @@ document.addEventListener('DOMContentLoaded', () => {
         input.addEventListener('click', () => playSound(clickSound));
         input.addEventListener('mouseenter', () => playSound(hoverSound));
     });
-    backButton.addEventListener('click', () => playSound(clickSound));
-    backButton.addEventListener('mouseenter', () => playSound(hoverSound));
+    selects.forEach(select => {
+        select.addEventListener('change', () => playSound(clickSound));
+        select.addEventListener('mouseenter', () => playSound(hoverSound));
+    });
     document.getElementById('vip-select').addEventListener('change', updateLuckValue);
-    document.getElementById('xyz-luck').addEventListener('change', updateLuckValue);
+    const xyzToggle = document.getElementById('xyz-luck');
+    if (xyzToggle) {
+        xyzToggle.addEventListener('change', updateLuckValue);
+    }
     if (document.getElementById('dave-luck-select')) {
         document.getElementById('dave-luck-select').addEventListener('change', updateLuckValue);
     }
@@ -209,6 +215,17 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     document.getElementById('biome-select').addEventListener('change', handleBiomeUI);
     handleBiomeUI();
+
+    const soundToggle = document.getElementById('soundToggle');
+    if (soundToggle) {
+        soundToggle.textContent = 'Sound: Off';
+        soundToggle.setAttribute('aria-pressed', 'false');
+    }
+
+    const yearEl = document.getElementById('year');
+    if (yearEl) {
+        yearEl.textContent = new Date().getFullYear();
+    }
 });
 
 function playAuraVideo(videoId) {
