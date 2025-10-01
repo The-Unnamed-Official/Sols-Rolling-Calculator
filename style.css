@@ -278,6 +278,19 @@ body {
     margin-right: 8px;
 }
 
+.results__mythic {
+    margin: clamp(8px, 1.6vw, 16px) 0 0;
+    font-size: clamp(8px, 1.6vw, 10px);
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+}
+
+.results__mythic-label {
+    color: rgb(46, 255, 238);
+    margin-left: 8px;
+}
+
 .panel__header {
     display: flex;
     flex-direction: column;
