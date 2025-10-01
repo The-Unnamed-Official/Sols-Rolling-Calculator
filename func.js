@@ -18,11 +18,8 @@ function Random(min, max) {
     return Math.floor(getRand() * (max - min + 1)) + min;
 }
 
-function jsRandom(min, max) {
-    return Math.floor(Math.random() * (max - min + 1)) + min;
-}
-
 let soundEnabled = false;
+let cutscenesEnabled = false;
 let videoPlaying = false;
 
 function isMobileDevice() {
@@ -50,7 +47,7 @@ function toggleSound() {
     const bgMusic = document.getElementById('bgMusic');
     const soundToggle = document.getElementById('soundToggle');
     bgMusic.volume = 0.02;
-    
+
     if (soundEnabled) {
         playSound(document.getElementById('clickSound'));
         bgMusic.muted = false;
@@ -59,6 +56,32 @@ function toggleSound() {
         bgMusic.muted = true;
         bgMusic.pause();
         bgMusic.currentTime = 0;
+    }
+
+    if (soundToggle) {
+        soundToggle.textContent = soundEnabled ? 'Sound: On' : 'Sound: Off';
+        soundToggle.setAttribute('aria-pressed', soundEnabled);
+    }
+}
+
+function toggleCutscenes() {
+    cutscenesEnabled = !cutscenesEnabled;
+    const cutsceneToggle = document.getElementById('cutsceneToggle');
+    if (cutsceneToggle) {
+        cutsceneToggle.textContent = cutscenesEnabled ? 'Cutscenes: On' : 'Cutscenes: Off';
+        cutsceneToggle.setAttribute('aria-pressed', cutscenesEnabled ? 'true' : 'false');
+    }
+
+    const clickSound = document.getElementById('clickSound');
+    if (clickSound) {
+        playSound(clickSound);
+    }
+
+    if (!cutscenesEnabled) {
+        const skipButton = document.getElementById('skip-button');
+        if (skipButton && skipButton.style.display !== 'none') {
+            skipButton.click();
+        }
     }
 }
 
@@ -178,7 +201,7 @@ function handleBiomeUI() {
 document.addEventListener('DOMContentLoaded', () => {
     const buttons = document.querySelectorAll('button');
     const inputs = document.querySelectorAll('input');
-    const backButton = document.querySelector('.back-button');
+    const selects = document.querySelectorAll('select');
     const clickSound = document.getElementById('clickSound');
     const hoverSound = document.getElementById('hoverSound');
     buttons.forEach(button => {
@@ -189,10 +212,15 @@ document.addEventListener('DOMContentLoaded', () => {
         input.addEventListener('click', () => playSound(clickSound));
         input.addEventListener('mouseenter', () => playSound(hoverSound));
     });
-    backButton.addEventListener('click', () => playSound(clickSound));
-    backButton.addEventListener('mouseenter', () => playSound(hoverSound));
+    selects.forEach(select => {
+        select.addEventListener('change', () => playSound(clickSound));
+        select.addEventListener('mouseenter', () => playSound(hoverSound));
+    });
     document.getElementById('vip-select').addEventListener('change', updateLuckValue);
-    document.getElementById('xyz-luck').addEventListener('change', updateLuckValue);
+    const xyzToggle = document.getElementById('xyz-luck');
+    if (xyzToggle) {
+        xyzToggle.addEventListener('change', updateLuckValue);
+    }
     if (document.getElementById('dave-luck-select')) {
         document.getElementById('dave-luck-select').addEventListener('change', updateLuckValue);
     }
@@ -209,96 +237,127 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     document.getElementById('biome-select').addEventListener('change', handleBiomeUI);
     handleBiomeUI();
+
+    const soundToggle = document.getElementById('soundToggle');
+    if (soundToggle) {
+        soundToggle.textContent = 'Sound: Off';
+        soundToggle.setAttribute('aria-pressed', 'false');
+    }
+
+    const cutsceneToggle = document.getElementById('cutsceneToggle');
+    if (cutsceneToggle) {
+        cutsceneToggle.textContent = 'Cutscenes: Off';
+        cutsceneToggle.setAttribute('aria-pressed', 'false');
+    }
+
+    const yearEl = document.getElementById('year');
+    if (yearEl) {
+        yearEl.textContent = new Date().getFullYear();
+    }
 });
 
 function playAuraVideo(videoId) {
-    if (isMobileDevice()) {
+    return new Promise(resolve => {
+        if (!cutscenesEnabled) {
+            resolve();
+            return;
+        }
+
+        if (isMobileDevice()) {
+            const bgMusic = document.getElementById('bgMusic');
+            if (bgMusic && !bgMusic.paused) {
+                bgMusic.pause();
+                setTimeout(() => {
+                    if (soundEnabled) bgMusic.play();
+                }, 500);
+            }
+            resolve();
+            return;
+        }
+
+        let overlay = document.getElementById('video-overlay');
+        if (!overlay) {
+            overlay = document.createElement('div');
+            overlay.id = 'video-overlay';
+            overlay.className = 'video-overlay';
+            document.body.appendChild(overlay);
+        }
+
+        let skipButton = document.getElementById('skip-button');
+        if (!skipButton) {
+            skipButton = document.createElement('div');
+            skipButton.id = 'skip-button';
+            skipButton.className = 'skip-button';
+            skipButton.textContent = 'Skip cutscene';
+            document.body.appendChild(skipButton);
+        }
+
+        const video = document.getElementById(videoId);
+        if (!video) {
+            resolve();
+            return;
+        }
+
+        videoPlaying = true;
         const bgMusic = document.getElementById('bgMusic');
-        if (bgMusic && !bgMusic.paused) {
+        const wasPlaying = bgMusic && !bgMusic.paused;
+
+        if (bgMusic && wasPlaying) {
             bgMusic.pause();
-            setTimeout(() => {
-                if (soundEnabled) bgMusic.play();
-            }, 500);
         }
-        return;
-    }
 
-    let overlay = document.getElementById('video-overlay');
-    if (!overlay) {
-        overlay = document.createElement('div');
-        overlay.id = 'video-overlay';
-        overlay.className = 'video-overlay';
-        document.body.appendChild(overlay);
-    }
+        overlay.style.display = 'flex';
+        video.style.display = 'block';
+        skipButton.style.display = 'block';
+        video.currentTime = 0;
+        video.muted = !soundEnabled;
 
-    let skipButton = document.getElementById('skip-button');
-    if (!skipButton) {
-        skipButton = document.createElement('div');
-        skipButton.id = 'skip-button';
-        skipButton.className = 'skip-button';
-        skipButton.textContent = 'Click to skip';
-        document.body.appendChild(skipButton);
-    }
-    
-    const video = document.getElementById(videoId);
-    if (!video) return;
-    
-    videoPlaying = true;
-    const bgMusic = document.getElementById('bgMusic');
-    const wasPlaying = !bgMusic.paused;
-    
-    if (wasPlaying) {
-        bgMusic.pause();
-    }
-    
-    overlay.style.display = 'block';
-    video.style.display = 'block';
-    skipButton.style.display = 'block';
-    video.currentTime = 0;
-    video.muted = !soundEnabled;
-    
-    const videoDuration = video.duration;
-    let endProtectionActive = false;
-    
-    video.play().catch(error => {
-        console.error("Video play error:", error);
+        let cleanedUp = false;
+        const cleanup = () => {
+            if (cleanedUp) return;
+            cleanedUp = true;
+            videoPlaying = false;
+            video.pause();
+            video.currentTime = 0;
+            video.style.display = 'none';
+            overlay.style.display = 'none';
+            skipButton.style.display = 'none';
+            if (bgMusic && wasPlaying && soundEnabled) {
+                bgMusic.play().catch(() => {});
+            }
+            video.onended = null;
+            video.onerror = null;
+            skipButton.onclick = null;
+            resolve();
+        };
+
+        skipButton.onclick = () => {
+            cleanup();
+        };
+
+        video.onended = () => {
+            cleanup();
+        };
+
+        video.onerror = () => {
+            cleanup();
+        };
+
+        video.load();
+        const playPromise = video.play();
+        if (playPromise && typeof playPromise.catch === 'function') {
+            playPromise.catch(() => cleanup());
+        }
     });
-    
-    const restoreAudio = () => {
-        videoPlaying = false;
-        
-        if (wasPlaying && soundEnabled) {
-            bgMusic.play();
-        }
-        video.style.display = 'none';
-        overlay.style.display = 'none';
-        skipButton.style.display = 'none';
-    };
-    
-    skipButton.onclick = () => {
-        video.pause();
-        restoreAudio();
-    };
-    
-    overlay.onclick = null;
-    
-    video.onended = () => {
-        if (!endProtectionActive) {
-            restoreAudio();
-        }
-    };
-    
-    video.ontimeupdate = () => {
-        if (Math.round(video.currentTime * 10) % 10 === 0) {
-            console.log(`Video time: ${video.currentTime.toFixed(1)}s / ${videoDuration.toFixed(1)}s`);
-        }
-        
-        if (videoDuration > 0 && video.currentTime < (videoDuration * 0.9)) {
-            endProtectionActive = true;
-        } else {
-            endProtectionActive = false;
-        }
-    };
+}
+
+async function playAuraSequence(queue) {
+    if (!Array.isArray(queue) || queue.length === 0) return;
+
+    for (const videoId of queue) {
+        if (!cutscenesEnabled) break;
+        await playAuraVideo(videoId);
+    }
 }
 
 function getRarityClass(aura, biome) {
