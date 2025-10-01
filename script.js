@@ -6,10 +6,10 @@ const auras = [
     { name: "Equinox - 2,500,000,000", chance: 2500000000, cutscene: "equinox-cs" },
     { name: "Luminosity - 1,200,000,000", chance: 1200000000, cutscene: "lumi-cs" },
     { name: "Pixelation - 1,073,741,824", chance: 1073741824, cutscene: "pixelation-cs" },
-    { name: "Dreamscape - 850,000,000", chance: 850000000, cutscene: "dreamscape-cs", exclusiveTo: ["limbo"] },
-    { name: "Aegis - 825,000,000", chance: 825000000, cutscene: "aegis-cs" },
+    { name: "Dreamscape - 850,000,000", chance: 850000000, exclusiveTo: ["limbo"] },
+    { name: "Aegis - 825,000,000", chance: 825000000 },
     { name: "Aegis : Watergun - 825,000,000", chance: 825000000, breakthrough: { blazing: 2 }},
-    { name: "Ruins : Withered - 800,000,000", chance: 800000000, cutscene: "ruinswithered-cs" },
+    { name: "Ruins : Withered - 800,000,000", chance: 800000000 },
     { name: "Sovereign - 750,000,000", chance: 750000000 },
     { name: "PROLOGUE - 666,616,111", chance: 666616111, exclusiveTo: ["limbo"] },
     { name: "Matrix : Reality - 601,020,102", chance: 601020102 },
@@ -168,6 +168,8 @@ const auras = [
     { name: "Nothing - 1", chance: 1, exclusiveTo: ["limbo"] },
 ];
 
+const cutscenePriority = ["equinox-cs", "lumi-cs", "pixelation-cs"];
+
 auras.forEach(aura => {
     aura.wonCount = 0;
 });
@@ -186,11 +188,15 @@ function getXpForChance(chance) {
 
 function roll() {
     if (isRolling) return;
-    
+
     isRolling = true;
     const rollButton = document.querySelector('.roll-button');
+    const brandMark = document.querySelector('.brand__mark');
     rollButton.disabled = true;
     rollButton.style.opacity = '0.5';
+    if (brandMark) {
+        brandMark.classList.add('brand__mark--spinning');
+    }
     
     playSound(document.getElementById('rollSound'));
     if (isNaN(parseInt(document.getElementById('rolls').value))) {
@@ -201,7 +207,6 @@ function roll() {
     }
 
     const total = parseInt(document.getElementById('rolls').value);
-    const jsEnabled = document.getElementById('cbx').checked;
     const biome = document.getElementById('biome-select').value;
     
     results.innerHTML = `Rolling...`;
@@ -215,10 +220,10 @@ function roll() {
 
     let btAuras = {};
 
-    const progressContainer = document.querySelector('.progress-container');
-    const progressFill = document.querySelector('.progress-fill');
-    const progressText = document.querySelector('.progress-text');
-    progressContainer.style.display = total >= 100000 ? 'block' : 'none';
+    const progressContainer = document.querySelector('.progress');
+    const progressFill = document.querySelector('.progress__fill');
+    const progressText = document.querySelector('.progress__value');
+    progressContainer.style.display = total >= 100000 ? 'grid' : 'none';
     progressFill.style.width = '0%';
     progressText.textContent = '0%';
 
@@ -278,7 +283,7 @@ function roll() {
                 let usedBT = aura.effectiveChance !== aura.chance;
                 let btChance = usedBT ? aura.effectiveChance : null;
                 
-                if ((jsEnabled ? jsRandom : Random)(1, Math.floor(chance / luck.value)) === 1) {
+                if (Random(1, Math.floor(chance / luck.value)) === 1) {
                     aura.wonCount++;
                     if (usedBT) {
                         if (!btAuras[aura.name]) {
@@ -307,17 +312,24 @@ function roll() {
             progressContainer.style.display = 'none';
             rollButton.disabled = false;
             rollButton.style.opacity = '1';
+            if (brandMark) {
+                brandMark.classList.remove('brand__mark--spinning');
+            }
             isRolling = false;
-            
+
             const endTime = performance.now();
             const executionTime = ((endTime - startTime) / 1000).toFixed(0);
 
-            if (total === 1) {
-                for (let aura of auras) {
-                    if (aura.wonCount > 0 && aura.cutscene && !isMobileDevice()) {
-                        playAuraVideo(aura.cutscene);
-                        break;
+            if (cutscenesEnabled) {
+                const cutsceneQueue = [];
+                for (const videoId of cutscenePriority) {
+                    const aura = auras.find(entry => entry.cutscene === videoId);
+                    if (aura && aura.wonCount > 0) {
+                        cutsceneQueue.push(videoId);
                     }
+                }
+                if (cutsceneQueue.length > 0) {
+                    playAuraSequence(cutsceneQueue);
                 }
             }
 
@@ -328,7 +340,7 @@ function roll() {
                 }
             }
 
-            if (highestChance >= 100000000) {
+            if (highestChance >= 99999999) {
                 playSound(document.getElementById('100mSound'));
             } else if (highestChance >= 10000000) {
                 playSound(document.getElementById('10mSound'));
@@ -349,24 +361,26 @@ function roll() {
             for (let aura of auras) {
                 if (aura.wonCount > 0) {
                     let rarityClass = getRarityClass(aura, biome);
+                    let specialClass = getAuraStyleClass(aura);
+                    let classAttr = [rarityClass, specialClass].filter(Boolean).join(' ');
                     if (btAuras[aura.name]) {
                         let btName = aura.name.replace(
                             /-\s*[\d,]+/,
                             `- ${btAuras[aura.name].btChance.toLocaleString()}`
                         );
                         resultEntries.push({
-                            label: `<span class="${rarityClass}">[Native] ${btName} | Times Rolled: ${btAuras[aura.name].count.toLocaleString()}</span>`,
+                            label: `<span class="${classAttr}">[Native] ${btName} | Times Rolled: ${btAuras[aura.name].count.toLocaleString()}</span>`,
                             chance: btAuras[aura.name].btChance
                         });
                         if (aura.wonCount > btAuras[aura.name].count) {
                             resultEntries.push({
-                                label: `<span class="${rarityClass}">${aura.name} | Times Rolled: ${(aura.wonCount - btAuras[aura.name].count).toLocaleString()}</span>`,
+                                label: `<span class="${classAttr}">${aura.name} | Times Rolled: ${(aura.wonCount - btAuras[aura.name].count).toLocaleString()}</span>`,
                                 chance: aura.chance
                             });
                         }
                     } else {
                         resultEntries.push({
-                            label: `<span class="${rarityClass}">${aura.name} | Times Rolled: ${aura.wonCount.toLocaleString()}</span>`,
+                            label: `<span class="${classAttr}">${aura.name} | Times Rolled: ${aura.wonCount.toLocaleString()}</span>`,
                             chance: aura.chance
                         });
                     }
