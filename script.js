@@ -340,7 +340,7 @@ function roll() {
                 }
             }
 
-            if (highestChance >= 100000000) {
+            if (highestChance >= 99999999) {
                 playSound(document.getElementById('100mSound'));
             } else if (highestChance >= 10000000) {
                 playSound(document.getElementById('10mSound'));
