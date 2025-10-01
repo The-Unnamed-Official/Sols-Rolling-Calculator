@@ -79,7 +79,6 @@ body {
         linear-gradient(var(--accent), var(--accent)) bottom right / var(--corner-thickness) var(--corner-size) no-repeat,
         var(--panel-gradient);
     border: 1px solid var(--panel-border);
-    border-radius: 14px;
     box-shadow: var(--shadow-strong);
     overflow: hidden;
 }
@@ -610,10 +609,10 @@ body {
 /* rarity colors */
 .rarity-basic { color: #d3d3d3; text-shadow: 1px 1px 2px #000; }
 .rarity-epic { color: #754c73; text-shadow: 1px 1px 2px #000; }
-.rarity-unique { color: #976627; text-shadow: 1px 1px 2px #000; }
-.rarity-legendary { color: #fff130; text-shadow: 1px 1px 2px #000; }
-.rarity-mythic { color: #be3a9d; text-shadow: 1px 1px 2px #000; }
-.rarity-exalted { color: #0f467e; text-shadow: 1px 1px 2px #000; }
+.rarity-unique { color: #d49924; text-shadow: 1px 1px 2px #000; }
+.rarity-legendary { color: #35f2c9; text-shadow: 1px 1px 2px #000; }
+.rarity-mythic { color: #d607a3; text-shadow: 1px 1px 2px #000; }
+.rarity-exalted { color: #0d3d6e; text-shadow: 1px 1px 2px #000; }
 .rarity-glorious { color: #790707; text-shadow: 1px 1px 2px #000; }
 .rarity-transcendent { color: #afeeee; text-shadow: 1px 1px 2px #000; }
 .rarity-challenged { color: #000000; text-shadow: -1px -1px 0 #fff, 1px -1px 0 #fff, -1px 1px 0 #fff, 1px 1px 0 #fff; }
@@ -648,32 +647,31 @@ body {
     }
 }
 
-    .panel--side,
-    .panel--results,
-    .panel--controls {
-        grid-area: auto;
-    }
+.panel--side,
+.panel--results,
+.panel--controls {
+    grid-area: auto;
+}
 
-    .ui-header {
-        flex-direction: column;
-        align-items: flex-start;
-    }
+.ui-header {
+    flex-direction: column;
+    align-items: flex-start;
+}
 
-    .header__controls {
-        width: 100%;
-        justify-content: center;
-    }
+.header__controls {
+    width: 100%;
+    justify-content: center;
+}
 
-    .brand__meta {
-        text-align: center;
-    }
+.brand__meta {
+    text-align: center;
+}
 
-    .brand__title,
-    .brand__subtitle,
-    .panel__title,
-    .panel__subtitle {
-        text-align: center;
-    }
+.brand__title,
+.brand__subtitle,
+.panel__title,
+.panel__subtitle {
+    text-align: center;
 }
 
 @media (max-width: 620px) {
