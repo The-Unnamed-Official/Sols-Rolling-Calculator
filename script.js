@@ -15,7 +15,7 @@ const auras = [
     { name: "Matrix : Reality - 601,020,102", chance: 601020102 },
     { name: "Sophyra - 570,000,000", chance: 570000000 },
     { name: "Elude - 555,555,555", chance: 555555555, exclusiveTo: ["limbo"] },    
-    { name: "Dreammetric - 520,000,000", chance: 520000000, exclusiveTo: ["glitch", "dreamspace"] },
+    { name: "Dreammetric - 520,000,000", chance: 520000000, exclusiveTo: ["glitch", "dreamspace"], cutscene: "dreammetric-cs" },
     { name: "Matrix : Overdrive - 503,000,000", chance: 503000000 },
     { name: "Ruins - 500,000,000", chance: 500000000 },
     { name: "Kyawthuite : Remembrance - 450,000,000", chance: 450000000 },
@@ -35,7 +35,7 @@ const auras = [
     { name: "Astral : Legendarium - 267,200,000", chance: 267200000, breakthrough: { starfall: 5 } },
     { name: "Archangel - 250,000,000", chance: 250000000 },
     { name: "HYPER-VOLT : EVER-STORM - 225,000,000", chance: 225000000 },
-    { name: "Oppression - 220,000,000", chance: 220000000, exclusiveTo: ["glitch"] },
+    { name: "Oppression - 220,000,000", chance: 220000000, exclusiveTo: ["glitch"], cutscene: "oppression-cs" },
     { name: "Impeached - 200,000,000", chance: 200000000, breakthrough: { corruption: 5 } },
     { name: "Twilight : Withering Grace - 180,000,000", chance: 180000000, breakthrough: { night: 10 } },
     { name: "Symphony - 175,000,000", chance: 175000000 },
@@ -168,7 +168,7 @@ const auras = [
     { name: "Nothing - 1", chance: 1, exclusiveTo: ["limbo"] },
 ];
 
-const cutscenePriority = ["equinox-cs", "lumi-cs", "pixelation-cs"];
+const cutscenePriority = ["equinox-cs", "lumi-cs", "pixelation-cs", "dreammetric-cs", "oppression-cs"];
 
 auras.forEach(aura => {
     aura.wonCount = 0;
