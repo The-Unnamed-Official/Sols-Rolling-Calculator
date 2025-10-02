@@ -263,6 +263,7 @@ function roll() {
     }
 
     const total = parseInt(document.getElementById('rolls').value);
+    const luckValue = Math.max(0, Number.parseFloat(luck.value) || 0);
     const biome = document.getElementById('biome-select').value;
     
     results.innerHTML = `Rolling...`;
@@ -346,7 +347,8 @@ function roll() {
                 let usedBT = aura.effectiveChance !== aura.chance;
                 let btChance = usedBT ? aura.effectiveChance : null;
                 
-                if (Random(1, Math.floor(chance / luck.value)) === 1) {
+                const successThreshold = Math.min(chance, luckValue);
+                if (successThreshold > 0 && Random(1, chance) <= successThreshold) {
                     aura.wonCount++;
                     if (usedBT) {
                         if (!btAuras[aura.name]) {
