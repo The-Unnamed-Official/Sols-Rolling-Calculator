@@ -22,6 +22,7 @@ let rollingSoundEnabled = false;
 let uiSoundEnabled = false;
 let cutscenesEnabled = false;
 let videoPlaying = false;
+let scrollLockState = null;
 
 const audioBufferCache = new Map();
 const audioBufferPromises = new Map();
@@ -219,7 +220,7 @@ function toggleSound() {
     }
 
     if (soundToggle) {
-        soundToggle.textContent = rollingSoundEnabled ? 'Rolling Sound: On' : 'Rolling Sound: Off';
+        soundToggle.textContent = rollingSoundEnabled ? 'Other Sounds: On' : 'Other Sounds: Off';
         soundToggle.setAttribute('aria-pressed', rollingSoundEnabled);
     }
 }
@@ -268,6 +269,7 @@ let lastDaveMultiplier = 1;
 
 const biomeAssets = {
     normal: { image: 'files/normalBiomeImage.jpg', music: 'files/normalBiomeMusic.mp3' },
+    roe: { image: 'files/normalBiomeImage.jpg', music: 'files/normalBiomeMusic.mp3' },
     day: { image: 'files/dayBiomeImage.jpg', music: 'files/dayBiomeMusic.mp3' },
     night: { image: 'files/nightBiomeImage.jpg', music: 'files/nightBiomeMusic.mp3' },
     rainy: { image: 'files/rainyBiomeImage.jpg', music: 'files/rainyBiomeMusic.mp3' },
@@ -386,6 +388,12 @@ function setLimbo() {
     handleBiomeUI();
 }
 
+function setROE() {
+    document.getElementById('biome-select').value = 'roe'
+    playSound(document.getElementById('clicksound'), 'ui');
+    handleBiomeUI();
+}
+
 function resetBiome() {
     document.getElementById('biome-select').value = 'normal';
     playSound(document.getElementById('clickSound'), 'ui');
@@ -472,7 +480,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const soundToggle = document.getElementById('soundToggle');
     if (soundToggle) {
-        soundToggle.textContent = 'Rolling Sound: Off';
+        soundToggle.textContent = 'Other Sounds: Off';
         soundToggle.setAttribute('aria-pressed', 'false');
     }
 
@@ -551,6 +559,20 @@ function playAuraVideo(videoId) {
         overlay.style.display = 'flex';
         video.style.display = 'block';
         skipButton.style.display = 'block';
+        if (!scrollLockState && document.body) {
+            const body = document.body;
+            const previousOverflow = body.style.overflow;
+            const previousPadding = body.style.paddingRight;
+            const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
+            body.style.overflow = 'hidden';
+            if (scrollbarWidth > 0) {
+                body.style.paddingRight = `${scrollbarWidth}px`;
+            }
+            scrollLockState = {
+                overflow: previousOverflow,
+                paddingRight: previousPadding
+            };
+        }
         video.currentTime = 0;
         video.muted = !rollingSoundEnabled;
 
@@ -564,6 +586,12 @@ function playAuraVideo(videoId) {
             video.style.display = 'none';
             overlay.style.display = 'none';
             skipButton.style.display = 'none';
+            if (scrollLockState && document.body) {
+                const body = document.body;
+                body.style.overflow = scrollLockState.overflow;
+                body.style.paddingRight = scrollLockState.paddingRight;
+                scrollLockState = null;
+            }
             if (bgMusic && wasPlaying && rollingSoundEnabled) {
                 bgMusic.play().catch(() => {});
             }

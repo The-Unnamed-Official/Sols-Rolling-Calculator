@@ -538,6 +538,10 @@ body {
     width: 160px;
 }
 
+.field__select-shell--biome {
+    width: clamp(210px, 24vw, 225px);
+}
+
 .field--select select.field__input {
     appearance: none;
     -webkit-appearance: none;
@@ -559,6 +563,10 @@ body {
     transform: translateY(-50%) rotate(45deg);
     pointer-events: none;
     transition: border-color 0.2s ease, transform 0.2s ease;
+}
+
+#biome-select.field__input {
+    padding-right: 60px;
 }
 
 .field--select:focus-within .field__select-shell::after {

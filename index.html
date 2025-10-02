@@ -55,7 +55,7 @@
                 </div>
             </div>
             <div class="header__controls">
-                <button class="ui-toggle" id="soundToggle" type="button" onclick="toggleSound()" aria-pressed="false">Rolling Sound: Off</button>
+                <button class="ui-toggle" id="soundToggle" type="button" onclick="toggleSound()" aria-pressed="false">Other Sounds: Off</button>
                 <button class="ui-toggle" id="uiSoundToggle" type="button" onclick="toggleUiSound()" aria-pressed="false">UI Sound: Off</button>
                 <button class="ui-toggle" id="cutsceneToggle" type="button" onclick="toggleCutscenes()" aria-pressed="false">Cutscenes (Fullscreen recommended): Off</button>
             </div>
@@ -188,9 +188,10 @@
                     </label>
                     <label class="field field--select" for="biome-select">
                         <span class="field__label">Biome</span>
-                        <span class="field__select-shell">
+                        <span class="field__select-shell field__select-shell--biome">
                             <select id="biome-select" class="field__input">
-                                <option value="normal">Normal</option>
+                                <option value="roe">Rune of Everything</option>
+                                <option value="normal" selected>Normal</option>
                                 <option value="day">Day</option>
                                 <option value="night">Night</option>
                                 <option value="rainy">Rainy</option>
@@ -211,6 +212,7 @@
                     <div class="quick-actions">
                         <button class="ui-button ui-button--ghost" type="button" onclick="setGlitch()">Set Glitch</button>
                         <button class="ui-button ui-button--ghost" type="button" onclick="setLimbo()">Set Limbo</button>
+                        <button class="ui-button ui-button--ghost" type="button" onclick="setROE()">Use RoE</button>
                         <button class="ui-button ui-button--ghost" type="button" onclick="resetBiome()">Reset Biome</button>
                     </div>
                 </div>
