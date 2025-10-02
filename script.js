@@ -2,6 +2,8 @@ let results = document.getElementById('result-text');
 let luck = document.getElementById('luck');
 let isRolling = false;
 
+const customSelectRegistry = new Map();
+
 const auras = [
     { name: "Equinox - 2,500,000,000", chance: 2500000000, cutscene: "equinox-cs" },
     { name: "Luminosity - 1,200,000,000", chance: 1200000000, cutscene: "lumi-cs" },
@@ -346,6 +348,45 @@ function updateEventSummary() {
     summary.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
 }
 
+function closeAllSelects(except, options = {}) {
+    const { focusSummary = false } = options;
+    let hasFocused = false;
+    const openSelects = document.querySelectorAll('details.ui-select[open]');
+    openSelects.forEach(details => {
+        if (except && details === except) return;
+        details.open = false;
+        const summary = details.querySelector('.ui-select__summary');
+        if (summary) {
+            summary.setAttribute('aria-expanded', 'false');
+            if (focusSummary && !hasFocused) {
+                summary.focus();
+                hasFocused = true;
+            }
+        }
+        if (details.id === 'event-select') {
+            updateEventSummary();
+        }
+        const selectId = details.dataset.select;
+        if (selectId) {
+            const registryEntry = customSelectRegistry.get(selectId);
+            if (registryEntry && typeof registryEntry.update === 'function') {
+                registryEntry.update();
+            }
+        }
+    });
+}
+
+document.addEventListener('click', event => {
+    const parentSelect = event.target.closest('details.ui-select');
+    closeAllSelects(parentSelect);
+});
+
+document.addEventListener('keydown', event => {
+    if (event.key === 'Escape') {
+        closeAllSelects(null, { focusSummary: true });
+    }
+});
+
 function applyEventBiomeRestrictions() {
     const biomeSelect = document.getElementById('biome-select');
     if (!biomeSelect) return;
@@ -379,6 +420,8 @@ function applyEventBiomeRestrictions() {
             handleBiomeUI();
         }
     }
+
+    refreshCustomSelect('biome-select');
 }
 
 function setEventActive(eventId, enabled) {
@@ -427,33 +470,92 @@ function initializeEventSelectors() {
         });
     }
 
-    document.addEventListener('click', event => {
-        const detailsEl = document.getElementById('event-select');
-        if (!detailsEl || !detailsEl.open) return;
-        if (!detailsEl.contains(event.target)) {
-            detailsEl.open = false;
-            updateEventSummary();
-        }
-    });
-
-    document.addEventListener('keydown', event => {
-        if (event.key !== 'Escape') return;
-        const detailsEl = document.getElementById('event-select');
-        if (detailsEl && detailsEl.open) {
-            detailsEl.open = false;
-            const summary = document.getElementById('event-summary');
-            if (summary) {
-                summary.focus();
-            }
-            updateEventSummary();
-        }
-    });
-
     updateEventSummary();
     applyEventBiomeRestrictions();
 }
 
 document.addEventListener('DOMContentLoaded', initializeEventSelectors);
+
+function initializeSingleSelect(selectId) {
+    const select = document.getElementById(selectId);
+    const details = document.querySelector(`details[data-select="${selectId}"]`);
+    if (!select || !details) return;
+
+    const summary = details.querySelector('.ui-select__summary');
+    const menu = details.querySelector('.ui-select__menu');
+    if (!summary || !menu) return;
+
+    const placeholder = summary.dataset.placeholder || summary.textContent.trim();
+    menu.innerHTML = '';
+
+    const optionButtons = Array.from(select.options).map(option => {
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'ui-select__option-button';
+        button.dataset.value = option.value;
+        button.textContent = option.textContent;
+        button.setAttribute('role', 'option');
+        button.addEventListener('click', () => {
+            if (option.disabled) return;
+            const valueChanged = select.value !== option.value;
+            if (valueChanged) {
+                select.value = option.value;
+                select.dispatchEvent(new Event('change', { bubbles: true }));
+            }
+            details.open = false;
+            summary.focus();
+            updateSummary();
+        });
+        menu.appendChild(button);
+        return { button, option };
+    });
+
+    if (!menu.hasAttribute('role')) {
+        menu.setAttribute('role', 'listbox');
+    }
+
+    function updateSummary() {
+        const selectedOption = select.options[select.selectedIndex];
+        const label = selectedOption ? selectedOption.textContent : placeholder;
+        summary.textContent = label;
+        summary.classList.toggle('field__input--placeholder', !selectedOption);
+        summary.setAttribute('aria-expanded', details.open ? 'true' : 'false');
+
+        optionButtons.forEach(({ button, option }) => {
+            const isActive = option.value === select.value;
+            button.classList.toggle('ui-select__option-button--active', isActive);
+            button.classList.toggle('ui-select__option-button--disabled', option.disabled);
+            button.disabled = !!option.disabled;
+            if (option.disabled) {
+                button.setAttribute('aria-disabled', 'true');
+            } else {
+                button.removeAttribute('aria-disabled');
+            }
+        });
+    }
+
+    select.addEventListener('change', updateSummary);
+    details.addEventListener('toggle', () => {
+        summary.setAttribute('aria-expanded', details.open ? 'true' : 'false');
+    });
+
+    customSelectRegistry.set(selectId, { update: updateSummary });
+
+    updateSummary();
+}
+
+function refreshCustomSelect(selectId) {
+    const registryEntry = customSelectRegistry.get(selectId);
+    if (registryEntry && typeof registryEntry.update === 'function') {
+        registryEntry.update();
+    }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    initializeSingleSelect('vip-select');
+    initializeSingleSelect('dave-luck-select');
+    initializeSingleSelect('biome-select');
+});
 
 // xp
 function getXpForChance(chance) {
