@@ -542,6 +542,153 @@ body {
     width: clamp(210px, 24vw, 225px);
 }
 
+.biome-control-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    align-items: flex-end;
+}
+
+.biome-control-row > .field {
+    flex: 1 1 clamp(210px, 24vw, 240px);
+}
+
+.field--events {
+    min-width: clamp(200px, 25vw, 240px);
+}
+
+.event-select {
+    position: relative;
+    display: block;
+}
+
+.field__input--event {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    user-select: none;
+}
+
+.field__input--event.field__input--placeholder {
+    color: var(--text-tertiary);
+}
+
+.event-select summary {
+    list-style: none;
+    position: relative;
+    padding-right: 48px;
+}
+
+.event-select summary::-webkit-details-marker {
+    display: none;
+}
+
+.event-select summary::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    right: 18px;
+    width: 10px;
+    height: 10px;
+    border-right: 2px solid var(--accent);
+    border-bottom: 2px solid var(--accent);
+    transform: translateY(-50%) rotate(45deg);
+    transition: transform 0.2s ease, border-color 0.2s ease;
+    pointer-events: none;
+}
+
+.event-select summary:hover,
+.event-select summary:focus-visible {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 2px rgba(127, 227, 255, 0.25);
+    outline: none;
+}
+
+.event-select[open] summary::after {
+    transform: translateY(-50%) rotate(225deg);
+}
+
+.event-select__menu {
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 0;
+    right: 0;
+    background: linear-gradient(175deg, rgba(12, 20, 38, 0.96), rgba(4, 10, 22, 0.98));
+    border: 1px solid rgba(95, 160, 230, 0.35);
+    border-radius: 12px;
+    box-shadow: 0 18px 38px rgba(4, 10, 24, 0.65);
+    padding: 14px 16px;
+    display: grid;
+    gap: 10px;
+    max-height: 320px;
+    overflow-y: auto;
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(-6px);
+    transition: opacity 0.2s ease, transform 0.2s ease;
+    z-index: 20;
+}
+
+.event-select[open] .event-select__menu {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateY(0);
+}
+
+.event-select__option {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 13px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+}
+
+.event-select__option:hover {
+    color: var(--text-primary);
+}
+
+.event-select__option input[type="checkbox"] {
+    appearance: none;
+    width: 18px;
+    height: 18px;
+    border-radius: 5px;
+    border: 1px solid rgba(95, 160, 230, 0.5);
+    background: rgba(6, 12, 24, 0.85);
+    display: grid;
+    place-items: center;
+    transition: border-color 0.2s ease, background-color 0.2s ease;
+}
+
+.event-select__option input[type="checkbox"]::after {
+    content: '';
+    width: 10px;
+    height: 10px;
+    clip-path: polygon(14% 44%, 0% 63%, 43% 100%, 100% 18%, 80% 0%, 40% 62%);
+    background: transparent;
+    transition: background 0.2s ease;
+}
+
+.event-select__option input[type="checkbox"]:checked {
+    border-color: var(--accent);
+    background: rgba(20, 36, 64, 0.95);
+}
+
+.event-select__option input[type="checkbox"]:checked::after {
+    background: var(--accent);
+}
+
+.event-select__option input[type="checkbox"]:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+}
+
+.event-select__option span {
+    flex: 1;
+}
+
 .field--select select.field__input {
     appearance: none;
     -webkit-appearance: none;
@@ -799,6 +946,16 @@ select.field__input option {
     .resource-card--nolifers:focus-visible .resource-card__arrow-cluster {
         transform: translateY(-50%) scale(0.9);
     }
+
+    .biome-control-row {
+        gap: 12px;
+    }
+
+    .biome-control-row > .field,
+    .field--events {
+        flex: 1 1 100%;
+        min-width: 100%;
+    }
 }
 
 .video-overlay {
@@ -845,6 +1002,11 @@ select.field__input option {
 .rarity-transcendent { color: #afeeee; text-shadow: 1px 1px 2px #000; }
 .rarity-challenged { color: #000000; text-shadow: -1px -1px 0 #fff, 1px -1px 0 #fff, -1px 1px 0 #fff, 1px 1px 0 #fff; }
 .rarity-limbo { color: #000; text-shadow: 0 0 2px #aaa, 0 0 4px #aaa, 1px 1px 0 #aaa, -1px -1px 0 #aaa; }
+
+.aura-event-text {
+  color: #fff !important;
+  text-shadow: 1px 1px 2px #000;
+}
 
 .aura-outline-halloween {
     text-shadow:
