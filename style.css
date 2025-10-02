@@ -1226,25 +1226,40 @@ select.field__input option {
 
 @media (max-width: 1180px) {
     .ui-layout {
-        grid-template-columns: minmax(240px, 320px) 1fr;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
         grid-template-areas:
-            "side results"
-            "controls results";
+            "results results"
+            "controls controls"
+            "side side";
     }
 
     .header__controls {
         flex-wrap: wrap;
+    }
+
+    .panel--side,
+    .panel--results,
+    .panel--controls {
+        width: 100%;
     }
 }
 
 @media (max-width: 900px) {
     body {
         padding: clamp(12px, 4vw, 20px);
+        align-items: flex-start;
     }
 
     .ui-layout {
         grid-template-columns: 1fr;
-        grid-template-areas: none;
+        grid-template-areas:
+            "results"
+            "controls"
+            "side";
+    }
+
+    .ui-layout > .panel {
+        width: 100%;
     }
 
     .header__controls {
@@ -1270,10 +1285,17 @@ select.field__input option {
     .panel__subtitle {
         text-align: center;
     }
+
+    .results__viewport {
+        min-height: 260px;
+    }
+
+    .results__meta {
+        flex-direction: column;
+        align-items: flex-start;
+    }
 }
 
-.panel--side,
-.panel--results,
 .panel--parameters,
 .panel--presets {
     grid-area: auto;
@@ -1303,6 +1325,10 @@ select.field__input option {
     .header__brand {
         flex-direction: column;
         text-align: center;
+    }
+
+    .panel {
+        padding: 16px;
     }
 
     .field__combo {
