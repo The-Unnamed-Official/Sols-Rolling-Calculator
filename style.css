@@ -599,29 +599,11 @@ body {
     display: none;
 }
 
-.ui-select summary::after {
-    content: '';
-    position: absolute;
-    top: 50%;
-    right: 18px;
-    width: 10px;
-    height: 10px;
-    border-right: 2px solid var(--accent);
-    border-bottom: 2px solid var(--accent);
-    transform: translateY(-50%) rotate(45deg);
-    transition: transform 0.2s ease, border-color 0.2s ease;
-    pointer-events: none;
-}
-
 .ui-select summary:hover,
 .ui-select summary:focus-visible {
     border-color: var(--accent);
     box-shadow: 0 0 0 2px rgba(127, 227, 255, 0.25);
     outline: none;
-}
-
-.ui-select[open] summary::after {
-    transform: translateY(-50%) rotate(225deg);
 }
 
 .ui-select__menu {
@@ -636,7 +618,7 @@ body {
     padding: 14px 16px;
     display: grid;
     gap: 10px;
-    max-height: 320px;
+    max-height: 290px;
     overflow-y: auto;
     opacity: 0;
     pointer-events: none;
@@ -717,7 +699,7 @@ body {
     border-radius: 8px;
     background: transparent;
     color: var(--text-secondary);
-    font-size: 13px;
+    font-size: 11px;
     letter-spacing: 0.08em;
     text-transform: uppercase;
     cursor: pointer;
