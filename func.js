@@ -22,6 +22,7 @@ let rollingSoundEnabled = false;
 let uiSoundEnabled = false;
 let cutscenesEnabled = false;
 let videoPlaying = false;
+let scrollLockState = null;
 
 const audioBufferCache = new Map();
 const audioBufferPromises = new Map();
@@ -552,6 +553,20 @@ function playAuraVideo(videoId) {
         overlay.style.display = 'flex';
         video.style.display = 'block';
         skipButton.style.display = 'block';
+        if (!scrollLockState && document.body) {
+            const body = document.body;
+            const previousOverflow = body.style.overflow;
+            const previousPadding = body.style.paddingRight;
+            const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
+            body.style.overflow = 'hidden';
+            if (scrollbarWidth > 0) {
+                body.style.paddingRight = `${scrollbarWidth}px`;
+            }
+            scrollLockState = {
+                overflow: previousOverflow,
+                paddingRight: previousPadding
+            };
+        }
         video.currentTime = 0;
         video.muted = !rollingSoundEnabled;
 
@@ -565,6 +580,12 @@ function playAuraVideo(videoId) {
             video.style.display = 'none';
             overlay.style.display = 'none';
             skipButton.style.display = 'none';
+            if (scrollLockState && document.body) {
+                const body = document.body;
+                body.style.overflow = scrollLockState.overflow;
+                body.style.paddingRight = scrollLockState.paddingRight;
+                scrollLockState = null;
+            }
             if (bgMusic && wasPlaying && rollingSoundEnabled) {
                 bgMusic.play().catch(() => {});
             }
