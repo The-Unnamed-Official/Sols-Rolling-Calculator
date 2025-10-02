@@ -335,7 +335,11 @@ function setLuck(value) {
     lastDaveMultiplier = 1;
     document.getElementById('vip-select').value = "1";
     document.getElementById('xyz-luck').checked = false;
-    if (document.getElementById('dave-luck-select')) document.getElementById('dave-luck-select').value = "1";
+    refreshCustomSelect('vip-select');
+    if (document.getElementById('dave-luck-select')) {
+        document.getElementById('dave-luck-select').value = "1";
+        refreshCustomSelect('dave-luck-select');
+    }
     document.getElementById('luck').value = value;
 }
 
@@ -358,7 +362,11 @@ function updateLuckValue() {
         lastDaveMultiplier = 1;
         document.getElementById('vip-select').value = "1";
         document.getElementById('xyz-luck').checked = false;
-        if (document.getElementById('dave-luck-select')) document.getElementById('dave-luck-select').value = "1";
+        refreshCustomSelect('vip-select');
+        if (document.getElementById('dave-luck-select')) {
+            document.getElementById('dave-luck-select').value = "1";
+            refreshCustomSelect('dave-luck-select');
+        }
         return;
     }
     currentLuck = baseLuck * vipMultiplier * xyzMultiplier * daveMultiplier;
@@ -409,7 +417,6 @@ function handleBiomeUI() {
     const xyzLuckContainer = document.getElementById('xyz-luck-container');
     const luckPresets = document.getElementById('luck-presets');
     const voidHeartBtn = document.getElementById('void-heart-btn');
-    const vipSelect = document.getElementById('vip-select');
     if (biome === "limbo") {
         if (daveLuckContainer) daveLuckContainer.style.display = "";
         if (xyzLuckContainer) xyzLuckContainer.style.display = "none";
@@ -439,6 +446,7 @@ function handleBiomeUI() {
     }
     applyBiomeTheme(biome);
     updateLuckValue();
+    refreshCustomSelect('biome-select');
 }
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -476,7 +484,11 @@ document.addEventListener('DOMContentLoaded', () => {
         lastDaveMultiplier = 1;
         document.getElementById('vip-select').value = "1";
         document.getElementById('xyz-luck').checked = false;
-        if (document.getElementById('dave-luck-select')) document.getElementById('dave-luck-select').value = "1";
+        refreshCustomSelect('vip-select');
+        if (document.getElementById('dave-luck-select')) {
+            document.getElementById('dave-luck-select').value = "1";
+            refreshCustomSelect('dave-luck-select');
+        }
     });
     document.getElementById('biome-select').addEventListener('change', handleBiomeUI);
     handleBiomeUI();

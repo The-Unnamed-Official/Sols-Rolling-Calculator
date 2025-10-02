@@ -532,6 +532,19 @@ body {
     position: relative;
 }
 
+.field__input--native {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    border: 0;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    clip-path: inset(50%);
+    white-space: nowrap;
+}
+
 .field__select-shell {
     position: relative;
     display: block;
@@ -557,11 +570,12 @@ body {
     min-width: clamp(200px, 25vw, 240px);
 }
 
-.event-select {
+.ui-select {
     position: relative;
     display: block;
 }
 
+.ui-select__summary.field__input--event,
 .field__input--event {
     display: flex;
     align-items: center;
@@ -570,21 +584,22 @@ body {
     user-select: none;
 }
 
+.ui-select__summary.field__input--placeholder,
 .field__input--event.field__input--placeholder {
     color: var(--text-tertiary);
 }
 
-.event-select summary {
+.ui-select summary {
     list-style: none;
     position: relative;
     padding-right: 48px;
 }
 
-.event-select summary::-webkit-details-marker {
+.ui-select summary::-webkit-details-marker {
     display: none;
 }
 
-.event-select summary::after {
+.ui-select summary::after {
     content: '';
     position: absolute;
     top: 50%;
@@ -598,26 +613,26 @@ body {
     pointer-events: none;
 }
 
-.event-select summary:hover,
-.event-select summary:focus-visible {
+.ui-select summary:hover,
+.ui-select summary:focus-visible {
     border-color: var(--accent);
     box-shadow: 0 0 0 2px rgba(127, 227, 255, 0.25);
     outline: none;
 }
 
-.event-select[open] summary::after {
+.ui-select[open] summary::after {
     transform: translateY(-50%) rotate(225deg);
 }
 
-.event-select__menu {
+.ui-select__menu {
     position: absolute;
-    top: calc(100% + 8px);
+    bottom: calc(100% + 8px);
     left: 0;
     right: 0;
     background: linear-gradient(175deg, rgba(12, 20, 38, 0.96), rgba(4, 10, 22, 0.98));
     border: 1px solid rgba(95, 160, 230, 0.35);
     border-radius: 12px;
-    box-shadow: 0 18px 38px rgba(4, 10, 24, 0.65);
+    box-shadow: 0 -18px 38px rgba(4, 10, 24, 0.65);
     padding: 14px 16px;
     display: grid;
     gap: 10px;
@@ -625,18 +640,18 @@ body {
     overflow-y: auto;
     opacity: 0;
     pointer-events: none;
-    transform: translateY(-6px);
+    transform: translateY(6px);
     transition: opacity 0.2s ease, transform 0.2s ease;
     z-index: 20;
 }
 
-.event-select[open] .event-select__menu {
+.ui-select[open] .ui-select__menu {
     opacity: 1;
     pointer-events: auto;
     transform: translateY(0);
 }
 
-.event-select__option {
+.ui-select__option {
     display: flex;
     align-items: center;
     gap: 12px;
@@ -646,11 +661,11 @@ body {
     color: var(--text-secondary);
 }
 
-.event-select__option:hover {
+.ui-select__option:hover {
     color: var(--text-primary);
 }
 
-.event-select__option input[type="checkbox"] {
+.ui-select__option--checkbox input[type="checkbox"] {
     appearance: none;
     width: 18px;
     height: 18px;
@@ -662,7 +677,7 @@ body {
     transition: border-color 0.2s ease, background-color 0.2s ease;
 }
 
-.event-select__option input[type="checkbox"]::after {
+.ui-select__option--checkbox input[type="checkbox"]::after {
     content: '';
     width: 10px;
     height: 10px;
@@ -671,22 +686,60 @@ body {
     transition: background 0.2s ease;
 }
 
-.event-select__option input[type="checkbox"]:checked {
+.ui-select__option--checkbox input[type="checkbox"]:checked {
     border-color: var(--accent);
     background: rgba(20, 36, 64, 0.95);
 }
 
-.event-select__option input[type="checkbox"]:checked::after {
+.ui-select__option--checkbox input[type="checkbox"]:checked::after {
     background: var(--accent);
 }
 
-.event-select__option input[type="checkbox"]:focus-visible {
+.ui-select__option--checkbox input[type="checkbox"]:focus-visible {
     outline: 2px solid var(--accent);
     outline-offset: 2px;
 }
 
-.event-select__option span {
+.ui-select__option span {
     flex: 1;
+}
+
+.ui-select--single .ui-select__menu {
+    gap: 6px;
+}
+
+.ui-select__option-button {
+    display: inline-flex;
+    align-items: center;
+    width: 100%;
+    padding: 10px 12px;
+    border: none;
+    border-radius: 8px;
+    background: transparent;
+    color: var(--text-secondary);
+    font-size: 13px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.ui-select__option-button:hover,
+.ui-select__option-button:focus-visible {
+    color: var(--text-primary);
+    background: rgba(30, 60, 110, 0.2);
+    outline: none;
+}
+
+.ui-select__option-button--active {
+    background: rgba(20, 36, 64, 0.95);
+    color: var(--accent);
+    box-shadow: inset 0 0 0 1px rgba(127, 227, 255, 0.4);
+}
+
+.ui-select__option-button--disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
 }
 
 .field--select select.field__input {

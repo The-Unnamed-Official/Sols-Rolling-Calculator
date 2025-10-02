@@ -131,17 +131,21 @@
                     <label class="field field--select" for="vip-select">
                         <span class="field__label">VIP Luck</span>
                         <span class="field__select-shell">
-                            <select id="vip-select" class="field__input">
+                            <select id="vip-select" class="field__input field__input--native">
                                 <option value="1">None</option>
                                 <option value="1.2">VIP or VIP+</option>
                                 <option value="1.3">VIP and VIP+</option>
                             </select>
+                            <details class="ui-select ui-select--single" data-select="vip-select">
+                                <summary class="field__input ui-select__summary" role="button" aria-haspopup="listbox" aria-expanded="false">None</summary>
+                                <div class="ui-select__menu" role="listbox"></div>
+                            </details>
                         </span>
                     </label>
                     <div id="dave-luck-container" class="field field--select" style="display:none;">
                         <label class="field__label" for="dave-luck-select">Dave's Luck</label>
                         <span class="field__select-shell">
-                            <select id="dave-luck-select" class="field__input">
+                            <select id="dave-luck-select" class="field__input field__input--native">
                                 <option value="1">None</option>
                                 <option value="1.2">Dave's Luck 1</option>
                                 <option value="1.4">Dave's Luck 2</option>
@@ -149,6 +153,10 @@
                                 <option value="1.8">Dave's Luck 4</option>
                                 <option value="2">Dave's Luck 5</option>
                             </select>
+                            <details class="ui-select ui-select--single" data-select="dave-luck-select">
+                                <summary class="field__input ui-select__summary" role="button" aria-haspopup="listbox" aria-expanded="false">None</summary>
+                                <div class="ui-select__menu" role="listbox"></div>
+                            </details>
                         </span>
                     </div>
                     <div id="xyz-luck-container" class="field field--switch">
@@ -190,7 +198,7 @@
                         <label class="field field--select" for="biome-select">
                             <span class="field__label">Biome</span>
                             <span class="field__select-shell field__select-shell--biome">
-                                <select id="biome-select" class="field__input">
+                                <select id="biome-select" class="field__input field__input--native">
                                     <option value="roe">Rune of Everything</option>
                                     <option value="normal" selected>Normal</option>
                                     <option value="day">Day</option>
@@ -211,42 +219,46 @@
                                     <option value="graveyard">Graveyard</option>
                                     <option value="pumpkinMoon">Pumpkin Moon</option>
                                 </select>
+                                <details class="ui-select ui-select--single" data-select="biome-select">
+                                    <summary class="field__input ui-select__summary" role="button" aria-haspopup="listbox" aria-expanded="false">Normal</summary>
+                                    <div class="ui-select__menu" role="listbox"></div>
+                                </details>
                             </span>
                         </label>
                         <div class="field field--events">
                             <span class="field__label">Events</span>
-                            <details class="event-select" id="event-select">
-                                <summary id="event-summary" class="field__input field__input--event field__input--placeholder" role="button" aria-expanded="false">No events enabled</summary>
-                                <div class="event-select__menu" id="event-menu" role="listbox" aria-multiselectable="true">
-                                    <label class="event-select__option">
+                            <details class="ui-select ui-select--multi" id="event-select" data-select="event-select">
+                                <summary id="event-summary" class="field__input field__input--event field__input--placeholder ui-select__summary" role="button" aria-expanded="false" aria-haspopup="listbox">No events enabled</summary>
+                                <div class="ui-select__menu" id="event-menu" role="listbox" aria-multiselectable="true">
+                                    <label class="ui-select__option ui-select__option--checkbox">
                                         <input type="checkbox" value="valentine2024" data-event-id="valentine2024">
                                         <span>Valentine 2024</span>
                                     </label>
-                                    <label class="event-select__option">
+                                    <label class="ui-select__option ui-select__option--checkbox">
                                         <input type="checkbox" value="aprilFools2024" data-event-id="aprilFools2024">
                                         <span>April Fools 2024</span>
                                     </label>
-                                    <label class="event-select__option">
+                                    <label class="ui-select__option ui-select__option--checkbox">
                                         <input type="checkbox" value="summer2024" data-event-id="summer2024">
                                         <span>Summer 2024</span>
                                     </label>
-                                    <label class="event-select__option">
+                                    <label class="ui-select__option ui-select__option--checkbox">
                                         <input type="checkbox" value="ria2024" data-event-id="ria2024">
                                         <span>RIA Event 2024</span>
                                     </label>
-                                    <label class="event-select__option">
+                                    <label class="ui-select__option ui-select__option--checkbox">
                                         <input type="checkbox" value="halloween2024" data-event-id="halloween2024">
                                         <span>Halloween 2024</span>
                                     </label>
-                                    <label class="event-select__option">
+                                    <label class="ui-select__option ui-select__option--checkbox">
                                         <input type="checkbox" value="winter2024" data-event-id="winter2024">
                                         <span>Winter 2024</span>
                                     </label>
-                                    <label class="event-select__option">
+                                    <label class="ui-select__option ui-select__option--checkbox">
                                         <input type="checkbox" value="aprilFools2025" data-event-id="aprilFools2025">
                                         <span>April Fools 2025</span>
                                     </label>
-                                    <label class="event-select__option">
+                                    <label class="ui-select__option ui-select__option--checkbox">
                                         <input type="checkbox" value="summer2025" data-event-id="summer2025">
                                         <span>Summer 2025</span>
                                     </label>
