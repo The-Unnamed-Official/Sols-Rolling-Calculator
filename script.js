@@ -45,7 +45,7 @@ const auras = [
     { name: "Nightmare Sky - 190,000,000", chance: 190000000, exclusiveTo: ["pumpkinMoon"] },
     { name: "Twilight : Withering Grace - 180,000,000", chance: 180000000, breakthrough: { night: 10 } },
     { name: "Symphony - 175,000,000", chance: 175000000 },
-    { name: "Glock : the glock of the sky - 170,000,000", chance: 170000000, breakthrough: { night: 10 } },
+    { name: "Glock : Glock of the sky - 170,000,000", chance: 170000000, breakthrough: { night: 10 } },
     { name: "Overture - 150,000,000", chance: 150000000 },
     { name: "Abominable - 120,000,000", chance: 120000000, breakthrough: { snowy: 3 } },
     { name: "Starscourge : Radiant - 100,000,000", chance: 100000000, breakthrough: { starfall: 5 } },
@@ -198,6 +198,82 @@ const auras = [
     { name: "Nothing - 1", chance: 1, exclusiveTo: ["limbo"] },
 ];
 
+const EVENT_DEFINITIONS = [
+    { id: "valentine2024", label: "Valentine 2024" },
+    { id: "aprilFools2024", label: "April Fools 2024" },
+    { id: "summer2024", label: "Summer 2024" },
+    { id: "ria2024", label: "RIA Event 2024" },
+    { id: "halloween2024", label: "Halloween 2024" },
+    { id: "winter2024", label: "Winter 2024" },
+    { id: "aprilFools2025", label: "April Fools 2025" },
+    { id: "summer2025", label: "Summer 2025" },
+];
+
+const EVENT_AURA_MAP = {
+    valentine2024: [
+        "Divinus : Love - 32",
+        "Flushed : Heart Eye - 6,900",
+    ],
+    aprilFools2024: [
+        "Undefined : Defined - 2,222,000",
+        "Chromatic : Kromat1k - 40,000,000",
+        "Impeached : I'm Peach - 400,000,000",
+    ],
+    summer2024: [
+        "Star Rider : Starfish Rider - 250,000",
+        "Watermelon - 320,000",
+        "Surfer : Shard Surfer - 225,000,000",
+    ],
+    ria2024: [
+        "Innovator - 30,000,000",
+    ],
+    halloween2024: [
+        "Apostolos : Veil - 800,000,000",
+        "Harvester - 666,000,000",
+        "Nightmare Sky - 190,000,000",
+        "Dullahan - 72,000,000",
+        "Soul Hunter - 40,000,000",
+        "Cryptfire - 21,000,000",
+        "Moonflower - 10,000,000",
+        "Vital - 6,000,000",
+        "Lunar : Nightfall - 3,000,000",
+        "Pump - 200,000",
+    ],
+    winter2024: [
+        "Atlas : Yuletide - 510,000,000",
+        "Abominable - 120,000,000",
+        "Express - 90,000,000",
+        "Winter Fantasy - 72,000,000",
+        "Santa Frost - 45,000,000",
+        "Wonderland - 12,000,000",
+    ],
+    aprilFools2025: [
+        "Glock : Glock of the sky - 170,000,000",
+        "Origin : Onion - 8,000,000",
+        "Flushed : Troll - 1,000,000",
+        "Pukeko - 3,198",
+    ],
+    summer2025: [
+        "Aegis : Watergun - 825,000,000",
+        "Manta - 300,000,000",
+    ],
+};
+
+const BIOME_EVENT_REQUIREMENTS = {
+    graveyard: "halloween2024",
+    pumpkinMoon: "halloween2024",
+    blazing: "summer2025",
+};
+
+const activeEvents = new Set();
+const auraEventLookup = new Map();
+
+for (const [eventId, auraNames] of Object.entries(EVENT_AURA_MAP)) {
+    auraNames.forEach(name => {
+        auraEventLookup.set(name, eventId);
+    });
+}
+
 const cutscenePriority = ["equinox-cs", "lumi-cs", "pixelation-cs", "dreammetric-cs", "oppression-cs"];
 
 const ROE_EXCLUDED_AURAS = new Set([
@@ -228,7 +304,156 @@ const ROE_BREAKTHROUGH_EXCLUSIONS = new Set([
 
 auras.forEach(aura => {
     aura.wonCount = 0;
+    const eventId = auraEventLookup.get(aura.name);
+    if (eventId) {
+        aura.event = eventId;
+    }
 });
+
+const EVENT_SUMMARY_NONE = "No events enabled";
+
+function getActiveEventLabels() {
+    return EVENT_DEFINITIONS
+        .filter(event => activeEvents.has(event.id))
+        .map(event => event.label);
+}
+
+function updateEventSummary() {
+    const summary = document.getElementById('event-summary');
+    if (!summary) return;
+
+    const labels = getActiveEventLabels();
+    let displayText = EVENT_SUMMARY_NONE;
+
+    if (labels.length === 0) {
+        summary.classList.add('field__input--placeholder');
+    } else {
+        summary.classList.remove('field__input--placeholder');
+        if (labels.length === 1) {
+            displayText = labels[0];
+        } else if (labels.length === 2) {
+            displayText = `${labels[0]}, ${labels[1]}`;
+        } else {
+            displayText = `${labels[0]}, ${labels[1]} +${labels.length - 2} more`;
+        }
+    }
+
+    summary.textContent = displayText;
+    summary.title = labels.length > 0 ? labels.join(', ') : EVENT_SUMMARY_NONE;
+
+    const details = document.getElementById('event-select');
+    const isOpen = !!(details && details.open);
+    summary.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+}
+
+function applyEventBiomeRestrictions() {
+    const biomeSelect = document.getElementById('biome-select');
+    if (!biomeSelect) return;
+
+    const currentValue = biomeSelect.value;
+    let resetToDefault = false;
+
+    Array.from(biomeSelect.options).forEach(option => {
+        const requiredEvent = BIOME_EVENT_REQUIREMENTS[option.value];
+        if (!requiredEvent) {
+            option.disabled = false;
+            option.removeAttribute('title');
+            return;
+        }
+        const enabled = activeEvents.has(requiredEvent);
+        option.disabled = !enabled;
+        const eventLabel = EVENT_DEFINITIONS.find(event => event.id === requiredEvent)?.label;
+        if (!enabled && eventLabel) {
+            option.title = `${eventLabel} must be enabled to access this biome.`;
+        } else {
+            option.removeAttribute('title');
+        }
+        if (!enabled && option.value === currentValue) {
+            resetToDefault = true;
+        }
+    });
+
+    if (resetToDefault) {
+        biomeSelect.value = 'normal';
+        if (typeof handleBiomeUI === 'function') {
+            handleBiomeUI();
+        }
+    }
+}
+
+function setEventActive(eventId, enabled) {
+    if (!eventId) return;
+    const hasEvent = activeEvents.has(eventId);
+    if (enabled && !hasEvent) {
+        activeEvents.add(eventId);
+    } else if (!enabled && hasEvent) {
+        activeEvents.delete(eventId);
+    } else {
+        return;
+    }
+
+    const eventMenu = document.getElementById('event-menu');
+    if (eventMenu) {
+        const checkbox = eventMenu.querySelector(`input[type="checkbox"][data-event-id="${eventId}"]`);
+        if (checkbox && checkbox.checked !== enabled) {
+            checkbox.checked = enabled;
+        }
+    }
+
+    updateEventSummary();
+    applyEventBiomeRestrictions();
+}
+
+function initializeEventSelectors() {
+    const eventMenu = document.getElementById('event-menu');
+    if (!eventMenu) return;
+
+    const checkboxes = eventMenu.querySelectorAll('input[type="checkbox"][data-event-id]');
+    checkboxes.forEach(input => {
+        const eventId = input.dataset.eventId;
+        input.checked = activeEvents.has(eventId);
+        input.addEventListener('change', () => {
+            setEventActive(eventId, input.checked);
+        });
+    });
+
+    const details = document.getElementById('event-select');
+    if (details) {
+        details.addEventListener('toggle', () => {
+            const summary = document.getElementById('event-summary');
+            if (summary) {
+                summary.setAttribute('aria-expanded', details.open ? 'true' : 'false');
+            }
+        });
+    }
+
+    document.addEventListener('click', event => {
+        const detailsEl = document.getElementById('event-select');
+        if (!detailsEl || !detailsEl.open) return;
+        if (!detailsEl.contains(event.target)) {
+            detailsEl.open = false;
+            updateEventSummary();
+        }
+    });
+
+    document.addEventListener('keydown', event => {
+        if (event.key !== 'Escape') return;
+        const detailsEl = document.getElementById('event-select');
+        if (detailsEl && detailsEl.open) {
+            detailsEl.open = false;
+            const summary = document.getElementById('event-summary');
+            if (summary) {
+                summary.focus();
+            }
+            updateEventSummary();
+        }
+    });
+
+    updateEventSummary();
+    applyEventBiomeRestrictions();
+}
+
+document.addEventListener('DOMContentLoaded', initializeEventSelectors);
 
 // xp
 function getXpForChance(chance) {
@@ -265,6 +490,8 @@ function roll() {
     const total = parseInt(document.getElementById('rolls').value);
     const luckValue = Math.max(0, Number.parseFloat(luck.value) || 0);
     const biome = document.getElementById('biome-select').value;
+    const activeEventSnapshot = new Set(activeEvents);
+    const isEventAuraEnabled = aura => !aura.event || activeEventSnapshot.has(aura.event);
     
     results.innerHTML = `Rolling...`;
     let rolls = 0;
@@ -287,6 +514,7 @@ function roll() {
     let effectiveAuras;
     if (biome === "limbo") {
         effectiveAuras = auras.filter(aura =>
+            isEventAuraEnabled(aura) &&
             aura.exclusiveTo && (aura.exclusiveTo.includes("limbo") || aura.exclusiveTo.includes("limbo-null"))
         ).map(aura => {
             let effectiveChance = aura.chance;
@@ -302,6 +530,10 @@ function roll() {
         const glitchLikeBiome = biome === "glitch" || isRoe;
         const exclusivityBiome = isRoe ? "glitch" : biome;
         effectiveAuras = auras.map(aura => {
+            if (!isEventAuraEnabled(aura)) {
+                aura.effectiveChance = Infinity;
+                return aura;
+            }
             if (isRoe && ROE_EXCLUDED_AURAS.has(aura.name)) {
                 aura.effectiveChance = Infinity;
                 return aura;
