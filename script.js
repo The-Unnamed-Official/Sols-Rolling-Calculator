@@ -170,6 +170,21 @@ const auras = [
 
 const cutscenePriority = ["equinox-cs", "lumi-cs", "pixelation-cs", "dreammetric-cs", "oppression-cs"];
 
+const ROE_EXCLUDED_AURAS = new Set([
+    "Dreammetric - 520,000,000",
+    "Oppression - 220,000,000",
+    "Glitch - 12,210,110",
+    "★★★ - 10,000",
+    "★★ - 1,000",
+    "★ - 100"
+]);
+
+const ROE_BREAKTHROUGH_EXCLUSIONS = new Set([
+    "Twilight : Withering Grace - 180,000,000",
+    "Aegis : Watergun - 825,000,000",
+    "Manta - 300,000,000"
+]);
+
 auras.forEach(aura => {
     aura.wonCount = 0;
 });
@@ -241,20 +256,27 @@ function roll() {
             return aura;
         }).sort((a, b) => b.effectiveChance - a.effectiveChance);
     } else {
+        const isRoe = biome === "roe";
+        const glitchLikeBiome = biome === "glitch" || isRoe;
+        const exclusivityBiome = isRoe ? "glitch" : biome;
         effectiveAuras = auras.map(aura => {
+            if (isRoe && ROE_EXCLUDED_AURAS.has(aura.name)) {
+                aura.effectiveChance = Infinity;
+                return aura;
+            }
             if (aura.exclusiveTo) {
                 if (aura.exclusiveTo.includes("limbo") && !aura.exclusiveTo.includes("limbo-null")) {
                     aura.effectiveChance = Infinity;
                     return aura;
                 }
-                if (!aura.exclusiveTo.includes("limbo-null") && !aura.exclusiveTo.includes(biome)) {
+                if (!aura.exclusiveTo.includes("limbo-null") && !aura.exclusiveTo.includes(exclusivityBiome)) {
                     aura.effectiveChance = Infinity;
                     return aura;
                 }
             }
             let effectiveChance = aura.chance;
             if (aura.breakthrough) {
-                if (biome === "glitch") {
+                if (glitchLikeBiome && (!isRoe || !ROE_BREAKTHROUGH_EXCLUSIONS.has(aura.name))) {
                     let minChance = aura.chance;
                     for (const mult of Object.values(aura.breakthrough)) {
                         minChance = Math.min(minChance, Math.floor(aura.chance / mult));
