@@ -186,32 +186,74 @@
                             <button class="ui-button ui-button--minor" type="button" onclick="resetRolls()">Reset</button>
                         </div>
                     </label>
-                    <label class="field field--select" for="biome-select">
-                        <span class="field__label">Biome</span>
-                        <span class="field__select-shell field__select-shell--biome">
-                            <select id="biome-select" class="field__input">
-                                <option value="roe">Rune of Everything</option>
-                                <option value="normal" selected>Normal</option>
-                                <option value="day">Day</option>
-                                <option value="night">Night</option>
-                                <option value="rainy">Rainy</option>
-                                <option value="windy">Windy</option>
-                                <option value="snowy">Snowy</option>
-                                <option value="sandstorm">Sandstorm</option>
-                                <option value="hell">Hell</option>
-                                <option value="starfall">Starfall</option>
-                                <option value="corruption">Corruption</option>
-                                <option value="null">NULL</option>
-                                <option value="dreamspace">Dreamspace</option>
-                                <option value="glitch">Glitch</option>
-                                <option value="limbo">LIMBO</option>
-                                <option value="blazing">Blazing Sun</option>
-                                <option value="anotherRealm">Another Realm</option>
-                                <option value="graveyard">Graveyard</option>
-                                <option value="pumpkinMoon">Pumpkin Moon</option>
-                            </select>
-                        </span>
-                    </label>
+                    <div class="biome-control-row">
+                        <label class="field field--select" for="biome-select">
+                            <span class="field__label">Biome</span>
+                            <span class="field__select-shell field__select-shell--biome">
+                                <select id="biome-select" class="field__input">
+                                    <option value="roe">Rune of Everything</option>
+                                    <option value="normal" selected>Normal</option>
+                                    <option value="day">Day</option>
+                                    <option value="night">Night</option>
+                                    <option value="rainy">Rainy</option>
+                                    <option value="windy">Windy</option>
+                                    <option value="snowy">Snowy</option>
+                                    <option value="sandstorm">Sandstorm</option>
+                                    <option value="hell">Hell</option>
+                                    <option value="starfall">Starfall</option>
+                                    <option value="corruption">Corruption</option>
+                                    <option value="null">NULL</option>
+                                    <option value="dreamspace">Dreamspace</option>
+                                    <option value="glitch">Glitch</option>
+                                    <option value="limbo">LIMBO</option>
+                                    <option value="blazing">Blazing Sun</option>
+                                    <option value="anotherRealm">Another Realm</option>
+                                    <option value="graveyard">Graveyard</option>
+                                    <option value="pumpkinMoon">Pumpkin Moon</option>
+                                </select>
+                            </span>
+                        </label>
+                        <div class="field field--events">
+                            <span class="field__label">Events</span>
+                            <details class="event-select" id="event-select">
+                                <summary id="event-summary" class="field__input field__input--event field__input--placeholder" role="button" aria-expanded="false">No events enabled</summary>
+                                <div class="event-select__menu" id="event-menu" role="listbox" aria-multiselectable="true">
+                                    <label class="event-select__option">
+                                        <input type="checkbox" value="valentine2024" data-event-id="valentine2024">
+                                        <span>Valentine 2024</span>
+                                    </label>
+                                    <label class="event-select__option">
+                                        <input type="checkbox" value="aprilFools2024" data-event-id="aprilFools2024">
+                                        <span>April Fools 2024</span>
+                                    </label>
+                                    <label class="event-select__option">
+                                        <input type="checkbox" value="summer2024" data-event-id="summer2024">
+                                        <span>Summer 2024</span>
+                                    </label>
+                                    <label class="event-select__option">
+                                        <input type="checkbox" value="ria2024" data-event-id="ria2024">
+                                        <span>RIA Event 2024</span>
+                                    </label>
+                                    <label class="event-select__option">
+                                        <input type="checkbox" value="halloween2024" data-event-id="halloween2024">
+                                        <span>Halloween 2024</span>
+                                    </label>
+                                    <label class="event-select__option">
+                                        <input type="checkbox" value="winter2024" data-event-id="winter2024">
+                                        <span>Winter 2024</span>
+                                    </label>
+                                    <label class="event-select__option">
+                                        <input type="checkbox" value="aprilFools2025" data-event-id="aprilFools2025">
+                                        <span>April Fools 2025</span>
+                                    </label>
+                                    <label class="event-select__option">
+                                        <input type="checkbox" value="summer2025" data-event-id="summer2025">
+                                        <span>Summer 2025</span>
+                                    </label>
+                                </div>
+                            </details>
+                        </div>
+                    </div>
                     <div class="quick-actions">
                         <button class="ui-button ui-button--ghost" type="button" onclick="setGlitch()">Set Glitch</button>
                         <button class="ui-button ui-button--ghost" type="button" onclick="setLimbo()">Set Limbo</button>
