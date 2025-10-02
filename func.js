@@ -282,6 +282,9 @@ const biomeAssets = {
     null: { image: 'files/nullBiomeImage.jpg', music: 'files/nullBiomeMusic.mp3' },
     dreamspace: { image: 'files/dreamspaceBiomeImage.jpg', music: 'files/dreamspaceBiomeMusic.mp3' },
     glitch: { image: 'files/glitchBiomeImage.jpg', music: 'files/glitchBiomeMusic.mp3' },
+    anotherRealm: { image: 'files/anotherRealmBiomeImage.jpg', music: 'files/anotherRealmBiomeMusic.mp3' },
+    graveyard: { image: 'files/graveyardBiomeImage.jpg', music: 'files/graveyardBiomeMusic.mp3' },
+    pumpkinMoon: { image: 'files/pumpkinMoonBiomeImage.jpg', music: 'files/pumpkinMoonBiomeMusic.mp3' },
     limbo: { image: 'files/limboImage.jpg', music: 'files/limboMusic.mp3' },
     blazing: { image: 'files/blazingBiomeImage.jpg', music: 'files/blazingBiomeMusic.mp3' }
 };
@@ -332,7 +335,11 @@ function setLuck(value) {
     lastDaveMultiplier = 1;
     document.getElementById('vip-select').value = "1";
     document.getElementById('xyz-luck').checked = false;
-    if (document.getElementById('dave-luck-select')) document.getElementById('dave-luck-select').value = "1";
+    refreshCustomSelect('vip-select');
+    if (document.getElementById('dave-luck-select')) {
+        document.getElementById('dave-luck-select').value = "1";
+        refreshCustomSelect('dave-luck-select');
+    }
     document.getElementById('luck').value = value;
 }
 
@@ -355,7 +362,11 @@ function updateLuckValue() {
         lastDaveMultiplier = 1;
         document.getElementById('vip-select').value = "1";
         document.getElementById('xyz-luck').checked = false;
-        if (document.getElementById('dave-luck-select')) document.getElementById('dave-luck-select').value = "1";
+        refreshCustomSelect('vip-select');
+        if (document.getElementById('dave-luck-select')) {
+            document.getElementById('dave-luck-select').value = "1";
+            refreshCustomSelect('dave-luck-select');
+        }
         return;
     }
     currentLuck = baseLuck * vipMultiplier * xyzMultiplier * daveMultiplier;
@@ -406,7 +417,6 @@ function handleBiomeUI() {
     const xyzLuckContainer = document.getElementById('xyz-luck-container');
     const luckPresets = document.getElementById('luck-presets');
     const voidHeartBtn = document.getElementById('void-heart-btn');
-    const vipSelect = document.getElementById('vip-select');
     if (biome === "limbo") {
         if (daveLuckContainer) daveLuckContainer.style.display = "";
         if (xyzLuckContainer) xyzLuckContainer.style.display = "none";
@@ -436,6 +446,7 @@ function handleBiomeUI() {
     }
     applyBiomeTheme(biome);
     updateLuckValue();
+    refreshCustomSelect('biome-select');
 }
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -473,7 +484,11 @@ document.addEventListener('DOMContentLoaded', () => {
         lastDaveMultiplier = 1;
         document.getElementById('vip-select').value = "1";
         document.getElementById('xyz-luck').checked = false;
-        if (document.getElementById('dave-luck-select')) document.getElementById('dave-luck-select').value = "1";
+        refreshCustomSelect('vip-select');
+        if (document.getElementById('dave-luck-select')) {
+            document.getElementById('dave-luck-select').value = "1";
+            refreshCustomSelect('dave-luck-select');
+        }
     });
     document.getElementById('biome-select').addEventListener('change', handleBiomeUI);
     handleBiomeUI();
@@ -649,12 +664,53 @@ function getRarityClass(aura, biome) {
     return 'rarity-basic';
 }
 
+const auraOutlineOverrides = new Map([
+    ['Prowler', 'aura-outline-prowler'],
+    ['Divinus : Love', 'aura-outline-valentine'],
+    ['Flushed : Heart Eye', 'aura-outline-valentine'],
+    ['Pukeko', 'aura-outline-april'],
+    ['Flushed : Troll', 'aura-outline-april'],
+    ['Undefined : Defined', 'aura-outline-april'],
+    ['Origin : Onion', 'aura-outline-april'],
+    ['Chromatic : Kromat1k', 'aura-outline-april'],
+    ['Glock : Glock of the sky', 'aura-outline-april'],
+    ["Impeached : I'm Peach", 'aura-outline-april'],
+    ['Star Rider : Starfish Rider', 'aura-outline-summer'],
+    ['Watermelon', 'aura-outline-summer'],
+    ['Surfer : Shard Surfer', 'aura-outline-summer'],
+    ['Manta', 'aura-outline-summer'],
+    ['Aegis : Watergun', 'aura-outline-summer'],
+    ['Innovator', 'aura-outline-innovator'],
+    ['Wonderland', 'aura-outline-winter'],
+    ['Santa Frost', 'aura-outline-winter'],
+    ['Winter Fantasy', 'aura-outline-winter'],
+    ['Express', 'aura-outline-winter'],
+    ['Abominable', 'aura-outline-winter'],
+    ['Atlas : Yuletide', 'aura-outline-winter'],
+]);
+
 function getAuraStyleClass(aura) {
     if (!aura) return '';
+
     const name = typeof aura === 'string' ? aura : aura.name;
     if (!name) return '';
-    if (name.startsWith('Pixelation')) return 'aura-effect-pixelation';
-    if (name.startsWith('Luminosity')) return 'aura-effect-luminosity';
-    if (name.startsWith('Equinox')) return 'aura-effect-equinox';
-    return '';
+
+    const classes = [];
+    if (name.startsWith('Pixelation')) classes.push('aura-effect-pixelation');
+    if (name.startsWith('Luminosity')) classes.push('aura-effect-luminosity');
+    if (name.startsWith('Equinox')) classes.push('aura-effect-equinox');
+
+    const auraData = typeof aura === 'string' ? null : aura;
+    const exclusiveTo = auraData && Array.isArray(auraData.exclusiveTo) ? auraData.exclusiveTo : null;
+    if (exclusiveTo && exclusiveTo.some((zone) => zone === 'pumpkinMoon' || zone === 'graveyard')) {
+        classes.push('aura-outline-halloween');
+    }
+
+    const shortName = name.includes(' - ') ? name.split(' - ')[0].trim() : name.trim();
+    const overrideClass = auraOutlineOverrides.get(shortName);
+    if (overrideClass) {
+        classes.push(overrideClass);
+    }
+
+    return classes.join(' ');
 }
