@@ -45,7 +45,7 @@ const auras = [
     { name: "Nightmare Sky - 190,000,000", chance: 190000000, exclusiveTo: ["pumpkinMoon"] },
     { name: "Twilight : Withering Grace - 180,000,000", chance: 180000000, breakthrough: { night: 10 } },
     { name: "Symphony - 175,000,000", chance: 175000000 },
-    { name: "Glock : Glock of the sky - 170,000,000", chance: 170000000, breakthrough: { night: 10 } },
+    { name: "Glock : the glock of the sky - 170,000,000", chance: 170000000 },
     { name: "Overture - 150,000,000", chance: 150000000 },
     { name: "Abominable - 120,000,000", chance: 120000000, breakthrough: { snowy: 3 } },
     { name: "Starscourge : Radiant - 100,000,000", chance: 100000000, breakthrough: { starfall: 5 } },
