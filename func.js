@@ -220,7 +220,7 @@ function toggleSound() {
     }
 
     if (soundToggle) {
-        soundToggle.textContent = rollingSoundEnabled ? 'Rolling Sound: On' : 'Rolling Sound: Off';
+        soundToggle.textContent = rollingSoundEnabled ? 'Other Sounds: On' : 'Other Sounds: Off';
         soundToggle.setAttribute('aria-pressed', rollingSoundEnabled);
     }
 }
@@ -388,6 +388,12 @@ function setLimbo() {
     handleBiomeUI();
 }
 
+function setROE() {
+    document.getElementById('biome-select').value = 'roe'
+    playSound(document.getElementById('clicksound'), 'ui');
+    handleBiomeUI();
+}
+
 function resetBiome() {
     document.getElementById('biome-select').value = 'normal';
     playSound(document.getElementById('clickSound'), 'ui');
@@ -474,7 +480,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const soundToggle = document.getElementById('soundToggle');
     if (soundToggle) {
-        soundToggle.textContent = 'Rolling Sound: Off';
+        soundToggle.textContent = 'Other Sounds: Off';
         soundToggle.setAttribute('aria-pressed', 'false');
     }
 

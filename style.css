@@ -539,7 +539,7 @@ body {
 }
 
 .field__select-shell--biome {
-    width: clamp(210px, 24vw, 280px);
+    width: clamp(210px, 24vw, 225px);
 }
 
 .field--select select.field__input {
