@@ -673,7 +673,7 @@ const auraOutlineOverrides = new Map([
     ['Undefined : Defined', 'aura-outline-april'],
     ['Origin : Onion', 'aura-outline-april'],
     ['Chromatic : Kromat1k', 'aura-outline-april'],
-    ['Glock : Glock of the sky', 'aura-outline-april'],
+    ['Glock : the glock of the sky', 'aura-outline-april'],
     ["Impeached : I'm Peach", 'aura-outline-april'],
     ['Star Rider : Starfish Rider', 'aura-outline-summer'],
     ['Watermelon', 'aura-outline-summer'],
