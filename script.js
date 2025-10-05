@@ -250,7 +250,7 @@ const EVENT_AURA_MAP = {
         "Wonderland - 12,000,000",
     ],
     aprilFools2025: [
-        "Glock : Glock of the sky - 170,000,000",
+        "Glock : the glock of the sky - 170,000,000",
         "Origin : Onion - 8,000,000",
         "Flushed : Troll - 1,000,000",
         "Pukeko - 3,198",
