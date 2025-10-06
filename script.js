@@ -784,15 +784,15 @@ function roll() {
         const chunkEnd = Math.min(currentRoll + CHUNK_SIZE, total);
         
         for (let i = currentRoll; i < chunkEnd; i++) {
-            if (activeOblivionAura) {
-                if (Random(1, OBLIVION_POTION_ROLL_ODDS) === 1) {
-                    const specialAura = (activeMemoryAura && Random(1, OBLIVION_MEMORY_ROLL_ODDS) === 1)
-                        ? activeMemoryAura
-                        : activeOblivionAura;
-                    specialAura.wonCount++;
-                    rolls++;
-                    continue;
-                }
+            if (activeMemoryAura && Random(1, OBLIVION_MEMORY_ROLL_ODDS) === 1) {
+                activeMemoryAura.wonCount++;
+                rolls++;
+                continue;
+            }
+            if (activeOblivionAura && Random(1, OBLIVION_POTION_ROLL_ODDS) === 1) {
+                activeOblivionAura.wonCount++;
+                rolls++;
+                continue;
             }
             for (let aura of effectiveAuras) {
                 let chance = aura.effectiveChance;
