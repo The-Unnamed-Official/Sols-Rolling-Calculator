@@ -4,6 +4,7 @@ let isRolling = false;
 
 const customSelectRegistry = new Map();
 
+
 const OBLIVION_PRESET_KEY = 'oblivion';
 const OBLIVION_PRESET_LUCK = 600000;
 const OBLIVION_AURA_NAME = 'Oblivion';
