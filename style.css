@@ -881,6 +881,56 @@ select.field__input option {
     transform: translateY(-1px);
 }
 
+.preset-footer {
+    margin-top: clamp(12px, 2vw, 20px);
+    align-self: flex-end;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: clamp(12px, 2vw, 24px);
+    flex-wrap: wrap;
+}
+
+.preset-footer__status {
+    margin: 0;
+    font-size: clamp(9px, 1.6vw, 12px);
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: rgba(212, 224, 255, 0.82);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    text-align: left;
+    flex: 1 1 auto;
+}
+
+.preset-footer__status-channel {
+    color: #6f7aff;
+    font-weight: 700;
+    letter-spacing: 0.22em;
+    text-shadow: 0 0 8px rgba(111, 122, 255, 0.4);
+}
+
+.preset-footer__status-message {
+    max-width: clamp(200px, 32vw, 420px);
+    line-height: 1.4;
+    color: rgba(237, 241, 255, 0.88);
+}
+
+.preset-footer__name {
+    font-size: clamp(18px, 3vw, 26px);
+    font-weight: 700;
+    letter-spacing: 0.34em;
+    text-transform: uppercase;
+    background: linear-gradient(95deg, #000000 0%, #050505 24%, #f7f7f7 78%, #ffffff 100%);
+    color: transparent;
+    -webkit-background-clip: text;
+    background-clip: text;
+    filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.32));
+    white-space: nowrap;
+    text-align: right;
+}
+
 .control-group--cta {
     align-items: center;
     justify-content: center;
