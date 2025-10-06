@@ -707,6 +707,7 @@ function getAuraStyleClass(aura) {
     if (!name) return '';
 
     const classes = [];
+    if (name.startsWith('Oblivion')) classes.push('aura-effect-oblivion');
     if (name.startsWith('Pixelation')) classes.push('aura-effect-pixelation');
     if (name.startsWith('Luminosity')) classes.push('aura-effect-luminosity');
     if (name.startsWith('Equinox')) classes.push('aura-effect-equinox');
