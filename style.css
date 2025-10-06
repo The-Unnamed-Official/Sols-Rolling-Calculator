@@ -894,11 +894,8 @@ select.field__input option {
     letter-spacing: 0.18em;
     text-transform: uppercase;
     color: rgba(212, 224, 255, 0.82);
-    display: flex;
-    align-items: center;
-    gap: 8px;
     text-align: left;
-    max-width: clamp(220px, 36vw, 460px);
+    max-width: clamp(500px, 36vw, 460px);
     position: absolute;
     left: 0;
     bottom: 0;
@@ -912,7 +909,7 @@ select.field__input option {
 }
 
 .preset-footer__status-message {
-    line-height: 1.4;
+    line-height: 1.5;
     color: rgba(237, 241, 255, 0.88);
 }
 
