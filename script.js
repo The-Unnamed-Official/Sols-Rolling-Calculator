@@ -4,13 +4,19 @@ let isRolling = false;
 
 const customSelectRegistry = new Map();
 
+
+const OBLIVION_PRESET_KEY = 'oblivion';
 const OBLIVION_PRESET_LUCK = 600000;
+const OBLIVION_AURA_NAME = 'Oblivion';
+const OBLIVION_POTION_ROLL_ODDS = 2000;
+
 let isOblivionPresetActive = false;
 let activeOblivionPresetLabel = 'Select preset';
+let oblivionAuraDefinition = null;
 
 function applyOblivionPreset(presetKey) {
     const options = {};
-    if (presetKey === 'oblivion') {
+    if (presetKey === OBLIVION_PRESET_KEY) {
         options.activateOblivionPreset = true;
         options.presetLabel = 'Oblivion Potion Preset';
     } else {
@@ -340,6 +346,8 @@ for (const [eventId, auraNames] of Object.entries(EVENT_AURA_MAP)) {
 }
 
 const cutscenePriority = ["oblivion-cs", "equinox-cs", "lumi-cs", "pixelation-cs", "dreammetric-cs", "oppression-cs"];
+
+oblivionAuraDefinition = auras.find(aura => aura.name === OBLIVION_AURA_NAME) || null;
 
 const ROE_EXCLUDED_AURAS = new Set([
     "Apostolos : Veil - 800,000,000",
@@ -693,7 +701,7 @@ function roll() {
     let effectiveAuras;
     if (biome === "limbo") {
         effectiveAuras = auras.filter(aura =>
-            (!aura.requiresOblivionPreset || isOblivionPresetActive) &&
+            !aura.requiresOblivionPreset &&
             isEventAuraEnabled(aura) &&
             aura.exclusiveTo && (aura.exclusiveTo.includes("limbo") || aura.exclusiveTo.includes("limbo-null"))
         ).map(aura => {
@@ -710,7 +718,7 @@ function roll() {
         const glitchLikeBiome = biome === "glitch" || isRoe;
         const exclusivityBiome = isRoe ? "glitch" : biome;
         effectiveAuras = auras.map(aura => {
-            if (aura.requiresOblivionPreset && !isOblivionPresetActive) {
+            if (aura.requiresOblivionPreset) {
                 aura.effectiveChance = Infinity;
                 return aura;
             }
@@ -754,6 +762,8 @@ function roll() {
         .filter(aura => aura.effectiveChance !== Infinity);
     }
 
+    const activeOblivionAura = (isOblivionPresetActive && luckValue >= OBLIVION_PRESET_LUCK) ? oblivionAuraDefinition : null;
+
     const CHUNK_SIZE = 100000;
     let currentRoll = 0;
 
@@ -761,6 +771,13 @@ function roll() {
         const chunkEnd = Math.min(currentRoll + CHUNK_SIZE, total);
         
         for (let i = currentRoll; i < chunkEnd; i++) {
+            if (activeOblivionAura) {
+                if (Random(1, OBLIVION_POTION_ROLL_ODDS) === 1) {
+                    activeOblivionAura.wonCount++;
+                    rolls++;
+                    continue;
+                }
+            }
             for (let aura of effectiveAuras) {
                 let chance = aura.effectiveChance;
                 let usedBT = aura.effectiveChance !== aura.chance;
