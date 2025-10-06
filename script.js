@@ -4,6 +4,61 @@ let isRolling = false;
 
 const customSelectRegistry = new Map();
 
+const OBLIVION_PRESET_LUCK = 600000;
+let isOblivionPresetActive = false;
+let activeOblivionPresetLabel = 'Select preset';
+
+function applyOblivionPreset(presetKey) {
+    const options = {};
+    if (presetKey === 'oblivion') {
+        options.activateOblivionPreset = true;
+        options.presetLabel = 'Oblivion Potion Preset';
+    } else {
+        options.activateOblivionPreset = false;
+        options.presetLabel = 'Godlike + Heavenly + Bound';
+    }
+
+    setLuck(OBLIVION_PRESET_LUCK, options);
+
+    const dropdown = document.getElementById('oblivion-preset-dropdown');
+    if (dropdown) {
+        dropdown.open = false;
+        const summary = dropdown.querySelector('.preset-dropdown__summary');
+        if (summary) {
+            summary.focus();
+        }
+    }
+}
+
+function updateOblivionPresetUi() {
+    const selection = document.getElementById('oblivion-preset-selection');
+    if (selection) {
+        selection.textContent = activeOblivionPresetLabel;
+        selection.classList.toggle('preset-dropdown__selection--placeholder', activeOblivionPresetLabel === 'Select preset');
+    }
+}
+
+function handlePresetOptionChange(options = {}) {
+    isOblivionPresetActive = options.activateOblivionPreset === true;
+
+    if (typeof options.presetLabel === 'string') {
+        activeOblivionPresetLabel = options.presetLabel;
+    } else {
+        activeOblivionPresetLabel = 'Select preset';
+    }
+
+    updateOblivionPresetUi();
+}
+
+function renderAuraName(aura, overrideName) {
+    if (!aura) return overrideName || '';
+    const baseName = typeof overrideName === 'string' && overrideName.length > 0 ? overrideName : aura.name;
+    if (aura.subtitle) {
+        return `${baseName} <span class="aura-subtitle">${aura.subtitle}</span>`;
+    }
+    return baseName;
+}
+
 const auras = [
     { name: "Equinox - 2,500,000,000", chance: 2500000000, cutscene: "equinox-cs" },
     { name: "Luminosity - 1,200,000,000", chance: 1200000000, cutscene: "lumi-cs" },
@@ -175,6 +230,7 @@ const auras = [
     { name: "Glacier - 2,304", chance: 2304, breakthrough: { snowy: 3 } },
     { name: "Ash - 2,300", chance: 2300 },
     { name: "Magnetic - 2,048", chance: 2048 },
+    { name: "Oblivion", chance: 2000, requiresOblivionPreset: true, ignoreLuck: true, fixedRollThreshold: 1, subtitle: "The Truth Seeker", cutscene: "oblivion-cs", disableRarityClass: true },
     { name: "Glock - 1,700", chance: 1700 },
     { name: "Atomic - 1,180", chance: 1180 },
     { name: "Precious - 1,024", chance: 1024 },
@@ -283,7 +339,7 @@ for (const [eventId, auraNames] of Object.entries(EVENT_AURA_MAP)) {
     });
 }
 
-const cutscenePriority = ["equinox-cs", "lumi-cs", "pixelation-cs", "dreammetric-cs", "oppression-cs"];
+const cutscenePriority = ["oblivion-cs", "equinox-cs", "lumi-cs", "pixelation-cs", "dreammetric-cs", "oppression-cs"];
 
 const ROE_EXCLUDED_AURAS = new Set([
     "Apostolos : Veil - 800,000,000",
@@ -495,6 +551,7 @@ function initializeEventSelectors() {
 }
 
 document.addEventListener('DOMContentLoaded', initializeEventSelectors);
+document.addEventListener('DOMContentLoaded', updateOblivionPresetUi);
 
 function initializeSingleSelect(selectId) {
     const select = document.getElementById(selectId);
@@ -636,6 +693,7 @@ function roll() {
     let effectiveAuras;
     if (biome === "limbo") {
         effectiveAuras = auras.filter(aura =>
+            (!aura.requiresOblivionPreset || isOblivionPresetActive) &&
             isEventAuraEnabled(aura) &&
             aura.exclusiveTo && (aura.exclusiveTo.includes("limbo") || aura.exclusiveTo.includes("limbo-null"))
         ).map(aura => {
@@ -652,6 +710,10 @@ function roll() {
         const glitchLikeBiome = biome === "glitch" || isRoe;
         const exclusivityBiome = isRoe ? "glitch" : biome;
         effectiveAuras = auras.map(aura => {
+            if (aura.requiresOblivionPreset && !isOblivionPresetActive) {
+                aura.effectiveChance = Infinity;
+                return aura;
+            }
             if (!isEventAuraEnabled(aura)) {
                 aura.effectiveChance = Infinity;
                 return aura;
@@ -704,7 +766,13 @@ function roll() {
                 let usedBT = aura.effectiveChance !== aura.chance;
                 let btChance = usedBT ? aura.effectiveChance : null;
                 
-                const successThreshold = Math.min(chance, luckValue);
+                let successThreshold;
+                if (aura.ignoreLuck) {
+                    const fixedThreshold = Number.isFinite(aura.fixedRollThreshold) ? aura.fixedRollThreshold : 1;
+                    successThreshold = Math.max(0, Math.min(chance, fixedThreshold));
+                } else {
+                    successThreshold = Math.min(chance, luckValue);
+                }
                 if (successThreshold > 0 && Random(1, chance) <= successThreshold) {
                     aura.wonCount++;
                     if (usedBT) {
@@ -790,24 +858,26 @@ function roll() {
                     let specialClass = getAuraStyleClass(aura);
                     let eventClass = aura.event ? 'aura-event-text' : '';
                     let classAttr = [rarityClass, specialClass, eventClass].filter(Boolean).join(' ');
+                    const formattedName = renderAuraName(aura);
                     if (btAuras[aura.name]) {
                         let btName = aura.name.replace(
                             /-\s*[\d,]+/,
                             `- ${btAuras[aura.name].btChance.toLocaleString()}`
                         );
+                        const nativeLabel = renderAuraName(aura, btName);
                         resultEntries.push({
-                            label: `<span class="${classAttr}">[Native] ${btName} | Times Rolled: ${btAuras[aura.name].count.toLocaleString()}</span>`,
+                            label: `<span class="${classAttr}">[Native] ${nativeLabel} | Times Rolled: ${btAuras[aura.name].count.toLocaleString()}</span>`,
                             chance: btAuras[aura.name].btChance
                         });
                         if (aura.wonCount > btAuras[aura.name].count) {
                             resultEntries.push({
-                                label: `<span class="${classAttr}">${aura.name} | Times Rolled: ${(aura.wonCount - btAuras[aura.name].count).toLocaleString()}</span>`,
+                                label: `<span class="${classAttr}">${formattedName} | Times Rolled: ${(aura.wonCount - btAuras[aura.name].count).toLocaleString()}</span>`,
                                 chance: aura.chance
                             });
                         }
                     } else {
                         resultEntries.push({
-                            label: `<span class="${classAttr}">${aura.name} | Times Rolled: ${aura.wonCount.toLocaleString()}</span>`,
+                            label: `<span class="${classAttr}">${formattedName} | Times Rolled: ${aura.wonCount.toLocaleString()}</span>`,
                             chance: aura.chance
                         });
                     }
