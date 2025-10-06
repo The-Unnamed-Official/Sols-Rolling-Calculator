@@ -265,13 +265,17 @@ const EVENT_AURA_MAP = {
 };
 
 const BIOME_EVENT_REQUIREMENTS = {
-    graveyard: "halloween2024",
-    pumpkinMoon: "halloween2024",
+    graveyard: ["halloween2024"],
+    pumpkinMoon: ["halloween2024"],
     blazing: "summer2025",
 };
 
 const activeEvents = new Set();
 const auraEventLookup = new Map();
+
+const EVENTS_ALLOWING_GLITCH_ACCESS = new Set([
+    "halloween2024",
+]);
 
 for (const [eventId, auraNames] of Object.entries(EVENT_AURA_MAP)) {
     auraNames.forEach(name => {
@@ -404,11 +408,24 @@ function applyEventBiomeRestrictions() {
             option.removeAttribute('title');
             return;
         }
-        const enabled = activeEvents.has(requiredEvent);
+        const requiredEvents = Array.isArray(requiredEvent) ? requiredEvent : [requiredEvent];
+        const enabled = requiredEvents.some(eventId => activeEvents.has(eventId));
         option.disabled = !enabled;
-        const eventLabel = EVENT_DEFINITIONS.find(event => event.id === requiredEvent)?.label;
-        if (!enabled && eventLabel) {
-            option.title = `${eventLabel} must be enabled to access this biome.`;
+        if (!enabled) {
+            const eventLabels = requiredEvents
+                .map(eventId => EVENT_DEFINITIONS.find(event => event.id === eventId)?.label)
+                .filter(Boolean);
+            if (eventLabels.length > 0) {
+                let labelText = eventLabels[0];
+                if (eventLabels.length === 2) {
+                    labelText = `${eventLabels[0]} or ${eventLabels[1]}`;
+                } else if (eventLabels.length > 2) {
+                    labelText = `${eventLabels.slice(0, -1).join(', ')}, or ${eventLabels[eventLabels.length - 1]}`;
+                }
+                option.title = `${labelText} must be enabled to access this biome.`;
+            } else {
+                option.removeAttribute('title');
+            }
         } else {
             option.removeAttribute('title');
         }
@@ -648,7 +665,10 @@ function roll() {
                     aura.effectiveChance = Infinity;
                     return aura;
                 }
-                if (!aura.exclusiveTo.includes("limbo-null") && !aura.exclusiveTo.includes(exclusivityBiome)) {
+                const allowEventGlitchAccess = glitchLikeBiome && aura.event &&
+                    activeEventSnapshot.has(aura.event) &&
+                    EVENTS_ALLOWING_GLITCH_ACCESS.has(aura.event);
+                if (!aura.exclusiveTo.includes("limbo-null") && !aura.exclusiveTo.includes(exclusivityBiome) && !allowEventGlitchAccess) {
                     aura.effectiveChance = Infinity;
                     return aura;
                 }
