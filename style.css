@@ -1281,6 +1281,7 @@ select.field__input option {
 }
 
 .aura-effect-oblivion,
+.aura-effect-memory,
 .aura-effect-pixelation,
 .aura-effect-luminosity,
 .aura-effect-equinox {
@@ -1294,6 +1295,14 @@ select.field__input option {
     -webkit-background-clip: text;
     background-clip: text;
     text-shadow: 0 0 16px rgba(187, 122, 255, 0.45);
+}
+
+.aura-effect-memory {
+    background: linear-gradient(110deg, #f3d9ff 0%, #a26bff 45%, #3b1061 100%);
+    color: transparent;
+    -webkit-background-clip: text;
+    background-clip: text;
+    text-shadow: 0 0 20px rgba(200, 140, 255, 0.55);
 }
 
 .aura-effect-pixelation {
