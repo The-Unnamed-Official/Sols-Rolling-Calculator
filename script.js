@@ -65,7 +65,13 @@ function renderAuraName(aura, overrideName) {
     return baseName;
 }
 
+function getResultSortChance(aura, baseChance) {
+    if (!aura) return baseChance;
+    return aura.name === OBLIVION_AURA_NAME ? Number.POSITIVE_INFINITY : baseChance;
+}
+
 const auras = [
+    { name: "Oblivion", chance: 2000, requiresOblivionPreset: true, ignoreLuck: true, fixedRollThreshold: 1, subtitle: "The Truth Seeker", cutscene: "oblivion-cs", disableRarityClass: true },
     { name: "Equinox - 2,500,000,000", chance: 2500000000, cutscene: "equinox-cs" },
     { name: "Luminosity - 1,200,000,000", chance: 1200000000, cutscene: "lumi-cs" },
     { name: "Pixelation - 1,073,741,824", chance: 1073741824, cutscene: "pixelation-cs" },
@@ -236,7 +242,6 @@ const auras = [
     { name: "Glacier - 2,304", chance: 2304, breakthrough: { snowy: 3 } },
     { name: "Ash - 2,300", chance: 2300 },
     { name: "Magnetic - 2,048", chance: 2048 },
-    { name: "Oblivion", chance: 2000, requiresOblivionPreset: true, ignoreLuck: true, fixedRollThreshold: 1, subtitle: "The Truth Seeker", cutscene: "oblivion-cs", disableRarityClass: true },
     { name: "Glock - 1,700", chance: 1700 },
     { name: "Atomic - 1,180", chance: 1180 },
     { name: "Precious - 1,024", chance: 1024 },
@@ -884,18 +889,18 @@ function roll() {
                         const nativeLabel = renderAuraName(aura, btName);
                         resultEntries.push({
                             label: `<span class="${classAttr}">[Native] ${nativeLabel} | Times Rolled: ${btAuras[aura.name].count.toLocaleString()}</span>`,
-                            chance: btAuras[aura.name].btChance
+                            chance: getResultSortChance(aura, btAuras[aura.name].btChance)
                         });
                         if (aura.wonCount > btAuras[aura.name].count) {
                             resultEntries.push({
                                 label: `<span class="${classAttr}">${formattedName} | Times Rolled: ${(aura.wonCount - btAuras[aura.name].count).toLocaleString()}</span>`,
-                                chance: aura.chance
+                                chance: getResultSortChance(aura, aura.chance)
                             });
                         }
                     } else {
                         resultEntries.push({
                             label: `<span class="${classAttr}">${formattedName} | Times Rolled: ${aura.wonCount.toLocaleString()}</span>`,
-                            chance: aura.chance
+                            chance: getResultSortChance(aura, aura.chance)
                         });
                     }
                 }
