@@ -882,13 +882,10 @@ select.field__input option {
 }
 
 .preset-footer {
+    position: relative;
     margin-top: clamp(12px, 2vw, 20px);
-    align-self: flex-end;
-    display: flex;
-    align-items: flex-end;
-    justify-content: space-between;
-    gap: clamp(12px, 2vw, 24px);
-    flex-wrap: wrap;
+    padding: clamp(12px, 2vw, 18px);
+    min-height: clamp(82px, 9vw, 110px);
 }
 
 .preset-footer__status {
@@ -901,7 +898,10 @@ select.field__input option {
     align-items: center;
     gap: 8px;
     text-align: left;
-    flex: 1 1 auto;
+    max-width: clamp(220px, 36vw, 460px);
+    position: absolute;
+    left: 0;
+    bottom: 0;
 }
 
 .preset-footer__status-channel {
@@ -912,7 +912,6 @@ select.field__input option {
 }
 
 .preset-footer__status-message {
-    max-width: clamp(200px, 32vw, 420px);
     line-height: 1.4;
     color: rgba(237, 241, 255, 0.88);
 }
@@ -929,6 +928,32 @@ select.field__input option {
     filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.32));
     white-space: nowrap;
     text-align: right;
+    position: absolute;
+    top: 0;
+    right: 0;
+}
+
+@media (max-width: 600px) {
+    .preset-footer {
+        padding: clamp(12px, 3vw, 18px) clamp(12px, 4vw, 20px);
+        min-height: unset;
+        display: flex;
+        flex-direction: column;
+        gap: clamp(12px, 3vw, 16px);
+    }
+
+    .preset-footer__name,
+    .preset-footer__status {
+        position: static;
+    }
+
+    .preset-footer__name {
+        align-self: flex-end;
+    }
+
+    .preset-footer__status {
+        max-width: none;
+    }
 }
 
 .control-group--cta {
