@@ -327,7 +327,7 @@ function applyBiomeTheme(biome) {
     }
 }
 
-function setLuck(value) {
+function setLuck(value, options = {}) {
     baseLuck = value;
     currentLuck = value;
     lastVipMultiplier = 1;
@@ -341,6 +341,10 @@ function setLuck(value) {
         refreshCustomSelect('dave-luck-select');
     }
     document.getElementById('luck').value = value;
+
+    if (typeof handlePresetOptionChange === 'function') {
+        handlePresetOptionChange(options);
+    }
 }
 
 function updateLuckValue() {
@@ -367,6 +371,9 @@ function updateLuckValue() {
             document.getElementById('dave-luck-select').value = "1";
             refreshCustomSelect('dave-luck-select');
         }
+        if (typeof handlePresetOptionChange === 'function') {
+            handlePresetOptionChange({});
+        }
         return;
     }
     currentLuck = baseLuck * vipMultiplier * xyzMultiplier * daveMultiplier;
@@ -380,6 +387,9 @@ function resetLuck() {
     document.getElementById('luck').value = 1;
     playSound(document.getElementById('clickSound'), 'ui');
     updateLuckValue();
+    if (typeof handlePresetOptionChange === 'function') {
+        handlePresetOptionChange({});
+    }
 }
 
 function resetRolls() {
@@ -646,6 +656,7 @@ async function playAuraSequence(queue) {
 }
 
 function getRarityClass(aura, biome) {
+    if (aura && aura.disableRarityClass) return '';
     // Special case for Fault
     if (aura && aura.name === "Fault") return 'rarity-challenged';
     if (aura && aura.exclusiveTo && (aura.exclusiveTo.includes("limbo") || aura.exclusiveTo.includes("limbo-null"))) {
@@ -696,6 +707,8 @@ function getAuraStyleClass(aura) {
     if (!name) return '';
 
     const classes = [];
+    if (name.startsWith('Oblivion')) classes.push('aura-effect-oblivion');
+    if (name.startsWith('Memory')) classes.push('aura-effect-memory');
     if (name.startsWith('Pixelation')) classes.push('aura-effect-pixelation');
     if (name.startsWith('Luminosity')) classes.push('aura-effect-luminosity');
     if (name.startsWith('Equinox')) classes.push('aura-effect-equinox');

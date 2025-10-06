@@ -881,6 +881,91 @@ select.field__input option {
     transform: translateY(-1px);
 }
 
+.preset-dropdown {
+    position: relative;
+    border-radius: 10px;
+    border: 1px solid rgba(95, 160, 230, 0.35);
+    background: rgba(6, 12, 24, 0.85);
+    color: var(--text-primary);
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    width: 100%;
+    margin: 0;
+    overflow: hidden;
+}
+
+.preset-dropdown[open] {
+    border-color: var(--accent);
+    box-shadow: inset 0 0 16px rgba(127, 227, 255, 0.2);
+}
+
+.preset-dropdown__summary {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+    padding: 10px 36px 10px 12px;
+    font-family: inherit;
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    cursor: pointer;
+    color: var(--text-primary);
+    position: relative;
+}
+
+.preset-dropdown__summary::-webkit-details-marker {
+    display: none;
+}
+
+.preset-dropdown__summary::after {
+    content: '\25BC';
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 11px;
+    opacity: 0.7;
+    transition: transform 0.2s ease;
+}
+
+.preset-dropdown[open] .preset-dropdown__summary::after {
+    transform: translateY(-50%) rotate(180deg);
+}
+
+.preset-dropdown__summary:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+}
+
+.preset-dropdown__title {
+    font-weight: 600;
+}
+
+.preset-dropdown__selection {
+    font-size: 10px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+}
+
+.preset-dropdown__selection--placeholder {
+    color: rgba(199, 219, 255, 0.48);
+}
+
+.preset-dropdown__options {
+    display: grid;
+    gap: 8px;
+    padding: 8px 12px 12px;
+    border-top: 1px solid rgba(95, 160, 230, 0.35);
+    background: rgba(4, 10, 22, 0.95);
+}
+
+.preset-dropdown__options button {
+    width: 100%;
+    text-align: left;
+}
+
 .preset-footer {
     position: relative;
     margin-top: clamp(12px, 2vw, 20px);
@@ -1110,6 +1195,15 @@ select.field__input option {
 .rarity-challenged { color: #000000; text-shadow: -1px -1px 0 #fff, 1px -1px 0 #fff, -1px 1px 0 #fff, 1px 1px 0 #fff; }
 .rarity-limbo { color: #000; text-shadow: 0 0 2px #aaa, 0 0 4px #aaa, 1px 1px 0 #aaa, -1px -1px 0 #aaa; }
 
+.aura-subtitle {
+    display: block;
+    font-size: 0.85em;
+    letter-spacing: 0.08em;
+    text-transform: none;
+    color: var(--text-secondary);
+    font-style: italic;
+}
+
 .aura-event-text {
   color: #fff !important;
   text-shadow: 1px 1px 2px #000;
@@ -1186,11 +1280,29 @@ select.field__input option {
         -1px -1px 0 rgba(40, 90, 140, 0.85);
 }
 
+.aura-effect-oblivion,
+.aura-effect-memory,
 .aura-effect-pixelation,
 .aura-effect-luminosity,
 .aura-effect-equinox {
     display: inline-block;
     position: relative;
+}
+
+.aura-effect-oblivion {
+    background: linear-gradient(92deg, #bb7aff 0%, #401768 40%, #26063c 100%);
+    color: transparent;
+    -webkit-background-clip: text;
+    background-clip: text;
+    text-shadow: 0 0 16px rgba(187, 122, 255, 0.45);
+}
+
+.aura-effect-memory {
+    background: linear-gradient(110deg, #f3d9ff 0%, #a26bff 45%, #3b1061 100%);
+    color: transparent;
+    -webkit-background-clip: text;
+    background-clip: text;
+    text-shadow: 0 0 20px rgba(200, 140, 255, 0.55);
 }
 
 .aura-effect-pixelation {

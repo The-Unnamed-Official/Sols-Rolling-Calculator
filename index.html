@@ -32,6 +32,12 @@
     <audio id="100mSound" loop muted src="files/100_000_000Roll.ogg" type="audio/ogg"></audio>
     <audio id="limbo99mSound" loop muted src="files/99mLimboRollSound.mp3" type="audio/mpeg" data-boost="6.7"></audio>
 
+    <video id="oblivion-cs" class="aura-video" preload="auto">
+        <source src="files/oblivionCutscene.webm" type="video/webm">
+    </video>
+    <video id="memory-cs" class="aura-video" preload="auto">
+        <source src="files/memoryCutscene.webm" type="video/webm">
+    </video>
     <video id="equinox-cs" class="aura-video" preload="auto">
         <source src="files/equinoxCutscene.webm" type="video/webm">
     </video>
@@ -291,7 +297,16 @@
                 <div class="control-group control-group--presets">
                     <div class="preset-grid" id="luck-presets">
                         <button type="button" onclick="setLuck(700000)">Pump King's Blood 700,000×</button>
-                        <button type="button" onclick="setLuck(600000)">Oblivion / Godlike + Bound + Heavenly 600,000×</button>
+                        <details id="oblivion-preset-dropdown" class="preset-dropdown">
+                            <summary class="preset-dropdown__summary">
+                                <span class="preset-dropdown__title">Oblivion / Godlike + Bound + Heavenly 600,000×</span>
+                                <span id="oblivion-preset-selection" class="preset-dropdown__selection preset-dropdown__selection--placeholder">Select preset</span>
+                            </summary>
+                            <div class="preset-dropdown__options">
+                                <button type="button" onclick="applyOblivionPreset('oblivion')">Oblivion Potion Preset 600,000×</button>
+                                <button type="button" onclick="applyOblivionPreset('classic')">Godlike + Heavenly + Bound 600,000×</button>
+                            </div>
+                        </details>
                         <button type="button" onclick="setLuck(400000)">Godlike Potion 400,000×</button>
                         <button type="button" id="void-heart-btn" style="display:none;" onclick="setLuck(300000)">Void Heart 300,000×</button>
                         <button type="button" onclick="setLuck(200000)">Heavenly + Bound 200,000×</button>
