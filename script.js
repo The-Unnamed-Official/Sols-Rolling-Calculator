@@ -8,11 +8,14 @@ const customSelectRegistry = new Map();
 const OBLIVION_PRESET_KEY = 'oblivion';
 const OBLIVION_PRESET_LUCK = 600000;
 const OBLIVION_AURA_NAME = 'Oblivion';
+const OBLIVION_MEMORY_AURA_NAME = 'Memory';
 const OBLIVION_POTION_ROLL_ODDS = 2000;
+const OBLIVION_MEMORY_ROLL_ODDS = 100;
 
 let isOblivionPresetActive = false;
 let activeOblivionPresetLabel = 'Select preset';
 let oblivionAuraDefinition = null;
+let memoryAuraDefinition = null;
 
 function applyOblivionPreset(presetKey) {
     const options = {};
@@ -67,11 +70,14 @@ function renderAuraName(aura, overrideName) {
 
 function getResultSortChance(aura, baseChance) {
     if (!aura) return baseChance;
-    return aura.name === OBLIVION_AURA_NAME ? Number.POSITIVE_INFINITY : baseChance;
+    if (aura.name === OBLIVION_AURA_NAME) return Number.POSITIVE_INFINITY;
+    if (aura.name === OBLIVION_MEMORY_AURA_NAME) return Number.MAX_SAFE_INTEGER;
+    return baseChance;
 }
 
 const auras = [
     { name: "Oblivion", chance: 2000, requiresOblivionPreset: true, ignoreLuck: true, fixedRollThreshold: 1, subtitle: "The Truth Seeker", cutscene: "oblivion-cs", disableRarityClass: true },
+    { name: "Memory", chance: 200000, requiresOblivionPreset: true, ignoreLuck: true, fixedRollThreshold: 1, subtitle: "The Fallen", cutscene: "memory-cs", disableRarityClass: true },
     { name: "Equinox - 2,500,000,000", chance: 2500000000, cutscene: "equinox-cs" },
     { name: "Luminosity - 1,200,000,000", chance: 1200000000, cutscene: "lumi-cs" },
     { name: "Pixelation - 1,073,741,824", chance: 1073741824, cutscene: "pixelation-cs" },
@@ -350,9 +356,10 @@ for (const [eventId, auraNames] of Object.entries(EVENT_AURA_MAP)) {
     });
 }
 
-const cutscenePriority = ["oblivion-cs", "equinox-cs", "lumi-cs", "pixelation-cs", "dreammetric-cs", "oppression-cs"];
+const cutscenePriority = ["oblivion-cs", "memory-cs", "equinox-cs", "lumi-cs", "pixelation-cs", "dreammetric-cs", "oppression-cs"];
 
 oblivionAuraDefinition = auras.find(aura => aura.name === OBLIVION_AURA_NAME) || null;
+memoryAuraDefinition = auras.find(aura => aura.name === OBLIVION_MEMORY_AURA_NAME) || null;
 
 const ROE_EXCLUDED_AURAS = new Set([
     "Apostolos : Veil - 800,000,000",
@@ -768,6 +775,7 @@ function roll() {
     }
 
     const activeOblivionAura = (isOblivionPresetActive && luckValue >= OBLIVION_PRESET_LUCK) ? oblivionAuraDefinition : null;
+    const activeMemoryAura = (isOblivionPresetActive && luckValue >= OBLIVION_PRESET_LUCK) ? memoryAuraDefinition : null;
 
     const CHUNK_SIZE = 100000;
     let currentRoll = 0;
@@ -778,7 +786,10 @@ function roll() {
         for (let i = currentRoll; i < chunkEnd; i++) {
             if (activeOblivionAura) {
                 if (Random(1, OBLIVION_POTION_ROLL_ODDS) === 1) {
-                    activeOblivionAura.wonCount++;
+                    const specialAura = (activeMemoryAura && Random(1, OBLIVION_MEMORY_ROLL_ODDS) === 1)
+                        ? activeMemoryAura
+                        : activeOblivionAura;
+                    specialAura.wonCount++;
                     rolls++;
                     continue;
                 }
