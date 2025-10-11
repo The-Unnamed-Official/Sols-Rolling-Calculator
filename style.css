@@ -1348,29 +1348,28 @@ select.field__input option {
     text-transform: uppercase;
     padding: 0.15em 0.35em;
     color: transparent !important;
-    background-image: linear-gradient(90deg, #050608 0%, #050608 50%, #fdfdff 50%, #fdfdff 100%);
-    background-size: 220% 100%;
-    background-position: 0% 50%;
+    background-image: linear-gradient(180deg, #fdfdff 0%, #fdfdff 50%, #050608 50%, #050608 100%);
+    background-size: 100% 200%;
+    background-position: 0% 0%;
+    background-repeat: repeat-y;
     -webkit-background-clip: text;
     background-clip: text;
     text-shadow:
-        0 0 8px rgba(255, 255, 255, 0.35),
+        0 0 10px rgba(255, 255, 255, 0.4),
         0 12px 28px rgba(0, 0, 0, 0.35);
     transform: skewX(-10deg) scale(1);
     animation:
-        aura-equinox-gradient 4s ease-in-out infinite alternate,
+        aura-equinox-gradient 4s ease-in-out infinite,
         aura-equinox-pulse 2.8s ease-in-out infinite;
 }
 
 @keyframes aura-equinox-gradient {
-    0% {
-        background-position: 0% 50%;
+    0%,
+    100% {
+        background-position: 0% 0%;
     }
     50% {
-        background-position: 100% 50%;
-    }
-    100% {
-        background-position: 0% 50%;
+        background-position: 0% 100%;
     }
 }
 
@@ -1378,7 +1377,7 @@ select.field__input option {
     0%, 100% {
         transform: skewX(-10deg) scale(1);
         text-shadow:
-            0 0 8px rgba(255, 255, 255, 0.35),
+            0 0 10px rgba(255, 255, 255, 0.4),
             0 12px 28px rgba(0, 0, 0, 0.35);
     }
     50% {
