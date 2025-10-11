@@ -1341,65 +1341,50 @@ select.field__input option {
 }
 
 .aura-effect-equinox {
-    color: #f4f6ff !important;
+    font-family: "Playfair Display", "Times New Roman", serif;
     font-style: italic;
-    letter-spacing: 0.28em;
+    font-weight: 500;
+    letter-spacing: 0.18em;
     text-transform: uppercase;
-    padding: 0.1em 0.3em;
-    transform: skewX(-8deg);
+    padding: 0.15em 0.35em;
+    color: transparent !important;
+    background-image: linear-gradient(180deg, #fdfdff 0%, #fdfdff 50%, #4e4e4e 50%, #050608 100%);
+    background-size: 100% 200%;
+    background-position: 0% 0%;
+    background-repeat: repeat-y;
+    -webkit-background-clip: text;
+    background-clip: text;
     text-shadow:
-        0 0 4px rgba(255, 255, 255, 0.65),
-        0 0 14px rgba(240, 244, 255, 0.35),
-        2px 2px 0 rgba(8, 12, 24, 0.7),
-        3px 3px 8px rgba(0, 0, 0, 0.55);
-    animation: aura-equinox-flash 0.6s steps(2, jump-none) infinite;
+        0 0 10px rgba(41, 41, 41, 0.4),
+        0 12px 28px rgba(0, 0, 0, 0.35);
+    transform: skewX(-10deg) scale(1);
+    animation:
+        aura-equinox-gradient 4s ease-in-out infinite,
+        aura-equinox-pulse 2.8s ease-in-out infinite;
 }
 
-.aura-effect-equinox::before,
-.aura-effect-equinox::after {
-    content: '';
-    position: absolute;
-    inset: 50% auto auto 0;
-    width: 55%;
-    height: 2px;
-    background: linear-gradient(90deg, rgba(255, 255, 255, 0.65), rgba(120, 164, 224, 0));
-    transform: translateY(-50%) skewX(20deg);
-    pointer-events: none;
-    opacity: 0.55;
-    animation: aura-equinox-glint 0.6s steps(2, jump-none) infinite;
+@keyframes aura-equinox-gradient {
+    0%,
+    100% {
+        background-position: 0% 0%;
+    }
+    50% {
+        background-position: 0% 100%;
+    }
 }
 
-.aura-effect-equinox::after {
-    inset: 50% 0 auto auto;
-    transform: translateY(-50%) skewX(-20deg);
-    background: linear-gradient(270deg, rgba(255, 255, 255, 0.65), rgba(120, 164, 224, 0));
-}
-
-@keyframes aura-equinox-flash {
-    0%, 45% {
-        color: #f4f6ff !important;
+@keyframes aura-equinox-pulse {
+    0%, 100% {
+        transform: skewX(-10deg) scale(1);
         text-shadow:
-            0 0 6px rgba(255, 255, 255, 0.75),
-            0 0 18px rgba(240, 244, 255, 0.45),
-            2px 2px 0 rgba(8, 12, 24, 0.7),
-            3px 3px 10px rgba(0, 0, 0, 0.6);
+            0 0 10px rgba(255, 255, 255, 0.4),
+            0 12px 28px rgba(0, 0, 0, 0.35);
     }
-    55%, 100% {
-        color: #05060a !important;
+    50% {
+        transform: skewX(-10deg) scale(1.05);
         text-shadow:
-            0 0 12px rgba(255, 255, 255, 0.7),
-            0 0 24px rgba(180, 200, 255, 0.35),
-            -2px -2px 0 rgba(246, 248, 255, 0.6),
-            -3px -3px 12px rgba(120, 160, 220, 0.35);
-    }
-}
-
-@keyframes aura-equinox-glint {
-    0%, 45% {
-        opacity: 0.6;
-    }
-    55%, 100% {
-        opacity: 0.18;
+            0 0 14px rgba(255, 255, 255, 0.55),
+            0 16px 32px rgba(0, 0, 0, 0.45);
     }
 }
 
