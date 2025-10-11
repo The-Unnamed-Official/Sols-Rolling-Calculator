@@ -1348,14 +1348,14 @@ select.field__input option {
     text-transform: uppercase;
     padding: 0.15em 0.35em;
     color: transparent !important;
-    background-image: linear-gradient(180deg, #fdfdff 0%, #fdfdff 50%, #050608 50%, #050608 100%);
+    background-image: linear-gradient(180deg, #fdfdff 0%, #fdfdff 50%, #4e4e4e 50%, #050608 100%);
     background-size: 100% 200%;
     background-position: 0% 0%;
     background-repeat: repeat-y;
     -webkit-background-clip: text;
     background-clip: text;
     text-shadow:
-        0 0 10px rgba(255, 255, 255, 0.4),
+        0 0 10px rgba(41, 41, 41, 0.4),
         0 12px 28px rgba(0, 0, 0, 0.35);
     transform: skewX(-10deg) scale(1);
     animation:
