@@ -1649,7 +1649,9 @@ select.field__input option {
         0 18px 38px rgba(0, 0, 0, 0.4);
     filter: drop-shadow(0 5px 18px rgba(8, 15, 34, 0.72));
     transform: skewX(-6deg) scale3d(0.98, 0.98, 1);
-    animation: aura-equinox-beat calc(60s / 180) linear infinite;
+    animation:
+        aura-equinox-beat calc(60s / 180) linear infinite,
+        aura-equinox-chroma calc(120s / 180) steps(2, jump-end) infinite;
     will-change: transform, color;
 }
 
@@ -1680,22 +1682,29 @@ select.field__input option {
 @keyframes aura-equinox-beat {
     0% {
         transform: skewX(-6deg) scale3d(0.96, 0.96, 1);
-        color: #f7f7f7;
         animation-timing-function: cubic-bezier(0.26, 0.0, 0.42, 1);
     }
     18% {
         transform: skewX(-6deg) scale3d(1.16, 1.16, 1);
-        color: #050505;
         animation-timing-function: cubic-bezier(0.55, 0.02, 0.44, 1);
     }
     46% {
         transform: skewX(-6deg) scale3d(0.98, 0.98, 1);
-        color: #fafafa;
         animation-timing-function: cubic-bezier(0.25, 0.55, 0.38, 1);
     }
     100% {
         transform: skewX(-6deg) scale3d(1, 1, 1);
-        color: #ffffff;
+    }
+}
+
+@keyframes aura-equinox-chroma {
+    0%,
+    49.999% {
+        color: #f7f7f7;
+    }
+    50%,
+    100% {
+        color: #050505;
     }
 }
 
