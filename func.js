@@ -408,7 +408,8 @@ const glitchAudioState = {
     originalPlaybackRate: null,
     basePlaybackRate: null,
     ruinTimeoutId: null,
-    isRuinActive: false
+    isRuinActive: false,
+    warbleIntervalId: null
 };
 const glitchUiState = {
     loopTimeoutId: null,
@@ -416,15 +417,70 @@ const glitchUiState = {
 };
 let glitchPresentationEnabled = false;
 
-const GLITCH_BASE_FILTER_FREQUENCY = 950;
-const GLITCH_BASE_FILTER_Q = 1.25;
-const GLITCH_BASE_GAIN = 0.9;
+const GLITCH_BASE_FILTER_FREQUENCY = 420;
+const GLITCH_BASE_FILTER_Q = 0.85;
+const GLITCH_BASE_GAIN = 0.68;
+const GLITCH_BASE_DISTORTION = 520;
+const GLITCH_WARBLE_RATE_MIN = 0.78;
+const GLITCH_WARBLE_RATE_MAX = 0.9;
+const GLITCH_WARBLE_REST_MIN = 1600;
+const GLITCH_WARBLE_REST_MAX = 3200;
 
 function clearGlitchAudioRuinTimer() {
     if (glitchAudioState.ruinTimeoutId !== null && typeof window !== 'undefined') {
         window.clearTimeout(glitchAudioState.ruinTimeoutId);
         glitchAudioState.ruinTimeoutId = null;
     }
+}
+
+function clearGlitchBaseWarbleTimer() {
+    if (glitchAudioState.warbleIntervalId !== null && typeof window !== 'undefined') {
+        window.clearTimeout(glitchAudioState.warbleIntervalId);
+        glitchAudioState.warbleIntervalId = null;
+    }
+}
+
+function scheduleGlitchBaseWarble(bgMusic, chain) {
+    if (!bgMusic || typeof window === 'undefined') return;
+
+    clearGlitchBaseWarbleTimer();
+
+    const context = chain?.context || ensureAudioContext();
+    const applyWarble = () => {
+        if (!glitchPresentationEnabled) {
+            clearGlitchBaseWarbleTimer();
+            return;
+        }
+
+        if (glitchAudioState.isRuinActive) {
+            glitchAudioState.warbleIntervalId = window.setTimeout(applyWarble, Random(420, 900));
+            return;
+        }
+
+        const warbleRate = randomFloat(GLITCH_WARBLE_RATE_MIN, GLITCH_WARBLE_RATE_MAX);
+        glitchAudioState.basePlaybackRate = warbleRate;
+
+        try {
+            bgMusic.playbackRate = warbleRate;
+        } catch (error) {
+            console.warn('Unable to apply glitch base warble rate', error);
+        }
+
+        const baseGain = chain?.baseGain ?? getBgMusicBaseVolume(bgMusic);
+        if (context && chain?.gainNode?.gain && typeof chain.gainNode.gain.setTargetAtTime === 'function') {
+            const warpedGain = Math.max(0, Math.min(1, baseGain * randomFloat(0.55, 0.85)));
+            chain.gainNode.gain.setTargetAtTime(warpedGain, context.currentTime, 0.6);
+        }
+
+        if (context && chain?.filter?.detune && typeof chain.filter.detune.setTargetAtTime === 'function') {
+            const detune = randomFloat(-680, 420);
+            chain.filter.detune.setTargetAtTime(detune, context.currentTime, 0.6);
+        }
+
+        glitchAudioState.warbleIntervalId = window.setTimeout(applyWarble, Random(GLITCH_WARBLE_REST_MIN, GLITCH_WARBLE_REST_MAX));
+    };
+
+    glitchAudioState.warbleIntervalId = window.setTimeout(applyWarble, Random(180, 520));
 }
 
 function createDistortionCurve(amount = 0) {
@@ -537,7 +593,7 @@ function updateGlitchAudioEffect(enabled) {
             glitchAudioState.originalPlaybackRate = bgMusic.playbackRate || 1;
         }
         if (glitchAudioState.basePlaybackRate === null) {
-            glitchAudioState.basePlaybackRate = randomFloat(0.9, 0.96);
+            glitchAudioState.basePlaybackRate = randomFloat(GLITCH_WARBLE_RATE_MIN, GLITCH_WARBLE_RATE_MAX);
         }
         const baseRate = glitchAudioState.basePlaybackRate ?? glitchAudioState.originalPlaybackRate ?? bgMusic.playbackRate;
         try {
@@ -560,7 +616,10 @@ function updateGlitchAudioEffect(enabled) {
             chain.filter.Q.value = GLITCH_BASE_FILTER_Q;
             chain.gainNode.gain.value = baseGain * GLITCH_BASE_GAIN;
         }
-        chain.waveshaper.curve = createDistortionCurve(200);
+        chain.waveshaper.curve = createDistortionCurve(GLITCH_BASE_DISTORTION);
+        if (chain.waveshaper) {
+            chain.waveshaper.oversample = '4x';
+        }
     } else {
         try {
             chain.filter.type = chain.originalFilterType || 'lowpass';
@@ -587,6 +646,15 @@ function updateGlitchAudioEffect(enabled) {
             chain.gainNode.gain.value = baseGain;
         }
         chain.waveshaper.curve = chain.neutralCurve || createDistortionCurve(0);
+        if (chain.waveshaper) {
+            chain.waveshaper.oversample = 'none';
+        }
+    }
+
+    if (enabled) {
+        scheduleGlitchBaseWarble(bgMusic, chain);
+    } else {
+        clearGlitchBaseWarbleTimer();
     }
 }
 
@@ -601,12 +669,13 @@ function applyGlitchAudioBurst() {
 
     glitchAudioState.isRuinActive = true;
     clearGlitchAudioRuinTimer();
+    clearGlitchBaseWarbleTimer();
 
     if (glitchAudioState.originalPlaybackRate === null) {
         glitchAudioState.originalPlaybackRate = bgMusic.playbackRate || 1;
     }
     if (glitchAudioState.basePlaybackRate === null) {
-        glitchAudioState.basePlaybackRate = randomFloat(0.9, 0.96);
+        glitchAudioState.basePlaybackRate = randomFloat(GLITCH_WARBLE_RATE_MIN, GLITCH_WARBLE_RATE_MAX);
     }
 
     if (!chain.originalFilterType) {
@@ -624,17 +693,19 @@ function applyGlitchAudioBurst() {
     const applyChaosPulse = () => {
         if (!glitchAudioState.isRuinActive) return;
 
-        const chaoticRate = randomFloat(0.45, 1.65);
+        const chaoticRate = randomFloat(0.32, 1.85);
         try {
             bgMusic.playbackRate = chaoticRate;
         } catch (error) {
             console.warn('Unable to modify playback rate for glitch ruin', error);
         }
 
-        const frequency = randomFloat(60, 720);
-        const q = randomFloat(3.5, 10);
-        const gain = baseGain * randomFloat(0.28, 1.32);
-        const distortionAmount = Random(240, 420);
+        const frequency = randomFloat(45, 2400);
+        const q = randomFloat(2.6, 14);
+        const gain = Math.max(0, Math.min(1.2, baseGain * randomFloat(0.22, 1.48)));
+        const distortionAmount = Random(360, 960);
+        const filterTypes = ['bandpass', 'highpass', 'notch'];
+        const selectedType = filterTypes[Math.floor(Math.random() * filterTypes.length)] || 'bandpass';
 
         if (context.state === 'running') {
             chain.filter.frequency.setTargetAtTime(frequency, context.currentTime, 0.05);
@@ -646,7 +717,21 @@ function applyGlitchAudioBurst() {
             chain.gainNode.gain.value = gain;
         }
 
+        try {
+            chain.filter.type = selectedType;
+        } catch (error) {
+            console.warn('Unable to set glitch filter mode', error);
+        }
+
+        if (chain.filter?.detune && typeof chain.filter.detune.setTargetAtTime === 'function') {
+            const detune = randomFloat(-2400, 2400);
+            chain.filter.detune.setTargetAtTime(detune, context.currentTime, 0.05);
+        }
+
         chain.waveshaper.curve = createDistortionCurve(distortionAmount);
+        if (chain.waveshaper) {
+            chain.waveshaper.oversample = Math.random() > 0.4 ? '4x' : '2x';
+        }
 
         if (typeof window !== 'undefined') {
             glitchAudioState.ruinTimeoutId = window.setTimeout(applyChaosPulse, Random(120, 260));
@@ -676,7 +761,14 @@ function finishGlitchAudioBurst() {
         console.warn('Unable to restore playback rate after glitch ruin', error);
     }
 
-    if (!context || !chain) return;
+    if (!context || !chain) {
+        if (glitchPresentationEnabled) {
+            scheduleGlitchBaseWarble(bgMusic, null);
+        } else {
+            clearGlitchBaseWarbleTimer();
+        }
+        return;
+    }
 
     const baseGain = chain.baseGain ?? getBgMusicBaseVolume(bgMusic);
     const targetGain = glitchPresentationEnabled ? baseGain * GLITCH_BASE_GAIN : baseGain;
@@ -699,7 +791,16 @@ function finishGlitchAudioBurst() {
         chain.gainNode.gain.value = targetGain;
     }
 
-    chain.waveshaper.curve = glitchPresentationEnabled ? createDistortionCurve(200) : (chain.neutralCurve || createDistortionCurve(0));
+    chain.waveshaper.curve = glitchPresentationEnabled ? createDistortionCurve(GLITCH_BASE_DISTORTION) : (chain.neutralCurve || createDistortionCurve(0));
+    if (chain.waveshaper) {
+        chain.waveshaper.oversample = glitchPresentationEnabled ? '4x' : 'none';
+    }
+
+    if (glitchPresentationEnabled) {
+        scheduleGlitchBaseWarble(bgMusic, chain);
+    } else {
+        clearGlitchBaseWarbleTimer();
+    }
 }
 
 function scheduleGlitchBurst(delay) {
@@ -765,6 +866,7 @@ function stopGlitchLoop() {
         }
         clearGlitchAudioRuinTimer();
         glitchAudioState.isRuinActive = false;
+        clearGlitchBaseWarbleTimer();
     }
 
     finishGlitchAudioBurst();
