@@ -155,7 +155,7 @@ const auras = [
     { name: "Arcane : Legacy - 15,000,000", chance: 15000000 },
     { name: "Sirius - 14,000,000", chance: 14000000, breakthrough: { starfall: 5 } },
     { name: "Stormal : Hurricane - 13,500,000", chance: 13500000, breakthrough: { windy: 3 } },
-    { name: "Glitch - 12,210,110", chance: 12210110, exclusiveTo: ["glitch"] },
+    { name: "Glitch - 12,210,110", chance: 12210110, exclusiveTo: ["glitch"], cutscene: "glitch-cs" },
     { name: "Wonderland - 12,000,000", chance: 12000000, breakthrough: { snowy: 3 } },
     { name: "Sailor - 12,000,000", chance: 12000000, breakthrough: { rainy: 4 } },
     { name: "Moonflower - 10,000,000", chance: 10000000, exclusiveTo: ["pumpkinMoon"] },
@@ -869,6 +869,8 @@ function roll() {
                 } else {
                     playSound(document.getElementById('100mSound'));
                 }
+            } else if (highestChance >= 999999999) {
+                playSound(document.getElementById('1bSound'));
             } else if (highestChance >= 10000000) {
                 playSound(document.getElementById('10mSound'));
             } else if (highestChance >= 1000000) {
