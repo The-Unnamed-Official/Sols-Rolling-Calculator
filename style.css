@@ -1689,12 +1689,20 @@ select.field__input option {
     content: '『';
     margin-right: 0.2em;
     transform: skewX(5deg) translateY(-0.06em);
+    text-shadow:
+        0 1px 0 rgba(99, 99, 99, 0.9),
+        0 6px 18px rgba(12, 21, 43, 0.58),
+        0 18px 38px rgba(0, 0, 0, 0.4);
 }
 
 .aura-effect-equinox::after {
     content: '』';
     margin-left: 0.2em;
     transform: skewX(-5deg) translateY(-0.06em);
+    text-shadow:
+        0 1px 0 rgba(99, 99, 99, 0.9),
+        0 6px 18px rgba(12, 21, 43, 0.58),
+        0 18px 38px rgba(0, 0, 0, 0.4);
 }
 
 @keyframes aura-equinox-beat {
