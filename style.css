@@ -125,6 +125,12 @@ body.is-glitching .ui-backdrop__veil {
     filter: hue-rotate(18deg) saturate(1.65) blur(2px);
 }
 
+body.is-glitching .ui-shell {
+    animation: glitch-shell 0.16s steps(3, end) infinite;
+    filter: contrast(1.38) saturate(1.8) brightness(1.08);
+    transform-origin: 50% 12%;
+}
+
 body.is-glitching .panel {
     animation: glitch-panel 0.18s steps(3, end) infinite;
     filter: saturate(1.6) contrast(1.22) brightness(1.05);
@@ -136,6 +142,25 @@ body.is-glitching .panel::after {
     mix-blend-mode: screen;
 }
 
+body.is-glitching .panel::before {
+    content: '';
+    position: absolute;
+    inset: -6px;
+    background:
+        linear-gradient(0deg, rgba(0, 0, 0, 0.55), rgba(0, 0, 0, 0.35)),
+        linear-gradient(90deg, rgba(0, 0, 0, 0.9) 50%, transparent 50%),
+        linear-gradient(0deg, rgba(0, 0, 0, 0.9) 50%, transparent 50%),
+        repeating-linear-gradient(180deg, rgba(255, 255, 255, 0.06) 0 2px, transparent 2px 4px);
+    background-size: 200% 200%, 120px 120px, 120px 120px, 6px 6px;
+    background-position: center;
+    mix-blend-mode: hard-light;
+    opacity: 0.65;
+    filter: blur(0.2px) contrast(1.4);
+    animation: glitch-fracture 0.22s steps(4, end) infinite;
+    z-index: 2;
+    pointer-events: none;
+}
+
 body.is-glitching .ui-shell::after {
     content: '';
     position: absolute;
@@ -145,6 +170,29 @@ body.is-glitching .ui-shell::after {
     mix-blend-mode: screen;
     animation: glitch-outline 0.16s steps(3, end) infinite;
     box-shadow: 0 0 36px rgba(255, 100, 246, 0.28);
+}
+
+body.is-glitching .ui-shell::before {
+    content: '';
+    position: absolute;
+    inset: -12px;
+    background:
+        repeating-conic-gradient(from 45deg, rgba(0, 0, 0, 0.8) 0 12deg, transparent 12deg 24deg),
+        repeating-linear-gradient(120deg, rgba(255, 255, 255, 0.08) 0 18px, transparent 18px 36px);
+    mix-blend-mode: multiply;
+    opacity: 0.4;
+    animation: glitch-shard 0.18s steps(3, end) infinite;
+    pointer-events: none;
+    z-index: 1;
+}
+
+body.is-glitching .panel > * {
+    animation: glitch-content 0.2s steps(4, end) infinite;
+    filter: saturate(1.2) contrast(1.2);
+}
+
+body.is-glitching .panel > *:nth-child(odd) {
+    animation-duration: 0.18s;
 }
 
 body.is-glitching .ui-toggle,
@@ -179,6 +227,31 @@ body.is-glitching .results__mythic-label {
 body.is-glitching .results__viewport {
     animation: glitch-flicker 0.18s steps(3, end) infinite;
     filter: saturate(1.5) blur(0.6px);
+}
+
+body.is-glitching .results__viewport::before,
+body.is-glitching .results__viewport::after {
+    content: '';
+    position: absolute;
+    inset: -2px;
+    pointer-events: none;
+    mix-blend-mode: difference;
+}
+
+body.is-glitching .results__viewport::before {
+    background:
+        repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.12) 0 6px, transparent 6px 12px),
+        linear-gradient(90deg, rgba(0, 0, 0, 0.85) 50%, transparent 50%),
+        linear-gradient(0deg, rgba(0, 0, 0, 0.85) 50%, transparent 50%);
+    background-size: 12px 12px, 110px 110px, 110px 110px;
+    animation: glitch-fracture 0.22s steps(4, end) infinite;
+    opacity: 0.8;
+}
+
+body.is-glitching .results__viewport::after {
+    background: linear-gradient(90deg, rgba(255, 0, 170, 0.35), rgba(0, 255, 255, 0.3));
+    animation: glitch-scan 1s steps(6, end) infinite;
+    opacity: 0.45;
 }
 
 .ui-backdrop {
@@ -432,6 +505,102 @@ body.is-glitching .results__viewport {
     100% {
         opacity: 0.25;
         transform: translate3d(0, 0, 0);
+    }
+}
+
+@keyframes glitch-shell {
+    0% {
+        transform: translate3d(0, 0, 0) skewX(0deg);
+    }
+    30% {
+        transform: translate3d(-8px, 4px, 0) skewX(1.8deg) scaleX(1.01);
+    }
+    55% {
+        transform: translate3d(6px, -6px, 0) skewY(-1.4deg) rotate(-0.3deg);
+    }
+    70% {
+        transform: translate3d(-10px, 8px, 0) skewX(-2deg) rotate(0.35deg);
+    }
+    100% {
+        transform: translate3d(0, 0, 0) skewX(0deg);
+    }
+}
+
+@keyframes glitch-fracture {
+    0% {
+        clip-path: polygon(0 0, 100% 0, 100% 18%, 0 12%);
+        transform: translate3d(0, 0, 0);
+    }
+    25% {
+        clip-path: polygon(0 38%, 100% 30%, 100% 58%, 0 64%);
+        transform: translate3d(-12px, 6px, 0);
+    }
+    50% {
+        clip-path: polygon(0 70%, 100% 62%, 100% 100%, 0 86%);
+        transform: translate3d(10px, -6px, 0);
+    }
+    75% {
+        clip-path: polygon(0 16%, 100% 0, 100% 44%, 0 32%);
+        transform: translate3d(-8px, -8px, 0);
+    }
+    100% {
+        clip-path: polygon(0 0, 100% 0, 100% 18%, 0 12%);
+        transform: translate3d(0, 0, 0);
+    }
+}
+
+@keyframes glitch-shard {
+    0% {
+        background-position: 0 0, 0 0;
+        opacity: 0.2;
+    }
+    30% {
+        background-position: -40px 20px, 10px -30px;
+        opacity: 0.6;
+    }
+    60% {
+        background-position: 38px -24px, -26px 36px;
+        opacity: 0.45;
+    }
+    80% {
+        background-position: -24px -12px, 32px -20px;
+        opacity: 0.7;
+    }
+    100% {
+        background-position: 0 0, 0 0;
+        opacity: 0.3;
+    }
+}
+
+@keyframes glitch-content {
+    0% {
+        transform: translate3d(0, 0, 0);
+    }
+    28% {
+        transform: translate3d(-4px, 2px, 0) skewX(1deg);
+    }
+    56% {
+        transform: translate3d(6px, -4px, 0) skewY(-1deg);
+    }
+    72% {
+        transform: translate3d(-6px, -6px, 0) rotate(0.4deg);
+    }
+    100% {
+        transform: translate3d(0, 0, 0);
+    }
+}
+
+@keyframes glitch-scan {
+    0% {
+        transform: translateY(-100%);
+        opacity: 0.2;
+    }
+    50% {
+        opacity: 0.6;
+    }
+    100% {
+        transform: translateY(100%);
+        opacity: 0.2;
     }
 }
 
@@ -730,6 +899,7 @@ body.is-glitching .results__viewport {
     font-size: 14px;
     letter-spacing: 0.05em;
     line-height: 1.55;
+    position: relative;
 }
 
 .results__viewport p {
