@@ -417,14 +417,20 @@ const glitchUiState = {
 };
 let glitchPresentationEnabled = false;
 
-const GLITCH_BASE_FILTER_FREQUENCY = 420;
-const GLITCH_BASE_FILTER_Q = 0.85;
-const GLITCH_BASE_GAIN = 0.68;
-const GLITCH_BASE_DISTORTION = 520;
+const GLITCH_BASE_FILTER_FREQUENCY = 2400;
+const GLITCH_BASE_FILTER_Q = 0.5;
+const GLITCH_BASE_GAIN = 0.32;
+const GLITCH_BASE_DISTORTION = 360;
+const GLITCH_BASE_HIGHPASS_FREQUENCY = 480;
+const GLITCH_BASE_HIGHPASS_Q = 0.65;
+const GLITCH_IDLE_HIGHPASS_FREQUENCY = 140;
+const GLITCH_IDLE_HIGHPASS_Q = 0.6;
 const GLITCH_WARBLE_RATE_MIN = 0.78;
 const GLITCH_WARBLE_RATE_MAX = 0.9;
 const GLITCH_WARBLE_REST_MIN = 1600;
 const GLITCH_WARBLE_REST_MAX = 3200;
+const GLITCH_RUIN_MIN_FREQUENCY = 360;
+const GLITCH_RUIN_MAX_DISTORTION = 660;
 
 function clearGlitchAudioRuinTimer() {
     if (glitchAudioState.ruinTimeoutId !== null && typeof window !== 'undefined') {
@@ -468,8 +474,13 @@ function scheduleGlitchBaseWarble(bgMusic, chain) {
 
         const baseGain = chain?.baseGain ?? getBgMusicBaseVolume(bgMusic);
         if (context && chain?.gainNode?.gain && typeof chain.gainNode.gain.setTargetAtTime === 'function') {
-            const warpedGain = Math.max(0, Math.min(1, baseGain * randomFloat(0.55, 0.85)));
+            const warpedGain = Math.max(0, Math.min(1, baseGain * randomFloat(0.45, 0.7)));
             chain.gainNode.gain.setTargetAtTime(warpedGain, context.currentTime, 0.6);
+        }
+
+        if (context && chain?.highpass?.frequency && typeof chain.highpass.frequency.setTargetAtTime === 'function') {
+            const warpedHighpass = Math.max(0, GLITCH_BASE_HIGHPASS_FREQUENCY * randomFloat(1.05, 1.4));
+            chain.highpass.frequency.setTargetAtTime(warpedHighpass, context.currentTime, 0.6);
         }
 
         if (context && chain?.filter?.detune && typeof chain.filter.detune.setTargetAtTime === 'function') {
@@ -512,6 +523,10 @@ function ensureGlitchAudioChain(audioElement) {
         return null;
     }
     if (chain && chain.context === context) {
+        if (!chain.highpass) {
+            glitchAudioChainMap.delete(audioElement);
+            return ensureGlitchAudioChain(audioElement);
+        }
         chain.baseGain = baseVolume;
         chain.originalFilterType = chain.originalFilterType || chain.filter.type;
         if (chain.gainNode && chain.gainNode.gain) {
@@ -530,6 +545,11 @@ function ensureGlitchAudioChain(audioElement) {
 
     try {
         const source = context.createMediaElementSource(audioElement);
+        const highpass = context.createBiquadFilter();
+        highpass.type = 'highpass';
+        highpass.frequency.value = GLITCH_IDLE_HIGHPASS_FREQUENCY;
+        highpass.Q.value = GLITCH_IDLE_HIGHPASS_Q;
+
         const filter = context.createBiquadFilter();
         filter.type = 'lowpass';
         filter.frequency.value = 14000;
@@ -542,12 +562,13 @@ function ensureGlitchAudioChain(audioElement) {
         const gainNode = context.createGain();
         gainNode.gain.value = baseVolume;
 
-        source.connect(filter).connect(waveshaper).connect(gainNode).connect(context.destination);
+        source.connect(highpass).connect(filter).connect(waveshaper).connect(gainNode).connect(context.destination);
 
         audioElement.volume = 1;
         chain = {
             context,
             source,
+            highpass,
             filter,
             waveshaper,
             gainNode,
@@ -608,10 +629,18 @@ function updateGlitchAudioEffect(enabled) {
         }
 
         if (context.state === 'running') {
+            if (chain.highpass) {
+                chain.highpass.frequency.setTargetAtTime(GLITCH_BASE_HIGHPASS_FREQUENCY, context.currentTime, 0.25);
+                chain.highpass.Q.setTargetAtTime(GLITCH_BASE_HIGHPASS_Q, context.currentTime, 0.25);
+            }
             chain.filter.frequency.setTargetAtTime(GLITCH_BASE_FILTER_FREQUENCY, context.currentTime, 0.25);
             chain.filter.Q.setTargetAtTime(GLITCH_BASE_FILTER_Q, context.currentTime, 0.25);
             chain.gainNode.gain.setTargetAtTime(baseGain * GLITCH_BASE_GAIN, context.currentTime, 0.25);
         } else {
+            if (chain.highpass) {
+                chain.highpass.frequency.value = GLITCH_BASE_HIGHPASS_FREQUENCY;
+                chain.highpass.Q.value = GLITCH_BASE_HIGHPASS_Q;
+            }
             chain.filter.frequency.value = GLITCH_BASE_FILTER_FREQUENCY;
             chain.filter.Q.value = GLITCH_BASE_FILTER_Q;
             chain.gainNode.gain.value = baseGain * GLITCH_BASE_GAIN;
@@ -637,10 +666,18 @@ function updateGlitchAudioEffect(enabled) {
         glitchAudioState.originalPlaybackRate = null;
         glitchAudioState.basePlaybackRate = null;
         if (context.state === 'running') {
+            if (chain.highpass) {
+                chain.highpass.frequency.setTargetAtTime(GLITCH_IDLE_HIGHPASS_FREQUENCY, context.currentTime, 0.4);
+                chain.highpass.Q.setTargetAtTime(GLITCH_IDLE_HIGHPASS_Q, context.currentTime, 0.4);
+            }
             chain.filter.frequency.setTargetAtTime(14000, context.currentTime, 0.4);
             chain.filter.Q.setTargetAtTime(0.4, context.currentTime, 0.4);
             chain.gainNode.gain.setTargetAtTime(baseGain, context.currentTime, 0.4);
         } else {
+            if (chain.highpass) {
+                chain.highpass.frequency.value = GLITCH_IDLE_HIGHPASS_FREQUENCY;
+                chain.highpass.Q.value = GLITCH_IDLE_HIGHPASS_Q;
+            }
             chain.filter.frequency.value = 14000;
             chain.filter.Q.value = 0.4;
             chain.gainNode.gain.value = baseGain;
@@ -693,17 +730,17 @@ function applyGlitchAudioBurst() {
     const applyChaosPulse = () => {
         if (!glitchAudioState.isRuinActive) return;
 
-        const chaoticRate = randomFloat(0.32, 1.85);
+        const chaoticRate = randomFloat(0.38, 1.72);
         try {
             bgMusic.playbackRate = chaoticRate;
         } catch (error) {
             console.warn('Unable to modify playback rate for glitch ruin', error);
         }
 
-        const frequency = randomFloat(45, 2400);
-        const q = randomFloat(2.6, 14);
-        const gain = Math.max(0, Math.min(1.2, baseGain * randomFloat(0.22, 1.48)));
-        const distortionAmount = Random(360, 960);
+        const frequency = randomFloat(GLITCH_RUIN_MIN_FREQUENCY, 2600);
+        const q = randomFloat(1.4, 9);
+        const gain = Math.max(0, Math.min(1, baseGain * randomFloat(0.25, 0.7)));
+        const distortionAmount = Random(240, GLITCH_RUIN_MAX_DISTORTION);
         const filterTypes = ['bandpass', 'highpass', 'notch'];
         const selectedType = filterTypes[Math.floor(Math.random() * filterTypes.length)] || 'bandpass';
 
@@ -774,6 +811,8 @@ function finishGlitchAudioBurst() {
     const targetGain = glitchPresentationEnabled ? baseGain * GLITCH_BASE_GAIN : baseGain;
     const targetFrequency = glitchPresentationEnabled ? GLITCH_BASE_FILTER_FREQUENCY : 14000;
     const targetQ = glitchPresentationEnabled ? GLITCH_BASE_FILTER_Q : 0.4;
+    const targetHighpassFrequency = glitchPresentationEnabled ? GLITCH_BASE_HIGHPASS_FREQUENCY : GLITCH_IDLE_HIGHPASS_FREQUENCY;
+    const targetHighpassQ = glitchPresentationEnabled ? GLITCH_BASE_HIGHPASS_Q : GLITCH_IDLE_HIGHPASS_Q;
 
     try {
         chain.filter.type = chain.originalFilterType || 'lowpass';
@@ -782,10 +821,18 @@ function finishGlitchAudioBurst() {
     }
 
     if (context.state === 'running') {
+        if (chain.highpass) {
+            chain.highpass.frequency.setTargetAtTime(targetHighpassFrequency, context.currentTime, 0.2);
+            chain.highpass.Q.setTargetAtTime(targetHighpassQ, context.currentTime, 0.2);
+        }
         chain.filter.frequency.setTargetAtTime(targetFrequency, context.currentTime, 0.2);
         chain.filter.Q.setTargetAtTime(targetQ, context.currentTime, 0.2);
         chain.gainNode.gain.setTargetAtTime(targetGain, context.currentTime, 0.2);
     } else {
+        if (chain.highpass) {
+            chain.highpass.frequency.value = targetHighpassFrequency;
+            chain.highpass.Q.value = targetHighpassQ;
+        }
         chain.filter.frequency.value = targetFrequency;
         chain.filter.Q.value = targetQ;
         chain.gainNode.gain.value = targetGain;
