@@ -1366,6 +1366,16 @@ select.field__input option {
     color: var(--text-tertiary);
 }
 
+.footer__credit {
+    margin-top: 6px;
+    letter-spacing: 0.12em;
+}
+
+.footer__credit a {
+    color: inherit;
+    text-decoration: underline;
+}
+
 .aura-video {
     display: none;
     position: fixed;
