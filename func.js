@@ -207,7 +207,8 @@ function toggleSound() {
     rollingSoundEnabled = !rollingSoundEnabled;
     const bgMusic = document.getElementById('bgMusic');
     const soundToggle = document.getElementById('soundToggle');
-    bgMusic.volume = 0.02;
+    const baseMusicVolume = Number.parseFloat(bgMusic.dataset.volume ?? '0.18');
+    bgMusic.volume = Number.isFinite(baseMusicVolume) ? baseMusicVolume : 0.18;
     if (bgMusic && !bgMusic.getAttribute('data-current-src')) {
         bgMusic.setAttribute('data-current-src', bgMusic.src);
     }
@@ -399,7 +400,7 @@ function updateGlitchAudioEffect(enabled) {
         }
         chain.filter.frequency.setTargetAtTime(GLITCH_BASE_FILTER_FREQUENCY, context.currentTime, 0.25);
         chain.filter.Q.setTargetAtTime(GLITCH_BASE_FILTER_Q, context.currentTime, 0.25);
-        chain.gain.gain.setTargetAtTime(GLITCH_BASE_GAIN, context.currentTime, 0.25);
+        chain.gainNode.gain.setTargetAtTime(GLITCH_BASE_GAIN, context.currentTime, 0.25);
         chain.waveshaper.curve = createDistortionCurve(200);
     } else {
         if (glitchAudioState.originalPlaybackRate !== null) {
@@ -413,7 +414,7 @@ function updateGlitchAudioEffect(enabled) {
         glitchAudioState.basePlaybackRate = null;
         chain.filter.frequency.setTargetAtTime(14000, context.currentTime, 0.4);
         chain.filter.Q.setTargetAtTime(0.4, context.currentTime, 0.4);
-        chain.gain.gain.setTargetAtTime(1, context.currentTime, 0.4);
+        chain.gainNode.gain.setTargetAtTime(1, context.currentTime, 0.4);
         chain.waveshaper.curve = chain.neutralCurve || createDistortionCurve(0);
     }
 }
@@ -429,7 +430,7 @@ function applyGlitchAudioBurst() {
         const burstFrequency = randomFloat(320, 1100);
         chain.filter.frequency.setTargetAtTime(burstFrequency, context.currentTime, 0.05);
         chain.filter.Q.setTargetAtTime(randomFloat(1.4, 2), context.currentTime, 0.05);
-        chain.gain.gain.setTargetAtTime(randomFloat(0.7, 1), context.currentTime, 0.05);
+        chain.gainNode.gain.setTargetAtTime(randomFloat(0.7, 1), context.currentTime, 0.05);
         chain.waveshaper.curve = createDistortionCurve(Random(160, 320));
     }
 
@@ -463,7 +464,7 @@ function applyGlitchAudioBurst() {
             if (context && chain) {
                 chain.filter.frequency.setTargetAtTime(GLITCH_BASE_FILTER_FREQUENCY, context.currentTime, 0.2);
                 chain.filter.Q.setTargetAtTime(GLITCH_BASE_FILTER_Q, context.currentTime, 0.2);
-                chain.gain.gain.setTargetAtTime(GLITCH_BASE_GAIN, context.currentTime, 0.2);
+                chain.gainNode.gain.setTargetAtTime(GLITCH_BASE_GAIN, context.currentTime, 0.2);
                 chain.waveshaper.curve = createDistortionCurve(200);
             }
             glitchAudioState.burstTimeoutId = null;
