@@ -18,6 +18,10 @@ function Random(min, max) {
     return Math.floor(getRand() * (max - min + 1)) + min;
 }
 
+function randomFloat(min, max) {
+    return getRand() * (max - min) + min;
+}
+
 let rollingSoundEnabled = false;
 let uiSoundEnabled = false;
 let cutscenesEnabled = false;
@@ -289,6 +293,290 @@ const biomeAssets = {
     blazing: { image: 'files/blazingBiomeImage.jpg', music: 'files/blazingBiomeMusic.mp3' }
 };
 
+const glitchAudioChainMap = new WeakMap();
+const glitchAudioState = {
+    originalPlaybackRate: null,
+    basePlaybackRate: null,
+    burstTimeoutId: null
+};
+const glitchUiState = {
+    loopTimeoutId: null,
+    activeTimeoutId: null
+};
+let glitchPresentationEnabled = false;
+
+const GLITCH_BASE_FILTER_FREQUENCY = 950;
+const GLITCH_BASE_FILTER_Q = 1.25;
+const GLITCH_BASE_GAIN = 0.9;
+
+function createDistortionCurve(amount = 0) {
+    const sampleCount = 44100;
+    const curve = new Float32Array(sampleCount);
+    const deg = Math.PI / 180;
+    for (let i = 0; i < sampleCount; i++) {
+        const x = i * 2 / sampleCount - 1;
+        if (amount === 0) {
+            curve[i] = x;
+        } else {
+            curve[i] = (3 + amount) * x * 20 * deg / (Math.PI + amount * Math.abs(x));
+        }
+    }
+    return curve;
+}
+
+function ensureGlitchAudioChain(audioElement) {
+    if (!audioElement) return null;
+    const context = resumeAudioContext();
+    if (!context) return null;
+
+    let chain = glitchAudioChainMap.get(audioElement);
+    if (chain && chain.context === context) {
+        return chain;
+    }
+
+    try {
+        const source = context.createMediaElementSource(audioElement);
+        const filter = context.createBiquadFilter();
+        filter.type = 'lowpass';
+        filter.frequency.value = 14000;
+        filter.Q.value = 0.3;
+
+        const waveshaper = context.createWaveShaper();
+        const neutralCurve = createDistortionCurve(0);
+        waveshaper.curve = neutralCurve;
+
+        const gainNode = context.createGain();
+        gainNode.gain.value = 1;
+
+        source.connect(filter).connect(waveshaper).connect(gainNode).connect(context.destination);
+
+        chain = { context, source, filter, waveshaper, gainNode, neutralCurve };
+        glitchAudioChainMap.set(audioElement, chain);
+        return chain;
+    } catch (error) {
+        console.warn('Unable to initialize glitch audio nodes', error);
+        return null;
+    }
+}
+
+function updateGlitchAudioEffect(enabled) {
+    const bgMusic = document.getElementById('bgMusic');
+    if (!bgMusic) return;
+
+    const context = enabled ? resumeAudioContext() : ensureAudioContext();
+    const chain = ensureGlitchAudioChain(bgMusic);
+
+    if (!context || !chain) {
+        if (!enabled && glitchAudioState.originalPlaybackRate !== null) {
+            try {
+                bgMusic.playbackRate = glitchAudioState.originalPlaybackRate;
+            } catch (error) {
+                console.warn('Unable to restore playback rate', error);
+            }
+            glitchAudioState.originalPlaybackRate = null;
+            glitchAudioState.basePlaybackRate = null;
+        }
+        return;
+    }
+
+    if (glitchAudioState.burstTimeoutId !== null && typeof window !== 'undefined') {
+        window.clearTimeout(glitchAudioState.burstTimeoutId);
+        glitchAudioState.burstTimeoutId = null;
+    }
+
+    if (enabled) {
+        if (glitchAudioState.originalPlaybackRate === null) {
+            glitchAudioState.originalPlaybackRate = bgMusic.playbackRate || 1;
+        }
+        if (glitchAudioState.basePlaybackRate === null) {
+            glitchAudioState.basePlaybackRate = randomFloat(0.9, 0.96);
+        }
+        const baseRate = glitchAudioState.basePlaybackRate ?? glitchAudioState.originalPlaybackRate ?? bgMusic.playbackRate;
+        try {
+            bgMusic.playbackRate = baseRate;
+        } catch (error) {
+            console.warn('Unable to apply base glitch playback rate', error);
+        }
+        chain.filter.frequency.setTargetAtTime(GLITCH_BASE_FILTER_FREQUENCY, context.currentTime, 0.25);
+        chain.filter.Q.setTargetAtTime(GLITCH_BASE_FILTER_Q, context.currentTime, 0.25);
+        chain.gain.gain.setTargetAtTime(GLITCH_BASE_GAIN, context.currentTime, 0.25);
+        chain.waveshaper.curve = createDistortionCurve(200);
+    } else {
+        if (glitchAudioState.originalPlaybackRate !== null) {
+            try {
+                bgMusic.playbackRate = glitchAudioState.originalPlaybackRate;
+            } catch (error) {
+                console.warn('Unable to restore playback rate', error);
+            }
+        }
+        glitchAudioState.originalPlaybackRate = null;
+        glitchAudioState.basePlaybackRate = null;
+        chain.filter.frequency.setTargetAtTime(14000, context.currentTime, 0.4);
+        chain.filter.Q.setTargetAtTime(0.4, context.currentTime, 0.4);
+        chain.gain.gain.setTargetAtTime(1, context.currentTime, 0.4);
+        chain.waveshaper.curve = chain.neutralCurve || createDistortionCurve(0);
+    }
+}
+
+function applyGlitchAudioBurst() {
+    const bgMusic = document.getElementById('bgMusic');
+    if (!bgMusic || !glitchPresentationEnabled) return;
+
+    const context = ensureAudioContext();
+    const chain = ensureGlitchAudioChain(bgMusic);
+
+    if (context && chain) {
+        const burstFrequency = randomFloat(320, 1100);
+        chain.filter.frequency.setTargetAtTime(burstFrequency, context.currentTime, 0.05);
+        chain.filter.Q.setTargetAtTime(randomFloat(1.4, 2), context.currentTime, 0.05);
+        chain.gain.gain.setTargetAtTime(randomFloat(0.7, 1), context.currentTime, 0.05);
+        chain.waveshaper.curve = createDistortionCurve(Random(160, 320));
+    }
+
+    if (glitchAudioState.originalPlaybackRate === null) {
+        glitchAudioState.originalPlaybackRate = bgMusic.playbackRate || 1;
+    }
+    if (glitchAudioState.basePlaybackRate === null) {
+        glitchAudioState.basePlaybackRate = randomFloat(0.9, 0.96);
+    }
+
+    try {
+        bgMusic.playbackRate = randomFloat(0.78, 1.18);
+    } catch (error) {
+        console.warn('Unable to modify playback rate for glitch effect', error);
+    }
+
+    if (glitchAudioState.burstTimeoutId !== null && typeof window !== 'undefined') {
+        window.clearTimeout(glitchAudioState.burstTimeoutId);
+    }
+
+    if (typeof window !== 'undefined') {
+        glitchAudioState.burstTimeoutId = window.setTimeout(() => {
+            const resetRate = glitchAudioState.basePlaybackRate ?? glitchAudioState.originalPlaybackRate;
+            if (resetRate !== null && resetRate !== undefined) {
+                try {
+                    bgMusic.playbackRate = resetRate;
+                } catch (error) {
+                    console.warn('Unable to restore playback rate after glitch burst', error);
+                }
+            }
+            if (context && chain) {
+                chain.filter.frequency.setTargetAtTime(GLITCH_BASE_FILTER_FREQUENCY, context.currentTime, 0.2);
+                chain.filter.Q.setTargetAtTime(GLITCH_BASE_FILTER_Q, context.currentTime, 0.2);
+                chain.gain.gain.setTargetAtTime(GLITCH_BASE_GAIN, context.currentTime, 0.2);
+                chain.waveshaper.curve = createDistortionCurve(200);
+            }
+            glitchAudioState.burstTimeoutId = null;
+        }, Random(200, 520));
+    }
+}
+
+function scheduleGlitchBurst(delay) {
+    if (typeof window === 'undefined') return;
+    if (glitchUiState.loopTimeoutId !== null) {
+        window.clearTimeout(glitchUiState.loopTimeoutId);
+    }
+    glitchUiState.loopTimeoutId = window.setTimeout(() => {
+        glitchUiState.loopTimeoutId = null;
+        runGlitchBurst();
+    }, Math.max(0, delay));
+}
+
+function runGlitchBurst() {
+    if (!glitchPresentationEnabled) return;
+    const body = document.body;
+    const root = document.documentElement;
+    if (!body || !root) return;
+
+    body.classList.add('is-glitching');
+    root.classList.add('is-glitching');
+    applyGlitchAudioBurst();
+
+    if (typeof window === 'undefined') return;
+    if (glitchUiState.activeTimeoutId !== null) {
+        window.clearTimeout(glitchUiState.activeTimeoutId);
+    }
+    glitchUiState.activeTimeoutId = window.setTimeout(() => {
+        body.classList.remove('is-glitching');
+        root.classList.remove('is-glitching');
+        glitchUiState.activeTimeoutId = null;
+        if (glitchPresentationEnabled) {
+            scheduleGlitchBurst(Random(1800, 4200));
+        }
+    }, Random(320, 980));
+}
+
+function startGlitchLoop(forceImmediate = false) {
+    if (!glitchPresentationEnabled || typeof window === 'undefined') return;
+    const initialDelay = forceImmediate ? Random(120, 420) : Random(600, 1800);
+    scheduleGlitchBurst(initialDelay);
+}
+
+function ensureGlitchLoopScheduled() {
+    if (!glitchPresentationEnabled) return;
+    const body = document.body;
+    if (!body) return;
+    if (glitchUiState.loopTimeoutId === null && !body.classList.contains('is-glitching')) {
+        scheduleGlitchBurst(Random(1800, 4200));
+    }
+}
+
+function stopGlitchLoop() {
+    if (typeof window !== 'undefined') {
+        if (glitchUiState.loopTimeoutId !== null) {
+            window.clearTimeout(glitchUiState.loopTimeoutId);
+            glitchUiState.loopTimeoutId = null;
+        }
+        if (glitchUiState.activeTimeoutId !== null) {
+            window.clearTimeout(glitchUiState.activeTimeoutId);
+            glitchUiState.activeTimeoutId = null;
+        }
+        if (glitchAudioState.burstTimeoutId !== null) {
+            window.clearTimeout(glitchAudioState.burstTimeoutId);
+            glitchAudioState.burstTimeoutId = null;
+        }
+    }
+
+    const body = document.body;
+    const root = document.documentElement;
+    if (body) {
+        body.classList.remove('is-glitching');
+        body.classList.remove('biome--glitch');
+    }
+    if (root) {
+        root.classList.remove('is-glitching');
+        root.classList.remove('biome--glitch');
+    }
+}
+
+function setGlitchPresentation(enabled) {
+    const body = document.body;
+    const root = document.documentElement;
+    if (!body || !root) return;
+
+    if (enabled) {
+        root.classList.add('biome--glitch');
+        body.classList.add('biome--glitch');
+        if (!glitchPresentationEnabled) {
+            glitchPresentationEnabled = true;
+            updateGlitchAudioEffect(true);
+            startGlitchLoop(true);
+        } else {
+            updateGlitchAudioEffect(true);
+            ensureGlitchLoopScheduled();
+        }
+    } else {
+        if (glitchPresentationEnabled) {
+            glitchPresentationEnabled = false;
+            stopGlitchLoop();
+        } else {
+            body.classList.remove('biome--glitch');
+            root.classList.remove('biome--glitch');
+        }
+        updateGlitchAudioEffect(false);
+    }
+}
+
 function applyBiomeTheme(biome) {
     const assetKey = Object.prototype.hasOwnProperty.call(biomeAssets, biome) ? biome : 'normal';
     const assets = biomeAssets[assetKey];
@@ -455,6 +743,7 @@ function handleBiomeUI() {
         }
     }
     applyBiomeTheme(biome);
+    setGlitchPresentation(biome === 'glitch');
     updateLuckValue();
     refreshCustomSelect('biome-select');
 }

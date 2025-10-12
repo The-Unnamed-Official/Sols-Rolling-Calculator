@@ -44,6 +44,135 @@ body {
     overflow-x: hidden;
 }
 
+body.biome--glitch {
+    --bg-base: #050010;
+    --panel-border: rgba(255, 100, 246, 0.52);
+    --panel-glow: rgba(255, 100, 246, 0.24);
+    --accent: #ff64f6;
+    --accent-strong: #ffd7ff;
+    --accent-soft: rgba(255, 100, 246, 0.18);
+    --accent-muted: rgba(255, 100, 246, 0.32);
+    --text-secondary: rgba(222, 206, 255, 0.78);
+    --text-tertiary: rgba(188, 180, 255, 0.54);
+}
+
+body.biome--glitch .ui-backdrop {
+    filter: hue-rotate(-18deg) saturate(1.35) contrast(1.08);
+}
+
+body.biome--glitch .ui-backdrop__veil {
+    opacity: 0.85;
+    mix-blend-mode: screen;
+    animation: glitch-noise 12s steps(2, end) infinite;
+}
+
+body.biome--glitch::before,
+body.biome--glitch::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    transition: opacity 0.4s ease;
+}
+
+body.biome--glitch::before {
+    background:
+        repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.04) 0 1px, transparent 1px 3px),
+        repeating-linear-gradient(90deg, rgba(255, 92, 231, 0.08) 0 2px, transparent 2px 6px);
+    mix-blend-mode: screen;
+    opacity: 0.22;
+}
+
+body.biome--glitch::after {
+    background:
+        radial-gradient(circle at 18% 18%, rgba(255, 92, 231, 0.22), transparent 48%),
+        radial-gradient(circle at 82% 24%, rgba(72, 214, 255, 0.2), transparent 50%);
+    mix-blend-mode: lighten;
+    opacity: 0.18;
+}
+
+body.biome--glitch .panel {
+    border-color: rgba(255, 100, 246, 0.45);
+    box-shadow: 0 28px 60px rgba(18, 0, 34, 0.68), 0 0 34px rgba(255, 100, 246, 0.18);
+}
+
+body.biome--glitch .panel::after {
+    background: radial-gradient(circle at 50% 0%, rgba(255, 100, 246, 0.12), transparent 44%),
+                linear-gradient(160deg, rgba(22, 6, 32, 0.96), rgba(6, 0, 14, 0.98));
+}
+
+body.biome--glitch .ui-toggle,
+body.biome--glitch .roll-button {
+    background-image: linear-gradient(92deg, rgba(38, 0, 64, 0.9), rgba(10, 0, 24, 0.92));
+    border-color: rgba(255, 100, 246, 0.42);
+    color: #fff;
+}
+
+body.biome--glitch .resource-card {
+    box-shadow: 0 10px 24px rgba(20, 0, 40, 0.55);
+}
+
+body.is-glitching::before,
+body.is-glitching::after {
+    opacity: 0.36;
+    animation: glitch-noise 0.6s steps(3, end) infinite;
+}
+
+body.is-glitching .ui-backdrop__veil {
+    animation-duration: 2.4s;
+}
+
+body.is-glitching .panel {
+    animation: glitch-panel 0.24s steps(2, end) infinite;
+    filter: saturate(1.35) contrast(1.08);
+}
+
+body.is-glitching .panel::after {
+    animation: glitch-flicker 0.24s steps(2, end) infinite;
+}
+
+body.is-glitching .ui-shell::after {
+    content: '';
+    position: absolute;
+    inset: -6px;
+    border: 2px solid rgba(255, 100, 246, 0.38);
+    pointer-events: none;
+    mix-blend-mode: screen;
+    animation: glitch-outline 0.22s steps(2, end) infinite;
+}
+
+body.is-glitching .ui-toggle,
+body.is-glitching .roll-button,
+body.is-glitching .field__input,
+body.is-glitching .ui-select__summary,
+body.is-glitching .ui-select__option-button,
+body.is-glitching .switch__track,
+body.is-glitching .switch__thumb,
+body.is-glitching .resource-card {
+    animation: glitch-translate 0.18s steps(2, end) infinite;
+}
+
+body.is-glitching .ui-toggle,
+body.is-glitching .roll-button {
+    box-shadow: 0 0 18px rgba(255, 100, 246, 0.32);
+}
+
+body.is-glitching .resource-card {
+    box-shadow: 0 0 22px rgba(255, 100, 246, 0.22);
+}
+
+body.is-glitching .brand__title,
+body.is-glitching .panel__title,
+body.is-glitching .results__tip-label,
+body.is-glitching .results__mythic-label {
+    animation: glitch-chroma 0.42s steps(2, end) infinite;
+}
+
+body.is-glitching .results__viewport {
+    animation: glitch-flicker 0.22s steps(2, end) infinite;
+}
+
 .ui-backdrop {
     position: fixed;
     inset: 0;
@@ -70,6 +199,8 @@ body {
     display: flex;
     flex-direction: column;
     gap: clamp(16px, 2vw, 24px);
+    position: relative;
+    z-index: 1;
 }
 
 .panel {
@@ -164,6 +295,116 @@ body {
     letter-spacing: 0.22em;
     text-transform: uppercase;
     color: var(--text-secondary);
+}
+
+@keyframes glitch-panel {
+    0% {
+        transform: translate3d(0, 0, 0);
+    }
+    20% {
+        transform: translate3d(-2px, 1px, 0) skewX(0.6deg);
+    }
+    40% {
+        transform: translate3d(3px, -2px, 0) skewX(-0.6deg);
+    }
+    60% {
+        transform: translate3d(-1px, 2px, 0) skewY(0.4deg);
+    }
+    80% {
+        transform: translate3d(2px, -1px, 0) skewX(0.3deg);
+    }
+    100% {
+        transform: translate3d(0, 0, 0);
+    }
+}
+
+@keyframes glitch-translate {
+    0% {
+        transform: translate3d(0, 0, 0);
+    }
+    25% {
+        transform: translate3d(-3px, 2px, 0);
+    }
+    50% {
+        transform: translate3d(3px, -2px, 0);
+    }
+    75% {
+        transform: translate3d(-2px, -2px, 0);
+    }
+    100% {
+        transform: translate3d(0, 0, 0);
+    }
+}
+
+@keyframes glitch-flicker {
+    0%, 100% {
+        opacity: 1;
+    }
+    40% {
+        opacity: 0.35;
+    }
+    55% {
+        opacity: 0.85;
+    }
+    70% {
+        opacity: 0.45;
+    }
+}
+
+@keyframes glitch-chroma {
+    0%, 100% {
+        text-shadow: 0 0 0 rgba(255, 0, 170, 0), 0 0 0 rgba(0, 255, 255, 0);
+    }
+    33% {
+        text-shadow: -2px 0 rgba(255, 0, 170, 0.8), 2px 0 rgba(0, 255, 255, 0.8);
+    }
+    66% {
+        text-shadow: 2px 0 rgba(255, 0, 170, 0.7), -2px 0 rgba(0, 255, 255, 0.7);
+    }
+}
+
+@keyframes glitch-noise {
+    0% {
+        background-position: 0 0, 0 0, 0 0;
+    }
+    20% {
+        background-position: 12px -6px, -8px 10px, 0 0;
+    }
+    40% {
+        background-position: -6px 12px, 6px -12px, 0 0;
+    }
+    60% {
+        background-position: 10px 6px, -10px -6px, 0 0;
+    }
+    80% {
+        background-position: -12px -8px, 12px 8px, 0 0;
+    }
+    100% {
+        background-position: 0 0, 0 0, 0 0;
+    }
+}
+
+@keyframes glitch-outline {
+    0% {
+        opacity: 0.25;
+        transform: translate3d(0, 0, 0);
+    }
+    30% {
+        opacity: 0.6;
+        transform: translate3d(-4px, 3px, 0);
+    }
+    55% {
+        opacity: 0.35;
+        transform: translate3d(3px, -3px, 0);
+    }
+    75% {
+        opacity: 0.7;
+        transform: translate3d(-3px, -2px, 0);
+    }
+    100% {
+        opacity: 0.25;
+        transform: translate3d(0, 0, 0);
+    }
 }
 
 .header__controls {
