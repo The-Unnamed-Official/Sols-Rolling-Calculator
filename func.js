@@ -417,9 +417,9 @@ const glitchUiState = {
 };
 let glitchPresentationEnabled = false;
 
-const GLITCH_BASE_FILTER_FREQUENCY = 420;
-const GLITCH_BASE_FILTER_Q = 0.85;
-const GLITCH_BASE_GAIN = 0.68;
+const GLITCH_BASE_FILTER_FREQUENCY = 720;
+const GLITCH_BASE_FILTER_Q = 0.65;
+const GLITCH_BASE_GAIN = 0.48;
 const GLITCH_BASE_DISTORTION = 520;
 const GLITCH_WARBLE_RATE_MIN = 0.78;
 const GLITCH_WARBLE_RATE_MAX = 0.9;
