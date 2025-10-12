@@ -1588,7 +1588,7 @@ select.field__input option {
     color: #ff004c;
     animation: aura-pixelation-rgb 0.75s linear infinite, aura-pixelation-sway 1.1s ease-in-out infinite;
     font-family: "Press Start 2P", "Sarpanch", sans-serif;
-    font-size: 0.95em;
+    font-size: 0.65em;
     letter-spacing: 0.12em;
     text-transform: uppercase;
     -webkit-font-smoothing: none;
