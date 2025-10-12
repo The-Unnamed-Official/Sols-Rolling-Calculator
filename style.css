@@ -1642,21 +1642,9 @@ select.field__input option {
     letter-spacing: 0.3em;
     text-transform: uppercase;
     padding: 0.28em 0.9em;
-    --equinox-color-a: #f7f7f7;
-    --equinox-color-b: #050505;
-    color: transparent;
-    background-image: linear-gradient(
-        180deg,
-        var(--equinox-color-a) 0 50%,
-        var(--equinox-color-b) 50% 100%
-    );
-    background-size: 100% 200%;
-    background-position: 50% 0%;
-    background-repeat: no-repeat;
-    -webkit-background-clip: text;
-    background-clip: text;
+    color: #ffffff;
     text-shadow:
-        0 1px 0 rgba(255, 255, 255, 0.9),
+        0 1px 0 rgba(99, 99, 99, 0.9),
         0 6px 18px rgba(12, 21, 43, 0.58),
         0 18px 38px rgba(0, 0, 0, 0.4);
     filter: drop-shadow(0 5px 18px rgba(8, 15, 34, 0.72));
@@ -1664,7 +1652,7 @@ select.field__input option {
     animation:
         aura-equinox-beat calc(60s / 180) linear infinite,
         aura-equinox-chroma calc(120s / 180) steps(2, jump-end) infinite;
-    will-change: transform, background-position;
+    will-change: transform, color;
 }
 
 .aura-effect-equinox::before,
@@ -1673,13 +1661,7 @@ select.field__input option {
     font-weight: 700;
     font-style: normal;
     letter-spacing: 0;
-    color: transparent;
-    background-image: inherit;
-    background-size: inherit;
-    background-position: inherit;
-    background-repeat: inherit;
-    -webkit-background-clip: text;
-    background-clip: text;
+    color: currentColor;
     text-shadow:
         0 1px 0 rgba(255, 255, 255, 0.8),
         0 5px 12px rgba(12, 21, 43, 0.48);
@@ -1726,11 +1708,11 @@ select.field__input option {
 @keyframes aura-equinox-chroma {
     0%,
     49.999% {
-        background-position: 50% 0%;
+        color: #f7f7f7;
     }
     50%,
     100% {
-        background-position: 50% 100%;
+        color: #050505;
     }
 }
 
