@@ -417,20 +417,20 @@ const glitchUiState = {
 };
 let glitchPresentationEnabled = false;
 
-const GLITCH_BASE_FILTER_FREQUENCY = 2200;
-const GLITCH_BASE_FILTER_Q = 0.55;
-const GLITCH_BASE_GAIN = 0.48;
-const GLITCH_BASE_DISTORTION = 420;
-const GLITCH_BASE_HIGHPASS_FREQUENCY = 260;
-const GLITCH_BASE_HIGHPASS_Q = 0.85;
-const GLITCH_IDLE_HIGHPASS_FREQUENCY = 32;
-const GLITCH_IDLE_HIGHPASS_Q = 0.5;
+const GLITCH_BASE_FILTER_FREQUENCY = 2400;
+const GLITCH_BASE_FILTER_Q = 0.5;
+const GLITCH_BASE_GAIN = 0.32;
+const GLITCH_BASE_DISTORTION = 360;
+const GLITCH_BASE_HIGHPASS_FREQUENCY = 480;
+const GLITCH_BASE_HIGHPASS_Q = 0.65;
+const GLITCH_IDLE_HIGHPASS_FREQUENCY = 140;
+const GLITCH_IDLE_HIGHPASS_Q = 0.6;
 const GLITCH_WARBLE_RATE_MIN = 0.78;
 const GLITCH_WARBLE_RATE_MAX = 0.9;
 const GLITCH_WARBLE_REST_MIN = 1600;
 const GLITCH_WARBLE_REST_MAX = 3200;
-const GLITCH_RUIN_MIN_FREQUENCY = 160;
-const GLITCH_RUIN_MAX_DISTORTION = 720;
+const GLITCH_RUIN_MIN_FREQUENCY = 360;
+const GLITCH_RUIN_MAX_DISTORTION = 660;
 
 function clearGlitchAudioRuinTimer() {
     if (glitchAudioState.ruinTimeoutId !== null && typeof window !== 'undefined') {
@@ -474,12 +474,12 @@ function scheduleGlitchBaseWarble(bgMusic, chain) {
 
         const baseGain = chain?.baseGain ?? getBgMusicBaseVolume(bgMusic);
         if (context && chain?.gainNode?.gain && typeof chain.gainNode.gain.setTargetAtTime === 'function') {
-            const warpedGain = Math.max(0, Math.min(1, baseGain * randomFloat(0.55, 0.85)));
+            const warpedGain = Math.max(0, Math.min(1, baseGain * randomFloat(0.45, 0.7)));
             chain.gainNode.gain.setTargetAtTime(warpedGain, context.currentTime, 0.6);
         }
 
         if (context && chain?.highpass?.frequency && typeof chain.highpass.frequency.setTargetAtTime === 'function') {
-            const warpedHighpass = Math.max(0, GLITCH_BASE_HIGHPASS_FREQUENCY * randomFloat(0.9, 1.22));
+            const warpedHighpass = Math.max(0, GLITCH_BASE_HIGHPASS_FREQUENCY * randomFloat(1.05, 1.4));
             chain.highpass.frequency.setTargetAtTime(warpedHighpass, context.currentTime, 0.6);
         }
 
@@ -737,10 +737,10 @@ function applyGlitchAudioBurst() {
             console.warn('Unable to modify playback rate for glitch ruin', error);
         }
 
-        const frequency = randomFloat(GLITCH_RUIN_MIN_FREQUENCY, 2400);
-        const q = randomFloat(1.8, 11);
-        const gain = Math.max(0, Math.min(1, baseGain * randomFloat(0.3, 1.05)));
-        const distortionAmount = Random(280, GLITCH_RUIN_MAX_DISTORTION);
+        const frequency = randomFloat(GLITCH_RUIN_MIN_FREQUENCY, 2600);
+        const q = randomFloat(1.4, 9);
+        const gain = Math.max(0, Math.min(1, baseGain * randomFloat(0.25, 0.7)));
+        const distortionAmount = Random(240, GLITCH_RUIN_MAX_DISTORTION);
         const filterTypes = ['bandpass', 'highpass', 'notch'];
         const selectedType = filterTypes[Math.floor(Math.random() * filterTypes.length)] || 'bandpass';
 
