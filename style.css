@@ -182,6 +182,7 @@ body.is-glitching .results__viewport {
     background-repeat: no-repeat;
     background-size: 100% 100%;
     background-attachment: fixed;
+    overflow: hidden;
     z-index: -2;
 }
 
@@ -192,6 +193,8 @@ body.is-glitching .results__viewport {
                 radial-gradient(circle at 80% 15%, rgba(18, 42, 110, 0.22), transparent 28%),
                 linear-gradient(135deg, rgba(2, 6, 16, 0.42), rgba(1, 4, 12, 0.5));
     backdrop-filter: blur(5px);
+    pointer-events: none;
+    z-index: 1;
 }
 
 .ui-shell {
