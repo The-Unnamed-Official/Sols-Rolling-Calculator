@@ -1644,7 +1644,7 @@ select.field__input option {
     padding: 0.28em 0.9em;
     color: #ffffff;
     text-shadow:
-        0 1px 0 rgba(255, 255, 255, 0.9),
+        0 1px 0 rgba(99, 99, 99, 0.9),
         0 6px 18px rgba(12, 21, 43, 0.58),
         0 18px 38px rgba(0, 0, 0, 0.4);
     filter: drop-shadow(0 5px 18px rgba(8, 15, 34, 0.72));
@@ -1671,12 +1671,20 @@ select.field__input option {
     content: '『';
     margin-right: 0.2em;
     transform: skewX(5deg) translateY(-0.06em);
+    text-shadow:
+        0 1px 0 rgba(99, 99, 99, 0.9),
+        0 6px 18px rgba(12, 21, 43, 0.58),
+        0 18px 38px rgba(0, 0, 0, 0.4);
 }
 
 .aura-effect-equinox::after {
     content: '』';
     margin-left: 0.2em;
     transform: skewX(-5deg) translateY(-0.06em);
+    text-shadow:
+        0 1px 0 rgba(99, 99, 99, 0.9),
+        0 6px 18px rgba(12, 21, 43, 0.58),
+        0 18px 38px rgba(0, 0, 0, 0.4);
 }
 
 @keyframes aura-equinox-beat {
