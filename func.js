@@ -425,9 +425,6 @@ const GLITCH_WARBLE_RATE_MIN = 0.78;
 const GLITCH_WARBLE_RATE_MAX = 0.9;
 const GLITCH_WARBLE_REST_MIN = 1600;
 const GLITCH_WARBLE_REST_MAX = 3200;
-const GLITCH_BURST_TRIGGER_INTERVAL = 125; // 1/8 second between burst triggers
-const GLITCH_BURST_MIN_DURATION = 1000;
-const GLITCH_BURST_MAX_DURATION = 2000;
 
 function clearGlitchAudioRuinTimer() {
     if (glitchAudioState.ruinTimeoutId !== null && typeof window !== 'undefined') {
@@ -822,31 +819,29 @@ function runGlitchBurst() {
     const body = document.body;
     const root = document.documentElement;
     if (!body || !root) return;
-    if (glitchUiState.activeTimeoutId !== null) {
-        scheduleGlitchBurst(GLITCH_BURST_TRIGGER_INTERVAL);
-        return;
-    }
 
     body.classList.add('is-glitching');
     root.classList.add('is-glitching');
     applyGlitchAudioBurst();
 
     if (typeof window === 'undefined') return;
-    const activeDuration = Random(GLITCH_BURST_MIN_DURATION, GLITCH_BURST_MAX_DURATION);
+    if (glitchUiState.activeTimeoutId !== null) {
+        window.clearTimeout(glitchUiState.activeTimeoutId);
+    }
     glitchUiState.activeTimeoutId = window.setTimeout(() => {
         body.classList.remove('is-glitching');
         root.classList.remove('is-glitching');
         glitchUiState.activeTimeoutId = null;
         finishGlitchAudioBurst();
         if (glitchPresentationEnabled) {
-            scheduleGlitchBurst(GLITCH_BURST_TRIGGER_INTERVAL);
+            scheduleGlitchBurst(Random(1800, 4200));
         }
-    }, activeDuration);
+    }, Random(320, 980));
 }
 
 function startGlitchLoop(forceImmediate = false) {
     if (!glitchPresentationEnabled || typeof window === 'undefined') return;
-    const initialDelay = forceImmediate ? 0 : GLITCH_BURST_TRIGGER_INTERVAL;
+    const initialDelay = forceImmediate ? Random(120, 420) : Random(600, 1800);
     scheduleGlitchBurst(initialDelay);
 }
 
@@ -855,7 +850,7 @@ function ensureGlitchLoopScheduled() {
     const body = document.body;
     if (!body) return;
     if (glitchUiState.loopTimeoutId === null && !body.classList.contains('is-glitching')) {
-        scheduleGlitchBurst(GLITCH_BURST_TRIGGER_INTERVAL);
+        scheduleGlitchBurst(Random(1800, 4200));
     }
 }
 
