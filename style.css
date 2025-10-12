@@ -183,6 +183,25 @@ body.is-glitching .results__viewport {
     background-size: 100% 100%;
     background-attachment: fixed;
     z-index: -2;
+    overflow: hidden;
+}
+
+.ui-backdrop__video {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.6s ease;
+    pointer-events: none;
+    z-index: 0;
+}
+
+.ui-backdrop--video-active .ui-backdrop__video {
+    opacity: 1;
+    visibility: visible;
 }
 
 .ui-backdrop__veil {
@@ -192,6 +211,7 @@ body.is-glitching .results__viewport {
                 radial-gradient(circle at 80% 15%, rgba(18, 42, 110, 0.22), transparent 28%),
                 linear-gradient(135deg, rgba(2, 6, 16, 0.42), rgba(1, 4, 12, 0.5));
     backdrop-filter: blur(5px);
+    z-index: 1;
 }
 
 .ui-shell {
