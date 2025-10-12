@@ -115,21 +115,25 @@ body.biome--glitch .resource-card {
 
 body.is-glitching::before,
 body.is-glitching::after {
-    opacity: 0.36;
-    animation: glitch-noise 0.6s steps(3, end) infinite;
+    opacity: 0.52;
+    animation: glitch-noise 0.46s steps(4, end) infinite;
+    filter: saturate(1.4) contrast(1.18);
 }
 
 body.is-glitching .ui-backdrop__veil {
-    animation-duration: 2.4s;
+    animation-duration: 1.6s;
+    filter: hue-rotate(18deg) saturate(1.65) blur(2px);
 }
 
 body.is-glitching .panel {
-    animation: glitch-panel 0.24s steps(2, end) infinite;
-    filter: saturate(1.35) contrast(1.08);
+    animation: glitch-panel 0.18s steps(3, end) infinite;
+    filter: saturate(1.6) contrast(1.22) brightness(1.05);
+    box-shadow: 0 0 24px rgba(255, 100, 246, 0.32), 0 18px 42px rgba(18, 0, 34, 0.7);
 }
 
 body.is-glitching .panel::after {
-    animation: glitch-flicker 0.24s steps(2, end) infinite;
+    animation: glitch-flicker 0.18s steps(3, end) infinite;
+    mix-blend-mode: screen;
 }
 
 body.is-glitching .ui-shell::after {
@@ -139,7 +143,8 @@ body.is-glitching .ui-shell::after {
     border: 2px solid rgba(255, 100, 246, 0.38);
     pointer-events: none;
     mix-blend-mode: screen;
-    animation: glitch-outline 0.22s steps(2, end) infinite;
+    animation: glitch-outline 0.16s steps(3, end) infinite;
+    box-shadow: 0 0 36px rgba(255, 100, 246, 0.28);
 }
 
 body.is-glitching .ui-toggle,
@@ -150,27 +155,30 @@ body.is-glitching .ui-select__option-button,
 body.is-glitching .switch__track,
 body.is-glitching .switch__thumb,
 body.is-glitching .resource-card {
-    animation: glitch-translate 0.18s steps(2, end) infinite;
+    animation: glitch-translate 0.16s steps(3, end) infinite;
+    filter: hue-rotate(-12deg) saturate(1.4);
 }
 
 body.is-glitching .ui-toggle,
 body.is-glitching .roll-button {
-    box-shadow: 0 0 18px rgba(255, 100, 246, 0.32);
+    box-shadow: 0 0 28px rgba(255, 100, 246, 0.38);
 }
 
 body.is-glitching .resource-card {
-    box-shadow: 0 0 22px rgba(255, 100, 246, 0.22);
+    box-shadow: 0 0 32px rgba(255, 100, 246, 0.28);
+    transform: perspective(500px) translateZ(6px);
 }
 
 body.is-glitching .brand__title,
 body.is-glitching .panel__title,
 body.is-glitching .results__tip-label,
 body.is-glitching .results__mythic-label {
-    animation: glitch-chroma 0.42s steps(2, end) infinite;
+    animation: glitch-chroma 0.32s steps(3, end) infinite;
 }
 
 body.is-glitching .results__viewport {
-    animation: glitch-flicker 0.22s steps(2, end) infinite;
+    animation: glitch-flicker 0.18s steps(3, end) infinite;
+    filter: saturate(1.5) blur(0.6px);
 }
 
 .ui-backdrop {
@@ -322,16 +330,16 @@ body.is-glitching .results__viewport {
         transform: translate3d(0, 0, 0);
     }
     20% {
-        transform: translate3d(-2px, 1px, 0) skewX(0.6deg);
+        transform: translate3d(-6px, 3px, 0) skewX(1.6deg) skewY(-0.4deg) scale(1.01);
     }
     40% {
-        transform: translate3d(3px, -2px, 0) skewX(-0.6deg);
+        transform: translate3d(6px, -4px, 0) skewX(-1.4deg) rotate(0.25deg);
     }
     60% {
-        transform: translate3d(-1px, 2px, 0) skewY(0.4deg);
+        transform: translate3d(-4px, 5px, 0) skewY(1deg) scale(1.015);
     }
     80% {
-        transform: translate3d(2px, -1px, 0) skewX(0.3deg);
+        transform: translate3d(5px, -3px, 0) skewX(1.2deg) rotate(-0.35deg);
     }
     100% {
         transform: translate3d(0, 0, 0);
@@ -343,13 +351,13 @@ body.is-glitching .results__viewport {
         transform: translate3d(0, 0, 0);
     }
     25% {
-        transform: translate3d(-3px, 2px, 0);
+        transform: translate3d(-6px, 4px, 0);
     }
     50% {
-        transform: translate3d(3px, -2px, 0);
+        transform: translate3d(6px, -4px, 0);
     }
     75% {
-        transform: translate3d(-2px, -2px, 0);
+        transform: translate3d(-4px, -5px, 0) skewX(1deg);
     }
     100% {
         transform: translate3d(0, 0, 0);
@@ -361,13 +369,13 @@ body.is-glitching .results__viewport {
         opacity: 1;
     }
     40% {
-        opacity: 0.35;
+        opacity: 0.18;
     }
     55% {
-        opacity: 0.85;
+        opacity: 0.95;
     }
     70% {
-        opacity: 0.45;
+        opacity: 0.28;
     }
 }
 
@@ -376,10 +384,10 @@ body.is-glitching .results__viewport {
         text-shadow: 0 0 0 rgba(255, 0, 170, 0), 0 0 0 rgba(0, 255, 255, 0);
     }
     33% {
-        text-shadow: -2px 0 rgba(255, 0, 170, 0.8), 2px 0 rgba(0, 255, 255, 0.8);
+        text-shadow: -4px 0 rgba(255, 0, 170, 0.9), 4px 0 rgba(0, 255, 255, 0.9);
     }
     66% {
-        text-shadow: 2px 0 rgba(255, 0, 170, 0.7), -2px 0 rgba(0, 255, 255, 0.7);
+        text-shadow: 4px 0 rgba(255, 0, 170, 0.85), -4px 0 rgba(0, 255, 255, 0.85);
     }
 }
 
@@ -388,16 +396,16 @@ body.is-glitching .results__viewport {
         background-position: 0 0, 0 0, 0 0;
     }
     20% {
-        background-position: 12px -6px, -8px 10px, 0 0;
+        background-position: 24px -14px, -18px 16px, 0 0;
     }
     40% {
-        background-position: -6px 12px, 6px -12px, 0 0;
+        background-position: -18px 22px, 16px -26px, 0 0;
     }
     60% {
-        background-position: 10px 6px, -10px -6px, 0 0;
+        background-position: 22px 12px, -22px -16px, 0 0;
     }
     80% {
-        background-position: -12px -8px, 12px 8px, 0 0;
+        background-position: -26px -18px, 26px 18px, 0 0;
     }
     100% {
         background-position: 0 0, 0 0, 0 0;
@@ -410,16 +418,16 @@ body.is-glitching .results__viewport {
         transform: translate3d(0, 0, 0);
     }
     30% {
-        opacity: 0.6;
-        transform: translate3d(-4px, 3px, 0);
+        opacity: 0.75;
+        transform: translate3d(-8px, 6px, 0) skewX(1.2deg);
     }
     55% {
-        opacity: 0.35;
-        transform: translate3d(3px, -3px, 0);
+        opacity: 0.5;
+        transform: translate3d(6px, -6px, 0) skewY(-1deg);
     }
     75% {
-        opacity: 0.7;
-        transform: translate3d(-3px, -2px, 0);
+        opacity: 0.85;
+        transform: translate3d(-6px, -4px, 0) rotate(0.4deg);
     }
     100% {
         opacity: 0.25;
