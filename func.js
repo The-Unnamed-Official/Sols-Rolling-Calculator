@@ -32,6 +32,7 @@ const audioBufferCache = new Map();
 const audioBufferPromises = new Map();
 const mediaElementGainMap = new WeakMap();
 let audioContextInstance = null;
+let cachedNoiseBuffer = null;
 
 function ensureAudioContext() {
     if (typeof window === 'undefined') return null;
@@ -425,6 +426,9 @@ const GLITCH_WARBLE_RATE_MIN = 0.78;
 const GLITCH_WARBLE_RATE_MAX = 0.9;
 const GLITCH_WARBLE_REST_MIN = 1600;
 const GLITCH_WARBLE_REST_MAX = 3200;
+const GLITCH_BURST_TRIGGER_INTERVAL = 125; // 1/8 second between burst triggers
+const GLITCH_BURST_MIN_DURATION = 1000;
+const GLITCH_BURST_MAX_DURATION = 2000;
 
 function clearGlitchAudioRuinTimer() {
     if (glitchAudioState.ruinTimeoutId !== null && typeof window !== 'undefined') {
@@ -498,6 +502,42 @@ function createDistortionCurve(amount = 0) {
     return curve;
 }
 
+function createBitcrusherCurve(bits = 16, mix = 1, jitter = 0) {
+    const sampleCount = 65536;
+    const curve = new Float32Array(sampleCount);
+    const resolvedBits = Math.max(1, Math.min(16, Math.floor(bits)));
+    const steps = Math.max(1, (1 << resolvedBits) - 1);
+    const clampedMix = Math.max(0, Math.min(1, mix));
+    const clampedJitter = Math.max(0, Math.min(1, jitter));
+
+    for (let i = 0; i < sampleCount; i++) {
+        const x = i / (sampleCount - 1) * 2 - 1;
+        const normalized = (x + 1) * 0.5;
+        const quantised = Math.round(normalized * steps) / steps;
+        let crushed = quantised * 2 - 1;
+        if (clampedJitter > 0) {
+            crushed += (Math.random() * 2 - 1) * clampedJitter;
+        }
+        curve[i] = clampedMix * crushed + (1 - clampedMix) * x;
+    }
+
+    return curve;
+}
+
+function getOrCreateNoiseBuffer(context) {
+    if (cachedNoiseBuffer && cachedNoiseBuffer.sampleRate === context.sampleRate) {
+        return cachedNoiseBuffer;
+    }
+
+    const buffer = context.createBuffer(1, Math.max(1, Math.floor(context.sampleRate)), context.sampleRate);
+    const data = buffer.getChannelData(0);
+    for (let i = 0; i < data.length; i++) {
+        data[i] = Math.random() * 2 - 1;
+    }
+    cachedNoiseBuffer = buffer;
+    return cachedNoiseBuffer;
+}
+
 function ensureGlitchAudioChain(audioElement) {
     if (!audioElement) return null;
     const context = ensureAudioContext();
@@ -512,6 +552,17 @@ function ensureGlitchAudioChain(audioElement) {
         return null;
     }
     if (chain && chain.context === context) {
+        if (!chain.crusher || !chain.noiseGain || !chain.noiseSource) {
+            try {
+                if (chain.source && typeof chain.source.disconnect === 'function') {
+                    chain.source.disconnect();
+                }
+            } catch (error) {
+                console.warn('Unable to disconnect legacy glitch chain', error);
+            }
+            glitchAudioChainMap.delete(audioElement);
+            return ensureGlitchAudioChain(audioElement);
+        }
         chain.baseGain = baseVolume;
         chain.originalFilterType = chain.originalFilterType || chain.filter.type;
         if (chain.gainNode && chain.gainNode.gain) {
@@ -539,10 +590,27 @@ function ensureGlitchAudioChain(audioElement) {
         const neutralCurve = createDistortionCurve(0);
         waveshaper.curve = neutralCurve;
 
+        const crusher = context.createWaveShaper();
+        const neutralCrusherCurve = createBitcrusherCurve(16, 0);
+        crusher.curve = neutralCrusherCurve;
+
         const gainNode = context.createGain();
         gainNode.gain.value = baseVolume;
 
-        source.connect(filter).connect(waveshaper).connect(gainNode).connect(context.destination);
+        const noiseGain = context.createGain();
+        noiseGain.gain.value = 0;
+
+        const noiseSource = context.createBufferSource();
+        noiseSource.buffer = getOrCreateNoiseBuffer(context);
+        noiseSource.loop = true;
+        try {
+            noiseSource.start();
+        } catch (error) {
+            console.warn('Unable to start glitch noise source', error);
+        }
+
+        source.connect(filter).connect(waveshaper).connect(crusher).connect(gainNode).connect(context.destination);
+        noiseSource.connect(noiseGain).connect(gainNode);
 
         audioElement.volume = 1;
         chain = {
@@ -550,8 +618,12 @@ function ensureGlitchAudioChain(audioElement) {
             source,
             filter,
             waveshaper,
+            crusher,
             gainNode,
             neutralCurve,
+            neutralCrusherCurve,
+            noiseGain,
+            noiseSource,
             baseGain: baseVolume,
             originalFilterType: filter.type
         };
@@ -608,15 +680,24 @@ function updateGlitchAudioEffect(enabled) {
         }
 
         if (context.state === 'running') {
-            chain.filter.frequency.setTargetAtTime(GLITCH_BASE_FILTER_FREQUENCY, context.currentTime, 0.25);
-            chain.filter.Q.setTargetAtTime(GLITCH_BASE_FILTER_Q, context.currentTime, 0.25);
-            chain.gainNode.gain.setTargetAtTime(baseGain * GLITCH_BASE_GAIN, context.currentTime, 0.25);
-        } else {
-            chain.filter.frequency.value = GLITCH_BASE_FILTER_FREQUENCY;
-            chain.filter.Q.value = GLITCH_BASE_FILTER_Q;
-            chain.gainNode.gain.value = baseGain * GLITCH_BASE_GAIN;
+        chain.filter.frequency.setTargetAtTime(GLITCH_BASE_FILTER_FREQUENCY, context.currentTime, 0.25);
+        chain.filter.Q.setTargetAtTime(GLITCH_BASE_FILTER_Q, context.currentTime, 0.25);
+        chain.gainNode.gain.setTargetAtTime(baseGain * GLITCH_BASE_GAIN, context.currentTime, 0.25);
+        if (chain.noiseGain) {
+            chain.noiseGain.gain.setTargetAtTime(0, context.currentTime, 0.25);
         }
+    } else {
+        chain.filter.frequency.value = GLITCH_BASE_FILTER_FREQUENCY;
+        chain.filter.Q.value = GLITCH_BASE_FILTER_Q;
+        chain.gainNode.gain.value = baseGain * GLITCH_BASE_GAIN;
+        if (chain.noiseGain) {
+            chain.noiseGain.gain.value = 0;
+        }
+    }
         chain.waveshaper.curve = createDistortionCurve(GLITCH_BASE_DISTORTION);
+        if (chain.crusher) {
+            chain.crusher.curve = createBitcrusherCurve(8, 0.2, 0);
+        }
         if (chain.waveshaper) {
             chain.waveshaper.oversample = '4x';
         }
@@ -640,12 +721,21 @@ function updateGlitchAudioEffect(enabled) {
             chain.filter.frequency.setTargetAtTime(14000, context.currentTime, 0.4);
             chain.filter.Q.setTargetAtTime(0.4, context.currentTime, 0.4);
             chain.gainNode.gain.setTargetAtTime(baseGain, context.currentTime, 0.4);
+            if (chain.noiseGain) {
+                chain.noiseGain.gain.setTargetAtTime(0, context.currentTime, 0.2);
+            }
         } else {
             chain.filter.frequency.value = 14000;
             chain.filter.Q.value = 0.4;
             chain.gainNode.gain.value = baseGain;
+            if (chain.noiseGain) {
+                chain.noiseGain.gain.value = 0;
+            }
         }
         chain.waveshaper.curve = chain.neutralCurve || createDistortionCurve(0);
+        if (chain.crusher) {
+            chain.crusher.curve = chain.neutralCrusherCurve || createBitcrusherCurve(16, 0);
+        }
         if (chain.waveshaper) {
             chain.waveshaper.oversample = 'none';
         }
@@ -693,18 +783,18 @@ function applyGlitchAudioBurst() {
     const applyChaosPulse = () => {
         if (!glitchAudioState.isRuinActive) return;
 
-        const chaoticRate = randomFloat(0.32, 1.85);
+        const chaoticRate = randomFloat(0.12, 2.8);
         try {
             bgMusic.playbackRate = chaoticRate;
         } catch (error) {
             console.warn('Unable to modify playback rate for glitch ruin', error);
         }
 
-        const frequency = randomFloat(45, 2400);
-        const q = randomFloat(2.6, 14);
-        const gain = Math.max(0, Math.min(1.2, baseGain * randomFloat(0.22, 1.48)));
-        const distortionAmount = Random(360, 960);
-        const filterTypes = ['bandpass', 'highpass', 'notch'];
+        const frequency = randomFloat(25, 6400);
+        const q = randomFloat(0.8, 18);
+        const gain = Math.max(0, Math.min(1.4, baseGain * randomFloat(0.18, 1.76)));
+        const distortionAmount = Random(520, 1820);
+        const filterTypes = ['bandpass', 'highpass', 'notch', 'lowshelf', 'peaking'];
         const selectedType = filterTypes[Math.floor(Math.random() * filterTypes.length)] || 'bandpass';
 
         if (context.state === 'running') {
@@ -724,13 +814,37 @@ function applyGlitchAudioBurst() {
         }
 
         if (chain.filter?.detune && typeof chain.filter.detune.setTargetAtTime === 'function') {
-            const detune = randomFloat(-2400, 2400);
+            const detune = randomFloat(-3200, 3200);
             chain.filter.detune.setTargetAtTime(detune, context.currentTime, 0.05);
         }
 
-        chain.waveshaper.curve = createDistortionCurve(distortionAmount);
+        chain.waveshaper.curve = createDistortionCurve(distortionAmount * randomFloat(1.2, 2.4));
+        if (chain.crusher) {
+            const crushBits = Random(3, 6);
+            const crushMix = randomFloat(0.55, 1);
+            const crushJitter = randomFloat(0.02, 0.18);
+            chain.crusher.curve = createBitcrusherCurve(crushBits, crushMix, crushJitter);
+        }
         if (chain.waveshaper) {
             chain.waveshaper.oversample = Math.random() > 0.4 ? '4x' : '2x';
+        }
+
+        if (chain.noiseGain) {
+            const noiseLevel = randomFloat(0.08, 0.32);
+            if (context.state === 'running') {
+                chain.noiseGain.gain.setTargetAtTime(noiseLevel, context.currentTime, 0.02);
+            } else {
+                chain.noiseGain.gain.value = noiseLevel;
+            }
+        }
+
+        if (Math.random() < 0.18) {
+            const jitterAmount = randomFloat(-0.24, 0.24);
+            try {
+                bgMusic.playbackRate = Math.max(0.05, chaoticRate + jitterAmount);
+            } catch (error) {
+                console.warn('Unable to apply jittered playback rate', error);
+            }
         }
 
         if (typeof window !== 'undefined') {
@@ -792,8 +906,21 @@ function finishGlitchAudioBurst() {
     }
 
     chain.waveshaper.curve = glitchPresentationEnabled ? createDistortionCurve(GLITCH_BASE_DISTORTION) : (chain.neutralCurve || createDistortionCurve(0));
+    if (chain.crusher) {
+        chain.crusher.curve = glitchPresentationEnabled
+            ? createBitcrusherCurve(8, 0.18, 0)
+            : (chain.neutralCrusherCurve || createBitcrusherCurve(16, 0));
+    }
     if (chain.waveshaper) {
         chain.waveshaper.oversample = glitchPresentationEnabled ? '4x' : 'none';
+    }
+
+    if (chain.noiseGain) {
+        if (glitchPresentationEnabled) {
+            chain.noiseGain.gain.setTargetAtTime(0, context.currentTime, 0.25);
+        } else {
+            chain.noiseGain.gain.setTargetAtTime(0, context.currentTime, 0.2);
+        }
     }
 
     if (glitchPresentationEnabled) {
@@ -819,29 +946,31 @@ function runGlitchBurst() {
     const body = document.body;
     const root = document.documentElement;
     if (!body || !root) return;
+    if (glitchUiState.activeTimeoutId !== null) {
+        scheduleGlitchBurst(GLITCH_BURST_TRIGGER_INTERVAL);
+        return;
+    }
 
     body.classList.add('is-glitching');
     root.classList.add('is-glitching');
     applyGlitchAudioBurst();
 
     if (typeof window === 'undefined') return;
-    if (glitchUiState.activeTimeoutId !== null) {
-        window.clearTimeout(glitchUiState.activeTimeoutId);
-    }
+    const activeDuration = Random(GLITCH_BURST_MIN_DURATION, GLITCH_BURST_MAX_DURATION);
     glitchUiState.activeTimeoutId = window.setTimeout(() => {
         body.classList.remove('is-glitching');
         root.classList.remove('is-glitching');
         glitchUiState.activeTimeoutId = null;
         finishGlitchAudioBurst();
         if (glitchPresentationEnabled) {
-            scheduleGlitchBurst(Random(1800, 4200));
+            scheduleGlitchBurst(GLITCH_BURST_TRIGGER_INTERVAL);
         }
-    }, Random(320, 980));
+    }, activeDuration);
 }
 
 function startGlitchLoop(forceImmediate = false) {
     if (!glitchPresentationEnabled || typeof window === 'undefined') return;
-    const initialDelay = forceImmediate ? Random(120, 420) : Random(600, 1800);
+    const initialDelay = forceImmediate ? 0 : GLITCH_BURST_TRIGGER_INTERVAL;
     scheduleGlitchBurst(initialDelay);
 }
 
@@ -850,7 +979,7 @@ function ensureGlitchLoopScheduled() {
     const body = document.body;
     if (!body) return;
     if (glitchUiState.loopTimeoutId === null && !body.classList.contains('is-glitching')) {
-        scheduleGlitchBurst(Random(1800, 4200));
+        scheduleGlitchBurst(GLITCH_BURST_TRIGGER_INTERVAL);
     }
 }
 
