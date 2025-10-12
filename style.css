@@ -1630,6 +1630,7 @@ select.field__input option {
     100% { background-position: 0% 50%; }
 }
 
+
 .aura-effect-equinox {
     position: relative;
     display: inline-flex;
@@ -1641,22 +1642,29 @@ select.field__input option {
     letter-spacing: 0.3em;
     text-transform: uppercase;
     padding: 0.28em 0.9em;
-    color: transparent !important;
-    background-image: linear-gradient(184deg, #ffffff 0%, #f4f6ff 32%, #d5def5 52%, #a8b7d8 62%, #121f3b 100%);
-    background-size: 120% 320%;
+    --equinox-color-a: #f7f7f7;
+    --equinox-color-b: #050505;
+    color: transparent;
+    background-image: linear-gradient(
+        180deg,
+        var(--equinox-color-a) 0 50%,
+        var(--equinox-color-b) 50% 100%
+    );
+    background-size: 100% 200%;
     background-position: 50% 0%;
-    background-repeat: repeat-y;
+    background-repeat: no-repeat;
     -webkit-background-clip: text;
     background-clip: text;
     text-shadow:
-        0 1px 0 rgba(255, 255, 255, 0.92),
-        0 5px 14px rgba(12, 21, 43, 0.6),
-        0 16px 34px rgba(0, 0, 0, 0.45);
+        0 1px 0 rgba(255, 255, 255, 0.9),
+        0 6px 18px rgba(12, 21, 43, 0.58),
+        0 18px 38px rgba(0, 0, 0, 0.4);
     filter: drop-shadow(0 5px 18px rgba(8, 15, 34, 0.72));
-    transform: skewX(-6deg) scale(1);
+    transform: skewX(-6deg) scale3d(0.98, 0.98, 1);
     animation:
-        aura-equinox-gradient 4.4s ease-in-out infinite,
-        aura-equinox-glint 3.4s ease-in-out infinite;
+        aura-equinox-beat calc(60s / 180) linear infinite,
+        aura-equinox-chroma calc(120s / 180) steps(2, jump-end) infinite;
+    will-change: transform, background-position;
 }
 
 .aura-effect-equinox::before,
@@ -1665,10 +1673,16 @@ select.field__input option {
     font-weight: 700;
     font-style: normal;
     letter-spacing: 0;
-    color: rgba(247, 250, 255, 0.96);
+    color: transparent;
+    background-image: inherit;
+    background-size: inherit;
+    background-position: inherit;
+    background-repeat: inherit;
+    -webkit-background-clip: text;
+    background-clip: text;
     text-shadow:
-        0 1px 0 rgba(255, 255, 255, 0.82),
-        0 5px 12px rgba(12, 21, 43, 0.58);
+        0 1px 0 rgba(255, 255, 255, 0.8),
+        0 5px 12px rgba(12, 21, 43, 0.48);
 }
 
 .aura-effect-equinox::before {
@@ -1683,34 +1697,32 @@ select.field__input option {
     transform: skewX(-5deg) translateY(-0.06em);
 }
 
-@keyframes aura-equinox-gradient {
-    0%,
+@keyframes aura-equinox-beat {
+    0% {
+        transform: skewX(-6deg) scale3d(0.96, 0.96, 1);
+        animation-timing-function: cubic-bezier(0.26, 0.0, 0.42, 1);
+    }
+    18% {
+        transform: skewX(-6deg) scale3d(1.16, 1.16, 1);
+        animation-timing-function: cubic-bezier(0.55, 0.02, 0.44, 1);
+    }
+    46% {
+        transform: skewX(-6deg) scale3d(0.98, 0.98, 1);
+        animation-timing-function: cubic-bezier(0.25, 0.55, 0.38, 1);
+    }
     100% {
-        background-position: 50% 0%;
-    }
-    42% {
-        background-position: 50% 96%;
-    }
-    58% {
-        background-position: 50% 68%;
+        transform: skewX(-6deg) scale3d(1, 1, 1);
     }
 }
 
-@keyframes aura-equinox-glint {
+@keyframes aura-equinox-chroma {
     0%,
-    100% {
-        transform: skewX(-6deg) scale(1);
-        text-shadow:
-            0 1px 0 rgba(255, 255, 255, 0.92),
-            0 5px 14px rgba(12, 21, 43, 0.6),
-            0 16px 34px rgba(0, 0, 0, 0.45);
+    49.999% {
+        background-position: 50% 0%;
     }
-    50% {
-        transform: skewX(-6deg) scale(1.045);
-        text-shadow:
-            0 2px 4px rgba(255, 255, 255, 0.97),
-            0 7px 18px rgba(12, 21, 43, 0.68),
-            0 18px 38px rgba(0, 0, 0, 0.52);
+    50%,
+    100% {
+        background-position: 50% 100%;
     }
 }
 
