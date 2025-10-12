@@ -62,6 +62,34 @@ function resolveMediaSourceUrl(element) {
     }
 }
 
+function canUseMediaElementSource(element) {
+    if (!element || typeof window === 'undefined') return false;
+
+    const { location } = window;
+    if (!location) return false;
+
+    if (location.protocol === 'file:') {
+        return false;
+    }
+
+    const sourceUrl = resolveMediaSourceUrl(element);
+    if (!sourceUrl) return false;
+
+    try {
+        const parsed = new URL(sourceUrl);
+        if (parsed.protocol === 'data:' || parsed.protocol === 'blob:') {
+            return true;
+        }
+        if (parsed.origin === location.origin) {
+            return true;
+        }
+        const crossOrigin = element.getAttribute('crossorigin') ?? element.crossOrigin;
+        return crossOrigin === 'anonymous';
+    } catch (error) {
+        return false;
+    }
+}
+
 function configureMediaElementGain(element) {
     if (!element) return;
     const dataset = element.dataset || {};
@@ -71,7 +99,7 @@ function configureMediaElementGain(element) {
     let gainValue = Number.parseFloat(gainValueRaw);
     if (!Number.isFinite(gainValue) || gainValue <= 0) return;
 
-    const context = resumeAudioContext();
+    const context = canUseMediaElementSource(element) ? resumeAudioContext() : null;
     if (context) {
         try {
             let entry = mediaElementGainMap.get(element);
@@ -413,6 +441,12 @@ function ensureGlitchAudioChain(audioElement) {
 
     let chain = glitchAudioChainMap.get(audioElement);
     const baseVolume = getBgMusicBaseVolume(audioElement);
+
+    if (!canUseMediaElementSource(audioElement)) {
+        glitchAudioChainMap.delete(audioElement);
+        audioElement.volume = Math.max(0, Math.min(baseVolume, 1));
+        return null;
+    }
     if (chain && chain.context === context) {
         chain.baseGain = baseVolume;
         if (chain.gainNode && chain.gainNode.gain) {
