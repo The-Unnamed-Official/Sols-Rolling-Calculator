@@ -44,6 +44,143 @@ body {
     overflow-x: hidden;
 }
 
+body.biome--glitch {
+    --bg-base: #050010;
+    --panel-border: rgba(255, 100, 246, 0.52);
+    --panel-glow: rgba(255, 100, 246, 0.24);
+    --accent: #ff64f6;
+    --accent-strong: #ffd7ff;
+    --accent-soft: rgba(255, 100, 246, 0.18);
+    --accent-muted: rgba(255, 100, 246, 0.32);
+    --text-secondary: rgba(222, 206, 255, 0.78);
+    --text-tertiary: rgba(188, 180, 255, 0.54);
+}
+
+body.biome--glitch .ui-backdrop {
+    filter: hue-rotate(-18deg) saturate(1.35) contrast(1.08);
+}
+
+body.biome--glitch .ui-backdrop__veil {
+    opacity: 0.85;
+    mix-blend-mode: screen;
+    animation: glitch-noise 12s steps(2, end) infinite;
+}
+
+body.biome--glitch::before,
+body.biome--glitch::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    transition: opacity 0.4s ease;
+}
+
+body.biome--glitch::before {
+    background:
+        repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.04) 0 1px, transparent 1px 3px),
+        repeating-linear-gradient(90deg, rgba(255, 92, 231, 0.08) 0 2px, transparent 2px 6px);
+    mix-blend-mode: screen;
+    opacity: 0.22;
+}
+
+body.biome--glitch::after {
+    background:
+        radial-gradient(circle at 18% 18%, rgba(255, 92, 231, 0.22), transparent 48%),
+        radial-gradient(circle at 82% 24%, rgba(72, 214, 255, 0.2), transparent 50%);
+    mix-blend-mode: lighten;
+    opacity: 0.18;
+}
+
+body.biome--glitch .panel {
+    border-color: rgba(255, 100, 246, 0.45);
+    box-shadow: 0 28px 60px rgba(18, 0, 34, 0.68), 0 0 34px rgba(255, 100, 246, 0.18);
+}
+
+body.biome--glitch .panel::after {
+    background: radial-gradient(circle at 50% 0%, rgba(255, 100, 246, 0.12), transparent 44%),
+                linear-gradient(160deg, rgba(22, 6, 32, 0.96), rgba(6, 0, 14, 0.98));
+}
+
+body.biome--glitch .ui-toggle,
+body.biome--glitch .roll-button {
+    background-image: linear-gradient(92deg, rgba(38, 0, 64, 0.9), rgba(10, 0, 24, 0.92));
+    border-color: rgba(255, 100, 246, 0.42);
+    color: #fff;
+}
+
+body.biome--glitch .resource-card {
+    box-shadow: 0 10px 24px rgba(20, 0, 40, 0.55);
+}
+
+body.is-glitching::before,
+body.is-glitching::after {
+    opacity: 0.52;
+    animation: glitch-noise 0.46s steps(4, end) infinite;
+    filter: saturate(1.4) contrast(1.18);
+}
+
+body.is-glitching .ui-backdrop__veil {
+    animation-duration: 1.6s;
+    filter: hue-rotate(18deg) saturate(1.65) blur(2px);
+}
+
+body.is-glitching .panel {
+    animation: glitch-panel 0.18s steps(3, end) infinite;
+    filter: saturate(1.6) contrast(1.22) brightness(1.05);
+    box-shadow: 0 0 24px rgba(255, 100, 246, 0.32), 0 18px 42px rgba(18, 0, 34, 0.7);
+}
+
+body.is-glitching .panel::after {
+    animation: glitch-flicker 0.18s steps(3, end) infinite;
+    mix-blend-mode: screen;
+}
+
+body.is-glitching .ui-shell::after {
+    content: '';
+    position: absolute;
+    inset: -6px;
+    border: 2px solid rgba(255, 100, 246, 0.38);
+    pointer-events: none;
+    mix-blend-mode: screen;
+    animation: glitch-outline 0.16s steps(3, end) infinite;
+    box-shadow: 0 0 36px rgba(255, 100, 246, 0.28);
+}
+
+body.is-glitching .ui-toggle,
+body.is-glitching .roll-button,
+body.is-glitching .field__input,
+body.is-glitching .ui-select__summary,
+body.is-glitching .ui-select__option-button,
+body.is-glitching .switch__track,
+body.is-glitching .switch__thumb,
+body.is-glitching .resource-card {
+    animation: glitch-translate 0.16s steps(3, end) infinite;
+    filter: hue-rotate(-12deg) saturate(1.4);
+}
+
+body.is-glitching .ui-toggle,
+body.is-glitching .roll-button {
+    box-shadow: 0 0 28px rgba(255, 100, 246, 0.38);
+}
+
+body.is-glitching .resource-card {
+    box-shadow: 0 0 32px rgba(255, 100, 246, 0.28);
+    transform: perspective(500px) translateZ(6px);
+}
+
+body.is-glitching .brand__title,
+body.is-glitching .panel__title,
+body.is-glitching .results__tip-label,
+body.is-glitching .results__mythic-label {
+    animation: glitch-chroma 0.32s steps(3, end) infinite;
+}
+
+body.is-glitching .results__viewport {
+    animation: glitch-flicker 0.18s steps(3, end) infinite;
+    filter: saturate(1.5) blur(0.6px);
+}
+
 .ui-backdrop {
     position: fixed;
     inset: 0;
@@ -54,6 +191,25 @@ body {
     background-size: 100% 100%;
     background-attachment: fixed;
     z-index: -2;
+    overflow: hidden;
+}
+
+.ui-backdrop__video {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.6s ease;
+    pointer-events: none;
+    z-index: 0;
+}
+
+.ui-backdrop--video-active .ui-backdrop__video {
+    opacity: 1;
+    visibility: visible;
 }
 
 .ui-backdrop__veil {
@@ -63,6 +219,7 @@ body {
                 radial-gradient(circle at 80% 15%, rgba(18, 42, 110, 0.22), transparent 28%),
                 linear-gradient(135deg, rgba(2, 6, 16, 0.42), rgba(1, 4, 12, 0.5));
     backdrop-filter: blur(5px);
+    z-index: 1;
 }
 
 .ui-shell {
@@ -70,6 +227,8 @@ body {
     display: flex;
     flex-direction: column;
     gap: clamp(16px, 2vw, 24px);
+    position: relative;
+    z-index: 1;
 }
 
 .panel {
@@ -164,6 +323,116 @@ body {
     letter-spacing: 0.22em;
     text-transform: uppercase;
     color: var(--text-secondary);
+}
+
+@keyframes glitch-panel {
+    0% {
+        transform: translate3d(0, 0, 0);
+    }
+    20% {
+        transform: translate3d(-6px, 3px, 0) skewX(1.6deg) skewY(-0.4deg) scale(1.01);
+    }
+    40% {
+        transform: translate3d(6px, -4px, 0) skewX(-1.4deg) rotate(0.25deg);
+    }
+    60% {
+        transform: translate3d(-4px, 5px, 0) skewY(1deg) scale(1.015);
+    }
+    80% {
+        transform: translate3d(5px, -3px, 0) skewX(1.2deg) rotate(-0.35deg);
+    }
+    100% {
+        transform: translate3d(0, 0, 0);
+    }
+}
+
+@keyframes glitch-translate {
+    0% {
+        transform: translate3d(0, 0, 0);
+    }
+    25% {
+        transform: translate3d(-6px, 4px, 0);
+    }
+    50% {
+        transform: translate3d(6px, -4px, 0);
+    }
+    75% {
+        transform: translate3d(-4px, -5px, 0) skewX(1deg);
+    }
+    100% {
+        transform: translate3d(0, 0, 0);
+    }
+}
+
+@keyframes glitch-flicker {
+    0%, 100% {
+        opacity: 1;
+    }
+    40% {
+        opacity: 0.18;
+    }
+    55% {
+        opacity: 0.95;
+    }
+    70% {
+        opacity: 0.28;
+    }
+}
+
+@keyframes glitch-chroma {
+    0%, 100% {
+        text-shadow: 0 0 0 rgba(255, 0, 170, 0), 0 0 0 rgba(0, 255, 255, 0);
+    }
+    33% {
+        text-shadow: -4px 0 rgba(255, 0, 170, 0.9), 4px 0 rgba(0, 255, 255, 0.9);
+    }
+    66% {
+        text-shadow: 4px 0 rgba(255, 0, 170, 0.85), -4px 0 rgba(0, 255, 255, 0.85);
+    }
+}
+
+@keyframes glitch-noise {
+    0% {
+        background-position: 0 0, 0 0, 0 0;
+    }
+    20% {
+        background-position: 24px -14px, -18px 16px, 0 0;
+    }
+    40% {
+        background-position: -18px 22px, 16px -26px, 0 0;
+    }
+    60% {
+        background-position: 22px 12px, -22px -16px, 0 0;
+    }
+    80% {
+        background-position: -26px -18px, 26px 18px, 0 0;
+    }
+    100% {
+        background-position: 0 0, 0 0, 0 0;
+    }
+}
+
+@keyframes glitch-outline {
+    0% {
+        opacity: 0.25;
+        transform: translate3d(0, 0, 0);
+    }
+    30% {
+        opacity: 0.75;
+        transform: translate3d(-8px, 6px, 0) skewX(1.2deg);
+    }
+    55% {
+        opacity: 0.5;
+        transform: translate3d(6px, -6px, 0) skewY(-1deg);
+    }
+    75% {
+        opacity: 0.85;
+        transform: translate3d(-6px, -4px, 0) rotate(0.4deg);
+    }
+    100% {
+        opacity: 0.25;
+        transform: translate3d(0, 0, 0);
+    }
 }
 
 .header__controls {
@@ -1097,6 +1366,16 @@ select.field__input option {
     color: var(--text-tertiary);
 }
 
+.footer__credit {
+    margin-top: 6px;
+    letter-spacing: 0.12em;
+}
+
+.footer__credit a {
+    color: inherit;
+    text-decoration: underline;
+}
+
 .aura-video {
     display: none;
     position: fixed;
@@ -1308,7 +1587,18 @@ select.field__input option {
 .aura-effect-pixelation {
     color: #ff004c;
     animation: aura-pixelation-rgb 0.75s linear infinite, aura-pixelation-sway 1.1s ease-in-out infinite;
-    text-shadow: 0 0 10px rgba(255, 255, 255, 0.55);
+    font-family: "Press Start 2P", "Sarpanch", sans-serif;
+    font-size: 0.65em;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    -webkit-font-smoothing: none;
+    font-smooth: never;
+    text-shadow:
+        1px 1px 0 rgba(0, 0, 0, 0.85),
+        -1px 1px 0 rgba(0, 0, 0, 0.85),
+        1px -1px 0 rgba(0, 0, 0, 0.85),
+        -1px -1px 0 rgba(0, 0, 0, 0.85),
+        0 0 8px rgba(255, 255, 255, 0.55);
 }
 
 @keyframes aura-pixelation-rgb {
@@ -1340,51 +1630,89 @@ select.field__input option {
     100% { background-position: 0% 50%; }
 }
 
+
 .aura-effect-equinox {
-    font-family: "Playfair Display", "Times New Roman", serif;
-    font-style: italic;
-    font-weight: 500;
-    letter-spacing: 0.18em;
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    font-family: "Noto Serif TC", "Noto Serif", "Songti TC", "PMingLiU", serif;
+    font-style: normal;
+    font-weight: 700;
+    font-size: 0.75rem;
+    letter-spacing: 0.3em;
     text-transform: uppercase;
-    padding: 0.15em 0.35em;
-    color: transparent !important;
-    background-image: linear-gradient(180deg, #fdfdff 0%, #fdfdff 50%, #4e4e4e 50%, #050608 100%);
-    background-size: 100% 200%;
-    background-position: 0% 0%;
-    background-repeat: repeat-y;
-    -webkit-background-clip: text;
-    background-clip: text;
+    padding: 0.28em 0.9em;
+    color: #ffffff;
     text-shadow:
-        0 0 10px rgba(41, 41, 41, 0.4),
-        0 12px 28px rgba(0, 0, 0, 0.35);
-    transform: skewX(-10deg) scale(1);
+        0 1px 0 rgba(99, 99, 99, 0.9),
+        0 6px 18px rgba(12, 21, 43, 0.58),
+        0 18px 38px rgba(0, 0, 0, 0.4);
+    filter: drop-shadow(0 5px 18px rgba(8, 15, 34, 0.72));
+    transform: skewX(-6deg) scale3d(0.98, 0.98, 1);
     animation:
-        aura-equinox-gradient 4s ease-in-out infinite,
-        aura-equinox-pulse 2.8s ease-in-out infinite;
+        aura-equinox-beat calc(60s / 180) linear infinite,
+        aura-equinox-chroma calc(120s / 180) steps(2, jump-end) infinite;
+    will-change: transform, color;
 }
 
-@keyframes aura-equinox-gradient {
-    0%,
+.aura-effect-equinox::before,
+.aura-effect-equinox::after {
+    font-family: "Noto Serif TC", "Noto Serif", "Songti TC", "PMingLiU", serif;
+    font-weight: 700;
+    font-style: normal;
+    letter-spacing: 0;
+    color: currentColor;
+    text-shadow:
+        0 1px 0 rgba(255, 255, 255, 0.8),
+        0 5px 12px rgba(12, 21, 43, 0.48);
+}
+
+.aura-effect-equinox::before {
+    content: '『';
+    margin-right: 0.2em;
+    transform: skewX(5deg) translateY(-0.06em);
+    text-shadow:
+        0 1px 0 rgba(99, 99, 99, 0.9),
+        0 6px 18px rgba(12, 21, 43, 0.58),
+        0 18px 38px rgba(0, 0, 0, 0.4);
+}
+
+.aura-effect-equinox::after {
+    content: '』';
+    margin-left: 0.2em;
+    transform: skewX(-5deg) translateY(-0.06em);
+    text-shadow:
+        0 1px 0 rgba(99, 99, 99, 0.9),
+        0 6px 18px rgba(12, 21, 43, 0.58),
+        0 18px 38px rgba(0, 0, 0, 0.4);
+}
+
+@keyframes aura-equinox-beat {
+    0% {
+        transform: skewX(-6deg) scale3d(0.96, 0.96, 1);
+        animation-timing-function: cubic-bezier(0.26, 0.0, 0.42, 1);
+    }
+    18% {
+        transform: skewX(-6deg) scale3d(1.16, 1.16, 1);
+        animation-timing-function: cubic-bezier(0.55, 0.02, 0.44, 1);
+    }
+    46% {
+        transform: skewX(-6deg) scale3d(0.98, 0.98, 1);
+        animation-timing-function: cubic-bezier(0.25, 0.55, 0.38, 1);
+    }
     100% {
-        background-position: 0% 0%;
-    }
-    50% {
-        background-position: 0% 100%;
+        transform: skewX(-6deg) scale3d(1, 1, 1);
     }
 }
 
-@keyframes aura-equinox-pulse {
-    0%, 100% {
-        transform: skewX(-10deg) scale(1);
-        text-shadow:
-            0 0 10px rgba(255, 255, 255, 0.4),
-            0 12px 28px rgba(0, 0, 0, 0.35);
+@keyframes aura-equinox-chroma {
+    0%,
+    49.999% {
+        color: #f7f7f7;
     }
-    50% {
-        transform: skewX(-10deg) scale(1.05);
-        text-shadow:
-            0 0 14px rgba(255, 255, 255, 0.55),
-            0 16px 32px rgba(0, 0, 0, 0.45);
+    50%,
+    100% {
+        color: #050505;
     }
 }
 

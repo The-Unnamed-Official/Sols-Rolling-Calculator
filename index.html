@@ -7,7 +7,8 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Sarpanch:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@1,500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
     <link rel="icon" type="image/png" sizes="16x16" href="files/favicon-16.png">
     <link rel="icon" type="image/png" sizes="32x32" href="files/favicon-32.png">
     <link rel="icon" type="image/png" sizes="48x48" href="files/favicon-48.png">
@@ -19,10 +20,11 @@
 </head>
 <body>
     <div class="ui-backdrop" aria-hidden="true">
+        <video class="ui-backdrop__video" autoplay loop muted playsinline preload="auto" aria-hidden="true"></video>
         <div class="ui-backdrop__veil"></div>
     </div>
 
-    <audio id="bgMusic" loop muted src="files/normalBiomeMusic.mp3" type="audio/mpeg"></audio>
+    <audio id="bgMusic" loop muted src="files/normalBiomeMusic.mp3" type="audio/mpeg" data-volume="0.18"></audio>
     <audio id="rollSound" loop muted src="files/SolsRollSound.mp3" type="audio/mpeg"></audio>
     <audio id="clickSound" loop muted src="files/SolsClickSound.mp3" type="audio/mpeg"></audio>
     <audio id="hoverSound" loop muted src="files/SolsHoverSound.mp3" type="audio/mpeg"></audio>
@@ -65,7 +67,7 @@
                 </span>
                 <div class="brand__meta">
                     <h1 class="brand__title">Sols Rolling Simulator</h1>
-                    <p class="brand__subtitle">V0.9 ◉ By not.unnamed ◉ Updated 2025/10/11 ◉ Sol's RNG Eon 1-8.4</p>
+                    <p class="brand__subtitle">V0.9 ◉ By not.unnamed ◉ Updated 2025/10/12 ◉ Sol's RNG Eon 1-8.4</p>
                 </div>
             </div>
             <div class="header__controls">
@@ -327,6 +329,7 @@
 
         <footer class="panel ui-footer" role="contentinfo">
             <p class="footer__text">&copy; <span id="year"></span> The Unnamed. All rights reserved.</p>
+            <p class="footer__text footer__credit">Glitch biome backdrop courtesy of <a href="https://www.youtube.com/watch?v=Efxaiefo3QY" target="_blank" rel="noopener">ComedicChicken</a>.</p>
         </footer>
     </div>
 
