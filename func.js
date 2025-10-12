@@ -318,7 +318,7 @@ function toggleSound() {
         if (bgMusic) {
             prepareBgMusicForPlayback(bgMusic);
             if (glitchPresentationEnabled) {
-                updateGlitchAudioEffect(true);
+                updateGlitchAudioEffect(shouldApplyGlitchBaseEffect());
             }
             playBgMusic(bgMusic);
         }
@@ -413,9 +413,14 @@ const glitchAudioState = {
 };
 const glitchUiState = {
     loopTimeoutId: null,
-    activeTimeoutId: null
+    activeTimeoutId: null,
+    isUiGlitching: false
 };
 let glitchPresentationEnabled = false;
+
+function shouldApplyGlitchBaseEffect() {
+    return glitchPresentationEnabled && glitchUiState.isUiGlitching;
+}
 
 const GLITCH_BASE_FILTER_FREQUENCY = 2400;
 const GLITCH_BASE_FILTER_Q = 0.5;
@@ -697,7 +702,7 @@ function updateGlitchAudioEffect(enabled) {
 
 function applyGlitchAudioBurst() {
     const bgMusic = document.getElementById('bgMusic');
-    if (!bgMusic || !glitchPresentationEnabled) return;
+    if (!bgMusic || !shouldApplyGlitchBaseEffect()) return;
 
     const context = ensureAudioContext();
     const chain = ensureGlitchAudioChain(bgMusic);
@@ -788,7 +793,8 @@ function finishGlitchAudioBurst() {
     const context = ensureAudioContext();
     const chain = glitchAudioChainMap.get(bgMusic) || ensureGlitchAudioChain(bgMusic);
 
-    const resetRate = glitchPresentationEnabled
+    const baseEffectEnabled = shouldApplyGlitchBaseEffect();
+    const resetRate = baseEffectEnabled
         ? (glitchAudioState.basePlaybackRate ?? glitchAudioState.originalPlaybackRate ?? 1)
         : (glitchAudioState.originalPlaybackRate ?? glitchAudioState.basePlaybackRate ?? 1);
 
@@ -799,7 +805,7 @@ function finishGlitchAudioBurst() {
     }
 
     if (!context || !chain) {
-        if (glitchPresentationEnabled) {
+        if (baseEffectEnabled) {
             scheduleGlitchBaseWarble(bgMusic, null);
         } else {
             clearGlitchBaseWarbleTimer();
@@ -808,11 +814,11 @@ function finishGlitchAudioBurst() {
     }
 
     const baseGain = chain.baseGain ?? getBgMusicBaseVolume(bgMusic);
-    const targetGain = glitchPresentationEnabled ? baseGain * GLITCH_BASE_GAIN : baseGain;
-    const targetFrequency = glitchPresentationEnabled ? GLITCH_BASE_FILTER_FREQUENCY : 14000;
-    const targetQ = glitchPresentationEnabled ? GLITCH_BASE_FILTER_Q : 0.4;
-    const targetHighpassFrequency = glitchPresentationEnabled ? GLITCH_BASE_HIGHPASS_FREQUENCY : GLITCH_IDLE_HIGHPASS_FREQUENCY;
-    const targetHighpassQ = glitchPresentationEnabled ? GLITCH_BASE_HIGHPASS_Q : GLITCH_IDLE_HIGHPASS_Q;
+    const targetGain = baseEffectEnabled ? baseGain * GLITCH_BASE_GAIN : baseGain;
+    const targetFrequency = baseEffectEnabled ? GLITCH_BASE_FILTER_FREQUENCY : 14000;
+    const targetQ = baseEffectEnabled ? GLITCH_BASE_FILTER_Q : 0.4;
+    const targetHighpassFrequency = baseEffectEnabled ? GLITCH_BASE_HIGHPASS_FREQUENCY : GLITCH_IDLE_HIGHPASS_FREQUENCY;
+    const targetHighpassQ = baseEffectEnabled ? GLITCH_BASE_HIGHPASS_Q : GLITCH_IDLE_HIGHPASS_Q;
 
     try {
         chain.filter.type = chain.originalFilterType || 'lowpass';
@@ -838,12 +844,12 @@ function finishGlitchAudioBurst() {
         chain.gainNode.gain.value = targetGain;
     }
 
-    chain.waveshaper.curve = glitchPresentationEnabled ? createDistortionCurve(GLITCH_BASE_DISTORTION) : (chain.neutralCurve || createDistortionCurve(0));
+    chain.waveshaper.curve = baseEffectEnabled ? createDistortionCurve(GLITCH_BASE_DISTORTION) : (chain.neutralCurve || createDistortionCurve(0));
     if (chain.waveshaper) {
-        chain.waveshaper.oversample = glitchPresentationEnabled ? '4x' : 'none';
+        chain.waveshaper.oversample = baseEffectEnabled ? '4x' : 'none';
     }
 
-    if (glitchPresentationEnabled) {
+    if (baseEffectEnabled) {
         scheduleGlitchBaseWarble(bgMusic, chain);
     } else {
         clearGlitchBaseWarbleTimer();
@@ -867,8 +873,10 @@ function runGlitchBurst() {
     const root = document.documentElement;
     if (!body || !root) return;
 
+    glitchUiState.isUiGlitching = true;
     body.classList.add('is-glitching');
     root.classList.add('is-glitching');
+    updateGlitchAudioEffect(shouldApplyGlitchBaseEffect());
     applyGlitchAudioBurst();
 
     if (typeof window === 'undefined') return;
@@ -879,7 +887,9 @@ function runGlitchBurst() {
         body.classList.remove('is-glitching');
         root.classList.remove('is-glitching');
         glitchUiState.activeTimeoutId = null;
+        glitchUiState.isUiGlitching = false;
         finishGlitchAudioBurst();
+        updateGlitchAudioEffect(shouldApplyGlitchBaseEffect());
         if (glitchPresentationEnabled) {
             scheduleGlitchBurst(Random(1800, 4200));
         }
@@ -916,7 +926,9 @@ function stopGlitchLoop() {
         clearGlitchBaseWarbleTimer();
     }
 
+    glitchUiState.isUiGlitching = false;
     finishGlitchAudioBurst();
+    updateGlitchAudioEffect(false);
 
     const body = document.body;
     const root = document.documentElement;
@@ -940,10 +952,10 @@ function setGlitchPresentation(enabled) {
         body.classList.add('biome--glitch');
         if (!glitchPresentationEnabled) {
             glitchPresentationEnabled = true;
-            updateGlitchAudioEffect(true);
+            updateGlitchAudioEffect(shouldApplyGlitchBaseEffect());
             startGlitchLoop(true);
         } else {
-            updateGlitchAudioEffect(true);
+            updateGlitchAudioEffect(shouldApplyGlitchBaseEffect());
             ensureGlitchLoopScheduled();
         }
     } else {
@@ -954,6 +966,7 @@ function setGlitchPresentation(enabled) {
             body.classList.remove('biome--glitch');
             root.classList.remove('biome--glitch');
         }
+        glitchUiState.isUiGlitching = false;
         updateGlitchAudioEffect(false);
     }
 }
@@ -1023,7 +1036,7 @@ function applyBiomeTheme(biome) {
         if (rollingSoundEnabled) {
             prepareBgMusicForPlayback(bgMusic);
             if (glitchPresentationEnabled) {
-                updateGlitchAudioEffect(true);
+                updateGlitchAudioEffect(shouldApplyGlitchBaseEffect());
             }
         }
 
