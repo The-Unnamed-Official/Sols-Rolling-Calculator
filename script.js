@@ -391,7 +391,7 @@ for (const [eventId, auraNames] of Object.entries(EVENT_AURA_MAP)) {
     });
 }
 
-const cutscenePriority = ["oblivion-cs", "memory-cs", "equinox-cs", "lumi-cs", "erebus-cs", "Lamenthyr-cs" "pixelation-cs", "dreammetric-cs", "oppression-cs", "glitch-cs"];
+const cutscenePriority = ["oblivion-cs", "memory-cs", "equinox-cs", "lumi-cs", "erebus-cs", "Lamenthyr-cs", "pixelation-cs", "dreammetric-cs", "oppression-cs", "glitch-cs"];
 
 oblivionAuraDefinition = auras.find(aura => aura.name === OBLIVION_AURA_NAME) || null;
 memoryAuraDefinition = auras.find(aura => aura.name === OBLIVION_MEMORY_AURA_NAME) || null;
