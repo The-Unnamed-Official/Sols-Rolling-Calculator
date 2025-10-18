@@ -1418,6 +1418,20 @@ const auraOutlineOverrides = new Map([
     ['Express', 'aura-outline-winter'],
     ['Abominable', 'aura-outline-winter'],
     ['Atlas : Yuletide', 'aura-outline-winter'],
+    ['Erebus', 'aura-outline-halloween2025'],
+    ['Lamynthyr', 'aura-outline-halloween2025'],
+    ['Arachnaphobia', 'aura-outline-halloween2025'],
+    ['Ravage', 'aura-outline-halloween2025'],
+    ['Malediction', 'aura-outline-halloween2025'],
+    ['Banshee', 'aura-outline-halloween2025'],
+    ['Apocalypse', 'aura-outline-halloween2025'],
+    ['Phantasma', 'aura-outline-halloween2025'],
+    ['Accursed', 'aura-outline-halloween2025'],
+    ['Headless : Horseman', 'aura-outline-halloween2025'],
+    ['Sinister', 'aura-outline-halloween2025'],
+    ['Oni', 'aura-outline-halloween2025'],
+    ['Headless', 'aura-outline-halloween2025'],
+    ['Pump : Trickster', 'aura-outline-halloween2025'],
 ]);
 
 function getAuraStyleClass(aura) {
