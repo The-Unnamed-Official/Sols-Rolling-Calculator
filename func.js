@@ -459,11 +459,13 @@ function synchronizeBloodRainWeather(biome) {
         drop.className = 'blood-rain-drop';
         const offsetX = randomFloat(0, 100);
         const delay = randomFloat(0, 2.2);
-        const duration = randomFloat(0.9, 2.4);
-        const length = randomFloat(0.8, 2.4);
-        const thickness = randomFloat(0.6, 1.8);
-        const opacity = randomFloat(0.55, 0.95);
-        const skew = randomFloat(-5, 5);
+        const duration = randomFloat(1.2, 2.8);
+        const length = randomFloat(0.9, 2.6);
+        const thickness = randomFloat(0.8, 1.9);
+        const opacity = randomFloat(0.6, 0.95);
+        const skew = randomFloat(-4, 4);
+        const drift = randomFloat(-18, 18);
+        const startOffset = randomFloat(0, 60);
         drop.style.setProperty('--x', `${offsetX.toFixed(2)}%`);
         drop.style.setProperty('--delay', `${delay.toFixed(2)}s`);
         drop.style.setProperty('--duration', `${duration.toFixed(2)}s`);
@@ -471,6 +473,8 @@ function synchronizeBloodRainWeather(biome) {
         drop.style.setProperty('--thickness', thickness.toFixed(2));
         drop.style.setProperty('--opacity', opacity.toFixed(2));
         drop.style.setProperty('--skew', `${skew.toFixed(2)}deg`);
+        drop.style.setProperty('--drift', `${drift.toFixed(2)}px`);
+        drop.style.setProperty('--start-offset', `${startOffset.toFixed(2)}%`);
         fragment.appendChild(drop);
     }
 
