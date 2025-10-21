@@ -324,6 +324,7 @@ body.is-glitching .results__viewport::after {
 
 .panel.ui-header {
     overflow: visible;
+    z-index: 5;
 }
 
 .panel::after {
