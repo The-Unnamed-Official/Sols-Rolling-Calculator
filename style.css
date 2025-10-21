@@ -1785,6 +1785,16 @@ select.field__input option {
         -1px -1px 0 rgba(40, 90, 140, 0.85);
 }
 
+.aura-outline-blood {
+    text-shadow:
+        0 0 4px rgba(200, 20, 20, 0.9),
+        0 0 8px rgba(150, 0, 0, 0.75),
+        1px 1px 0 rgba(60, 0, 0, 0.95),
+        -1px 1px 0 rgba(60, 0, 0, 0.95),
+        1px -1px 0 rgba(60, 0, 0, 0.95),
+        -1px -1px 0 rgba(60, 0, 0, 0.95);
+}
+
 .aura-effect-oblivion,
 .aura-effect-memory,
 .aura-effect-pixelation,
