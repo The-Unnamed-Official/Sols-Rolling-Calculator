@@ -25,6 +25,7 @@ function randomFloat(min, max) {
 let rollingSoundEnabled = false;
 let uiSoundEnabled = false;
 let cutscenesEnabled = false;
+let glitchEffectsEnabled = true;
 let videoPlaying = false;
 let scrollLockState = null;
 
@@ -373,6 +374,28 @@ function toggleCutscenes() {
             skipButton.click();
         }
     }
+}
+
+function isGlitchBiomeSelected() {
+    const biomeSelect = document.getElementById('biome-select');
+    return biomeSelect ? biomeSelect.value === 'glitch' : false;
+}
+
+function synchronizeGlitchPresentation() {
+    const glitchBiomeActive = isGlitchBiomeSelected();
+    setGlitchPresentation(glitchEffectsEnabled && glitchBiomeActive, { forceTheme: glitchBiomeActive });
+}
+
+function toggleGlitchEffects() {
+    glitchEffectsEnabled = !glitchEffectsEnabled;
+    const glitchToggle = document.getElementById('glitchToggle');
+    if (glitchToggle) {
+        glitchToggle.textContent = glitchEffectsEnabled ? 'Glitch Effects: On' : 'Glitch Effects: Off';
+        glitchToggle.setAttribute('aria-pressed', glitchEffectsEnabled ? 'true' : 'false');
+    }
+
+    playSound(document.getElementById('clickSound'), 'ui');
+    synchronizeGlitchPresentation();
 }
 
 let baseLuck = 1;
@@ -911,7 +934,8 @@ function ensureGlitchLoopScheduled() {
     }
 }
 
-function stopGlitchLoop() {
+function stopGlitchLoop(options = {}) {
+    const { preserveBiomeClass = false } = options;
     if (typeof window !== 'undefined') {
         if (glitchUiState.loopTimeoutId !== null) {
             window.clearTimeout(glitchUiState.loopTimeoutId);
@@ -934,18 +958,23 @@ function stopGlitchLoop() {
     const root = document.documentElement;
     if (body) {
         body.classList.remove('is-glitching');
-        body.classList.remove('biome--glitch');
+        if (!preserveBiomeClass) {
+            body.classList.remove('biome--glitch');
+        }
     }
     if (root) {
         root.classList.remove('is-glitching');
-        root.classList.remove('biome--glitch');
+        if (!preserveBiomeClass) {
+            root.classList.remove('biome--glitch');
+        }
     }
 }
 
-function setGlitchPresentation(enabled) {
+function setGlitchPresentation(enabled, options = {}) {
     const body = document.body;
     const root = document.documentElement;
     if (!body || !root) return;
+    const { forceTheme = false } = options;
 
     if (enabled) {
         root.classList.add('biome--glitch');
@@ -961,7 +990,11 @@ function setGlitchPresentation(enabled) {
     } else {
         if (glitchPresentationEnabled) {
             glitchPresentationEnabled = false;
-            stopGlitchLoop();
+            stopGlitchLoop({ preserveBiomeClass: forceTheme });
+        }
+        if (forceTheme) {
+            root.classList.add('biome--glitch');
+            body.classList.add('biome--glitch');
         } else {
             body.classList.remove('biome--glitch');
             root.classList.remove('biome--glitch');
@@ -1174,7 +1207,7 @@ function handleBiomeUI() {
         }
     }
     applyBiomeTheme(biome);
-    setGlitchPresentation(biome === 'glitch');
+    synchronizeGlitchPresentation();
     updateLuckValue();
     refreshCustomSelect('biome-select');
 }
@@ -1239,6 +1272,64 @@ document.addEventListener('DOMContentLoaded', () => {
     if (cutsceneToggle) {
         cutsceneToggle.textContent = 'Cutscenes (Fullscreen recommended): Off';
         cutsceneToggle.setAttribute('aria-pressed', 'false');
+    }
+
+    const glitchToggle = document.getElementById('glitchToggle');
+    if (glitchToggle) {
+        glitchToggle.textContent = glitchEffectsEnabled ? 'Glitch Effects: On' : 'Glitch Effects: Off';
+        glitchToggle.setAttribute('aria-pressed', glitchEffectsEnabled ? 'true' : 'false');
+    }
+
+    const settingsMenu = document.getElementById('settingsMenu');
+    const settingsToggleButton = document.getElementById('settingsMenuToggle');
+    const settingsPanel = document.getElementById('settingsMenuPanel');
+    if (settingsMenu && settingsToggleButton && settingsPanel) {
+        const closeSettingsMenu = () => {
+            settingsMenu.classList.remove('settings-menu--open');
+            settingsToggleButton.setAttribute('aria-expanded', 'false');
+        };
+
+        const openSettingsMenu = () => {
+            settingsMenu.classList.add('settings-menu--open');
+            settingsToggleButton.setAttribute('aria-expanded', 'true');
+        };
+
+        settingsToggleButton.addEventListener('click', event => {
+            event.stopPropagation();
+            if (settingsMenu.classList.contains('settings-menu--open')) {
+                closeSettingsMenu();
+            } else {
+                openSettingsMenu();
+                if (event.detail === 0) {
+                    const firstItem = settingsPanel.querySelector('button');
+                    if (firstItem) {
+                        firstItem.focus({ preventScroll: true });
+                    }
+                }
+            }
+        });
+
+        document.addEventListener('click', event => {
+            if (!settingsMenu.contains(event.target)) {
+                closeSettingsMenu();
+            }
+        });
+
+        settingsMenu.addEventListener('keydown', event => {
+            if (event.key === 'Escape') {
+                closeSettingsMenu();
+                settingsToggleButton.focus({ preventScroll: true });
+            }
+        });
+
+        settingsMenu.addEventListener('focusout', event => {
+            const nextFocus = event.relatedTarget;
+            if (nextFocus instanceof Node && !settingsMenu.contains(nextFocus)) {
+                closeSettingsMenu();
+            }
+        });
+
+        closeSettingsMenu();
     }
 
     const yearEl = document.getElementById('year');
