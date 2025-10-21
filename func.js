@@ -427,6 +427,57 @@ const biomeAssets = {
     blazing: { image: 'files/blazingBiomeImage.jpg', music: 'files/blazingBiomeMusic.mp3' }
 };
 
+function synchronizeBloodRainWeather(biome) {
+    const container = document.querySelector('.weather--blood-rain');
+    if (!container) return;
+
+    const isActive = biome === 'bloodRain';
+    container.dataset.active = isActive ? 'true' : 'false';
+    if (!isActive) {
+        if (container.childElementCount > 0) {
+            container.replaceChildren();
+        }
+        container.dataset.initialized = 'false';
+        return;
+    }
+
+    let dropTotal = 80;
+    let viewportWidth = 1280;
+    let viewportHeight = 720;
+    if (typeof window !== 'undefined') {
+        viewportWidth = window.innerWidth || viewportWidth;
+        viewportHeight = window.innerHeight || viewportHeight;
+        const density = Math.max(72, Math.floor((viewportWidth * viewportHeight) / 22000));
+        dropTotal = Math.min(220, density);
+    }
+
+    container.replaceChildren();
+
+    const fragment = document.createDocumentFragment();
+    for (let i = 0; i < dropTotal; i++) {
+        const drop = document.createElement('span');
+        drop.className = 'blood-rain-drop';
+        const offsetX = randomFloat(0, 100);
+        const delay = randomFloat(0, 2.2);
+        const duration = randomFloat(0.9, 2.4);
+        const length = randomFloat(0.8, 2.4);
+        const thickness = randomFloat(0.6, 1.8);
+        const opacity = randomFloat(0.55, 0.95);
+        const skew = randomFloat(-5, 5);
+        drop.style.setProperty('--x', `${offsetX.toFixed(2)}%`);
+        drop.style.setProperty('--delay', `${delay.toFixed(2)}s`);
+        drop.style.setProperty('--duration', `${duration.toFixed(2)}s`);
+        drop.style.setProperty('--length', length.toFixed(2));
+        drop.style.setProperty('--thickness', thickness.toFixed(2));
+        drop.style.setProperty('--opacity', opacity.toFixed(2));
+        drop.style.setProperty('--skew', `${skew.toFixed(2)}deg`);
+        fragment.appendChild(drop);
+    }
+
+    container.appendChild(fragment);
+    container.dataset.initialized = 'true';
+}
+
 const glitchAudioChainMap = new WeakMap();
 const glitchAudioState = {
     originalPlaybackRate: null,
@@ -1010,7 +1061,18 @@ function applyBiomeTheme(biome) {
     const assets = biomeAssets[assetKey];
     const isVideoAsset = typeof assets.image === 'string' && /\.(webm|mp4|ogv|ogg)$/i.test(assets.image);
 
+    const body = document.body;
     const root = document.documentElement;
+    const isBloodRain = biome === 'bloodRain';
+    if (body) {
+        body.classList.toggle('biome--blood-rain', isBloodRain);
+    }
+    if (root) {
+        root.classList.toggle('biome--blood-rain', isBloodRain);
+    }
+
+    synchronizeBloodRainWeather(biome);
+
     if (root) {
         root.style.setProperty('--biome-background', isVideoAsset ? 'none' : `url("${assets.image}")`);
     }
