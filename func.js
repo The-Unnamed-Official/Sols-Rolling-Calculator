@@ -427,6 +427,44 @@ const biomeAssets = {
     blazing: { image: 'files/blazingBiomeImage.jpg', music: 'files/blazingBiomeMusic.mp3' }
 };
 
+function synchronizeBloodRainWeather(biome) {
+    const container = document.querySelector('.weather--blood-rain');
+    if (!container) return;
+
+    const isActive = biome === 'bloodRain';
+    container.dataset.active = isActive ? 'true' : 'false';
+    if (!isActive) return;
+
+    if (container.dataset.initialized === 'true' || container.childElementCount > 0) {
+        return;
+    }
+
+    let dropTotal = 80;
+    if (typeof window !== 'undefined') {
+        const viewportWidth = window.innerWidth || 1280;
+        const viewportHeight = window.innerHeight || 720;
+        const density = Math.max(48, Math.floor((viewportWidth * viewportHeight) / 32000));
+        dropTotal = Math.min(180, density);
+    }
+
+    const fragment = document.createDocumentFragment();
+    for (let i = 0; i < dropTotal; i++) {
+        const drop = document.createElement('span');
+        drop.className = 'blood-rain-drop';
+        drop.style.setProperty('--x', `${(Math.random() * 100).toFixed(2)}%`);
+        drop.style.setProperty('--delay', `${(Math.random() * 1.6).toFixed(2)}s`);
+        drop.style.setProperty('--duration', `${(0.85 + Math.random() * 1.2).toFixed(2)}s`);
+        drop.style.setProperty('--length', (0.7 + Math.random() * 1.6).toFixed(2));
+        drop.style.setProperty('--thickness', (0.7 + Math.random() * 1.2).toFixed(2));
+        drop.style.setProperty('--opacity', (0.45 + Math.random() * 0.4).toFixed(2));
+        drop.style.setProperty('--skew', `${(Math.random() * 6 - 3).toFixed(2)}deg`);
+        fragment.appendChild(drop);
+    }
+
+    container.appendChild(fragment);
+    container.dataset.initialized = 'true';
+}
+
 const glitchAudioChainMap = new WeakMap();
 const glitchAudioState = {
     originalPlaybackRate: null,
@@ -1010,7 +1048,18 @@ function applyBiomeTheme(biome) {
     const assets = biomeAssets[assetKey];
     const isVideoAsset = typeof assets.image === 'string' && /\.(webm|mp4|ogv|ogg)$/i.test(assets.image);
 
+    const body = document.body;
     const root = document.documentElement;
+    const isBloodRain = biome === 'bloodRain';
+    if (body) {
+        body.classList.toggle('biome--blood-rain', isBloodRain);
+    }
+    if (root) {
+        root.classList.toggle('biome--blood-rain', isBloodRain);
+    }
+
+    synchronizeBloodRainWeather(biome);
+
     if (root) {
         root.style.setProperty('--biome-background', isVideoAsset ? 'none' : `url("${assets.image}")`);
     }

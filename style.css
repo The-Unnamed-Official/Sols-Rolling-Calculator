@@ -295,6 +295,61 @@ body.is-glitching .results__viewport::after {
     z-index: 1;
 }
 
+.weather {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    overflow: hidden;
+}
+
+.weather--blood-rain {
+    display: none;
+    z-index: 2;
+    mix-blend-mode: screen;
+}
+
+body.biome--blood-rain .weather--blood-rain {
+    display: block;
+}
+
+.blood-rain-drop {
+    position: absolute;
+    top: -20%;
+    left: var(--x, 50%);
+    width: calc(2px * var(--thickness, 1));
+    height: calc(46px * var(--length, 1));
+    background: linear-gradient(180deg, rgba(204, 16, 32, 0.92), rgba(204, 16, 32, 0.28) 65%, rgba(204, 16, 32, 0));
+    border-radius: 999px;
+    opacity: var(--opacity, 0.7);
+    filter: drop-shadow(0 0 4px rgba(255, 36, 56, 0.35));
+    animation: blood-rain-fall var(--duration, 1.5s) linear infinite;
+    animation-delay: calc(-1 * var(--delay, 0s));
+}
+
+.blood-rain-drop::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.45), transparent 55%);
+    opacity: 0.4;
+    border-radius: inherit;
+    mix-blend-mode: screen;
+}
+
+@keyframes blood-rain-fall {
+    0% {
+        transform: translate3d(-50%, -120%, 0) skewX(var(--skew, 0deg));
+        opacity: 0;
+    }
+    12% {
+        opacity: var(--opacity, 0.7);
+    }
+    100% {
+        transform: translate3d(-50%, 120%, 0) skewX(var(--skew, 0deg));
+        opacity: 0;
+    }
+}
+
 .ui-shell {
     width: min(1260px, 100%);
     display: flex;
