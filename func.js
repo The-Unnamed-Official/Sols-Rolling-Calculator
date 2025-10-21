@@ -1324,14 +1324,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         settingsMenu.addEventListener('focusout', event => {
             const nextFocus = event.relatedTarget;
-            if (!settingsMenu.contains(nextFocus)) {
-                closeSettingsMenu();
-            }
-        });
-
-        settingsPanel.addEventListener('click', event => {
-            const target = event.target instanceof Element ? event.target.closest('.settings-menu__item') : null;
-            if (target) {
+            if (nextFocus instanceof Node && !settingsMenu.contains(nextFocus)) {
                 closeSettingsMenu();
             }
         });

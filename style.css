@@ -322,6 +322,10 @@ body.is-glitching .results__viewport::after {
     overflow: hidden;
 }
 
+.panel.ui-header {
+    overflow: visible;
+}
+
 .panel::after {
     content: '';
     position: absolute;
@@ -650,7 +654,7 @@ body.is-glitching .results__viewport::after {
     border: 1px solid var(--panel-border);
     border-radius: 18px;
     box-shadow: var(--shadow-strong);
-    z-index: 20;
+    z-index: 2000;
 }
 
 .settings-menu--open .settings-menu__panel {
