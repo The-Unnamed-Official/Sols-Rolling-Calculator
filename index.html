@@ -56,6 +56,12 @@
     <video id="oppression-cs" class="aura-video" preload="auto">
         <source src="files/oppressionCutscene.webm" type="video/webm">
     </video>
+    <video id="lamenthyr-cs" class="aura-video" preload="auto">
+        <source src="files/lamenthyrCutscene.webm" type="video/webm">
+    </video>
+    <video id="erebus-cs" class="aura-video" preload="auto">
+        <source src="files/erebusCutscene.webm" type="video/webm">
+    </video>
 
     <div id="video-overlay" class="video-overlay" aria-hidden="true"></div>
 
@@ -67,13 +73,19 @@
                 </span>
                 <div class="brand__meta">
                     <h1 class="brand__title">Sols Rolling Simulator</h1>
-                    <p class="brand__subtitle">V0.9 ◉ By not.unnamed ◉ Updated 2025/10/12 ◉ Sol's RNG Eon 1-8.4</p>
+                    <p class="brand__subtitle">V0.9.5 ◉ By not.unnamed ◉ Updated 2025/10/21 ◉ Sol's RNG Eon 1-9</p>
                 </div>
             </div>
             <div class="header__controls">
-                <button class="ui-toggle" id="soundToggle" type="button" onclick="toggleSound()" aria-pressed="false">Other Sounds: Off</button>
-                <button class="ui-toggle" id="uiSoundToggle" type="button" onclick="toggleUiSound()" aria-pressed="false">UI Sound: Off</button>
-                <button class="ui-toggle" id="cutsceneToggle" type="button" onclick="toggleCutscenes()" aria-pressed="false">Cutscenes (Fullscreen recommended): Off</button>
+                <div class="settings-menu" id="settingsMenu">
+                    <button class="ui-toggle settings-menu__trigger" id="settingsMenuToggle" type="button" aria-haspopup="menu" aria-expanded="false" aria-controls="settingsMenuPanel">Settings</button>
+                    <div class="settings-menu__panel" id="settingsMenuPanel" aria-labelledby="settingsMenuToggle">
+                        <button class="ui-toggle settings-menu__item" id="soundToggle" type="button" onclick="toggleSound()" aria-pressed="false">Other Sounds: Off</button>
+                        <button class="ui-toggle settings-menu__item" id="uiSoundToggle" type="button" onclick="toggleUiSound()" aria-pressed="false">UI Sound: Off</button>
+                        <button class="ui-toggle settings-menu__item" id="cutsceneToggle" type="button" onclick="toggleCutscenes()" aria-pressed="false">Cutscenes (Fullscreen recommended): Off</button>
+                        <button class="ui-toggle settings-menu__item" id="glitchToggle" type="button" onclick="toggleGlitchEffects()" aria-pressed="true">Glitch Effects: On</button>
+                    </div>
+                </div>
             </div>
         </header>
 
@@ -232,6 +244,7 @@
                                     <option value="limbo">Limbo</option>
                                     <option value="graveyard">Graveyard</option>
                                     <option value="pumpkinMoon">Pumpkin Moon</option>
+                                    <option value="bloodRain">Blood Rain</option>
                                     <option value="blazing">Blazing Sun</option>
                                     <option value="anotherRealm">Another Realm</option>
                                 </select>
@@ -277,6 +290,10 @@
                                     <label class="ui-select__option ui-select__option--checkbox">
                                         <input type="checkbox" value="summer2025" data-event-id="summer2025">
                                         <span>Summer 2025</span>
+                                    </label>
+                                    <label class="ui-select__option ui-select__option--checkbox">
+                                        <input type="checkbox" value="halloween2025" data-event-id="halloween2025">
+                                        <span>Halloween 2025</span>
                                     </label>
                                 </div>
                             </details>

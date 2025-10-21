@@ -80,22 +80,30 @@ const auras = [
     { name: "Memory", chance: 200000, requiresOblivionPreset: true, ignoreLuck: true, fixedRollThreshold: 1, subtitle: "The Fallen", cutscene: "memory-cs", disableRarityClass: true },
     { name: "Equinox - 2,500,000,000", chance: 2500000000, cutscene: "equinox-cs" },
     { name: "Luminosity - 1,200,000,000", chance: 1200000000, cutscene: "lumi-cs" },
+    { name: "Erebus - 1,200,000,000", chance: 1200000000, exclusiveTo: ["glitch", "bloodRain"], cutscene: "erebus-cs" },
     { name: "Pixelation - 1,073,741,824", chance: 1073741824, cutscene: "pixelation-cs" },
+    { name: "Lamenthyr - 1,000,000,000", chance: 1000000000, exclusiveTo: ["glitch", "bloodRain"], cutscene: "lamenthyr-cs" },
+    { name: "Arachnophobia - 940,000,000", chance: 940000000, exclusiveTo: ["glitch", "pumpkinMoon"] },
+    { name: "Ravage - 930,000,000", chance: 930000000, exclusiveTo: ["glitch", "graveyard"] },
     { name: "Dreamscape - 850,000,000", chance: 850000000, exclusiveTo: ["limbo"] },
     { name: "Aegis - 825,000,000", chance: 825000000 },
     { name: "Aegis : Watergun - 825,000,000", chance: 825000000, breakthrough: { blazing: 2 }},
     { name: "Apostolos : Veil - 800,000,000", chance: 800000000, exclusiveTo: ["graveyard", "pumpkinMoon"] },
     { name: "Ruins : Withered - 800,000,000", chance: 800000000 },
     { name: "Sovereign - 750,000,000", chance: 750000000 },
+    { name: "Malediction - 730,000,000", chance: 730000000, exclusiveTo: ["glitch", "bloodRain"] },
+    { name: "Banshee - 730,000,000", chance: 730000000, exclusiveTo: ["glitch", "graveyard"] },
     { name: "PROLOGUE - 666,616,111", chance: 666616111, exclusiveTo: ["limbo"] },
-    { name: "Matrix : Reality - 601,020,102", chance: 601020102 },
     { name: "Harvester - 666,000,000", chance: 666000000, exclusiveTo: ["graveyard"] },
+    { name: "Apocalypse - 624,000,000", chance: 624000000, exclusiveTo: ["glitch", "graveyard"] },
+    { name: "Matrix : Reality - 601,020,102", chance: 601020102 },
     { name: "Sophyra - 570,000,000", chance: 570000000 },
-    { name: "Elude - 555,555,555", chance: 555555555, exclusiveTo: ["limbo"] },    
+    { name: "Elude - 555,555,555", chance: 555555555, exclusiveTo: ["limbo"] },
     { name: "Dreammetric - 520,000,000", chance: 520000000, exclusiveTo: ["glitch", "dreamspace"], cutscene: "dreammetric-cs" },
+    { name: "Atlas : Yuletide - 510,000,000", chance: 510000000, breakthrough: { snowy: 3 } },
     { name: "Matrix : Overdrive - 503,000,000", chance: 503000000 },
     { name: "Ruins - 500,000,000", chance: 500000000 },
-    { name: "Atlas : Yuletide - 510,000,000", chance: 510000000, breakthrough: { snowy: 3 } },
+    { name: "Phantasma - 462,600,000", chance: 462600000, exclusiveTo: ["glitch", "pumpkinMoon"] },
     { name: "Kyawthuite : Remembrance - 450,000,000", chance: 450000000 },
     { name: "unknown - 444,444,444", chance: 444444444, exclusiveTo: ["limbo"] },
     { name: "Apostolos - 444,000,000", chance: 444000000 },
@@ -129,6 +137,7 @@ const auras = [
     { name: "Express - 90,000,000", chance: 90000000, breakthrough: { snowy: 3 } },
     { name: "Virtual : Worldwide - 87,500,000", chance: 87500000 },
     { name: "Harnessed : Elements - 85,000,000", chance: 85000000 },
+    { name: "Accursed - 82,000,000", chance: 82000000, exclusiveTo: ["glitch", "bloodRain"] },
     { name: "Sailor : Flying Dutchman - 80,000,000", chance: 80000000, breakthrough: { rainy: 4 } },
     { name: "Carriage - 80,000,000", chance: 80000000 },
     { name: "Winter Fantasy - 72,000,000", chance: 72000000, breakthrough: { snowy: 3 } },
@@ -145,6 +154,7 @@ const auras = [
     { name: "Chromatic : Kromat1k - 40,000,000", chance: 40000000 },
     { name: "Soul Hunter - 40,000,000", chance: 40000000, exclusiveTo: ["graveyard"] },
     { name: "Ethereal - 35,000,000", chance: 35000000 },
+    { name: "Headless : Horseman - 32,000,000", chance: 32000000, exclusiveTo: ["glitch", "pumpkinMoon"] },
     { name: "Innovator - 30,000,000", chance: 30000000 },
     { name: "Arcane : Dark - 30,000,000", chance: 30000000 },
     { name: "Aviator - 24,000,000", chance: 24000000 },
@@ -152,6 +162,7 @@ const auras = [
     { name: "Chromatic - 20,000,000", chance: 20000000 },
     { name: "Blizzard - 27,315,000", chance: 27315000, breakthrough: { snowy: 3 } },
     { name: "Lullaby - 17,000,000", chance: 17000000, breakthrough: { night: 10 } },
+    { name: "Sinister - 15,000,000", chance: 15000000, exclusiveTo: ["glitch", "pumpkinMoon"] },
     { name: "Arcane : Legacy - 15,000,000", chance: 15000000 },
     { name: "Sirius - 14,000,000", chance: 14000000, breakthrough: { starfall: 5 } },
     { name: "Stormal : Hurricane - 13,500,000", chance: 13500000, breakthrough: { windy: 3 } },
@@ -170,6 +181,7 @@ const auras = [
     { name: "HYPER-VOLT - 7,500,000", chance: 7500000 },
     { name: "Anubis - 7,200,000", chance: 7200000, breakthrough: { sandstorm: 4 } },
     { name: "Hades - 6,666,666", chance: 6666666, breakthrough: { hell: 6 } },
+    { name: "Oni - 6,666,666", chance: 6666666, exclusiveTo: ["glitch", "bloodRain"] },
     { name: "Origin - 6,500,000", chance: 6500000 },
     { name: "Twilight - 6,000,000", chance: 6000000, breakthrough: { night: 10 } },
     { name: "Vital - 6,000,000", chance: 6000000, exclusiveTo: ["pumpkinMoon"] },
@@ -181,6 +193,7 @@ const auras = [
     { name: "Poseidon - 4,000,000", chance: 4000000, breakthrough: { rainy: 4 } },
     { name: "Shiftlock - 3,325,000", chance: 3325000, breakthrough: { null: 1000, limbo: 1000 }, exclusiveTo: ["limbo-null"] },
     { name: "Savior - 3,200,000", chance: 3200000 },
+    { name: "Headless - 3,200,000", chance: 3200000, exclusiveTo: ["glitch", "graveyard"] },
     { name: "Lunar : Nightfall - 3,000,000", chance: 3000000, exclusiveTo: ["graveyard"] },
     { name: "Parasite - 3,000,000", chance: 3000000, breakthrough: { corruption: 5 } },
     { name: "Virtual - 2,500,000", chance: 2500000 },
@@ -196,6 +209,7 @@ const auras = [
     { name: "Arcane - 1,000,000", chance: 1000000 },
     { name: "Kyawthuite - 850,000", chance: 850000 },
     { name: "Warlock - 666,000", chance: 666000 },
+    { name: "Pump : Trickster - 600,000", chance: 600000, exclusiveTo: ["glitch", "pumpkinMoon"] },
     { name: "Prowler - 540,000", chance: 540000, exclusiveTo: ["anotherRealm"] },
     { name: "Raven - 500,000", chance: 500000, exclusiveTo: ["limbo"] },
     { name: "Terror - 400,000", chance: 400000 },
@@ -285,6 +299,7 @@ const EVENT_DEFINITIONS = [
     { id: "winter2024", label: "Winter 2024" },
     { id: "aprilFools2025", label: "April Fools 2025" },
     { id: "summer2025", label: "Summer 2025" },
+    { id: "halloween2025", label: "Halloween 2025" },
 ];
 
 const EVENT_AURA_MAP = {
@@ -335,11 +350,28 @@ const EVENT_AURA_MAP = {
         "Aegis : Watergun - 825,000,000",
         "Manta - 300,000,000",
     ],
+    halloween2025: [
+        "Pump : Trickster - 600,000",
+        "Headless - 3,200,000",
+        "Oni - 6,666,666",
+        "Headless : Horseman - 32,000,000",
+        "Sinister - 15,000,000",
+        "Accursed - 82,000,000",
+        "Phantasma - 462,600,000",
+        "Apocalypse - 624,000,000",
+        "Malediction - 730,000,000",
+        "Banshee - 730,000,000",
+        "Ravage - 930,000,000",
+        "Arachnophobia - 940,000,000",
+        "Lamenthyr - 1,000,000,000",
+        "Erebus - 1,200,000,000",
+    ],
 };
 
 const BIOME_EVENT_REQUIREMENTS = {
-    graveyard: ["halloween2024"],
-    pumpkinMoon: ["halloween2024"],
+    graveyard: ["halloween2024", "halloween2025"],
+    pumpkinMoon: ["halloween2024", "halloween2025"],
+    bloodRain: ["halloween2025"],
     blazing: "summer2025",
 };
 
@@ -348,6 +380,7 @@ const auraEventLookup = new Map();
 
 const EVENTS_ALLOWING_GLITCH_ACCESS = new Set([
     "halloween2024",
+    "halloween2025",
 ]);
 
 for (const [eventId, auraNames] of Object.entries(EVENT_AURA_MAP)) {
@@ -356,7 +389,7 @@ for (const [eventId, auraNames] of Object.entries(EVENT_AURA_MAP)) {
     });
 }
 
-const cutscenePriority = ["oblivion-cs", "memory-cs", "equinox-cs", "lumi-cs", "pixelation-cs", "dreammetric-cs", "oppression-cs"];
+const cutscenePriority = ["oblivion-cs", "memory-cs", "equinox-cs", "lumi-cs", "pixelation-cs", "lamenthyr-cs", "erebus-cs", "dreammetric-cs", "oppression-cs"];
 
 oblivionAuraDefinition = auras.find(aura => aura.name === OBLIVION_AURA_NAME) || null;
 memoryAuraDefinition = auras.find(aura => aura.name === OBLIVION_MEMORY_AURA_NAME) || null;
@@ -364,18 +397,32 @@ memoryAuraDefinition = auras.find(aura => aura.name === OBLIVION_MEMORY_AURA_NAM
 const ROE_EXCLUDED_AURAS = new Set([
     "Apostolos : Veil - 800,000,000",
     "Harvester - 666,000,000",
+    "Apocalypse - 624,000,000",
     "Dreammetric - 520,000,000",
+    "Phantasma - 462,600,000",
     "Oppression - 220,000,000",
     "Nightmare Sky - 190,000,000",
+    "Malediction - 730,000,000",
+    "Banshee - 730,000,000",
+    "Ravage - 930,000,000",
+    "Arachnophobia - 940,000,000",
+    "Lamenthyr - 1,000,000,000",
+    "Erebus - 1,200,000,000",
+    "Accursed - 82,000,000",
     "Dullahan - 72,000,000",
     "Soul Hunter - 40,000,000",
     "Cryptfire - 21,000,000",
     "Glitch - 12,210,110",
     "Moonflower - 10,000,000",
     "Vital - 6,000,000",
+    "Oni - 6,666,666",
     "Lunar : Nightfall - 3,000,000",
+    "Headless - 3,200,000",
     "Prowler - 540,000",
+    "Headless : Horseman - 32,000,000",
+    "Sinister - 15,000,000",
     "Pump - 200,000",
+    "Pump : Trickster - 600,000",
     "★★★ - 10,000",
     "★★ - 1,000",
     "★ - 100"

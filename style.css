@@ -322,6 +322,11 @@ body.is-glitching .results__viewport::after {
     overflow: hidden;
 }
 
+.panel.ui-header {
+    overflow: visible;
+    z-index: 5;
+}
+
 .panel::after {
     content: '';
     position: absolute;
@@ -610,6 +615,57 @@ body.is-glitching .results__viewport::after {
     gap: 12px;
     margin-left: auto;
     align-items: center;
+}
+
+.settings-menu {
+    position: relative;
+}
+
+.settings-menu__trigger {
+    position: relative;
+    min-width: 0;
+    padding-inline: 16px 42px;
+}
+
+.settings-menu__trigger::after {
+    content: '▾';
+    position: absolute;
+    right: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 12px;
+    letter-spacing: normal;
+}
+
+.settings-menu--open .settings-menu__trigger::after {
+    content: '▴';
+}
+
+.settings-menu__panel {
+    position: absolute;
+    top: calc(100% + 12px);
+    right: 0;
+    display: none;
+    flex-direction: column;
+    gap: 10px;
+    width: min(320px, calc(100vw - 32px));
+    min-width: min(260px, calc(100vw - 32px));
+    padding: 18px;
+    background: var(--panel-bg);
+    border: 1px solid var(--panel-border);
+    border-radius: 18px;
+    box-shadow: var(--shadow-strong);
+    z-index: 2000;
+}
+
+.settings-menu--open .settings-menu__panel {
+    display: flex;
+}
+
+.settings-menu__item {
+    width: 100%;
+    text-align: left;
+    min-width: 0;
 }
 
 @media (min-width: 1200px) {
@@ -1727,6 +1783,16 @@ select.field__input option {
         -1px 1px 0 rgba(40, 90, 140, 0.85),
         1px -1px 0 rgba(40, 90, 140, 0.85),
         -1px -1px 0 rgba(40, 90, 140, 0.85);
+}
+
+.aura-outline-blood {
+    text-shadow:
+        0 0 4px rgba(200, 20, 20, 0.9),
+        0 0 8px rgba(150, 0, 0, 0.75),
+        1px 1px 0 rgba(60, 0, 0, 0.95),
+        -1px 1px 0 rgba(60, 0, 0, 0.95),
+        1px -1px 0 rgba(60, 0, 0, 0.95),
+        -1px -1px 0 rgba(60, 0, 0, 0.95);
 }
 
 .aura-effect-oblivion,
