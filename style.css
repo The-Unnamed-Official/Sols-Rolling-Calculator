@@ -612,6 +612,57 @@ body.is-glitching .results__viewport::after {
     align-items: center;
 }
 
+.settings-menu {
+    position: relative;
+}
+
+.settings-menu__trigger {
+    position: relative;
+    min-width: 0;
+    padding-inline: 16px 42px;
+}
+
+.settings-menu__trigger::after {
+    content: '▾';
+    position: absolute;
+    right: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 12px;
+    letter-spacing: normal;
+}
+
+.settings-menu--open .settings-menu__trigger::after {
+    content: '▴';
+}
+
+.settings-menu__panel {
+    position: absolute;
+    top: calc(100% + 12px);
+    right: 0;
+    display: none;
+    flex-direction: column;
+    gap: 10px;
+    width: min(320px, calc(100vw - 32px));
+    min-width: min(260px, calc(100vw - 32px));
+    padding: 18px;
+    background: var(--panel-bg);
+    border: 1px solid var(--panel-border);
+    border-radius: 18px;
+    box-shadow: var(--shadow-strong);
+    z-index: 20;
+}
+
+.settings-menu--open .settings-menu__panel {
+    display: flex;
+}
+
+.settings-menu__item {
+    width: 100%;
+    text-align: left;
+    min-width: 0;
+}
+
 @media (min-width: 1200px) {
     .ui-shell {
         margin-inline: auto;
