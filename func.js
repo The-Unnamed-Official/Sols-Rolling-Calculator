@@ -422,6 +422,7 @@ const biomeAssets = {
     anotherRealm: { image: 'files/anotherRealmBiomeImage.jpg', music: 'files/anotherRealmBiomeMusic.mp3' },
     graveyard: { image: 'files/graveyardBiomeImage.jpg', music: 'files/graveyardBiomeMusic.mp3' },
     pumpkinMoon: { image: 'files/pumpkinMoonBiomeImage.jpg', music: 'files/pumpkinMoonBiomeMusic.mp3' },
+    bloodRain: { image: 'files/graveyardBiomeImage.jpg', music: 'files/graveyardBiomeMusic.mp3' },
     limbo: { image: 'files/limboImage.jpg', music: 'files/limboMusic.mp3' },
     blazing: { image: 'files/blazingBiomeImage.jpg', music: 'files/blazingBiomeMusic.mp3' }
 };
@@ -1509,6 +1510,20 @@ const auraOutlineOverrides = new Map([
     ['Express', 'aura-outline-winter'],
     ['Abominable', 'aura-outline-winter'],
     ['Atlas : Yuletide', 'aura-outline-winter'],
+    ['Pump : Trickster', 'aura-outline-blood'],
+    ['Headless', 'aura-outline-blood'],
+    ['Oni', 'aura-outline-blood'],
+    ['Headless : Horseman', 'aura-outline-blood'],
+    ['Sinister', 'aura-outline-blood'],
+    ['Accursed', 'aura-outline-blood'],
+    ['Phantasma', 'aura-outline-blood'],
+    ['Apocalypse', 'aura-outline-blood'],
+    ['Malediction', 'aura-outline-blood'],
+    ['Banshee', 'aura-outline-blood'],
+    ['Ravage', 'aura-outline-blood'],
+    ['Arachnophobia', 'aura-outline-blood'],
+    ['Lamenthyr', 'aura-outline-blood'],
+    ['Erebus', 'aura-outline-blood'],
 ]);
 
 function getAuraStyleClass(aura) {
