@@ -2247,6 +2247,11 @@ select.form-field__input option {
     text-decoration: underline;
 }
 
+.footer-credits__item-inspired {
+    color: #c1d7ff;
+    font-size: 19px;
+}
+
 .cutscene-video {
     display: none;
     position: fixed;
