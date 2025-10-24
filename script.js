@@ -520,7 +520,7 @@ const biomeAssets = {
 };
 
 function updateBloodRainWeather(biome) {
-    const container = document.querySelector('.weather--blood-rain');
+    const container = document.querySelector('.climate--blood-rain');
     if (!container) return;
 
     const isActive = biome === 'bloodRain';
@@ -836,11 +836,11 @@ function applyBiomeTheme(biome) {
         root.style.setProperty('--biome-background', isVideoAsset ? 'none' : `url("${assets.image}")`);
     }
 
-    const backdrop = document.querySelector('.ui-backdrop');
+    const backdrop = document.querySelector('.interface-backdrop');
     if (backdrop) {
-        const backdropVideo = backdrop.querySelector('.ui-backdrop__video');
+        const backdropVideo = backdrop.querySelector('.interface-backdrop__video');
         if (isVideoAsset && backdropVideo) {
-            backdrop.classList.add('ui-backdrop--video-active');
+            backdrop.classList.add('interface-backdrop--video-active');
             backdrop.style.backgroundImage = 'none';
 
             const currentVideoSrc = backdropVideo.getAttribute('data-current-src');
@@ -858,7 +858,7 @@ function applyBiomeTheme(biome) {
                 playPromise.catch(() => {});
             }
         } else {
-            backdrop.classList.remove('ui-backdrop--video-active');
+            backdrop.classList.remove('interface-backdrop--video-active');
             backdrop.style.backgroundImage = `url("${assets.image}")`;
             if (backdropVideo) {
                 backdropVideo.pause();
@@ -1186,10 +1186,9 @@ async function playAuraSequence(queue) {
 function resolveRarityClass(aura, biome) {
     if (aura && aura.disableRarityClass) return '';
     if (aura && aura.name === 'Fault') return 'rarity-tier-challenged';
-    if (aura && aura.exclusiveTo && (aura.exclusiveTo.includes('limbo') || aura.exclusiveTo.includes('limbo-null'))) {
-        if (biome === 'limbo') return 'rarity-tier-limbo';
-    }
-    if (aura && aura.exclusiveTo && !aura.exclusiveTo.includes('limbo-null')) return 'rarity-tier-challenged';
+    const hasLimboNative = auraMatchesAnyBiome(aura, ['limbo', 'limbo-null']);
+    if (hasLimboNative && biome === 'limbo') return 'rarity-tier-limbo';
+    if (aura && aura.nativeBiomes && !aura.nativeBiomes.has('limbo-null')) return 'rarity-tier-challenged';
     const chance = aura.chance;
     if (chance >= 1000000000) return 'rarity-tier-transcendent';
     if (chance >= 99999999) return 'rarity-tier-glorious';
@@ -1254,8 +1253,7 @@ function resolveAuraStyleClass(aura) {
     if (name.startsWith('Equinox')) classes.push('sigil-effect-equinox');
 
     const auraData = typeof aura === 'string' ? null : aura;
-    const exclusiveTo = auraData && Array.isArray(auraData.exclusiveTo) ? auraData.exclusiveTo : null;
-    if (exclusiveTo && exclusiveTo.some(zone => zone === 'pumpkinMoon' || zone === 'graveyard')) {
+    if (auraMatchesAnyBiome(auraData, ['pumpkinMoon', 'graveyard'])) {
         classes.push('sigil-outline-halloween');
     }
 
@@ -1338,180 +1336,180 @@ function determineResultPriority(aura, baseChance) {
     return baseChance;
 }
 
-const AURA_LIBRARY = [
+const AURA_BLUEPRINT_SOURCE = Object.freeze([
     { name: "Oblivion", chance: 2000, requiresOblivionPreset: true, ignoreLuck: true, fixedRollThreshold: 1, subtitle: "The Truth Seeker", cutscene: "oblivion-cutscene", disableRarityClass: true },
     { name: "Memory", chance: 200000, requiresOblivionPreset: true, ignoreLuck: true, fixedRollThreshold: 1, subtitle: "The Fallen", cutscene: "memory-cutscene", disableRarityClass: true },
     { name: "Equinox - 2,500,000,000", chance: 2500000000, cutscene: "equinox-cutscene" },
     { name: "Luminosity - 1,200,000,000", chance: 1200000000, cutscene: "luminosity-cutscene" },
-    { name: "Erebus - 1,200,000,000", chance: 1200000000, exclusiveTo: ["glitch", "bloodRain"], cutscene: "erebus-cutscene" },
+    { name: "Erebus - 1,200,000,000", chance: 1200000000, nativeBiomes: ["glitch", "bloodRain"], cutscene: "erebus-cutscene" },
     { name: "Pixelation - 1,073,741,824", chance: 1073741824, cutscene: "pixelation-cutscene" },
-    { name: "Lamenthyr - 1,000,000,000", chance: 1000000000, exclusiveTo: ["glitch", "bloodRain"], cutscene: "lamenthyr-cutscene" },
-    { name: "Arachnophobia - 940,000,000", chance: 940000000, exclusiveTo: ["glitch", "pumpkinMoon"] },
-    { name: "Ravage - 930,000,000", chance: 930000000, exclusiveTo: ["glitch", "graveyard"] },
-    { name: "Dreamscape - 850,000,000", chance: 850000000, exclusiveTo: ["limbo"] },
+    { name: "Lamenthyr - 1,000,000,000", chance: 1000000000, nativeBiomes: ["glitch", "bloodRain"], cutscene: "lamenthyr-cutscene" },
+    { name: "Arachnophobia - 940,000,000", chance: 940000000, nativeBiomes: ["glitch", "pumpkinMoon"] },
+    { name: "Ravage - 930,000,000", chance: 930000000, nativeBiomes: ["glitch", "graveyard"] },
+    { name: "Dreamscape - 850,000,000", chance: 850000000, nativeBiomes: ["limbo"] },
     { name: "Aegis - 825,000,000", chance: 825000000 },
-    { name: "Aegis : Watergun - 825,000,000", chance: 825000000, breakthrough: { blazing: 2 }},
-    { name: "Apostolos : Veil - 800,000,000", chance: 800000000, exclusiveTo: ["graveyard", "pumpkinMoon"] },
+    { name: "Aegis : Watergun - 825,000,000", chance: 825000000, breakthroughs: { blazing: 2 }},
+    { name: "Apostolos : Veil - 800,000,000", chance: 800000000, nativeBiomes: ["graveyard", "pumpkinMoon"] },
     { name: "Ruins : Withered - 800,000,000", chance: 800000000 },
     { name: "Sovereign - 750,000,000", chance: 750000000 },
-    { name: "Malediction - 730,000,000", chance: 730000000, exclusiveTo: ["glitch", "bloodRain"] },
-    { name: "Banshee - 730,000,000", chance: 730000000, exclusiveTo: ["glitch", "graveyard"] },
-    { name: "PROLOGUE - 666,616,111", chance: 666616111, exclusiveTo: ["limbo"] },
-    { name: "Harvester - 666,000,000", chance: 666000000, exclusiveTo: ["graveyard"] },
-    { name: "Apocalypse - 624,000,000", chance: 624000000, exclusiveTo: ["glitch", "graveyard"] },
+    { name: "Malediction - 730,000,000", chance: 730000000, nativeBiomes: ["glitch", "bloodRain"] },
+    { name: "Banshee - 730,000,000", chance: 730000000, nativeBiomes: ["glitch", "graveyard"] },
+    { name: "PROLOGUE - 666,616,111", chance: 666616111, nativeBiomes: ["limbo"] },
+    { name: "Harvester - 666,000,000", chance: 666000000, nativeBiomes: ["graveyard"] },
+    { name: "Apocalypse - 624,000,000", chance: 624000000, nativeBiomes: ["glitch", "graveyard"] },
     { name: "Matrix : Reality - 601,020,102", chance: 601020102 },
     { name: "Sophyra - 570,000,000", chance: 570000000 },
-    { name: "Elude - 555,555,555", chance: 555555555, exclusiveTo: ["limbo"] },
-    { name: "Dreammetric - 520,000,000", chance: 520000000, exclusiveTo: ["glitch", "dreamspace"], cutscene: "dreammetric-cutscene" },
-    { name: "Atlas : Yuletide - 510,000,000", chance: 510000000, breakthrough: { snowy: 3 } },
+    { name: "Elude - 555,555,555", chance: 555555555, nativeBiomes: ["limbo"] },
+    { name: "Dreammetric - 520,000,000", chance: 520000000, nativeBiomes: ["glitch", "dreamspace"], cutscene: "dreammetric-cutscene" },
+    { name: "Atlas : Yuletide - 510,000,000", chance: 510000000, breakthroughs: { snowy: 3 } },
     { name: "Matrix : Overdrive - 503,000,000", chance: 503000000 },
     { name: "Ruins - 500,000,000", chance: 500000000 },
-    { name: "Phantasma - 462,600,000", chance: 462600000, exclusiveTo: ["glitch", "pumpkinMoon"] },
+    { name: "Phantasma - 462,600,000", chance: 462600000, nativeBiomes: ["glitch", "pumpkinMoon"] },
     { name: "Kyawthuite : Remembrance - 450,000,000", chance: 450000000 },
-    { name: "unknown - 444,444,444", chance: 444444444, exclusiveTo: ["limbo"] },
+    { name: "unknown - 444,444,444", chance: 444444444, nativeBiomes: ["limbo"] },
     { name: "Apostolos - 444,000,000", chance: 444000000 },
-    { name: "Gargantua - 430,000,000", chance: 430000000, breakthrough: { starfall: 5 } },
-    { name: "Abyssal Hunter - 400,000,000", chance: 400000000, breakthrough: { rainy: 4 } },
+    { name: "Gargantua - 430,000,000", chance: 430000000, breakthroughs: { starfall: 5 } },
+    { name: "Abyssal Hunter - 400,000,000", chance: 400000000, breakthroughs: { rainy: 4 } },
     { name: "Impeached : I'm Peach - 400,000,000", chance: 400000000 },
-    { name: "CHILLSEAR - 375,000,000", chance: 375000000, breakthrough: { snowy: 3 } },
+    { name: "CHILLSEAR - 375,000,000", chance: 375000000, breakthroughs: { snowy: 3 } },
     { name: "Flora : Evergreen - 370,073,730", chance: 370073730 },
-    { name: "Atlas - 360,000,000", chance: 360000000, breakthrough: { sandstorm: 4 } },
+    { name: "Atlas - 360,000,000", chance: 360000000, breakthroughs: { sandstorm: 4 } },
     { name: "Jazz : Orchestra - 336,870,912", chance: 336870912 },
     { name: "LOTUSFALL - 320,000,000", chance: 320000000 },
-    { name: "Maelstrom - 309,999,999", chance: 309999999, breakthrough: { windy: 3 } },
-    { name: "Manta - 300,000,000", chance: 300000000, breakthrough: { blazing: 2 } },
+    { name: "Maelstrom - 309,999,999", chance: 309999999, breakthroughs: { windy: 3 } },
+    { name: "Manta - 300,000,000", chance: 300000000, breakthroughs: { blazing: 2 } },
     { name: "Overture : History - 300,000,000", chance: 300000000 },
-    { name: "Bloodlust - 300,000,000", chance: 300000000, breakthrough: { hell: 6 } },
+    { name: "Bloodlust - 300,000,000", chance: 300000000, breakthroughs: { hell: 6 } },
     { name: "Exotic : Void - 299,999,999", chance: 299999999 },
-    { name: "Astral : Legendarium - 267,200,000", chance: 267200000, breakthrough: { starfall: 5 } },
+    { name: "Astral : Legendarium - 267,200,000", chance: 267200000, breakthroughs: { starfall: 5 } },
     { name: "Archangel - 250,000,000", chance: 250000000 },
-    { name: "Surfer : Shard Surfer - 225,000,000", chance: 225000000, breakthrough: { snowy: 3 } },
+    { name: "Surfer : Shard Surfer - 225,000,000", chance: 225000000, breakthroughs: { snowy: 3 } },
     { name: "HYPER-VOLT : EVER-STORM - 225,000,000", chance: 225000000 },
-    { name: "Oppression - 220,000,000", chance: 220000000, exclusiveTo: ["glitch"], cutscene: "oppression-cutscene" },
-    { name: "Impeached - 200,000,000", chance: 200000000, breakthrough: { corruption: 5 } },
-    { name: "Nightmare Sky - 190,000,000", chance: 190000000, exclusiveTo: ["pumpkinMoon"] },
-    { name: "Twilight : Withering Grace - 180,000,000", chance: 180000000, breakthrough: { night: 10 } },
+    { name: "Oppression - 220,000,000", chance: 220000000, nativeBiomes: ["glitch"], cutscene: "oppression-cutscene" },
+    { name: "Impeached - 200,000,000", chance: 200000000, breakthroughs: { corruption: 5 } },
+    { name: "Nightmare Sky - 190,000,000", chance: 190000000, nativeBiomes: ["pumpkinMoon"] },
+    { name: "Twilight : Withering Grace - 180,000,000", chance: 180000000, breakthroughs: { night: 10 } },
     { name: "Symphony - 175,000,000", chance: 175000000 },
     { name: "Glock : the glock of the sky - 170,000,000", chance: 170000000 },
     { name: "Overture - 150,000,000", chance: 150000000 },
-    { name: "Abominable - 120,000,000", chance: 120000000, breakthrough: { snowy: 3 } },
-    { name: "Starscourge : Radiant - 100,000,000", chance: 100000000, breakthrough: { starfall: 5 } },
+    { name: "Abominable - 120,000,000", chance: 120000000, breakthroughs: { snowy: 3 } },
+    { name: "Starscourge : Radiant - 100,000,000", chance: 100000000, breakthroughs: { starfall: 5 } },
     { name: "Chromatic : GENESIS - 99,999,999", chance: 99999999 },
-    { name: "Express - 90,000,000", chance: 90000000, breakthrough: { snowy: 3 } },
+    { name: "Express - 90,000,000", chance: 90000000, breakthroughs: { snowy: 3 } },
     { name: "Virtual : Worldwide - 87,500,000", chance: 87500000 },
     { name: "Harnessed : Elements - 85,000,000", chance: 85000000 },
-    { name: "Accursed - 82,000,000", chance: 82000000, exclusiveTo: ["glitch", "bloodRain"] },
-    { name: "Sailor : Flying Dutchman - 80,000,000", chance: 80000000, breakthrough: { rainy: 4 } },
+    { name: "Accursed - 82,000,000", chance: 82000000, nativeBiomes: ["glitch", "bloodRain"] },
+    { name: "Sailor : Flying Dutchman - 80,000,000", chance: 80000000, breakthroughs: { rainy: 4 } },
     { name: "Carriage - 80,000,000", chance: 80000000 },
-    { name: "Winter Fantasy - 72,000,000", chance: 72000000, breakthrough: { snowy: 3 } },
-    { name: "Dullahan - 72,000,000", chance: 72000000, exclusiveTo: ["graveyard"] },
-    { name: "Twilight : Iridescent Memory - 60,000,000", chance: 60000000, breakthrough: { night: 10 } },
+    { name: "Winter Fantasy - 72,000,000", chance: 72000000, breakthroughs: { snowy: 3 } },
+    { name: "Dullahan - 72,000,000", chance: 72000000, nativeBiomes: ["graveyard"] },
+    { name: "Twilight : Iridescent Memory - 60,000,000", chance: 60000000, breakthroughs: { night: 10 } },
     { name: "SENTINEL - 60,000,000", chance: 60000000 },
     { name: "Matrix - 50,000,000", chance: 50000000 },
     { name: "Runic - 50,000,000", chance: 50000000 },
     { name: "Exotic : APEX - 49,999,500", chance: 49999500 },
     { name: "Overseer - 45,000,000", chance: 45000000 },
-    { name: "Santa Frost - 45,000,000", chance: 45000000, breakthrough: { snowy: 3 } },
-    { name: "{J u x t a p o s i t i o n} - 40,440,400", chance: 40440400, exclusiveTo: ["limbo"] },
+    { name: "Santa Frost - 45,000,000", chance: 45000000, breakthroughs: { snowy: 3 } },
+    { name: "{J u x t a p o s i t i o n} - 40,440,400", chance: 40440400, nativeBiomes: ["limbo"] },
     { name: "Virtual : Fatal Error - 40,413,000", chance: 40413000 },
     { name: "Chromatic : Kromat1k - 40,000,000", chance: 40000000 },
-    { name: "Soul Hunter - 40,000,000", chance: 40000000, exclusiveTo: ["graveyard"] },
+    { name: "Soul Hunter - 40,000,000", chance: 40000000, nativeBiomes: ["graveyard"] },
     { name: "Ethereal - 35,000,000", chance: 35000000 },
-    { name: "Headless : Horseman - 32,000,000", chance: 32000000, exclusiveTo: ["glitch", "pumpkinMoon"] },
+    { name: "Headless : Horseman - 32,000,000", chance: 32000000, nativeBiomes: ["glitch", "pumpkinMoon"] },
     { name: "Innovator - 30,000,000", chance: 30000000 },
     { name: "Arcane : Dark - 30,000,000", chance: 30000000 },
     { name: "Aviator - 24,000,000", chance: 24000000 },
-    { name: "Cryptfire - 21,000,000", chance: 21000000, exclusiveTo: ["graveyard"] },
+    { name: "Cryptfire - 21,000,000", chance: 21000000, nativeBiomes: ["graveyard"] },
     { name: "Chromatic - 20,000,000", chance: 20000000 },
-    { name: "Blizzard - 27,315,000", chance: 27315000, breakthrough: { snowy: 3 } },
-    { name: "Lullaby - 17,000,000", chance: 17000000, breakthrough: { night: 10 } },
-    { name: "Sinister - 15,000,000", chance: 15000000, exclusiveTo: ["glitch", "pumpkinMoon"] },
+    { name: "Blizzard - 27,315,000", chance: 27315000, breakthroughs: { snowy: 3 } },
+    { name: "Lullaby - 17,000,000", chance: 17000000, breakthroughs: { night: 10 } },
+    { name: "Sinister - 15,000,000", chance: 15000000, nativeBiomes: ["glitch", "pumpkinMoon"] },
     { name: "Arcane : Legacy - 15,000,000", chance: 15000000 },
-    { name: "Sirius - 14,000,000", chance: 14000000, breakthrough: { starfall: 5 } },
-    { name: "Stormal : Hurricane - 13,500,000", chance: 13500000, breakthrough: { windy: 3 } },
-    { name: "Glitch - 12,210,110", chance: 12210110, exclusiveTo: ["glitch"] },
-    { name: "Wonderland - 12,000,000", chance: 12000000, breakthrough: { snowy: 3 } },
-    { name: "Sailor - 12,000,000", chance: 12000000, breakthrough: { rainy: 4 } },
-    { name: "Moonflower - 10,000,000", chance: 10000000, exclusiveTo: ["pumpkinMoon"] },
-    { name: "Starscourge - 10,000,000", chance: 10000000, breakthrough: { starfall: 5 } },
-    { name: "Stargazer - 9,200,000", chance: 9200000, breakthrough: { starfall: 5 } },
+    { name: "Sirius - 14,000,000", chance: 14000000, breakthroughs: { starfall: 5 } },
+    { name: "Stormal : Hurricane - 13,500,000", chance: 13500000, breakthroughs: { windy: 3 } },
+    { name: "Glitch - 12,210,110", chance: 12210110, nativeBiomes: ["glitch"] },
+    { name: "Wonderland - 12,000,000", chance: 12000000, breakthroughs: { snowy: 3 } },
+    { name: "Sailor - 12,000,000", chance: 12000000, breakthroughs: { rainy: 4 } },
+    { name: "Moonflower - 10,000,000", chance: 10000000, nativeBiomes: ["pumpkinMoon"] },
+    { name: "Starscourge - 10,000,000", chance: 10000000, breakthroughs: { starfall: 5 } },
+    { name: "Stargazer - 9,200,000", chance: 9200000, breakthroughs: { starfall: 5 } },
     { name: "Helios - 9,000,000", chance: 9000000 },
-    { name: "Nihility - 9,000,000", chance: 9000000, breakthrough: { null: 1000, limbo: 1000 }, exclusiveTo: ["limbo-null"] },
+    { name: "Nihility - 9,000,000", chance: 9000000, breakthroughs: { null: 1000, limbo: 1000 }, nativeBiomes: ["limbo-null"] },
     { name: "Harnessed - 8,500,000", chance: 85000000 },
     { name: "Origin : Onion - 8,000,000", chance: 80000000 },
     { name: "Nautilus : Lost - 7,700,000", chance: 7700000 },
     { name: "Velocity - 7,630,000", chance: 7630000 },
     { name: "HYPER-VOLT - 7,500,000", chance: 7500000 },
-    { name: "Anubis - 7,200,000", chance: 7200000, breakthrough: { sandstorm: 4 } },
-    { name: "Hades - 6,666,666", chance: 6666666, breakthrough: { hell: 6 } },
-    { name: "Oni - 6,666,666", chance: 6666666, exclusiveTo: ["glitch", "bloodRain"] },
+    { name: "Anubis - 7,200,000", chance: 7200000, breakthroughs: { sandstorm: 4 } },
+    { name: "Hades - 6,666,666", chance: 6666666, breakthroughs: { hell: 6 } },
+    { name: "Oni - 6,666,666", chance: 6666666, nativeBiomes: ["glitch", "bloodRain"] },
     { name: "Origin - 6,500,000", chance: 6500000 },
-    { name: "Twilight - 6,000,000", chance: 6000000, breakthrough: { night: 10 } },
-    { name: "Vital - 6,000,000", chance: 6000000, exclusiveTo: ["pumpkinMoon"] },
-    { name: "Anima - 5,730,000", chance: 5730000, exclusiveTo: ["limbo"] },
-    { name: "Galaxy - 5,000,000", chance: 5000000, breakthrough: { starfall: 5 } },
-    { name: "Lunar : Full Moon - 5,000,000", chance: 5000000, breakthrough: { night: 10 } },
-    { name: "Solar : Solstice - 5,000,000", chance: 5000000, breakthrough: { day: 10 } },
+    { name: "Twilight - 6,000,000", chance: 6000000, breakthroughs: { night: 10 } },
+    { name: "Vital - 6,000,000", chance: 6000000, nativeBiomes: ["pumpkinMoon"] },
+    { name: "Anima - 5,730,000", chance: 5730000, nativeBiomes: ["limbo"] },
+    { name: "Galaxy - 5,000,000", chance: 5000000, breakthroughs: { starfall: 5 } },
+    { name: "Lunar : Full Moon - 5,000,000", chance: 5000000, breakthroughs: { night: 10 } },
+    { name: "Solar : Solstice - 5,000,000", chance: 5000000, breakthroughs: { day: 10 } },
     { name: "Aquatic : Flame - 4,000,000", chance: 4000000 },
-    { name: "Poseidon - 4,000,000", chance: 4000000, breakthrough: { rainy: 4 } },
-    { name: "Shiftlock - 3,325,000", chance: 3325000, breakthrough: { null: 1000, limbo: 1000 }, exclusiveTo: ["limbo-null"] },
+    { name: "Poseidon - 4,000,000", chance: 4000000, breakthroughs: { rainy: 4 } },
+    { name: "Shiftlock - 3,325,000", chance: 3325000, breakthroughs: { null: 1000, limbo: 1000 }, nativeBiomes: ["limbo-null"] },
     { name: "Savior - 3,200,000", chance: 3200000 },
-    { name: "Headless - 3,200,000", chance: 3200000, exclusiveTo: ["glitch", "graveyard"] },
-    { name: "Lunar : Nightfall - 3,000,000", chance: 3000000, exclusiveTo: ["graveyard"] },
-    { name: "Parasite - 3,000,000", chance: 3000000, breakthrough: { corruption: 5 } },
+    { name: "Headless - 3,200,000", chance: 3200000, nativeBiomes: ["glitch", "graveyard"] },
+    { name: "Lunar : Nightfall - 3,000,000", chance: 3000000, nativeBiomes: ["graveyard"] },
+    { name: "Parasite - 3,000,000", chance: 3000000, breakthroughs: { corruption: 5 } },
     { name: "Virtual - 2,500,000", chance: 2500000 },
-    { name: "Undefined : Defined - 2,222,000", chance: 2222000, breakthrough: { null: 1000 } },
+    { name: "Undefined : Defined - 2,222,000", chance: 2222000, breakthroughs: { null: 1000 } },
     { name: "Bounded : Unbound - 2,000,000", chance: 2000000 },
     { name: "Gravitational - 2,000,000", chance: 2000000 },
     { name: "Cosmos - 1,520,000", chance: 1520000 },
-    { name: "Astral - 1,336,000", chance: 1336000, breakthrough: { starfall: 5 } },
+    { name: "Astral - 1,336,000", chance: 1336000, breakthroughs: { starfall: 5 } },
     { name: "Rage : Brawler - 1,280,000", chance: 1280000 },
-    { name: "Undefined - 1,111,000", chance: 1111000, breakthrough: { null: 1000, limbo: 1000 }, exclusiveTo: ["limbo-null"] },
+    { name: "Undefined - 1,111,000", chance: 1111000, breakthroughs: { null: 1000, limbo: 1000 }, nativeBiomes: ["limbo-null"] },
     { name: "Magnetic : Reverse Polarity - 1,024,000", chance: 1024000 },
     { name: "Flushed : Troll - 1,000,000", chance: 1000000 },
     { name: "Arcane - 1,000,000", chance: 1000000 },
     { name: "Kyawthuite - 850,000", chance: 850000 },
     { name: "Warlock - 666,000", chance: 666000 },
-    { name: "Pump : Trickster - 600,000", chance: 600000, exclusiveTo: ["glitch", "pumpkinMoon"] },
-    { name: "Prowler - 540,000", chance: 540000, exclusiveTo: ["anotherRealm"] },
-    { name: "Raven - 500,000", chance: 500000, exclusiveTo: ["limbo"] },
+    { name: "Pump : Trickster - 600,000", chance: 600000, nativeBiomes: ["glitch", "pumpkinMoon"] },
+    { name: "Prowler - 540,000", chance: 540000, nativeBiomes: ["anotherRealm"] },
+    { name: "Raven - 500,000", chance: 500000, nativeBiomes: ["limbo"] },
     { name: "Terror - 400,000", chance: 400000 },
     { name: "Celestial - 350,000", chance: 350000 },
     { name: "Watermelon - 320,000", chance: 320000 },
-    { name: "Star Rider : Starfish Rider - 250,000", chance: 250000, breakthrough: { starfall: 10 } },
+    { name: "Star Rider : Starfish Rider - 250,000", chance: 250000, breakthroughs: { starfall: 10 } },
     { name: "Bounded - 200,000", chance: 200000 },
-    { name: "Pump - 200,000", chance: 200000, exclusiveTo: ["pumpkinMoon"] },
+    { name: "Pump - 200,000", chance: 200000, nativeBiomes: ["pumpkinMoon"] },
     { name: "Aether - 180,000", chance: 180000 },
     { name: "Jade - 125,000", chance: 125000 },
     { name: "Divinus : Angel - 120,000", chance: 120000 },
-    { name: "Comet - 120,000", chance: 120000, breakthrough: { starfall: 5 } },
-    { name: "Undead : Devil - 120,000", chance: 120000, breakthrough: { hell: 6 } },
+    { name: "Comet - 120,000", chance: 120000, breakthroughs: { starfall: 5 } },
+    { name: "Undead : Devil - 120,000", chance: 120000, breakthroughs: { hell: 6 } },
     { name: "Diaboli : Void - 100,400", chance: 100400 },
     { name: "Exotic - 99,999", chance: 99999 },
-    { name: "Stormal - 90,000", chance: 90000, breakthrough: { windy: 3 } },
-    { name: "Flow - 87,000", chance: 87000 , breakthrough: { windy: 3 } },
-    { name: "Permafrost - 73,500", chance: 73500, breakthrough: { snowy: 3 } },
+    { name: "Stormal - 90,000", chance: 90000, breakthroughs: { windy: 3 } },
+    { name: "Flow - 87,000", chance: 87000 , breakthroughs: { windy: 3 } },
+    { name: "Permafrost - 73,500", chance: 73500, breakthroughs: { snowy: 3 } },
     { name: "Nautilus - 70,000", chance: 70000 },
-    { name: "Hazard : Rays - 70,000", chance: 70000, breakthrough: { corruption: 5 } },
+    { name: "Hazard : Rays - 70,000", chance: 70000, breakthroughs: { corruption: 5 } },
     { name: "Flushed : Lobotomy - 69,000", chance: 69000 },
-    { name: "Solar - 50,000", chance: 50000, breakthrough: { day: 10 } },
-    { name: "Lunar - 50,000", chance: 50000, breakthrough: { night: 10 } },
-    { name: "Starlight - 50,000", chance: 50000, breakthrough: { starfall: 5 } },
-    { name: "Star Rider - 50,000", chance: 50000, breakthrough: { starfall: 5 } },
+    { name: "Solar - 50,000", chance: 50000, breakthroughs: { day: 10 } },
+    { name: "Lunar - 50,000", chance: 50000, breakthroughs: { night: 10 } },
+    { name: "Starlight - 50,000", chance: 50000, breakthroughs: { starfall: 5 } },
+    { name: "Star Rider - 50,000", chance: 50000, breakthroughs: { starfall: 5 } },
     { name: "Aquatic - 40,000", chance: 40000 },
     { name: "Watt - 32,768", chance: 32768 },
     { name: "Copper - 29,000", chance: 29000 },
     { name: "Powered - 16,384", chance: 16384 },
     { name: "LEAK - 14,000", chance: 14000 },
     { name: "Rage : Heated - 12,800", chance: 12800 },
-    { name: "Corrosive - 12,000", chance: 12000, breakthrough: { corruption: 5 } },
-    { name: "Undead - 12,000", chance: 12000, breakthrough: { hell: 6 } },
-    { name: "★★★ - 10,000", chance: 10000, exclusiveTo: ["glitch", "dreamspace"] },
+    { name: "Corrosive - 12,000", chance: 12000, breakthroughs: { corruption: 5 } },
+    { name: "Undead - 12,000", chance: 12000, breakthroughs: { hell: 6 } },
+    { name: "★★★ - 10,000", chance: 10000, nativeBiomes: ["glitch", "dreamspace"] },
     { name: "Atomic : Riboneucleic - 9876", chance: 9876 },
     { name: "Lost Soul - 9,200", chance: 9200 },
     { name: "Honey - 8,335", chance: 8335 },
     { name: "Quartz - 8,192", chance: 8192 },
-    { name: "Hazard - 7,000", chance: 7000, breakthrough: { corruption: 5 } },
+    { name: "Hazard - 7,000", chance: 7000, breakthroughs: { corruption: 5 } },
     { name: "Flushed : Heart Eye - 6,900", chance: 6900 },
     { name: "Flushed - 6,900", chance: 6900 },
     { name: "Megaphone - 5,000", chance: 5000 },
@@ -1521,27 +1519,27 @@ const AURA_LIBRARY = [
     { name: "Cola - 3,999", chance: 3999 },
     { name: "Pukeko - 3,198", chance: 3198 },
     { name: "Player - 3,000", chance: 3000 },
-    { name: "Fault - 3,000", chance: 3000, exclusiveTo: ["glitch"] },
-    { name: "Glacier - 2,304", chance: 2304, breakthrough: { snowy: 3 } },
+    { name: "Fault - 3,000", chance: 3000, nativeBiomes: ["glitch"] },
+    { name: "Glacier - 2,304", chance: 2304, breakthroughs: { snowy: 3 } },
     { name: "Ash - 2,300", chance: 2300 },
     { name: "Magnetic - 2,048", chance: 2048 },
     { name: "Glock - 1,700", chance: 1700 },
     { name: "Atomic - 1,180", chance: 1180 },
     { name: "Precious - 1,024", chance: 1024 },
     { name: "Diaboli - 1,004", chance: 1004 },
-    { name: "★★ - 1,000", chance: 1000, exclusiveTo: ["glitch", "dreamspace"] },
-    { name: "Wind - 900", chance: 900, breakthrough: { windy: 3 } },
+    { name: "★★ - 1,000", chance: 1000, nativeBiomes: ["glitch", "dreamspace"] },
+    { name: "Wind - 900", chance: 900, breakthroughs: { windy: 3 } },
     { name: "Aquamarine - 900", chance: 900 },
     { name: "Sapphire - 800", chance: 800 },
-    { name: "Jackpot - 777", chance: 777, breakthrough: { sandstorm: 4 } },
+    { name: "Jackpot - 777", chance: 777, breakthroughs: { sandstorm: 4 } },
     { name: "Ink - 700", chance: 700 },
-    { name: "Gilded - 512", chance: 512, breakthrough: { sandstorm: 4 } },
+    { name: "Gilded - 512", chance: 512, breakthroughs: { sandstorm: 4 } },
     { name: "Emerald - 500", chance: 500 },
     { name: "Forbidden - 404", chance: 404 },
     { name: "Ruby - 350", chance: 350 },
     { name: "Topaz - 150", chance: 150 },
     { name: "Rage - 128", chance: 128 },
-    { name: "★ - 100", chance: 100, exclusiveTo: ["glitch", "dreamspace"] },
+    { name: "★ - 100", chance: 100, nativeBiomes: ["glitch", "dreamspace"] },
     { name: "Crystallized - 64", chance: 64 },
     { name: "Divinus : Love - 32", chance: 32 },
     { name: "Divinus - 32", chance: 32 },
@@ -1550,8 +1548,113 @@ const AURA_LIBRARY = [
     { name: "Good - 5", chance: 5 },
     { name: "Uncommon - 4", chance: 4 },
     { name: "Common - 2", chance: 1 },
-    { name: "Nothing - 1", chance: 1, exclusiveTo: ["limbo"] },
-];
+    { name: "Nothing - 1", chance: 1, nativeBiomes: ["limbo"] },
+]);
+
+function coerceNativeBiomes(nativeBiomes) {
+    if (!nativeBiomes) return null;
+    const queue = Array.isArray(nativeBiomes) ? nativeBiomes : [nativeBiomes];
+    const normalized = new Set();
+    for (const item of queue) {
+        if (typeof item !== 'string') continue;
+        const fragments = item.split(',');
+        for (const fragment of fragments) {
+            const trimmed = fragment.trim();
+            if (trimmed) {
+                normalized.add(trimmed);
+            }
+        }
+    }
+    return normalized.size > 0 ? normalized : null;
+}
+
+function coerceBreakthroughMap(breakthroughs) {
+    if (!breakthroughs) return null;
+    const pairs = breakthroughs instanceof Map
+        ? Array.from(breakthroughs.entries())
+        : Object.entries(breakthroughs);
+    const sanitized = new Map();
+    for (const [biome, multiplier] of pairs) {
+        const value = Number(multiplier);
+        if (Number.isFinite(value) && value > 0) {
+            sanitized.set(biome, value);
+        }
+    }
+    return sanitized.size > 0 ? sanitized : null;
+}
+
+function normalizeAuraDefinition(definition) {
+    const { nativeBiomes, breakthroughs, ...rest } = definition;
+    return {
+        ...rest,
+        nativeBiomes: coerceNativeBiomes(nativeBiomes),
+        breakthroughs: coerceBreakthroughMap(breakthroughs)
+    };
+}
+
+function createAuraRegistry(definitions) {
+    const catalog = [];
+    for (const entry of definitions) {
+        const normalized = normalizeAuraDefinition(entry);
+        catalog.push(Object.freeze(normalized));
+    }
+    return Object.freeze(catalog);
+}
+
+const AURA_REGISTRY = createAuraRegistry(AURA_BLUEPRINT_SOURCE);
+
+const auraRollState = new WeakMap();
+
+function getAuraState(aura) {
+    let state = auraRollState.get(aura);
+    if (!state) {
+        state = { wonCount: 0, effectiveChance: aura.chance };
+        auraRollState.set(aura, state);
+    }
+    return state;
+}
+
+function resetAuraRollState(registry) {
+    for (const aura of registry) {
+        const state = getAuraState(aura);
+        state.wonCount = 0;
+        state.effectiveChance = aura.chance;
+    }
+}
+
+function recordAuraWin(aura) {
+    if (!aura) return;
+    const state = getAuraState(aura);
+    state.wonCount += 1;
+}
+
+function setAuraEffectiveChance(aura, value) {
+    const state = getAuraState(aura);
+    state.effectiveChance = value;
+}
+
+function readAuraWinCount(aura) {
+    return getAuraState(aura).wonCount;
+}
+
+function isAuraNativeTo(aura, biome) {
+    return Boolean(aura && aura.nativeBiomes && aura.nativeBiomes.has(biome));
+}
+
+function auraMatchesAnyBiome(aura, biomes) {
+    if (!aura || !aura.nativeBiomes || !Array.isArray(biomes)) return false;
+    for (const biome of biomes) {
+        if (aura.nativeBiomes.has(biome)) {
+            return true;
+        }
+    }
+    return false;
+}
+
+function readBreakthroughMultiplier(aura, biome) {
+    if (!aura || !aura.breakthroughs) return null;
+    return aura.breakthroughs.get(biome) ?? null;
+}
 
 const EVENT_LIST = [
     { id: "valentine24", label: "Valentine 2024" },
@@ -1652,10 +1755,15 @@ for (const [eventId, auraNames] of Object.entries(EVENT_AURA_LOOKUP)) {
     });
 }
 
+function getAuraEventId(aura) {
+    if (!aura) return null;
+    return auraEventIndex.get(aura.name) || null;
+}
+
 const CUTSCENE_PRIORITY_SEQUENCE = ["oblivion-cutscene", "memory-cutscene", "equinox-cutscene", "erebus-cutscene", "luminosity-cutscene", "pixelation-cutscene", "lamenthyr-cutscene", "dreammetric-cutscene", "oppression-cutscene"];
 
-oblivionAuraData = AURA_LIBRARY.find(aura => aura.name === OBLIVION_AURA_LABEL) || null;
-memoryAuraData = AURA_LIBRARY.find(aura => aura.name === MEMORY_AURA_LABEL) || null;
+oblivionAuraData = AURA_REGISTRY.find(aura => aura.name === OBLIVION_AURA_LABEL) || null;
+memoryAuraData = AURA_REGISTRY.find(aura => aura.name === MEMORY_AURA_LABEL) || null;
 
 const ROE_EXCLUSION_SET = new Set([
     "Apostolos : Veil - 800,000,000",
@@ -1697,13 +1805,7 @@ const ROE_BREAKTHROUGH_BLOCKLIST = new Set([
     "Manta - 300,000,000"
 ]);
 
-AURA_LIBRARY.forEach(aura => {
-    aura.wonCount = 0;
-    const eventId = auraEventIndex.get(aura.name);
-    if (eventId) {
-        aura.event = eventId;
-    }
-});
+AURA_REGISTRY.forEach(getAuraState);
 
 const EVENT_SUMMARY_EMPTY_LABEL = "No events enabled";
 
@@ -2102,24 +2204,200 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // XP is awarded once per rarity tier. Landing any aura within an inclusive tier range grants that tier's XP
-// a single time per simulation run, regardless of how many qualifying entries in AURA_LIBRARY were rolled in that band.
-const XP_RARITY_TABLE = [
-    { key: 'tier-9k', min: 9999, max: 99998, xp: 1000, label: '1 in 9,999 – 99,998' },
-    { key: 'tier-99k', min: 99999, max: 999998, xp: 2500, label: '1 in 99,999 – 999,998' },
-    { key: 'tier-999k', min: 999999, max: 9999998, xp: 5000, label: '1 in 999,999 – 9,999,998' },
-    { key: 'tier-9m', min: 9999999, max: 99999998, xp: 7500, label: '1 in 9,999,999 – 99,999,998' },
-    { key: 'tier-99m', min: 99999999, max: 999999998, xp: 15000, label: '1 in 99,999,999 – 999,999,998' },
-    { key: 'tier-999m', min: 999999999, max: Number.POSITIVE_INFINITY, xp: 30000, label: '1 in 999,999,999+' }
-];
+// a single time per simulation run, regardless of how many qualifying entries in AURA_REGISTRY were rolled in that band.
+const XP_RARITY_ROWS = Object.freeze([
+    ['tier-9k', 9999, 99998, 1000, '1 in 9,999 – 99,998'],
+    ['tier-99k', 99999, 999998, 2500, '1 in 99,999 – 999,998'],
+    ['tier-999k', 999999, 9999998, 5000, '1 in 999,999 – 9,999,998'],
+    ['tier-9m', 9999999, 99999998, 7500, '1 in 9,999,999 – 99,999,998'],
+    ['tier-99m', 99999999, 999999998, 15000, '1 in 99,999,999 – 999,999,998'],
+    ['tier-999m', 999999999, Number.POSITIVE_INFINITY, 30000, '1 in 999,999,999+']
+]);
+
+const XP_RARITY_TABLE = Object.freeze(XP_RARITY_ROWS.map(([key, min, max, xp, label]) => Object.freeze({ key, min, max, xp, label })));
 
 function resolveXpTierForChance(chance) {
     if (!Number.isFinite(chance)) return null;
-    for (const tier of XP_RARITY_TABLE) {
-        if (chance >= tier.min && chance <= tier.max) {
-            return tier;
+    return XP_RARITY_TABLE.find(tier => chance >= tier.min && chance <= tier.max) || null;
+}
+
+const LIMBO_NATIVE_FILTER = ['limbo', 'limbo-null'];
+
+function createAuraEvaluationContext(biome, { eventChecker }) {
+    const isRoe = biome === 'roe';
+    return {
+        biome,
+        isRoe,
+        glitchLikeBiome: biome === 'glitch' || isRoe,
+        exclusivityBiome: isRoe ? 'glitch' : biome,
+        eventChecker
+    };
+}
+
+function computeLimboEffectiveChance(aura, context) {
+    if (aura.requiresOblivionPreset) return Infinity;
+    if (!context.eventChecker(aura)) return Infinity;
+    if (!aura.nativeBiomes) return Infinity;
+    if (!auraMatchesAnyBiome(aura, LIMBO_NATIVE_FILTER)) return Infinity;
+
+    let effectiveChance = aura.chance;
+    const limboBreakthrough = readBreakthroughMultiplier(aura, 'limbo');
+    if (limboBreakthrough) {
+        effectiveChance = Math.floor(aura.chance / limboBreakthrough);
+    }
+    return Math.max(1, effectiveChance);
+}
+
+function computeStandardEffectiveChance(aura, context) {
+    const { biome, exclusivityBiome, glitchLikeBiome, isRoe } = context;
+    if (aura.requiresOblivionPreset) return Infinity;
+
+    const eventId = getAuraEventId(aura);
+    const eventEnabled = context.eventChecker(aura);
+    if (!eventEnabled) return Infinity;
+
+    if (isRoe && ROE_EXCLUSION_SET.has(aura.name)) return Infinity;
+
+    if (aura.nativeBiomes) {
+        if (isAuraNativeTo(aura, 'limbo') && !isAuraNativeTo(aura, 'limbo-null')) {
+            return Infinity;
+        }
+
+        const allowEventGlitchAccess = glitchLikeBiome
+            && eventId
+            && eventEnabled
+            && GLITCH_EVENT_WHITELIST.has(eventId);
+
+        if (!isAuraNativeTo(aura, 'limbo-null') && !isAuraNativeTo(aura, exclusivityBiome) && !allowEventGlitchAccess) {
+            return Infinity;
         }
     }
-    return null;
+
+    let effectiveChance = aura.chance;
+    if (aura.breakthroughs) {
+        if (glitchLikeBiome && (!isRoe || !ROE_BREAKTHROUGH_BLOCKLIST.has(aura.name))) {
+            let minChance = aura.chance;
+            for (const multiplier of aura.breakthroughs.values()) {
+                const scaled = Math.floor(aura.chance / multiplier);
+                if (scaled < minChance) {
+                    minChance = scaled;
+                }
+            }
+            effectiveChance = minChance;
+        } else {
+            const targetBiome = exclusivityBiome;
+            let multiplier = readBreakthroughMultiplier(aura, targetBiome);
+            if (!multiplier && targetBiome !== biome) {
+                multiplier = readBreakthroughMultiplier(aura, biome);
+            }
+            if (multiplier) {
+                effectiveChance = Math.floor(aura.chance / multiplier);
+            }
+        }
+    }
+
+    return Math.max(1, effectiveChance);
+}
+
+function determineAuraEffectiveChance(aura, context) {
+    if (context.biome === 'limbo') {
+        return computeLimboEffectiveChance(aura, context);
+    }
+    return computeStandardEffectiveChance(aura, context);
+}
+
+function buildComputedAuraEntries(registry, context, luckValue, breakthroughStatsMap) {
+    const evaluated = [];
+    for (const aura of registry) {
+        const effectiveChance = determineAuraEffectiveChance(aura, context);
+        if (!Number.isFinite(effectiveChance)) {
+            setAuraEffectiveChance(aura, Number.POSITIVE_INFINITY);
+            continue;
+        }
+        setAuraEffectiveChance(aura, effectiveChance);
+
+        const usesBreakthrough = effectiveChance !== aura.chance;
+        const breakthroughStats = usesBreakthrough ? { count: 0, btChance: effectiveChance } : null;
+        if (breakthroughStats) {
+            breakthroughStatsMap.set(aura.name, breakthroughStats);
+        }
+
+        let successThreshold;
+        if (aura.ignoreLuck) {
+            const fixedThreshold = Number.isFinite(aura.fixedRollThreshold) ? aura.fixedRollThreshold : 1;
+            successThreshold = Math.max(0, Math.min(effectiveChance, fixedThreshold));
+        } else {
+            successThreshold = Math.min(effectiveChance, luckValue);
+        }
+
+        const successRatio = successThreshold > 0 ? successThreshold / effectiveChance : 0;
+        evaluated.push({ aura, successRatio, breakthroughStats, effectiveChance });
+    }
+
+    evaluated.sort((a, b) => b.effectiveChance - a.effectiveChance);
+    return evaluated;
+}
+
+function buildResultEntries(registry, biome, breakthroughStatsMap) {
+    const entries = [];
+    for (const aura of registry) {
+        const winCount = readAuraWinCount(aura);
+        if (winCount <= 0) continue;
+
+        const rarityClass = typeof resolveRarityClass === 'function' ? resolveRarityClass(aura, biome) : '';
+        const specialClass = typeof resolveAuraStyleClass === 'function' ? resolveAuraStyleClass(aura) : '';
+        const eventClass = getAuraEventId(aura) ? 'sigil-event-text' : '';
+        const classAttr = [rarityClass, specialClass, eventClass].filter(Boolean).join(' ');
+        const formattedName = formatAuraNameMarkup(aura);
+        const breakthroughStats = breakthroughStatsMap.get(aura.name);
+
+        if (breakthroughStats && breakthroughStats.count > 0) {
+            const btName = aura.name.replace(/-\s*[\d,]+/, `- ${formatWithCommas(breakthroughStats.btChance)}`);
+            const nativeLabel = formatAuraNameMarkup(aura, btName);
+            entries.push({
+                markup: `<span class="${classAttr}">[Native] ${nativeLabel} | Times Rolled: ${formatWithCommas(breakthroughStats.count)}</span>`,
+                priority: determineResultPriority(aura, breakthroughStats.btChance)
+            });
+
+            if (winCount > breakthroughStats.count) {
+                entries.push({
+                    markup: `<span class="${classAttr}">${formattedName} | Times Rolled: ${formatWithCommas(winCount - breakthroughStats.count)}</span>`,
+                    priority: determineResultPriority(aura, aura.chance)
+                });
+            }
+        } else {
+            entries.push({
+                markup: `<span class="${classAttr}">${formattedName} | Times Rolled: ${formatWithCommas(winCount)}</span>`,
+                priority: determineResultPriority(aura, aura.chance)
+            });
+        }
+    }
+
+    entries.sort((a, b) => b.priority - a.priority);
+    return entries.map(entry => entry.markup);
+}
+
+function summarizeXpRewards(registry) {
+    const earnedTiers = new Set();
+    registry.forEach(aura => {
+        if (readAuraWinCount(aura) > 0) {
+            const tier = resolveXpTierForChance(aura.chance);
+            if (tier) {
+                earnedTiers.add(tier.key);
+            }
+        }
+    });
+
+    let totalXp = 0;
+    const lines = [];
+    for (const tier of XP_RARITY_TABLE) {
+        if (earnedTiers.has(tier.key)) {
+            totalXp += tier.xp;
+            lines.push(`Reached ${tier.label}: +${formatWithCommas(tier.xp)} XP`);
+        }
+    }
+
+    return { totalXp, lines };
 }
 
 // Run the roll simulation while keeping the UI responsive
@@ -2176,16 +2454,16 @@ function runRollSimulation() {
     const biome = biomeSelector ? biomeSelector.value : '';
 
     const eventSnapshot = enabledEvents.size > 0 ? new Set(enabledEvents) : null;
-    const isEventAuraEnabled = aura => !aura.event || (eventSnapshot ? eventSnapshot.has(aura.event) : enabledEvents.has(aura.event));
+    const isEventAuraEnabled = aura => {
+        const eventId = getAuraEventId(aura);
+        return !eventId || (eventSnapshot ? eventSnapshot.has(eventId) : enabledEvents.has(eventId));
+    };
 
     feedContainer.innerHTML = 'Rolling...';
     let rolls = 0;
     const startTime = performance.now();
 
-    for (const aura of AURA_LIBRARY) {
-        aura.wonCount = 0;
-        aura.effectiveChance = aura.chance;
-    }
+    resetAuraRollState(AURA_REGISTRY);
 
     const breakthroughStatsMap = new Map();
 
@@ -2206,95 +2484,8 @@ function runRollSimulation() {
         }
     }
 
-    const effectiveAuras = [];
-    if (biome === 'limbo') {
-        for (const aura of AURA_LIBRARY) {
-            if (aura.requiresOblivionPreset) continue;
-            if (!isEventAuraEnabled(aura)) continue;
-            if (!aura.exclusiveTo) continue;
-            if (!aura.exclusiveTo.includes('limbo') && !aura.exclusiveTo.includes('limbo-null')) continue;
-
-            let effectiveChance = aura.chance;
-            if (aura.breakthrough && aura.breakthrough.limbo) {
-                effectiveChance = Math.floor(aura.chance / aura.breakthrough.limbo);
-            }
-            aura.effectiveChance = Math.max(1, effectiveChance);
-            effectiveAuras.push(aura);
-        }
-    } else {
-        const isRoe = biome === 'roe';
-        const glitchLikeBiome = biome === 'glitch' || isRoe;
-        const exclusivityBiome = isRoe ? 'glitch' : biome;
-
-        for (const aura of AURA_LIBRARY) {
-            if (aura.requiresOblivionPreset) {
-                aura.effectiveChance = Infinity;
-                continue;
-            }
-            if (!isEventAuraEnabled(aura)) {
-                aura.effectiveChance = Infinity;
-                continue;
-            }
-            if (isRoe && ROE_EXCLUSION_SET.has(aura.name)) {
-                aura.effectiveChance = Infinity;
-                continue;
-            }
-            if (aura.exclusiveTo) {
-                if (aura.exclusiveTo.includes('limbo') && !aura.exclusiveTo.includes('limbo-null')) {
-                    aura.effectiveChance = Infinity;
-                    continue;
-                }
-                const allowEventGlitchAccess = glitchLikeBiome && aura.event && (eventSnapshot ? eventSnapshot.has(aura.event) : enabledEvents.has(aura.event)) && GLITCH_EVENT_WHITELIST.has(aura.event);
-                if (!aura.exclusiveTo.includes('limbo-null') && !aura.exclusiveTo.includes(exclusivityBiome) && !allowEventGlitchAccess) {
-                    aura.effectiveChance = Infinity;
-                    continue;
-                }
-            }
-
-            let effectiveChance = aura.chance;
-            if (aura.breakthrough) {
-                if (glitchLikeBiome && (!isRoe || !ROE_BREAKTHROUGH_BLOCKLIST.has(aura.name))) {
-                    let minChance = aura.chance;
-                    for (const mult of Object.values(aura.breakthrough)) {
-                        minChance = Math.min(minChance, Math.floor(aura.chance / mult));
-                    }
-                    effectiveChance = minChance;
-                } else if (aura.breakthrough[biome]) {
-                    effectiveChance = Math.floor(aura.chance / aura.breakthrough[biome]);
-                }
-            }
-
-            aura.effectiveChance = Math.max(1, effectiveChance);
-            if (aura.effectiveChance !== Infinity) {
-                effectiveAuras.push(aura);
-            }
-        }
-    }
-
-    effectiveAuras.sort((a, b) => b.effectiveChance - a.effectiveChance);
-
-    const computedAuras = effectiveAuras.map(aura => {
-        const usesBreakthrough = aura.effectiveChance !== aura.chance;
-        const breakthroughStats = usesBreakthrough ? { count: 0, btChance: aura.effectiveChance } : null;
-        if (breakthroughStats) {
-            breakthroughStatsMap.set(aura.name, breakthroughStats);
-        }
-
-        let successThreshold;
-        if (aura.ignoreLuck) {
-            const fixedThreshold = Number.isFinite(aura.fixedRollThreshold) ? aura.fixedRollThreshold : 1;
-            successThreshold = Math.max(0, Math.min(aura.effectiveChance, fixedThreshold));
-        } else {
-            successThreshold = Math.min(aura.effectiveChance, luckValue);
-        }
-
-        const successRatio = successThreshold > 0 ? successThreshold / aura.effectiveChance : 0;
-        return {
-            aura,
-            successRatio,
-            breakthroughStats
-        };
-    });
+    const evaluationContext = createAuraEvaluationContext(biome, { eventChecker: isEventAuraEnabled, eventSnapshot });
+    const computedAuras = buildComputedAuraEntries(AURA_REGISTRY, evaluationContext, luckValue, breakthroughStatsMap);
 
     const activeOblivionAura = (oblivionPresetEnabled && luckValue >= OBLIVION_LUCK_TARGET) ? oblivionAuraData : null;
     const activeMemoryAura = (oblivionPresetEnabled && luckValue >= OBLIVION_LUCK_TARGET) ? memoryAuraData : null;
@@ -2332,12 +2523,12 @@ function runRollSimulation() {
 
     function performSingleRollCheck() {
         if (memoryProbability > 0 && sampleEntropy() < memoryProbability) {
-            activeMemoryAura.wonCount++;
+            recordAuraWin(activeMemoryAura);
             rolls++;
             return;
         }
         if (oblivionProbability > 0 && sampleEntropy() < oblivionProbability) {
-            activeOblivionAura.wonCount++;
+            recordAuraWin(activeOblivionAura);
             rolls++;
             return;
         }
@@ -2345,7 +2536,7 @@ function runRollSimulation() {
         for (let j = 0; j < computedAuras.length; j++) {
             const entry = computedAuras[j];
             if (entry.successRatio > 0 && sampleEntropy() < entry.successRatio) {
-                entry.aura.wonCount++;
+                recordAuraWin(entry.aura);
                 if (entry.breakthroughStats) {
                     entry.breakthroughStats.count++;
                 }
@@ -2397,8 +2588,8 @@ function runRollSimulation() {
         if (cutscenesEnabled) {
             const cutsceneQueue = [];
             for (const videoId of CUTSCENE_PRIORITY_SEQUENCE) {
-                const aura = AURA_LIBRARY.find(entry => entry.cutscene === videoId);
-                if (aura && aura.wonCount > 0) {
+                const aura = AURA_REGISTRY.find(entry => entry.cutscene === videoId);
+                if (aura && readAuraWinCount(aura) > 0) {
                     cutsceneQueue.push(videoId);
                 }
             }
@@ -2408,8 +2599,8 @@ function runRollSimulation() {
         }
 
         let highestChance = 0;
-        for (const aura of AURA_LIBRARY) {
-            if (aura.wonCount > 0 && aura.chance > highestChance) {
+        for (const aura of AURA_REGISTRY) {
+            if (readAuraWinCount(aura) > 0 && aura.chance > highestChance) {
                 highestChance = aura.chance;
             }
         }
@@ -2436,70 +2627,13 @@ function runRollSimulation() {
             `Luck: ${formatWithCommas(luckValue)}<br><br>`
         ];
 
-        const resultEntries = [];
-        for (const aura of AURA_LIBRARY) {
-            if (aura.wonCount <= 0) continue;
-
-            const rarityClass = typeof resolveRarityClass === 'function'
-                ? resolveRarityClass(aura, biome)
-                : '';
-            const specialClass = typeof resolveAuraStyleClass === 'function'
-                ? resolveAuraStyleClass(aura)
-                : '';
-            const eventClass = aura.event ? 'sigil-event-text' : '';
-            const classAttr = [rarityClass, specialClass, eventClass].filter(Boolean).join(' ');
-            const formattedName = formatAuraNameMarkup(aura);
-            const breakthroughStats = breakthroughStatsMap.get(aura.name);
-
-            if (breakthroughStats && breakthroughStats.count > 0) {
-                const btName = aura.name.replace(
-                    /-\s*[\d,]+/,
-                    `- ${formatWithCommas(breakthroughStats.btChance)}`
-                );
-                const nativeLabel = formatAuraNameMarkup(aura, btName);
-                resultEntries.push({
-                    label: `<span class="${classAttr}">[Native] ${nativeLabel} | Times Rolled: ${formatWithCommas(breakthroughStats.count)}</span>`,
-                    chance: determineResultPriority(aura, breakthroughStats.btChance)
-                });
-                if (aura.wonCount > breakthroughStats.count) {
-                    resultEntries.push({
-                        label: `<span class="${classAttr}">${formattedName} | Times Rolled: ${formatWithCommas(aura.wonCount - breakthroughStats.count)}</span>`,
-                        chance: determineResultPriority(aura, aura.chance)
-                    });
-                }
-            } else {
-                resultEntries.push({
-                    label: `<span class="${classAttr}">${formattedName} | Times Rolled: ${formatWithCommas(aura.wonCount)}</span>`,
-                    chance: determineResultPriority(aura, aura.chance)
-                });
-            }
+        const sortedResultEntries = buildResultEntries(AURA_REGISTRY, biome, breakthroughStatsMap);
+        for (const markup of sortedResultEntries) {
+            resultChunks.push(`${markup}<br>`);
         }
 
-        resultEntries.sort((a, b) => b.chance - a.chance);
-        for (const entry of resultEntries) {
-            resultChunks.push(`${entry.label}<br>`);
-        }
-
-        let totalXP = 0;
-        const xpLines = [];
-        const earnedXpTiers = new Set();
-        for (const aura of AURA_LIBRARY) {
-            if (aura.wonCount > 0) {
-                const tier = resolveXpTierForChance(aura.chance);
-                if (tier) {
-                    earnedXpTiers.add(tier.key);
-                }
-            }
-        }
-
-        for (const tier of XP_RARITY_TABLE) {
-            if (earnedXpTiers.has(tier.key)) {
-                totalXP += tier.xp;
-                xpLines.push(`Reached ${tier.label}: +${formatWithCommas(tier.xp)} XP`);
-            }
-        }
-
-        resultChunks.push(`<br><strong>Total XP Earned: ${formatWithCommas(totalXP)}</strong><br>`);
+        const { totalXp, lines: xpLines } = summarizeXpRewards(AURA_REGISTRY);
+        resultChunks.push(`<br><strong>Total XP Earned: ${formatWithCommas(totalXp)}</strong><br>`);
         for (const line of xpLines) {
             resultChunks.push(`${line}<br>`);
         }
