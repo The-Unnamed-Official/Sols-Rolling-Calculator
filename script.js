@@ -815,10 +815,17 @@ function roll() {
     const showProgress = progressElementsAvailable && total >= 100000;
     if (progressContainer) {
         progressContainer.style.display = showProgress ? 'grid' : 'none';
+        progressContainer.classList.toggle('progress--active', showProgress);
+        if (!showProgress) {
+            delete progressContainer.dataset.progress;
+        }
     }
     if (progressElementsAvailable) {
         progressFill.style.width = '0%';
         progressValue.textContent = '0%';
+        if (showProgress && progressContainer) {
+            progressContainer.dataset.progress = '0';
+        }
     }
 
     const effectiveAuras = [];
@@ -922,8 +929,10 @@ function roll() {
 
     const updateProgress = showProgress
         ? progress => {
+            const progressValueRounded = Math.floor(progress);
             progressFill.style.width = `${progress}%`;
-            progressValue.textContent = `${Math.floor(progress)}%`;
+            progressValue.textContent = `${progressValueRounded}%`;
+            progressContainer.dataset.progress = `${progressValueRounded}`;
         }
         : null;
 
@@ -971,6 +980,8 @@ function roll() {
 
         if (progressContainer) {
             progressContainer.style.display = 'none';
+            progressContainer.classList.remove('progress--active');
+            delete progressContainer.dataset.progress;
         }
         rollButton.disabled = false;
         rollButton.style.opacity = '1';
