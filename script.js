@@ -101,7 +101,8 @@ const appState = {
         context: null,
         bufferCache: new Map(),
         bufferPromises: new Map(),
-        gainMap: new WeakMap()
+        gainMap: new WeakMap(),
+        fallbackPlayers: new Set()
     },
     cinematic: false,
     glitch: true,
@@ -222,21 +223,71 @@ function playSoundEffect(audioElement, category = 'rolling') {
     if (!isSoundChannelActive(category)) return;
     if (category !== 'ui' && appState.videoPlaying) return;
 
-    const context = resumeAudioEngine();
-    if (!context) {
-        if (audioElement.readyState >= 2) {
+    const spawnFallbackPlayer = () => {
+        const sourceUrl = normalizeMediaSource(audioElement);
+        if (!sourceUrl) {
             audioElement.currentTime = 0;
             audioElement.muted = false;
             audioElement.play().catch(() => {});
+            return;
+        }
+
+        const fallbackPlayer = audioElement.cloneNode(true);
+        fallbackPlayer.removeAttribute('id');
+        fallbackPlayer.src = sourceUrl;
+        fallbackPlayer.currentTime = 0;
+        fallbackPlayer.muted = false;
+        fallbackPlayer.loop = false;
+        fallbackPlayer.playsInline = true;
+        fallbackPlayer.autoplay = false;
+
+        const dataset = audioElement.dataset || {};
+        const gainValueRaw = dataset.gain ?? dataset.boost ?? dataset.volume;
+        if (gainValueRaw !== undefined) {
+            const gainValue = Number.parseFloat(gainValueRaw);
+            if (Number.isFinite(gainValue) && gainValue > 0) {
+                fallbackPlayer.volume = Math.max(0, Math.min(gainValue, 1));
+            }
+        } else {
+            fallbackPlayer.volume = audioElement.volume;
+        }
+
+        const cleanup = () => {
+            fallbackPlayer.pause();
+            fallbackPlayer.removeAttribute('src');
+            fallbackPlayer.load();
+            appState.audio.fallbackPlayers.delete(fallbackPlayer);
+            if (fallbackPlayer.parentNode) {
+                fallbackPlayer.parentNode.removeChild(fallbackPlayer);
+            }
+        };
+
+        fallbackPlayer.addEventListener('ended', cleanup, { once: true });
+        fallbackPlayer.addEventListener('error', cleanup, { once: true });
+
+        fallbackPlayer.style.display = 'none';
+        const attachmentTarget = document.body || document.documentElement;
+        if (attachmentTarget) {
+            attachmentTarget.appendChild(fallbackPlayer);
+        }
+
+        appState.audio.fallbackPlayers.add(fallbackPlayer);
+        fallbackPlayer.play().catch(() => {
+            cleanup();
+        });
+    };
+
+    const context = resumeAudioEngine();
+    if (!context) {
+        if (audioElement.readyState >= 2) {
+            spawnFallbackPlayer();
         }
         return;
     }
 
     const sourceKey = normalizeMediaSource(audioElement);
     if (!sourceKey) {
-        audioElement.currentTime = 0;
-        audioElement.muted = false;
-        audioElement.play().catch(() => {});
+        spawnFallbackPlayer();
         return;
     }
 
@@ -266,9 +317,7 @@ function playSoundEffect(audioElement, category = 'rolling') {
 
     fetchAudioBuffer().then(buffer => {
         if (!buffer) {
-            audioElement.currentTime = 0;
-            audioElement.muted = false;
-            audioElement.play().catch(() => {});
+            spawnFallbackPlayer();
             return;
         }
 
@@ -279,7 +328,7 @@ function playSoundEffect(audioElement, category = 'rolling') {
             gainNode.gain.value = 0.3;
         }
         source.connect(gainNode).connect(context.destination);
-        source.start();
+        source.start(0);
     });
 }
 
