@@ -4095,4 +4095,3 @@ function wrapTextLines(context, text, maxWidth) {
 
     return lines;
 }
-
