@@ -1384,6 +1384,18 @@ body.biome--blood-rain .interface-backdrop__veil {
     transform: translateY(0);
 }
 
+.feed-share__menu--image {
+    gap: 12px;
+}
+
+.feed-share__menu-label {
+    margin: 0;
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+}
+
 .feed-share__item {
     font-family: inherit;
     font-size: 12px;
@@ -2245,6 +2257,11 @@ select.form-field__input option {
 .footer-credits__item a {
     color: inherit;
     text-decoration: underline;
+}
+
+.footer-credits__item-inspired {
+    color: #c1d7ff;
+    font-size: 19px;
 }
 
 .cutscene-video {
