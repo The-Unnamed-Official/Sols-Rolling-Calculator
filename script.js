@@ -999,6 +999,12 @@ function setGlitchPreset() {
     initializeBiomeInterface();
 }
 
+function setDreamspacePreset() {
+    document.getElementById('biome-dropdown').value = 'dreamspace';
+    playSoundEffect(document.getElementById('clickSoundFx'), 'ui');
+    initializeBiomeInterface();
+}
+
 function setLimboPreset() {
     document.getElementById('biome-dropdown').value = 'limbo';
     playSoundEffect(document.getElementById('clickSoundFx'), 'ui');

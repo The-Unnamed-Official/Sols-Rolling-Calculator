@@ -461,7 +461,7 @@ body.biome--blood-rain .interface-backdrop__veil {
 }
 
 .interface-shell {
-    width: min(1500px, 100%);
+    width: min(1565px, 100%);
     display: flex;
     flex-direction: column;
     gap: clamp(16px, 2vw, 24px);
