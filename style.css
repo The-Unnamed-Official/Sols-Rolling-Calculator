@@ -2052,16 +2052,55 @@ select.form-field__input option {
 }
 
 /* rarity colors */
-.rarity-tier-basic { color: #d3d3d3; text-shadow: 1px 1px 2px #000; }
-.rarity-tier-epic { color: #754c73; text-shadow: 1px 1px 2px #000; }
-.rarity-tier-unique { color: #d49924; text-shadow: 1px 1px 2px #000; }
-.rarity-tier-legendary { color: #35f2c9; text-shadow: 1px 1px 2px #000; }
-.rarity-tier-mythic { color: #d607a3; text-shadow: 1px 1px 2px #000; }
-.rarity-tier-exalted { color: #0d3d6e; text-shadow: 1px 1px 2px #000; }
-.rarity-tier-glorious { color: #790707; text-shadow: 1px 1px 2px #000; }
-.rarity-tier-transcendent { color: #afeeee; text-shadow: 1px 1px 2px #000; }
-.rarity-tier-challenged { color: #000000; text-shadow: -1px -1px 0 #fff, 1px -1px 0 #fff, -1px 1px 0 #fff, 1px 1px 0 #fff; }
-.rarity-tier-limbo { color: #000; text-shadow: 0 0 2px #aaa, 0 0 4px #aaa, 1px 1px 0 #aaa, -1px -1px 0 #aaa; }
+.rarity-tier-basic {
+    color: #d8ddea;
+    text-shadow: 0 0 6px rgba(220, 230, 255, 0.25), 0 0 2px rgba(14, 22, 38, 0.75);
+}
+
+.rarity-tier-epic {
+    color: #815482;
+    text-shadow: 0 0 8px rgba(129, 84, 130, 0.32), 0 0 2px rgba(15, 6, 24, 0.8);
+}
+
+.rarity-tier-unique {
+    color: #dba738;
+    text-shadow: 0 0 10px rgba(219, 167, 56, 0.35), 0 0 3px rgba(32, 16, 0, 0.82);
+}
+
+.rarity-tier-legendary {
+    color: #3df1cf;
+    text-shadow: 0 0 12px rgba(61, 241, 207, 0.35), 0 0 3px rgba(0, 22, 18, 0.78);
+}
+
+.rarity-tier-mythic {
+    color: #df1ab0;
+    text-shadow: 0 0 14px rgba(223, 26, 176, 0.38), 0 0 4px rgba(30, 0, 22, 0.82);
+}
+
+.rarity-tier-exalted {
+    color: #10477c;
+    text-shadow: 0 0 12px rgba(16, 71, 124, 0.35), 0 0 3px rgba(0, 12, 28, 0.85);
+}
+
+.rarity-tier-glorious {
+    color: #851010;
+    text-shadow: 0 0 12px rgba(133, 16, 16, 0.4), 0 0 3px rgba(26, 0, 0, 0.8);
+}
+
+.rarity-tier-transcendent {
+    color: #b7f5f5;
+    text-shadow: 0 0 14px rgba(183, 245, 245, 0.42), 0 0 3px rgba(18, 30, 36, 0.72);
+}
+
+.rarity-tier-challenged {
+    color: #080808;
+    text-shadow: 0 0 6px rgba(255, 255, 255, 0.65), 0 0 2px rgba(0, 0, 0, 0.85);
+}
+
+.rarity-tier-limbo {
+    color: #0a0a0a;
+    text-shadow: 0 0 6px rgba(200, 200, 200, 0.6), 0 0 3px rgba(80, 80, 80, 0.7);
+}
 
 .sigil-subtitle {
     display: block;
