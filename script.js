@@ -2471,33 +2471,55 @@ function buildResultEntries(registry, biome, breakthroughStatsMap) {
         const formattedTextName = formatAuraNameText(aura);
         const breakthroughStats = breakthroughStatsMap.get(aura.name);
 
-        const pushEntry = (markup, shareText, priority) => {
-            entries.push({ markup, share: shareText, priority });
+        const specialClassTokens = specialClass
+            ? specialClass.split(/\s+/).filter(Boolean)
+            : [];
+
+        const createShareVisualRecord = (baseName, countValue, options = {}) => ({
+            aura,
+            displayName: baseName,
+            subtitle: aura.subtitle || null,
+            prefix: typeof options.prefix === 'string' && options.prefix.length > 0 ? options.prefix : null,
+            variant: options.variant || 'standard',
+            count: countValue,
+            countLabel: `Times Rolled: ${formatWithCommas(countValue)}`,
+            classes: {
+                rarity: rarityClass || null,
+                special: specialClassTokens,
+                event: Boolean(eventClass)
+            }
+        });
+
+        const pushVisualEntry = (markup, shareText, priority, visualRecord) => {
+            entries.push({ markup, share: shareText, priority, visual: visualRecord || null });
         };
 
         if (breakthroughStats && breakthroughStats.count > 0) {
             const btName = aura.name.replace(/-\s*[\d,]+/, `- ${formatWithCommas(breakthroughStats.btChance)}`);
             const nativeLabel = formatAuraNameMarkup(aura, btName);
             const nativeShareName = formatAuraNameText(aura, btName);
-            pushEntry(
+            pushVisualEntry(
                 `<span class="${classAttr}">[Native] ${nativeLabel} | Times Rolled: ${formatWithCommas(breakthroughStats.count)}</span>`,
                 `[Native] ${nativeShareName} | Times Rolled: ${formatWithCommas(breakthroughStats.count)}`,
-                determineResultPriority(aura, breakthroughStats.btChance)
+                determineResultPriority(aura, breakthroughStats.btChance),
+                createShareVisualRecord(btName, breakthroughStats.count, { prefix: '[Native]', variant: 'native' })
             );
 
             if (winCount > breakthroughStats.count) {
                 const remainingCount = winCount - breakthroughStats.count;
-                pushEntry(
+                pushVisualEntry(
                     `<span class="${classAttr}">${formattedName} | Times Rolled: ${formatWithCommas(remainingCount)}</span>`,
                     `${formattedTextName} | Times Rolled: ${formatWithCommas(remainingCount)}`,
-                    determineResultPriority(aura, aura.chance)
+                    determineResultPriority(aura, aura.chance),
+                    createShareVisualRecord(aura.name, remainingCount, { variant: 'standard' })
                 );
             }
         } else {
-            pushEntry(
+            pushVisualEntry(
                 `<span class="${classAttr}">${formattedName} | Times Rolled: ${formatWithCommas(winCount)}</span>`,
                 `${formattedTextName} | Times Rolled: ${formatWithCommas(winCount)}`,
-                determineResultPriority(aura, aura.chance)
+                determineResultPriority(aura, aura.chance),
+                createShareVisualRecord(aura.name, winCount, { variant: 'standard' })
             );
         }
     }
@@ -2505,14 +2527,18 @@ function buildResultEntries(registry, biome, breakthroughStatsMap) {
     entries.sort((a, b) => b.priority - a.priority);
     const markupList = [];
     const shareRecords = [];
+    const shareVisualRecords = [];
     for (const entry of entries) {
         markupList.push(entry.markup);
         if (entry.share) {
             shareRecords.push(entry.share);
         }
+        if (entry.visual) {
+            shareVisualRecords.push(entry.visual);
+        }
     }
 
-    return { markupList, shareRecords };
+    return { markupList, shareRecords, shareVisualRecords };
 }
 
 function summarizeXpRewards(registry) {
@@ -2784,7 +2810,7 @@ function runRollSimulation() {
             `Events: ${eventSummaryText}<br><br>`
         ];
 
-        const { markupList, shareRecords } = buildResultEntries(AURA_REGISTRY, biome, breakthroughStatsMap);
+        const { markupList, shareRecords, shareVisualRecords } = buildResultEntries(AURA_REGISTRY, biome, breakthroughStatsMap);
         for (const markup of markupList) {
             resultChunks.push(`${markup}<br>`);
         }
@@ -2806,6 +2832,7 @@ function runRollSimulation() {
             eventIds: usedEventIds,
             eventLabels,
             shareRecords,
+            shareVisuals: shareVisualRecords,
             xpTotal: totalXp,
             xpLines,
             executionSeconds: Number.isFinite(executionSeconds) ? executionSeconds : 0
@@ -3090,13 +3117,650 @@ function createPlainShareText(summary) {
     return lines.join('\n');
 }
 
+const SHARE_IMAGE_BASE_NAME_STYLE = Object.freeze({
+    font: '600 28px "Sarpanch", sans-serif',
+    fill: '#f6fbff',
+    letterSpacing: 0,
+    shadowLayers: [
+        { color: 'rgba(14, 22, 38, 0.55)', blur: 12, offsetX: 0, offsetY: 4 }
+    ],
+    lineHeightMultiplier: 1.35
+});
+
+const SHARE_IMAGE_BASE_PREFIX_STYLE = Object.freeze({
+    font: '600 20px "Sarpanch", sans-serif',
+    fill: '#7fe3ff',
+    letterSpacing: 0.5,
+    shadowLayers: [
+        { color: 'rgba(127, 227, 255, 0.45)', blur: 10, offsetX: 0, offsetY: 3 }
+    ],
+    lineHeightMultiplier: 1.2
+});
+
+const SHARE_IMAGE_BASE_COUNT_STYLE = Object.freeze({
+    font: '500 22px "Sarpanch", sans-serif',
+    fill: '#cfe7ff',
+    letterSpacing: 0.5,
+    shadowLayers: [
+        { color: 'rgba(12, 32, 60, 0.65)', blur: 8, offsetX: 0, offsetY: 3 }
+    ],
+    lineHeightMultiplier: 1.25
+});
+
+const SHARE_IMAGE_BASE_SUBTITLE_STYLE = Object.freeze({
+    font: 'italic 500 20px "Sarpanch", sans-serif',
+    fill: 'rgba(199, 219, 255, 0.72)',
+    letterSpacing: 1.6,
+    shadowLayers: [],
+    lineHeightMultiplier: 1.2
+});
+
+const SHARE_IMAGE_RARITY_STYLES = Object.freeze({
+    'rarity-tier-basic': {
+        fill: '#d8ddea',
+        shadows: [
+            { color: 'rgba(220, 230, 255, 0.25)', blur: 6 },
+            { color: 'rgba(14, 22, 38, 0.75)', blur: 2 }
+        ]
+    },
+    'rarity-tier-epic': {
+        fill: '#815482',
+        shadows: [
+            { color: 'rgba(129, 84, 130, 0.32)', blur: 8 },
+            { color: 'rgba(15, 6, 24, 0.8)', blur: 2 }
+        ]
+    },
+    'rarity-tier-unique': {
+        fill: '#dba738',
+        shadows: [
+            { color: 'rgba(219, 167, 56, 0.35)', blur: 10 },
+            { color: 'rgba(32, 16, 0, 0.82)', blur: 3 }
+        ]
+    },
+    'rarity-tier-legendary': {
+        fill: '#3df1cf',
+        shadows: [
+            { color: 'rgba(61, 241, 207, 0.35)', blur: 12 },
+            { color: 'rgba(0, 22, 18, 0.78)', blur: 3 }
+        ]
+    },
+    'rarity-tier-mythic': {
+        fill: '#df1ab0',
+        shadows: [
+            { color: 'rgba(223, 26, 176, 0.38)', blur: 14 },
+            { color: 'rgba(30, 0, 22, 0.82)', blur: 4 }
+        ]
+    },
+    'rarity-tier-exalted': {
+        fill: '#10477c',
+        shadows: [
+            { color: 'rgba(16, 71, 124, 0.35)', blur: 12 },
+            { color: 'rgba(0, 12, 28, 0.85)', blur: 3 }
+        ]
+    },
+    'rarity-tier-glorious': {
+        fill: '#851010',
+        shadows: [
+            { color: 'rgba(133, 16, 16, 0.4)', blur: 12 },
+            { color: 'rgba(26, 0, 0, 0.8)', blur: 3 }
+        ]
+    },
+    'rarity-tier-transcendent': {
+        fill: '#b7f5f5',
+        shadows: [
+            { color: 'rgba(183, 245, 245, 0.42)', blur: 14 },
+            { color: 'rgba(18, 30, 36, 0.72)', blur: 3 }
+        ]
+    },
+    'rarity-tier-challenged': {
+        fill: '#080808',
+        shadows: [
+            { color: 'rgba(255, 255, 255, 0.65)', blur: 6 },
+            { color: 'rgba(0, 0, 0, 0.85)', blur: 2 }
+        ]
+    },
+    'rarity-tier-limbo': {
+        fill: '#d7d7d7',
+        shadows: [
+            { color: 'rgba(40, 40, 40, 0.95)', blur: 6 },
+            { color: 'rgba(10, 10, 10, 0.9)', blur: 12 },
+            { color: 'rgba(0, 0, 0, 0.95)', blur: 0, offsetX: 1, offsetY: 1 },
+            { color: 'rgba(0, 0, 0, 0.95)', blur: 0, offsetX: -1, offsetY: 1 },
+            { color: 'rgba(0, 0, 0, 0.95)', blur: 0, offsetX: 1, offsetY: -1 },
+            { color: 'rgba(0, 0, 0, 0.95)', blur: 0, offsetX: -1, offsetY: -1 }
+        ]
+    }
+});
+
+const SHARE_IMAGE_OUTLINE_STYLES = Object.freeze({
+    'sigil-outline-halloween': {
+        shadows: [
+            { color: 'rgba(255, 140, 0, 0.85)', blur: 4 },
+            { color: 'rgba(255, 90, 0, 0.7)', blur: 8 },
+            { color: 'rgba(60, 20, 0, 0.95)', blur: 0, offsetX: 1, offsetY: 1 },
+            { color: 'rgba(60, 20, 0, 0.95)', blur: 0, offsetX: -1, offsetY: 1 },
+            { color: 'rgba(60, 20, 0, 0.95)', blur: 0, offsetX: 1, offsetY: -1 },
+            { color: 'rgba(60, 20, 0, 0.95)', blur: 0, offsetX: -1, offsetY: -1 }
+        ]
+    },
+    'sigil-outline-prowler': {
+        shadows: [
+            { color: 'rgba(80, 170, 255, 0.85)', blur: 4 },
+            { color: 'rgba(20, 110, 220, 0.7)', blur: 8 },
+            { color: 'rgba(5, 40, 120, 0.9)', blur: 0, offsetX: 1, offsetY: 1 },
+            { color: 'rgba(5, 40, 120, 0.9)', blur: 0, offsetX: -1, offsetY: 1 },
+            { color: 'rgba(5, 40, 120, 0.9)', blur: 0, offsetX: 1, offsetY: -1 },
+            { color: 'rgba(5, 40, 120, 0.9)', blur: 0, offsetX: -1, offsetY: -1 }
+        ]
+    },
+    'sigil-outline-valentine': {
+        shadows: [
+            { color: 'rgba(255, 140, 200, 0.85)', blur: 4 },
+            { color: 'rgba(255, 95, 170, 0.75)', blur: 8 },
+            { color: 'rgba(115, 20, 80, 0.9)', blur: 0, offsetX: 1, offsetY: 1 },
+            { color: 'rgba(115, 20, 80, 0.9)', blur: 0, offsetX: -1, offsetY: 1 },
+            { color: 'rgba(115, 20, 80, 0.9)', blur: 0, offsetX: 1, offsetY: -1 },
+            { color: 'rgba(115, 20, 80, 0.9)', blur: 0, offsetX: -1, offsetY: -1 }
+        ]
+    },
+    'sigil-outline-april': {
+        shadows: [
+            { color: 'rgba(190, 190, 190, 0.85)', blur: 4 },
+            { color: 'rgba(140, 140, 140, 0.75)', blur: 8 },
+            { color: 'rgba(80, 80, 80, 0.9)', blur: 0, offsetX: 1, offsetY: 1 },
+            { color: 'rgba(80, 80, 80, 0.9)', blur: 0, offsetX: -1, offsetY: 1 },
+            { color: 'rgba(80, 80, 80, 0.9)', blur: 0, offsetX: 1, offsetY: -1 },
+            { color: 'rgba(80, 80, 80, 0.9)', blur: 0, offsetX: -1, offsetY: -1 }
+        ]
+    },
+    'sigil-outline-summer': {
+        shadows: [
+            { color: 'rgba(255, 255, 140, 0.9)', blur: 4 },
+            { color: 'rgba(234, 240, 70, 0.75)', blur: 8 },
+            { color: 'rgba(145, 155, 10, 0.85)', blur: 0, offsetX: 1, offsetY: 1 },
+            { color: 'rgba(155, 155, 10, 0.85)', blur: 0, offsetX: -1, offsetY: 1 },
+            { color: 'rgba(150, 155, 10, 0.85)', blur: 0, offsetX: 1, offsetY: -1 },
+            { color: 'rgba(155, 155, 10, 0.85)', blur: 0, offsetX: -1, offsetY: -1 }
+        ]
+    },
+    'sigil-outline-innovator': {
+        fill: '#f1e6ff',
+        shadows: [
+            { color: 'rgba(200, 140, 255, 0.9)', blur: 4 },
+            { color: 'rgba(150, 90, 235, 0.75)', blur: 8 },
+            { color: 'rgba(70, 20, 120, 0.9)', blur: 0, offsetX: 1, offsetY: 1 },
+            { color: 'rgba(70, 20, 120, 0.9)', blur: 0, offsetX: -1, offsetY: 1 },
+            { color: 'rgba(70, 20, 120, 0.9)', blur: 0, offsetX: 1, offsetY: -1 },
+            { color: 'rgba(70, 20, 120, 0.9)', blur: 0, offsetX: -1, offsetY: -1 }
+        ]
+    },
+    'sigil-outline-winter': {
+        shadows: [
+            { color: 'rgba(210, 240, 255, 0.9)', blur: 4 },
+            { color: 'rgba(140, 200, 255, 0.75)', blur: 8 },
+            { color: 'rgba(40, 90, 140, 0.85)', blur: 0, offsetX: 1, offsetY: 1 },
+            { color: 'rgba(40, 90, 140, 0.85)', blur: 0, offsetX: -1, offsetY: 1 },
+            { color: 'rgba(40, 90, 140, 0.85)', blur: 0, offsetX: 1, offsetY: -1 },
+            { color: 'rgba(40, 90, 140, 0.85)', blur: 0, offsetX: -1, offsetY: -1 }
+        ]
+    },
+    'sigil-outline-blood': {
+        shadows: [
+            { color: 'rgba(200, 20, 20, 0.9)', blur: 4 },
+            { color: 'rgba(150, 0, 0, 0.75)', blur: 8 },
+            { color: 'rgba(60, 0, 0, 0.95)', blur: 0, offsetX: 1, offsetY: 1 },
+            { color: 'rgba(60, 0, 0, 0.95)', blur: 0, offsetX: -1, offsetY: 1 },
+            { color: 'rgba(60, 0, 0, 0.95)', blur: 0, offsetX: 1, offsetY: -1 },
+            { color: 'rgba(60, 0, 0, 0.95)', blur: 0, offsetX: -1, offsetY: -1 }
+        ]
+    },
+    'sigil-outline-glitch': {
+        fill: '#0f0018',
+        shadows: [
+            { color: 'rgba(255, 255, 255, 0.95)', blur: 6 },
+            { color: 'rgba(255, 255, 255, 0.85)', blur: 14 },
+            { color: 'rgba(255, 255, 255, 0.98)', blur: 0, offsetX: 2, offsetY: 0 },
+            { color: 'rgba(255, 255, 255, 0.98)', blur: 0, offsetX: -2, offsetY: 0 },
+            { color: 'rgba(255, 255, 255, 0.98)', blur: 0, offsetX: 0, offsetY: 2 },
+            { color: 'rgba(255, 255, 255, 0.98)', blur: 0, offsetX: 0, offsetY: -2 }
+        ]
+    },
+    'sigil-outline-dreamspace': {
+        fill: '#ffe9ff',
+        shadows: [
+            { color: 'rgba(255, 140, 220, 0.95)', blur: 10 },
+            { color: 'rgba(255, 90, 210, 0.85)', blur: 18 },
+            { color: 'rgba(255, 110, 220, 0.96)', blur: 0, offsetX: 3, offsetY: 0 },
+            { color: 'rgba(255, 110, 220, 0.96)', blur: 0, offsetX: -3, offsetY: 0 },
+            { color: 'rgba(255, 110, 220, 0.96)', blur: 0, offsetX: 0, offsetY: 3 },
+            { color: 'rgba(255, 110, 220, 0.96)', blur: 0, offsetX: 0, offsetY: -3 }
+        ]
+    }
+});
+
+function cloneShareShadowLayer(layer) {
+    return {
+        color: layer.color,
+        blur: layer.blur ?? 0,
+        offsetX: layer.offsetX ?? 0,
+        offsetY: layer.offsetY ?? 0,
+        fill: layer.fill || null
+    };
+}
+
+function cloneShareStyle(style) {
+    return {
+        ...style,
+        shadowLayers: style.shadowLayers ? style.shadowLayers.map(cloneShareShadowLayer) : [],
+        baseShadow: style.baseShadow ? { ...style.baseShadow } : null,
+        decorations: style.decorations ? { ...style.decorations } : null
+    };
+}
+
+function parseFontSize(font) {
+    const match = /([0-9]+(?:\.[0-9]+)?)px/.exec(font);
+    if (!match) return 24;
+    const value = Number.parseFloat(match[1]);
+    return Number.isFinite(value) ? value : 24;
+}
+
+function computeLineHeight(font, multiplier) {
+    const size = parseFontSize(font);
+    const factor = Number.isFinite(multiplier) ? multiplier : 1.3;
+    return Math.ceil(size * factor);
+}
+
+function applyRarityStyle(style, className) {
+    const config = SHARE_IMAGE_RARITY_STYLES[className];
+    if (!config) return;
+    if (config.fill) {
+        style.fill = config.fill;
+    }
+    if (Array.isArray(config.shadows)) {
+        style.shadowLayers.push(...config.shadows.map(cloneShareShadowLayer));
+    }
+}
+
+function applyOutlineStyle(style, className) {
+    const config = SHARE_IMAGE_OUTLINE_STYLES[className];
+    if (!config) return;
+    if (config.fill) {
+        style.fill = config.fill;
+    }
+    if (Array.isArray(config.shadows)) {
+        style.shadowLayers.push(...config.shadows.map(cloneShareShadowLayer));
+    }
+}
+
+const SHARE_IMAGE_EFFECT_HANDLERS = Object.freeze({
+    'sigil-effect-oblivion': styleSet => {
+        styleSet.name.shadowLayers = [
+            { color: 'rgba(187, 122, 255, 0.45)', blur: 16, offsetX: 0, offsetY: 3 }
+        ];
+        styleSet.name.fill = (ctx, x, y, width) => {
+            const gradient = ctx.createLinearGradient(x, y, x + width, y + width * 0.25);
+            gradient.addColorStop(0, '#bb7aff');
+            gradient.addColorStop(0.4, '#401768');
+            gradient.addColorStop(1, '#26063c');
+            return gradient;
+        };
+    },
+    'sigil-effect-memory': styleSet => {
+        styleSet.name.shadowLayers = [
+            { color: 'rgba(200, 140, 255, 0.55)', blur: 20, offsetX: 0, offsetY: 4 }
+        ];
+        styleSet.name.fill = (ctx, x, y, width) => {
+            const gradient = ctx.createLinearGradient(x, y, x + width, y + width * 0.3);
+            gradient.addColorStop(0, '#f3d9ff');
+            gradient.addColorStop(0.45, '#a26bff');
+            gradient.addColorStop(1, '#3b1061');
+            return gradient;
+        };
+    },
+    'sigil-effect-pixelation': styleSet => {
+        styleSet.name.font = '700 22px "Press Start 2P", "Sarpanch", sans-serif';
+        styleSet.name.letterSpacing = 2.6;
+        styleSet.name.lineHeightMultiplier = 1.45;
+        styleSet.name.shadowLayers = [
+            { color: 'rgba(0, 0, 0, 0.85)', blur: 0, offsetX: 1, offsetY: 1 },
+            { color: 'rgba(255, 255, 255, 0.55)', blur: 8, offsetX: 0, offsetY: 0 }
+        ];
+        styleSet.name.fill = '#ff004c';
+        styleSet.name.transform = text => text.toUpperCase();
+    },
+    'sigil-effect-luminosity': styleSet => {
+        styleSet.name.shadowLayers = [
+            { color: 'rgba(142, 230, 255, 0.85)', blur: 18, offsetX: 0, offsetY: 3 }
+        ];
+        styleSet.name.fill = (ctx, x, y, width) => {
+            const gradient = ctx.createLinearGradient(x, y, x + width, y + width * 0.2);
+            gradient.addColorStop(0, '#f7fdff');
+            gradient.addColorStop(0.4, '#6ad6ff');
+            gradient.addColorStop(0.7, '#e4f7ff');
+            gradient.addColorStop(1, '#ffffff');
+            return gradient;
+        };
+    },
+    'sigil-effect-equinox': styleSet => {
+        const font = '700 26px "Noto Serif TC", "Noto Serif", "Songti TC", serif';
+        styleSet.name.font = font;
+        styleSet.name.letterSpacing = Number.parseFloat((0.3 * parseFontSize(font)).toFixed(2));
+        styleSet.name.lineHeightMultiplier = 1.6;
+        styleSet.name.transform = text => text.toUpperCase();
+        styleSet.name.shadowLayers = [
+            { color: 'rgba(99, 99, 99, 0.9)', blur: 1, offsetX: 0, offsetY: 1 },
+            { color: 'rgba(12, 21, 43, 0.58)', blur: 18, offsetX: 0, offsetY: 6 }
+        ];
+        styleSet.name.fill = '#ffffff';
+        styleSet.name.decorations = {
+            before: '『',
+            after: '』',
+            font,
+            letterSpacing: 0
+        };
+        if (styleSet.subtitle) {
+            styleSet.subtitle.font = 'italic 500 18px "Noto Serif TC", "Noto Serif", serif';
+            styleSet.subtitle.fill = 'rgba(214, 228, 255, 0.78)';
+            styleSet.subtitle.letterSpacing = 1.4;
+            styleSet.subtitle.lineHeightMultiplier = 1.25;
+        }
+    }
+});
+
+function applyEffectStyle(styleSet, effectClass) {
+    const handler = SHARE_IMAGE_EFFECT_HANDLERS[effectClass];
+    if (handler) {
+        handler(styleSet);
+    }
+}
+
+function applyEventStyle(styleSet) {
+    if (!styleSet || !styleSet.name) return;
+    styleSet.name.fill = '#ffffff';
+    styleSet.name.shadowLayers = [
+        { color: 'rgba(0, 0, 0, 0.9)', blur: 2, offsetX: 1, offsetY: 1 }
+    ];
+}
+
+function ensureStyleLineHeights(styleSet) {
+    if (styleSet.name) {
+        styleSet.name.lineHeight = computeLineHeight(styleSet.name.font, styleSet.name.lineHeightMultiplier);
+    }
+    if (styleSet.prefix) {
+        styleSet.prefix.lineHeight = computeLineHeight(styleSet.prefix.font, styleSet.prefix.lineHeightMultiplier);
+    }
+    if (styleSet.count) {
+        styleSet.count.lineHeight = computeLineHeight(styleSet.count.font, styleSet.count.lineHeightMultiplier);
+    }
+    if (styleSet.subtitle) {
+        styleSet.subtitle.lineHeight = computeLineHeight(styleSet.subtitle.font, styleSet.subtitle.lineHeightMultiplier);
+    }
+}
+
+function computeAuraCanvasStyles(record) {
+    const baseStyles = {
+        name: cloneShareStyle(SHARE_IMAGE_BASE_NAME_STYLE),
+        prefix: cloneShareStyle(SHARE_IMAGE_BASE_PREFIX_STYLE),
+        count: cloneShareStyle(SHARE_IMAGE_BASE_COUNT_STYLE),
+        subtitle: record && record.subtitle ? cloneShareStyle(SHARE_IMAGE_BASE_SUBTITLE_STYLE) : null
+    };
+
+    if (record && record.classes) {
+        if (record.classes.rarity) {
+            applyRarityStyle(baseStyles.name, record.classes.rarity);
+        }
+
+        if (Array.isArray(record.classes.special) && record.classes.special.length > 0) {
+            record.classes.special
+                .filter(token => token.startsWith('sigil-outline-'))
+                .forEach(token => applyOutlineStyle(baseStyles.name, token));
+
+            record.classes.special
+                .filter(token => token.startsWith('sigil-effect-'))
+                .forEach(token => applyEffectStyle(baseStyles, token));
+        }
+
+        if (record.classes.event) {
+            applyEventStyle(baseStyles);
+        }
+    }
+
+    if (record && record.prefix) {
+        baseStyles.prefix = cloneShareStyle(baseStyles.name);
+        baseStyles.prefix.font = baseStyles.name.font;
+        baseStyles.prefix.letterSpacing = baseStyles.name.letterSpacing || 0;
+        baseStyles.prefix.lineHeightMultiplier = baseStyles.name.lineHeightMultiplier;
+    }
+
+    ensureStyleLineHeights(baseStyles);
+    return baseStyles;
+}
+
+function measureStyledSegmentWidth(context, text, style) {
+    if (!text || !style) return 0;
+    context.save();
+    context.font = style.font;
+    let width = 0;
+    if (style.letterSpacing && style.letterSpacing !== 0) {
+        const spacing = style.letterSpacing;
+        for (let i = 0; i < text.length; i++) {
+            width += context.measureText(text[i]).width;
+            if (i < text.length - 1) {
+                width += spacing;
+            }
+        }
+    } else {
+        width = context.measureText(text).width;
+    }
+    context.restore();
+    return width;
+}
+
+function measureStyledTextWidth(context, text, style) {
+    if (!text || !style) return 0;
+    const segments = [];
+    const baseText = style.transform ? style.transform(text) : text;
+    if (style.decorations && style.decorations.before) {
+        segments.push({
+            text: style.decorations.before,
+            style: {
+                ...style,
+                font: style.decorations.font || style.font,
+                letterSpacing: style.decorations.letterSpacing ?? style.letterSpacing ?? 0,
+                decorations: null,
+                transform: null
+            }
+        });
+    }
+    segments.push({
+        text: baseText,
+        style: { ...style, decorations: null }
+    });
+    if (style.decorations && style.decorations.after) {
+        segments.push({
+            text: style.decorations.after,
+            style: {
+                ...style,
+                font: style.decorations.font || style.font,
+                letterSpacing: style.decorations.letterSpacing ?? style.letterSpacing ?? 0,
+                decorations: null,
+                transform: null
+            }
+        });
+    }
+
+    return segments.reduce((total, segment) => total + measureStyledSegmentWidth(context, segment.text, segment.style), 0);
+}
+
+function drawTextWithSpacing(context, text, x, y, letterSpacing) {
+    if (!text) return;
+    if (!letterSpacing) {
+        context.fillText(text, x, y);
+        return;
+    }
+    let cursor = x;
+    for (let i = 0; i < text.length; i++) {
+        const char = text[i];
+        context.fillText(char, cursor, y);
+        cursor += context.measureText(char).width;
+        if (i < text.length - 1) {
+            cursor += letterSpacing;
+        }
+    }
+}
+
+function resolveFillStyle(style, context, x, y, width, height) {
+    if (typeof style.fill === 'function') {
+        return style.fill(context, x, y, width, height);
+    }
+    return style.fill || '#ffffff';
+}
+
+function renderStyledSegment(context, text, x, y, style) {
+    if (!text || !style) return 0;
+    context.save();
+    context.font = style.font;
+    const letterSpacing = style.letterSpacing || 0;
+    const width = measureStyledSegmentWidth(context, text, { ...style, decorations: null, transform: null });
+    const fill = resolveFillStyle(style, context, x, y, width, style.lineHeight || computeLineHeight(style.font));
+
+    if (Array.isArray(style.shadowLayers) && style.shadowLayers.length > 0) {
+        for (const layer of style.shadowLayers) {
+            context.shadowColor = layer.color || 'rgba(0, 0, 0, 0)';
+            context.shadowBlur = layer.blur ?? 0;
+            context.shadowOffsetX = layer.offsetX ?? 0;
+            context.shadowOffsetY = layer.offsetY ?? 0;
+            context.fillStyle = layer.fill || fill;
+            drawTextWithSpacing(context, text, x, y, letterSpacing);
+        }
+    }
+
+    if (style.baseShadow) {
+        context.shadowColor = style.baseShadow.color || 'rgba(0, 0, 0, 0)';
+        context.shadowBlur = style.baseShadow.blur ?? 0;
+        context.shadowOffsetX = style.baseShadow.offsetX ?? 0;
+        context.shadowOffsetY = style.baseShadow.offsetY ?? 0;
+    } else {
+        context.shadowColor = 'rgba(0, 0, 0, 0)';
+        context.shadowBlur = 0;
+        context.shadowOffsetX = 0;
+        context.shadowOffsetY = 0;
+    }
+
+    context.fillStyle = fill;
+    drawTextWithSpacing(context, text, x, y, letterSpacing);
+    context.restore();
+    return width;
+}
+
+function renderStyledText(context, text, x, y, style) {
+    if (!text || !style) return 0;
+    const segments = [];
+    const baseText = style.transform ? style.transform(text) : text;
+    if (style.decorations && style.decorations.before) {
+        segments.push({
+            text: style.decorations.before,
+            style: {
+                ...style,
+                font: style.decorations.font || style.font,
+                letterSpacing: style.decorations.letterSpacing ?? style.letterSpacing ?? 0,
+                decorations: null,
+                transform: null
+            }
+        });
+    }
+    segments.push({ text: baseText, style: { ...style, decorations: null } });
+    if (style.decorations && style.decorations.after) {
+        segments.push({
+            text: style.decorations.after,
+            style: {
+                ...style,
+                font: style.decorations.font || style.font,
+                letterSpacing: style.decorations.letterSpacing ?? style.letterSpacing ?? 0,
+                decorations: null,
+                transform: null
+            }
+        });
+    }
+
+    let cursorX = x;
+    for (const segment of segments) {
+        cursorX += renderStyledSegment(context, segment.text, cursorX, y, segment.style);
+    }
+    return cursorX - x;
+}
+
+function createAuraBlock(context, record) {
+    const styles = computeAuraCanvasStyles(record);
+    const prefixText = record && record.prefix ? `${record.prefix}` : '';
+    const nameText = record && record.displayName ? record.displayName : '';
+    const subtitleText = record && record.subtitle ? record.subtitle : '';
+    const countText = record && record.countLabel ? record.countLabel : '';
+
+    const prefixWidth = prefixText ? measureStyledTextWidth(context, prefixText, styles.prefix) : 0;
+    const prefixGap = prefixText ? 12 : 0;
+    const nameWidth = measureStyledTextWidth(context, nameText, styles.name);
+    const nameLineHeight = styles.name.lineHeight;
+    const countLineHeight = countText ? styles.count.lineHeight : 0;
+    const countGap = countText ? 28 : 0;
+    const subtitleLineHeight = subtitleText && styles.subtitle ? styles.subtitle.lineHeight : 0;
+
+    const firstLineHeight = Math.max(nameLineHeight, countLineHeight);
+    const contentHeight = firstLineHeight + subtitleLineHeight;
+
+    return {
+        contentHeight,
+        gapAfter: 22,
+        draw(ctx, x, y) {
+            let currentY = y;
+            const nameX = prefixText ? x + prefixWidth + prefixGap : x;
+            if (prefixText) {
+                renderStyledText(ctx, prefixText, x, currentY, styles.prefix);
+            }
+            renderStyledText(ctx, nameText, nameX, currentY, styles.name);
+            if (countText) {
+                const countX = nameX + nameWidth + countGap;
+                renderStyledText(ctx, countText, countX, currentY, styles.count);
+            }
+            currentY += firstLineHeight;
+            if (subtitleText && styles.subtitle) {
+                renderStyledText(ctx, subtitleText, nameX, currentY, styles.subtitle);
+                currentY += subtitleLineHeight;
+            }
+        }
+    };
+}
+
+async function ensureShareFontsLoaded() {
+    if (typeof document === 'undefined' || !document.fonts || typeof document.fonts.load !== 'function') {
+        return;
+    }
+    const requests = [
+        document.fonts.load('700 48px "Sarpanch"'),
+        document.fonts.load('600 28px "Sarpanch"'),
+        document.fonts.load('500 22px "Sarpanch"'),
+        document.fonts.load('italic 500 20px "Sarpanch"'),
+        document.fonts.load('700 26px "Noto Serif TC"'),
+        document.fonts.load('700 22px "Press Start 2P"')
+    ];
+    try {
+        await Promise.allSettled(requests);
+    } catch (error) {
+        console.warn('Font loading for share image failed', error);
+    }
+}
+
+
+
 async function generateShareImage(summary) {
     if (typeof document === 'undefined') {
         return false;
     }
 
+    await ensureShareFontsLoaded();
+
     const canvas = document.createElement('canvas');
-    const width = 1040;
+    const width = 1260;
     canvas.width = width;
     let context = canvas.getContext('2d');
     if (!context) {
@@ -3123,13 +3787,13 @@ async function generateShareImage(summary) {
         `Total XP: ${formatWithCommas(summary.xpTotal)}`
     ];
 
-    const auraEntries = summary.shareRecords && summary.shareRecords.length > 0
-        ? summary.shareRecords.slice()
-        : ['No auras were rolled.'];
-
     const milestoneEntries = summary.xpLines && summary.xpLines.length > 0
         ? summary.xpLines.slice()
         : [];
+
+    const auraVisuals = Array.isArray(summary.shareVisuals) && summary.shareVisuals.length > 0
+        ? summary.shareVisuals.slice()
+        : null;
 
     const drawQueue = [];
     drawQueue.push({ type: 'text', text: 'Sols Roll Result', font: headerFont, color: '#f6fbff', lineHeight: 58 });
@@ -3145,12 +3809,29 @@ async function generateShareImage(summary) {
     drawQueue.push({ type: 'spacer', size: 30 });
     drawQueue.push({ type: 'text', text: 'Auras Rolled', font: detailFont, color: '#f6c361', lineHeight: 36 });
 
-    context.font = auraFont;
-    auraEntries.forEach(entry => {
-        wrapTextLines(context, entry, maxWidth).forEach(line => {
-            drawQueue.push({ type: 'text', text: line, font: auraFont, color: '#ffffff', lineHeight: 32 });
+    const auraBlocks = [];
+    if (auraVisuals && auraVisuals.length > 0) {
+        auraVisuals.forEach(record => {
+            const block = createAuraBlock(context, record);
+            auraBlocks.push(block);
         });
-    });
+        if (auraBlocks.length > 0) {
+            auraBlocks[auraBlocks.length - 1].gapAfter = 0;
+            auraBlocks.forEach(block => {
+                drawQueue.push({ type: 'aura', block });
+            });
+        }
+    } else {
+        const fallbackAuras = summary.shareRecords && summary.shareRecords.length > 0
+            ? summary.shareRecords.slice()
+            : ['No auras were rolled.'];
+        context.font = auraFont;
+        fallbackAuras.forEach(entry => {
+            wrapTextLines(context, entry, maxWidth).forEach(line => {
+                drawQueue.push({ type: 'text', text: line, font: auraFont, color: '#ffffff', lineHeight: 32 });
+            });
+        });
+    }
 
     if (milestoneEntries.length > 0) {
         drawQueue.push({ type: 'spacer', size: 30 });
@@ -3167,6 +3848,8 @@ async function generateShareImage(summary) {
     drawQueue.forEach(command => {
         if (command.type === 'spacer') {
             totalHeight += command.size;
+        } else if (command.type === 'aura') {
+            totalHeight += command.block.contentHeight + command.block.gapAfter;
         } else {
             totalHeight += command.lineHeight;
         }
@@ -3195,6 +3878,11 @@ async function generateShareImage(summary) {
     drawQueue.forEach(command => {
         if (command.type === 'spacer') {
             cursorY += command.size;
+            return;
+        }
+        if (command.type === 'aura') {
+            command.block.draw(context, margin, cursorY);
+            cursorY += command.block.contentHeight + command.block.gapAfter;
             return;
         }
         context.font = command.font;
