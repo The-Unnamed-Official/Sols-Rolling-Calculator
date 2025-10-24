@@ -10,6 +10,7 @@
     --accent-strong: #c5f6ff;
     --accent-soft: rgba(112, 216, 255, 0.14);
     --accent-muted: rgba(46, 116, 196, 0.35);
+    --accent-rgb: 127 227 255;
     --text-primary: #f6f8ff;
     --text-secondary: rgba(199, 219, 255, 0.68);
     --text-tertiary: rgba(158, 192, 243, 0.52);
@@ -52,6 +53,7 @@ body.biome--glitch {
     --accent-strong: #ffd7ff;
     --accent-soft: rgba(255, 100, 246, 0.18);
     --accent-muted: rgba(255, 100, 246, 0.32);
+    --accent-rgb: 255 100 246;
     --text-secondary: rgba(222, 206, 255, 0.78);
     --text-tertiary: rgba(188, 180, 255, 0.54);
 }
@@ -1034,38 +1036,197 @@ body.biome--blood-rain .ui-backdrop__veil {
 }
 
 .progress {
-    display: flex;
+    --progress-corner-size: calc(var(--corner-size) * 0.7);
+    --progress-corner-thickness: var(--corner-thickness);
+    position: relative;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
     align-items: center;
-    gap: 14px;
-    padding: 12px 14px;
-    background: linear-gradient(135deg, rgba(12, 20, 38, 0.8), rgba(4, 10, 20, 0.88));
-    border: 1px solid rgba(127, 227, 255, 0.18);
-    border-radius: 10px;
-    box-shadow: inset 0 0 18px rgba(120, 180, 255, 0.12);
+    gap: 16px;
+    padding: 16px 20px;
+    border-radius: 12px;
+    background:
+        linear-gradient(var(--accent), var(--accent)) top left / var(--progress-corner-size) var(--progress-corner-thickness) no-repeat,
+        linear-gradient(var(--accent), var(--accent)) top left / var(--progress-corner-thickness) var(--progress-corner-size) no-repeat,
+        linear-gradient(var(--accent), var(--accent)) top right / var(--progress-corner-size) var(--progress-corner-thickness) no-repeat,
+        linear-gradient(var(--accent), var(--accent)) top right / var(--progress-corner-thickness) var(--progress-corner-size) no-repeat,
+        linear-gradient(var(--accent), var(--accent)) bottom left / var(--progress-corner-size) var(--progress-corner-thickness) no-repeat,
+        linear-gradient(var(--accent), var(--accent)) bottom left / var(--progress-corner-thickness) var(--progress-corner-size) no-repeat,
+        linear-gradient(var(--accent), var(--accent)) bottom right / var(--progress-corner-size) var(--progress-corner-thickness) no-repeat,
+        linear-gradient(var(--accent), var(--accent)) bottom right / var(--progress-corner-thickness) var(--progress-corner-size) no-repeat,
+        radial-gradient(circle at 40% 0%, rgb(var(--accent-rgb) / 0.22), transparent 52%),
+        radial-gradient(circle at 10% 100%, rgb(var(--accent-rgb) / 0.14), transparent 60%),
+        radial-gradient(circle at 90% 50%, rgb(var(--accent-rgb) / 0.18), transparent 65%),
+        linear-gradient(160deg, rgba(10, 18, 34, 0.94), rgba(2, 8, 18, 0.98));
+    border: 1px solid rgb(var(--accent-rgb) / 0.28);
+    box-shadow: 0 20px 44px rgba(0, 8, 20, 0.54), inset 0 0 18px rgb(var(--accent-rgb) / 0.16);
+    overflow: hidden;
+    isolation: isolate;
+}
+
+.progress::before {
+    content: '';
+    position: absolute;
+    inset: auto 12px -18px auto;
+    font-size: clamp(42px, 8vw, 72px);
+    letter-spacing: 0.08em;
+    color: rgb(var(--accent-rgb) / 0.24);
+    text-shadow: 0 0 22px rgb(var(--accent-rgb) / 0.28);
+    transform: translate3d(0, 12px, 0) scale(0.94);
+    opacity: 0;
+    transition: opacity 0.4s ease, transform 0.4s ease;
+    pointer-events: none;
+    z-index: 0;
+}
+
+.progress::after {
+    content: '';
+    position: absolute;
+    inset: -30% -60%;
+    background: linear-gradient(115deg, transparent 32%, rgb(var(--accent-rgb) / 0.42) 50%, transparent 68%);
+    mix-blend-mode: screen;
+    opacity: 0;
+    transform: translateX(-30%);
+    filter: blur(12px);
+    pointer-events: none;
+    z-index: 1;
+}
+
+.progress[data-progress]::before {
+    content: attr(data-progress) '%';
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+}
+
+.progress--active::after {
+    opacity: 0.6;
+    animation: progress-sheen 2.4s ease-in-out infinite;
 }
 
 .progress__rail {
-    flex: 1;
-    height: 8px;
-    border-radius: 8px;
-    background: rgba(60, 110, 180, 0.2);
+    position: relative;
+    height: 12px;
+    border-radius: 12px;
+    background: linear-gradient(180deg, rgba(6, 14, 28, 0.9), rgba(2, 8, 18, 0.96));
+    border: 1px solid rgb(var(--accent-rgb) / 0.25);
+    box-shadow: inset 0 0 18px rgb(var(--accent-rgb) / 0.32);
     overflow: hidden;
+    z-index: 2;
+}
+
+.progress__rail::after {
+    content: '';
+    position: absolute;
+    inset: -40% -20%;
+    background: radial-gradient(circle at 0% 50%, rgb(var(--accent-rgb) / 0.32), transparent 65%);
+    mix-blend-mode: screen;
+    opacity: 0.3;
+    transform: translateX(-12%);
+    pointer-events: none;
+}
+
+.progress--active .progress__rail::after {
+    animation: progress-ambient 3s ease-in-out infinite;
 }
 
 .progress__fill {
+    position: relative;
     height: 100%;
     width: 0;
     border-radius: inherit;
-    background: linear-gradient(90deg, rgba(127, 227, 255, 0.9), rgba(150, 255, 210, 0.9));
-    transition: width 0.3s ease;
+    background-image:
+        linear-gradient(90deg, rgb(var(--accent-rgb) / 0.2), rgb(var(--accent-rgb) / 0.85)),
+        repeating-linear-gradient(120deg, rgb(var(--accent-rgb) / 0.65) 0 28px, rgb(var(--accent-rgb) / 0.2) 28px 56px);
+    background-size: 100% 100%, 220px 100%;
+    background-position: 0 0, 0 0;
+    box-shadow: 0 0 20px rgb(var(--accent-rgb) / 0.35);
+    transition: width 0.4s cubic-bezier(0.25, 0.1, 0.25, 1);
+    overflow: hidden;
+}
+
+.progress__fill::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.45), transparent 65%);
+    mix-blend-mode: screen;
+    opacity: 0.5;
+    pointer-events: none;
+}
+
+.progress--active .progress__fill {
+    animation: progress-flow 2.6s linear infinite, progress-pulse 2.2s ease-in-out infinite;
 }
 
 .progress__value {
-    min-width: 52px;
-    text-align: right;
+    position: relative;
+    min-width: 64px;
+    justify-self: end;
+    padding: 6px 14px;
+    border-radius: 10px;
     font-size: 12px;
-    letter-spacing: 0.16em;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    text-align: right;
+    font-variant-numeric: tabular-nums;
     color: var(--accent-strong);
+    background: linear-gradient(180deg, rgba(10, 22, 38, 0.92), rgba(4, 12, 26, 0.98));
+    border: 1px solid rgb(var(--accent-rgb) / 0.42);
+    box-shadow: 0 0 18px rgb(var(--accent-rgb) / 0.3);
+    text-shadow: 0 0 14px rgb(var(--accent-rgb) / 0.52);
+    z-index: 2;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.progress--active .progress__value {
+    transform: translateY(-1px);
+    box-shadow: 0 0 24px rgb(var(--accent-rgb) / 0.45);
+}
+
+@keyframes progress-sheen {
+    0% {
+        transform: translateX(-45%);
+        opacity: 0;
+    }
+    35% {
+        opacity: 0.55;
+    }
+    65% {
+        opacity: 0.2;
+    }
+    100% {
+        transform: translateX(45%);
+        opacity: 0;
+    }
+}
+
+@keyframes progress-flow {
+    0% {
+        background-position: 0 0, 0 0;
+    }
+    100% {
+        background-position: 0 0, 220px 0;
+    }
+}
+
+@keyframes progress-pulse {
+    0%,
+    100% {
+        box-shadow: 0 0 18px rgb(var(--accent-rgb) / 0.36);
+    }
+    50% {
+        box-shadow: 0 0 28px rgb(var(--accent-rgb) / 0.5);
+    }
+}
+
+@keyframes progress-ambient {
+    0%,
+    100% {
+        transform: translateX(-12%);
+    }
+    50% {
+        transform: translateX(32%);
+    }
 }
 
 .results__viewport {
