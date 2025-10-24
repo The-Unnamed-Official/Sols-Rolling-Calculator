@@ -1,5 +1,5 @@
 // Generate pseudo-random numbers using the SFC32 algorithm for consistent rolls
-function sfc32(a, b, c, d) {
+function createSfc32Generator(a, b, c, d) {
     return function() {
       a |= 0; b |= 0; c |= 0; d |= 0;
       let t = (a + b | 0) + d | 0;
@@ -15,15 +15,15 @@ function sfc32(a, b, c, d) {
 // Capture a random seed for each component so the generator starts in a varied state
 const seedgen = () => (Math.random()*2**32)>>>0;
 // Shared generator instance that all random helpers read from
-const getRand = sfc32(seedgen(), seedgen(), seedgen(), seedgen());
+const getRand = createSfc32Generator(seedgen(), seedgen(), seedgen(), seedgen());
 
 // Produce an integer between two inclusive bounds
-function Random(min, max) {
+function randomIntegerInRange(min, max) {
     return Math.floor(getRand() * (max - min + 1)) + min;
 }
 
 // Produce a floating-point value between two bounds
-function randomFloat(min, max) {
+function randomDecimalInRange(min, max) {
     return getRand() * (max - min) + min;
 }
 
@@ -42,7 +42,7 @@ const mediaElementGainMap = new WeakMap();
 let audioContextInstance = null;
 
 // Lazily create (or reuse) a web audio context when the browser allows it
-function ensureAudioContext() {
+function obtainAudioContext() {
     if (typeof window === 'undefined') return null;
     if (!audioContextInstance) {
         const AudioContextClass = window.AudioContext || window.webkitAudioContext;
@@ -53,8 +53,8 @@ function ensureAudioContext() {
 }
 
 // Make sure playback can resume after a user gesture if the context was suspended
-function resumeAudioContext() {
-    const context = ensureAudioContext();
+function resumeAudioContextPlayback() {
+    const context = obtainAudioContext();
     if (context && context.state === 'suspended') {
         context.resume().catch(() => {});
     }
@@ -62,7 +62,7 @@ function resumeAudioContext() {
 }
 
 // Normalize the audio/video source so caching keys are consistent across relative URLs
-function resolveMediaSourceUrl(element) {
+function normalizeMediaSourceUrl(element) {
     if (!element) return null;
     const rawSrc = element.getAttribute('src') || element.currentSrc;
     if (!rawSrc) return null;
@@ -74,7 +74,7 @@ function resolveMediaSourceUrl(element) {
 }
 
 // Check whether connecting the media element to the Web Audio graph is safe
-function canUseMediaElementSource(element) {
+function isMediaElementSourceAllowed(element) {
     if (!element || typeof window === 'undefined') return false;
 
     const { location } = window;
@@ -84,7 +84,7 @@ function canUseMediaElementSource(element) {
         return false;
     }
 
-    const sourceUrl = resolveMediaSourceUrl(element);
+    const sourceUrl = normalizeMediaSourceUrl(element);
     if (!sourceUrl) return false;
 
     try {
@@ -103,7 +103,7 @@ function canUseMediaElementSource(element) {
 }
 
 // Apply gain configuration through Web Audio when possible, otherwise fall back to element volume
-function configureMediaElementGain(element) {
+function applyMediaElementGainControl(element) {
     if (!element) return;
     const dataset = element.dataset || {};
     const gainValueRaw = dataset.gain ?? dataset.boost ?? dataset.volume;
@@ -112,7 +112,7 @@ function configureMediaElementGain(element) {
     let gainValue = Number.parseFloat(gainValueRaw);
     if (!Number.isFinite(gainValue) || gainValue <= 0) return;
 
-    const context = canUseMediaElementSource(element) ? resumeAudioContext() : null;
+    const context = isMediaElementSourceAllowed(element) ? resumeAudioContextPlayback() : null;
     if (context) {
         try {
             let entry = mediaElementGainMap.get(element);
@@ -134,7 +134,7 @@ function configureMediaElementGain(element) {
 }
 
 // Heuristic to detect touch-first devices and adjust UI expectations
-function isMobileDevice() {
+function detectMobilePlatform() {
     return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
         || (window.matchMedia("(max-width: 768px)").matches)
         || ('ontouchstart' in window)
@@ -143,16 +143,16 @@ function isMobileDevice() {
 }
 
 // Separate toggles for UI and rolling sounds so they can be controlled independently
-function isSoundCategoryEnabled(category) {
+function isSoundCategoryActive(category) {
     if (category === 'ui') return uiSoundEnabled;
     return rollingSoundEnabled;
 }
 
 // Play a sound effect with respect to user toggles and cached buffers
-function playSound(audioElement, category = 'rolling') {
+function emitSoundEffect(audioElement, category = 'rolling') {
     if (!audioElement) return;
 
-    if (!isSoundCategoryEnabled(category)) return;
+    if (!isSoundCategoryActive(category)) return;
 
     if (category !== 'ui' && videoPlaying) return;
 
@@ -169,11 +169,11 @@ function playSound(audioElement, category = 'rolling') {
     const gainValue = Math.max(0, baseVolume * boost);
     if (gainValue === 0) return;
 
-    const context = resumeAudioContext();
-    const sourceUrl = resolveMediaSourceUrl(audioElement);
+    const context = resumeAudioContextPlayback();
+    const sourceUrl = normalizeMediaSourceUrl(audioElement);
 
     const playViaElement = () => {
-        if (!isSoundCategoryEnabled(category)) return;
+        if (!isSoundCategoryActive(category)) return;
         if (category !== 'ui' && videoPlaying) return;
         const newAudio = audioElement.cloneNode();
         newAudio.muted = false;
@@ -190,9 +190,9 @@ function playSound(audioElement, category = 'rolling') {
 
     if (context && sourceUrl) {
         const playBuffer = buffer => {
-            if (!buffer || !isSoundCategoryEnabled(category)) return;
+            if (!buffer || !isSoundCategoryActive(category)) return;
             if (category !== 'ui' && videoPlaying) return;
-            const activeContext = resumeAudioContext();
+            const activeContext = resumeAudioContextPlayback();
             if (!activeContext) {
                 playViaElement();
                 return;
@@ -247,7 +247,7 @@ function playSound(audioElement, category = 'rolling') {
     playViaElement();
 }
 
-function getBgMusicBaseVolume(bgMusic) {
+function calculateBgMusicBaseVolume(bgMusic) {
     if (!bgMusic) return 0.18;
     const dataset = bgMusic.dataset || {};
     const rawValue = dataset.volume ?? dataset.gain ?? dataset.boost;
@@ -258,13 +258,13 @@ function getBgMusicBaseVolume(bgMusic) {
     return 0.18;
 }
 
-function synchroniseBgMusicRouting(bgMusic) {
+function syncBgMusicRouting(bgMusic) {
     if (!bgMusic) {
         return { baseVolume: 0.18, chain: null };
     }
 
-    const baseVolume = getBgMusicBaseVolume(bgMusic);
-    const chain = ensureGlitchAudioChain(bgMusic);
+    const baseVolume = calculateBgMusicBaseVolume(bgMusic);
+    const chain = ensureGlitchAudioChainInitialized(bgMusic);
 
     if (chain && chain.gainNode) {
         chain.baseGain = baseVolume;
@@ -282,10 +282,10 @@ function synchroniseBgMusicRouting(bgMusic) {
     return { baseVolume, chain };
 }
 
-function prepareBgMusicForPlayback(bgMusic) {
+function readyBgMusicForPlayback(bgMusic) {
     if (!bgMusic) return;
 
-    synchroniseBgMusicRouting(bgMusic);
+    syncBgMusicRouting(bgMusic);
     try {
         bgMusic.muted = false;
         if (typeof bgMusic.removeAttribute === 'function') {
@@ -296,7 +296,7 @@ function prepareBgMusicForPlayback(bgMusic) {
     }
 }
 
-function playBgMusic(bgMusic) {
+function startBgMusicPlayback(bgMusic) {
     if (!bgMusic) return;
 
     const playPromise = bgMusic.play();
@@ -320,7 +320,7 @@ function playBgMusic(bgMusic) {
     }
 }
 
-function toggleSound() {
+function switchRollingSound() {
     rollingSoundEnabled = !rollingSoundEnabled;
     const bgMusic = document.getElementById('bgMusic');
     const soundToggle = document.getElementById('soundToggle');
@@ -329,14 +329,14 @@ function toggleSound() {
     }
 
     if (rollingSoundEnabled) {
-        resumeAudioContext();
-        playSound(document.getElementById('clickSound'), 'ui');
+        resumeAudioContextPlayback();
+        emitSoundEffect(document.getElementById('clickSound'), 'ui');
         if (bgMusic) {
-            prepareBgMusicForPlayback(bgMusic);
+            readyBgMusicForPlayback(bgMusic);
             if (glitchPresentationEnabled) {
-                updateGlitchAudioEffect(shouldApplyGlitchBaseEffect());
+                updateGlitchAudioState(shouldEnableGlitchBaseEffect());
             }
-            playBgMusic(bgMusic);
+            startBgMusicPlayback(bgMusic);
         }
     } else {
         if (bgMusic) {
@@ -355,9 +355,9 @@ function toggleSound() {
     }
 }
 
-function toggleUiSound() {
+function switchUiSound() {
     uiSoundEnabled = !uiSoundEnabled;
-    resumeAudioContext();
+    resumeAudioContextPlayback();
 
     const uiSoundToggle = document.getElementById('uiSoundToggle');
     if (uiSoundToggle) {
@@ -366,11 +366,11 @@ function toggleUiSound() {
     }
 
     if (uiSoundEnabled) {
-        playSound(document.getElementById('clickSound'), 'ui');
+        emitSoundEffect(document.getElementById('clickSound'), 'ui');
     }
 }
 
-function toggleCutscenes() {
+function switchCutsceneMode() {
     cutscenesEnabled = !cutscenesEnabled;
     const cutsceneToggle = document.getElementById('cutsceneToggle');
     if (cutsceneToggle) {
@@ -380,7 +380,7 @@ function toggleCutscenes() {
 
     const clickSound = document.getElementById('clickSound');
     if (clickSound) {
-        playSound(clickSound, 'ui');
+        emitSoundEffect(clickSound, 'ui');
     }
 
     if (!cutscenesEnabled) {
@@ -391,17 +391,17 @@ function toggleCutscenes() {
     }
 }
 
-function isGlitchBiomeSelected() {
+function checkGlitchBiomeSelected() {
     const biomeSelect = document.getElementById('biome-select');
     return biomeSelect ? biomeSelect.value === 'glitch' : false;
 }
 
-function synchronizeGlitchPresentation() {
-    const glitchBiomeActive = isGlitchBiomeSelected();
-    setGlitchPresentation(glitchEffectsEnabled && glitchBiomeActive, { forceTheme: glitchBiomeActive });
+function syncGlitchPresentation() {
+    const glitchBiomeActive = checkGlitchBiomeSelected();
+    applyGlitchPresentation(glitchEffectsEnabled && glitchBiomeActive, { forceTheme: glitchBiomeActive });
 }
 
-function toggleGlitchEffects() {
+function switchGlitchEffects() {
     glitchEffectsEnabled = !glitchEffectsEnabled;
     const glitchToggle = document.getElementById('glitchToggle');
     if (glitchToggle) {
@@ -409,8 +409,8 @@ function toggleGlitchEffects() {
         glitchToggle.setAttribute('aria-pressed', glitchEffectsEnabled ? 'true' : 'false');
     }
 
-    playSound(document.getElementById('clickSound'), 'ui');
-    synchronizeGlitchPresentation();
+    emitSoundEffect(document.getElementById('clickSound'), 'ui');
+    syncGlitchPresentation();
 }
 
 let baseLuck = 1;
@@ -442,7 +442,7 @@ const biomeAssets = {
     blazing: { image: 'files/blazingBiomeImage.jpg', music: 'files/blazingBiomeMusic.mp3' }
 };
 
-function synchronizeBloodRainWeather(biome) {
+function syncBloodRainWeather(biome) {
     const container = document.querySelector('.weather--blood-rain');
     if (!container) return;
 
@@ -472,15 +472,15 @@ function synchronizeBloodRainWeather(biome) {
     for (let i = 0; i < dropTotal; i++) {
         const drop = document.createElement('span');
         drop.className = 'blood-rain-drop';
-        const offsetX = randomFloat(0, 100);
-        const delay = randomFloat(0, 2.2);
-        const duration = randomFloat(1.2, 2.8);
-        const length = randomFloat(0.9, 2.6);
-        const thickness = randomFloat(0.8, 1.9);
-        const opacity = randomFloat(0.6, 0.95);
-        const skew = randomFloat(-4, 4);
-        const drift = randomFloat(-18, 18);
-        const startOffset = randomFloat(0, 60);
+        const offsetX = randomDecimalInRange(0, 100);
+        const delay = randomDecimalInRange(0, 2.2);
+        const duration = randomDecimalInRange(1.2, 2.8);
+        const length = randomDecimalInRange(0.9, 2.6);
+        const thickness = randomDecimalInRange(0.8, 1.9);
+        const opacity = randomDecimalInRange(0.6, 0.95);
+        const skew = randomDecimalInRange(-4, 4);
+        const drift = randomDecimalInRange(-18, 18);
+        const startOffset = randomDecimalInRange(0, 60);
         drop.style.setProperty('--x', `${offsetX.toFixed(2)}%`);
         drop.style.setProperty('--delay', `${delay.toFixed(2)}s`);
         drop.style.setProperty('--duration', `${duration.toFixed(2)}s`);
@@ -512,7 +512,7 @@ const glitchUiState = {
 };
 let glitchPresentationEnabled = false;
 
-function shouldApplyGlitchBaseEffect() {
+function shouldEnableGlitchBaseEffect() {
     return glitchPresentationEnabled && glitchUiState.isUiGlitching;
 }
 
@@ -532,38 +532,38 @@ const GLITCH_RUIN_MIN_FREQUENCY = 360;
 const GLITCH_RUIN_MIN_DISTORTION = 180;
 const GLITCH_RUIN_MAX_DISTORTION = 420;
 
-function clearGlitchAudioRuinTimer() {
+function resetGlitchAudioRuinTimer() {
     if (glitchAudioState.ruinTimeoutId !== null && typeof window !== 'undefined') {
         window.clearTimeout(glitchAudioState.ruinTimeoutId);
         glitchAudioState.ruinTimeoutId = null;
     }
 }
 
-function clearGlitchBaseWarbleTimer() {
+function resetGlitchBaseWarbleTimer() {
     if (glitchAudioState.warbleIntervalId !== null && typeof window !== 'undefined') {
         window.clearTimeout(glitchAudioState.warbleIntervalId);
         glitchAudioState.warbleIntervalId = null;
     }
 }
 
-function scheduleGlitchBaseWarble(bgMusic, chain) {
+function scheduleGlitchBaseWarbleCycle(bgMusic, chain) {
     if (!bgMusic || typeof window === 'undefined') return;
 
-    clearGlitchBaseWarbleTimer();
+    resetGlitchBaseWarbleTimer();
 
-    const context = chain?.context || ensureAudioContext();
+    const context = chain?.context || obtainAudioContext();
     const applyWarble = () => {
         if (!glitchPresentationEnabled) {
-            clearGlitchBaseWarbleTimer();
+            resetGlitchBaseWarbleTimer();
             return;
         }
 
         if (glitchAudioState.isRuinActive) {
-            glitchAudioState.warbleIntervalId = window.setTimeout(applyWarble, Random(420, 900));
+            glitchAudioState.warbleIntervalId = window.setTimeout(applyWarble, randomIntegerInRange(420, 900));
             return;
         }
 
-        const warbleRate = randomFloat(GLITCH_WARBLE_RATE_MIN, GLITCH_WARBLE_RATE_MAX);
+        const warbleRate = randomDecimalInRange(GLITCH_WARBLE_RATE_MIN, GLITCH_WARBLE_RATE_MAX);
         glitchAudioState.basePlaybackRate = warbleRate;
 
         try {
@@ -572,29 +572,29 @@ function scheduleGlitchBaseWarble(bgMusic, chain) {
             console.warn('Unable to apply glitch base warble rate', error);
         }
 
-        const baseGain = chain?.baseGain ?? getBgMusicBaseVolume(bgMusic);
+        const baseGain = chain?.baseGain ?? calculateBgMusicBaseVolume(bgMusic);
         if (context && chain?.gainNode?.gain && typeof chain.gainNode.gain.setTargetAtTime === 'function') {
-            const warpedGain = Math.max(0, Math.min(1, baseGain * randomFloat(0.45, 0.7)));
+            const warpedGain = Math.max(0, Math.min(1, baseGain * randomDecimalInRange(0.45, 0.7)));
             chain.gainNode.gain.setTargetAtTime(warpedGain, context.currentTime, 0.6);
         }
 
         if (context && chain?.highpass?.frequency && typeof chain.highpass.frequency.setTargetAtTime === 'function') {
-            const warpedHighpass = Math.max(0, GLITCH_BASE_HIGHPASS_FREQUENCY * randomFloat(1.05, 1.4));
+            const warpedHighpass = Math.max(0, GLITCH_BASE_HIGHPASS_FREQUENCY * randomDecimalInRange(1.05, 1.4));
             chain.highpass.frequency.setTargetAtTime(warpedHighpass, context.currentTime, 0.6);
         }
 
         if (context && chain?.filter?.detune && typeof chain.filter.detune.setTargetAtTime === 'function') {
-            const detune = randomFloat(-680, 420);
+            const detune = randomDecimalInRange(-680, 420);
             chain.filter.detune.setTargetAtTime(detune, context.currentTime, 0.6);
         }
 
-        glitchAudioState.warbleIntervalId = window.setTimeout(applyWarble, Random(GLITCH_WARBLE_REST_MIN, GLITCH_WARBLE_REST_MAX));
+        glitchAudioState.warbleIntervalId = window.setTimeout(applyWarble, randomIntegerInRange(GLITCH_WARBLE_REST_MIN, GLITCH_WARBLE_REST_MAX));
     };
 
-    glitchAudioState.warbleIntervalId = window.setTimeout(applyWarble, Random(180, 520));
+    glitchAudioState.warbleIntervalId = window.setTimeout(applyWarble, randomIntegerInRange(180, 520));
 }
 
-function createDistortionCurve(amount = 0) {
+function generateDistortionCurve(amount = 0) {
     const sampleCount = 44100;
     const curve = new Float32Array(sampleCount);
     const deg = Math.PI / 180;
@@ -609,15 +609,15 @@ function createDistortionCurve(amount = 0) {
     return curve;
 }
 
-function ensureGlitchAudioChain(audioElement) {
+function ensureGlitchAudioChainInitialized(audioElement) {
     if (!audioElement) return null;
-    const context = ensureAudioContext();
+    const context = obtainAudioContext();
     if (!context) return null;
 
     let chain = glitchAudioChainMap.get(audioElement);
-    const baseVolume = getBgMusicBaseVolume(audioElement);
+    const baseVolume = calculateBgMusicBaseVolume(audioElement);
 
-    if (!canUseMediaElementSource(audioElement)) {
+    if (!isMediaElementSourceAllowed(audioElement)) {
         glitchAudioChainMap.delete(audioElement);
         audioElement.volume = Math.max(0, Math.min(baseVolume, 1));
         return null;
@@ -625,7 +625,7 @@ function ensureGlitchAudioChain(audioElement) {
     if (chain && chain.context === context) {
         if (!chain.highpass) {
             glitchAudioChainMap.delete(audioElement);
-            return ensureGlitchAudioChain(audioElement);
+            return ensureGlitchAudioChainInitialized(audioElement);
         }
         chain.baseGain = baseVolume;
         chain.originalFilterType = chain.originalFilterType || chain.filter.type;
@@ -656,7 +656,7 @@ function ensureGlitchAudioChain(audioElement) {
         filter.Q.value = 0.3;
 
         const waveshaper = context.createWaveShaper();
-        const neutralCurve = createDistortionCurve(0);
+        const neutralCurve = generateDistortionCurve(0);
         waveshaper.curve = neutralCurve;
 
         const gainNode = context.createGain();
@@ -684,12 +684,12 @@ function ensureGlitchAudioChain(audioElement) {
     }
 }
 
-function updateGlitchAudioEffect(enabled) {
+function updateGlitchAudioState(enabled) {
     const bgMusic = document.getElementById('bgMusic');
     if (!bgMusic) return;
 
-    const context = enabled ? resumeAudioContext() : ensureAudioContext();
-    const chain = ensureGlitchAudioChain(bgMusic);
+    const context = enabled ? resumeAudioContextPlayback() : obtainAudioContext();
+    const chain = ensureGlitchAudioChainInitialized(bgMusic);
 
     if (!context || !chain) {
         if (!enabled && glitchAudioState.originalPlaybackRate !== null) {
@@ -704,17 +704,17 @@ function updateGlitchAudioEffect(enabled) {
         return;
     }
 
-    clearGlitchAudioRuinTimer();
+    resetGlitchAudioRuinTimer();
     glitchAudioState.isRuinActive = false;
 
-    const baseGain = chain.baseGain ?? getBgMusicBaseVolume(bgMusic);
+    const baseGain = chain.baseGain ?? calculateBgMusicBaseVolume(bgMusic);
 
     if (enabled) {
         if (glitchAudioState.originalPlaybackRate === null) {
             glitchAudioState.originalPlaybackRate = bgMusic.playbackRate || 1;
         }
         if (glitchAudioState.basePlaybackRate === null) {
-            glitchAudioState.basePlaybackRate = randomFloat(GLITCH_WARBLE_RATE_MIN, GLITCH_WARBLE_RATE_MAX);
+            glitchAudioState.basePlaybackRate = randomDecimalInRange(GLITCH_WARBLE_RATE_MIN, GLITCH_WARBLE_RATE_MAX);
         }
         const baseRate = glitchAudioState.basePlaybackRate ?? glitchAudioState.originalPlaybackRate ?? bgMusic.playbackRate;
         try {
@@ -745,7 +745,7 @@ function updateGlitchAudioEffect(enabled) {
             chain.filter.Q.value = GLITCH_BASE_FILTER_Q;
             chain.gainNode.gain.value = baseGain * GLITCH_BASE_GAIN;
         }
-        chain.waveshaper.curve = createDistortionCurve(GLITCH_BASE_DISTORTION);
+        chain.waveshaper.curve = generateDistortionCurve(GLITCH_BASE_DISTORTION);
         if (chain.waveshaper) {
             chain.waveshaper.oversample = '4x';
         }
@@ -782,37 +782,37 @@ function updateGlitchAudioEffect(enabled) {
             chain.filter.Q.value = 0.4;
             chain.gainNode.gain.value = baseGain;
         }
-        chain.waveshaper.curve = chain.neutralCurve || createDistortionCurve(0);
+        chain.waveshaper.curve = chain.neutralCurve || generateDistortionCurve(0);
         if (chain.waveshaper) {
             chain.waveshaper.oversample = 'none';
         }
     }
 
     if (enabled) {
-        scheduleGlitchBaseWarble(bgMusic, chain);
+        scheduleGlitchBaseWarbleCycle(bgMusic, chain);
     } else {
-        clearGlitchBaseWarbleTimer();
+        resetGlitchBaseWarbleTimer();
     }
 }
 
-function applyGlitchAudioBurst() {
+function triggerGlitchAudioBurst() {
     const bgMusic = document.getElementById('bgMusic');
-    if (!bgMusic || !shouldApplyGlitchBaseEffect()) return;
+    if (!bgMusic || !shouldEnableGlitchBaseEffect()) return;
 
-    const context = ensureAudioContext();
-    const chain = ensureGlitchAudioChain(bgMusic);
+    const context = obtainAudioContext();
+    const chain = ensureGlitchAudioChainInitialized(bgMusic);
 
     if (!context || !chain) return;
 
     glitchAudioState.isRuinActive = true;
-    clearGlitchAudioRuinTimer();
-    clearGlitchBaseWarbleTimer();
+    resetGlitchAudioRuinTimer();
+    resetGlitchBaseWarbleTimer();
 
     if (glitchAudioState.originalPlaybackRate === null) {
         glitchAudioState.originalPlaybackRate = bgMusic.playbackRate || 1;
     }
     if (glitchAudioState.basePlaybackRate === null) {
-        glitchAudioState.basePlaybackRate = randomFloat(GLITCH_WARBLE_RATE_MIN, GLITCH_WARBLE_RATE_MAX);
+        glitchAudioState.basePlaybackRate = randomDecimalInRange(GLITCH_WARBLE_RATE_MIN, GLITCH_WARBLE_RATE_MAX);
     }
 
     if (!chain.originalFilterType) {
@@ -825,22 +825,22 @@ function applyGlitchAudioBurst() {
         console.warn('Unable to adjust glitch filter type', error);
     }
 
-    const baseGain = chain.baseGain ?? getBgMusicBaseVolume(bgMusic);
+    const baseGain = chain.baseGain ?? calculateBgMusicBaseVolume(bgMusic);
 
     const applyChaosPulse = () => {
         if (!glitchAudioState.isRuinActive) return;
 
-        const chaoticRate = randomFloat(0.38, 1.72);
+        const chaoticRate = randomDecimalInRange(0.38, 1.72);
         try {
             bgMusic.playbackRate = chaoticRate;
         } catch (error) {
             console.warn('Unable to modify playback rate for glitch ruin', error);
         }
 
-        const frequency = randomFloat(GLITCH_RUIN_MIN_FREQUENCY, 2600);
-        const q = randomFloat(1.4, 9);
-        const gain = Math.max(0, Math.min(1, baseGain * randomFloat(0.25, 0.7)));
-        const distortionAmount = Random(GLITCH_RUIN_MIN_DISTORTION, GLITCH_RUIN_MAX_DISTORTION);
+        const frequency = randomDecimalInRange(GLITCH_RUIN_MIN_FREQUENCY, 2600);
+        const q = randomDecimalInRange(1.4, 9);
+        const gain = Math.max(0, Math.min(1, baseGain * randomDecimalInRange(0.25, 0.7)));
+        const distortionAmount = randomIntegerInRange(GLITCH_RUIN_MIN_DISTORTION, GLITCH_RUIN_MAX_DISTORTION);
         const filterTypes = ['bandpass', 'highpass', 'notch'];
         const selectedType = filterTypes[Math.floor(Math.random() * filterTypes.length)] || 'bandpass';
 
@@ -861,34 +861,34 @@ function applyGlitchAudioBurst() {
         }
 
         if (chain.filter?.detune && typeof chain.filter.detune.setTargetAtTime === 'function') {
-            const detune = randomFloat(-2400, 2400);
+            const detune = randomDecimalInRange(-2400, 2400);
             chain.filter.detune.setTargetAtTime(detune, context.currentTime, 0.05);
         }
 
-        chain.waveshaper.curve = createDistortionCurve(distortionAmount);
+        chain.waveshaper.curve = generateDistortionCurve(distortionAmount);
         if (chain.waveshaper) {
             chain.waveshaper.oversample = Math.random() > 0.4 ? '4x' : '2x';
         }
 
         if (typeof window !== 'undefined') {
-            glitchAudioState.ruinTimeoutId = window.setTimeout(applyChaosPulse, Random(120, 260));
+            glitchAudioState.ruinTimeoutId = window.setTimeout(applyChaosPulse, randomIntegerInRange(120, 260));
         }
     };
 
     applyChaosPulse();
 }
 
-function finishGlitchAudioBurst() {
+function completeGlitchAudioBurst() {
     glitchAudioState.isRuinActive = false;
-    clearGlitchAudioRuinTimer();
+    resetGlitchAudioRuinTimer();
 
     const bgMusic = document.getElementById('bgMusic');
     if (!bgMusic) return;
 
-    const context = ensureAudioContext();
-    const chain = glitchAudioChainMap.get(bgMusic) || ensureGlitchAudioChain(bgMusic);
+    const context = obtainAudioContext();
+    const chain = glitchAudioChainMap.get(bgMusic) || ensureGlitchAudioChainInitialized(bgMusic);
 
-    const baseEffectEnabled = shouldApplyGlitchBaseEffect();
+    const baseEffectEnabled = shouldEnableGlitchBaseEffect();
     const resetRate = baseEffectEnabled
         ? (glitchAudioState.basePlaybackRate ?? glitchAudioState.originalPlaybackRate ?? 1)
         : (glitchAudioState.originalPlaybackRate ?? glitchAudioState.basePlaybackRate ?? 1);
@@ -901,14 +901,14 @@ function finishGlitchAudioBurst() {
 
     if (!context || !chain) {
         if (baseEffectEnabled) {
-            scheduleGlitchBaseWarble(bgMusic, null);
+            scheduleGlitchBaseWarbleCycle(bgMusic, null);
         } else {
-            clearGlitchBaseWarbleTimer();
+            resetGlitchBaseWarbleTimer();
         }
         return;
     }
 
-    const baseGain = chain.baseGain ?? getBgMusicBaseVolume(bgMusic);
+    const baseGain = chain.baseGain ?? calculateBgMusicBaseVolume(bgMusic);
     const targetGain = baseEffectEnabled ? baseGain * GLITCH_BASE_GAIN : baseGain;
     const targetFrequency = baseEffectEnabled ? GLITCH_BASE_FILTER_FREQUENCY : 14000;
     const targetQ = baseEffectEnabled ? GLITCH_BASE_FILTER_Q : 0.4;
@@ -939,30 +939,30 @@ function finishGlitchAudioBurst() {
         chain.gainNode.gain.value = targetGain;
     }
 
-    chain.waveshaper.curve = baseEffectEnabled ? createDistortionCurve(GLITCH_BASE_DISTORTION) : (chain.neutralCurve || createDistortionCurve(0));
+    chain.waveshaper.curve = baseEffectEnabled ? generateDistortionCurve(GLITCH_BASE_DISTORTION) : (chain.neutralCurve || generateDistortionCurve(0));
     if (chain.waveshaper) {
         chain.waveshaper.oversample = baseEffectEnabled ? '4x' : 'none';
     }
 
     if (baseEffectEnabled) {
-        scheduleGlitchBaseWarble(bgMusic, chain);
+        scheduleGlitchBaseWarbleCycle(bgMusic, chain);
     } else {
-        clearGlitchBaseWarbleTimer();
+        resetGlitchBaseWarbleTimer();
     }
 }
 
-function scheduleGlitchBurst(delay) {
+function scheduleGlitchBurstCycle(delay) {
     if (typeof window === 'undefined') return;
     if (glitchUiState.loopTimeoutId !== null) {
         window.clearTimeout(glitchUiState.loopTimeoutId);
     }
     glitchUiState.loopTimeoutId = window.setTimeout(() => {
         glitchUiState.loopTimeoutId = null;
-        runGlitchBurst();
+        executeGlitchBurst();
     }, Math.max(0, delay));
 }
 
-function runGlitchBurst() {
+function executeGlitchBurst() {
     if (!glitchPresentationEnabled) return;
     const body = document.body;
     const root = document.documentElement;
@@ -971,8 +971,8 @@ function runGlitchBurst() {
     glitchUiState.isUiGlitching = true;
     body.classList.add('is-glitching');
     root.classList.add('is-glitching');
-    updateGlitchAudioEffect(shouldApplyGlitchBaseEffect());
-    applyGlitchAudioBurst();
+    updateGlitchAudioState(shouldEnableGlitchBaseEffect());
+    triggerGlitchAudioBurst();
 
     if (typeof window === 'undefined') return;
     if (glitchUiState.activeTimeoutId !== null) {
@@ -983,30 +983,30 @@ function runGlitchBurst() {
         root.classList.remove('is-glitching');
         glitchUiState.activeTimeoutId = null;
         glitchUiState.isUiGlitching = false;
-        finishGlitchAudioBurst();
-        updateGlitchAudioEffect(shouldApplyGlitchBaseEffect());
+        completeGlitchAudioBurst();
+        updateGlitchAudioState(shouldEnableGlitchBaseEffect());
         if (glitchPresentationEnabled) {
-            scheduleGlitchBurst(Random(1800, 4200));
+            scheduleGlitchBurstCycle(randomIntegerInRange(1800, 4200));
         }
-    }, Random(320, 980));
+    }, randomIntegerInRange(320, 980));
 }
 
-function startGlitchLoop(forceImmediate = false) {
+function beginGlitchLoop(forceImmediate = false) {
     if (!glitchPresentationEnabled || typeof window === 'undefined') return;
-    const initialDelay = forceImmediate ? Random(120, 420) : Random(600, 1800);
-    scheduleGlitchBurst(initialDelay);
+    const initialDelay = forceImmediate ? randomIntegerInRange(120, 420) : randomIntegerInRange(600, 1800);
+    scheduleGlitchBurstCycle(initialDelay);
 }
 
-function ensureGlitchLoopScheduled() {
+function confirmGlitchLoopScheduled() {
     if (!glitchPresentationEnabled) return;
     const body = document.body;
     if (!body) return;
     if (glitchUiState.loopTimeoutId === null && !body.classList.contains('is-glitching')) {
-        scheduleGlitchBurst(Random(1800, 4200));
+        scheduleGlitchBurstCycle(randomIntegerInRange(1800, 4200));
     }
 }
 
-function stopGlitchLoop(options = {}) {
+function haltGlitchLoop(options = {}) {
     const { preserveBiomeClass = false } = options;
     if (typeof window !== 'undefined') {
         if (glitchUiState.loopTimeoutId !== null) {
@@ -1017,14 +1017,14 @@ function stopGlitchLoop(options = {}) {
             window.clearTimeout(glitchUiState.activeTimeoutId);
             glitchUiState.activeTimeoutId = null;
         }
-        clearGlitchAudioRuinTimer();
+        resetGlitchAudioRuinTimer();
         glitchAudioState.isRuinActive = false;
-        clearGlitchBaseWarbleTimer();
+        resetGlitchBaseWarbleTimer();
     }
 
     glitchUiState.isUiGlitching = false;
-    finishGlitchAudioBurst();
-    updateGlitchAudioEffect(false);
+    completeGlitchAudioBurst();
+    updateGlitchAudioState(false);
 
     const body = document.body;
     const root = document.documentElement;
@@ -1042,7 +1042,7 @@ function stopGlitchLoop(options = {}) {
     }
 }
 
-function setGlitchPresentation(enabled, options = {}) {
+function applyGlitchPresentation(enabled, options = {}) {
     const body = document.body;
     const root = document.documentElement;
     if (!body || !root) return;
@@ -1053,16 +1053,16 @@ function setGlitchPresentation(enabled, options = {}) {
         body.classList.add('biome--glitch');
         if (!glitchPresentationEnabled) {
             glitchPresentationEnabled = true;
-            updateGlitchAudioEffect(shouldApplyGlitchBaseEffect());
-            startGlitchLoop(true);
+            updateGlitchAudioState(shouldEnableGlitchBaseEffect());
+            beginGlitchLoop(true);
         } else {
-            updateGlitchAudioEffect(shouldApplyGlitchBaseEffect());
-            ensureGlitchLoopScheduled();
+            updateGlitchAudioState(shouldEnableGlitchBaseEffect());
+            confirmGlitchLoopScheduled();
         }
     } else {
         if (glitchPresentationEnabled) {
             glitchPresentationEnabled = false;
-            stopGlitchLoop({ preserveBiomeClass: forceTheme });
+            haltGlitchLoop({ preserveBiomeClass: forceTheme });
         }
         if (forceTheme) {
             root.classList.add('biome--glitch');
@@ -1072,11 +1072,11 @@ function setGlitchPresentation(enabled, options = {}) {
             root.classList.remove('biome--glitch');
         }
         glitchUiState.isUiGlitching = false;
-        updateGlitchAudioEffect(false);
+        updateGlitchAudioState(false);
     }
 }
 
-function applyBiomeTheme(biome) {
+function applyBiomeVisualTheme(biome) {
     const assetKey = Object.prototype.hasOwnProperty.call(biomeAssets, biome) ? biome : 'normal';
     const assets = biomeAssets[assetKey];
     const isVideoAsset = typeof assets.image === 'string' && /\.(webm|mp4|ogv|ogg)$/i.test(assets.image);
@@ -1091,7 +1091,7 @@ function applyBiomeTheme(biome) {
         root.classList.toggle('biome--blood-rain', isBloodRain);
     }
 
-    synchronizeBloodRainWeather(biome);
+    syncBloodRainWeather(biome);
 
     if (root) {
         root.style.setProperty('--biome-background', isVideoAsset ? 'none' : `url("${assets.image}")`);
@@ -1150,19 +1150,19 @@ function applyBiomeTheme(biome) {
         }
 
         if (rollingSoundEnabled) {
-            prepareBgMusicForPlayback(bgMusic);
+            readyBgMusicForPlayback(bgMusic);
             if (glitchPresentationEnabled) {
-                updateGlitchAudioEffect(shouldApplyGlitchBaseEffect());
+                updateGlitchAudioState(shouldEnableGlitchBaseEffect());
             }
         }
 
         if (rollingSoundEnabled && (shouldUpdateMusic || bgMusic.paused)) {
-            playBgMusic(bgMusic);
+            startBgMusicPlayback(bgMusic);
         }
     }
 }
 
-function setLuck(value, options = {}) {
+function assignLuckValue(value, options = {}) {
     baseLuck = value;
     currentLuck = value;
     lastVipMultiplier = 1;
@@ -1170,20 +1170,20 @@ function setLuck(value, options = {}) {
     lastDaveMultiplier = 1;
     document.getElementById('vip-select').value = "1";
     document.getElementById('xyz-luck').checked = false;
-    refreshCustomSelect('vip-select');
+    refreshCustomSelectDisplay('vip-select');
     if (document.getElementById('dave-luck-select')) {
         document.getElementById('dave-luck-select').value = "1";
-        refreshCustomSelect('dave-luck-select');
+        refreshCustomSelectDisplay('dave-luck-select');
     }
     document.getElementById('luck').value = value;
 
-    if (typeof handlePresetOptionChange === 'function') {
-        handlePresetOptionChange(options);
+    if (typeof processPresetOptionChange === 'function') {
+        processPresetOptionChange(options);
     }
 }
 
 // Recalculate the combined luck multiplier whenever a control changes
-function updateLuckValue() {
+function recalculateLuckValue() {
     const controls = {
         biome: document.getElementById('biome-select'),
         vip: document.getElementById('vip-select'),
@@ -1211,17 +1211,17 @@ function updateLuckValue() {
         lastDaveMultiplier = 1;
         if (controls.vip) {
             controls.vip.value = "1";
-            refreshCustomSelect('vip-select');
+            refreshCustomSelectDisplay('vip-select');
         }
         if (controls.xyz) {
             controls.xyz.checked = false;
         }
         if (controls.dave) {
             controls.dave.value = "1";
-            refreshCustomSelect('dave-luck-select');
+            refreshCustomSelectDisplay('dave-luck-select');
         }
-        if (typeof handlePresetOptionChange === 'function') {
-            handlePresetOptionChange({});
+        if (typeof processPresetOptionChange === 'function') {
+            processPresetOptionChange({});
         }
         return;
     }
@@ -1235,45 +1235,45 @@ function updateLuckValue() {
     }
 }
 
-function resetLuck() {
+function restoreLuckDefaults() {
     document.getElementById('luck').value = 1;
-    playSound(document.getElementById('clickSound'), 'ui');
-    updateLuckValue();
-    if (typeof handlePresetOptionChange === 'function') {
-        handlePresetOptionChange({});
+    emitSoundEffect(document.getElementById('clickSound'), 'ui');
+    recalculateLuckValue();
+    if (typeof processPresetOptionChange === 'function') {
+        processPresetOptionChange({});
     }
 }
 
-function resetRolls() {
+function clearRollCount() {
     document.getElementById('rolls').value = 1;
-    playSound(document.getElementById('clickSound'), 'ui');
+    emitSoundEffect(document.getElementById('clickSound'), 'ui');
 }
 
-function setGlitch() {
+function applyGlitchPreset() {
     document.getElementById('biome-select').value = 'glitch';
-    playSound(document.getElementById('clickSound'), 'ui');
-    handleBiomeUI();
+    emitSoundEffect(document.getElementById('clickSound'), 'ui');
+    handleBiomeInterface();
 }
 
-function setLimbo() {
+function applyLimboPreset() {
     document.getElementById('biome-select').value = 'limbo';
-    playSound(document.getElementById('clickSound'), 'ui');
-    handleBiomeUI();
+    emitSoundEffect(document.getElementById('clickSound'), 'ui');
+    handleBiomeInterface();
 }
 
-function setROE() {
-    document.getElementById('biome-select').value = 'roe'
-    playSound(document.getElementById('clicksound'), 'ui');
-    handleBiomeUI();
+function applyRoePreset() {
+    document.getElementById('biome-select').value = 'roe';
+    emitSoundEffect(document.getElementById('clickSound'), 'ui');
+    handleBiomeInterface();
 }
 
-function resetBiome() {
+function resetBiomeSelection() {
     document.getElementById('biome-select').value = 'normal';
-    playSound(document.getElementById('clickSound'), 'ui');
-    handleBiomeUI();
+    emitSoundEffect(document.getElementById('clickSound'), 'ui');
+    handleBiomeInterface();
 }
 
-function handleBiomeUI() {
+function handleBiomeInterface() {
     const biome = document.getElementById('biome-select').value;
     const daveLuckContainer = document.getElementById('dave-luck-container');
     const xyzLuckContainer = document.getElementById('xyz-luck-container');
@@ -1306,10 +1306,10 @@ function handleBiomeUI() {
             });
         }
     }
-    applyBiomeTheme(biome);
-    synchronizeGlitchPresentation();
-    updateLuckValue();
-    refreshCustomSelect('biome-select');
+    applyBiomeVisualTheme(biome);
+    syncGlitchPresentation();
+    recalculateLuckValue();
+    refreshCustomSelectDisplay('biome-select');
 }
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -1319,24 +1319,24 @@ document.addEventListener('DOMContentLoaded', () => {
     const clickSound = document.getElementById('clickSound');
     const hoverSound = document.getElementById('hoverSound');
     buttons.forEach(button => {
-        button.addEventListener('click', () => playSound(clickSound, 'ui'));
-        button.addEventListener('mouseenter', () => playSound(hoverSound, 'ui'));
+        button.addEventListener('click', () => emitSoundEffect(clickSound, 'ui'));
+        button.addEventListener('mouseenter', () => emitSoundEffect(hoverSound, 'ui'));
     });
     inputs.forEach(input => {
-        input.addEventListener('click', () => playSound(clickSound, 'ui'));
-        input.addEventListener('mouseenter', () => playSound(hoverSound, 'ui'));
+        input.addEventListener('click', () => emitSoundEffect(clickSound, 'ui'));
+        input.addEventListener('mouseenter', () => emitSoundEffect(hoverSound, 'ui'));
     });
     selects.forEach(select => {
-        select.addEventListener('change', () => playSound(clickSound, 'ui'));
-        select.addEventListener('mouseenter', () => playSound(hoverSound, 'ui'));
+        select.addEventListener('change', () => emitSoundEffect(clickSound, 'ui'));
+        select.addEventListener('mouseenter', () => emitSoundEffect(hoverSound, 'ui'));
     });
-    document.getElementById('vip-select').addEventListener('change', updateLuckValue);
+    document.getElementById('vip-select').addEventListener('change', recalculateLuckValue);
     const xyzToggle = document.getElementById('xyz-luck');
     if (xyzToggle) {
-        xyzToggle.addEventListener('change', updateLuckValue);
+        xyzToggle.addEventListener('change', recalculateLuckValue);
     }
     if (document.getElementById('dave-luck-select')) {
-        document.getElementById('dave-luck-select').addEventListener('change', updateLuckValue);
+        document.getElementById('dave-luck-select').addEventListener('change', recalculateLuckValue);
     }
     document.getElementById('luck').addEventListener('input', function() {
         const value = parseInt(this.value) || 1;
@@ -1347,14 +1347,14 @@ document.addEventListener('DOMContentLoaded', () => {
         lastDaveMultiplier = 1;
         document.getElementById('vip-select').value = "1";
         document.getElementById('xyz-luck').checked = false;
-        refreshCustomSelect('vip-select');
+        refreshCustomSelectDisplay('vip-select');
         if (document.getElementById('dave-luck-select')) {
             document.getElementById('dave-luck-select').value = "1";
-            refreshCustomSelect('dave-luck-select');
+            refreshCustomSelectDisplay('dave-luck-select');
         }
     });
-    document.getElementById('biome-select').addEventListener('change', handleBiomeUI);
-    handleBiomeUI();
+    document.getElementById('biome-select').addEventListener('change', handleBiomeInterface);
+    handleBiomeInterface();
 
     const soundToggle = document.getElementById('soundToggle');
     if (soundToggle) {
@@ -1438,14 +1438,14 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-function playAuraVideo(videoId) {
+function presentAuraVideo(videoId) {
     return new Promise(resolve => {
         if (!cutscenesEnabled) {
             resolve();
             return;
         }
 
-        if (isMobileDevice()) {
+        if (detectMobilePlatform()) {
             const bgMusic = document.getElementById('bgMusic');
             if (bgMusic && !bgMusic.paused) {
                 bgMusic.pause();
@@ -1481,7 +1481,7 @@ function playAuraVideo(videoId) {
         }
 
         if (rollingSoundEnabled) {
-            configureMediaElementGain(video);
+            applyMediaElementGainControl(video);
         }
 
         videoPlaying = true;
@@ -1557,17 +1557,17 @@ function playAuraVideo(videoId) {
     });
 }
 
-async function playAuraSequence(queue) {
+async function runAuraSequence(queue) {
     if (!Array.isArray(queue) || queue.length === 0) return;
 
     for (const videoId of queue) {
         if (!cutscenesEnabled) break;
-        await playAuraVideo(videoId);
+        await presentAuraVideo(videoId);
     }
 }
 
 // Decide which rarity CSS class to apply to an aura for display purposes
-function getRarityClass(aura, biome) {
+function determineRarityClass(aura, biome) {
     if (aura && aura.disableRarityClass) return '';
     // Fault always appears with a challenged rarity style to match in-game presentation
     if (aura && aura.name === "Fault") return 'rarity-challenged';
@@ -1626,7 +1626,7 @@ const auraOutlineOverrides = new Map([
     ['Erebus', 'aura-outline-blood'],
 ]);
 
-function getAuraStyleClass(aura) {
+function deriveAuraStyleClass(aura) {
     if (!aura) return '';
 
     const name = typeof aura === 'string' ? aura : aura.name;

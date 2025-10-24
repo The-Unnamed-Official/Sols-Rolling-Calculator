@@ -39,7 +39,7 @@ let activeOblivionPresetLabel = 'Select preset';
 let oblivionAuraDefinition = null;
 let memoryAuraDefinition = null;
 
-function applyOblivionPreset(presetKey) {
+function triggerOblivionPresetSelection(presetKey) {
     const options = {};
     if (presetKey === OBLIVION_PRESET_KEY) {
         options.activateOblivionPreset = true;
@@ -49,7 +49,7 @@ function applyOblivionPreset(presetKey) {
         options.presetLabel = 'Godlike + Heavenly + Bound';
     }
 
-    setLuck(OBLIVION_PRESET_LUCK, options);
+    assignLuckValue(OBLIVION_PRESET_LUCK, options);
 
     const dropdown = document.getElementById('oblivion-preset-dropdown');
     if (dropdown) {
@@ -61,7 +61,7 @@ function applyOblivionPreset(presetKey) {
     }
 }
 
-function updateOblivionPresetUi() {
+function refreshOblivionPresetUi() {
     const selection = document.getElementById('oblivion-preset-selection');
     if (selection) {
         selection.textContent = activeOblivionPresetLabel;
@@ -69,7 +69,7 @@ function updateOblivionPresetUi() {
     }
 }
 
-function handlePresetOptionChange(options = {}) {
+function processPresetOptionChange(options = {}) {
     isOblivionPresetActive = options.activateOblivionPreset === true;
 
     if (typeof options.presetLabel === 'string') {
@@ -78,10 +78,10 @@ function handlePresetOptionChange(options = {}) {
         activeOblivionPresetLabel = 'Select preset';
     }
 
-    updateOblivionPresetUi();
+    refreshOblivionPresetUi();
 }
 
-function renderAuraName(aura, overrideName) {
+function composeAuraNameMarkup(aura, overrideName) {
     if (!aura) return overrideName || '';
     const baseName = typeof overrideName === 'string' && overrideName.length > 0 ? overrideName : aura.name;
     if (aura.subtitle) {
@@ -90,7 +90,7 @@ function renderAuraName(aura, overrideName) {
     return baseName;
 }
 
-function getResultSortChance(aura, baseChance) {
+function calculateResultSortPriority(aura, baseChance) {
     if (!aura) return baseChance;
     if (aura.name === OBLIVION_AURA_NAME) return Number.POSITIVE_INFINITY;
     if (aura.name === OBLIVION_MEMORY_AURA_NAME) return Number.MAX_SAFE_INTEGER;
@@ -466,17 +466,17 @@ auras.forEach(aura => {
 
 const EVENT_SUMMARY_NONE = "No events enabled";
 
-function getActiveEventLabels() {
+function collectActiveEventLabels() {
     return EVENT_DEFINITIONS
         .filter(event => activeEvents.has(event.id))
         .map(event => event.label);
 }
 
-function updateEventSummary() {
+function renderEventSummary() {
     const summary = document.getElementById('event-summary');
     if (!summary) return;
 
-    const labels = getActiveEventLabels();
+    const labels = collectActiveEventLabels();
     let displayText = EVENT_SUMMARY_NONE;
 
     if (labels.length === 0) {
@@ -500,7 +500,7 @@ function updateEventSummary() {
     summary.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
 }
 
-function closeAllSelects(except, options = {}) {
+function collapseOpenSelectMenus(except, options = {}) {
     const { focusSummary = false } = options;
     let hasFocused = false;
     const openSelects = document.querySelectorAll('details.ui-select[open]');
@@ -516,7 +516,7 @@ function closeAllSelects(except, options = {}) {
             }
         }
         if (details.id === 'event-select') {
-            updateEventSummary();
+            renderEventSummary();
         }
         const selectId = details.dataset.select;
         if (selectId) {
@@ -530,16 +530,16 @@ function closeAllSelects(except, options = {}) {
 
 document.addEventListener('click', event => {
     const parentSelect = event.target.closest('details.ui-select');
-    closeAllSelects(parentSelect);
+    collapseOpenSelectMenus(parentSelect);
 });
 
 document.addEventListener('keydown', event => {
     if (event.key === 'Escape') {
-        closeAllSelects(null, { focusSummary: true });
+        collapseOpenSelectMenus(null, { focusSummary: true });
     }
 });
 
-function applyEventBiomeRestrictions() {
+function enforceBiomeEventLocks() {
     const biomeSelect = document.getElementById('biome-select');
     if (!biomeSelect) return;
 
@@ -581,15 +581,15 @@ function applyEventBiomeRestrictions() {
 
     if (resetToDefault) {
         biomeSelect.value = 'normal';
-        if (typeof handleBiomeUI === 'function') {
-            handleBiomeUI();
+        if (typeof handleBiomeInterface === 'function') {
+            handleBiomeInterface();
         }
     }
 
-    refreshCustomSelect('biome-select');
+    refreshCustomSelectDisplay('biome-select');
 }
 
-function setEventActive(eventId, enabled) {
+function toggleEventActivation(eventId, enabled) {
     if (!eventId) return;
     const hasEvent = activeEvents.has(eventId);
     if (enabled && !hasEvent) {
@@ -608,11 +608,11 @@ function setEventActive(eventId, enabled) {
         }
     }
 
-    updateEventSummary();
-    applyEventBiomeRestrictions();
+    renderEventSummary();
+    enforceBiomeEventLocks();
 }
 
-function initializeEventSelectors() {
+function setupEventSelectorControls() {
     const eventMenu = document.getElementById('event-menu');
     if (!eventMenu) return;
 
@@ -621,7 +621,7 @@ function initializeEventSelectors() {
         const eventId = input.dataset.eventId;
         input.checked = activeEvents.has(eventId);
         input.addEventListener('change', () => {
-            setEventActive(eventId, input.checked);
+            toggleEventActivation(eventId, input.checked);
         });
     });
 
@@ -635,14 +635,14 @@ function initializeEventSelectors() {
         });
     }
 
-    updateEventSummary();
-    applyEventBiomeRestrictions();
+    renderEventSummary();
+    enforceBiomeEventLocks();
 }
 
-document.addEventListener('DOMContentLoaded', initializeEventSelectors);
-document.addEventListener('DOMContentLoaded', updateOblivionPresetUi);
+document.addEventListener('DOMContentLoaded', setupEventSelectorControls);
+document.addEventListener('DOMContentLoaded', refreshOblivionPresetUi);
 
-function initializeSingleSelect(selectId) {
+function setupSingleSelectControl(selectId) {
     const select = document.getElementById(selectId);
     const details = document.querySelector(`details[data-select="${selectId}"]`);
     if (!select || !details) return;
@@ -710,7 +710,7 @@ function initializeSingleSelect(selectId) {
     updateSummary();
 }
 
-function refreshCustomSelect(selectId) {
+function refreshCustomSelectDisplay(selectId) {
     const registryEntry = customSelectRegistry.get(selectId);
     if (registryEntry && typeof registryEntry.update === 'function') {
         registryEntry.update();
@@ -718,9 +718,9 @@ function refreshCustomSelect(selectId) {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-    initializeSingleSelect('vip-select');
-    initializeSingleSelect('dave-luck-select');
-    initializeSingleSelect('biome-select');
+    setupSingleSelectControl('vip-select');
+    setupSingleSelectControl('dave-luck-select');
+    setupSingleSelectControl('biome-select');
 });
 
 // XP is awarded once per rarity tier. Landing any aura within an inclusive tier range grants that tier's XP
@@ -734,7 +734,7 @@ const XP_RARITY_TIERS = [
     { key: 'tier-999m', min: 999999999, max: Number.POSITIVE_INFINITY, xp: 30000, label: '1 in 999,999,999+' }
 ];
 
-function getXpTierForChance(chance) {
+function identifyXpTierForChance(chance) {
     if (!Number.isFinite(chance)) return null;
     for (const tier of XP_RARITY_TIERS) {
         if (chance >= tier.min && chance <= tier.max) {
@@ -745,7 +745,7 @@ function getXpTierForChance(chance) {
 }
 
 // Run the roll simulation while keeping the UI responsive
-function roll() {
+function executeRollSimulation() {
     if (isRolling) return;
 
     if (!results) {
@@ -781,7 +781,7 @@ function roll() {
         brandMark.classList.add('brand__mark--spinning');
     }
 
-    playSound(audio.roll);
+    emitSoundEffect(audio.roll);
 
     let total = Number.parseInt(rollInput.value, 10);
     if (!Number.isFinite(total) || total <= 0) {
@@ -949,7 +949,7 @@ function roll() {
     const CHECK_INTERVAL = 512;
     let currentRoll = 0;
 
-    function executeSingleRoll() {
+    function performSingleSimulationRoll() {
         if (memoryProbability > 0 && getRand() < memoryProbability) {
             activeMemoryAura.wonCount++;
             rolls++;
@@ -974,12 +974,12 @@ function roll() {
         rolls++;
     }
 
-    function processChunk() {
+    function processRollChunk() {
         const deadline = performance.now() + MAX_FRAME_DURATION;
         let processedThisChunk = 0;
 
         while (currentRoll < total && processedThisChunk < MAX_ROLLS_PER_CHUNK) {
-            executeSingleRoll();
+            performSingleSimulationRoll();
             currentRoll++;
             processedThisChunk++;
 
@@ -994,7 +994,7 @@ function roll() {
         }
 
         if (currentRoll < total) {
-            scheduleFrame(processChunk);
+            scheduleFrame(processRollChunk);
             return;
         }
 
@@ -1022,7 +1022,7 @@ function roll() {
                 }
             }
             if (cutsceneQueue.length > 0) {
-                playAuraSequence(cutsceneQueue);
+                runAuraSequence(cutsceneQueue);
             }
         }
 
@@ -1035,18 +1035,18 @@ function roll() {
 
         if (highestChance >= 99999999) {
             if (biome === 'limbo') {
-                playSound(audio.limbo99m);
+                emitSoundEffect(audio.limbo99m);
             } else {
-                playSound(audio.m100);
+                emitSoundEffect(audio.m100);
             }
         } else if (highestChance >= 10000000) {
-            playSound(audio.m10);
+            emitSoundEffect(audio.m10);
         } else if (highestChance >= 1000000) {
-            playSound(audio.k100);
+            emitSoundEffect(audio.k100);
         } else if (highestChance >= 100000) {
-            playSound(audio.k10);
+            emitSoundEffect(audio.k10);
         } else if (highestChance >= 1000) {
-            playSound(audio.k1);
+            emitSoundEffect(audio.k1);
         }
 
         const resultChunks = [
@@ -1059,11 +1059,11 @@ function roll() {
         for (const aura of auras) {
             if (aura.wonCount <= 0) continue;
 
-            const rarityClass = getRarityClass(aura, biome);
-            const specialClass = getAuraStyleClass(aura);
+            const rarityClass = determineRarityClass(aura, biome);
+            const specialClass = deriveAuraStyleClass(aura);
             const eventClass = aura.event ? 'aura-event-text' : '';
             const classAttr = [rarityClass, specialClass, eventClass].filter(Boolean).join(' ');
-            const formattedName = renderAuraName(aura);
+            const formattedName = composeAuraNameMarkup(aura);
             const breakthroughStats = breakthroughStatsMap.get(aura.name);
 
             if (breakthroughStats && breakthroughStats.count > 0) {
@@ -1071,21 +1071,21 @@ function roll() {
                     /-\s*[\d,]+/,
                     `- ${formatNumber(breakthroughStats.btChance)}`
                 );
-                const nativeLabel = renderAuraName(aura, btName);
+                const nativeLabel = composeAuraNameMarkup(aura, btName);
                 resultEntries.push({
                     label: `<span class="${classAttr}">[Native] ${nativeLabel} | Times Rolled: ${formatNumber(breakthroughStats.count)}</span>`,
-                    chance: getResultSortChance(aura, breakthroughStats.btChance)
+                    chance: calculateResultSortPriority(aura, breakthroughStats.btChance)
                 });
                 if (aura.wonCount > breakthroughStats.count) {
                     resultEntries.push({
                         label: `<span class="${classAttr}">${formattedName} | Times Rolled: ${formatNumber(aura.wonCount - breakthroughStats.count)}</span>`,
-                        chance: getResultSortChance(aura, aura.chance)
+                        chance: calculateResultSortPriority(aura, aura.chance)
                     });
                 }
             } else {
                 resultEntries.push({
                     label: `<span class="${classAttr}">${formattedName} | Times Rolled: ${formatNumber(aura.wonCount)}</span>`,
-                    chance: getResultSortChance(aura, aura.chance)
+                    chance: calculateResultSortPriority(aura, aura.chance)
                 });
             }
         }
@@ -1100,7 +1100,7 @@ function roll() {
         const earnedXpTiers = new Set();
         for (const aura of auras) {
             if (aura.wonCount > 0) {
-                const tier = getXpTierForChance(aura.chance);
+                const tier = identifyXpTierForChance(aura.chance);
                 if (tier) {
                     earnedXpTiers.add(tier.key);
                 }
@@ -1122,6 +1122,6 @@ function roll() {
         results.innerHTML = resultChunks.join('');
     }
 
-    scheduleFrame(processChunk);
+    scheduleFrame(processRollChunk);
 }
 
