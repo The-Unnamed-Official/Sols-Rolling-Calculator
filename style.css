@@ -27,6 +27,7 @@
     --button-corner-size: 10px;
     --font-base: 'Sarpanch', 'Segoe UI', sans-serif;
     --ui-scale-desktop: 0.88;
+    user-select: none;
 }
 
 * {
@@ -1316,6 +1317,7 @@ body.biome--blood-rain .interface-backdrop__veil {
     position: relative;
     scrollbar-width: thin;
     scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
+    user-select: text;
 }
 
 .feed__viewport p {
