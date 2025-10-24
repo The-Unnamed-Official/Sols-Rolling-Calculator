@@ -1062,7 +1062,8 @@ function initializeBiomeInterface() {
     refreshCustomSelect('biome-dropdown');
 }
 
-function playAuraVideo(videoId) {
+function playAuraVideo(videoId, options = {}) {
+    const manageAmbient = options.manageAmbient !== false;
     return new Promise(resolve => {
         if (!appState.cinematic) {
             resolve();
@@ -1109,8 +1110,8 @@ function playAuraVideo(videoId) {
         }
 
         appState.videoPlaying = true;
-        const bgMusic = document.getElementById('ambientMusic');
-        const wasPlaying = bgMusic && !bgMusic.paused;
+        const bgMusic = manageAmbient ? document.getElementById('ambientMusic') : null;
+        const wasPlaying = !!(bgMusic && !bgMusic.paused);
         if (bgMusic && wasPlaying) {
             bgMusic.pause();
         }
@@ -1233,6 +1234,12 @@ async function playAuraSequence(queue) {
     const wasFullscreen = !!getFullscreenElement();
     let enteredFullscreen = false;
 
+    const ambientMusic = typeof document !== 'undefined' ? document.getElementById('ambientMusic') : null;
+    const shouldResumeAmbient = !!(ambientMusic && !ambientMusic.paused);
+    if (ambientMusic && shouldResumeAmbient) {
+        ambientMusic.pause();
+    }
+
     if (!wasFullscreen && documentElement && document.fullscreenEnabled !== false) {
         enteredFullscreen = await requestFullscreen(documentElement);
     }
@@ -1240,9 +1247,12 @@ async function playAuraSequence(queue) {
     try {
         for (const videoId of queue) {
             if (!appState.cinematic) break;
-            await playAuraVideo(videoId);
+            await playAuraVideo(videoId, { manageAmbient: false });
         }
     } finally {
+        if (ambientMusic && shouldResumeAmbient && appState.audio.roll) {
+            ambientMusic.play().catch(() => {});
+        }
         if (!wasFullscreen && enteredFullscreen) {
             await exitFullscreen();
         }
