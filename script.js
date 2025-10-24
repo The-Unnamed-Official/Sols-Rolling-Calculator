@@ -949,13 +949,15 @@ function runRollSimulation() {
     const CHECK_INTERVAL = 512;
     let currentRoll = 0;
 
+    const sampleEntropy = (typeof drawEntropy === 'function') ? drawEntropy : Math.random;
+
     function performSingleRollCheck() {
-        if (memoryProbability > 0 && getRand() < memoryProbability) {
+        if (memoryProbability > 0 && sampleEntropy() < memoryProbability) {
             activeMemoryAura.wonCount++;
             rolls++;
             return;
         }
-        if (oblivionProbability > 0 && getRand() < oblivionProbability) {
+        if (oblivionProbability > 0 && sampleEntropy() < oblivionProbability) {
             activeOblivionAura.wonCount++;
             rolls++;
             return;
@@ -963,7 +965,7 @@ function runRollSimulation() {
 
         for (let j = 0; j < computedAuras.length; j++) {
             const entry = computedAuras[j];
-            if (entry.successRatio > 0 && getRand() < entry.successRatio) {
+            if (entry.successRatio > 0 && sampleEntropy() < entry.successRatio) {
                 entry.aura.wonCount++;
                 if (entry.breakthroughStats) {
                     entry.breakthroughStats.count++;
