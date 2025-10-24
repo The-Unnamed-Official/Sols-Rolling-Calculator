@@ -420,8 +420,8 @@ let lastXyzMultiplier = 1;
 let lastDaveMultiplier = 1;
 
 const biomeAssets = {
-    normal: { image: 'files/normalBiomeImage.jpg', music: 'files/normalBiomeMusic.mp3' },
-    roe: { image: 'files/normalBiomeImage.jpg', music: 'files/normalBiomeMusic.mp3' },
+    normal: { image: 'files/normalBiomeImage.png', music: 'files/normalBiomeMusic.mp3' },
+    roe: { image: 'files/normalBiomeImage.png', music: 'files/normalBiomeMusic.mp3' },
     day: { image: 'files/dayBiomeImage.jpg', music: 'files/dayBiomeMusic.mp3' },
     night: { image: 'files/nightBiomeImage.jpg', music: 'files/nightBiomeMusic.mp3' },
     rainy: { image: 'files/rainyBiomeImage.jpg', music: 'files/rainyBiomeMusic.mp3' },
