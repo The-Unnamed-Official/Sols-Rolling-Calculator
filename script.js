@@ -1,47 +1,47 @@
 // Reference frequently accessed UI elements at module load
-let results = document.getElementById('result-text');
-let luck = document.getElementById('luck');
-let isRolling = false;
+let feedContainer = document.getElementById('simulation-feed');
+let luckField = document.getElementById('luck-total');
+let simulationActive = false;
 
-const customSelectRegistry = new Map();
+const selectWidgetRegistry = new Map();
 
-const numberFormatter = new Intl.NumberFormat();
-const formatNumber = value => numberFormatter.format(value);
+const decimalFormatter = new Intl.NumberFormat();
+const formatWithCommas = value => decimalFormatter.format(value);
 
-const domCache = {
-    rollButton: document.querySelector('.roll-button'),
-    brandMark: document.querySelector('.brand__mark'),
-    rollInput: document.getElementById('rolls'),
-    biomeSelect: document.getElementById('biome-select'),
-    progressContainer: document.querySelector('.progress'),
-    progressFill: document.querySelector('.progress__fill'),
-    progressValue: document.querySelector('.progress__value'),
+const uiHandles = {
+    rollTriggerButton: document.querySelector('.roll-trigger'),
+    brandMark: document.querySelector('.banner__emblem'),
+    rollCountInput: document.getElementById('roll-total'),
+    biomeSelector: document.getElementById('biome-dropdown'),
+    progressPanel: document.querySelector('.loading-indicator'),
+    progressBarFill: document.querySelector('.loading-indicator__fill'),
+    progressLabel: document.querySelector('.loading-indicator__value'),
     audio: {
-        roll: document.getElementById('rollSound'),
-        k1: document.getElementById('1kSound'),
-        k10: document.getElementById('10kSound'),
-        k100: document.getElementById('100kSound'),
-        m10: document.getElementById('10mSound'),
-        m100: document.getElementById('100mSound'),
-        limbo99m: document.getElementById('limbo99mSound')
+        roll: document.getElementById('rollLoopSound'),
+        k1: document.getElementById('thousandSound'),
+        k10: document.getElementById('tenThousandSound'),
+        k100: document.getElementById('hundredThousandSound'),
+        m10: document.getElementById('tenMillionSound'),
+        m100: document.getElementById('hundredMillionSound'),
+        limbo99m: document.getElementById('limbo99mSoundFx')
     }
 };
 
-const OBLIVION_PRESET_KEY = 'oblivion';
-const OBLIVION_PRESET_LUCK = 600000;
-const OBLIVION_AURA_NAME = 'Oblivion';
-const OBLIVION_MEMORY_AURA_NAME = 'Memory';
-const OBLIVION_POTION_ROLL_ODDS = 2000;
-const OBLIVION_MEMORY_ROLL_ODDS = 100;
+const OBLIVION_PRESET_IDENTIFIER = 'oblivion';
+const OBLIVION_LUCK_TARGET = 600000;
+const OBLIVION_AURA_LABEL = 'Oblivion';
+const MEMORY_AURA_LABEL = 'Memory';
+const OBLIVION_POTION_ODDS = 2000;
+const OBLIVION_MEMORY_ODDS = 100;
 
-let isOblivionPresetActive = false;
-let activeOblivionPresetLabel = 'Select preset';
-let oblivionAuraDefinition = null;
-let memoryAuraDefinition = null;
+let oblivionPresetEnabled = false;
+let currentOblivionPresetLabel = 'Select preset';
+let oblivionAuraData = null;
+let memoryAuraData = null;
 
-function triggerOblivionPresetSelection(presetKey) {
+function handleOblivionPresetSelection(presetKey) {
     const options = {};
-    if (presetKey === OBLIVION_PRESET_KEY) {
+    if (presetKey === OBLIVION_PRESET_IDENTIFIER) {
         options.activateOblivionPreset = true;
         options.presetLabel = 'Oblivion Potion Preset';
     } else {
@@ -49,62 +49,62 @@ function triggerOblivionPresetSelection(presetKey) {
         options.presetLabel = 'Godlike + Heavenly + Bound';
     }
 
-    assignLuckValue(OBLIVION_PRESET_LUCK, options);
+    applyLuckValue(OBLIVION_LUCK_TARGET, options);
 
-    const dropdown = document.getElementById('oblivion-preset-dropdown');
+    const dropdown = document.getElementById('oblivion-preset-menu');
     if (dropdown) {
         dropdown.open = false;
-        const summary = dropdown.querySelector('.preset-dropdown__summary');
+        const summary = dropdown.querySelector('.preset-toggle__summary');
         if (summary) {
             summary.focus();
         }
     }
 }
 
-function refreshOblivionPresetUi() {
-    const selection = document.getElementById('oblivion-preset-selection');
+function updateOblivionPresetDisplay() {
+    const selection = document.getElementById('oblivion-preset-label');
     if (selection) {
-        selection.textContent = activeOblivionPresetLabel;
-        selection.classList.toggle('preset-dropdown__selection--placeholder', activeOblivionPresetLabel === 'Select preset');
+        selection.textContent = currentOblivionPresetLabel;
+        selection.classList.toggle('preset-toggle__selection--placeholder', currentOblivionPresetLabel === 'Select preset');
     }
 }
 
-function processPresetOptionChange(options = {}) {
-    isOblivionPresetActive = options.activateOblivionPreset === true;
+function applyOblivionPresetOptions(options = {}) {
+    oblivionPresetEnabled = options.activateOblivionPreset === true;
 
     if (typeof options.presetLabel === 'string') {
-        activeOblivionPresetLabel = options.presetLabel;
+        currentOblivionPresetLabel = options.presetLabel;
     } else {
-        activeOblivionPresetLabel = 'Select preset';
+        currentOblivionPresetLabel = 'Select preset';
     }
 
-    refreshOblivionPresetUi();
+    updateOblivionPresetDisplay();
 }
 
-function composeAuraNameMarkup(aura, overrideName) {
+function formatAuraNameMarkup(aura, overrideName) {
     if (!aura) return overrideName || '';
     const baseName = typeof overrideName === 'string' && overrideName.length > 0 ? overrideName : aura.name;
     if (aura.subtitle) {
-        return `${baseName} <span class="aura-subtitle">${aura.subtitle}</span>`;
+        return `${baseName} <span class="sigil-subtitle">${aura.subtitle}</span>`;
     }
     return baseName;
 }
 
-function calculateResultSortPriority(aura, baseChance) {
+function determineResultPriority(aura, baseChance) {
     if (!aura) return baseChance;
-    if (aura.name === OBLIVION_AURA_NAME) return Number.POSITIVE_INFINITY;
-    if (aura.name === OBLIVION_MEMORY_AURA_NAME) return Number.MAX_SAFE_INTEGER;
+    if (aura.name === OBLIVION_AURA_LABEL) return Number.POSITIVE_INFINITY;
+    if (aura.name === MEMORY_AURA_LABEL) return Number.MAX_SAFE_INTEGER;
     return baseChance;
 }
 
-const auras = [
-    { name: "Oblivion", chance: 2000, requiresOblivionPreset: true, ignoreLuck: true, fixedRollThreshold: 1, subtitle: "The Truth Seeker", cutscene: "oblivion-cs", disableRarityClass: true },
-    { name: "Memory", chance: 200000, requiresOblivionPreset: true, ignoreLuck: true, fixedRollThreshold: 1, subtitle: "The Fallen", cutscene: "memory-cs", disableRarityClass: true },
-    { name: "Equinox - 2,500,000,000", chance: 2500000000, cutscene: "equinox-cs" },
-    { name: "Luminosity - 1,200,000,000", chance: 1200000000, cutscene: "lumi-cs" },
-    { name: "Erebus - 1,200,000,000", chance: 1200000000, exclusiveTo: ["glitch", "bloodRain"], cutscene: "erebus-cs" },
-    { name: "Pixelation - 1,073,741,824", chance: 1073741824, cutscene: "pixelation-cs" },
-    { name: "Lamenthyr - 1,000,000,000", chance: 1000000000, exclusiveTo: ["glitch", "bloodRain"], cutscene: "lamenthyr-cs" },
+const AURA_LIBRARY = [
+    { name: "Oblivion", chance: 2000, requiresOblivionPreset: true, ignoreLuck: true, fixedRollThreshold: 1, subtitle: "The Truth Seeker", cutscene: "oblivion-cutscene", disableRarityClass: true },
+    { name: "Memory", chance: 200000, requiresOblivionPreset: true, ignoreLuck: true, fixedRollThreshold: 1, subtitle: "The Fallen", cutscene: "memory-cutscene", disableRarityClass: true },
+    { name: "Equinox - 2,500,000,000", chance: 2500000000, cutscene: "equinox-cutscene" },
+    { name: "Luminosity - 1,200,000,000", chance: 1200000000, cutscene: "luminosity-cutscene" },
+    { name: "Erebus - 1,200,000,000", chance: 1200000000, exclusiveTo: ["glitch", "bloodRain"], cutscene: "erebus-cutscene" },
+    { name: "Pixelation - 1,073,741,824", chance: 1073741824, cutscene: "pixelation-cutscene" },
+    { name: "Lamenthyr - 1,000,000,000", chance: 1000000000, exclusiveTo: ["glitch", "bloodRain"], cutscene: "lamenthyr-cutscene" },
     { name: "Arachnophobia - 940,000,000", chance: 940000000, exclusiveTo: ["glitch", "pumpkinMoon"] },
     { name: "Ravage - 930,000,000", chance: 930000000, exclusiveTo: ["glitch", "graveyard"] },
     { name: "Dreamscape - 850,000,000", chance: 850000000, exclusiveTo: ["limbo"] },
@@ -121,7 +121,7 @@ const auras = [
     { name: "Matrix : Reality - 601,020,102", chance: 601020102 },
     { name: "Sophyra - 570,000,000", chance: 570000000 },
     { name: "Elude - 555,555,555", chance: 555555555, exclusiveTo: ["limbo"] },
-    { name: "Dreammetric - 520,000,000", chance: 520000000, exclusiveTo: ["glitch", "dreamspace"], cutscene: "dreammetric-cs" },
+    { name: "Dreammetric - 520,000,000", chance: 520000000, exclusiveTo: ["glitch", "dreamspace"], cutscene: "dreammetric-cutscene" },
     { name: "Atlas : Yuletide - 510,000,000", chance: 510000000, breakthrough: { snowy: 3 } },
     { name: "Matrix : Overdrive - 503,000,000", chance: 503000000 },
     { name: "Ruins - 500,000,000", chance: 500000000 },
@@ -146,7 +146,7 @@ const auras = [
     { name: "Archangel - 250,000,000", chance: 250000000 },
     { name: "Surfer : Shard Surfer - 225,000,000", chance: 225000000, breakthrough: { snowy: 3 } },
     { name: "HYPER-VOLT : EVER-STORM - 225,000,000", chance: 225000000 },
-    { name: "Oppression - 220,000,000", chance: 220000000, exclusiveTo: ["glitch"], cutscene: "oppression-cs" },
+    { name: "Oppression - 220,000,000", chance: 220000000, exclusiveTo: ["glitch"], cutscene: "oppression-cutscene" },
     { name: "Impeached - 200,000,000", chance: 200000000, breakthrough: { corruption: 5 } },
     { name: "Nightmare Sky - 190,000,000", chance: 190000000, exclusiveTo: ["pumpkinMoon"] },
     { name: "Twilight : Withering Grace - 180,000,000", chance: 180000000, breakthrough: { night: 10 } },
@@ -312,37 +312,37 @@ const auras = [
     { name: "Nothing - 1", chance: 1, exclusiveTo: ["limbo"] },
 ];
 
-const EVENT_DEFINITIONS = [
-    { id: "valentine2024", label: "Valentine 2024" },
-    { id: "aprilFools2024", label: "April Fools 2024" },
-    { id: "summer2024", label: "Summer 2024" },
-    { id: "ria2024", label: "RIA Event 2024" },
-    { id: "halloween2024", label: "Halloween 2024" },
-    { id: "winter2024", label: "Winter 2024" },
-    { id: "aprilFools2025", label: "April Fools 2025" },
-    { id: "summer2025", label: "Summer 2025" },
-    { id: "halloween2025", label: "Halloween 2025" },
+const EVENT_LIST = [
+    { id: "valentine24", label: "Valentine 2024" },
+    { id: "aprilFools24", label: "April Fools 2024" },
+    { id: "summer24", label: "Summer 2024" },
+    { id: "ria24", label: "RIA Event 2024" },
+    { id: "halloween24", label: "Halloween 2024" },
+    { id: "winter24", label: "Winter 2024" },
+    { id: "aprilFools25", label: "April Fools 2025" },
+    { id: "summer25", label: "Summer 2025" },
+    { id: "halloween25", label: "Halloween 2025" },
 ];
 
-const EVENT_AURA_MAP = {
-    valentine2024: [
+const EVENT_AURA_LOOKUP = {
+    valentine24: [
         "Divinus : Love - 32",
         "Flushed : Heart Eye - 6,900",
     ],
-    aprilFools2024: [
+    aprilFools24: [
         "Undefined : Defined - 2,222,000",
         "Chromatic : Kromat1k - 40,000,000",
         "Impeached : I'm Peach - 400,000,000",
     ],
-    summer2024: [
+    summer24: [
         "Star Rider : Starfish Rider - 250,000",
         "Watermelon - 320,000",
         "Surfer : Shard Surfer - 225,000,000",
     ],
-    ria2024: [
+    ria24: [
         "Innovator - 30,000,000",
     ],
-    halloween2024: [
+    halloween24: [
         "Apostolos : Veil - 800,000,000",
         "Harvester - 666,000,000",
         "Nightmare Sky - 190,000,000",
@@ -354,7 +354,7 @@ const EVENT_AURA_MAP = {
         "Lunar : Nightfall - 3,000,000",
         "Pump - 200,000",
     ],
-    winter2024: [
+    winter24: [
         "Atlas : Yuletide - 510,000,000",
         "Abominable - 120,000,000",
         "Express - 90,000,000",
@@ -362,17 +362,17 @@ const EVENT_AURA_MAP = {
         "Santa Frost - 45,000,000",
         "Wonderland - 12,000,000",
     ],
-    aprilFools2025: [
+    aprilFools25: [
         "Glock : the glock of the sky - 170,000,000",
         "Origin : Onion - 8,000,000",
         "Flushed : Troll - 1,000,000",
         "Pukeko - 3,198",
     ],
-    summer2025: [
+    summer25: [
         "Aegis : Watergun - 825,000,000",
         "Manta - 300,000,000",
     ],
-    halloween2025: [
+    halloween25: [
         "Pump : Trickster - 600,000",
         "Headless - 3,200,000",
         "Oni - 6,666,666",
@@ -390,33 +390,33 @@ const EVENT_AURA_MAP = {
     ],
 };
 
-const BIOME_EVENT_REQUIREMENTS = {
-    graveyard: ["halloween2024", "halloween2025"],
-    pumpkinMoon: ["halloween2024", "halloween2025"],
-    bloodRain: ["halloween2025"],
-    blazing: "summer2025",
+const BIOME_EVENT_CONSTRAINTS = {
+    graveyard: ["halloween24", "halloween25"],
+    pumpkinMoon: ["halloween24", "halloween25"],
+    bloodRain: ["halloween25"],
+    blazing: "summer25",
 };
 
-const activeEvents = new Set();
-const auraEventLookup = new Map();
+const enabledEvents = new Set();
+const auraEventIndex = new Map();
 
-const EVENTS_ALLOWING_GLITCH_ACCESS = new Set([
-    "halloween2024",
-    "halloween2025",
+const GLITCH_EVENT_WHITELIST = new Set([
+    "halloween24",
+    "halloween25",
 ]);
 
-for (const [eventId, auraNames] of Object.entries(EVENT_AURA_MAP)) {
+for (const [eventId, auraNames] of Object.entries(EVENT_AURA_LOOKUP)) {
     auraNames.forEach(name => {
-        auraEventLookup.set(name, eventId);
+        auraEventIndex.set(name, eventId);
     });
 }
 
-const cutscenePriority = ["oblivion-cs", "memory-cs", "equinox-cs", "erebus-cs", "lumi-cs", "pixelation-cs", "lamenthyr-cs", "dreammetric-cs", "oppression-cs"];
+const CUTSCENE_PRIORITY_SEQUENCE = ["oblivion-cutscene", "memory-cutscene", "equinox-cutscene", "erebus-cutscene", "luminosity-cutscene", "pixelation-cutscene", "lamenthyr-cutscene", "dreammetric-cutscene", "oppression-cutscene"];
 
-oblivionAuraDefinition = auras.find(aura => aura.name === OBLIVION_AURA_NAME) || null;
-memoryAuraDefinition = auras.find(aura => aura.name === OBLIVION_MEMORY_AURA_NAME) || null;
+oblivionAuraData = AURA_LIBRARY.find(aura => aura.name === OBLIVION_AURA_LABEL) || null;
+memoryAuraData = AURA_LIBRARY.find(aura => aura.name === MEMORY_AURA_LABEL) || null;
 
-const ROE_EXCLUDED_AURAS = new Set([
+const ROE_EXCLUSION_SET = new Set([
     "Apostolos : Veil - 800,000,000",
     "Harvester - 666,000,000",
     "Apocalypse - 624,000,000",
@@ -450,39 +450,39 @@ const ROE_EXCLUDED_AURAS = new Set([
     "★ - 100"
 ]);
 
-const ROE_BREAKTHROUGH_EXCLUSIONS = new Set([
+const ROE_BREAKTHROUGH_BLOCKLIST = new Set([
     "Twilight : Withering Grace - 180,000,000",
     "Aegis : Watergun - 825,000,000",
     "Manta - 300,000,000"
 ]);
 
-auras.forEach(aura => {
+AURA_LIBRARY.forEach(aura => {
     aura.wonCount = 0;
-    const eventId = auraEventLookup.get(aura.name);
+    const eventId = auraEventIndex.get(aura.name);
     if (eventId) {
         aura.event = eventId;
     }
 });
 
-const EVENT_SUMMARY_NONE = "No events enabled";
+const EVENT_SUMMARY_EMPTY_LABEL = "No events enabled";
 
-function collectActiveEventLabels() {
-    return EVENT_DEFINITIONS
-        .filter(event => activeEvents.has(event.id))
+function gatherActiveEventLabels() {
+    return EVENT_LIST
+        .filter(event => enabledEvents.has(event.id))
         .map(event => event.label);
 }
 
-function renderEventSummary() {
-    const summary = document.getElementById('event-summary');
+function updateEventSummary() {
+    const summary = document.getElementById('event-selector-summary');
     if (!summary) return;
 
-    const labels = collectActiveEventLabels();
-    let displayText = EVENT_SUMMARY_NONE;
+    const labels = gatherActiveEventLabels();
+    let displayText = EVENT_SUMMARY_EMPTY_LABEL;
 
     if (labels.length === 0) {
-        summary.classList.add('field__input--placeholder');
+        summary.classList.add('form-field__input--placeholder');
     } else {
-        summary.classList.remove('field__input--placeholder');
+        summary.classList.remove('form-field__input--placeholder');
         if (labels.length === 1) {
             displayText = labels[0];
         } else if (labels.length === 2) {
@@ -493,21 +493,21 @@ function renderEventSummary() {
     }
 
     summary.textContent = displayText;
-    summary.title = labels.length > 0 ? labels.join(', ') : EVENT_SUMMARY_NONE;
+    summary.title = labels.length > 0 ? labels.join(', ') : EVENT_SUMMARY_EMPTY_LABEL;
 
-    const details = document.getElementById('event-select');
+    const details = document.getElementById('event-selector');
     const isOpen = !!(details && details.open);
     summary.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
 }
 
-function collapseOpenSelectMenus(except, options = {}) {
+function closeOpenSelectMenus(except, options = {}) {
     const { focusSummary = false } = options;
     let hasFocused = false;
-    const openSelects = document.querySelectorAll('details.ui-select[open]');
+    const openSelects = document.querySelectorAll('details.interface-select[open]');
     openSelects.forEach(details => {
         if (except && details === except) return;
         details.open = false;
-        const summary = details.querySelector('.ui-select__summary');
+        const summary = details.querySelector('.interface-select__summary');
         if (summary) {
             summary.setAttribute('aria-expanded', 'false');
             if (focusSummary && !hasFocused) {
@@ -515,12 +515,12 @@ function collapseOpenSelectMenus(except, options = {}) {
                 hasFocused = true;
             }
         }
-        if (details.id === 'event-select') {
-            renderEventSummary();
+        if (details.id === 'event-selector') {
+            updateEventSummary();
         }
         const selectId = details.dataset.select;
         if (selectId) {
-            const registryEntry = customSelectRegistry.get(selectId);
+            const registryEntry = selectWidgetRegistry.get(selectId);
             if (registryEntry && typeof registryEntry.update === 'function') {
                 registryEntry.update();
             }
@@ -529,36 +529,36 @@ function collapseOpenSelectMenus(except, options = {}) {
 }
 
 document.addEventListener('click', event => {
-    const parentSelect = event.target.closest('details.ui-select');
-    collapseOpenSelectMenus(parentSelect);
+    const parentSelect = event.target.closest('details.interface-select');
+    closeOpenSelectMenus(parentSelect);
 });
 
 document.addEventListener('keydown', event => {
     if (event.key === 'Escape') {
-        collapseOpenSelectMenus(null, { focusSummary: true });
+        closeOpenSelectMenus(null, { focusSummary: true });
     }
 });
 
-function enforceBiomeEventLocks() {
-    const biomeSelect = document.getElementById('biome-select');
-    if (!biomeSelect) return;
+function enforceBiomeEventRestrictions() {
+    const biomeSelector = document.getElementById('biome-dropdown');
+    if (!biomeSelector) return;
 
-    const currentValue = biomeSelect.value;
+    const currentValue = biomeSelector.value;
     let resetToDefault = false;
 
-    Array.from(biomeSelect.options).forEach(option => {
-        const requiredEvent = BIOME_EVENT_REQUIREMENTS[option.value];
+    Array.from(biomeSelector.options).forEach(option => {
+        const requiredEvent = BIOME_EVENT_CONSTRAINTS[option.value];
         if (!requiredEvent) {
             option.disabled = false;
             option.removeAttribute('title');
             return;
         }
         const requiredEvents = Array.isArray(requiredEvent) ? requiredEvent : [requiredEvent];
-        const enabled = requiredEvents.some(eventId => activeEvents.has(eventId));
+        const enabled = requiredEvents.some(eventId => enabledEvents.has(eventId));
         option.disabled = !enabled;
         if (!enabled) {
             const eventLabels = requiredEvents
-                .map(eventId => EVENT_DEFINITIONS.find(event => event.id === eventId)?.label)
+                .map(eventId => EVENT_LIST.find(event => event.id === eventId)?.label)
                 .filter(Boolean);
             if (eventLabels.length > 0) {
                 let labelText = eventLabels[0];
@@ -580,27 +580,27 @@ function enforceBiomeEventLocks() {
     });
 
     if (resetToDefault) {
-        biomeSelect.value = 'normal';
+        biomeSelector.value = 'normal';
         if (typeof handleBiomeInterface === 'function') {
             handleBiomeInterface();
         }
     }
 
-    refreshCustomSelectDisplay('biome-select');
+    refreshCustomSelect('biome-dropdown');
 }
 
-function toggleEventActivation(eventId, enabled) {
+function setEventToggleState(eventId, enabled) {
     if (!eventId) return;
-    const hasEvent = activeEvents.has(eventId);
+    const hasEvent = enabledEvents.has(eventId);
     if (enabled && !hasEvent) {
-        activeEvents.add(eventId);
+        enabledEvents.add(eventId);
     } else if (!enabled && hasEvent) {
-        activeEvents.delete(eventId);
+        enabledEvents.delete(eventId);
     } else {
         return;
     }
 
-    const eventMenu = document.getElementById('event-menu');
+    const eventMenu = document.getElementById('event-option-list');
     if (eventMenu) {
         const checkbox = eventMenu.querySelector(`input[type="checkbox"][data-event-id="${eventId}"]`);
         if (checkbox && checkbox.checked !== enabled) {
@@ -608,47 +608,47 @@ function toggleEventActivation(eventId, enabled) {
         }
     }
 
-    renderEventSummary();
-    enforceBiomeEventLocks();
+    updateEventSummary();
+    enforceBiomeEventRestrictions();
 }
 
-function setupEventSelectorControls() {
-    const eventMenu = document.getElementById('event-menu');
+function initializeEventSelector() {
+    const eventMenu = document.getElementById('event-option-list');
     if (!eventMenu) return;
 
     const checkboxes = eventMenu.querySelectorAll('input[type="checkbox"][data-event-id]');
     checkboxes.forEach(input => {
         const eventId = input.dataset.eventId;
-        input.checked = activeEvents.has(eventId);
+        input.checked = enabledEvents.has(eventId);
         input.addEventListener('change', () => {
-            toggleEventActivation(eventId, input.checked);
+            setEventToggleState(eventId, input.checked);
         });
     });
 
-    const details = document.getElementById('event-select');
+    const details = document.getElementById('event-selector');
     if (details) {
         details.addEventListener('toggle', () => {
-            const summary = document.getElementById('event-summary');
+            const summary = document.getElementById('event-selector-summary');
             if (summary) {
                 summary.setAttribute('aria-expanded', details.open ? 'true' : 'false');
             }
         });
     }
 
-    renderEventSummary();
-    enforceBiomeEventLocks();
+    updateEventSummary();
+    enforceBiomeEventRestrictions();
 }
 
-document.addEventListener('DOMContentLoaded', setupEventSelectorControls);
-document.addEventListener('DOMContentLoaded', refreshOblivionPresetUi);
+document.addEventListener('DOMContentLoaded', initializeEventSelector);
+document.addEventListener('DOMContentLoaded', updateOblivionPresetDisplay);
 
-function setupSingleSelectControl(selectId) {
+function initializeSingleSelectControl(selectId) {
     const select = document.getElementById(selectId);
     const details = document.querySelector(`details[data-select="${selectId}"]`);
     if (!select || !details) return;
 
-    const summary = details.querySelector('.ui-select__summary');
-    const menu = details.querySelector('.ui-select__menu');
+    const summary = details.querySelector('.interface-select__summary');
+    const menu = details.querySelector('.interface-select__menu');
     if (!summary || !menu) return;
 
     const placeholder = summary.dataset.placeholder || summary.textContent.trim();
@@ -657,7 +657,7 @@ function setupSingleSelectControl(selectId) {
     const optionButtons = Array.from(select.options).map(option => {
         const button = document.createElement('button');
         button.type = 'button';
-        button.className = 'ui-select__option-button';
+        button.className = 'interface-select__option-button';
         button.dataset.value = option.value;
         button.textContent = option.textContent;
         button.setAttribute('role', 'option');
@@ -684,13 +684,13 @@ function setupSingleSelectControl(selectId) {
         const selectedOption = select.options[select.selectedIndex];
         const label = selectedOption ? selectedOption.textContent : placeholder;
         summary.textContent = label;
-        summary.classList.toggle('field__input--placeholder', !selectedOption);
+        summary.classList.toggle('form-field__input--placeholder', !selectedOption);
         summary.setAttribute('aria-expanded', details.open ? 'true' : 'false');
 
         optionButtons.forEach(({ button, option }) => {
             const isActive = option.value === select.value;
-            button.classList.toggle('ui-select__option-button--active', isActive);
-            button.classList.toggle('ui-select__option-button--disabled', option.disabled);
+            button.classList.toggle('interface-select__option-button--active', isActive);
+            button.classList.toggle('interface-select__option-button--disabled', option.disabled);
             button.disabled = !!option.disabled;
             if (option.disabled) {
                 button.setAttribute('aria-disabled', 'true');
@@ -705,27 +705,27 @@ function setupSingleSelectControl(selectId) {
         summary.setAttribute('aria-expanded', details.open ? 'true' : 'false');
     });
 
-    customSelectRegistry.set(selectId, { update: updateSummary });
+    selectWidgetRegistry.set(selectId, { update: updateSummary });
 
     updateSummary();
 }
 
-function refreshCustomSelectDisplay(selectId) {
-    const registryEntry = customSelectRegistry.get(selectId);
+function refreshCustomSelect(selectId) {
+    const registryEntry = selectWidgetRegistry.get(selectId);
     if (registryEntry && typeof registryEntry.update === 'function') {
         registryEntry.update();
     }
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-    setupSingleSelectControl('vip-select');
-    setupSingleSelectControl('dave-luck-select');
-    setupSingleSelectControl('biome-select');
+    initializeSingleSelectControl('vip-dropdown');
+    initializeSingleSelectControl('dave-luck-dropdown');
+    initializeSingleSelectControl('biome-dropdown');
 });
 
 // XP is awarded once per rarity tier. Landing any aura within an inclusive tier range grants that tier's XP
-// a single time per simulation run, regardless of how many qualifying auras were rolled in that band.
-const XP_RARITY_TIERS = [
+// a single time per simulation run, regardless of how many qualifying entries in AURA_LIBRARY were rolled in that band.
+const XP_RARITY_TABLE = [
     { key: 'tier-9k', min: 9999, max: 99998, xp: 1000, label: '1 in 9,999 – 99,998' },
     { key: 'tier-99k', min: 99999, max: 999998, xp: 2500, label: '1 in 99,999 – 999,998' },
     { key: 'tier-999k', min: 999999, max: 9999998, xp: 5000, label: '1 in 999,999 – 9,999,998' },
@@ -734,9 +734,9 @@ const XP_RARITY_TIERS = [
     { key: 'tier-999m', min: 999999999, max: Number.POSITIVE_INFINITY, xp: 30000, label: '1 in 999,999,999+' }
 ];
 
-function identifyXpTierForChance(chance) {
+function resolveXpTierForChance(chance) {
     if (!Number.isFinite(chance)) return null;
-    for (const tier of XP_RARITY_TIERS) {
+    for (const tier of XP_RARITY_TABLE) {
         if (chance >= tier.min && chance <= tier.max) {
             return tier;
         }
@@ -745,92 +745,92 @@ function identifyXpTierForChance(chance) {
 }
 
 // Run the roll simulation while keeping the UI responsive
-function executeRollSimulation() {
-    if (isRolling) return;
+function runRollSimulation() {
+    if (simulationActive) return;
 
-    if (!results) {
-        results = document.getElementById('result-text');
+    if (!feedContainer) {
+        feedContainer = document.getElementById('simulation-feed');
     }
-    if (!luck) {
-        luck = document.getElementById('luck');
+    if (!luckField) {
+        luckField = document.getElementById('luck-total');
     }
 
-    if (!results || !luck) {
+    if (!feedContainer || !luckField) {
         return;
     }
 
     const {
-        rollButton,
+        rollTriggerButton,
         brandMark,
-        rollInput,
-        biomeSelect,
-        progressContainer,
-        progressFill,
-        progressValue,
+        rollCountInput,
+        biomeSelector,
+        progressPanel,
+        progressBarFill,
+        progressLabel,
         audio
-    } = domCache;
+    } = uiHandles;
 
-    if (!rollButton || !rollInput || !luck) {
+    if (!rollTriggerButton || !rollCountInput || !luckField) {
         return;
     }
 
-    isRolling = true;
-    rollButton.disabled = true;
-    rollButton.style.opacity = '0.5';
+    simulationActive = true;
+    rollTriggerButton.disabled = true;
+    rollTriggerButton.style.opacity = '0.5';
     if (brandMark) {
-        brandMark.classList.add('brand__mark--spinning');
+        brandMark.classList.add('banner__emblem--spinning');
     }
 
-    emitSoundEffect(audio.roll);
+    playSoundEffect(audio.roll);
 
-    let total = Number.parseInt(rollInput.value, 10);
+    let total = Number.parseInt(rollCountInput.value, 10);
     if (!Number.isFinite(total) || total <= 0) {
         total = 1;
-        rollInput.value = '1';
+        rollCountInput.value = '1';
     }
 
-    let parsedLuck = Number.parseFloat(luck.value);
+    let parsedLuck = Number.parseFloat(luckField.value);
     if (!Number.isFinite(parsedLuck)) {
         parsedLuck = 1;
-        luck.value = '1';
+        luckField.value = '1';
     }
     const luckValue = Math.max(0, parsedLuck);
-    const biome = biomeSelect ? biomeSelect.value : '';
+    const biome = biomeSelector ? biomeSelector.value : '';
 
-    const eventSnapshot = activeEvents.size > 0 ? new Set(activeEvents) : null;
-    const isEventAuraEnabled = aura => !aura.event || (eventSnapshot ? eventSnapshot.has(aura.event) : activeEvents.has(aura.event));
+    const eventSnapshot = enabledEvents.size > 0 ? new Set(enabledEvents) : null;
+    const isEventAuraEnabled = aura => !aura.event || (eventSnapshot ? eventSnapshot.has(aura.event) : enabledEvents.has(aura.event));
 
-    results.innerHTML = 'Rolling...';
+    feedContainer.innerHTML = 'Rolling...';
     let rolls = 0;
     const startTime = performance.now();
 
-    for (const aura of auras) {
+    for (const aura of AURA_LIBRARY) {
         aura.wonCount = 0;
         aura.effectiveChance = aura.chance;
     }
 
     const breakthroughStatsMap = new Map();
 
-    const progressElementsAvailable = progressContainer && progressFill && progressValue;
+    const progressElementsAvailable = progressPanel && progressBarFill && progressLabel;
     const showProgress = progressElementsAvailable && total >= 100000;
-    if (progressContainer) {
-        progressContainer.style.display = showProgress ? 'grid' : 'none';
-        progressContainer.classList.toggle('progress--active', showProgress);
+    if (progressPanel) {
+        progressPanel.style.display = showProgress ? 'grid' : 'none';
+        progressPanel.classList.toggle('loading-indicator--active', showProgress);
         if (!showProgress) {
-            delete progressContainer.dataset.progress;
+            delete progressPanel.dataset.progress;
         }
     }
     if (progressElementsAvailable) {
-        progressFill.style.width = '0%';
-        progressValue.textContent = '0%';
-        if (showProgress && progressContainer) {
-            progressContainer.dataset.progress = '0';
+        progressBarFill.style.width = '0%';
+        progressLabel.textContent = '0%';
+        if (showProgress && progressPanel) {
+            progressPanel.dataset.progress = '0';
         }
     }
 
     const effectiveAuras = [];
     if (biome === 'limbo') {
-        for (const aura of auras) {
+        for (const aura of AURA_LIBRARY) {
             if (aura.requiresOblivionPreset) continue;
             if (!isEventAuraEnabled(aura)) continue;
             if (!aura.exclusiveTo) continue;
@@ -848,7 +848,7 @@ function executeRollSimulation() {
         const glitchLikeBiome = biome === 'glitch' || isRoe;
         const exclusivityBiome = isRoe ? 'glitch' : biome;
 
-        for (const aura of auras) {
+        for (const aura of AURA_LIBRARY) {
             if (aura.requiresOblivionPreset) {
                 aura.effectiveChance = Infinity;
                 continue;
@@ -857,7 +857,7 @@ function executeRollSimulation() {
                 aura.effectiveChance = Infinity;
                 continue;
             }
-            if (isRoe && ROE_EXCLUDED_AURAS.has(aura.name)) {
+            if (isRoe && ROE_EXCLUSION_SET.has(aura.name)) {
                 aura.effectiveChance = Infinity;
                 continue;
             }
@@ -866,7 +866,7 @@ function executeRollSimulation() {
                     aura.effectiveChance = Infinity;
                     continue;
                 }
-                const allowEventGlitchAccess = glitchLikeBiome && aura.event && (eventSnapshot ? eventSnapshot.has(aura.event) : activeEvents.has(aura.event)) && EVENTS_ALLOWING_GLITCH_ACCESS.has(aura.event);
+                const allowEventGlitchAccess = glitchLikeBiome && aura.event && (eventSnapshot ? eventSnapshot.has(aura.event) : enabledEvents.has(aura.event)) && GLITCH_EVENT_WHITELIST.has(aura.event);
                 if (!aura.exclusiveTo.includes('limbo-null') && !aura.exclusiveTo.includes(exclusivityBiome) && !allowEventGlitchAccess) {
                     aura.effectiveChance = Infinity;
                     continue;
@@ -875,7 +875,7 @@ function executeRollSimulation() {
 
             let effectiveChance = aura.chance;
             if (aura.breakthrough) {
-                if (glitchLikeBiome && (!isRoe || !ROE_BREAKTHROUGH_EXCLUSIONS.has(aura.name))) {
+                if (glitchLikeBiome && (!isRoe || !ROE_BREAKTHROUGH_BLOCKLIST.has(aura.name))) {
                     let minChance = aura.chance;
                     for (const mult of Object.values(aura.breakthrough)) {
                         minChance = Math.min(minChance, Math.floor(aura.chance / mult));
@@ -918,12 +918,12 @@ function executeRollSimulation() {
         };
     });
 
-    const activeOblivionAura = (isOblivionPresetActive && luckValue >= OBLIVION_PRESET_LUCK) ? oblivionAuraDefinition : null;
-    const activeMemoryAura = (isOblivionPresetActive && luckValue >= OBLIVION_PRESET_LUCK) ? memoryAuraDefinition : null;
-    const memoryProbability = activeMemoryAura ? 1 / OBLIVION_MEMORY_ROLL_ODDS : 0;
-    const oblivionProbability = activeOblivionAura ? 1 / OBLIVION_POTION_ROLL_ODDS : 0;
+    const activeOblivionAura = (oblivionPresetEnabled && luckValue >= OBLIVION_LUCK_TARGET) ? oblivionAuraData : null;
+    const activeMemoryAura = (oblivionPresetEnabled && luckValue >= OBLIVION_LUCK_TARGET) ? memoryAuraData : null;
+    const memoryProbability = activeMemoryAura ? 1 / OBLIVION_MEMORY_ODDS : 0;
+    const oblivionProbability = activeOblivionAura ? 1 / OBLIVION_POTION_ODDS : 0;
 
-    const scheduleFrame = (typeof window !== 'undefined' && typeof window.requestAnimationFrame === 'function')
+    const queueAnimationFrame = (typeof window !== 'undefined' && typeof window.requestAnimationFrame === 'function')
         ? callback => window.requestAnimationFrame(callback)
         : callback => setTimeout(callback, 0);
 
@@ -937,9 +937,9 @@ function executeRollSimulation() {
                     return;
                 }
                 lastProgressValue = progressValueRounded;
-                progressFill.style.width = `${progress}%`;
-                progressValue.textContent = `${progressValueRounded}%`;
-                progressContainer.dataset.progress = `${progressValueRounded}`;
+                progressBarFill.style.width = `${progress}%`;
+                progressLabel.textContent = `${progressValueRounded}%`;
+                progressPanel.dataset.progress = `${progressValueRounded}`;
             };
         })()
         : null;
@@ -949,7 +949,7 @@ function executeRollSimulation() {
     const CHECK_INTERVAL = 512;
     let currentRoll = 0;
 
-    function performSingleSimulationRoll() {
+    function performSingleRollCheck() {
         if (memoryProbability > 0 && getRand() < memoryProbability) {
             activeMemoryAura.wonCount++;
             rolls++;
@@ -974,12 +974,12 @@ function executeRollSimulation() {
         rolls++;
     }
 
-    function processRollChunk() {
+    function processRollSequence() {
         const deadline = performance.now() + MAX_FRAME_DURATION;
         let processedThisChunk = 0;
 
         while (currentRoll < total && processedThisChunk < MAX_ROLLS_PER_CHUNK) {
-            performSingleSimulationRoll();
+            performSingleRollCheck();
             currentRoll++;
             processedThisChunk++;
 
@@ -990,44 +990,44 @@ function executeRollSimulation() {
 
         if (updateProgress) {
             const progress = (currentRoll / total) * 100;
-            scheduleFrame(() => updateProgress(progress));
+            queueAnimationFrame(() => updateProgress(progress));
         }
 
         if (currentRoll < total) {
-            scheduleFrame(processRollChunk);
+            queueAnimationFrame(processRollSequence);
             return;
         }
 
-        if (progressContainer) {
-            progressContainer.style.display = 'none';
-            progressContainer.classList.remove('progress--active');
-            delete progressContainer.dataset.progress;
+        if (progressPanel) {
+            progressPanel.style.display = 'none';
+            progressPanel.classList.remove('loading-indicator--active');
+            delete progressPanel.dataset.progress;
         }
-        rollButton.disabled = false;
-        rollButton.style.opacity = '1';
+        rollTriggerButton.disabled = false;
+        rollTriggerButton.style.opacity = '1';
         if (brandMark) {
-            brandMark.classList.remove('brand__mark--spinning');
+            brandMark.classList.remove('banner__emblem--spinning');
         }
-        isRolling = false;
+        simulationActive = false;
 
         const endTime = performance.now();
         const executionTime = ((endTime - startTime) / 1000).toFixed(0);
 
         if (cutscenesEnabled) {
             const cutsceneQueue = [];
-            for (const videoId of cutscenePriority) {
-                const aura = auras.find(entry => entry.cutscene === videoId);
+            for (const videoId of CUTSCENE_PRIORITY_SEQUENCE) {
+                const aura = AURA_LIBRARY.find(entry => entry.cutscene === videoId);
                 if (aura && aura.wonCount > 0) {
                     cutsceneQueue.push(videoId);
                 }
             }
             if (cutsceneQueue.length > 0) {
-                runAuraSequence(cutsceneQueue);
+                playAuraSequence(cutsceneQueue);
             }
         }
 
         let highestChance = 0;
-        for (const aura of auras) {
+        for (const aura of AURA_LIBRARY) {
             if (aura.wonCount > 0 && aura.chance > highestChance) {
                 highestChance = aura.chance;
             }
@@ -1035,57 +1035,57 @@ function executeRollSimulation() {
 
         if (highestChance >= 99999999) {
             if (biome === 'limbo') {
-                emitSoundEffect(audio.limbo99m);
+                playSoundEffect(audio.limbo99m);
             } else {
-                emitSoundEffect(audio.m100);
+                playSoundEffect(audio.m100);
             }
         } else if (highestChance >= 10000000) {
-            emitSoundEffect(audio.m10);
+            playSoundEffect(audio.m10);
         } else if (highestChance >= 1000000) {
-            emitSoundEffect(audio.k100);
+            playSoundEffect(audio.k100);
         } else if (highestChance >= 100000) {
-            emitSoundEffect(audio.k10);
+            playSoundEffect(audio.k10);
         } else if (highestChance >= 1000) {
-            emitSoundEffect(audio.k1);
+            playSoundEffect(audio.k1);
         }
 
         const resultChunks = [
             `Execution time: ${executionTime} seconds. <br>`,
-            `Rolls: ${formatNumber(rolls)}<br>`,
-            `Luck: ${formatNumber(luckValue)}<br><br>`
+            `Rolls: ${formatWithCommas(rolls)}<br>`,
+            `Luck: ${formatWithCommas(luckValue)}<br><br>`
         ];
 
         const resultEntries = [];
-        for (const aura of auras) {
+        for (const aura of AURA_LIBRARY) {
             if (aura.wonCount <= 0) continue;
 
             const rarityClass = determineRarityClass(aura, biome);
             const specialClass = deriveAuraStyleClass(aura);
-            const eventClass = aura.event ? 'aura-event-text' : '';
+            const eventClass = aura.event ? 'sigil-event-text' : '';
             const classAttr = [rarityClass, specialClass, eventClass].filter(Boolean).join(' ');
-            const formattedName = composeAuraNameMarkup(aura);
+            const formattedName = formatAuraNameMarkup(aura);
             const breakthroughStats = breakthroughStatsMap.get(aura.name);
 
             if (breakthroughStats && breakthroughStats.count > 0) {
                 const btName = aura.name.replace(
                     /-\s*[\d,]+/,
-                    `- ${formatNumber(breakthroughStats.btChance)}`
+                    `- ${formatWithCommas(breakthroughStats.btChance)}`
                 );
-                const nativeLabel = composeAuraNameMarkup(aura, btName);
+                const nativeLabel = formatAuraNameMarkup(aura, btName);
                 resultEntries.push({
-                    label: `<span class="${classAttr}">[Native] ${nativeLabel} | Times Rolled: ${formatNumber(breakthroughStats.count)}</span>`,
-                    chance: calculateResultSortPriority(aura, breakthroughStats.btChance)
+                    label: `<span class="${classAttr}">[Native] ${nativeLabel} | Times Rolled: ${formatWithCommas(breakthroughStats.count)}</span>`,
+                    chance: determineResultPriority(aura, breakthroughStats.btChance)
                 });
                 if (aura.wonCount > breakthroughStats.count) {
                     resultEntries.push({
-                        label: `<span class="${classAttr}">${formattedName} | Times Rolled: ${formatNumber(aura.wonCount - breakthroughStats.count)}</span>`,
-                        chance: calculateResultSortPriority(aura, aura.chance)
+                        label: `<span class="${classAttr}">${formattedName} | Times Rolled: ${formatWithCommas(aura.wonCount - breakthroughStats.count)}</span>`,
+                        chance: determineResultPriority(aura, aura.chance)
                     });
                 }
             } else {
                 resultEntries.push({
-                    label: `<span class="${classAttr}">${formattedName} | Times Rolled: ${formatNumber(aura.wonCount)}</span>`,
-                    chance: calculateResultSortPriority(aura, aura.chance)
+                    label: `<span class="${classAttr}">${formattedName} | Times Rolled: ${formatWithCommas(aura.wonCount)}</span>`,
+                    chance: determineResultPriority(aura, aura.chance)
                 });
             }
         }
@@ -1098,30 +1098,30 @@ function executeRollSimulation() {
         let totalXP = 0;
         const xpLines = [];
         const earnedXpTiers = new Set();
-        for (const aura of auras) {
+        for (const aura of AURA_LIBRARY) {
             if (aura.wonCount > 0) {
-                const tier = identifyXpTierForChance(aura.chance);
+                const tier = resolveXpTierForChance(aura.chance);
                 if (tier) {
                     earnedXpTiers.add(tier.key);
                 }
             }
         }
 
-        for (const tier of XP_RARITY_TIERS) {
+        for (const tier of XP_RARITY_TABLE) {
             if (earnedXpTiers.has(tier.key)) {
                 totalXP += tier.xp;
-                xpLines.push(`Reached ${tier.label}: +${formatNumber(tier.xp)} XP`);
+                xpLines.push(`Reached ${tier.label}: +${formatWithCommas(tier.xp)} XP`);
             }
         }
 
-        resultChunks.push(`<br><strong>Total XP Earned: ${formatNumber(totalXP)}</strong><br>`);
+        resultChunks.push(`<br><strong>Total XP Earned: ${formatWithCommas(totalXP)}</strong><br>`);
         for (const line of xpLines) {
             resultChunks.push(`${line}<br>`);
         }
 
-        results.innerHTML = resultChunks.join('');
+        feedContainer.innerHTML = resultChunks.join('');
     }
 
-    scheduleFrame(processRollChunk);
+    queueAnimationFrame(processRollSequence);
 }
 
