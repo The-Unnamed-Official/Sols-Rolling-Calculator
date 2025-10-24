@@ -3032,11 +3032,11 @@ function createDiscordShareText(summary) {
     ];
 
     const auraLines = summary.shareRecords && summary.shareRecords.length > 0
-        ? summary.shareRecords.map(line => `- ${line}`)
-        : ['- No auras were rolled.'];
+        ? summary.shareRecords.map(line => `* ${line}`)
+        : ['* No auras were rolled.'];
 
     const milestoneLines = summary.xpLines && summary.xpLines.length > 0
-        ? summary.xpLines.map(line => `• ${line}`)
+        ? summary.xpLines.map(line => `* ${line}`)
         : [];
 
     const sections = [
@@ -3074,16 +3074,16 @@ function createPlainShareText(summary) {
 
     if (summary.shareRecords && summary.shareRecords.length > 0) {
         summary.shareRecords.forEach(record => {
-            lines.push(`- ${record}`);
+            lines.push(`${record}`);
         });
     } else {
-        lines.push('- No auras were rolled.');
+        lines.push('No auras were rolled.');
     }
 
     if (summary.xpLines && summary.xpLines.length > 0) {
         lines.push('', 'Milestones');
         summary.xpLines.forEach(line => {
-            lines.push(`- ${line}`);
+            lines.push(`${line}`);
         });
     }
 
