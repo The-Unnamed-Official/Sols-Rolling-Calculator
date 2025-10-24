@@ -878,7 +878,8 @@ body.biome--blood-rain .interface-backdrop__veil {
 .roll-trigger,
 .interface-select__summary,
 .interface-select__option-button,
-.skip-cinematic-button {
+.skip-cinematic-button,
+.toggle {
     position: relative;
     border-radius: 0;
     border: 1px solid var(--button-border-color, var(--surface-border));
@@ -1692,10 +1693,15 @@ select.form-field__input option {
 
 .toggle {
     position: relative;
-    width: 56px;
-    height: 24px;
+    width: 60px;
+    height: 30px;
     display: inline-flex;
     align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    --button-background: linear-gradient(96deg, rgba(16, 30, 52, 0.95), rgba(8, 16, 30, 0.92));
+    --button-accent: rgba(127, 227, 255, 0.45);
+    box-shadow: inset 0 0 12px rgba(100, 180, 255, 0.15);
 }
 
 .toggle__input {
@@ -1709,32 +1715,35 @@ select.form-field__input option {
 
 .toggle__track {
     position: absolute;
-    inset: 0;
-    border-radius: 999px;
-    background: rgba(50, 90, 150, 0.4);
-    border: 1px solid rgba(127, 227, 255, 0.25);
-    transition: background 0.2s ease, border-color 0.2s ease;
+    inset: 4px;
+    border-radius: 0;
+    background: rgba(12, 24, 40, 0.88);
+    border: 1px solid rgba(127, 227, 255, 0.28);
+    box-shadow: inset 0 0 12px rgba(127, 227, 255, 0.16);
+    transition: background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .toggle__thumb {
     position: absolute;
-    width: 18px;
-    height: 18px;
-    border-radius: 50%;
-    background: var(--accent);
-    top: 2px;
+    width: 24px;
+    height: calc(100% - 8px);
+    border-radius: 0;
+    background: linear-gradient(160deg, rgba(127, 227, 255, 0.95), rgba(98, 210, 255, 0.9));
+    top: 4px;
     left: 4px;
-    transition: transform 0.2s ease;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+    transition: transform 0.2s ease, background 0.2s ease;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.45);
 }
 
 .toggle__input:checked + .toggle__track {
-    background: rgba(100, 220, 210, 0.55);
-    border-color: rgba(150, 255, 220, 0.5);
+    background: rgba(22, 42, 64, 0.92);
+    border-color: rgba(127, 227, 255, 0.45);
+    box-shadow: inset 0 0 16px rgba(127, 227, 255, 0.24);
 }
 
 .toggle__input:checked + .toggle__track + .toggle__thumb {
-    transform: translateX(26px);
+    transform: translateX(28px);
+    background: linear-gradient(160deg, rgba(165, 255, 255, 0.95), rgba(127, 227, 255, 0.88));
 }
 
 .quick-action-group {
