@@ -130,6 +130,14 @@
                     <h2 class="surface__title" id="results-heading">Roll Feed</h2>
                     <p class="surface__subtitle">High fidelity output with rarity cues, XP tracking, and event modifier callouts.</p>
                 </header>
+                <div class="feed-share" id="feedShareControls">
+                    <button class="interface-button interface-button--minor feed-share__trigger" type="button" id="feedShareButton" aria-haspopup="true" aria-expanded="false" aria-controls="feedShareMenu">Share Result</button>
+                    <div class="feed-share__menu" id="feedShareMenu" role="menu" hidden>
+                        <button class="feed-share__item" type="button" data-share-format="markdown" role="menuitem">Copy Discord Markdown</button>
+                        <button class="feed-share__item" type="button" data-share-format="plain" role="menuitem">Copy Plain Text</button>
+                        <button class="feed-share__item" type="button" data-share-format="image" role="menuitem">Download Image</button>
+                    </div>
+                </div>
                 <div class="loading-indicator" style="display:none;">
                     <div class="loading-indicator__rail">
                         <div class="loading-indicator__fill"></div>
