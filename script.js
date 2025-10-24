@@ -1603,6 +1603,40 @@ function createAuraRegistry(definitions) {
 
 const AURA_REGISTRY = createAuraRegistry(AURA_BLUEPRINT_SOURCE);
 
+const auraRollState = new WeakMap();
+
+function getAuraState(aura) {
+    let state = auraRollState.get(aura);
+    if (!state) {
+        state = { wonCount: 0, effectiveChance: aura.chance };
+        auraRollState.set(aura, state);
+    }
+    return state;
+}
+
+function resetAuraRollState(registry) {
+    for (const aura of registry) {
+        const state = getAuraState(aura);
+        state.wonCount = 0;
+        state.effectiveChance = aura.chance;
+    }
+}
+
+function recordAuraWin(aura) {
+    if (!aura) return;
+    const state = getAuraState(aura);
+    state.wonCount += 1;
+}
+
+function setAuraEffectiveChance(aura, value) {
+    const state = getAuraState(aura);
+    state.effectiveChance = value;
+}
+
+function readAuraWinCount(aura) {
+    return getAuraState(aura).wonCount;
+}
+
 function isAuraNativeTo(aura, biome) {
     return Boolean(aura && aura.nativeBiomes && aura.nativeBiomes.has(biome));
 }
@@ -1721,6 +1755,11 @@ for (const [eventId, auraNames] of Object.entries(EVENT_AURA_LOOKUP)) {
     });
 }
 
+function getAuraEventId(aura) {
+    if (!aura) return null;
+    return auraEventIndex.get(aura.name) || null;
+}
+
 const CUTSCENE_PRIORITY_SEQUENCE = ["oblivion-cutscene", "memory-cutscene", "equinox-cutscene", "erebus-cutscene", "luminosity-cutscene", "pixelation-cutscene", "lamenthyr-cutscene", "dreammetric-cutscene", "oppression-cutscene"];
 
 oblivionAuraData = AURA_REGISTRY.find(aura => aura.name === OBLIVION_AURA_LABEL) || null;
@@ -1766,13 +1805,7 @@ const ROE_BREAKTHROUGH_BLOCKLIST = new Set([
     "Manta - 300,000,000"
 ]);
 
-AURA_REGISTRY.forEach(aura => {
-    aura.wonCount = 0;
-    const eventId = auraEventIndex.get(aura.name);
-    if (eventId) {
-        aura.event = eventId;
-    }
-});
+AURA_REGISTRY.forEach(getAuraState);
 
 const EVENT_SUMMARY_EMPTY_LABEL = "No events enabled";
 
@@ -2219,6 +2252,7 @@ function computeStandardEffectiveChance(aura, context) {
     const { biome, exclusivityBiome, glitchLikeBiome, isRoe } = context;
     if (aura.requiresOblivionPreset) return Infinity;
 
+    const eventId = getAuraEventId(aura);
     const eventEnabled = context.eventChecker(aura);
     if (!eventEnabled) return Infinity;
 
@@ -2230,9 +2264,9 @@ function computeStandardEffectiveChance(aura, context) {
         }
 
         const allowEventGlitchAccess = glitchLikeBiome
-            && aura.event
+            && eventId
             && eventEnabled
-            && GLITCH_EVENT_WHITELIST.has(aura.event);
+            && GLITCH_EVENT_WHITELIST.has(eventId);
 
         if (!isAuraNativeTo(aura, 'limbo-null') && !isAuraNativeTo(aura, exclusivityBiome) && !allowEventGlitchAccess) {
             return Infinity;
@@ -2276,10 +2310,11 @@ function buildComputedAuraEntries(registry, context, luckValue, breakthroughStat
     const evaluated = [];
     for (const aura of registry) {
         const effectiveChance = determineAuraEffectiveChance(aura, context);
-        aura.effectiveChance = effectiveChance;
         if (!Number.isFinite(effectiveChance)) {
+            setAuraEffectiveChance(aura, Number.POSITIVE_INFINITY);
             continue;
         }
+        setAuraEffectiveChance(aura, effectiveChance);
 
         const usesBreakthrough = effectiveChance !== aura.chance;
         const breakthroughStats = usesBreakthrough ? { count: 0, btChance: effectiveChance } : null;
@@ -2296,21 +2331,22 @@ function buildComputedAuraEntries(registry, context, luckValue, breakthroughStat
         }
 
         const successRatio = successThreshold > 0 ? successThreshold / effectiveChance : 0;
-        evaluated.push({ aura, successRatio, breakthroughStats });
+        evaluated.push({ aura, successRatio, breakthroughStats, effectiveChance });
     }
 
-    evaluated.sort((a, b) => b.aura.effectiveChance - a.aura.effectiveChance);
+    evaluated.sort((a, b) => b.effectiveChance - a.effectiveChance);
     return evaluated;
 }
 
 function buildResultEntries(registry, biome, breakthroughStatsMap) {
     const entries = [];
     for (const aura of registry) {
-        if (aura.wonCount <= 0) continue;
+        const winCount = readAuraWinCount(aura);
+        if (winCount <= 0) continue;
 
         const rarityClass = typeof resolveRarityClass === 'function' ? resolveRarityClass(aura, biome) : '';
         const specialClass = typeof resolveAuraStyleClass === 'function' ? resolveAuraStyleClass(aura) : '';
-        const eventClass = aura.event ? 'sigil-event-text' : '';
+        const eventClass = getAuraEventId(aura) ? 'sigil-event-text' : '';
         const classAttr = [rarityClass, specialClass, eventClass].filter(Boolean).join(' ');
         const formattedName = formatAuraNameMarkup(aura);
         const breakthroughStats = breakthroughStatsMap.get(aura.name);
@@ -2323,15 +2359,15 @@ function buildResultEntries(registry, biome, breakthroughStatsMap) {
                 priority: determineResultPriority(aura, breakthroughStats.btChance)
             });
 
-            if (aura.wonCount > breakthroughStats.count) {
+            if (winCount > breakthroughStats.count) {
                 entries.push({
-                    markup: `<span class="${classAttr}">${formattedName} | Times Rolled: ${formatWithCommas(aura.wonCount - breakthroughStats.count)}</span>`,
+                    markup: `<span class="${classAttr}">${formattedName} | Times Rolled: ${formatWithCommas(winCount - breakthroughStats.count)}</span>`,
                     priority: determineResultPriority(aura, aura.chance)
                 });
             }
         } else {
             entries.push({
-                markup: `<span class="${classAttr}">${formattedName} | Times Rolled: ${formatWithCommas(aura.wonCount)}</span>`,
+                markup: `<span class="${classAttr}">${formattedName} | Times Rolled: ${formatWithCommas(winCount)}</span>`,
                 priority: determineResultPriority(aura, aura.chance)
             });
         }
@@ -2344,7 +2380,7 @@ function buildResultEntries(registry, biome, breakthroughStatsMap) {
 function summarizeXpRewards(registry) {
     const earnedTiers = new Set();
     registry.forEach(aura => {
-        if (aura.wonCount > 0) {
+        if (readAuraWinCount(aura) > 0) {
             const tier = resolveXpTierForChance(aura.chance);
             if (tier) {
                 earnedTiers.add(tier.key);
@@ -2418,16 +2454,16 @@ function runRollSimulation() {
     const biome = biomeSelector ? biomeSelector.value : '';
 
     const eventSnapshot = enabledEvents.size > 0 ? new Set(enabledEvents) : null;
-    const isEventAuraEnabled = aura => !aura.event || (eventSnapshot ? eventSnapshot.has(aura.event) : enabledEvents.has(aura.event));
+    const isEventAuraEnabled = aura => {
+        const eventId = getAuraEventId(aura);
+        return !eventId || (eventSnapshot ? eventSnapshot.has(eventId) : enabledEvents.has(eventId));
+    };
 
     feedContainer.innerHTML = 'Rolling...';
     let rolls = 0;
     const startTime = performance.now();
 
-    for (const aura of AURA_REGISTRY) {
-        aura.wonCount = 0;
-        aura.effectiveChance = aura.chance;
-    }
+    resetAuraRollState(AURA_REGISTRY);
 
     const breakthroughStatsMap = new Map();
 
@@ -2487,12 +2523,12 @@ function runRollSimulation() {
 
     function performSingleRollCheck() {
         if (memoryProbability > 0 && sampleEntropy() < memoryProbability) {
-            activeMemoryAura.wonCount++;
+            recordAuraWin(activeMemoryAura);
             rolls++;
             return;
         }
         if (oblivionProbability > 0 && sampleEntropy() < oblivionProbability) {
-            activeOblivionAura.wonCount++;
+            recordAuraWin(activeOblivionAura);
             rolls++;
             return;
         }
@@ -2500,7 +2536,7 @@ function runRollSimulation() {
         for (let j = 0; j < computedAuras.length; j++) {
             const entry = computedAuras[j];
             if (entry.successRatio > 0 && sampleEntropy() < entry.successRatio) {
-                entry.aura.wonCount++;
+                recordAuraWin(entry.aura);
                 if (entry.breakthroughStats) {
                     entry.breakthroughStats.count++;
                 }
@@ -2553,7 +2589,7 @@ function runRollSimulation() {
             const cutsceneQueue = [];
             for (const videoId of CUTSCENE_PRIORITY_SEQUENCE) {
                 const aura = AURA_REGISTRY.find(entry => entry.cutscene === videoId);
-                if (aura && aura.wonCount > 0) {
+                if (aura && readAuraWinCount(aura) > 0) {
                     cutsceneQueue.push(videoId);
                 }
             }
@@ -2564,7 +2600,7 @@ function runRollSimulation() {
 
         let highestChance = 0;
         for (const aura of AURA_REGISTRY) {
-            if (aura.wonCount > 0 && aura.chance > highestChance) {
+            if (readAuraWinCount(aura) > 0 && aura.chance > highestChance) {
                 highestChance = aura.chance;
             }
         }
