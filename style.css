@@ -792,6 +792,8 @@ body.biome--blood-rain .interface-backdrop__veil {
     position: relative;
     min-width: 0;
     padding-inline: 20px 96px;
+    width: 170px;
+    text-align: left;
 }
 
 .options-menu__trigger::after {
@@ -2599,6 +2601,10 @@ select.form-field__input option {
     .masthead__brand {
         flex-direction: column;
         text-align: center;
+    }
+
+    .options-menu__trigger {
+        text-align: left !important;
     }
 
     .surface {
