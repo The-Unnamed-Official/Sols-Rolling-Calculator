@@ -1947,7 +1947,9 @@ function enforceBiomeEventRestrictions() {
 
     if (resetToDefault) {
         biomeSelector.value = 'normal';
-        if (typeof handleBiomeInterface === 'function') {
+        if (typeof initializeBiomeInterface === 'function') {
+            initializeBiomeInterface();
+        } else if (typeof handleBiomeInterface === 'function') {
             handleBiomeInterface();
         }
     }

@@ -24,7 +24,7 @@
     --shadow-soft: 0 18px 34px rgba(6, 16, 36, 0.55);
     --corner-size: 28px;
     --corner-thickness: 2px;
-    --button-corner-size: 18px;
+    --button-corner-size: 10px;
     --font-base: 'Sarpanch', 'Segoe UI', sans-serif;
     --ui-scale-desktop: 0.88;
 }
