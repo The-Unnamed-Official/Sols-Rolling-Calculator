@@ -2,6 +2,8 @@
 let feedContainer = document.getElementById('simulation-feed');
 let luckField = document.getElementById('luck-total');
 let simulationActive = false;
+let lastSimulationSummary = null;
+let shareFeedbackTimerId = null;
 
 const randomToolkit = (() => {
     const toUint = value => (value >>> 0) & 0xffffffff;
@@ -1417,6 +1419,15 @@ function formatAuraNameMarkup(aura, overrideName) {
     return baseName;
 }
 
+function formatAuraNameText(aura, overrideName) {
+    if (!aura) return overrideName || '';
+    const baseName = typeof overrideName === 'string' && overrideName.length > 0 ? overrideName : aura.name;
+    if (aura.subtitle) {
+        return `${baseName} — ${aura.subtitle}`;
+    }
+    return baseName;
+}
+
 function determineResultPriority(aura, baseChance) {
     if (!aura) return baseChance;
     if (aura.name === OBLIVION_AURA_LABEL) return Number.POSITIVE_INFINITY;
@@ -1755,6 +1766,8 @@ const EVENT_LIST = [
     { id: "summer25", label: "Summer 2025" },
     { id: "halloween25", label: "Halloween 2025" },
 ];
+
+const EVENT_LABEL_MAP = new Map(EVENT_LIST.map(({ id, label }) => [id, label]));
 
 const EVENT_AURA_LOOKUP = {
     valentine24: [
@@ -2225,6 +2238,8 @@ document.addEventListener('DOMContentLoaded', () => {
     biomeDropdown.addEventListener('change', initializeBiomeInterface);
     initializeBiomeInterface();
 
+    setupShareInterface();
+
     const soundToggle = document.getElementById('rollAudioToggle');
     if (soundToggle) {
         soundToggle.textContent = 'Other Sounds: Off';
@@ -2453,32 +2468,51 @@ function buildResultEntries(registry, biome, breakthroughStatsMap) {
         const eventClass = getAuraEventId(aura) ? 'sigil-event-text' : '';
         const classAttr = [rarityClass, specialClass, eventClass].filter(Boolean).join(' ');
         const formattedName = formatAuraNameMarkup(aura);
+        const formattedTextName = formatAuraNameText(aura);
         const breakthroughStats = breakthroughStatsMap.get(aura.name);
+
+        const pushEntry = (markup, shareText, priority) => {
+            entries.push({ markup, share: shareText, priority });
+        };
 
         if (breakthroughStats && breakthroughStats.count > 0) {
             const btName = aura.name.replace(/-\s*[\d,]+/, `- ${formatWithCommas(breakthroughStats.btChance)}`);
             const nativeLabel = formatAuraNameMarkup(aura, btName);
-            entries.push({
-                markup: `<span class="${classAttr}">[Native] ${nativeLabel} | Times Rolled: ${formatWithCommas(breakthroughStats.count)}</span>`,
-                priority: determineResultPriority(aura, breakthroughStats.btChance)
-            });
+            const nativeShareName = formatAuraNameText(aura, btName);
+            pushEntry(
+                `<span class="${classAttr}">[Native] ${nativeLabel} | Times Rolled: ${formatWithCommas(breakthroughStats.count)}</span>`,
+                `[Native] ${nativeShareName} | Times Rolled: ${formatWithCommas(breakthroughStats.count)}`,
+                determineResultPriority(aura, breakthroughStats.btChance)
+            );
 
             if (winCount > breakthroughStats.count) {
-                entries.push({
-                    markup: `<span class="${classAttr}">${formattedName} | Times Rolled: ${formatWithCommas(winCount - breakthroughStats.count)}</span>`,
-                    priority: determineResultPriority(aura, aura.chance)
-                });
+                const remainingCount = winCount - breakthroughStats.count;
+                pushEntry(
+                    `<span class="${classAttr}">${formattedName} | Times Rolled: ${formatWithCommas(remainingCount)}</span>`,
+                    `${formattedTextName} | Times Rolled: ${formatWithCommas(remainingCount)}`,
+                    determineResultPriority(aura, aura.chance)
+                );
             }
         } else {
-            entries.push({
-                markup: `<span class="${classAttr}">${formattedName} | Times Rolled: ${formatWithCommas(winCount)}</span>`,
-                priority: determineResultPriority(aura, aura.chance)
-            });
+            pushEntry(
+                `<span class="${classAttr}">${formattedName} | Times Rolled: ${formatWithCommas(winCount)}</span>`,
+                `${formattedTextName} | Times Rolled: ${formatWithCommas(winCount)}`,
+                determineResultPriority(aura, aura.chance)
+            );
         }
     }
 
     entries.sort((a, b) => b.priority - a.priority);
-    return entries.map(entry => entry.markup);
+    const markupList = [];
+    const shareRecords = [];
+    for (const entry of entries) {
+        markupList.push(entry.markup);
+        if (entry.share) {
+            shareRecords.push(entry.share);
+        }
+    }
+
+    return { markupList, shareRecords };
 }
 
 function summarizeXpRewards(registry) {
@@ -2725,14 +2759,33 @@ function runRollSimulation() {
             playSoundEffect(audio.k1);
         }
 
+        let biomeLabel = biome;
+        if (biomeSelector) {
+            const selectedOption = (biomeSelector.selectedOptions && biomeSelector.selectedOptions.length > 0)
+                ? biomeSelector.selectedOptions[0]
+                : biomeSelector.options[biomeSelector.selectedIndex];
+            if (selectedOption && selectedOption.textContent) {
+                biomeLabel = selectedOption.textContent.trim();
+            }
+        }
+        if (!biomeLabel) {
+            biomeLabel = biome || 'Unknown';
+        }
+
+        const usedEventIds = eventSnapshot ? Array.from(eventSnapshot) : [];
+        const eventLabels = usedEventIds.map(id => EVENT_LABEL_MAP.get(id) || id);
+        const eventSummaryText = eventLabels.length > 0 ? eventLabels.join(', ') : EVENT_SUMMARY_EMPTY_LABEL;
+
         const resultChunks = [
-            `Execution time: ${executionTime} seconds. <br>`,
+            `Execution time: ${executionTime} seconds.<br>`,
             `Rolls: ${formatWithCommas(rolls)}<br>`,
-            `Luck: ${formatWithCommas(luckValue)}<br><br>`
+            `Luck: ${formatWithCommas(luckValue)}<br>`,
+            `Biome: ${biomeLabel}<br>`,
+            `Events: ${eventSummaryText}<br><br>`
         ];
 
-        const sortedResultEntries = buildResultEntries(AURA_REGISTRY, biome, breakthroughStatsMap);
-        for (const markup of sortedResultEntries) {
+        const { markupList, shareRecords } = buildResultEntries(AURA_REGISTRY, biome, breakthroughStatsMap);
+        for (const markup of markupList) {
             resultChunks.push(`${markup}<br>`);
         }
 
@@ -2743,8 +2796,467 @@ function runRollSimulation() {
         }
 
         feedContainer.innerHTML = resultChunks.join('');
+
+        const executionSeconds = Number.parseFloat(executionTime);
+        lastSimulationSummary = {
+            rolls,
+            luck: luckValue,
+            biomeId: biome,
+            biomeLabel,
+            eventIds: usedEventIds,
+            eventLabels,
+            shareRecords,
+            xpTotal: totalXp,
+            xpLines,
+            executionSeconds: Number.isFinite(executionSeconds) ? executionSeconds : 0
+        };
     }
 
     queueAnimationFrame(processRollSequence);
+}
+
+function setupShareInterface() {
+    if (typeof document === 'undefined') return;
+    const controls = document.getElementById('feedShareControls');
+    const trigger = document.getElementById('feedShareButton');
+    const menu = document.getElementById('feedShareMenu');
+    if (!controls || !trigger || !menu) return;
+
+    const defaultLabel = trigger.textContent ? trigger.textContent.trim() : '';
+    trigger.dataset.defaultLabel = defaultLabel || 'Share Result';
+
+    const closeMenu = () => {
+        if (menu.hidden) return;
+        menu.classList.remove('feed-share__menu--open');
+        menu.hidden = true;
+        trigger.setAttribute('aria-expanded', 'false');
+    };
+
+    const openMenu = focusFirst => {
+        if (!menu.hidden) return;
+        menu.hidden = false;
+        const activate = () => {
+            menu.classList.add('feed-share__menu--open');
+            if (focusFirst) {
+                const firstItem = menu.querySelector('[data-share-format]');
+                if (firstItem) {
+                    firstItem.focus({ preventScroll: true });
+                }
+            }
+        };
+        if (typeof window !== 'undefined' && typeof window.requestAnimationFrame === 'function') {
+            window.requestAnimationFrame(activate);
+        } else {
+            setTimeout(activate, 0);
+        }
+        trigger.setAttribute('aria-expanded', 'true');
+    };
+
+    trigger.addEventListener('click', event => {
+        event.stopPropagation();
+        if (menu.hidden) {
+            openMenu(event.detail === 0);
+        } else {
+            closeMenu();
+        }
+    });
+
+    trigger.addEventListener('keydown', event => {
+        if ((event.key === 'ArrowDown' || event.key === 'Enter' || event.key === ' ') && menu.hidden) {
+            event.preventDefault();
+            openMenu(true);
+        } else if (event.key === 'Escape' && !menu.hidden) {
+            event.preventDefault();
+            closeMenu();
+        }
+    });
+
+    menu.addEventListener('click', event => {
+        event.stopPropagation();
+    });
+
+    menu.addEventListener('keydown', event => {
+        if (event.key === 'Escape') {
+            closeMenu();
+            trigger.focus({ preventScroll: true });
+        }
+    });
+
+    document.addEventListener('click', event => {
+        if (!controls.contains(event.target)) {
+            closeMenu();
+        }
+    });
+
+    controls.addEventListener('focusout', event => {
+        const nextFocus = event.relatedTarget;
+        if (!nextFocus || !controls.contains(nextFocus)) {
+            closeMenu();
+        }
+    });
+
+    const shareButtons = menu.querySelectorAll('[data-share-format]');
+    shareButtons.forEach(button => {
+        button.addEventListener('click', async () => {
+            const format = button.getAttribute('data-share-format');
+            closeMenu();
+            await handleShareAction(format);
+        });
+    });
+}
+
+function notifyShareResult(message, tone = 'success') {
+    if (typeof document === 'undefined') return;
+    const trigger = document.getElementById('feedShareButton');
+    if (!trigger) return;
+
+    const defaultLabel = trigger.dataset.defaultLabel || trigger.textContent || 'Share Result';
+    trigger.dataset.defaultLabel = defaultLabel;
+
+    trigger.textContent = message;
+    trigger.classList.remove('feed-share__trigger--success', 'feed-share__trigger--error');
+    if (tone === 'success') {
+        trigger.classList.add('feed-share__trigger--success');
+    } else if (tone === 'error') {
+        trigger.classList.add('feed-share__trigger--error');
+    }
+
+    if (typeof window !== 'undefined' && shareFeedbackTimerId) {
+        window.clearTimeout(shareFeedbackTimerId);
+    }
+
+    const timeout = tone === 'error' ? 4200 : 2600;
+    const reset = () => {
+        trigger.textContent = trigger.dataset.defaultLabel || defaultLabel;
+        trigger.classList.remove('feed-share__trigger--success', 'feed-share__trigger--error');
+        shareFeedbackTimerId = null;
+    };
+
+    if (typeof window !== 'undefined') {
+        shareFeedbackTimerId = window.setTimeout(reset, timeout);
+    } else {
+        reset();
+    }
+}
+
+async function handleShareAction(format) {
+    const normalized = typeof format === 'string' ? format.toLowerCase() : '';
+    if (!lastSimulationSummary) {
+        notifyShareResult('Run a simulation first', 'error');
+        return;
+    }
+
+    try {
+        if (normalized === 'markdown' || normalized === 'discord') {
+            const text = createDiscordShareText(lastSimulationSummary);
+            const copied = await copyTextToClipboard(text);
+            if (copied) {
+                notifyShareResult('Discord format copied!');
+            } else {
+                if (typeof window !== 'undefined') {
+                    window.prompt('Copy the roll result:', text);
+                }
+                notifyShareResult('Copy manually required', 'neutral');
+            }
+        } else if (normalized === 'plain' || normalized === 'text') {
+            const text = createPlainShareText(lastSimulationSummary);
+            const copied = await copyTextToClipboard(text);
+            if (copied) {
+                notifyShareResult('Plain text copied!');
+            } else {
+                if (typeof window !== 'undefined') {
+                    window.prompt('Copy the roll result:', text);
+                }
+                notifyShareResult('Copy manually required', 'neutral');
+            }
+        } else if (normalized === 'image') {
+            const success = await generateShareImage(lastSimulationSummary);
+            notifyShareResult(success ? 'Image downloaded!' : 'Image failed', success ? 'success' : 'error');
+        } else {
+            notifyShareResult('Unknown share option', 'error');
+        }
+    } catch (error) {
+        console.error('Share action failed', error);
+        notifyShareResult('Share failed', 'error');
+    }
+}
+
+async function copyTextToClipboard(text) {
+    if (typeof navigator !== 'undefined' && navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
+        try {
+            await navigator.clipboard.writeText(text);
+            return true;
+        } catch (error) {
+            console.warn('Clipboard API copy failed', error);
+        }
+    }
+
+    if (typeof document === 'undefined') {
+        return false;
+    }
+
+    try {
+        const textarea = document.createElement('textarea');
+        textarea.value = text;
+        textarea.setAttribute('readonly', '');
+        textarea.style.position = 'absolute';
+        textarea.style.left = '-9999px';
+        document.body.appendChild(textarea);
+        const selection = document.getSelection();
+        const previousRange = selection && selection.rangeCount > 0 ? selection.getRangeAt(0) : null;
+        textarea.select();
+        const successful = document.execCommand('copy');
+        document.body.removeChild(textarea);
+        if (previousRange && selection) {
+            selection.removeAllRanges();
+            selection.addRange(previousRange);
+        }
+        return successful;
+    } catch (error) {
+        console.warn('execCommand copy failed', error);
+        return false;
+    }
+}
+
+function createDiscordShareText(summary) {
+    const eventSummary = summary.eventLabels && summary.eventLabels.length > 0
+        ? summary.eventLabels.join(', ')
+        : EVENT_SUMMARY_EMPTY_LABEL;
+    const details = [
+        `> **Rolls:** ${formatWithCommas(summary.rolls)}`,
+        `> **Luck:** ${formatWithCommas(summary.luck)}`,
+        `> **Biome:** ${summary.biomeLabel}`,
+        `> **Events:** ${eventSummary}`,
+        `> **Duration:** ${Math.max(0, Math.round(summary.executionSeconds))}s`,
+        `> **Total XP:** ${formatWithCommas(summary.xpTotal)}`
+    ];
+
+    const auraLines = summary.shareRecords && summary.shareRecords.length > 0
+        ? summary.shareRecords.map(line => `• ${line}`)
+        : ['• No auras were rolled.'];
+
+    const milestoneLines = summary.xpLines && summary.xpLines.length > 0
+        ? summary.xpLines.map(line => `• ${line}`)
+        : [];
+
+    const sections = [
+        '**Sols Roll Result**',
+        details.join('\n'),
+        '',
+        '**Auras Rolled**',
+        auraLines.join('\n')
+    ];
+
+    if (milestoneLines.length > 0) {
+        sections.push('');
+        sections.push('**Milestones**');
+        sections.push(milestoneLines.join('\n'));
+    }
+
+    return sections.filter(Boolean).join('\n');
+}
+
+function createPlainShareText(summary) {
+    const eventSummary = summary.eventLabels && summary.eventLabels.length > 0
+        ? summary.eventLabels.join(', ')
+        : EVENT_SUMMARY_EMPTY_LABEL;
+    const lines = [
+        'Sols Roll Result',
+        `Rolls: ${formatWithCommas(summary.rolls)}`,
+        `Luck: ${formatWithCommas(summary.luck)}`,
+        `Biome: ${summary.biomeLabel}`,
+        `Events: ${eventSummary}`,
+        `Duration: ${Math.max(0, Math.round(summary.executionSeconds))}s`,
+        `Total XP: ${formatWithCommas(summary.xpTotal)}`,
+        '',
+        'Auras Rolled'
+    ];
+
+    if (summary.shareRecords && summary.shareRecords.length > 0) {
+        summary.shareRecords.forEach(record => {
+            lines.push(`- ${record}`);
+        });
+    } else {
+        lines.push('- No auras were rolled.');
+    }
+
+    if (summary.xpLines && summary.xpLines.length > 0) {
+        lines.push('', 'Milestones');
+        summary.xpLines.forEach(line => {
+            lines.push(`- ${line}`);
+        });
+    }
+
+    return lines.join('\n');
+}
+
+async function generateShareImage(summary) {
+    if (typeof document === 'undefined') {
+        return false;
+    }
+
+    const canvas = document.createElement('canvas');
+    const width = 1040;
+    canvas.width = width;
+    let context = canvas.getContext('2d');
+    if (!context) {
+        return false;
+    }
+
+    const margin = 64;
+    const maxWidth = width - margin * 2;
+    const headerFont = '700 48px "Sarpanch", sans-serif';
+    const detailFont = '500 26px "Sarpanch", sans-serif';
+    const auraFont = '400 22px "Noto Serif TC", serif';
+    const milestoneFont = '500 22px "Sarpanch", sans-serif';
+
+    const eventSummary = summary.eventLabels && summary.eventLabels.length > 0
+        ? summary.eventLabels.join(', ')
+        : EVENT_SUMMARY_EMPTY_LABEL;
+
+    const detailEntries = [
+        `Rolls: ${formatWithCommas(summary.rolls)}`,
+        `Luck: ${formatWithCommas(summary.luck)}`,
+        `Biome: ${summary.biomeLabel}`,
+        `Events: ${eventSummary}`,
+        `Duration: ${Math.max(0, Math.round(summary.executionSeconds))}s`,
+        `Total XP: ${formatWithCommas(summary.xpTotal)}`
+    ];
+
+    const auraEntries = summary.shareRecords && summary.shareRecords.length > 0
+        ? summary.shareRecords.slice()
+        : ['No auras were rolled.'];
+
+    const milestoneEntries = summary.xpLines && summary.xpLines.length > 0
+        ? summary.xpLines.slice()
+        : [];
+
+    const drawQueue = [];
+    drawQueue.push({ type: 'text', text: 'Sols Roll Result', font: headerFont, color: '#f6fbff', lineHeight: 58 });
+    drawQueue.push({ type: 'spacer', size: 22 });
+
+    context.font = detailFont;
+    detailEntries.forEach(entry => {
+        wrapTextLines(context, entry, maxWidth).forEach(line => {
+            drawQueue.push({ type: 'text', text: line, font: detailFont, color: '#cfe7ff', lineHeight: 36 });
+        });
+    });
+
+    drawQueue.push({ type: 'spacer', size: 30 });
+    drawQueue.push({ type: 'text', text: 'Auras Rolled', font: detailFont, color: '#f6c361', lineHeight: 36 });
+
+    context.font = auraFont;
+    auraEntries.forEach(entry => {
+        wrapTextLines(context, entry, maxWidth).forEach(line => {
+            drawQueue.push({ type: 'text', text: line, font: auraFont, color: '#ffffff', lineHeight: 32 });
+        });
+    });
+
+    if (milestoneEntries.length > 0) {
+        drawQueue.push({ type: 'spacer', size: 30 });
+        drawQueue.push({ type: 'text', text: 'Milestones', font: detailFont, color: '#7fe3ff', lineHeight: 36 });
+        context.font = milestoneFont;
+        milestoneEntries.forEach(entry => {
+            wrapTextLines(context, entry, maxWidth).forEach(line => {
+                drawQueue.push({ type: 'text', text: line, font: milestoneFont, color: '#dbefff', lineHeight: 32 });
+            });
+        });
+    }
+
+    let totalHeight = margin;
+    drawQueue.forEach(command => {
+        if (command.type === 'spacer') {
+            totalHeight += command.size;
+        } else {
+            totalHeight += command.lineHeight;
+        }
+    });
+    totalHeight += margin;
+
+    canvas.height = Math.max(560, Math.ceil(totalHeight));
+    context = canvas.getContext('2d');
+    if (!context) {
+        return false;
+    }
+
+    const gradient = context.createLinearGradient(0, 0, width, canvas.height);
+    gradient.addColorStop(0, '#050a18');
+    gradient.addColorStop(1, '#0b1530');
+    context.fillStyle = gradient;
+    context.fillRect(0, 0, width, canvas.height);
+
+    context.strokeStyle = 'rgba(127, 227, 255, 0.45)';
+    context.lineWidth = 2;
+    context.strokeRect(margin - 30, margin - 30, width - (margin - 30) * 2, canvas.height - (margin - 30) * 2);
+
+    context.textBaseline = 'top';
+
+    let cursorY = margin;
+    drawQueue.forEach(command => {
+        if (command.type === 'spacer') {
+            cursorY += command.size;
+            return;
+        }
+        context.font = command.font;
+        context.fillStyle = command.color;
+        context.fillText(command.text, margin, cursorY);
+        cursorY += command.lineHeight;
+    });
+
+    const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+    if (!blob) {
+        return false;
+    }
+
+    const url = URL.createObjectURL(blob);
+    try {
+        const anchor = document.createElement('a');
+        anchor.href = url;
+        anchor.download = 'sols-roll-result.png';
+        document.body.appendChild(anchor);
+        anchor.click();
+        document.body.removeChild(anchor);
+    } finally {
+        if (typeof window !== 'undefined') {
+            window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+        } else {
+            URL.revokeObjectURL(url);
+        }
+    }
+
+    return true;
+}
+
+function wrapTextLines(context, text, maxWidth) {
+    const sanitized = typeof text === 'string' ? text : String(text ?? '');
+    const baseLines = sanitized.split(/\n/);
+    const lines = [];
+
+    baseLines.forEach(segment => {
+        const words = segment.split(/\s+/).filter(Boolean);
+        if (words.length === 0) {
+            lines.push('');
+            return;
+        }
+
+        let currentLine = '';
+        words.forEach(word => {
+            const candidate = currentLine ? `${currentLine} ${word}` : word;
+            if (context.measureText(candidate).width <= maxWidth) {
+                currentLine = candidate;
+            } else {
+                if (currentLine) {
+                    lines.push(currentLine);
+                }
+                currentLine = word;
+            }
+        });
+
+        if (currentLine) {
+            lines.push(currentLine);
+        }
+    });
+
+    return lines;
 }
 
