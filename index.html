@@ -19,161 +19,170 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="ui-backdrop" aria-hidden="true">
-        <video class="ui-backdrop__video" autoplay loop muted playsinline preload="auto" aria-hidden="true"></video>
-        <div class="ui-backdrop__veil"></div>
+    <div class="interface-backdrop" aria-hidden="true">
+        <video class="interface-backdrop__video" autoplay loop muted playsinline preload="auto" aria-hidden="true"></video>
+        <div class="climate climate--blood-rain" aria-hidden="true"></div>
+        <div class="interface-backdrop__veil"></div>
     </div>
 
-    <audio id="bgMusic" loop muted src="files/normalBiomeMusic.mp3" type="audio/mpeg" data-volume="0.18"></audio>
-    <audio id="rollSound" loop muted src="files/SolsRollSound.mp3" type="audio/mpeg"></audio>
-    <audio id="clickSound" loop muted src="files/SolsClickSound.mp3" type="audio/mpeg"></audio>
-    <audio id="hoverSound" loop muted src="files/SolsHoverSound.mp3" type="audio/mpeg"></audio>
-    <audio id="1kSound" loop muted src="files/1_000Roll.ogg" type="audio/ogg"></audio>
-    <audio id="10kSound" loop muted src="files/10_000Roll.ogg" type="audio/ogg"></audio>
-    <audio id="100kSound" loop muted src="files/100_000Roll.ogg" type="audio/ogg"></audio>
-    <audio id="10mSound" loop muted src="files/10_000_000Roll.ogg" type="audio/ogg"></audio>
-    <audio id="100mSound" loop muted src="files/100_000_000Roll.ogg" type="audio/ogg"></audio>
-    <audio id="limbo99mSound" loop muted src="files/99mLimboRollSound.mp3" type="audio/mpeg" data-boost="6.7"></audio>
+    <audio id="ambientMusic" loop muted src="files/normalBiomeMusic.mp3" type="audio/mpeg" data-volume="0.18"></audio>
+    <audio id="rollLoopSound" muted src="files/SolsRollSound.mp3" type="audio/mpeg"></audio>
+    <audio id="clickSoundFx" muted src="files/SolsClickSound.mp3" type="audio/mpeg"></audio>
+    <audio id="hoverSoundFx" muted src="files/SolsHoverSound.mp3" type="audio/mpeg"></audio>
+    <audio id="thousandSound" muted src="files/1_000Roll.ogg" type="audio/ogg"></audio>
+    <audio id="tenThousandSound" muted src="files/10_000Roll.ogg" type="audio/ogg"></audio>
+    <audio id="hundredThousandSound" muted src="files/100_000Roll.ogg" type="audio/ogg"></audio>
+    <audio id="tenMillionSound" muted src="files/10_000_000Roll.ogg" type="audio/ogg"></audio>
+    <audio id="hundredMillionSound" muted src="files/100_000_000Roll.ogg" type="audio/ogg"></audio>
+    <audio id="limbo99mSoundFx" muted src="files/99mLimboRollSound.mp3" type="audio/mpeg" data-boost="6.7"></audio>
 
-    <video id="oblivion-cs" class="aura-video" preload="auto">
+    <video id="oblivion-cutscene" class="cutscene-video" preload="auto">
         <source src="files/oblivionCutscene.webm" type="video/webm">
     </video>
-    <video id="memory-cs" class="aura-video" preload="auto">
+    <video id="memory-cutscene" class="cutscene-video" preload="auto">
         <source src="files/memoryCutscene.webm" type="video/webm">
     </video>
-    <video id="equinox-cs" class="aura-video" preload="auto">
+    <video id="equinox-cutscene" class="cutscene-video" preload="auto">
         <source src="files/equinoxCutscene.webm" type="video/webm">
     </video>
-    <video id="lumi-cs" class="aura-video" preload="auto">
+    <video id="luminosity-cutscene" class="cutscene-video" preload="auto">
         <source src="files/luminosityCutscene.webm" type="video/webm">
     </video>
-    <video id="pixelation-cs" class="aura-video" preload="auto">
+    <video id="pixelation-cutscene" class="cutscene-video" preload="auto">
         <source src="files/pixelationCutscene.webm" type="video/webm">
     </video>
-    <video id="dreammetric-cs" class="aura-video" preload="auto">
+    <video id="dreammetric-cutscene" class="cutscene-video" preload="auto">
         <source src="files/dreammetricCutscene.webm" type="video/webm">
     </video>
-    <video id="oppression-cs" class="aura-video" preload="auto">
+    <video id="oppression-cutscene" class="cutscene-video" preload="auto">
         <source src="files/oppressionCutscene.webm" type="video/webm">
     </video>
-    <video id="lamenthyr-cs" class="aura-video" preload="auto">
+    <video id="lamenthyr-cutscene" class="cutscene-video" preload="auto">
         <source src="files/lamenthyrCutscene.webm" type="video/webm">
     </video>
-    <video id="erebus-cs" class="aura-video" preload="auto">
+    <video id="erebus-cutscene" class="cutscene-video" preload="auto">
         <source src="files/erebusCutscene.webm" type="video/webm">
     </video>
 
-    <div id="video-overlay" class="video-overlay" aria-hidden="true"></div>
+    <div id="cinematic-overlay" class="cinematic-overlay" aria-hidden="true"></div>
 
-    <div class="ui-shell">
-        <header class="panel ui-header" role="banner">
-            <div class="header__brand">
-                <span class="brand__mark">
+    <div class="interface-shell">
+        <header class="surface interface-header" role="banner">
+            <div class="masthead__brand">
+                <span class="banner__emblem">
                     <img src="files/logo.png" alt="Sols Rolling Simulator logo">
                 </span>
-                <div class="brand__meta">
-                    <h1 class="brand__title">Sols Rolling Simulator</h1>
-                    <p class="brand__subtitle">V0.9.5 ◉ By not.unnamed ◉ Updated 2025/10/21 ◉ Sol's RNG Eon 1-9</p>
+                <div class="banner__meta">
+                    <h1 class="banner__title">Sols Rolling Simulator</h1>
+                    <p class="banner__subtitle">V1 ◉ By not.unnamed ◉ Updated 2025/10/24 ◉ Sol's RNG Eon 1-9</p>
                 </div>
             </div>
-            <div class="header__controls">
-                <div class="settings-menu" id="settingsMenu">
-                    <button class="ui-toggle settings-menu__trigger" id="settingsMenuToggle" type="button" aria-haspopup="menu" aria-expanded="false" aria-controls="settingsMenuPanel">Settings</button>
-                    <div class="settings-menu__panel" id="settingsMenuPanel" aria-labelledby="settingsMenuToggle">
-                        <button class="ui-toggle settings-menu__item" id="soundToggle" type="button" onclick="toggleSound()" aria-pressed="false">Other Sounds: Off</button>
-                        <button class="ui-toggle settings-menu__item" id="uiSoundToggle" type="button" onclick="toggleUiSound()" aria-pressed="false">UI Sound: Off</button>
-                        <button class="ui-toggle settings-menu__item" id="cutsceneToggle" type="button" onclick="toggleCutscenes()" aria-pressed="false">Cutscenes (Fullscreen recommended): Off</button>
-                        <button class="ui-toggle settings-menu__item" id="glitchToggle" type="button" onclick="toggleGlitchEffects()" aria-pressed="true">Glitch Effects: On</button>
+            <div class="masthead__controls">
+                <div class="options-menu" id="optionsMenu">
+                    <button class="interface-toggle options-menu__trigger" id="optionsMenuToggle" type="button" aria-haspopup="menu" aria-expanded="false" aria-controls="optionsMenuPanel">Settings</button>
+                    <div class="options-menu__surface" id="optionsMenuPanel" aria-labelledby="optionsMenuToggle">
+                        <button class="interface-toggle options-menu__item" id="rollAudioToggle" type="button" onclick="toggleRollingAudio()" aria-pressed="false">Other Sounds: Off</button>
+                        <button class="interface-toggle options-menu__item" id="uiAudioToggle" type="button" onclick="toggleInterfaceAudio()" aria-pressed="false">UI Sound: Off</button>
+                        <button class="interface-toggle options-menu__item" id="cinematicToggle" type="button" onclick="toggleCinematicMode()" aria-pressed="false">Cutscenes (Fullscreen recommended): Off</button>
+                        <button class="interface-toggle options-menu__item" id="glitchEffectsToggle" type="button" onclick="toggleGlitchEffects()" aria-pressed="true">Glitch Effects: On</button>
                     </div>
                 </div>
             </div>
         </header>
 
-        <div class="ui-layout">
-            <aside class="panel panel--side" aria-labelledby="resources-title">
-                <header class="panel__header">
-                    <h2 class="panel__title" id="resources-title">Other Resources</h2>
-                    <p class="panel__subtitle">Jump into more Sols utilities and communities.</p>
+        <div class="interface-layout">
+            <aside class="surface surface--side" aria-labelledby="resources-heading">
+                <header class="surface__header">
+                    <h2 class="surface__title" id="resources-heading">Other Resources</h2>
+                    <p class="surface__subtitle">Jump into more Sols utilities, reference docs, and communities.</p>
                 </header>
-                <div class="resource-grid">
-                    <a class="resource-card" href="https://discord-id-hub.info" target="_blank" rel="noopener">
-                        <span class="resource-card__label">Discord ID Hub</span>
-                        <span class="resource-card__meta">API search tools</span>
+                <div class="resource-board">
+                    <a class="resource-link" href="https://discord-id-hub.info" target="_blank" rel="noopener">
+                        <span class="resource-link__label">Discord ID Hub</span>
+                        <span class="resource-link__meta">API search tools</span>
                     </a>
-                    <a class="resource-card resource-card--nolifers" href="https://www.discord.gg/m6k7Jagm3v" target="_blank" rel="noopener">
-                        <span class="resource-card__label">Unnamed's RNG Server</span>
-                        <span class="resource-card__meta">Join my community and play my RNG game!</span>
-                        <span class="resource-card__arrow-cluster" aria-hidden="true">
-                            <span class="resource-card__arrow">➜</span>
-                            <span class="resource-card__arrow">➜</span>
-                            <span class="resource-card__arrow">➜</span>
+                    <a class="resource-link resource-link--nolifers" href="https://www.discord.gg/m6k7Jagm3v" target="_blank" rel="noopener">
+                        <span class="resource-link__label">Unnamed's RNG Server</span>
+                        <span class="resource-link__meta">Join my community and play my RNG game!</span>
+                        <span class="resource-link__arrow-cluster" aria-hidden="true">
+                            <span class="resource-link__arrow">➜</span>
+                            <span class="resource-link__arrow">➜</span>
+                            <span class="resource-link__arrow">➜</span>
                     </a>
-                    <a class="resource-card resource-card--nolifers" href="https://discord.gg/nolifers" target="_blank" rel="noopener">
-                        <span class="resource-card__label">Nolifers Discord</span>
-                        <span class="resource-card__meta">Join an awesome Sol's related community!</span>
-                        <span class="resource-card__arrow-cluster" aria-hidden="true">
-                            <span class="resource-card__arrow">➜</span>
-                            <span class="resource-card__arrow">➜</span>
-                            <span class="resource-card__arrow">➜</span>
+                    <a class="resource-link resource-link--nolifers" href="https://discord.gg/nolifers" target="_blank" rel="noopener">
+                        <span class="resource-link__label">Nolifers Discord</span>
+                        <span class="resource-link__meta">Join an awesome Sol's related community!</span>
+                        <span class="resource-link__arrow-cluster" aria-hidden="true">
+                            <span class="resource-link__arrow">➜</span>
+                            <span class="resource-link__arrow">➜</span>
+                            <span class="resource-link__arrow">➜</span>
                         </span>
                     </a>
-                    <a class="resource-card" href="https://github.com/The-Unnamed-Official/Sols-Rolling-Calculator/tree/Published" target="_blank" rel="noopener">
-                        <span class="resource-card__label">Project Repository</span>
-                        <span class="resource-card__meta">Source code</span>
+                    <a class="resource-link" href="https://github.com/The-Unnamed-Official/Sols-Rolling-Calculator/tree/Published" target="_blank" rel="noopener">
+                        <span class="resource-link__label">Project Repository</span>
+                        <span class="resource-link__meta">Source code</span>
                     </a>
                 </div>
             </aside>
 
-            <main class="panel panel--results" aria-labelledby="results-title">
-                <header class="panel__header">
-                    <h2 class="panel__title" id="results-title">Roll Feed</h2>
-                    <p class="panel__subtitle">High fidelity output with rarity cues and XP tracking.</p>
+            <main class="surface surface--results" aria-labelledby="results-heading">
+                <header class="surface__header">
+                    <h2 class="surface__title" id="results-heading">Roll Feed</h2>
+                    <p class="surface__subtitle">High fidelity output with rarity cues, XP tracking, and event modifier callouts.</p>
                 </header>
-                <div class="progress" style="display:none;">
-                    <div class="progress__rail">
-                        <div class="progress__fill"></div>
+                <div class="feed-share" id="feedShareControls">
+                    <button class="interface-button interface-button--minor feed-share__trigger" type="button" id="feedShareButton" aria-haspopup="true" aria-expanded="false" aria-controls="feedShareMenu">Share Result</button>
+                    <div class="feed-share__menu" id="feedShareMenu" role="menu" hidden>
+                        <button class="feed-share__item" type="button" data-share-format="markdown" role="menuitem">Copy Discord Markdown</button>
+                        <button class="feed-share__item" type="button" data-share-format="plain" role="menuitem">Copy Plain Text</button>
+                        <button class="feed-share__item" type="button" data-share-format="image" role="menuitem">Download Image</button>
                     </div>
-                    <span class="progress__value">0%</span>
                 </div>
-                <div class="results__viewport" id="result-text" role="status" aria-live="polite">
+                <div class="loading-indicator" style="display:none;">
+                    <div class="loading-indicator__rail">
+                        <div class="loading-indicator__fill"></div>
+                    </div>
+                    <span class="loading-indicator__value">0%</span>
+                </div>
+                <div class="feed__viewport" id="simulation-feed" role="status" aria-live="polite">
                     Configure your parameters and launch a simulation to see results.
                 </div>
-                <div class="results__meta">
-                    <p class="results__tip"><span class="results__tip-label">[Tip] Suzy:</span> Get Lucky</p>
-                    <p class="results__mythic"><span class="results__mythic-label">MythicDude</span> was here...</p>
+                <div class="feed__meta">
+                    <p class="feed__tip"><span class="feed__tip-label">[Tip] Suzy:</span> Get Lucky</p>
+                    <p class="feed__mythic"><span class="feed__mythic-label">MythicDude</span> was here...</p>
                 </div>
             </main>
 
-            <aside class="panel panel--controls" aria-labelledby="controls-title">
-                <header class="panel__header">
-                    <h2 class="panel__title" id="controls-title">Roll Controls</h2>
-                    <p class="panel__subtitle">Set your luck profile, biome, and roll counts.</p>
+            <aside class="surface surface--controls" aria-labelledby="controls-heading">
+                <header class="surface__header">
+                    <h2 class="surface__title" id="controls-heading">Roll Controls</h2>
+                    <p class="surface__subtitle">Set your luck profile, multiplier toggles, and simulation preferences.</p>
                 </header>
 
-                <div class="control-group control-group--cta">
-                    <button class="roll-button" type="button" onclick="roll()">Start Rolling</button>
+                <div class="control-section control-section--cta">
+                    <button class="roll-trigger" type="button" onclick="runRollSimulation()">Start Rolling</button>
                 </div>
 
-                <section class="control-group">
-                    <h3 class="control-group__title">Luck Multipliers</h3>
-                    <label class="field field--select" for="vip-select">
-                        <span class="field__label">VIP Luck</span>
-                        <span class="field__select-shell">
-                            <select id="vip-select" class="field__input field__input--native">
+                <section class="control-section">
+                    <h3 class="control-section__title">Luck Multipliers</h3>
+                    <label class="form-field form-field--select" for="vip-dropdown">
+                        <span class="form-field__label">VIP Luck</span>
+                        <span class="form-field__select-shell form-field__select-shell--custom">
+                            <select id="vip-dropdown" class="form-field__input form-field__input--native">
                                 <option value="1">None</option>
                                 <option value="1.2">VIP or VIP+</option>
                                 <option value="1.3">VIP and VIP+</option>
                             </select>
-                            <details class="ui-select ui-select--single" data-select="vip-select">
-                                <summary class="field__input ui-select__summary" role="button" aria-haspopup="listbox" aria-expanded="false">None</summary>
-                                <div class="ui-select__menu" role="listbox"></div>
+                            <details class="interface-select interface-select--single" data-select="vip-dropdown">
+                                <summary class="form-field__input interface-select__summary" role="button" aria-haspopup="listbox" aria-expanded="false">None</summary>
+                                <div class="interface-select__menu" role="listbox"></div>
                             </details>
                         </span>
                     </label>
-                    <div id="dave-luck-container" class="field field--select" style="display:none;">
-                        <label class="field__label" for="dave-luck-select">Dave's Luck</label>
-                        <span class="field__select-shell">
-                            <select id="dave-luck-select" class="field__input field__input--native">
+                    <div id="dave-luck-wrapper" class="form-field form-field--select" style="display:none;">
+                        <label class="form-field__label" for="dave-luck-dropdown">Dave's Luck</label>
+                        <span class="form-field__select-shell form-field__select-shell--custom">
+                            <select id="dave-luck-dropdown" class="form-field__input form-field__input--native">
                                 <option value="1">None</option>
                                 <option value="1.2">Dave's Luck 1</option>
                                 <option value="1.4">Dave's Luck 2</option>
@@ -181,18 +190,18 @@
                                 <option value="1.8">Dave's Luck 4</option>
                                 <option value="2">Dave's Luck 5</option>
                             </select>
-                            <details class="ui-select ui-select--single" data-select="dave-luck-select">
-                                <summary class="field__input ui-select__summary" role="button" aria-haspopup="listbox" aria-expanded="false">None</summary>
-                                <div class="ui-select__menu" role="listbox"></div>
+                            <details class="interface-select interface-select--single" data-select="dave-luck-dropdown">
+                                <summary class="form-field__input interface-select__summary" role="button" aria-haspopup="listbox" aria-expanded="false">None</summary>
+                                <div class="interface-select__menu" role="listbox"></div>
                             </details>
                         </span>
                     </div>
-                    <div id="xyz-luck-container" class="field field--switch">
-                        <span class="field__label">XYZ Luck (2×)</span>
-                        <label class="switch">
-                            <input type="checkbox" id="xyz-luck" class="switch__input">
-                            <span class="switch__track"></span>
-                            <span class="switch__thumb"></span>
+                    <div id="xyz-luck-wrapper" class="form-field form-field--toggle">
+                        <span class="form-field__label">XYZ Luck (2×)</span>
+                        <label class="toggle">
+                            <input type="checkbox" id="xyz-luck-toggle" class="toggle__input">
+                            <span class="toggle__track"></span>
+                            <span class="toggle__thumb"></span>
                         </label>
                     </div>
                 </section>
@@ -201,32 +210,32 @@
 
         </div>
 
-        <div class="ui-subgrid">
-            <section class="panel panel--parameters" aria-labelledby="parameters-title">
-                <header class="panel__header">
-                    <h2 class="panel__title" id="parameters-title">Run Parameters</h2>
-                    <p class="panel__subtitle">Tune your luck totals, roll counts, and biome.</p>
+        <div class="interface-subgrid">
+            <section class="surface surface--parameters" aria-labelledby="parameters-heading">
+                <header class="surface__header">
+                    <h2 class="surface__title" id="parameters-heading">Run Parameters</h2>
+                    <p class="surface__subtitle">Tune your luck totals, roll counts, biome, and seasonal event modifiers.</p>
                 </header>
-                <div class="control-group">
-                    <label class="field" for="luck">
-                        <span class="field__label">Luck Total</span>
-                        <div class="field__combo">
-                            <input class="field__input" type="number" id="luck" placeholder="Total luck" min="1" required>
-                            <button class="ui-button ui-button--minor" type="button" onclick="resetLuck()">Reset</button>
+                <div class="control-section">
+                    <label class="form-field" for="luck-total">
+                        <span class="form-field__label">Luck Total</span>
+                        <div class="form-field__combo">
+                            <input class="form-field__input" type="number" id="luck-total" placeholder="Total luck" min="1" required>
+                            <button class="interface-button interface-button--minor" type="button" onclick="resetLuckFields()">Reset</button>
                         </div>
                     </label>
-                    <label class="field" for="rolls">
-                        <span class="field__label">Roll Amount</span>
-                        <div class="field__combo">
-                            <input class="field__input" type="number" id="rolls" min="1" max="100000000" placeholder="Roll count" required>
-                            <button class="ui-button ui-button--minor" type="button" onclick="resetRolls()">Reset</button>
+                    <label class="form-field" for="roll-total">
+                        <span class="form-field__label">Roll Amount</span>
+                        <div class="form-field__combo">
+                            <input class="form-field__input" type="number" id="roll-total" min="1" max="100000000" placeholder="Roll count" required>
+                            <button class="interface-button interface-button--minor" type="button" onclick="resetRollCount()">Reset</button>
                         </div>
                     </label>
-                    <div class="biome-control-row">
-                        <label class="field field--select" for="biome-select">
-                            <span class="field__label">Biome</span>
-                            <span class="field__select-shell field__select-shell--biome">
-                                <select id="biome-select" class="field__input field__input--native">
+                    <div class="biome-selector-row">
+                        <label class="form-field form-field--select" for="biome-dropdown">
+                            <span class="form-field__label">Biome</span>
+                            <span class="form-field__select-shell form-field__select-shell--biome form-field__select-shell--custom">
+                                <select id="biome-dropdown" class="form-field__input form-field__input--native">
                                     <option value="roe">Rune of Everything</option>
                                     <option value="normal" selected>Normal</option>
                                     <option value="day">Day</option>
@@ -248,109 +257,120 @@
                                     <option value="blazing">Blazing Sun</option>
                                     <option value="anotherRealm">Another Realm</option>
                                 </select>
-                                <details class="ui-select ui-select--single" data-select="biome-select">
-                                    <summary class="field__input ui-select__summary" role="button" aria-haspopup="listbox" aria-expanded="false">Normal</summary>
-                                    <div class="ui-select__menu" role="listbox"></div>
+                                <details class="interface-select interface-select--single" data-select="biome-dropdown">
+                                    <summary class="form-field__input interface-select__summary" role="button" aria-haspopup="listbox" aria-expanded="false">Normal</summary>
+                                    <div class="interface-select__menu" role="listbox"></div>
                                 </details>
                             </span>
                         </label>
-                        <div class="field field--events">
-                            <span class="field__label">Events</span>
-                            <details class="ui-select ui-select--multi" id="event-select" data-select="event-select">
-                                <summary id="event-summary" class="field__input field__input--event field__input--placeholder ui-select__summary" role="button" aria-expanded="false" aria-haspopup="listbox">No events enabled</summary>
-                                <div class="ui-select__menu" id="event-menu" role="listbox" aria-multiselectable="true">
-                                    <label class="ui-select__option ui-select__option--checkbox">
-                                        <input type="checkbox" value="valentine2024" data-event-id="valentine2024">
-                                        <span>Valentine 2024</span>
+                        <div class="form-field form-field--events">
+                            <span class="form-field__label">Events</span>
+                            <details class="interface-select interface-select--multi" id="event-selector" data-select="event-selector">
+                                <summary id="event-selector-summary" class="form-field__input form-field__input--event form-field__input--placeholder interface-select__summary" role="button" aria-expanded="false" aria-haspopup="listbox">No events enabled</summary>
+                                <div class="interface-select__menu" id="event-option-list" role="listbox" aria-multiselectable="true">
+                                    <label class="interface-select__option interface-select__option--checkbox">
+                                        <input type="checkbox" value="valentine24" data-event-id="valentine24">
+                                        <span class="interface-select__option-label">Valentine 2024</span>
                                     </label>
-                                    <label class="ui-select__option ui-select__option--checkbox">
-                                        <input type="checkbox" value="aprilFools2024" data-event-id="aprilFools2024">
-                                        <span>April Fools 2024</span>
+                                    <label class="interface-select__option interface-select__option--checkbox">
+                                        <input type="checkbox" value="aprilFools24" data-event-id="aprilFools24">
+                                        <span class="interface-select__option-label">April Fools 2024</span>
                                     </label>
-                                    <label class="ui-select__option ui-select__option--checkbox">
-                                        <input type="checkbox" value="summer2024" data-event-id="summer2024">
-                                        <span>Summer 2024</span>
+                                    <label class="interface-select__option interface-select__option--checkbox">
+                                        <input type="checkbox" value="summer24" data-event-id="summer24">
+                                        <span class="interface-select__option-label">Summer 2024</span>
                                     </label>
-                                    <label class="ui-select__option ui-select__option--checkbox">
-                                        <input type="checkbox" value="ria2024" data-event-id="ria2024">
-                                        <span>RIA Event 2024</span>
+                                    <label class="interface-select__option interface-select__option--checkbox">
+                                        <input type="checkbox" value="ria24" data-event-id="ria24">
+                                        <span class="interface-select__option-label">RIA Event 2024</span>
                                     </label>
-                                    <label class="ui-select__option ui-select__option--checkbox">
-                                        <input type="checkbox" value="halloween2024" data-event-id="halloween2024">
-                                        <span>Halloween 2024</span>
+                                    <label class="interface-select__option interface-select__option--checkbox">
+                                        <input type="checkbox" value="halloween24" data-event-id="halloween24">
+                                        <span class="interface-select__option-label">Halloween 2024</span>
                                     </label>
-                                    <label class="ui-select__option ui-select__option--checkbox">
-                                        <input type="checkbox" value="winter2024" data-event-id="winter2024">
-                                        <span>Winter 2024</span>
+                                    <label class="interface-select__option interface-select__option--checkbox">
+                                        <input type="checkbox" value="winter24" data-event-id="winter24">
+                                        <span class="interface-select__option-label">Winter 2024</span>
                                     </label>
-                                    <label class="ui-select__option ui-select__option--checkbox">
-                                        <input type="checkbox" value="aprilFools2025" data-event-id="aprilFools2025">
-                                        <span>April Fools 2025</span>
+                                    <label class="interface-select__option interface-select__option--checkbox">
+                                        <input type="checkbox" value="aprilFools25" data-event-id="aprilFools25">
+                                        <span class="interface-select__option-label">April Fools 2025</span>
                                     </label>
-                                    <label class="ui-select__option ui-select__option--checkbox">
-                                        <input type="checkbox" value="summer2025" data-event-id="summer2025">
-                                        <span>Summer 2025</span>
+                                    <label class="interface-select__option interface-select__option--checkbox">
+                                        <input type="checkbox" value="summer25" data-event-id="summer25">
+                                        <span class="interface-select__option-label">Summer 2025</span>
                                     </label>
-                                    <label class="ui-select__option ui-select__option--checkbox">
-                                        <input type="checkbox" value="halloween2025" data-event-id="halloween2025">
-                                        <span>Halloween 2025</span>
+                                    <label class="interface-select__option interface-select__option--checkbox">
+                                        <input type="checkbox" value="halloween25" data-event-id="halloween25">
+                                        <span class="interface-select__option-label">Halloween 2025</span>
                                     </label>
                                 </div>
                             </details>
                         </div>
                     </div>
-                    <div class="quick-actions">
-                        <button class="ui-button ui-button--ghost" type="button" onclick="setGlitch()">Set Glitch</button>
-                        <button class="ui-button ui-button--ghost" type="button" onclick="setLimbo()">Set Limbo</button>
-                        <button class="ui-button ui-button--ghost" type="button" onclick="setROE()">Use RoE</button>
-                        <button class="ui-button ui-button--ghost" type="button" onclick="resetBiome()">Reset Biome</button>
+                    <div class="quick-action-group">
+                        <button class="interface-button interface-button--ghost" type="button" onclick="setGlitchPreset()">Set Glitch</button>
+                        <button class="interface-button interface-button--ghost" type="button" onclick="setDreamspacePreset()">Set Dreamspace</button>
+                        <button class="interface-button interface-button--ghost" type="button" onclick="setLimboPreset()">Set Limbo</button>
+                        <button class="interface-button interface-button--ghost" type="button" onclick="setRoePreset()">Use RoE</button>
+                        <button class="interface-button interface-button--ghost" type="button" onclick="resetBiomeChoice()">Reset Biome</button>
                     </div>
                 </div>
             </section>
 
-            <section class="panel panel--presets" aria-labelledby="presets-title">
-                <header class="panel__header">
-                    <h2 class="panel__title" id="presets-title">Quick Presets</h2>
-                    <p class="panel__subtitle">Instantly configure popular luck setups.</p>
-                    <span class="preset-footer__name">Aaden</span>
+            <section class="surface surface--presets" aria-labelledby="presets-heading">
+                <header class="surface__header">
+                    <h2 class="surface__title" id="presets-heading">Quick Presets</h2>
+                    <p class="surface__subtitle">Instantly configure popular luck and event-ready presets.</p>
+                    <span class="preset-signoff__name">Aaden</span>
                 </header>
-                <div class="control-group control-group--presets">
-                    <div class="preset-grid" id="luck-presets">
-                        <button type="button" onclick="setLuck(700000)">Pump King's Blood 700,000×</button>
-                        <details id="oblivion-preset-dropdown" class="preset-dropdown">
-                            <summary class="preset-dropdown__summary">
-                                <span class="preset-dropdown__title">Oblivion / Godlike + Bound + Heavenly 600,000×</span>
-                                <span id="oblivion-preset-selection" class="preset-dropdown__selection preset-dropdown__selection--placeholder">Select preset</span>
+                <div class="control-section control-section--presets">
+                    <div class="preset-matrix" id="luck-preset-panel">
+                        <button type="button" onclick="applyLuckValue(700000)">Pump King's Blood 700,000×</button>
+                        <details id="oblivion-preset-menu" class="preset-toggle">
+                            <summary class="preset-toggle__summary">
+                                <span class="preset-toggle__title">Oblivion / Godlike + Bound + Heavenly 600,000×</span>
+                                <span id="oblivion-preset-label" class="preset-toggle__selection preset-toggle__selection--placeholder">Select preset</span>
                             </summary>
-                            <div class="preset-dropdown__options">
-                                <button type="button" onclick="applyOblivionPreset('oblivion')">Oblivion Potion Preset 600,000×</button>
-                                <button type="button" onclick="applyOblivionPreset('classic')">Godlike + Heavenly + Bound 600,000×</button>
+                            <div class="preset-toggle__options">
+                                <button type="button" onclick="handleOblivionPresetSelection('oblivion')">Oblivion Potion Preset 600,000×</button>
+                                <button type="button" onclick="handleOblivionPresetSelection('classic')">Godlike + Heavenly + Bound 600,000×</button>
                             </div>
                         </details>
-                        <button type="button" onclick="setLuck(400000)">Godlike Potion 400,000×</button>
-                        <button type="button" id="void-heart-btn" style="display:none;" onclick="setLuck(300000)">Void Heart 300,000×</button>
-                        <button type="button" onclick="setLuck(200000)">Heavenly + Bound 200,000×</button>
-                        <button type="button" onclick="setLuck(150000)">Heavenly Potion 150,000×</button>
-                        <button type="button" onclick="setLuck(50000)">Bound Potion 50,000×</button>
-                        <button type="button" onclick="setLuck(10000)">Popping Potion / Potion of Dune 10,000×</button>
+                        <button type="button" onclick="applyLuckValue(400000)">Godlike Potion 400,000×</button>
+                        <button type="button" id="void-heart-trigger" style="display:none;" onclick="applyLuckValue(300000)">Void Heart 300,000×</button>
+                        <button type="button" onclick="applyLuckValue(200000)">Heavenly + Bound 200,000×</button>
+                        <button type="button" onclick="applyLuckValue(150000)">Heavenly Potion 150,000×</button>
+                        <button type="button" onclick="applyLuckValue(50000)">Bound Potion 50,000×</button>
+                        <button type="button" onclick="applyLuckValue(10000)">Popping Potion / Potion of Dune 10,000×</button>
                     </div>
-                    <div class="preset-footer">
-                        <p class="preset-footer__status">
-                            <span class="preset-footer__status-channel">[GLOBAL]:</span>
-                            <span class="preset-footer__status-message">@nik_kat HAS FOUND Abyssal Hunter, CHANCE OF 1 IN 400,000,000!</span>
+                    <div class="preset-signoff">
+                        <p class="preset-signoff__status">
+                            <span class="preset-signoff__status-channel">[GLOBAL]:</span>
+                            <span class="preset-signoff__status-message">@nik_kat HAS FOUND Abyssal Hunter, CHANCE OF 1 IN 400,000,000!</span>
                         </p>
                     </div>
                 </div>
             </section>
         </div>
 
-        <footer class="panel ui-footer" role="contentinfo">
-            <p class="footer__text">&copy; <span id="year"></span> The Unnamed. All rights reserved.</p>
-            <p class="footer__text footer__credit">Glitch biome backdrop courtesy of <a href="https://www.youtube.com/watch?v=Efxaiefo3QY" target="_blank" rel="noopener">ComedicChicken</a>.</p>
+        <footer class="surface interface-footer" role="contentinfo">
+            <p class="site-footer__text">&copy; <span id="build-year"></span> The Unnamed. All rights reserved.</p>
+            <details class="footer-credits">
+                <summary class="site-footer__text footer-credits__summary">Credits</summary>
+                <ul class="footer-credits__list">
+                    <li class="footer-credits__item">Glitch biome backdrop courtesy of <a href="https://www.youtube.com/watch?v=Efxaiefo3QY" target="_blank" rel="noopener">ComedicChicken</a>.</li>
+                    <li class="footer-credits__item">Erebus Cutscene courtesy of <a href="https://www.youtube.com/watch?v=ift10zMOVRk" target="_blank" rel="noopener">4zell</a>.</li>
+                    <li class="footer-credits__item">Lamenthyr Cutscene courtesy of <a href="https://www.youtube.com/watch?v=DwEzY_nA054" target="_blank" rel="noopener">Ray</a>.</li>
+                    <li class="footer-credits__item">Dreammetric Cutscene courtesy of <a href="https://www.youtube.com/watch?v=IGUg1M3dess" target="_blank" rel="noopener">aspen.</a>.</li>
+                    <li class="footer-credits__item">Equinox Cutscene courtesy of <a href="https://www.youtube.com/watch?v=o-u3_KUMKgk" target="_blank" rel="noopener">Silver :3</a>.</li>
+                    <li class="footer-credits__item">Oppression Cutscene courtesy of <a href="https://www.youtube.com/watch?v=dgqkpBYNxiU" target="_blank" rel="noopener">SorrVriety</a>.</li>
+                    <li class="footer-credits__item">Oblivion Cutscene courtesy of <a href="https://www.youtube.com/watch?v=clQxiIRH8Ps" target="_blank" rel="noopener">Mr-yani</a>.</li>
+                </ul>
+            </details>
         </footer>
     </div>
 
-    <script src="func.js"></script>
     <script src="script.js"></script>
 </body>
 </html>
