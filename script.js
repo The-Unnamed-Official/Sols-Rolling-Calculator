@@ -120,7 +120,8 @@ const glitchUiState = {
     waveShaper: null,
     gainNode: null,
     sourceNode: null,
-    isUiGlitching: false
+    isUiGlitching: false,
+    audioPipelineMode: null
 };
 
 let glitchPresentationEnabled = false;
@@ -608,6 +609,16 @@ function scheduleGlitchWarbleCycle(bgMusic, chain) {
     }, Math.floor(randomDecimalBetween(650, 1080)));
 }
 
+const GLITCH_BURST_TRIGGER_CHANCE = 0.42;
+
+function computeGlitchRestDelay() {
+    return Math.floor(randomDecimalBetween(12000, 36000));
+}
+
+function computeGlitchBurstDuration() {
+    return Math.floor(randomDecimalBetween(1400, 2400));
+}
+
 function createDistortionCurve(amount = 0) {
     const k = Number(amount) || 50;
     const samples = 44100;
@@ -641,6 +652,7 @@ function ensureGlitchAudioChain(audioElement) {
 
     if (!glitchUiState.sourceNode) {
         glitchUiState.sourceNode = context.createMediaElementSource(audioElement);
+        glitchUiState.audioPipelineMode = null;
     }
 
     if (!glitchUiState.waveShaper) {
@@ -660,11 +672,36 @@ function ensureGlitchAudioChain(audioElement) {
         glitchUiState.gainNode.gain.value = computeBackgroundMusicBase(audioElement);
     }
 
-    glitchUiState.sourceNode
-        .connect(glitchUiState.waveShaper)
-        .connect(glitchUiState.distortionNode)
-        .connect(glitchUiState.gainNode)
-        .connect(context.destination);
+    const desiredPipeline = shouldUseGlitchBaseEffect() ? 'glitch' : 'clean';
+
+    if (glitchUiState.audioPipelineMode !== desiredPipeline) {
+        if (glitchUiState.sourceNode) {
+            try { glitchUiState.sourceNode.disconnect(); } catch (error) {}
+        }
+        if (glitchUiState.waveShaper) {
+            try { glitchUiState.waveShaper.disconnect(); } catch (error) {}
+        }
+        if (glitchUiState.distortionNode) {
+            try { glitchUiState.distortionNode.disconnect(); } catch (error) {}
+        }
+        if (glitchUiState.gainNode) {
+            try { glitchUiState.gainNode.disconnect(); } catch (error) {}
+        }
+
+        if (desiredPipeline === 'glitch') {
+            glitchUiState.sourceNode
+                .connect(glitchUiState.waveShaper)
+                .connect(glitchUiState.distortionNode)
+                .connect(glitchUiState.gainNode)
+                .connect(context.destination);
+        } else {
+            glitchUiState.sourceNode
+                .connect(glitchUiState.gainNode)
+                .connect(context.destination);
+        }
+
+        glitchUiState.audioPipelineMode = desiredPipeline;
+    }
 
     return {
         context,
@@ -722,7 +759,14 @@ function queueGlitchBurstCycle(delay) {
 
     glitchUiState.loopTimeoutId = window.setTimeout(() => {
         glitchUiState.loopTimeoutId = null;
-        executeGlitchBurstSequence();
+        if (!glitchPresentationEnabled) return;
+
+        if (drawEntropy() < GLITCH_BURST_TRIGGER_CHANCE) {
+            executeGlitchBurstSequence();
+        } else {
+            const nextDelay = computeGlitchRestDelay();
+            queueGlitchBurstCycle(nextDelay);
+        }
     }, delay);
 }
 
@@ -731,12 +775,14 @@ function executeGlitchBurstSequence() {
 
     triggerGlitchBurst();
 
+    const activeDuration = computeGlitchBurstDuration();
+
     glitchUiState.activeTimeoutId = window.setTimeout(() => {
         glitchUiState.activeTimeoutId = null;
         completeGlitchBurst();
-        const nextDelay = Math.floor(randomDecimalBetween(4800, 8800));
+        const nextDelay = computeGlitchRestDelay();
         queueGlitchBurstCycle(nextDelay);
-    }, Math.floor(randomDecimalBetween(2200, 3200)));
+    }, activeDuration);
 }
 
 function startGlitchLoop(forceImmediate = false) {
@@ -745,7 +791,7 @@ function startGlitchLoop(forceImmediate = false) {
         executeGlitchBurstSequence();
         return;
     }
-    const initialDelay = Math.floor(randomDecimalBetween(2400, 5200));
+    const initialDelay = computeGlitchRestDelay();
     queueGlitchBurstCycle(initialDelay);
 }
 
@@ -796,7 +842,7 @@ function applyGlitchVisuals(enabled, options = {}) {
         root.classList.add('biome--glitch');
         if (!glitchPresentationEnabled) {
             glitchPresentationEnabled = true;
-            startGlitchLoop(true);
+            startGlitchLoop();
         } else if (!isGlitchLoopScheduled()) {
             startGlitchLoop();
         }
