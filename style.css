@@ -24,6 +24,7 @@
     --shadow-soft: 0 18px 34px rgba(6, 16, 36, 0.55);
     --corner-size: 28px;
     --corner-thickness: 2px;
+    --button-corner-size: 18px;
     --font-base: 'Sarpanch', 'Segoe UI', sans-serif;
     --ui-scale-desktop: 0.88;
 }
@@ -144,8 +145,9 @@ body.biome--glitch .surface::after {
 
 body.biome--glitch .interface-toggle,
 body.biome--glitch .roll-trigger {
-    background-image: linear-gradient(92deg, rgba(38, 0, 64, 0.9), rgba(10, 0, 24, 0.92));
-    border-color: rgba(255, 100, 246, 0.42);
+    --button-background: linear-gradient(92deg, rgba(38, 0, 64, 0.9), rgba(10, 0, 24, 0.92));
+    --button-border-color: rgba(255, 100, 246, 0.42);
+    --button-accent: rgba(255, 100, 246, 0.6);
     color: #fff;
 }
 
@@ -855,12 +857,35 @@ body.biome--blood-rain .interface-backdrop__veil {
     text-transform: uppercase;
     letter-spacing: 0.16em;
     color: var(--text-primary);
-    background: linear-gradient(90deg, rgba(15, 28, 52, 0.9), rgba(10, 20, 38, 0.92));
-    border: 1px solid var(--accent-muted);
-    border-radius: 10px;
+    --button-background: linear-gradient(90deg, rgba(15, 28, 52, 0.9), rgba(10, 20, 38, 0.92));
+    --button-border-color: var(--accent-muted);
     cursor: pointer;
     transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
     box-shadow: inset 0 0 12px rgba(100, 180, 255, 0.15);
+}
+
+.interface-toggle,
+.interface-button,
+.preset-matrix button,
+.preset-toggle__options button,
+.roll-trigger,
+.interface-select__option-button,
+.skip-cinematic-button {
+    position: relative;
+    border-radius: 0;
+    border: 1px solid var(--button-border-color, var(--surface-border));
+    background:
+        linear-gradient(var(--button-accent, var(--accent)), var(--button-accent, var(--accent))) top left / var(--button-corner-size) var(--corner-thickness) no-repeat,
+        linear-gradient(var(--button-accent, var(--accent)), var(--button-accent, var(--accent))) top left / var(--corner-thickness) var(--button-corner-size) no-repeat,
+        linear-gradient(var(--button-accent, var(--accent)), var(--button-accent, var(--accent))) top right / var(--button-corner-size) var(--corner-thickness) no-repeat,
+        linear-gradient(var(--button-accent, var(--accent)), var(--button-accent, var(--accent))) top right / var(--corner-thickness) var(--button-corner-size) no-repeat,
+        linear-gradient(var(--button-accent, var(--accent)), var(--button-accent, var(--accent))) bottom left / var(--button-corner-size) var(--corner-thickness) no-repeat,
+        linear-gradient(var(--button-accent, var(--accent)), var(--button-accent, var(--accent))) bottom left / var(--corner-thickness) var(--button-corner-size) no-repeat,
+        linear-gradient(var(--button-accent, var(--accent)), var(--button-accent, var(--accent))) bottom right / var(--button-corner-size) var(--corner-thickness) no-repeat,
+        linear-gradient(var(--button-accent, var(--accent)), var(--button-accent, var(--accent))) bottom right / var(--corner-thickness) var(--button-corner-size) no-repeat,
+        var(--button-background, var(--surface-gradient));
+    background-color: transparent;
+    background-repeat: no-repeat;
 }
 
 .interface-toggle:hover {
@@ -1515,9 +1540,8 @@ body.biome--blood-rain .interface-backdrop__veil {
     align-items: center;
     width: 100%;
     padding: 10px 12px;
-    border: none;
-    border-radius: 8px;
-    background: transparent;
+    --button-background: rgba(6, 12, 24, 0.85);
+    --button-border-color: rgba(95, 160, 230, 0.35);
     color: var(--text-secondary);
     font-size: 11px;
     letter-spacing: 0.08em;
@@ -1529,12 +1553,13 @@ body.biome--blood-rain .interface-backdrop__veil {
 .interface-select__option-button:hover,
 .interface-select__option-button:focus-visible {
     color: var(--text-primary);
-    background: rgba(30, 60, 110, 0.2);
+    --button-background: rgba(30, 60, 110, 0.24);
     outline: none;
 }
 
 .interface-select__option-button--active {
-    background: rgba(20, 36, 64, 0.95);
+    --button-background: rgba(20, 36, 64, 0.95);
+    --button-border-color: rgba(127, 227, 255, 0.4);
     color: var(--accent);
     box-shadow: inset 0 0 0 1px rgba(127, 227, 255, 0.4);
 }
@@ -1652,9 +1677,8 @@ select.form-field__input option {
     letter-spacing: 0.22em;
     text-transform: uppercase;
     padding: 10px 14px;
-    border-radius: 10px;
-    border: 1px solid rgba(95, 160, 230, 0.4);
-    background: rgba(6, 12, 24, 0.85);
+    --button-background: rgba(6, 12, 24, 0.85);
+    --button-border-color: rgba(95, 160, 230, 0.4);
     color: var(--text-primary);
     cursor: pointer;
     transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
@@ -1668,11 +1692,11 @@ select.form-field__input option {
 
 .interface-button--minor {
     min-width: 90px;
-    background: rgba(10, 18, 34, 0.9);
+    --button-background: rgba(10, 18, 34, 0.9);
 }
 
 .interface-button--ghost {
-    background: rgba(10, 20, 36, 0.7);
+    --button-background: rgba(10, 20, 36, 0.7);
 }
 
 .preset-matrix {
@@ -1687,15 +1711,15 @@ select.form-field__input option {
     letter-spacing: 0.14em;
     text-transform: uppercase;
     padding: 10px 12px;
-    border-radius: 10px;
-    border: 1px solid rgba(95, 160, 230, 0.35);
-    background: rgba(6, 12, 24, 0.85);
+    --button-background: rgba(6, 12, 24, 0.85);
+    --button-border-color: rgba(95, 160, 230, 0.35);
     color: var(--text-primary);
     cursor: pointer;
     transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
 }
 
-.preset-matrix button:hover {
+.preset-matrix button:hover,
+.preset-toggle__options button:hover {
     border-color: var(--accent);
     box-shadow: inset 0 0 16px rgba(127, 227, 255, 0.2);
     transform: translateY(-1px);
@@ -1782,6 +1806,15 @@ select.form-field__input option {
 }
 
 .preset-toggle__options button {
+    font-family: inherit;
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    padding: 10px 12px;
+    color: var(--text-primary);
+    transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+    --button-background: rgba(6, 12, 24, 0.85);
+    --button-border-color: rgba(95, 160, 230, 0.35);
     width: 100%;
     text-align: left;
 }
@@ -1872,9 +1905,9 @@ select.form-field__input option {
     letter-spacing: 0.32em;
     text-transform: uppercase;
     color: #d9ff9d;
-    background: linear-gradient(180deg, rgba(10, 20, 6, 0.95), rgba(8, 18, 14, 0.92));
-    border: 1px solid rgba(164, 255, 140, 0.55);
-    border-radius: 12px;
+    --button-background: linear-gradient(180deg, rgba(10, 20, 6, 0.95), rgba(8, 18, 14, 0.92));
+    --button-border-color: rgba(164, 255, 140, 0.55);
+    --button-accent: rgba(164, 255, 140, 0.8);
     box-shadow: inset 0 0 24px rgba(120, 255, 150, 0.18), 0 16px 28px rgba(0, 0, 0, 0.45);
     cursor: pointer;
     position: relative;
@@ -2034,10 +2067,9 @@ select.form-field__input option {
     top: clamp(16px, 4vw, 32px);
     right: clamp(16px, 4vw, 32px);
     padding: 12px 18px;
-    background: rgba(6, 12, 24, 0.9);
+    --button-background: rgba(6, 12, 24, 0.9);
     color: var(--text-primary);
-    border: 1px solid rgba(127, 227, 255, 0.4);
-    border-radius: 10px;
+    --button-border-color: rgba(127, 227, 255, 0.4);
     text-transform: uppercase;
     letter-spacing: 0.18em;
     font-size: 12px;
