@@ -2251,6 +2251,7 @@ function runRollSimulation() {
     const activeMemoryAura = (oblivionPresetEnabled && luckValue >= OBLIVION_LUCK_TARGET) ? memoryAuraData : null;
     const memoryProbability = activeMemoryAura ? 1 / OBLIVION_MEMORY_ODDS : 0;
     const oblivionProbability = activeOblivionAura ? 1 / OBLIVION_POTION_ODDS : 0;
+    const cutscenesEnabled = appState.cinematic === true;
 
     const queueAnimationFrame = (typeof window !== 'undefined' && typeof window.requestAnimationFrame === 'function')
         ? callback => window.requestAnimationFrame(callback)
