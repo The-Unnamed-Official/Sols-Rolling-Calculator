@@ -1546,6 +1546,63 @@ body.biome--blood-rain .interface-backdrop__veil {
     letter-spacing: 0.08em;
     text-transform: uppercase;
     color: var(--text-secondary);
+    width: 100%;
+}
+
+.interface-select__option-label {
+    flex: 1;
+    display: block;
+}
+
+.interface-select__option--checkbox {
+    position: relative;
+    padding: 12px 14px;
+    border-radius: 12px;
+    border: 1px solid rgba(95, 160, 230, 0.28);
+    background: linear-gradient(180deg, rgba(8, 14, 28, 0.72), rgba(4, 10, 22, 0.82));
+    box-shadow: inset 0 0 0 1px rgba(20, 36, 64, 0.35);
+    transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease, transform 0.2s ease;
+}
+
+.interface-select__option--checkbox::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: 12px;
+    background: radial-gradient(circle at 15% 20%, rgba(127, 227, 255, 0.2), transparent 48%),
+        radial-gradient(circle at 80% 80%, rgba(120, 160, 255, 0.12), transparent 55%);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+}
+
+.interface-select__option--checkbox:hover,
+.interface-select__option--checkbox:focus-within {
+    border-color: rgba(127, 227, 255, 0.5);
+    box-shadow: inset 0 0 0 1px rgba(127, 227, 255, 0.22), 0 10px 22px rgba(5, 10, 24, 0.45);
+    color: var(--text-primary);
+}
+
+.interface-select__option--checkbox:hover::before,
+.interface-select__option--checkbox:focus-within::before {
+    opacity: 1;
+}
+
+.interface-select__option--checkbox.interface-select__option--active {
+    border-color: rgba(127, 227, 255, 0.68);
+    background: linear-gradient(180deg, rgba(12, 22, 44, 0.92), rgba(6, 14, 32, 0.94));
+    box-shadow: inset 0 0 0 1px rgba(127, 227, 255, 0.32), inset 0 0 22px rgba(127, 227, 255, 0.12),
+        0 16px 32px rgba(4, 10, 24, 0.55);
+    color: var(--accent);
+}
+
+.interface-select__option--checkbox.interface-select__option--active::before {
+    opacity: 1;
+}
+
+.interface-select__option--checkbox.interface-select__option--active .interface-select__option-label {
+    color: var(--text-primary);
+    text-shadow: 0 0 8px rgba(127, 227, 255, 0.26);
 }
 
 .interface-select__option:hover {
@@ -1557,11 +1614,13 @@ body.biome--blood-rain .interface-backdrop__veil {
     width: 18px;
     height: 18px;
     border-radius: 5px;
-    border: 1px solid rgba(95, 160, 230, 0.5);
-    background: rgba(6, 12, 24, 0.85);
+    margin: 0;
+    margin-right: 12px;
+    border: 1px solid rgba(95, 160, 230, 0.45);
+    background: rgba(6, 12, 24, 0.88);
     display: grid;
     place-items: center;
-    transition: border-color 0.2s ease, background-color 0.2s ease;
+    transition: border-color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .interface-select__option--checkbox input[type="checkbox"]::after {
@@ -1574,8 +1633,9 @@ body.biome--blood-rain .interface-backdrop__veil {
 }
 
 .interface-select__option--checkbox input[type="checkbox"]:checked {
-    border-color: var(--accent);
+    border-color: rgba(127, 227, 255, 0.8);
     background: rgba(20, 36, 64, 0.95);
+    box-shadow: 0 0 14px rgba(127, 227, 255, 0.25);
 }
 
 .interface-select__option--checkbox input[type="checkbox"]:checked::after {
