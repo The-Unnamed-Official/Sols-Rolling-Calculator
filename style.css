@@ -1104,12 +1104,12 @@ body.biome--blood-rain .ui-backdrop__veil {
 .progress::before {
     content: '';
     position: absolute;
-    inset: auto 12px -18px auto;
+    inset: auto auto -18px 35%;
     font-size: clamp(42px, 8vw, 72px);
     letter-spacing: 0.08em;
     color: rgb(var(--accent-rgb) / 0.24);
     text-shadow: 0 0 22px rgb(var(--accent-rgb) / 0.28);
-    transform: translate3d(0, 12px, 0) scale(0.94);
+    transform: translate3d(-50%, 12px, 0) scale(0.94);
     opacity: 0;
     transition: opacity 0.4s ease, transform 0.4s ease;
     pointer-events: none;
