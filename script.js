@@ -120,7 +120,8 @@ const glitchUiState = {
     waveShaper: null,
     gainNode: null,
     sourceNode: null,
-    isUiGlitching: false
+    isUiGlitching: false,
+    audioPipelineMode: null
 };
 
 let glitchPresentationEnabled = false;
@@ -608,6 +609,16 @@ function scheduleGlitchWarbleCycle(bgMusic, chain) {
     }, Math.floor(randomDecimalBetween(650, 1080)));
 }
 
+const GLITCH_BURST_TRIGGER_CHANCE = 0.42;
+
+function computeGlitchRestDelay() {
+    return Math.floor(randomDecimalBetween(12000, 36000));
+}
+
+function computeGlitchBurstDuration() {
+    return Math.floor(randomDecimalBetween(1400, 2400));
+}
+
 function createDistortionCurve(amount = 0) {
     const k = Number(amount) || 50;
     const samples = 44100;
@@ -641,6 +652,7 @@ function ensureGlitchAudioChain(audioElement) {
 
     if (!glitchUiState.sourceNode) {
         glitchUiState.sourceNode = context.createMediaElementSource(audioElement);
+        glitchUiState.audioPipelineMode = null;
     }
 
     if (!glitchUiState.waveShaper) {
@@ -660,11 +672,36 @@ function ensureGlitchAudioChain(audioElement) {
         glitchUiState.gainNode.gain.value = computeBackgroundMusicBase(audioElement);
     }
 
-    glitchUiState.sourceNode
-        .connect(glitchUiState.waveShaper)
-        .connect(glitchUiState.distortionNode)
-        .connect(glitchUiState.gainNode)
-        .connect(context.destination);
+    const desiredPipeline = shouldUseGlitchBaseEffect() ? 'glitch' : 'clean';
+
+    if (glitchUiState.audioPipelineMode !== desiredPipeline) {
+        if (glitchUiState.sourceNode) {
+            try { glitchUiState.sourceNode.disconnect(); } catch (error) {}
+        }
+        if (glitchUiState.waveShaper) {
+            try { glitchUiState.waveShaper.disconnect(); } catch (error) {}
+        }
+        if (glitchUiState.distortionNode) {
+            try { glitchUiState.distortionNode.disconnect(); } catch (error) {}
+        }
+        if (glitchUiState.gainNode) {
+            try { glitchUiState.gainNode.disconnect(); } catch (error) {}
+        }
+
+        if (desiredPipeline === 'glitch') {
+            glitchUiState.sourceNode
+                .connect(glitchUiState.waveShaper)
+                .connect(glitchUiState.distortionNode)
+                .connect(glitchUiState.gainNode)
+                .connect(context.destination);
+        } else {
+            glitchUiState.sourceNode
+                .connect(glitchUiState.gainNode)
+                .connect(context.destination);
+        }
+
+        glitchUiState.audioPipelineMode = desiredPipeline;
+    }
 
     return {
         context,
@@ -722,7 +759,14 @@ function queueGlitchBurstCycle(delay) {
 
     glitchUiState.loopTimeoutId = window.setTimeout(() => {
         glitchUiState.loopTimeoutId = null;
-        executeGlitchBurstSequence();
+        if (!glitchPresentationEnabled) return;
+
+        if (drawEntropy() < GLITCH_BURST_TRIGGER_CHANCE) {
+            executeGlitchBurstSequence();
+        } else {
+            const nextDelay = computeGlitchRestDelay();
+            queueGlitchBurstCycle(nextDelay);
+        }
     }, delay);
 }
 
@@ -731,12 +775,14 @@ function executeGlitchBurstSequence() {
 
     triggerGlitchBurst();
 
+    const activeDuration = computeGlitchBurstDuration();
+
     glitchUiState.activeTimeoutId = window.setTimeout(() => {
         glitchUiState.activeTimeoutId = null;
         completeGlitchBurst();
-        const nextDelay = Math.floor(randomDecimalBetween(4800, 8800));
+        const nextDelay = computeGlitchRestDelay();
         queueGlitchBurstCycle(nextDelay);
-    }, Math.floor(randomDecimalBetween(2200, 3200)));
+    }, activeDuration);
 }
 
 function startGlitchLoop(forceImmediate = false) {
@@ -745,7 +791,7 @@ function startGlitchLoop(forceImmediate = false) {
         executeGlitchBurstSequence();
         return;
     }
-    const initialDelay = Math.floor(randomDecimalBetween(2400, 5200));
+    const initialDelay = computeGlitchRestDelay();
     queueGlitchBurstCycle(initialDelay);
 }
 
@@ -796,7 +842,7 @@ function applyGlitchVisuals(enabled, options = {}) {
         root.classList.add('biome--glitch');
         if (!glitchPresentationEnabled) {
             glitchPresentationEnabled = true;
-            startGlitchLoop(true);
+            startGlitchLoop();
         } else if (!isGlitchLoopScheduled()) {
             startGlitchLoop();
         }
@@ -928,6 +974,9 @@ function applyLuckValue(value, options = {}) {
     if (typeof applyOblivionPresetOptions === 'function') {
         applyOblivionPresetOptions(options);
     }
+    if (typeof applyDunePresetOptions === 'function') {
+        applyDunePresetOptions(options);
+    }
 }
 
 function recomputeLuckValue() {
@@ -970,6 +1019,9 @@ function recomputeLuckValue() {
         if (typeof applyOblivionPresetOptions === 'function') {
             applyOblivionPresetOptions({});
         }
+        if (typeof applyDunePresetOptions === 'function') {
+            applyDunePresetOptions({});
+        }
         return;
     }
 
@@ -988,6 +1040,9 @@ function resetLuckFields() {
     recomputeLuckValue();
     if (typeof applyOblivionPresetOptions === 'function') {
         applyOblivionPresetOptions({});
+    }
+    if (typeof applyDunePresetOptions === 'function') {
+        applyDunePresetOptions({});
     }
 }
 
@@ -1330,6 +1385,7 @@ function resolveAuraStyleClass(aura) {
     const classes = [];
     if (name.startsWith('Oblivion')) classes.push('sigil-effect-oblivion');
     if (name.startsWith('Memory')) classes.push('sigil-effect-memory');
+    if (name.startsWith('Neferkhaf')) classes.push('sigil-effect-neferkhaf');
     if (name.startsWith('Pixelation')) classes.push('sigil-effect-pixelation');
     if (name.startsWith('Luminosity')) classes.push('sigil-effect-luminosity');
     if (name.startsWith('Equinox')) classes.push('sigil-effect-equinox');
@@ -1364,10 +1420,19 @@ const MEMORY_AURA_LABEL = 'Memory';
 const OBLIVION_POTION_ODDS = 2000;
 const OBLIVION_MEMORY_ODDS = 100;
 
+const DUNE_PRESET_IDENTIFIER = 'dune';
+const DUNE_LUCK_TARGET = 10000;
+const DUNE_AURA_LABEL = 'Neferkhaf';
+const DUNE_POTION_ODDS = 1000;
+
 let oblivionPresetEnabled = false;
 let currentOblivionPresetLabel = 'Select preset';
 let oblivionAuraData = null;
 let memoryAuraData = null;
+
+let dunePresetEnabled = false;
+let currentDunePresetLabel = 'Select preset';
+let duneAuraData = null;
 
 function handleOblivionPresetSelection(presetKey) {
     const options = {};
@@ -1391,11 +1456,41 @@ function handleOblivionPresetSelection(presetKey) {
     }
 }
 
+function handleDunePresetSelection(presetKey) {
+    const options = {};
+    if (presetKey === DUNE_PRESET_IDENTIFIER) {
+        options.activateDunePreset = true;
+        options.dunePresetLabel = 'Potion of Dune Preset';
+    } else {
+        options.activateDunePreset = false;
+        options.dunePresetLabel = 'Popping Potion Preset';
+    }
+
+    applyLuckValue(DUNE_LUCK_TARGET, options);
+
+    const dropdown = document.getElementById('dune-preset-menu');
+    if (dropdown) {
+        dropdown.open = false;
+        const summary = dropdown.querySelector('.preset-toggle__summary');
+        if (summary) {
+            summary.focus();
+        }
+    }
+}
+
 function updateOblivionPresetDisplay() {
     const selection = document.getElementById('oblivion-preset-label');
     if (selection) {
         selection.textContent = currentOblivionPresetLabel;
         selection.classList.toggle('preset-toggle__selection--placeholder', currentOblivionPresetLabel === 'Select preset');
+    }
+}
+
+function updateDunePresetDisplay() {
+    const selection = document.getElementById('dune-preset-label');
+    if (selection) {
+        selection.textContent = currentDunePresetLabel;
+        selection.classList.toggle('preset-toggle__selection--placeholder', currentDunePresetLabel === 'Select preset');
     }
 }
 
@@ -1409,6 +1504,18 @@ function applyOblivionPresetOptions(options = {}) {
     }
 
     updateOblivionPresetDisplay();
+}
+
+function applyDunePresetOptions(options = {}) {
+    dunePresetEnabled = options.activateDunePreset === true;
+
+    if (typeof options.dunePresetLabel === 'string') {
+        currentDunePresetLabel = options.dunePresetLabel;
+    } else {
+        currentDunePresetLabel = 'Select preset';
+    }
+
+    updateDunePresetDisplay();
 }
 
 function formatAuraNameMarkup(aura, overrideName) {
@@ -1433,12 +1540,14 @@ function determineResultPriority(aura, baseChance) {
     if (!aura) return baseChance;
     if (aura.name === OBLIVION_AURA_LABEL) return Number.POSITIVE_INFINITY;
     if (aura.name === MEMORY_AURA_LABEL) return Number.MAX_SAFE_INTEGER;
+    if (aura.name === DUNE_AURA_LABEL) return Number.MAX_SAFE_INTEGER - 1;
     return baseChance;
 }
 
 const AURA_BLUEPRINT_SOURCE = Object.freeze([
     { name: "Oblivion", chance: 2000, requiresOblivionPreset: true, ignoreLuck: true, fixedRollThreshold: 1, subtitle: "The Truth Seeker", cutscene: "oblivion-cutscene", disableRarityClass: true },
     { name: "Memory", chance: 200000, requiresOblivionPreset: true, ignoreLuck: true, fixedRollThreshold: 1, subtitle: "The Fallen", cutscene: "memory-cutscene", disableRarityClass: true },
+    { name: "Neferkhaf", chance: 1000, requiresDunePreset: true, ignoreLuck: true, fixedRollThreshold: 1, subtitle: "The Crawler", cutscene: "neferkhaf-cutscene", disableRarityClass: true },
     { name: "Equinox - 2,500,000,000", chance: 2500000000, cutscene: "equinox-cutscene" },
     { name: "Luminosity - 1,200,000,000", chance: 1200000000, cutscene: "luminosity-cutscene" },
     { name: "Erebus - 1,200,000,000", chance: 1200000000, nativeBiomes: ["glitch", "bloodRain"], cutscene: "erebus-cutscene" },
@@ -1862,10 +1971,11 @@ function getAuraEventId(aura) {
     return auraEventIndex.get(aura.name) || null;
 }
 
-const CUTSCENE_PRIORITY_SEQUENCE = ["oblivion-cutscene", "memory-cutscene", "equinox-cutscene", "erebus-cutscene", "luminosity-cutscene", "pixelation-cutscene", "lamenthyr-cutscene", "dreammetric-cutscene", "oppression-cutscene"];
+const CUTSCENE_PRIORITY_SEQUENCE = ["oblivion-cutscene", "memory-cutscene", "neferkhaf-cutscene", "equinox-cutscene", "erebus-cutscene", "luminosity-cutscene", "pixelation-cutscene", "lamenthyr-cutscene", "dreammetric-cutscene", "oppression-cutscene"];
 
 oblivionAuraData = AURA_REGISTRY.find(aura => aura.name === OBLIVION_AURA_LABEL) || null;
 memoryAuraData = AURA_REGISTRY.find(aura => aura.name === MEMORY_AURA_LABEL) || null;
+duneAuraData = AURA_REGISTRY.find(aura => aura.name === DUNE_AURA_LABEL) || null;
 
 const ROE_EXCLUSION_SET = new Set([
     "Apostolos : Veil - 800,000,000",
@@ -2102,6 +2212,7 @@ function initializeEventSelector() {
 
 document.addEventListener('DOMContentLoaded', initializeEventSelector);
 document.addEventListener('DOMContentLoaded', updateOblivionPresetDisplay);
+document.addEventListener('DOMContentLoaded', updateDunePresetDisplay);
 
 function initializeSingleSelectControl(selectId) {
     const select = document.getElementById(selectId);
@@ -2355,7 +2466,7 @@ function createAuraEvaluationContext(biome, { eventChecker }) {
 }
 
 function computeLimboEffectiveChance(aura, context) {
-    if (aura.requiresOblivionPreset) return Infinity;
+    if (aura.requiresOblivionPreset || aura.requiresDunePreset) return Infinity;
     if (!context.eventChecker(aura)) return Infinity;
     if (!aura.nativeBiomes) return Infinity;
     if (!auraMatchesAnyBiome(aura, LIMBO_NATIVE_FILTER)) return Infinity;
@@ -2370,7 +2481,7 @@ function computeLimboEffectiveChance(aura, context) {
 
 function computeStandardEffectiveChance(aura, context) {
     const { biome, exclusivityBiome, glitchLikeBiome, isRoe } = context;
-    if (aura.requiresOblivionPreset) return Infinity;
+    if (aura.requiresOblivionPreset || aura.requiresDunePreset) return Infinity;
 
     const eventId = getAuraEventId(aura);
     const eventEnabled = context.eventChecker(aura);
@@ -2652,8 +2763,10 @@ function runRollSimulation() {
     const evaluationContext = createAuraEvaluationContext(biome, { eventChecker: isEventAuraEnabled, eventSnapshot });
     const computedAuras = buildComputedAuraEntries(AURA_REGISTRY, evaluationContext, luckValue, breakthroughStatsMap);
 
+    const activeDuneAura = (dunePresetEnabled && baseLuck >= DUNE_LUCK_TARGET) ? duneAuraData : null;
     const activeOblivionAura = (oblivionPresetEnabled && luckValue >= OBLIVION_LUCK_TARGET) ? oblivionAuraData : null;
     const activeMemoryAura = (oblivionPresetEnabled && luckValue >= OBLIVION_LUCK_TARGET) ? memoryAuraData : null;
+    const duneProbability = activeDuneAura ? 1 / DUNE_POTION_ODDS : 0;
     const memoryProbability = activeMemoryAura ? 1 / OBLIVION_MEMORY_ODDS : 0;
     const oblivionProbability = activeOblivionAura ? 1 / OBLIVION_POTION_ODDS : 0;
     const cutscenesEnabled = appState.cinematic === true;
@@ -2687,6 +2800,11 @@ function runRollSimulation() {
     const sampleEntropy = (typeof drawEntropy === 'function') ? drawEntropy : Math.random;
 
     function performSingleRollCheck() {
+        if (duneProbability > 0 && sampleEntropy() < duneProbability) {
+            recordAuraWin(activeDuneAura);
+            rolls++;
+            return;
+        }
         if (memoryProbability > 0 && sampleEntropy() < memoryProbability) {
             recordAuraWin(activeMemoryAura);
             rolls++;
@@ -3549,6 +3667,19 @@ const SHARE_IMAGE_EFFECT_HANDLERS = Object.freeze({
             gradient.addColorStop(0, '#f3d9ff');
             gradient.addColorStop(0.45, '#a26bff');
             gradient.addColorStop(1, '#3b1061');
+            return gradient;
+        };
+    },
+    'sigil-effect-neferkhaf': styleSet => {
+        styleSet.name.shadowLayers = [
+            { color: 'rgba(11, 8, 5, 0.82)', blur: 8, offsetX: 0, offsetY: 2 },
+            { color: 'rgba(217, 170, 92, 0.55)', blur: 22, offsetX: 0, offsetY: 8 }
+        ];
+        styleSet.name.fill = (ctx, x, y, width) => {
+            const gradient = ctx.createLinearGradient(x, y, x + width, y + width * 0.25);
+            gradient.addColorStop(0, '#0b0805');
+            gradient.addColorStop(0.5, '#f1d7a5');
+            gradient.addColorStop(1, '#c7903e');
             return gradient;
         };
     },
