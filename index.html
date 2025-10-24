@@ -42,6 +42,9 @@
     <video id="memory-cutscene" class="cutscene-video" preload="auto">
         <source src="files/memoryCutscene.webm" type="video/webm">
     </video>
+    <video id="neferkhaf-cutscene" class="cutscene-video" preload="auto">
+        <source src="files/neferkhafCutscene.webm" type="video/webm">
+    </video>
     <video id="equinox-cutscene" class="cutscene-video" preload="auto">
         <source src="files/equinoxCutscene.webm" type="video/webm">
     </video>
@@ -347,7 +350,16 @@
                         <button type="button" onclick="applyLuckValue(200000)">Heavenly + Bound 200,000×</button>
                         <button type="button" onclick="applyLuckValue(150000)">Heavenly Potion 150,000×</button>
                         <button type="button" onclick="applyLuckValue(50000)">Bound Potion 50,000×</button>
-                        <button type="button" onclick="applyLuckValue(10000)">Popping Potion / Potion of Dune 10,000×</button>
+                        <details id="dune-preset-menu" class="preset-toggle">
+                            <summary class="preset-toggle__summary">
+                                <span class="preset-toggle__title">Popping Potion / Potion of Dune 10,000×</span>
+                                <span id="dune-preset-label" class="preset-toggle__selection preset-toggle__selection--placeholder">Select preset</span>
+                            </summary>
+                            <div class="preset-toggle__options">
+                                <button type="button" onclick="handleDunePresetSelection('dune')">Potion of Dune Preset 10,000×</button>
+                                <button type="button" onclick="handleDunePresetSelection('popping')">Popping Potion Preset 10,000×</button>
+                            </div>
+                        </details>
                     </div>
                     <div class="preset-signoff">
                         <p class="preset-signoff__status">
