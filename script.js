@@ -1882,6 +1882,7 @@ const ROE_EXCLUSION_SET = new Set([
     "Sinister - 15,000,000",
     "Pump - 200,000",
     "Pump : Trickster - 600,000",
+    "Fault - 3,000",
     "★★★ - 10,000",
     "★★ - 1,000",
     "★ - 100"
