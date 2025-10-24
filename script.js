@@ -3699,11 +3699,14 @@ function createAuraBlock(context, record) {
 
     const prefixWidth = prefixText ? measureStyledTextWidth(context, prefixText, styles.prefix) : 0;
     const prefixGap = prefixText ? 12 : 0;
+    const nameWidth = measureStyledTextWidth(context, nameText, styles.name);
     const nameLineHeight = styles.name.lineHeight;
-    const subtitleLineHeight = subtitleText && styles.subtitle ? styles.subtitle.lineHeight : 0;
     const countLineHeight = countText ? styles.count.lineHeight : 0;
+    const countGap = countText ? 28 : 0;
+    const subtitleLineHeight = subtitleText && styles.subtitle ? styles.subtitle.lineHeight : 0;
 
-    const contentHeight = nameLineHeight + subtitleLineHeight + countLineHeight;
+    const firstLineHeight = Math.max(nameLineHeight, countLineHeight);
+    const contentHeight = firstLineHeight + subtitleLineHeight;
 
     return {
         contentHeight,
@@ -3715,13 +3718,14 @@ function createAuraBlock(context, record) {
                 renderStyledText(ctx, prefixText, x, currentY, styles.prefix);
             }
             renderStyledText(ctx, nameText, nameX, currentY, styles.name);
-            currentY += nameLineHeight;
+            if (countText) {
+                const countX = nameX + nameWidth + countGap;
+                renderStyledText(ctx, countText, countX, currentY, styles.count);
+            }
+            currentY += firstLineHeight;
             if (subtitleText && styles.subtitle) {
                 renderStyledText(ctx, subtitleText, nameX, currentY, styles.subtitle);
                 currentY += subtitleLineHeight;
-            }
-            if (countText) {
-                renderStyledText(ctx, countText, x, currentY, styles.count);
             }
         }
     };
@@ -3756,7 +3760,7 @@ async function generateShareImage(summary) {
     await ensureShareFontsLoaded();
 
     const canvas = document.createElement('canvas');
-    const width = 1040;
+    const width = 1260;
     canvas.width = width;
     let context = canvas.getContext('2d');
     if (!context) {
