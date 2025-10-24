@@ -878,6 +878,7 @@ body.biome--blood-rain .interface-backdrop__veil {
 .roll-trigger,
 .interface-select__summary,
 .interface-select__option-button,
+.interface-select__option--checkbox,
 .skip-cinematic-button,
 .toggle {
     position: relative;
@@ -1516,9 +1517,19 @@ body.biome--blood-rain .interface-backdrop__veil {
     bottom: calc(100% + 8px);
     left: 0;
     right: 0;
-    background: linear-gradient(175deg, rgba(12, 20, 38, 0.96), rgba(4, 10, 22, 0.98));
+    background:
+        linear-gradient(var(--accent), var(--accent)) top left / var(--corner-size) var(--corner-thickness) no-repeat,
+        linear-gradient(var(--accent), var(--accent)) top left / var(--corner-thickness) var(--corner-size) no-repeat,
+        linear-gradient(var(--accent), var(--accent)) top right / var(--corner-size) var(--corner-thickness) no-repeat,
+        linear-gradient(var(--accent), var(--accent)) top right / var(--corner-thickness) var(--corner-size) no-repeat,
+        linear-gradient(var(--accent), var(--accent)) bottom left / var(--corner-size) var(--corner-thickness) no-repeat,
+        linear-gradient(var(--accent), var(--accent)) bottom left / var(--corner-thickness) var(--corner-size) no-repeat,
+        linear-gradient(var(--accent), var(--accent)) bottom right / var(--corner-size) var(--corner-thickness) no-repeat,
+        linear-gradient(var(--accent), var(--accent)) bottom right / var(--corner-thickness) var(--corner-size) no-repeat,
+        linear-gradient(175deg, rgba(12, 20, 38, 0.96), rgba(4, 10, 22, 0.98));
+    background-repeat: no-repeat;
     border: 1px solid rgba(95, 160, 230, 0.35);
-    border-radius: 12px;
+    border-radius: 0;
     box-shadow: 0 -18px 38px rgba(4, 10, 24, 0.65);
     padding: 14px 16px;
     display: grid;
@@ -1557,9 +1568,9 @@ body.biome--blood-rain .interface-backdrop__veil {
 .interface-select__option--checkbox {
     position: relative;
     padding: 12px 14px;
-    border-radius: 12px;
-    border: 1px solid rgba(95, 160, 230, 0.28);
-    background: linear-gradient(180deg, rgba(8, 14, 28, 0.72), rgba(4, 10, 22, 0.82));
+    --button-background: linear-gradient(180deg, rgba(8, 14, 28, 0.72), rgba(4, 10, 22, 0.82));
+    --button-border-color: rgba(95, 160, 230, 0.28);
+    --button-accent: rgba(127, 227, 255, 0.38);
     box-shadow: inset 0 0 0 1px rgba(20, 36, 64, 0.35);
     transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease, transform 0.2s ease;
 }
@@ -1568,7 +1579,6 @@ body.biome--blood-rain .interface-backdrop__veil {
     content: "";
     position: absolute;
     inset: 0;
-    border-radius: 12px;
     background: radial-gradient(circle at 15% 20%, rgba(127, 227, 255, 0.2), transparent 48%),
         radial-gradient(circle at 80% 80%, rgba(120, 160, 255, 0.12), transparent 55%);
     opacity: 0;
