@@ -1264,15 +1264,12 @@ function resolveAuraStyleClass(aura) {
         classes.push('sigil-outline-halloween');
     }
 
-    // New: only add the glitch outline when the aura is exclusively from glitch OR exclusively from dreamspace.
-    // i.e. nativeBiomes is a Set with exactly one member and that member is 'glitch' or 'dreamspace'.
+    // Apply biome-specific outlines when available, prioritising Dreamspace's unique styling when present.
     if (auraData && auraData.nativeBiomes instanceof Set) {
-        if (auraData.nativeBiomes.size === 1) {
-            if (auraData.nativeBiomes.has('glitch')) {
-                classes.push('sigil-outline-glitch');
-            } else if (auraData.nativeBiomes.has('dreamspace')) {
-                classes.push('sigil-outline-dreamspace');
-            }
+        if (auraData.nativeBiomes.has('dreamspace')) {
+            classes.push('sigil-outline-dreamspace');
+        } else if (auraData.nativeBiomes.has('glitch')) {
+            classes.push('sigil-outline-glitch');
         }
     } else {
         // Fallback for legacy/edge cases: if we don't have nativeBiomes, keep prior behavior (if any).
