@@ -1385,6 +1385,7 @@ function resolveAuraStyleClass(aura) {
     const classes = [];
     if (name.startsWith('Oblivion')) classes.push('sigil-effect-oblivion');
     if (name.startsWith('Memory')) classes.push('sigil-effect-memory');
+    if (name.startsWith('Neferkhaf')) classes.push('sigil-effect-neferkhaf');
     if (name.startsWith('Pixelation')) classes.push('sigil-effect-pixelation');
     if (name.startsWith('Luminosity')) classes.push('sigil-effect-luminosity');
     if (name.startsWith('Equinox')) classes.push('sigil-effect-equinox');
@@ -1539,6 +1540,7 @@ function determineResultPriority(aura, baseChance) {
     if (!aura) return baseChance;
     if (aura.name === OBLIVION_AURA_LABEL) return Number.POSITIVE_INFINITY;
     if (aura.name === MEMORY_AURA_LABEL) return Number.MAX_SAFE_INTEGER;
+    if (aura.name === DUNE_AURA_LABEL) return Number.MAX_SAFE_INTEGER - 1;
     return baseChance;
 }
 
@@ -3665,6 +3667,19 @@ const SHARE_IMAGE_EFFECT_HANDLERS = Object.freeze({
             gradient.addColorStop(0, '#f3d9ff');
             gradient.addColorStop(0.45, '#a26bff');
             gradient.addColorStop(1, '#3b1061');
+            return gradient;
+        };
+    },
+    'sigil-effect-neferkhaf': styleSet => {
+        styleSet.name.shadowLayers = [
+            { color: 'rgba(11, 8, 5, 0.82)', blur: 8, offsetX: 0, offsetY: 2 },
+            { color: 'rgba(217, 170, 92, 0.55)', blur: 22, offsetX: 0, offsetY: 8 }
+        ];
+        styleSet.name.fill = (ctx, x, y, width) => {
+            const gradient = ctx.createLinearGradient(x, y, x + width, y + width * 0.25);
+            gradient.addColorStop(0, '#0b0805');
+            gradient.addColorStop(0.5, '#f1d7a5');
+            gradient.addColorStop(1, '#c7903e');
             return gradient;
         };
     },

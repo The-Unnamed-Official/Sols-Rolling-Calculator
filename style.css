@@ -2534,6 +2534,7 @@ select.form-field__input option {
 
 .sigil-effect-oblivion,
 .sigil-effect-memory,
+.sigil-effect-neferkhaf,
 .sigil-effect-pixelation,
 .sigil-effect-luminosity,
 .sigil-effect-equinox {
@@ -2555,6 +2556,16 @@ select.form-field__input option {
     -webkit-background-clip: text;
     background-clip: text;
     text-shadow: 0 0 20px rgba(200, 140, 255, 0.55);
+}
+
+.sigil-effect-neferkhaf {
+    background: linear-gradient(125deg, #0b0805 0%, #f1d7a5 55%, #c7903e 100%);
+    color: transparent;
+    -webkit-background-clip: text;
+    background-clip: text;
+    text-shadow:
+        0 0 6px rgba(12, 9, 6, 0.85),
+        0 0 18px rgba(200, 152, 70, 0.6);
 }
 
 .sigil-effect-pixelation {
