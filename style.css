@@ -1917,12 +1917,50 @@ select.form-field__input option {
     color: var(--text-tertiary);
 }
 
-.site-footer__credit {
-    margin-top: 6px;
-    letter-spacing: 0.12em;
+.footer-credits {
+    margin-top: 10px;
 }
 
-.site-footer__credit a {
+.footer-credits__summary {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    position: relative;
+    padding-right: 18px;
+    user-select: none;
+}
+
+.footer-credits__summary::-webkit-details-marker {
+    display: none;
+}
+
+.footer-credits__summary::after {
+    content: "\25BC";
+    font-size: 10px;
+    letter-spacing: normal;
+    transform: translateY(-1px);
+    transition: transform 0.2s ease;
+}
+
+.footer-credits[open] .footer-credits__summary::after {
+    transform: rotate(180deg) translateY(1px);
+}
+
+.footer-credits__list {
+    margin: 10px 0 0;
+    padding: 0;
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    color: var(--text-tertiary);
+    font-size: 12px;
+    letter-spacing: 0.06em;
+    text-transform: none;
+}
+
+.footer-credits__item a {
     color: inherit;
     text-decoration: underline;
 }
