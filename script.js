@@ -941,7 +941,7 @@ function recomputeLuckValue() {
 
     const multipliers = {
         vip: parseFloat(controls.vip ? controls.vip.value : '1') || 1,
-        xyz: !isLimboBiome && controls.xyz && controls.xyz.checked ? 2 : 1,
+        xyz: controls.xyz && controls.xyz.checked ? 2 : 1,
         dave: isLimboBiome && controls.dave ? parseFloat(controls.dave.value) || 1 : 1
     };
 
@@ -1031,7 +1031,7 @@ function initializeBiomeInterface() {
     const voidHeartBtn = document.getElementById('void-heart-trigger');
     if (biome === 'limbo') {
         if (daveLuckContainer) daveLuckContainer.style.display = '';
-        if (xyzLuckContainer) xyzLuckContainer.style.display = 'none';
+        if (xyzLuckContainer) xyzLuckContainer.style.display = '';
         if (luckPresets) {
             Array.from(luckPresets.children).forEach(btn => {
                 if (btn === voidHeartBtn) {
@@ -1305,6 +1305,9 @@ const auraOutlineOverrides = new Map([
     ['Erebus', 'sigil-outline-blood']
 ]);
 
+const glitchOutlineNames = new Set(['Fault', 'Glitch', 'Oppression']);
+const dreamspaceOutlineNames = new Set(['Dreammetric', '★★★', '★★', '★']);
+
 function resolveAuraStyleClass(aura) {
     if (!aura) return '';
 
@@ -1324,23 +1327,15 @@ function resolveAuraStyleClass(aura) {
         classes.push('sigil-outline-halloween');
     }
 
-    // Apply biome-specific outlines when available, prioritising Dreamspace's unique styling when present.
-    if (auraData && auraData.nativeBiomes instanceof Set) {
-        if (auraData.nativeBiomes.has('dreamspace')) {
-            classes.push('sigil-outline-dreamspace');
-        } else if (auraData.nativeBiomes.has('glitch')) {
-            classes.push('sigil-outline-glitch');
-        }
-    } else {
-        // Fallback for legacy/edge cases: if we don't have nativeBiomes, keep prior behavior (if any).
-        if (auraMatchesAnyBiome(auraData, ['glitch'])) {
-            classes.push('sigil-outline-glitch');
-        } else if (auraMatchesAnyBiome(auraData, ['dreamspace'])) {
-            classes.push('sigil-outline-dreamspace');
-        }
+    const shortName = name.includes(' - ') ? name.split(' - ')[0].trim() : name.trim();
+    if (glitchOutlineNames.has(shortName)) {
+        classes.push('sigil-outline-glitch');
     }
 
-    const shortName = name.includes(' - ') ? name.split(' - ')[0].trim() : name.trim();
+    if (dreamspaceOutlineNames.has(shortName)) {
+        classes.push('sigil-outline-dreamspace');
+    }
+
     const overrideClass = auraOutlineOverrides.get(shortName);
     if (overrideClass) {
         classes.push(overrideClass);
