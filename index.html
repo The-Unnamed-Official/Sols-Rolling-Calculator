@@ -135,7 +135,12 @@
                     <div class="feed-share__menu" id="feedShareMenu" role="menu" hidden>
                         <button class="feed-share__item" type="button" data-share-format="markdown" role="menuitem">Copy Discord Markdown</button>
                         <button class="feed-share__item" type="button" data-share-format="plain" role="menuitem">Copy Plain Text</button>
-                        <button class="feed-share__item" type="button" data-share-format="image" role="menuitem">Download Image</button>
+                        <button class="feed-share__item" type="button" data-share-format="image" role="menuitem">Image Options</button>
+                    </div>
+                    <div class="feed-share__menu feed-share__menu--image" id="feedShareImageMenu" role="menu" aria-labelledby="feedShareImageMenuLabel" hidden>
+                        <p class="feed-share__menu-label" id="feedShareImageMenuLabel">Share image as</p>
+                        <button class="feed-share__item" type="button" data-image-share-mode="copy" role="menuitem">Copy to Clipboard</button>
+                        <button class="feed-share__item" type="button" data-image-share-mode="download" role="menuitem">Download File</button>
                     </div>
                 </div>
                 <div class="loading-indicator" style="display:none;">
