@@ -974,6 +974,9 @@ function applyLuckValue(value, options = {}) {
     if (typeof applyOblivionPresetOptions === 'function') {
         applyOblivionPresetOptions(options);
     }
+    if (typeof applyDunePresetOptions === 'function') {
+        applyDunePresetOptions(options);
+    }
 }
 
 function recomputeLuckValue() {
@@ -1016,6 +1019,9 @@ function recomputeLuckValue() {
         if (typeof applyOblivionPresetOptions === 'function') {
             applyOblivionPresetOptions({});
         }
+        if (typeof applyDunePresetOptions === 'function') {
+            applyDunePresetOptions({});
+        }
         return;
     }
 
@@ -1034,6 +1040,9 @@ function resetLuckFields() {
     recomputeLuckValue();
     if (typeof applyOblivionPresetOptions === 'function') {
         applyOblivionPresetOptions({});
+    }
+    if (typeof applyDunePresetOptions === 'function') {
+        applyDunePresetOptions({});
     }
 }
 
@@ -1410,10 +1419,19 @@ const MEMORY_AURA_LABEL = 'Memory';
 const OBLIVION_POTION_ODDS = 2000;
 const OBLIVION_MEMORY_ODDS = 100;
 
+const DUNE_PRESET_IDENTIFIER = 'dune';
+const DUNE_LUCK_TARGET = 10000;
+const DUNE_AURA_LABEL = 'Neferkhaf';
+const DUNE_POTION_ODDS = 1000;
+
 let oblivionPresetEnabled = false;
 let currentOblivionPresetLabel = 'Select preset';
 let oblivionAuraData = null;
 let memoryAuraData = null;
+
+let dunePresetEnabled = false;
+let currentDunePresetLabel = 'Select preset';
+let duneAuraData = null;
 
 function handleOblivionPresetSelection(presetKey) {
     const options = {};
@@ -1437,11 +1455,41 @@ function handleOblivionPresetSelection(presetKey) {
     }
 }
 
+function handleDunePresetSelection(presetKey) {
+    const options = {};
+    if (presetKey === DUNE_PRESET_IDENTIFIER) {
+        options.activateDunePreset = true;
+        options.dunePresetLabel = 'Potion of Dune Preset';
+    } else {
+        options.activateDunePreset = false;
+        options.dunePresetLabel = 'Popping Potion Preset';
+    }
+
+    applyLuckValue(DUNE_LUCK_TARGET, options);
+
+    const dropdown = document.getElementById('dune-preset-menu');
+    if (dropdown) {
+        dropdown.open = false;
+        const summary = dropdown.querySelector('.preset-toggle__summary');
+        if (summary) {
+            summary.focus();
+        }
+    }
+}
+
 function updateOblivionPresetDisplay() {
     const selection = document.getElementById('oblivion-preset-label');
     if (selection) {
         selection.textContent = currentOblivionPresetLabel;
         selection.classList.toggle('preset-toggle__selection--placeholder', currentOblivionPresetLabel === 'Select preset');
+    }
+}
+
+function updateDunePresetDisplay() {
+    const selection = document.getElementById('dune-preset-label');
+    if (selection) {
+        selection.textContent = currentDunePresetLabel;
+        selection.classList.toggle('preset-toggle__selection--placeholder', currentDunePresetLabel === 'Select preset');
     }
 }
 
@@ -1455,6 +1503,18 @@ function applyOblivionPresetOptions(options = {}) {
     }
 
     updateOblivionPresetDisplay();
+}
+
+function applyDunePresetOptions(options = {}) {
+    dunePresetEnabled = options.activateDunePreset === true;
+
+    if (typeof options.dunePresetLabel === 'string') {
+        currentDunePresetLabel = options.dunePresetLabel;
+    } else {
+        currentDunePresetLabel = 'Select preset';
+    }
+
+    updateDunePresetDisplay();
 }
 
 function formatAuraNameMarkup(aura, overrideName) {
@@ -1485,6 +1545,7 @@ function determineResultPriority(aura, baseChance) {
 const AURA_BLUEPRINT_SOURCE = Object.freeze([
     { name: "Oblivion", chance: 2000, requiresOblivionPreset: true, ignoreLuck: true, fixedRollThreshold: 1, subtitle: "The Truth Seeker", cutscene: "oblivion-cutscene", disableRarityClass: true },
     { name: "Memory", chance: 200000, requiresOblivionPreset: true, ignoreLuck: true, fixedRollThreshold: 1, subtitle: "The Fallen", cutscene: "memory-cutscene", disableRarityClass: true },
+    { name: "Neferkhaf", chance: 1000, requiresDunePreset: true, ignoreLuck: true, fixedRollThreshold: 1, subtitle: "The Crawler", cutscene: "neferkhaf-cutscene", disableRarityClass: true },
     { name: "Equinox - 2,500,000,000", chance: 2500000000, cutscene: "equinox-cutscene" },
     { name: "Luminosity - 1,200,000,000", chance: 1200000000, cutscene: "luminosity-cutscene" },
     { name: "Erebus - 1,200,000,000", chance: 1200000000, nativeBiomes: ["glitch", "bloodRain"], cutscene: "erebus-cutscene" },
@@ -1908,10 +1969,11 @@ function getAuraEventId(aura) {
     return auraEventIndex.get(aura.name) || null;
 }
 
-const CUTSCENE_PRIORITY_SEQUENCE = ["oblivion-cutscene", "memory-cutscene", "equinox-cutscene", "erebus-cutscene", "luminosity-cutscene", "pixelation-cutscene", "lamenthyr-cutscene", "dreammetric-cutscene", "oppression-cutscene"];
+const CUTSCENE_PRIORITY_SEQUENCE = ["oblivion-cutscene", "memory-cutscene", "neferkhaf-cutscene", "equinox-cutscene", "erebus-cutscene", "luminosity-cutscene", "pixelation-cutscene", "lamenthyr-cutscene", "dreammetric-cutscene", "oppression-cutscene"];
 
 oblivionAuraData = AURA_REGISTRY.find(aura => aura.name === OBLIVION_AURA_LABEL) || null;
 memoryAuraData = AURA_REGISTRY.find(aura => aura.name === MEMORY_AURA_LABEL) || null;
+duneAuraData = AURA_REGISTRY.find(aura => aura.name === DUNE_AURA_LABEL) || null;
 
 const ROE_EXCLUSION_SET = new Set([
     "Apostolos : Veil - 800,000,000",
@@ -2148,6 +2210,7 @@ function initializeEventSelector() {
 
 document.addEventListener('DOMContentLoaded', initializeEventSelector);
 document.addEventListener('DOMContentLoaded', updateOblivionPresetDisplay);
+document.addEventListener('DOMContentLoaded', updateDunePresetDisplay);
 
 function initializeSingleSelectControl(selectId) {
     const select = document.getElementById(selectId);
@@ -2401,7 +2464,7 @@ function createAuraEvaluationContext(biome, { eventChecker }) {
 }
 
 function computeLimboEffectiveChance(aura, context) {
-    if (aura.requiresOblivionPreset) return Infinity;
+    if (aura.requiresOblivionPreset || aura.requiresDunePreset) return Infinity;
     if (!context.eventChecker(aura)) return Infinity;
     if (!aura.nativeBiomes) return Infinity;
     if (!auraMatchesAnyBiome(aura, LIMBO_NATIVE_FILTER)) return Infinity;
@@ -2416,7 +2479,7 @@ function computeLimboEffectiveChance(aura, context) {
 
 function computeStandardEffectiveChance(aura, context) {
     const { biome, exclusivityBiome, glitchLikeBiome, isRoe } = context;
-    if (aura.requiresOblivionPreset) return Infinity;
+    if (aura.requiresOblivionPreset || aura.requiresDunePreset) return Infinity;
 
     const eventId = getAuraEventId(aura);
     const eventEnabled = context.eventChecker(aura);
@@ -2698,8 +2761,10 @@ function runRollSimulation() {
     const evaluationContext = createAuraEvaluationContext(biome, { eventChecker: isEventAuraEnabled, eventSnapshot });
     const computedAuras = buildComputedAuraEntries(AURA_REGISTRY, evaluationContext, luckValue, breakthroughStatsMap);
 
+    const activeDuneAura = (dunePresetEnabled && baseLuck >= DUNE_LUCK_TARGET) ? duneAuraData : null;
     const activeOblivionAura = (oblivionPresetEnabled && luckValue >= OBLIVION_LUCK_TARGET) ? oblivionAuraData : null;
     const activeMemoryAura = (oblivionPresetEnabled && luckValue >= OBLIVION_LUCK_TARGET) ? memoryAuraData : null;
+    const duneProbability = activeDuneAura ? 1 / DUNE_POTION_ODDS : 0;
     const memoryProbability = activeMemoryAura ? 1 / OBLIVION_MEMORY_ODDS : 0;
     const oblivionProbability = activeOblivionAura ? 1 / OBLIVION_POTION_ODDS : 0;
     const cutscenesEnabled = appState.cinematic === true;
@@ -2733,6 +2798,11 @@ function runRollSimulation() {
     const sampleEntropy = (typeof drawEntropy === 'function') ? drawEntropy : Math.random;
 
     function performSingleRollCheck() {
+        if (duneProbability > 0 && sampleEntropy() < duneProbability) {
+            recordAuraWin(activeDuneAura);
+            rolls++;
+            return;
+        }
         if (memoryProbability > 0 && sampleEntropy() < memoryProbability) {
             recordAuraWin(activeMemoryAura);
             rolls++;
