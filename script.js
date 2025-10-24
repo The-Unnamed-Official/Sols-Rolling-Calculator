@@ -3032,8 +3032,8 @@ function createDiscordShareText(summary) {
     ];
 
     const auraLines = summary.shareRecords && summary.shareRecords.length > 0
-        ? summary.shareRecords.map(line => `• ${line}`)
-        : ['• No auras were rolled.'];
+        ? summary.shareRecords.map(line => `- ${line}`)
+        : ['- No auras were rolled.'];
 
     const milestoneLines = summary.xpLines && summary.xpLines.length > 0
         ? summary.xpLines.map(line => `• ${line}`)
