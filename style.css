@@ -1082,7 +1082,6 @@ body.biome--blood-rain .ui-backdrop__veil {
     align-items: center;
     gap: 16px;
     padding: 16px 20px;
-    border-radius: 12px;
     background:
         linear-gradient(var(--accent), var(--accent)) top left / var(--progress-corner-size) var(--progress-corner-thickness) no-repeat,
         linear-gradient(var(--accent), var(--accent)) top left / var(--progress-corner-thickness) var(--progress-corner-size) no-repeat,
