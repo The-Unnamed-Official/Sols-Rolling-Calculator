@@ -1897,6 +1897,23 @@ AURA_REGISTRY.forEach(getAuraState);
 
 const EVENT_SUMMARY_EMPTY_LABEL = "No events enabled";
 
+function syncEventOptionVisualState(eventId, enabled) {
+    const eventMenu = document.getElementById('event-option-list');
+    if (!eventMenu) return;
+
+    const checkbox = eventMenu.querySelector(`input[type="checkbox"][data-event-id="${eventId}"]`);
+    if (!checkbox) return;
+
+    if (checkbox.checked !== enabled) {
+        checkbox.checked = enabled;
+    }
+
+    const option = checkbox.closest('.interface-select__option--checkbox');
+    if (option) {
+        option.classList.toggle('interface-select__option--active', !!enabled);
+    }
+}
+
 function gatherActiveEventLabels() {
     return EVENT_LIST
         .filter(event => enabledEvents.has(event.id))
@@ -2030,16 +2047,11 @@ function setEventToggleState(eventId, enabled) {
     } else if (!enabled && hasEvent) {
         enabledEvents.delete(eventId);
     } else {
+        syncEventOptionVisualState(eventId, enabled);
         return;
     }
 
-    const eventMenu = document.getElementById('event-option-list');
-    if (eventMenu) {
-        const checkbox = eventMenu.querySelector(`input[type="checkbox"][data-event-id="${eventId}"]`);
-        if (checkbox && checkbox.checked !== enabled) {
-            checkbox.checked = enabled;
-        }
-    }
+    syncEventOptionVisualState(eventId, enabled);
 
     updateEventSummary();
     enforceBiomeEventRestrictions();
@@ -2053,6 +2065,7 @@ function initializeEventSelector() {
     checkboxes.forEach(input => {
         const eventId = input.dataset.eventId;
         input.checked = enabledEvents.has(eventId);
+        syncEventOptionVisualState(eventId, input.checked);
         input.addEventListener('change', () => {
             setEventToggleState(eventId, input.checked);
         });
