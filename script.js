@@ -1061,8 +1061,12 @@ function runRollSimulation() {
         for (const aura of AURA_LIBRARY) {
             if (aura.wonCount <= 0) continue;
 
-            const rarityClass = determineRarityClass(aura, biome);
-            const specialClass = deriveAuraStyleClass(aura);
+            const rarityClass = typeof resolveRarityClass === 'function'
+                ? resolveRarityClass(aura, biome)
+                : '';
+            const specialClass = typeof resolveAuraStyleClass === 'function'
+                ? resolveAuraStyleClass(aura)
+                : '';
             const eventClass = aura.event ? 'sigil-event-text' : '';
             const classAttr = [rarityClass, specialClass, eventClass].filter(Boolean).join(' ');
             const formattedName = formatAuraNameMarkup(aura);
