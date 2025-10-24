@@ -1253,8 +1253,22 @@ function resolveAuraStyleClass(aura) {
     if (name.startsWith('Equinox')) classes.push('sigil-effect-equinox');
 
     const auraData = typeof aura === 'string' ? null : aura;
+
     if (auraMatchesAnyBiome(auraData, ['pumpkinMoon', 'graveyard'])) {
         classes.push('sigil-outline-halloween');
+    }
+
+    // New: only add the glitch outline when the aura is exclusively from glitch OR exclusively from dreamspace.
+    // i.e. nativeBiomes is a Set with exactly one member and that member is 'glitch' or 'dreamspace'.
+    if (auraData && auraData.nativeBiomes instanceof Set) {
+        if (auraData.nativeBiomes.size === 1 && (auraData.nativeBiomes.has('glitch') || auraData.nativeBiomes.has('dreamspace'))) {
+            classes.push('sigil-outline-glitch');
+        }
+    } else {
+        // Fallback for legacy/edge cases: if we don't have nativeBiomes, keep prior behavior (if any).
+        if (auraMatchesAnyBiome(auraData, ['glitch'])) {
+            classes.push('sigil-outline-glitch');
+        }
     }
 
     const shortName = name.includes(' - ') ? name.split(' - ')[0].trim() : name.trim();
