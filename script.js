@@ -723,15 +723,25 @@ document.addEventListener('DOMContentLoaded', () => {
     initializeSingleSelect('biome-select');
 });
 
-// XP needs a rework
-function getXpForChance(chance) {
-    if (chance >= 10000 && chance <= 99998) return 0;
-    if (chance >= 99999 && chance <= 999999) return 0;
-    if (chance >= 1000000 && chance <= 9999999) return 200;
-    if (chance >= 10000000 && chance <= 99999998) return 2000;
-    if (chance >= 99999999 && chance <= 1000000000) return 20000;
-    if (chance > 1000000000) return 20000;
-    return 0;
+// XP is awarded once per rarity tier. Landing any aura within an inclusive tier range grants that tier's XP
+// a single time per simulation run, regardless of how many qualifying auras were rolled in that band.
+const XP_RARITY_TIERS = [
+    { key: 'tier-9k', min: 9999, max: 99998, xp: 1000, label: '1 in 9,999 – 99,998' },
+    { key: 'tier-99k', min: 99999, max: 999998, xp: 2500, label: '1 in 99,999 – 999,998' },
+    { key: 'tier-999k', min: 999999, max: 9999998, xp: 5000, label: '1 in 999,999 – 9,999,998' },
+    { key: 'tier-9m', min: 9999999, max: 99999998, xp: 7500, label: '1 in 9,999,999 – 99,999,998' },
+    { key: 'tier-99m', min: 99999999, max: 999999998, xp: 15000, label: '1 in 99,999,999 – 999,999,998' },
+    { key: 'tier-999m', min: 999999999, max: Number.POSITIVE_INFINITY, xp: 30000, label: '1 in 999,999,999+' }
+];
+
+function getXpTierForChance(chance) {
+    if (!Number.isFinite(chance)) return null;
+    for (const tier of XP_RARITY_TIERS) {
+        if (chance >= tier.min && chance <= tier.max) {
+            return tier;
+        }
+    }
+    return null;
 }
 
 // Run the roll simulation while keeping the UI responsive
@@ -1056,13 +1066,20 @@ function roll() {
 
         let totalXP = 0;
         const xpLines = [];
+        const earnedXpTiers = new Set();
         for (const aura of auras) {
             if (aura.wonCount > 0) {
-                const xpPer = getXpForChance(aura.chance);
-                const auraXp = xpPer * aura.wonCount;
-                if (xpPer > 0) {
-                    totalXP += auraXp;
+                const tier = getXpTierForChance(aura.chance);
+                if (tier) {
+                    earnedXpTiers.add(tier.key);
                 }
+            }
+        }
+
+        for (const tier of XP_RARITY_TIERS) {
+            if (earnedXpTiers.has(tier.key)) {
+                totalXP += tier.xp;
+                xpLines.push(`Reached ${tier.label}: +${formatNumber(tier.xp)} XP`);
             }
         }
 

@@ -519,7 +519,7 @@ function shouldApplyGlitchBaseEffect() {
 const GLITCH_BASE_FILTER_FREQUENCY = 2400;
 const GLITCH_BASE_FILTER_Q = 0.5;
 const GLITCH_BASE_GAIN = 0.32;
-const GLITCH_BASE_DISTORTION = 360;
+const GLITCH_BASE_DISTORTION = 220;
 const GLITCH_BASE_HIGHPASS_FREQUENCY = 480;
 const GLITCH_BASE_HIGHPASS_Q = 0.65;
 const GLITCH_IDLE_HIGHPASS_FREQUENCY = 140;
@@ -529,7 +529,8 @@ const GLITCH_WARBLE_RATE_MAX = 0.9;
 const GLITCH_WARBLE_REST_MIN = 1600;
 const GLITCH_WARBLE_REST_MAX = 3200;
 const GLITCH_RUIN_MIN_FREQUENCY = 360;
-const GLITCH_RUIN_MAX_DISTORTION = 660;
+const GLITCH_RUIN_MIN_DISTORTION = 180;
+const GLITCH_RUIN_MAX_DISTORTION = 420;
 
 function clearGlitchAudioRuinTimer() {
     if (glitchAudioState.ruinTimeoutId !== null && typeof window !== 'undefined') {
@@ -839,7 +840,7 @@ function applyGlitchAudioBurst() {
         const frequency = randomFloat(GLITCH_RUIN_MIN_FREQUENCY, 2600);
         const q = randomFloat(1.4, 9);
         const gain = Math.max(0, Math.min(1, baseGain * randomFloat(0.25, 0.7)));
-        const distortionAmount = Random(240, GLITCH_RUIN_MAX_DISTORTION);
+        const distortionAmount = Random(GLITCH_RUIN_MIN_DISTORTION, GLITCH_RUIN_MAX_DISTORTION);
         const filterTypes = ['bandpass', 'highpass', 'notch'];
         const selectedType = filterTypes[Math.floor(Math.random() * filterTypes.length)] || 'bandpass';
 
