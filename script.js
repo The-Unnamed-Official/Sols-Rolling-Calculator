@@ -283,6 +283,24 @@ function playSoundEffect(audioElement, category = 'rolling') {
     });
 }
 
+function stopSoundEffect(audioElement) {
+    if (!audioElement) return;
+    try {
+        if (typeof audioElement.pause === 'function') {
+            audioElement.pause();
+        }
+    } catch (error) {
+        console.warn('Unable to pause audio element', error);
+    }
+    try {
+        if ('currentTime' in audioElement) {
+            audioElement.currentTime = 0;
+        }
+    } catch (error) {
+        console.warn('Unable to reset audio element currentTime', error);
+    }
+}
+
 function computeBackgroundMusicBase(bgMusic) {
     if (!bgMusic) return 0.18;
     const dataset = bgMusic.dataset || {};
@@ -360,6 +378,7 @@ function toggleRollingAudio() {
     appState.audio.roll = !appState.audio.roll;
     const bgMusic = document.getElementById('ambientMusic');
     const soundToggle = document.getElementById('rollAudioToggle');
+    const rollingLoop = document.getElementById('rollLoopSound');
     if (bgMusic && !bgMusic.getAttribute('data-current-src')) {
         bgMusic.setAttribute('data-current-src', bgMusic.src);
     }
@@ -374,13 +393,22 @@ function toggleRollingAudio() {
             }
             startBackgroundMusic(bgMusic);
         }
-    } else if (bgMusic) {
-        bgMusic.muted = true;
-        if (typeof bgMusic.setAttribute === 'function') {
-            bgMusic.setAttribute('muted', '');
+    } else {
+        stopSoundEffect(rollingLoop);
+        if (rollingLoop) {
+            rollingLoop.muted = true;
+            if (typeof rollingLoop.setAttribute === 'function') {
+                rollingLoop.setAttribute('muted', '');
+            }
         }
-        bgMusic.pause();
-        bgMusic.currentTime = 0;
+        if (bgMusic) {
+            bgMusic.muted = true;
+            if (typeof bgMusic.setAttribute === 'function') {
+                bgMusic.setAttribute('muted', '');
+            }
+            bgMusic.pause();
+            bgMusic.currentTime = 0;
+        }
     }
 
     if (soundToggle) {
@@ -2110,6 +2138,7 @@ function runRollSimulation() {
         brandMark.classList.add('banner__emblem--spinning');
     }
 
+    stopSoundEffect(audio.roll);
     playSoundEffect(audio.roll);
 
     let total = Number.parseInt(rollCountInput.value, 10);
@@ -2251,6 +2280,7 @@ function runRollSimulation() {
     const activeMemoryAura = (oblivionPresetEnabled && luckValue >= OBLIVION_LUCK_TARGET) ? memoryAuraData : null;
     const memoryProbability = activeMemoryAura ? 1 / OBLIVION_MEMORY_ODDS : 0;
     const oblivionProbability = activeOblivionAura ? 1 / OBLIVION_POTION_ODDS : 0;
+    const cutscenesEnabled = appState.cinematic === true;
 
     const queueAnimationFrame = (typeof window !== 'undefined' && typeof window.requestAnimationFrame === 'function')
         ? callback => window.requestAnimationFrame(callback)
@@ -2340,6 +2370,7 @@ function runRollSimulation() {
             brandMark.classList.remove('banner__emblem--spinning');
         }
         simulationActive = false;
+        stopSoundEffect(audio.roll);
 
         const endTime = performance.now();
         const executionTime = ((endTime - startTime) / 1000).toFixed(0);
