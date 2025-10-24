@@ -1,3 +1,4 @@
+// Generate pseudo-random numbers using the SFC32 algorithm for consistent rolls
 function sfc32(a, b, c, d) {
     return function() {
       a |= 0; b |= 0; c |= 0; d |= 0;
@@ -11,17 +12,22 @@ function sfc32(a, b, c, d) {
     }
 }
 
+// Capture a random seed for each component so the generator starts in a varied state
 const seedgen = () => (Math.random()*2**32)>>>0;
+// Shared generator instance that all random helpers read from
 const getRand = sfc32(seedgen(), seedgen(), seedgen(), seedgen());
 
+// Produce an integer between two inclusive bounds
 function Random(min, max) {
     return Math.floor(getRand() * (max - min + 1)) + min;
 }
 
+// Produce a floating-point value between two bounds
 function randomFloat(min, max) {
     return getRand() * (max - min) + min;
 }
 
+// Track each feature toggle to avoid repeated DOM queries
 let rollingSoundEnabled = false;
 let uiSoundEnabled = false;
 let cutscenesEnabled = false;
@@ -29,11 +35,13 @@ let glitchEffectsEnabled = true;
 let videoPlaying = false;
 let scrollLockState = null;
 
+// These caches prevent redundant audio decoding and keep track of gain adjustments
 const audioBufferCache = new Map();
 const audioBufferPromises = new Map();
 const mediaElementGainMap = new WeakMap();
 let audioContextInstance = null;
 
+// Lazily create (or reuse) a web audio context when the browser allows it
 function ensureAudioContext() {
     if (typeof window === 'undefined') return null;
     if (!audioContextInstance) {
@@ -44,6 +52,7 @@ function ensureAudioContext() {
     return audioContextInstance;
 }
 
+// Make sure playback can resume after a user gesture if the context was suspended
 function resumeAudioContext() {
     const context = ensureAudioContext();
     if (context && context.state === 'suspended') {
@@ -52,6 +61,7 @@ function resumeAudioContext() {
     return context;
 }
 
+// Normalize the audio/video source so caching keys are consistent across relative URLs
 function resolveMediaSourceUrl(element) {
     if (!element) return null;
     const rawSrc = element.getAttribute('src') || element.currentSrc;
@@ -63,6 +73,7 @@ function resolveMediaSourceUrl(element) {
     }
 }
 
+// Check whether connecting the media element to the Web Audio graph is safe
 function canUseMediaElementSource(element) {
     if (!element || typeof window === 'undefined') return false;
 
@@ -91,6 +102,7 @@ function canUseMediaElementSource(element) {
     }
 }
 
+// Apply gain configuration through Web Audio when possible, otherwise fall back to element volume
 function configureMediaElementGain(element) {
     if (!element) return;
     const dataset = element.dataset || {};
@@ -121,6 +133,7 @@ function configureMediaElementGain(element) {
     element.volume = Math.max(0, Math.min(gainValue, 1));
 }
 
+// Heuristic to detect touch-first devices and adjust UI expectations
 function isMobileDevice() {
     return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
         || (window.matchMedia("(max-width: 768px)").matches)
@@ -129,11 +142,13 @@ function isMobileDevice() {
         || (navigator.msMaxTouchPoints > 0);
 }
 
+// Separate toggles for UI and rolling sounds so they can be controlled independently
 function isSoundCategoryEnabled(category) {
     if (category === 'ui') return uiSoundEnabled;
     return rollingSoundEnabled;
 }
 
+// Play a sound effect with respect to user toggles and cached buffers
 function playSound(audioElement, category = 'rolling') {
     if (!audioElement) return;
 
@@ -1166,28 +1181,42 @@ function setLuck(value, options = {}) {
     }
 }
 
+// Recalculate the combined luck multiplier whenever a control changes
 function updateLuckValue() {
-    const biome = document.getElementById('biome-select').value;
-    const vipMultiplier = parseFloat(document.getElementById('vip-select').value);
-    let xyzMultiplier = 1;
-    let daveMultiplier = 1;
-    if (biome === "limbo") {
-        daveMultiplier = parseFloat(document.getElementById('dave-luck-select').value);
-    } else {
-        xyzMultiplier = document.getElementById('xyz-luck').checked ? 2 : 1;
-    }
-    const luckInput = document.getElementById('luck');
-    if (luckInput.value && parseFloat(luckInput.value) !== currentLuck) {
-        baseLuck = parseFloat(luckInput.value);
-        currentLuck = baseLuck;
+    const controls = {
+        biome: document.getElementById('biome-select'),
+        vip: document.getElementById('vip-select'),
+        xyz: document.getElementById('xyz-luck'),
+        dave: document.getElementById('dave-luck-select'),
+        luckInput: document.getElementById('luck')
+    };
+
+    const biomeValue = controls.biome ? controls.biome.value : 'normal';
+    const isLimboBiome = biomeValue === 'limbo';
+
+    const multipliers = {
+        vip: parseFloat(controls.vip ? controls.vip.value : '1') || 1,
+        xyz: !isLimboBiome && controls.xyz && controls.xyz.checked ? 2 : 1,
+        dave: isLimboBiome && controls.dave ? parseFloat(controls.dave.value) || 1 : 1
+    };
+
+    const luckField = controls.luckInput;
+    const enteredLuck = luckField && luckField.value ? parseFloat(luckField.value) : NaN;
+    if (luckField && luckField.value && Number.isFinite(enteredLuck) && enteredLuck !== currentLuck) {
+        baseLuck = enteredLuck;
+        currentLuck = enteredLuck;
         lastVipMultiplier = 1;
         lastXyzMultiplier = 1;
         lastDaveMultiplier = 1;
-        document.getElementById('vip-select').value = "1";
-        document.getElementById('xyz-luck').checked = false;
-        refreshCustomSelect('vip-select');
-        if (document.getElementById('dave-luck-select')) {
-            document.getElementById('dave-luck-select').value = "1";
+        if (controls.vip) {
+            controls.vip.value = "1";
+            refreshCustomSelect('vip-select');
+        }
+        if (controls.xyz) {
+            controls.xyz.checked = false;
+        }
+        if (controls.dave) {
+            controls.dave.value = "1";
             refreshCustomSelect('dave-luck-select');
         }
         if (typeof handlePresetOptionChange === 'function') {
@@ -1195,11 +1224,14 @@ function updateLuckValue() {
         }
         return;
     }
-    currentLuck = baseLuck * vipMultiplier * xyzMultiplier * daveMultiplier;
-    lastVipMultiplier = vipMultiplier;
-    lastXyzMultiplier = xyzMultiplier;
-    lastDaveMultiplier = daveMultiplier;
-    luckInput.value = currentLuck;
+
+    currentLuck = baseLuck * multipliers.vip * multipliers.xyz * multipliers.dave;
+    lastVipMultiplier = multipliers.vip;
+    lastXyzMultiplier = multipliers.xyz;
+    lastDaveMultiplier = multipliers.dave;
+    if (luckField) {
+        luckField.value = currentLuck;
+    }
 }
 
 function resetLuck() {
@@ -1533,13 +1565,14 @@ async function playAuraSequence(queue) {
     }
 }
 
+// Decide which rarity CSS class to apply to an aura for display purposes
 function getRarityClass(aura, biome) {
     if (aura && aura.disableRarityClass) return '';
-    // Special case for Fault
+    // Fault always appears with a challenged rarity style to match in-game presentation
     if (aura && aura.name === "Fault") return 'rarity-challenged';
     if (aura && aura.exclusiveTo && (aura.exclusiveTo.includes("limbo") || aura.exclusiveTo.includes("limbo-null"))) {
         if (biome === "limbo") return 'rarity-limbo';
-        // fallback to normal rarity if not in limbo biome
+        // Limbo exclusives revert to their standard rarity outside of Limbo
     }
     if (aura && aura.exclusiveTo && !aura.exclusiveTo.includes("limbo-null")) return 'rarity-challenged';
     const chance = aura.chance;

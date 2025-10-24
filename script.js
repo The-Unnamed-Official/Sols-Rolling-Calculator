@@ -1,9 +1,31 @@
+// Reference frequently accessed UI elements at module load
 let results = document.getElementById('result-text');
 let luck = document.getElementById('luck');
 let isRolling = false;
 
 const customSelectRegistry = new Map();
 
+const numberFormatter = new Intl.NumberFormat();
+const formatNumber = value => numberFormatter.format(value);
+
+const domCache = {
+    rollButton: document.querySelector('.roll-button'),
+    brandMark: document.querySelector('.brand__mark'),
+    rollInput: document.getElementById('rolls'),
+    biomeSelect: document.getElementById('biome-select'),
+    progressContainer: document.querySelector('.progress'),
+    progressFill: document.querySelector('.progress__fill'),
+    progressValue: document.querySelector('.progress__value'),
+    audio: {
+        roll: document.getElementById('rollSound'),
+        k1: document.getElementById('1kSound'),
+        k10: document.getElementById('10kSound'),
+        k100: document.getElementById('100kSound'),
+        m10: document.getElementById('10mSound'),
+        m100: document.getElementById('100mSound'),
+        limbo99m: document.getElementById('limbo99mSound')
+    }
+};
 
 const OBLIVION_PRESET_KEY = 'oblivion';
 const OBLIVION_PRESET_LUCK = 600000;
@@ -701,7 +723,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initializeSingleSelect('biome-select');
 });
 
-// xp
+// XP needs a rework
 function getXpForChance(chance) {
     if (chance >= 10000 && chance <= 99998) return 0;
     if (chance >= 99999 && chance <= 999999) return 0;
@@ -709,99 +731,131 @@ function getXpForChance(chance) {
     if (chance >= 10000000 && chance <= 99999998) return 2000;
     if (chance >= 99999999 && chance <= 1000000000) return 20000;
     if (chance > 1000000000) return 20000;
-    return 0; // below 1m gives no XP under current rules
+    return 0;
 }
-// end xp
 
+// Run the roll simulation while keeping the UI responsive
 function roll() {
     if (isRolling) return;
 
+    if (!results) {
+        results = document.getElementById('result-text');
+    }
+    if (!luck) {
+        luck = document.getElementById('luck');
+    }
+
+    if (!results || !luck) {
+        return;
+    }
+
+    const {
+        rollButton,
+        brandMark,
+        rollInput,
+        biomeSelect,
+        progressContainer,
+        progressFill,
+        progressValue,
+        audio
+    } = domCache;
+
+    if (!rollButton || !rollInput || !luck) {
+        return;
+    }
+
     isRolling = true;
-    const rollButton = document.querySelector('.roll-button');
-    const brandMark = document.querySelector('.brand__mark');
     rollButton.disabled = true;
     rollButton.style.opacity = '0.5';
     if (brandMark) {
         brandMark.classList.add('brand__mark--spinning');
     }
-    
-    playSound(document.getElementById('rollSound'));
-    if (isNaN(parseInt(document.getElementById('rolls').value))) {
-        document.getElementById('rolls').value = 1;
-    }
-    if (isNaN(parseInt(luck.value))) {
-        luck.value = 1;
+
+    playSound(audio.roll);
+
+    let total = Number.parseInt(rollInput.value, 10);
+    if (!Number.isFinite(total) || total <= 0) {
+        total = 1;
+        rollInput.value = '1';
     }
 
-    const total = parseInt(document.getElementById('rolls').value);
-    const luckValue = Math.max(0, Number.parseFloat(luck.value) || 0);
-    const biome = document.getElementById('biome-select').value;
-    const activeEventSnapshot = new Set(activeEvents);
-    const isEventAuraEnabled = aura => !aura.event || activeEventSnapshot.has(aura.event);
-    
-    results.innerHTML = `Rolling...`;
+    let parsedLuck = Number.parseFloat(luck.value);
+    if (!Number.isFinite(parsedLuck)) {
+        parsedLuck = 1;
+        luck.value = '1';
+    }
+    const luckValue = Math.max(0, parsedLuck);
+    const biome = biomeSelect ? biomeSelect.value : '';
+
+    const eventSnapshot = activeEvents.size > 0 ? new Set(activeEvents) : null;
+    const isEventAuraEnabled = aura => !aura.event || (eventSnapshot ? eventSnapshot.has(aura.event) : activeEvents.has(aura.event));
+
+    results.innerHTML = 'Rolling...';
     let rolls = 0;
     const startTime = performance.now();
-    
-    auras.forEach(aura => {
+
+    for (const aura of auras) {
         aura.wonCount = 0;
         aura.effectiveChance = aura.chance;
-    });
+    }
 
-    let btAuras = {};
+    const breakthroughStatsMap = new Map();
 
-    const progressContainer = document.querySelector('.progress');
-    const progressFill = document.querySelector('.progress__fill');
-    const progressText = document.querySelector('.progress__value');
-    progressContainer.style.display = total >= 100000 ? 'grid' : 'none';
-    progressFill.style.width = '0%';
-    progressText.textContent = '0%';
+    const progressElementsAvailable = progressContainer && progressFill && progressValue;
+    const showProgress = progressElementsAvailable && total >= 100000;
+    if (progressContainer) {
+        progressContainer.style.display = showProgress ? 'grid' : 'none';
+    }
+    if (progressElementsAvailable) {
+        progressFill.style.width = '0%';
+        progressValue.textContent = '0%';
+    }
 
-    let effectiveAuras;
-    if (biome === "limbo") {
-        effectiveAuras = auras.filter(aura =>
-            !aura.requiresOblivionPreset &&
-            isEventAuraEnabled(aura) &&
-            aura.exclusiveTo && (aura.exclusiveTo.includes("limbo") || aura.exclusiveTo.includes("limbo-null"))
-        ).map(aura => {
+    const effectiveAuras = [];
+    if (biome === 'limbo') {
+        for (const aura of auras) {
+            if (aura.requiresOblivionPreset) continue;
+            if (!isEventAuraEnabled(aura)) continue;
+            if (!aura.exclusiveTo) continue;
+            if (!aura.exclusiveTo.includes('limbo') && !aura.exclusiveTo.includes('limbo-null')) continue;
+
             let effectiveChance = aura.chance;
             if (aura.breakthrough && aura.breakthrough.limbo) {
                 effectiveChance = Math.floor(aura.chance / aura.breakthrough.limbo);
             }
-            effectiveChance = Math.max(1, effectiveChance);
-            aura.effectiveChance = effectiveChance;
-            return aura;
-        }).sort((a, b) => b.effectiveChance - a.effectiveChance);
+            aura.effectiveChance = Math.max(1, effectiveChance);
+            effectiveAuras.push(aura);
+        }
     } else {
-        const isRoe = biome === "roe";
-        const glitchLikeBiome = biome === "glitch" || isRoe;
-        const exclusivityBiome = isRoe ? "glitch" : biome;
-        effectiveAuras = auras.map(aura => {
+        const isRoe = biome === 'roe';
+        const glitchLikeBiome = biome === 'glitch' || isRoe;
+        const exclusivityBiome = isRoe ? 'glitch' : biome;
+
+        for (const aura of auras) {
             if (aura.requiresOblivionPreset) {
                 aura.effectiveChance = Infinity;
-                return aura;
+                continue;
             }
             if (!isEventAuraEnabled(aura)) {
                 aura.effectiveChance = Infinity;
-                return aura;
+                continue;
             }
             if (isRoe && ROE_EXCLUDED_AURAS.has(aura.name)) {
                 aura.effectiveChance = Infinity;
-                return aura;
+                continue;
             }
             if (aura.exclusiveTo) {
-                if (aura.exclusiveTo.includes("limbo") && !aura.exclusiveTo.includes("limbo-null")) {
+                if (aura.exclusiveTo.includes('limbo') && !aura.exclusiveTo.includes('limbo-null')) {
                     aura.effectiveChance = Infinity;
-                    return aura;
+                    continue;
                 }
-                const allowEventGlitchAccess = glitchLikeBiome && aura.event &&
-                    activeEventSnapshot.has(aura.event) &&
-                    EVENTS_ALLOWING_GLITCH_ACCESS.has(aura.event);
-                if (!aura.exclusiveTo.includes("limbo-null") && !aura.exclusiveTo.includes(exclusivityBiome) && !allowEventGlitchAccess) {
+                const allowEventGlitchAccess = glitchLikeBiome && aura.event && (eventSnapshot ? eventSnapshot.has(aura.event) : activeEvents.has(aura.event)) && EVENTS_ALLOWING_GLITCH_ACCESS.has(aura.event);
+                if (!aura.exclusiveTo.includes('limbo-null') && !aura.exclusiveTo.includes(exclusivityBiome) && !allowEventGlitchAccess) {
                     aura.effectiveChance = Infinity;
-                    return aura;
+                    continue;
                 }
             }
+
             let effectiveChance = aura.chance;
             if (aura.breakthrough) {
                 if (glitchLikeBiome && (!isRoe || !ROE_BREAKTHROUGH_EXCLUSIONS.has(aura.name))) {
@@ -814,52 +868,79 @@ function roll() {
                     effectiveChance = Math.floor(aura.chance / aura.breakthrough[biome]);
                 }
             }
-            effectiveChance = Math.max(1, effectiveChance);
-            aura.effectiveChance = effectiveChance;
-            return aura;
-        }).sort((a, b) => b.effectiveChance - a.effectiveChance)
-        .filter(aura => aura.effectiveChance !== Infinity);
+
+            aura.effectiveChance = Math.max(1, effectiveChance);
+            if (aura.effectiveChance !== Infinity) {
+                effectiveAuras.push(aura);
+            }
+        }
     }
+
+    effectiveAuras.sort((a, b) => b.effectiveChance - a.effectiveChance);
+
+    const computedAuras = effectiveAuras.map(aura => {
+        const usesBreakthrough = aura.effectiveChance !== aura.chance;
+        const breakthroughStats = usesBreakthrough ? { count: 0, btChance: aura.effectiveChance } : null;
+        if (breakthroughStats) {
+            breakthroughStatsMap.set(aura.name, breakthroughStats);
+        }
+
+        let successThreshold;
+        if (aura.ignoreLuck) {
+            const fixedThreshold = Number.isFinite(aura.fixedRollThreshold) ? aura.fixedRollThreshold : 1;
+            successThreshold = Math.max(0, Math.min(aura.effectiveChance, fixedThreshold));
+        } else {
+            successThreshold = Math.min(aura.effectiveChance, luckValue);
+        }
+
+        const successRatio = successThreshold > 0 ? successThreshold / aura.effectiveChance : 0;
+        return {
+            aura,
+            successRatio,
+            breakthroughStats
+        };
+    });
 
     const activeOblivionAura = (isOblivionPresetActive && luckValue >= OBLIVION_PRESET_LUCK) ? oblivionAuraDefinition : null;
     const activeMemoryAura = (isOblivionPresetActive && luckValue >= OBLIVION_PRESET_LUCK) ? memoryAuraDefinition : null;
+    const memoryProbability = activeMemoryAura ? 1 / OBLIVION_MEMORY_ROLL_ODDS : 0;
+    const oblivionProbability = activeOblivionAura ? 1 / OBLIVION_POTION_ROLL_ODDS : 0;
+
+    const scheduleFrame = (typeof window !== 'undefined' && typeof window.requestAnimationFrame === 'function')
+        ? callback => window.requestAnimationFrame(callback)
+        : callback => setTimeout(callback, 0);
+
+    const updateProgress = showProgress
+        ? progress => {
+            progressFill.style.width = `${progress}%`;
+            progressValue.textContent = `${Math.floor(progress)}%`;
+        }
+        : null;
 
     const CHUNK_SIZE = 100000;
     let currentRoll = 0;
 
     function processChunk() {
         const chunkEnd = Math.min(currentRoll + CHUNK_SIZE, total);
-        
+
         for (let i = currentRoll; i < chunkEnd; i++) {
-            if (activeMemoryAura && Random(1, OBLIVION_MEMORY_ROLL_ODDS) === 1) {
+            if (memoryProbability > 0 && getRand() < memoryProbability) {
                 activeMemoryAura.wonCount++;
                 rolls++;
                 continue;
             }
-            if (activeOblivionAura && Random(1, OBLIVION_POTION_ROLL_ODDS) === 1) {
+            if (oblivionProbability > 0 && getRand() < oblivionProbability) {
                 activeOblivionAura.wonCount++;
                 rolls++;
                 continue;
             }
-            for (let aura of effectiveAuras) {
-                let chance = aura.effectiveChance;
-                let usedBT = aura.effectiveChance !== aura.chance;
-                let btChance = usedBT ? aura.effectiveChance : null;
-                
-                let successThreshold;
-                if (aura.ignoreLuck) {
-                    const fixedThreshold = Number.isFinite(aura.fixedRollThreshold) ? aura.fixedRollThreshold : 1;
-                    successThreshold = Math.max(0, Math.min(chance, fixedThreshold));
-                } else {
-                    successThreshold = Math.min(chance, luckValue);
-                }
-                if (successThreshold > 0 && Random(1, chance) <= successThreshold) {
-                    aura.wonCount++;
-                    if (usedBT) {
-                        if (!btAuras[aura.name]) {
-                            btAuras[aura.name] = { count: 0, btChance: btChance };
-                        }
-                        btAuras[aura.name].count++;
+
+            for (let j = 0; j < computedAuras.length; j++) {
+                const entry = computedAuras[j];
+                if (entry.successRatio > 0 && getRand() < entry.successRatio) {
+                    entry.aura.wonCount++;
+                    if (entry.breakthroughStats) {
+                        entry.breakthroughStats.count++;
                     }
                     break;
                 }
@@ -868,129 +949,131 @@ function roll() {
         }
 
         currentRoll = chunkEnd;
-        const progress = (currentRoll / total) * 100;
-        if (total >= 100000) {
-            requestAnimationFrame(() => {
-                progressFill.style.width = `${progress}%`;
-                progressText.textContent = `${Math.floor(progress)}%`;
-            });
+        if (updateProgress) {
+            const progress = (currentRoll / total) * 100;
+            scheduleFrame(() => updateProgress(progress));
         }
 
         if (currentRoll < total) {
-            setTimeout(processChunk, 0);
-        } else {
-            progressContainer.style.display = 'none';
-            rollButton.disabled = false;
-            rollButton.style.opacity = '1';
-            if (brandMark) {
-                brandMark.classList.remove('brand__mark--spinning');
-            }
-            isRolling = false;
-
-            const endTime = performance.now();
-            const executionTime = ((endTime - startTime) / 1000).toFixed(0);
-
-            if (cutscenesEnabled) {
-                const cutsceneQueue = [];
-                for (const videoId of cutscenePriority) {
-                    const aura = auras.find(entry => entry.cutscene === videoId);
-                    if (aura && aura.wonCount > 0) {
-                        cutsceneQueue.push(videoId);
-                    }
-                }
-                if (cutsceneQueue.length > 0) {
-                    playAuraSequence(cutsceneQueue);
-                }
-            }
-
-            let highestChance = 0;
-            for (let aura of auras) {
-                if (aura.wonCount > 0 && aura.chance > highestChance) {
-                    highestChance = aura.chance;
-                }
-            }
-
-            if (highestChance >= 99999999) {
-                if (biome === 'limbo') {
-                    playSound(document.getElementById('limbo99mSound'));
-                } else {
-                    playSound(document.getElementById('100mSound'));
-                }
-            } else if (highestChance >= 10000000) {
-                playSound(document.getElementById('10mSound'));
-            } else if (highestChance >= 1000000) {
-                playSound(document.getElementById('100kSound'));
-            } else if (highestChance >= 100000) {
-                playSound(document.getElementById('10kSound'));
-            } else if (highestChance >= 1000) {
-                playSound(document.getElementById('1kSound'));
-            }
-
-            let resultText = `
-            Execution time: ${executionTime} seconds. <br> 
-            Rolls: ${rolls.toLocaleString()}<br>
-            Luck: ${parseFloat(luck.value).toLocaleString()}<br><br>
-            `;
-            let resultEntries = [];
-            for (let aura of auras) {
-                if (aura.wonCount > 0) {
-                    let rarityClass = getRarityClass(aura, biome);
-                    let specialClass = getAuraStyleClass(aura);
-                    let eventClass = aura.event ? 'aura-event-text' : '';
-                    let classAttr = [rarityClass, specialClass, eventClass].filter(Boolean).join(' ');
-                    const formattedName = renderAuraName(aura);
-                    if (btAuras[aura.name]) {
-                        let btName = aura.name.replace(
-                            /-\s*[\d,]+/,
-                            `- ${btAuras[aura.name].btChance.toLocaleString()}`
-                        );
-                        const nativeLabel = renderAuraName(aura, btName);
-                        resultEntries.push({
-                            label: `<span class="${classAttr}">[Native] ${nativeLabel} | Times Rolled: ${btAuras[aura.name].count.toLocaleString()}</span>`,
-                            chance: getResultSortChance(aura, btAuras[aura.name].btChance)
-                        });
-                        if (aura.wonCount > btAuras[aura.name].count) {
-                            resultEntries.push({
-                                label: `<span class="${classAttr}">${formattedName} | Times Rolled: ${(aura.wonCount - btAuras[aura.name].count).toLocaleString()}</span>`,
-                                chance: getResultSortChance(aura, aura.chance)
-                            });
-                        }
-                    } else {
-                        resultEntries.push({
-                            label: `<span class="${classAttr}">${formattedName} | Times Rolled: ${aura.wonCount.toLocaleString()}</span>`,
-                            chance: getResultSortChance(aura, aura.chance)
-                        });
-                    }
-                }
-            }
-            resultEntries.sort((a, b) => b.chance - a.chance);
-            for (let entry of resultEntries) {
-                resultText += entry.label + "<br>";
-            }
-
-            // xp
-            let totalXP = 0;
-            let xpLines = [];
-            for (let aura of auras) {
-                if (aura.wonCount > 0) {
-                    const xpPer = getXpForChance(aura.chance);
-                    const auraXp = xpPer * aura.wonCount;
-                    if (xpPer > 0) {
-                        totalXP += auraXp;
-                    }
-                }
-            }
-
-            resultText += `<br><strong>Total XP Earned: ${totalXP.toLocaleString()}</strong><br>`;
-            for (let line of xpLines) {
-                resultText += line + "<br>";
-            }
-            // end xp
-
-            results.innerHTML = resultText;
+            scheduleFrame(processChunk);
+            return;
         }
+
+        if (progressContainer) {
+            progressContainer.style.display = 'none';
+        }
+        rollButton.disabled = false;
+        rollButton.style.opacity = '1';
+        if (brandMark) {
+            brandMark.classList.remove('brand__mark--spinning');
+        }
+        isRolling = false;
+
+        const endTime = performance.now();
+        const executionTime = ((endTime - startTime) / 1000).toFixed(0);
+
+        if (cutscenesEnabled) {
+            const cutsceneQueue = [];
+            for (const videoId of cutscenePriority) {
+                const aura = auras.find(entry => entry.cutscene === videoId);
+                if (aura && aura.wonCount > 0) {
+                    cutsceneQueue.push(videoId);
+                }
+            }
+            if (cutsceneQueue.length > 0) {
+                playAuraSequence(cutsceneQueue);
+            }
+        }
+
+        let highestChance = 0;
+        for (const aura of auras) {
+            if (aura.wonCount > 0 && aura.chance > highestChance) {
+                highestChance = aura.chance;
+            }
+        }
+
+        if (highestChance >= 99999999) {
+            if (biome === 'limbo') {
+                playSound(audio.limbo99m);
+            } else {
+                playSound(audio.m100);
+            }
+        } else if (highestChance >= 10000000) {
+            playSound(audio.m10);
+        } else if (highestChance >= 1000000) {
+            playSound(audio.k100);
+        } else if (highestChance >= 100000) {
+            playSound(audio.k10);
+        } else if (highestChance >= 1000) {
+            playSound(audio.k1);
+        }
+
+        const resultChunks = [
+            `Execution time: ${executionTime} seconds. <br>`,
+            `Rolls: ${formatNumber(rolls)}<br>`,
+            `Luck: ${formatNumber(luckValue)}<br><br>`
+        ];
+
+        const resultEntries = [];
+        for (const aura of auras) {
+            if (aura.wonCount <= 0) continue;
+
+            const rarityClass = getRarityClass(aura, biome);
+            const specialClass = getAuraStyleClass(aura);
+            const eventClass = aura.event ? 'aura-event-text' : '';
+            const classAttr = [rarityClass, specialClass, eventClass].filter(Boolean).join(' ');
+            const formattedName = renderAuraName(aura);
+            const breakthroughStats = breakthroughStatsMap.get(aura.name);
+
+            if (breakthroughStats && breakthroughStats.count > 0) {
+                const btName = aura.name.replace(
+                    /-\s*[\d,]+/,
+                    `- ${formatNumber(breakthroughStats.btChance)}`
+                );
+                const nativeLabel = renderAuraName(aura, btName);
+                resultEntries.push({
+                    label: `<span class="${classAttr}">[Native] ${nativeLabel} | Times Rolled: ${formatNumber(breakthroughStats.count)}</span>`,
+                    chance: getResultSortChance(aura, breakthroughStats.btChance)
+                });
+                if (aura.wonCount > breakthroughStats.count) {
+                    resultEntries.push({
+                        label: `<span class="${classAttr}">${formattedName} | Times Rolled: ${formatNumber(aura.wonCount - breakthroughStats.count)}</span>`,
+                        chance: getResultSortChance(aura, aura.chance)
+                    });
+                }
+            } else {
+                resultEntries.push({
+                    label: `<span class="${classAttr}">${formattedName} | Times Rolled: ${formatNumber(aura.wonCount)}</span>`,
+                    chance: getResultSortChance(aura, aura.chance)
+                });
+            }
+        }
+
+        resultEntries.sort((a, b) => b.chance - a.chance);
+        for (const entry of resultEntries) {
+            resultChunks.push(`${entry.label}<br>`);
+        }
+
+        let totalXP = 0;
+        const xpLines = [];
+        for (const aura of auras) {
+            if (aura.wonCount > 0) {
+                const xpPer = getXpForChance(aura.chance);
+                const auraXp = xpPer * aura.wonCount;
+                if (xpPer > 0) {
+                    totalXP += auraXp;
+                }
+            }
+        }
+
+        resultChunks.push(`<br><strong>Total XP Earned: ${formatNumber(totalXP)}</strong><br>`);
+        for (const line of xpLines) {
+            resultChunks.push(`${line}<br>`);
+        }
+
+        results.innerHTML = resultChunks.join('');
     }
 
-    setTimeout(processChunk, 0);
+    scheduleFrame(processChunk);
 }
 
