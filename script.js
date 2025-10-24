@@ -411,7 +411,7 @@ for (const [eventId, auraNames] of Object.entries(EVENT_AURA_MAP)) {
     });
 }
 
-const cutscenePriority = ["oblivion-cs", "memory-cs", "equinox-cs", "lumi-cs", "pixelation-cs", "lamenthyr-cs", "erebus-cs", "dreammetric-cs", "oppression-cs"];
+const cutscenePriority = ["oblivion-cs", "memory-cs", "equinox-cs", "erebus-cs", "lumi-cs", "pixelation-cs", "lamenthyr-cs", "dreammetric-cs", "oppression-cs"];
 
 oblivionAuraDefinition = auras.find(aura => aura.name === OBLIVION_AURA_NAME) || null;
 memoryAuraDefinition = auras.find(aura => aura.name === OBLIVION_MEMORY_AURA_NAME) || null;
@@ -927,47 +927,67 @@ function roll() {
         ? callback => window.requestAnimationFrame(callback)
         : callback => setTimeout(callback, 0);
 
+    const PROGRESS_ROUNDING_STEP = 1;
     const updateProgress = showProgress
-        ? progress => {
-            const progressValueRounded = Math.floor(progress);
-            progressFill.style.width = `${progress}%`;
-            progressValue.textContent = `${progressValueRounded}%`;
-            progressContainer.dataset.progress = `${progressValueRounded}`;
-        }
+        ? (() => {
+            let lastProgressValue = -1;
+            return progress => {
+                const progressValueRounded = Math.floor(progress / PROGRESS_ROUNDING_STEP) * PROGRESS_ROUNDING_STEP;
+                if (progressValueRounded === lastProgressValue && progress < 100) {
+                    return;
+                }
+                lastProgressValue = progressValueRounded;
+                progressFill.style.width = `${progress}%`;
+                progressValue.textContent = `${progressValueRounded}%`;
+                progressContainer.dataset.progress = `${progressValueRounded}`;
+            };
+        })()
         : null;
 
-    const CHUNK_SIZE = 100000;
+    const MAX_FRAME_DURATION = 14;
+    const MAX_ROLLS_PER_CHUNK = 40000;
+    const CHECK_INTERVAL = 512;
     let currentRoll = 0;
 
-    function processChunk() {
-        const chunkEnd = Math.min(currentRoll + CHUNK_SIZE, total);
-
-        for (let i = currentRoll; i < chunkEnd; i++) {
-            if (memoryProbability > 0 && getRand() < memoryProbability) {
-                activeMemoryAura.wonCount++;
-                rolls++;
-                continue;
-            }
-            if (oblivionProbability > 0 && getRand() < oblivionProbability) {
-                activeOblivionAura.wonCount++;
-                rolls++;
-                continue;
-            }
-
-            for (let j = 0; j < computedAuras.length; j++) {
-                const entry = computedAuras[j];
-                if (entry.successRatio > 0 && getRand() < entry.successRatio) {
-                    entry.aura.wonCount++;
-                    if (entry.breakthroughStats) {
-                        entry.breakthroughStats.count++;
-                    }
-                    break;
-                }
-            }
+    function executeSingleRoll() {
+        if (memoryProbability > 0 && getRand() < memoryProbability) {
+            activeMemoryAura.wonCount++;
             rolls++;
+            return;
+        }
+        if (oblivionProbability > 0 && getRand() < oblivionProbability) {
+            activeOblivionAura.wonCount++;
+            rolls++;
+            return;
         }
 
-        currentRoll = chunkEnd;
+        for (let j = 0; j < computedAuras.length; j++) {
+            const entry = computedAuras[j];
+            if (entry.successRatio > 0 && getRand() < entry.successRatio) {
+                entry.aura.wonCount++;
+                if (entry.breakthroughStats) {
+                    entry.breakthroughStats.count++;
+                }
+                break;
+            }
+        }
+        rolls++;
+    }
+
+    function processChunk() {
+        const deadline = performance.now() + MAX_FRAME_DURATION;
+        let processedThisChunk = 0;
+
+        while (currentRoll < total && processedThisChunk < MAX_ROLLS_PER_CHUNK) {
+            executeSingleRoll();
+            currentRoll++;
+            processedThisChunk++;
+
+            if (processedThisChunk % CHECK_INTERVAL === 0 && performance.now() >= deadline) {
+                break;
+            }
+        }
+
         if (updateProgress) {
             const progress = (currentRoll / total) * 100;
             scheduleFrame(() => updateProgress(progress));
