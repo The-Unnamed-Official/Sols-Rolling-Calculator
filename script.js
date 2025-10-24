@@ -2997,8 +2997,21 @@ async function handleShareAction(format) {
                 notifyShareResult('Copy manually required', 'neutral');
             }
         } else if (normalized === 'image') {
-            const success = await generateShareImage(lastSimulationSummary);
-            notifyShareResult(success ? 'Image downloaded!' : 'Image failed', success ? 'success' : 'error');
+            const mode = requestImageShareMode();
+            if (!mode) {
+                notifyShareResult('Image share cancelled', 'neutral');
+                return;
+            }
+            const outcome = await generateShareImage(lastSimulationSummary, mode);
+            if (outcome === 'copied') {
+                notifyShareResult('Image copied to clipboard!', 'success');
+            } else if (outcome === 'downloaded') {
+                notifyShareResult('Image downloaded!', 'success');
+            } else if (outcome === 'downloaded-fallback') {
+                notifyShareResult('Clipboard unavailable, image downloaded instead.', 'neutral');
+            } else {
+                notifyShareResult('Image failed', 'error');
+            }
         } else {
             notifyShareResult('Unknown share option', 'error');
         }
@@ -3041,6 +3054,42 @@ async function copyTextToClipboard(text) {
         return successful;
     } catch (error) {
         console.warn('execCommand copy failed', error);
+        return false;
+    }
+}
+
+function requestImageShareMode() {
+    if (typeof window === 'undefined') {
+        return 'download';
+    }
+    const response = window.prompt('How would you like to share the image? Enter "download" or "copy".', 'download');
+    if (response === null) {
+        return null;
+    }
+    const normalized = response.trim().toLowerCase();
+    if (normalized === 'download' || normalized === 'copy') {
+        return normalized;
+    }
+    window.alert('Unrecognized option. The image will be downloaded.');
+    return 'download';
+}
+
+async function copyImageBlobToClipboard(blob) {
+    if (!blob) {
+        return false;
+    }
+    if (typeof navigator === 'undefined' || !navigator.clipboard || typeof navigator.clipboard.write !== 'function') {
+        return false;
+    }
+    if (typeof ClipboardItem === 'undefined') {
+        return false;
+    }
+    try {
+        const item = new ClipboardItem({ [blob.type || 'image/png']: blob });
+        await navigator.clipboard.write([item]);
+        return true;
+    } catch (error) {
+        console.warn('Clipboard image copy failed', error);
         return false;
     }
 }
@@ -3752,7 +3801,7 @@ async function ensureShareFontsLoaded() {
 
 
 
-async function generateShareImage(summary) {
+async function generateShareImage(summary, mode = 'download') {
     if (typeof document === 'undefined') {
         return false;
     }
@@ -3893,7 +3942,17 @@ async function generateShareImage(summary) {
 
     const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
     if (!blob) {
-        return false;
+        return 'failed';
+    }
+
+    let fallbackFromCopy = false;
+    if (mode === 'copy') {
+        const copied = await copyImageBlobToClipboard(blob);
+        if (copied) {
+            return 'copied';
+        }
+        mode = 'download';
+        fallbackFromCopy = true;
     }
 
     const url = URL.createObjectURL(blob);
@@ -3912,7 +3971,10 @@ async function generateShareImage(summary) {
         }
     }
 
-    return true;
+    if (mode === 'download') {
+        return fallbackFromCopy ? 'downloaded-fallback' : 'downloaded';
+    }
+    return 'failed';
 }
 
 function wrapTextLines(context, text, maxWidth) {
