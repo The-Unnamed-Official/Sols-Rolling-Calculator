@@ -1180,12 +1180,72 @@ function playAuraVideo(videoId) {
     });
 }
 
+function getFullscreenElement() {
+    if (typeof document === 'undefined') return null;
+    return document.fullscreenElement
+        || document.webkitFullscreenElement
+        || document.mozFullScreenElement
+        || document.msFullscreenElement
+        || null;
+}
+
+async function requestFullscreen(element) {
+    if (!element) return false;
+    const method = element.requestFullscreen
+        || element.webkitRequestFullscreen
+        || element.mozRequestFullScreen
+        || element.msRequestFullscreen;
+    if (!method) return false;
+    try {
+        const result = method.call(element);
+        if (result && typeof result.then === 'function') {
+            await result;
+        }
+        return true;
+    } catch (error) {
+        return false;
+    }
+}
+
+async function exitFullscreen() {
+    if (typeof document === 'undefined') return false;
+    if (!getFullscreenElement()) return false;
+    const method = document.exitFullscreen
+        || document.webkitExitFullscreen
+        || document.mozCancelFullScreen
+        || document.msExitFullscreen;
+    if (!method) return false;
+    try {
+        const result = method.call(document);
+        if (result && typeof result.then === 'function') {
+            await result;
+        }
+        return true;
+    } catch (error) {
+        return false;
+    }
+}
+
 async function playAuraSequence(queue) {
     if (!Array.isArray(queue) || queue.length === 0) return;
 
-    for (const videoId of queue) {
-        if (!appState.cinematic) break;
-        await playAuraVideo(videoId);
+    const documentElement = typeof document !== 'undefined' ? document.documentElement : null;
+    const wasFullscreen = !!getFullscreenElement();
+    let enteredFullscreen = false;
+
+    if (!wasFullscreen && documentElement && document.fullscreenEnabled !== false) {
+        enteredFullscreen = await requestFullscreen(documentElement);
+    }
+
+    try {
+        for (const videoId of queue) {
+            if (!appState.cinematic) break;
+            await playAuraVideo(videoId);
+        }
+    } finally {
+        if (!wasFullscreen && enteredFullscreen) {
+            await exitFullscreen();
+        }
     }
 }
 
