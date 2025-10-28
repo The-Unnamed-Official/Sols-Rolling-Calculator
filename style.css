@@ -2837,3 +2837,53 @@ select.form-field__input option {
         font-size: 18px;
     }
 }
+
+.cutscene-warning-overlay {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: clamp(24px, 5vw, 48px);
+    background: rgba(3, 8, 18, 0.82);
+    backdrop-filter: blur(6px);
+    z-index: 9999;
+}
+
+.cutscene-warning {
+    background: linear-gradient(155deg, rgba(12, 22, 40, 0.96), rgba(4, 10, 22, 0.98));
+    border: 1px solid rgba(127, 227, 255, 0.45);
+    box-shadow: 0 28px 60px rgba(0, 6, 18, 0.66), 0 0 30px rgba(112, 216, 255, 0.22);
+    border-radius: 18px;
+    padding: clamp(24px, 4vw, 38px);
+    max-width: min(540px, 90vw);
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    gap: clamp(20px, 4vh, 28px);
+}
+
+.cutscene-warning__message {
+    margin: 0;
+    font-size: clamp(18px, 3vw, 22px);
+    line-height: 1.4;
+    color: var(--text-secondary);
+}
+
+.cutscene-warning__note {
+    font-weight: 700;
+    color: #9de8ff;
+}
+
+.cutscene-warning__actions {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+@media (min-width: 640px) {
+    .cutscene-warning__actions {
+        flex-direction: row;
+        justify-content: center;
+    }
+}
