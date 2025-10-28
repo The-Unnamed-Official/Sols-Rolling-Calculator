@@ -2337,6 +2337,56 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
+const BIOME_ICON_OVERRIDES = {
+    pumpkinMoon: 'halloween',
+    graveyard: 'halloween',
+    bloodRain: 'halloween',
+    blazing: 'blazing'
+};
+
+function getBiomeIconSource(value) {
+    if (!value) {
+        return null;
+    }
+    const iconKey = BIOME_ICON_OVERRIDES[value] || value;
+    return `files/${iconKey}BiomeIcon.png`;
+}
+
+function populateBiomeOptionElement(target, option) {
+    if (!target || !option) {
+        return '';
+    }
+
+    const label = option.textContent.trim();
+    target.innerHTML = '';
+
+    const iconSource = getBiomeIconSource(option.value);
+    if (iconSource) {
+        const icon = document.createElement('img');
+        icon.className = 'biome-option__icon';
+        icon.src = iconSource;
+        icon.alt = '';
+        icon.loading = 'lazy';
+        icon.decoding = 'async';
+        icon.setAttribute('aria-hidden', 'true');
+        icon.width = 28;
+        icon.height = 28;
+        icon.draggable = false;
+        icon.addEventListener('error', () => {
+            icon.classList.add('biome-option__icon--hidden');
+        }, { once: true });
+        target.appendChild(icon);
+    }
+
+    const labelSpan = document.createElement('span');
+    labelSpan.className = 'biome-option__label';
+    labelSpan.textContent = label;
+    target.appendChild(labelSpan);
+
+    target.title = label;
+    return label;
+}
+
 function initializeSingleSelectControl(selectId) {
     const select = document.getElementById(selectId);
     const details = document.querySelector(`details[data-select="${selectId}"]`);
@@ -2349,12 +2399,30 @@ function initializeSingleSelectControl(selectId) {
     const placeholder = summary.dataset.placeholder || summary.textContent.trim();
     menu.innerHTML = '';
 
+    const isBiomeSelect = selectId === 'biome-dropdown';
+
+    const setElementContent = (element, option) => {
+        if (!option) {
+            element.textContent = '';
+            element.removeAttribute('title');
+            return;
+        }
+
+        if (isBiomeSelect) {
+            populateBiomeOptionElement(element, option);
+        } else {
+            const label = option.textContent.trim();
+            element.textContent = label;
+            element.title = label;
+        }
+    };
+
     const optionButtons = Array.from(select.options).map(option => {
         const button = document.createElement('button');
         button.type = 'button';
         button.className = 'interface-select__option-button';
         button.dataset.value = option.value;
-        button.textContent = option.textContent;
+        setElementContent(button, option);
         button.setAttribute('role', 'option');
         button.addEventListener('click', () => {
             if (option.disabled) return;
@@ -2377,13 +2445,22 @@ function initializeSingleSelectControl(selectId) {
 
     function updateSummary() {
         const selectedOption = select.options[select.selectedIndex];
-        const label = selectedOption ? selectedOption.textContent : placeholder;
-        summary.textContent = label;
+        const label = selectedOption ? selectedOption.textContent.trim() : placeholder;
+        const normalizedLabel = label ? label.trim() : '';
+
+        if (selectedOption) {
+            setElementContent(summary, selectedOption);
+        } else {
+            summary.textContent = normalizedLabel;
+            summary.title = normalizedLabel;
+        }
+
         summary.classList.toggle('form-field__input--placeholder', !selectedOption);
         summary.setAttribute('aria-expanded', details.open ? 'true' : 'false');
 
         optionButtons.forEach(({ button, option }) => {
             const isActive = option.value === select.value;
+            setElementContent(button, option);
             button.classList.toggle('interface-select__option-button--active', isActive);
             button.classList.toggle('interface-select__option-button--disabled', option.disabled);
             button.disabled = !!option.disabled;

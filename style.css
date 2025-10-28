@@ -1823,6 +1823,7 @@ body.biome--blood-rain .interface-backdrop__veil {
 .interface-select__option-button {
     display: inline-flex;
     align-items: center;
+    gap: 10px;
     width: 100%;
     padding: 10px 12px;
     --button-background: rgba(6, 12, 24, 0.85);
@@ -1861,6 +1862,43 @@ body.biome--blood-rain .interface-backdrop__veil {
 .interface-select__option-button:active {
     --button-scale: 0.97;
     --button-raise: 0px;
+}
+
+.biome-option__icon {
+    width: 26px;
+    height: 26px;
+    flex-shrink: 0;
+    object-fit: contain;
+    pointer-events: none;
+    filter: drop-shadow(0 0 6px rgba(127, 227, 255, 0.35));
+    transition: filter 0.2s ease, opacity 0.2s ease;
+}
+
+details[data-select="biome-dropdown"] .interface-select__summary .biome-option__icon {
+    width: 28px;
+    height: 28px;
+}
+
+.biome-option__icon--hidden {
+    display: none;
+}
+
+.biome-option__label {
+    display: inline-flex;
+    align-items: center;
+    line-height: 1.4;
+    text-transform: inherit;
+    letter-spacing: inherit;
+}
+
+.interface-select__option-button--active .biome-option__icon {
+    filter: drop-shadow(0 0 10px rgba(127, 227, 255, 0.45));
+}
+
+.interface-select__option-button--disabled .biome-option__icon,
+.interface-select__option-button[disabled] .biome-option__icon {
+    filter: grayscale(100%) brightness(0.55);
+    opacity: 0.55;
 }
 
 .form-field--select select.form-field__input {
