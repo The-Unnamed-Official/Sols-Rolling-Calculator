@@ -30,6 +30,97 @@
     user-select: none;
 }
 
+@property --rainbow-hue {
+    syntax: '<angle>';
+    inherits: false;
+    initial-value: 0deg;
+}
+
+@keyframes luck-rainbow-cycle {
+    to {
+        --rainbow-hue: 360deg;
+    }
+}
+
+body.luck-effect--million {
+    animation: luck-rainbow-cycle 6s linear infinite;
+    --rainbow-hue: 0deg;
+    --rainbow-edge-strong: hsl(var(--rainbow-hue) 100% 62%);
+    --rainbow-edge-soft: hsl(var(--rainbow-hue) 100% 72%);
+    --rainbow-edge-glow: hsla(var(--rainbow-hue), 100%, 58%, 0.35);
+}
+
+body.luck-effect--million :is(
+        .surface,
+        .interface-toggle,
+        .interface-button,
+        .preset-matrix button,
+        .preset-toggle__options button,
+        .preset-toggle__summary,
+        .roll-trigger,
+        .interface-select__summary,
+        .interface-select__option-button,
+        .interface-select__option--checkbox,
+        .skip-cinematic-button,
+        .toggle
+    ) {
+    --button-accent: var(--rainbow-edge-strong);
+    --button-border-color: var(--rainbow-edge-soft);
+    border-color: var(--rainbow-edge-soft);
+    box-shadow: inset 0 0 18px var(--rainbow-edge-glow);
+}
+
+body.luck-effect--million .surface {
+    --surface-edge-accent: var(--rainbow-edge-strong);
+    border-color: var(--rainbow-edge-soft);
+    box-shadow: var(--shadow-strong), 0 0 36px var(--rainbow-edge-glow);
+}
+
+body.luck-effect--ten-million {
+    --accent: hsl(var(--rainbow-hue) 100% 68%);
+    --accent-strong: hsl(var(--rainbow-hue) 100% 86%);
+    --accent-soft: hsla(var(--rainbow-hue), 100%, 72%, 0.2);
+    --accent-muted: hsla(var(--rainbow-hue), 95%, 58%, 0.45);
+    --surface-border: hsl(var(--rainbow-hue) 100% 58%);
+    --surface-glow: hsla(var(--rainbow-hue), 100%, 62%, 0.28);
+    --surface-gradient: linear-gradient(
+        160deg,
+        hsla(var(--rainbow-hue), 100%, 28%, 0.94),
+        hsla(calc(var(--rainbow-hue) + 40deg), 100%, 18%, 0.96)
+    );
+    --bg-base: hsl(calc(var(--rainbow-hue) + 200deg) 82% 6%);
+    --text-primary: hsl(var(--rainbow-hue) 100% 92%);
+    --text-secondary: hsl(var(--rainbow-hue) 100% 76%);
+    --text-tertiary: hsl(var(--rainbow-hue) 100% 64%);
+    --bg-overlay: hsla(var(--rainbow-hue), 100%, 20%, 0.58);
+}
+
+body.luck-effect--ten-million .surface {
+    box-shadow: var(--shadow-strong), 0 0 42px var(--rainbow-edge-glow);
+}
+
+body.luck-effect--ten-million .surface::after {
+    background: linear-gradient(
+            160deg,
+            hsla(var(--rainbow-hue), 100%, 70%, 0.2),
+            hsla(calc(var(--rainbow-hue) + 60deg), 100%, 18%, 0.92)
+        );
+}
+
+body.luck-effect--ten-million .interface-backdrop__veil {
+    background:
+        radial-gradient(circle at 22% 18%, hsla(var(--rainbow-hue), 100%, 70%, 0.32), transparent 48%),
+        radial-gradient(circle at 78% 72%, hsla(calc(var(--rainbow-hue) + 140deg), 100%, 58%, 0.28), transparent 52%);
+    opacity: 0.92;
+    mix-blend-mode: screen;
+}
+
+body.luck-effect--ten-million .interface-button,
+body.luck-effect--ten-million .interface-toggle,
+body.luck-effect--ten-million .roll-trigger {
+    box-shadow: inset 0 0 22px var(--rainbow-edge-glow);
+}
+
 * {
     box-sizing: border-box;
 }
@@ -52,6 +143,22 @@ body {
     overflow-x: hidden;
     scrollbar-width: thin;
     scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
+}
+
+button {
+    --button-scale: 1;
+    --button-raise: 0px;
+    transform: translateY(var(--button-raise)) scale(var(--button-scale));
+    transition: transform 0.2s ease;
+    transform-origin: center;
+    will-change: transform;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    button {
+        transition: none;
+        transform: none !important;
+    }
 }
 
 *::-webkit-scrollbar {
@@ -476,14 +583,14 @@ body.biome--blood-rain .interface-backdrop__veil {
     position: relative;
     padding: clamp(16px, 2vw, 24px);
     background:
-        linear-gradient(var(--accent), var(--accent)) top left / var(--corner-size) var(--corner-thickness) no-repeat,
-        linear-gradient(var(--accent), var(--accent)) top left / var(--corner-thickness) var(--corner-size) no-repeat,
-        linear-gradient(var(--accent), var(--accent)) top right / var(--corner-size) var(--corner-thickness) no-repeat,
-        linear-gradient(var(--accent), var(--accent)) top right / var(--corner-thickness) var(--corner-size) no-repeat,
-        linear-gradient(var(--accent), var(--accent)) bottom left / var(--corner-size) var(--corner-thickness) no-repeat,
-        linear-gradient(var(--accent), var(--accent)) bottom left / var(--corner-thickness) var(--corner-size) no-repeat,
-        linear-gradient(var(--accent), var(--accent)) bottom right / var(--corner-size) var(--corner-thickness) no-repeat,
-        linear-gradient(var(--accent), var(--accent)) bottom right / var(--corner-thickness) var(--corner-size) no-repeat,
+        linear-gradient(var(--surface-edge-accent, var(--accent)), var(--surface-edge-accent, var(--accent))) top left / var(--corner-size) var(--corner-thickness) no-repeat,
+        linear-gradient(var(--surface-edge-accent, var(--accent)), var(--surface-edge-accent, var(--accent))) top left / var(--corner-thickness) var(--corner-size) no-repeat,
+        linear-gradient(var(--surface-edge-accent, var(--accent)), var(--surface-edge-accent, var(--accent))) top right / var(--corner-size) var(--corner-thickness) no-repeat,
+        linear-gradient(var(--surface-edge-accent, var(--accent)), var(--surface-edge-accent, var(--accent))) top right / var(--corner-thickness) var(--corner-size) no-repeat,
+        linear-gradient(var(--surface-edge-accent, var(--accent)), var(--surface-edge-accent, var(--accent))) bottom left / var(--corner-size) var(--corner-thickness) no-repeat,
+        linear-gradient(var(--surface-edge-accent, var(--accent)), var(--surface-edge-accent, var(--accent))) bottom left / var(--corner-thickness) var(--corner-size) no-repeat,
+        linear-gradient(var(--surface-edge-accent, var(--accent)), var(--surface-edge-accent, var(--accent))) bottom right / var(--corner-size) var(--corner-thickness) no-repeat,
+        linear-gradient(var(--surface-edge-accent, var(--accent)), var(--surface-edge-accent, var(--accent))) bottom right / var(--corner-thickness) var(--corner-size) no-repeat,
         var(--surface-gradient);
     border: 1px solid var(--surface-border);
     box-shadow: var(--shadow-strong);
@@ -867,7 +974,7 @@ body.biome--blood-rain .interface-backdrop__veil {
     --button-background: linear-gradient(90deg, rgba(15, 28, 52, 0.9), rgba(10, 20, 38, 0.92));
     --button-border-color: var(--accent-muted);
     cursor: pointer;
-    transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease, background 0.25s ease;
     box-shadow: inset 0 0 12px rgba(100, 180, 255, 0.15);
 }
 
@@ -885,24 +992,50 @@ body.biome--blood-rain .interface-backdrop__veil {
     position: relative;
     border-radius: 0;
     border: 1px solid var(--button-border-color, var(--surface-border));
+    --corner-fill-size: var(--button-corner-size, 14px);
+    --corner-line-thickness: var(--corner-thickness, 2px);
     background:
-        linear-gradient(var(--button-accent, var(--accent)), var(--button-accent, var(--accent))) top left / var(--button-corner-size) var(--corner-thickness) no-repeat,
-        linear-gradient(var(--button-accent, var(--accent)), var(--button-accent, var(--accent))) top left / var(--corner-thickness) var(--button-corner-size) no-repeat,
-        linear-gradient(var(--button-accent, var(--accent)), var(--button-accent, var(--accent))) top right / var(--button-corner-size) var(--corner-thickness) no-repeat,
-        linear-gradient(var(--button-accent, var(--accent)), var(--button-accent, var(--accent))) top right / var(--corner-thickness) var(--button-corner-size) no-repeat,
-        linear-gradient(var(--button-accent, var(--accent)), var(--button-accent, var(--accent))) bottom left / var(--button-corner-size) var(--corner-thickness) no-repeat,
-        linear-gradient(var(--button-accent, var(--accent)), var(--button-accent, var(--accent))) bottom left / var(--corner-thickness) var(--button-corner-size) no-repeat,
-        linear-gradient(var(--button-accent, var(--accent)), var(--button-accent, var(--accent))) bottom right / var(--button-corner-size) var(--corner-thickness) no-repeat,
-        linear-gradient(var(--button-accent, var(--accent)), var(--button-accent, var(--accent))) bottom right / var(--corner-thickness) var(--button-corner-size) no-repeat,
+        linear-gradient(var(--button-accent, var(--accent)), var(--button-accent, var(--accent))) top left no-repeat,
+        linear-gradient(var(--button-accent, var(--accent)), var(--button-accent, var(--accent))) top left no-repeat,
+        linear-gradient(var(--button-accent, var(--accent)), var(--button-accent, var(--accent))) top right no-repeat,
+        linear-gradient(var(--button-accent, var(--accent)), var(--button-accent, var(--accent))) top right no-repeat,
+        linear-gradient(var(--button-accent, var(--accent)), var(--button-accent, var(--accent))) bottom left no-repeat,
+        linear-gradient(var(--button-accent, var(--accent)), var(--button-accent, var(--accent))) bottom left no-repeat,
+        linear-gradient(var(--button-accent, var(--accent)), var(--button-accent, var(--accent))) bottom right no-repeat,
+        linear-gradient(var(--button-accent, var(--accent)), var(--button-accent, var(--accent))) bottom right no-repeat,
         var(--button-background, var(--surface-gradient));
     background-color: transparent;
     background-repeat: no-repeat;
+    background-size:
+        var(--corner-fill-size, var(--button-corner-size, 14px)) var(--corner-line-thickness, var(--corner-thickness, 2px)),
+        var(--corner-line-thickness, var(--corner-thickness, 2px)) var(--corner-fill-size, var(--button-corner-size, 14px)),
+        var(--corner-fill-size, var(--button-corner-size, 14px)) var(--corner-line-thickness, var(--corner-thickness, 2px)),
+        var(--corner-line-thickness, var(--corner-thickness, 2px)) var(--corner-fill-size, var(--button-corner-size, 14px)),
+        var(--corner-fill-size, var(--button-corner-size, 14px)) var(--corner-line-thickness, var(--corner-thickness, 2px)),
+        var(--corner-line-thickness, var(--corner-thickness, 2px)) var(--corner-fill-size, var(--button-corner-size, 14px)),
+        var(--corner-fill-size, var(--button-corner-size, 14px)) var(--corner-line-thickness, var(--corner-thickness, 2px)),
+        var(--corner-line-thickness, var(--corner-thickness, 2px)) var(--corner-fill-size, var(--button-corner-size, 14px)),
+        cover;
 }
 
-.interface-toggle:hover {
+.interface-toggle:hover,
+.interface-toggle:focus-visible {
     border-color: var(--accent);
     box-shadow: inset 0 0 18px rgba(127, 227, 255, 0.25), 0 6px 12px rgba(0, 0, 0, 0.25);
-    transform: translateY(-1px);
+    --button-scale: 1.03;
+    --button-raise: -1px;
+    --button-corner-size: 16px;
+    --corner-thickness: 3px;
+}
+
+.interface-toggle:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 3px;
+}
+
+.interface-toggle:active {
+    --button-scale: 0.97;
+    --button-raise: 0px;
 }
 
 .interface-toggle[aria-pressed="true"] {
@@ -1407,19 +1540,25 @@ body.biome--blood-rain .interface-backdrop__veil {
     border-radius: 9px;
     color: var(--text-primary);
     cursor: pointer;
-    transition: border-color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
+    transition: border-color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease, background 0.25s ease;
 }
 
 .feed-share__item:hover,
 .feed-share__item:focus-visible {
     border-color: var(--accent);
     box-shadow: inset 0 0 16px rgba(127, 227, 255, 0.18);
-    transform: translateY(-1px);
+    --button-scale: 1.03;
+    --button-raise: -1px;
 }
 
 .feed-share__item:focus-visible {
     outline: 2px solid var(--accent);
     outline-offset: 2px;
+}
+
+.feed-share__item:active {
+    --button-scale: 0.97;
+    --button-raise: 0px;
 }
 
 .feed__viewport p {
@@ -1514,8 +1653,9 @@ body.biome--blood-rain .interface-backdrop__veil {
     width: 100%;
 }
 
+
 .form-field__select-shell--biome {
-    max-width: clamp(210px, 24vw, 225px);
+    max-width: clamp(260px, 32vw, 340px);
 }
 
 .biome-selector-row {
@@ -1526,7 +1666,7 @@ body.biome--blood-rain .interface-backdrop__veil {
 }
 
 .biome-selector-row > .form-field {
-    flex: 1 1 clamp(210px, 24vw, 240px);
+    flex: 1 1 clamp(260px, 32vw, 360px);
 }
 
 .form-field--events {
@@ -1676,7 +1816,8 @@ body.biome--blood-rain .interface-backdrop__veil {
     --button-border-color: rgba(95, 160, 230, 0.28);
     --button-accent: rgba(127, 227, 255, 0.38);
     box-shadow: inset 0 0 0 1px rgba(20, 36, 64, 0.35);
-    transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease, transform 0.2s ease;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease, transform 0.2s ease,
+        background-size 0.35s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .interface-select__option--checkbox::before {
@@ -1708,6 +1849,8 @@ body.biome--blood-rain .interface-backdrop__veil {
     box-shadow: inset 0 0 0 1px rgba(127, 227, 255, 0.32), inset 0 0 22px rgba(127, 227, 255, 0.12),
         0 16px 32px rgba(4, 10, 24, 0.55);
     color: var(--accent);
+    --corner-fill-size: 100%;
+    --corner-line-thickness: 4px;
 }
 
 .interface-select__option--checkbox.interface-select__option--active::before {
@@ -1772,6 +1915,7 @@ body.biome--blood-rain .interface-backdrop__veil {
 .interface-select__option-button {
     display: inline-flex;
     align-items: center;
+    gap: 10px;
     width: 100%;
     padding: 10px 12px;
     --button-background: rgba(6, 12, 24, 0.85);
@@ -1781,7 +1925,7 @@ body.biome--blood-rain .interface-backdrop__veil {
     letter-spacing: 0.08em;
     text-transform: uppercase;
     cursor: pointer;
-    transition: color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
+    transition: color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
 }
 
 .interface-select__option-button:hover,
@@ -1789,6 +1933,10 @@ body.biome--blood-rain .interface-backdrop__veil {
     color: var(--text-primary);
     --button-background: rgba(30, 60, 110, 0.24);
     outline: none;
+    --button-scale: 1.02;
+    --button-raise: -1px;
+    --button-corner-size: 14px;
+    --corner-thickness: 3px;
 }
 
 .interface-select__option-button--active {
@@ -1801,6 +1949,48 @@ body.biome--blood-rain .interface-backdrop__veil {
 .interface-select__option-button--disabled {
     opacity: 0.4;
     cursor: not-allowed;
+}
+
+.interface-select__option-button:active {
+    --button-scale: 0.97;
+    --button-raise: 0px;
+}
+
+.biome-option__icon {
+    width: 26px;
+    height: 26px;
+    flex-shrink: 0;
+    object-fit: contain;
+    pointer-events: none;
+    filter: drop-shadow(0 0 6px rgba(127, 227, 255, 0.35));
+    transition: filter 0.2s ease, opacity 0.2s ease;
+}
+
+details[data-select="biome-dropdown"] .interface-select__summary .biome-option__icon {
+    width: 28px;
+    height: 28px;
+}
+
+.biome-option__icon--hidden {
+    display: none;
+}
+
+.biome-option__label {
+    display: inline-flex;
+    align-items: center;
+    line-height: 1.4;
+    text-transform: inherit;
+    letter-spacing: inherit;
+}
+
+.interface-select__option-button--active .biome-option__icon {
+    filter: drop-shadow(0 0 10px rgba(127, 227, 255, 0.45));
+}
+
+.interface-select__option-button--disabled .biome-option__icon,
+.interface-select__option-button[disabled] .biome-option__icon {
+    filter: grayscale(100%) brightness(0.55);
+    opacity: 0.55;
 }
 
 .form-field--select select.form-field__input {
@@ -1936,13 +2126,27 @@ select.form-field__input option {
     --button-border-color: rgba(95, 160, 230, 0.4);
     color: var(--text-primary);
     cursor: pointer;
-    transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease, background 0.25s ease;
 }
 
-.interface-button:hover {
+.interface-button:hover,
+.interface-button:focus-visible {
     border-color: var(--accent);
     box-shadow: inset 0 0 16px rgba(127, 227, 255, 0.18);
-    transform: translateY(-1px);
+    --button-scale: 1.03;
+    --button-raise: -1px;
+    --button-corner-size: 16px;
+    --corner-thickness: 3px;
+}
+
+.interface-button:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 3px;
+}
+
+.interface-button:active {
+    --button-scale: 0.97;
+    --button-raise: 0px;
 }
 
 .interface-button--minor {
@@ -1970,14 +2174,31 @@ select.form-field__input option {
     --button-border-color: rgba(95, 160, 230, 0.35);
     color: var(--text-primary);
     cursor: pointer;
-    transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease, background 0.25s ease;
 }
 
 .preset-matrix button:hover,
-.preset-toggle__options button:hover {
+.preset-matrix button:focus-visible,
+.preset-toggle__options button:hover,
+.preset-toggle__options button:focus-visible {
     border-color: var(--accent);
     box-shadow: inset 0 0 16px rgba(127, 227, 255, 0.2);
-    transform: translateY(-1px);
+    --button-scale: 1.03;
+    --button-raise: -1px;
+    --button-corner-size: 16px;
+    --corner-thickness: 3px;
+}
+
+.preset-matrix button:focus-visible,
+.preset-toggle__options button:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 3px;
+}
+
+.preset-matrix button:active,
+.preset-toggle__options button:active {
+    --button-scale: 0.97;
+    --button-raise: 0px;
 }
 
 .preset-toggle {
@@ -2073,7 +2294,7 @@ select.form-field__input option {
     text-transform: uppercase;
     padding: 10px 12px;
     color: var(--text-primary);
-    transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease, background 0.25s ease;
     --button-background: rgba(6, 12, 24, 0.85);
     --button-border-color: rgba(95, 160, 230, 0.35);
     width: 100%;
@@ -2173,7 +2394,7 @@ select.form-field__input option {
     cursor: pointer;
     position: relative;
     overflow: hidden;
-    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease, background 0.25s ease;
 }
 
 .roll-trigger::after {
@@ -2186,16 +2407,31 @@ select.form-field__input option {
     color: rgba(201, 255, 160, 0.75);
 }
 
-.roll-trigger:hover {
-    transform: translateY(-2px);
+.roll-trigger:hover,
+.roll-trigger:focus-visible {
     border-color: rgba(198, 255, 170, 0.8);
     box-shadow: inset 0 0 26px rgba(180, 255, 200, 0.22), 0 20px 34px rgba(0, 0, 0, 0.48);
+    --button-scale: 1.04;
+    --button-raise: -2px;
+    --button-corner-size: 18px;
+    --corner-thickness: 3px;
+}
+
+.roll-trigger:focus-visible {
+    outline: 2px solid rgba(198, 255, 170, 0.8);
+    outline-offset: 4px;
+}
+
+.roll-trigger:active {
+    --button-scale: 0.97;
+    --button-raise: 0px;
 }
 
 .roll-trigger:disabled {
     opacity: 0.55;
     cursor: not-allowed;
-    transform: none;
+    --button-scale: 1;
+    --button-raise: 0px;
 }
 
 .interface-footer {
@@ -2343,10 +2579,24 @@ select.form-field__input option {
     display: none;
     z-index: 1002;
     box-shadow: 0 12px 24px rgba(0, 0, 0, 0.45);
+    transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease, background 0.25s ease;
 }
 
-.skip-cinematic-button:hover {
+.skip-cinematic-button:hover,
+.skip-cinematic-button:focus-visible {
     border-color: var(--accent);
+    --button-scale: 1.03;
+    --button-raise: -1px;
+}
+
+.skip-cinematic-button:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 3px;
+}
+
+.skip-cinematic-button:active {
+    --button-scale: 0.97;
+    --button-raise: 0px;
 }
 
 /* rarity colors */
@@ -2835,5 +3085,96 @@ select.form-field__input option {
 
     .roll-trigger {
         font-size: 18px;
+    }
+}
+
+.cutscene-warning-overlay {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: clamp(24px, 5vw, 48px);
+    background: rgba(3, 8, 18, 0.82);
+    backdrop-filter: blur(6px);
+    z-index: 9999;
+}
+
+.cutscene-warning-overlay[hidden] {
+    display: none !important;
+}
+
+.cutscene-warning-overlay:not([hidden]) .surface--modal {
+    --corner-size: clamp(28px, 6vw, 36px);
+    --corner-thickness: 3px;
+    animation: modal-pop 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .cutscene-warning-overlay:not([hidden]) .surface--modal {
+        animation: none;
+        transform: none;
+    }
+}
+
+.surface--modal {
+    --corner-size: 24px;
+    padding: clamp(24px, 4vw, 38px);
+    width: min(540px, 90vw);
+    transform-origin: center;
+}
+
+.surface--modal::after {
+    border-radius: 0;
+}
+
+.cutscene-warning {
+    max-width: min(540px, 90vw);
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    gap: clamp(20px, 4vh, 28px);
+    margin: 0 auto;
+}
+
+.cutscene-warning__message {
+    margin: 0;
+    font-size: clamp(18px, 3vw, 22px);
+    line-height: 1.4;
+    color: var(--text-secondary);
+}
+
+.cutscene-warning__ratio {
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.cutscene-warning__note {
+    font-weight: 700;
+    color: #9de8ff;
+}
+
+.cutscene-warning__actions {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+@keyframes modal-pop {
+    0% {
+        transform: scale(0.95);
+    }
+    60% {
+        transform: scale(1.03);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+@media (min-width: 640px) {
+    .cutscene-warning__actions {
+        flex-direction: row;
+        justify-content: center;
     }
 }

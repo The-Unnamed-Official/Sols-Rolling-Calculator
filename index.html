@@ -77,7 +77,7 @@
                 </span>
                 <div class="banner__meta">
                     <h1 class="banner__title">Sols Rolling Simulator</h1>
-                    <p class="banner__subtitle">V1 ◉ By not.unnamed ◉ Updated 2025/10/24 ◉ Sol's RNG Eon 1-9</p>
+                    <p class="banner__subtitle">V1.1 ◉ By not.unnamed ◉ Updated 2025/10/28 ◉ Sol's RNG Eon 1-9</p>
                 </div>
             </div>
             <div class="masthead__controls">
@@ -334,6 +334,8 @@
                 </header>
                 <div class="control-section control-section--presets">
                     <div class="preset-matrix" id="luck-preset-panel">
+                        <button type="button" onclick="applyLuckValue(10000000)">10 Million Preset 10,000,000×</button>
+                        <button type="button" onclick="applyLuckValue(1000000)">1 Million Preset 1,000,000×</button>
                         <button type="button" onclick="applyLuckValue(700000)">Pump King's Blood 700,000×</button>
                         <details id="oblivion-preset-menu" class="preset-toggle">
                             <summary class="preset-toggle__summary">
@@ -388,6 +390,18 @@
                 </ul>
             </details>
         </footer>
+    </div>
+
+    <div id="cutsceneWarningOverlay" class="cutscene-warning-overlay" hidden>
+        <div class="cutscene-warning surface surface--modal" role="dialog" aria-modal="true" aria-labelledby="cutsceneWarningTitle">
+            <p class="cutscene-warning__message">
+                <span id="cutsceneWarningTitle" class="cutscene-warning__note">Note</span>: If your screen is less than <span class="cutscene-warning__ratio">1280×720</span> (similar to many phones and tablets), cutscenes will not play because of aspect ratio and the size of the cutscenes :P I'll see what I can do on a later notice :3
+            </p>
+            <div class="cutscene-warning__actions">
+                <button type="button" class="interface-button interface-button--minor" id="cutsceneWarningConfirm">Okay</button>
+                <button type="button" class="interface-button interface-button--ghost" id="cutsceneWarningDismiss">Don't show this again</button>
+            </div>
+        </div>
     </div>
 
     <script src="script.js"></script>

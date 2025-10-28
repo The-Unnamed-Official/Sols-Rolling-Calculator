@@ -113,6 +113,87 @@ const appState = {
     scrollLock: null
 };
 
+const cutsceneWarningManager = (() => {
+    const storageKey = 'solsCutsceneWarningDismissed';
+    let suppressed = null;
+
+    const getOverlay = () => document.getElementById('cutsceneWarningOverlay');
+
+    function readSuppressedPreference() {
+        if (suppressed !== null) {
+            return suppressed;
+        }
+        if (typeof window === 'undefined') {
+            suppressed = false;
+            return suppressed;
+        }
+        try {
+            const stored = window.localStorage.getItem(storageKey);
+            suppressed = stored === 'true';
+        } catch (error) {
+            suppressed = false;
+        }
+        return suppressed;
+    }
+
+    function focusPrimaryAction() {
+        const confirmButton = document.getElementById('cutsceneWarningConfirm');
+        if (!confirmButton || typeof confirmButton.focus !== 'function') {
+            return;
+        }
+        try {
+            confirmButton.focus({ preventScroll: true });
+        } catch (error) {
+            confirmButton.focus();
+        }
+    }
+
+    return {
+        isSuppressed() {
+            return readSuppressedPreference();
+        },
+        show() {
+            if (readSuppressedPreference()) {
+                return false;
+            }
+            const overlay = getOverlay();
+            if (!overlay) {
+                return false;
+            }
+            if (!overlay.hasAttribute('hidden')) {
+                return true;
+            }
+            overlay.removeAttribute('hidden');
+            overlay.removeAttribute('aria-hidden');
+            overlay.style.display = '';
+            overlay.setAttribute('data-visible', 'true');
+            focusPrimaryAction();
+            return true;
+        },
+        hide() {
+            const overlay = getOverlay();
+            if (!overlay) {
+                return;
+            }
+            overlay.setAttribute('hidden', '');
+            overlay.setAttribute('aria-hidden', 'true');
+            overlay.style.display = 'none';
+            overlay.removeAttribute('data-visible');
+        },
+        suppress() {
+            suppressed = true;
+            if (typeof window === 'undefined') {
+                return;
+            }
+            try {
+                window.localStorage.setItem(storageKey, 'true');
+            } catch (error) {
+                // Ignore storage errors
+            }
+        }
+    };
+})();
+
 const glitchUiState = {
     loopTimeoutId: null,
     activeTimeoutId: null,
@@ -458,6 +539,7 @@ function toggleInterfaceAudio() {
 }
 
 function toggleCinematicMode() {
+    const wasCinematic = appState.cinematic;
     appState.cinematic = !appState.cinematic;
     const cutsceneToggle = document.getElementById('cinematicToggle');
     if (cutsceneToggle) {
@@ -470,7 +552,16 @@ function toggleCinematicMode() {
         playSoundEffect(clickSound, 'ui');
     }
 
+    if (appState.cinematic) {
+        if (!cutsceneWarningManager.isSuppressed()) {
+            cutsceneWarningManager.show();
+        } else if (!wasCinematic) {
+            cutsceneWarningManager.hide();
+        }
+    }
+
     if (!appState.cinematic) {
+        cutsceneWarningManager.hide();
         const skipButton = document.getElementById('skip-cinematic-button');
         if (skipButton && skipButton.style.display !== 'none') {
             skipButton.click();
@@ -956,6 +1047,25 @@ let lastVipMultiplier = 1;
 let lastXyzMultiplier = 1;
 let lastDaveMultiplier = 1;
 
+const MILLION_LUCK_PRESET = 1000000;
+const TEN_MILLION_LUCK_PRESET = 10000000;
+
+function syncLuckVisualEffects(luckValue) {
+    const body = document.body;
+    if (!body) {
+        return;
+    }
+
+    if (luckValue === TEN_MILLION_LUCK_PRESET) {
+        body.classList.add('luck-effect--million', 'luck-effect--ten-million');
+    } else if (luckValue === MILLION_LUCK_PRESET) {
+        body.classList.add('luck-effect--million');
+        body.classList.remove('luck-effect--ten-million');
+    } else {
+        body.classList.remove('luck-effect--million', 'luck-effect--ten-million');
+    }
+}
+
 function applyLuckValue(value, options = {}) {
     baseLuck = value;
     currentLuck = value;
@@ -970,6 +1080,8 @@ function applyLuckValue(value, options = {}) {
         refreshCustomSelect('dave-luck-dropdown');
     }
     document.getElementById('luck-total').value = value;
+
+    syncLuckVisualEffects(value);
 
     if (typeof applyOblivionPresetOptions === 'function') {
         applyOblivionPresetOptions(options);
@@ -1016,6 +1128,7 @@ function recomputeLuckValue() {
             controls.dave.value = '1';
             refreshCustomSelect('dave-luck-dropdown');
         }
+        syncLuckVisualEffects(baseLuck);
         if (typeof applyOblivionPresetOptions === 'function') {
             applyOblivionPresetOptions({});
         }
@@ -2108,6 +2221,12 @@ document.addEventListener('click', event => {
 
 document.addEventListener('keydown', event => {
     if (event.key === 'Escape') {
+        const overlay = document.getElementById('cutsceneWarningOverlay');
+        const overlayVisible = overlay && !overlay.hasAttribute('hidden');
+        if (overlayVisible) {
+            cutsceneWarningManager.hide();
+            return;
+        }
         closeOpenSelectMenus(null, { focusSummary: true });
     }
 });
@@ -2214,6 +2333,85 @@ document.addEventListener('DOMContentLoaded', initializeEventSelector);
 document.addEventListener('DOMContentLoaded', updateOblivionPresetDisplay);
 document.addEventListener('DOMContentLoaded', updateDunePresetDisplay);
 
+document.addEventListener('DOMContentLoaded', () => {
+    const confirmButton = document.getElementById('cutsceneWarningConfirm');
+    if (confirmButton) {
+        confirmButton.addEventListener('click', () => {
+            cutsceneWarningManager.hide();
+        });
+    }
+
+    const dismissButton = document.getElementById('cutsceneWarningDismiss');
+    if (dismissButton) {
+        dismissButton.addEventListener('click', () => {
+            cutsceneWarningManager.suppress();
+            cutsceneWarningManager.hide();
+        });
+    }
+
+    const overlay = document.getElementById('cutsceneWarningOverlay');
+    if (overlay) {
+        overlay.addEventListener('click', event => {
+            if (event.target === overlay) {
+                cutsceneWarningManager.hide();
+            }
+        });
+    }
+});
+
+const BIOME_ICON_OVERRIDES = {
+    normal: 'other',
+    day: 'other',
+    night: 'other',
+    pumpkinMoon: 'halloween',
+    graveyard: 'halloween',
+    bloodRain: 'halloween',
+    blazing: 'blazing'
+};
+
+function getBiomeIconSource(value) {
+    if (!value) {
+        return null;
+    }
+    const iconKey = BIOME_ICON_OVERRIDES[value] || value;
+    return `files/${iconKey}BiomeIcon.png`;
+}
+
+function populateBiomeOptionElement(target, option) {
+    if (!target || !option) {
+        return '';
+    }
+
+    const label = option.textContent.trim();
+    target.innerHTML = '';
+
+    const iconSource = getBiomeIconSource(option.value);
+    if (iconSource) {
+        const icon = document.createElement('img');
+        icon.className = 'biome-option__icon';
+        icon.src = iconSource;
+        icon.alt = '';
+        icon.loading = 'lazy';
+        icon.decoding = 'async';
+        icon.setAttribute('aria-hidden', 'true');
+        icon.width = 28;
+        icon.height = 28;
+        icon.draggable = false;
+        icon.addEventListener('error', () => {
+            icon.classList.add('biome-option__icon--hidden');
+        }, { once: true });
+        target.appendChild(icon);
+    }
+
+    const labelSpan = document.createElement('span');
+    labelSpan.className = 'biome-option__label';
+    labelSpan.textContent = label;
+    target.appendChild(labelSpan);
+
+    target.title = label;
+    return label;
+}
+
 function initializeSingleSelectControl(selectId) {
     const select = document.getElementById(selectId);
     const details = document.querySelector(`details[data-select="${selectId}"]`);
@@ -2226,12 +2424,30 @@ function initializeSingleSelectControl(selectId) {
     const placeholder = summary.dataset.placeholder || summary.textContent.trim();
     menu.innerHTML = '';
 
+    const isBiomeSelect = selectId === 'biome-dropdown';
+
+    const setElementContent = (element, option) => {
+        if (!option) {
+            element.textContent = '';
+            element.removeAttribute('title');
+            return;
+        }
+
+        if (isBiomeSelect) {
+            populateBiomeOptionElement(element, option);
+        } else {
+            const label = option.textContent.trim();
+            element.textContent = label;
+            element.title = label;
+        }
+    };
+
     const optionButtons = Array.from(select.options).map(option => {
         const button = document.createElement('button');
         button.type = 'button';
         button.className = 'interface-select__option-button';
         button.dataset.value = option.value;
-        button.textContent = option.textContent;
+        setElementContent(button, option);
         button.setAttribute('role', 'option');
         button.addEventListener('click', () => {
             if (option.disabled) return;
@@ -2254,13 +2470,22 @@ function initializeSingleSelectControl(selectId) {
 
     function updateSummary() {
         const selectedOption = select.options[select.selectedIndex];
-        const label = selectedOption ? selectedOption.textContent : placeholder;
-        summary.textContent = label;
+        const label = selectedOption ? selectedOption.textContent.trim() : placeholder;
+        const normalizedLabel = label ? label.trim() : '';
+
+        if (selectedOption) {
+            setElementContent(summary, selectedOption);
+        } else {
+            summary.textContent = normalizedLabel;
+            summary.title = normalizedLabel;
+        }
+
         summary.classList.toggle('form-field__input--placeholder', !selectedOption);
         summary.setAttribute('aria-expanded', details.open ? 'true' : 'false');
 
         optionButtons.forEach(({ button, option }) => {
             const isActive = option.value === select.value;
+            setElementContent(button, option);
             button.classList.toggle('interface-select__option-button--active', isActive);
             button.classList.toggle('interface-select__option-button--disabled', option.disabled);
             button.disabled = !!option.disabled;
@@ -2343,6 +2568,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 daveDropdown.value = '1';
                 refreshCustomSelect('dave-luck-dropdown');
             }
+            syncLuckVisualEffects(baseLuck);
         });
     }
 
