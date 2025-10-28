@@ -2854,17 +2854,23 @@ select.form-field__input option {
     display: none !important;
 }
 
-.cutscene-warning {
-    background: linear-gradient(155deg, rgba(12, 22, 40, 0.96), rgba(4, 10, 22, 0.98));
-    border: 1px solid rgba(127, 227, 255, 0.45);
-    box-shadow: 0 28px 60px rgba(0, 6, 18, 0.66), 0 0 30px rgba(112, 216, 255, 0.22);
-    border-radius: 18px;
+.surface--modal {
+    --corner-size: 24px;
     padding: clamp(24px, 4vw, 38px);
+    width: min(540px, 90vw);
+}
+
+.surface--modal::after {
+    border-radius: 0;
+}
+
+.cutscene-warning {
     max-width: min(540px, 90vw);
     text-align: center;
     display: flex;
     flex-direction: column;
     gap: clamp(20px, 4vh, 28px);
+    margin: 0 auto;
 }
 
 .cutscene-warning__message {
@@ -2872,6 +2878,11 @@ select.form-field__input option {
     font-size: clamp(18px, 3vw, 22px);
     line-height: 1.4;
     color: var(--text-secondary);
+}
+
+.cutscene-warning__ratio {
+    font-weight: 700;
+    color: var(--text-primary);
 }
 
 .cutscene-warning__note {
