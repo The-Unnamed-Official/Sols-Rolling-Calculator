@@ -164,6 +164,8 @@ const cutsceneWarningManager = (() => {
                 return true;
             }
             overlay.removeAttribute('hidden');
+            overlay.removeAttribute('aria-hidden');
+            overlay.style.display = '';
             overlay.setAttribute('data-visible', 'true');
             focusPrimaryAction();
             return true;
@@ -174,6 +176,8 @@ const cutsceneWarningManager = (() => {
                 return;
             }
             overlay.setAttribute('hidden', '');
+            overlay.setAttribute('aria-hidden', 'true');
+            overlay.style.display = 'none';
             overlay.removeAttribute('data-visible');
         },
         suppress() {
@@ -535,6 +539,7 @@ function toggleInterfaceAudio() {
 }
 
 function toggleCinematicMode() {
+    const wasCinematic = appState.cinematic;
     appState.cinematic = !appState.cinematic;
     const cutsceneToggle = document.getElementById('cinematicToggle');
     if (cutsceneToggle) {
@@ -548,10 +553,15 @@ function toggleCinematicMode() {
     }
 
     if (appState.cinematic) {
-        cutsceneWarningManager.show();
+        if (!cutsceneWarningManager.isSuppressed()) {
+            cutsceneWarningManager.show();
+        } else if (!wasCinematic) {
+            cutsceneWarningManager.hide();
+        }
     }
 
     if (!appState.cinematic) {
+        cutsceneWarningManager.hide();
         const skipButton = document.getElementById('skip-cinematic-button');
         if (skipButton && skipButton.style.display !== 'none') {
             skipButton.click();
