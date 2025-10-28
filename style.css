@@ -2850,6 +2850,10 @@ select.form-field__input option {
     z-index: 9999;
 }
 
+.cutscene-warning-overlay[hidden] {
+    display: none !important;
+}
+
 .cutscene-warning {
     background: linear-gradient(155deg, rgba(12, 22, 40, 0.96), rgba(4, 10, 22, 0.98));
     border: 1px solid rgba(127, 227, 255, 0.45);
