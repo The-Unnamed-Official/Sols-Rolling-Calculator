@@ -54,6 +54,22 @@ body {
     scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
 }
 
+button {
+    --button-scale: 1;
+    --button-raise: 0px;
+    transform: translateY(var(--button-raise)) scale(var(--button-scale));
+    transition: transform 0.2s ease;
+    transform-origin: center;
+    will-change: transform;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    button {
+        transition: none;
+        transform: none !important;
+    }
+}
+
 *::-webkit-scrollbar {
     width: 12px;
     height: 12px;
@@ -867,7 +883,7 @@ body.biome--blood-rain .interface-backdrop__veil {
     --button-background: linear-gradient(90deg, rgba(15, 28, 52, 0.9), rgba(10, 20, 38, 0.92));
     --button-border-color: var(--accent-muted);
     cursor: pointer;
-    transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease, background 0.25s ease;
     box-shadow: inset 0 0 12px rgba(100, 180, 255, 0.15);
 }
 
@@ -899,10 +915,24 @@ body.biome--blood-rain .interface-backdrop__veil {
     background-repeat: no-repeat;
 }
 
-.interface-toggle:hover {
+.interface-toggle:hover,
+.interface-toggle:focus-visible {
     border-color: var(--accent);
     box-shadow: inset 0 0 18px rgba(127, 227, 255, 0.25), 0 6px 12px rgba(0, 0, 0, 0.25);
-    transform: translateY(-1px);
+    --button-scale: 1.03;
+    --button-raise: -1px;
+    --button-corner-size: 16px;
+    --corner-thickness: 3px;
+}
+
+.interface-toggle:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 3px;
+}
+
+.interface-toggle:active {
+    --button-scale: 0.97;
+    --button-raise: 0px;
 }
 
 .interface-toggle[aria-pressed="true"] {
@@ -1407,19 +1437,25 @@ body.biome--blood-rain .interface-backdrop__veil {
     border-radius: 9px;
     color: var(--text-primary);
     cursor: pointer;
-    transition: border-color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
+    transition: border-color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease, background 0.25s ease;
 }
 
 .feed-share__item:hover,
 .feed-share__item:focus-visible {
     border-color: var(--accent);
     box-shadow: inset 0 0 16px rgba(127, 227, 255, 0.18);
-    transform: translateY(-1px);
+    --button-scale: 1.03;
+    --button-raise: -1px;
 }
 
 .feed-share__item:focus-visible {
     outline: 2px solid var(--accent);
     outline-offset: 2px;
+}
+
+.feed-share__item:active {
+    --button-scale: 0.97;
+    --button-raise: 0px;
 }
 
 .feed__viewport p {
@@ -1781,7 +1817,7 @@ body.biome--blood-rain .interface-backdrop__veil {
     letter-spacing: 0.08em;
     text-transform: uppercase;
     cursor: pointer;
-    transition: color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
+    transition: color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
 }
 
 .interface-select__option-button:hover,
@@ -1789,6 +1825,10 @@ body.biome--blood-rain .interface-backdrop__veil {
     color: var(--text-primary);
     --button-background: rgba(30, 60, 110, 0.24);
     outline: none;
+    --button-scale: 1.02;
+    --button-raise: -1px;
+    --button-corner-size: 14px;
+    --corner-thickness: 3px;
 }
 
 .interface-select__option-button--active {
@@ -1801,6 +1841,11 @@ body.biome--blood-rain .interface-backdrop__veil {
 .interface-select__option-button--disabled {
     opacity: 0.4;
     cursor: not-allowed;
+}
+
+.interface-select__option-button:active {
+    --button-scale: 0.97;
+    --button-raise: 0px;
 }
 
 .form-field--select select.form-field__input {
@@ -1936,13 +1981,27 @@ select.form-field__input option {
     --button-border-color: rgba(95, 160, 230, 0.4);
     color: var(--text-primary);
     cursor: pointer;
-    transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease, background 0.25s ease;
 }
 
-.interface-button:hover {
+.interface-button:hover,
+.interface-button:focus-visible {
     border-color: var(--accent);
     box-shadow: inset 0 0 16px rgba(127, 227, 255, 0.18);
-    transform: translateY(-1px);
+    --button-scale: 1.03;
+    --button-raise: -1px;
+    --button-corner-size: 16px;
+    --corner-thickness: 3px;
+}
+
+.interface-button:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 3px;
+}
+
+.interface-button:active {
+    --button-scale: 0.97;
+    --button-raise: 0px;
 }
 
 .interface-button--minor {
@@ -1970,14 +2029,31 @@ select.form-field__input option {
     --button-border-color: rgba(95, 160, 230, 0.35);
     color: var(--text-primary);
     cursor: pointer;
-    transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease, background 0.25s ease;
 }
 
 .preset-matrix button:hover,
-.preset-toggle__options button:hover {
+.preset-matrix button:focus-visible,
+.preset-toggle__options button:hover,
+.preset-toggle__options button:focus-visible {
     border-color: var(--accent);
     box-shadow: inset 0 0 16px rgba(127, 227, 255, 0.2);
-    transform: translateY(-1px);
+    --button-scale: 1.03;
+    --button-raise: -1px;
+    --button-corner-size: 16px;
+    --corner-thickness: 3px;
+}
+
+.preset-matrix button:focus-visible,
+.preset-toggle__options button:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 3px;
+}
+
+.preset-matrix button:active,
+.preset-toggle__options button:active {
+    --button-scale: 0.97;
+    --button-raise: 0px;
 }
 
 .preset-toggle {
@@ -2073,7 +2149,7 @@ select.form-field__input option {
     text-transform: uppercase;
     padding: 10px 12px;
     color: var(--text-primary);
-    transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease, background 0.25s ease;
     --button-background: rgba(6, 12, 24, 0.85);
     --button-border-color: rgba(95, 160, 230, 0.35);
     width: 100%;
@@ -2173,7 +2249,7 @@ select.form-field__input option {
     cursor: pointer;
     position: relative;
     overflow: hidden;
-    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease, background 0.25s ease;
 }
 
 .roll-trigger::after {
@@ -2186,16 +2262,31 @@ select.form-field__input option {
     color: rgba(201, 255, 160, 0.75);
 }
 
-.roll-trigger:hover {
-    transform: translateY(-2px);
+.roll-trigger:hover,
+.roll-trigger:focus-visible {
     border-color: rgba(198, 255, 170, 0.8);
     box-shadow: inset 0 0 26px rgba(180, 255, 200, 0.22), 0 20px 34px rgba(0, 0, 0, 0.48);
+    --button-scale: 1.04;
+    --button-raise: -2px;
+    --button-corner-size: 18px;
+    --corner-thickness: 3px;
+}
+
+.roll-trigger:focus-visible {
+    outline: 2px solid rgba(198, 255, 170, 0.8);
+    outline-offset: 4px;
+}
+
+.roll-trigger:active {
+    --button-scale: 0.97;
+    --button-raise: 0px;
 }
 
 .roll-trigger:disabled {
     opacity: 0.55;
     cursor: not-allowed;
-    transform: none;
+    --button-scale: 1;
+    --button-raise: 0px;
 }
 
 .interface-footer {
@@ -2343,10 +2434,24 @@ select.form-field__input option {
     display: none;
     z-index: 1002;
     box-shadow: 0 12px 24px rgba(0, 0, 0, 0.45);
+    transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease, background 0.25s ease;
 }
 
-.skip-cinematic-button:hover {
+.skip-cinematic-button:hover,
+.skip-cinematic-button:focus-visible {
     border-color: var(--accent);
+    --button-scale: 1.03;
+    --button-raise: -1px;
+}
+
+.skip-cinematic-button:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 3px;
+}
+
+.skip-cinematic-button:active {
+    --button-scale: 0.97;
+    --button-raise: 0px;
 }
 
 /* rarity colors */
@@ -2854,10 +2959,24 @@ select.form-field__input option {
     display: none !important;
 }
 
+.cutscene-warning-overlay:not([hidden]) .surface--modal {
+    --corner-size: clamp(28px, 6vw, 36px);
+    --corner-thickness: 3px;
+    animation: modal-pop 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .cutscene-warning-overlay:not([hidden]) .surface--modal {
+        animation: none;
+        transform: none;
+    }
+}
+
 .surface--modal {
     --corner-size: 24px;
     padding: clamp(24px, 4vw, 38px);
     width: min(540px, 90vw);
+    transform-origin: center;
 }
 
 .surface--modal::after {
@@ -2894,6 +3013,18 @@ select.form-field__input option {
     display: flex;
     flex-direction: column;
     gap: 12px;
+}
+
+@keyframes modal-pop {
+    0% {
+        transform: scale(0.95);
+    }
+    60% {
+        transform: scale(1.03);
+    }
+    100% {
+        transform: scale(1);
+    }
 }
 
 @media (min-width: 640px) {
