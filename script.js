@@ -2338,6 +2338,9 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 const BIOME_ICON_OVERRIDES = {
+    normal: 'other',
+    day: 'other',
+    night: 'other',
     pumpkinMoon: 'halloween',
     graveyard: 'halloween',
     bloodRain: 'halloween',
