@@ -113,6 +113,83 @@ const appState = {
     scrollLock: null
 };
 
+const cutsceneWarningManager = (() => {
+    const storageKey = 'solsCutsceneWarningDismissed';
+    let suppressed = null;
+
+    const getOverlay = () => document.getElementById('cutsceneWarningOverlay');
+
+    function readSuppressedPreference() {
+        if (suppressed !== null) {
+            return suppressed;
+        }
+        if (typeof window === 'undefined') {
+            suppressed = false;
+            return suppressed;
+        }
+        try {
+            const stored = window.localStorage.getItem(storageKey);
+            suppressed = stored === 'true';
+        } catch (error) {
+            suppressed = false;
+        }
+        return suppressed;
+    }
+
+    function focusPrimaryAction() {
+        const confirmButton = document.getElementById('cutsceneWarningConfirm');
+        if (!confirmButton || typeof confirmButton.focus !== 'function') {
+            return;
+        }
+        try {
+            confirmButton.focus({ preventScroll: true });
+        } catch (error) {
+            confirmButton.focus();
+        }
+    }
+
+    return {
+        isSuppressed() {
+            return readSuppressedPreference();
+        },
+        show() {
+            if (readSuppressedPreference()) {
+                return false;
+            }
+            const overlay = getOverlay();
+            if (!overlay) {
+                return false;
+            }
+            if (!overlay.hasAttribute('hidden')) {
+                return true;
+            }
+            overlay.removeAttribute('hidden');
+            overlay.setAttribute('data-visible', 'true');
+            focusPrimaryAction();
+            return true;
+        },
+        hide() {
+            const overlay = getOverlay();
+            if (!overlay) {
+                return;
+            }
+            overlay.setAttribute('hidden', '');
+            overlay.removeAttribute('data-visible');
+        },
+        suppress() {
+            suppressed = true;
+            if (typeof window === 'undefined') {
+                return;
+            }
+            try {
+                window.localStorage.setItem(storageKey, 'true');
+            } catch (error) {
+                // Ignore storage errors
+            }
+        }
+    };
+})();
+
 const glitchUiState = {
     loopTimeoutId: null,
     activeTimeoutId: null,
@@ -468,6 +545,10 @@ function toggleCinematicMode() {
     const clickSound = document.getElementById('clickSoundFx');
     if (clickSound) {
         playSoundEffect(clickSound, 'ui');
+    }
+
+    if (appState.cinematic) {
+        cutsceneWarningManager.show();
     }
 
     if (!appState.cinematic) {
@@ -2108,6 +2189,12 @@ document.addEventListener('click', event => {
 
 document.addEventListener('keydown', event => {
     if (event.key === 'Escape') {
+        const overlay = document.getElementById('cutsceneWarningOverlay');
+        const overlayVisible = overlay && !overlay.hasAttribute('hidden');
+        if (overlayVisible) {
+            cutsceneWarningManager.hide();
+            return;
+        }
         closeOpenSelectMenus(null, { focusSummary: true });
     }
 });
@@ -2213,6 +2300,32 @@ function initializeEventSelector() {
 document.addEventListener('DOMContentLoaded', initializeEventSelector);
 document.addEventListener('DOMContentLoaded', updateOblivionPresetDisplay);
 document.addEventListener('DOMContentLoaded', updateDunePresetDisplay);
+
+document.addEventListener('DOMContentLoaded', () => {
+    const confirmButton = document.getElementById('cutsceneWarningConfirm');
+    if (confirmButton) {
+        confirmButton.addEventListener('click', () => {
+            cutsceneWarningManager.hide();
+        });
+    }
+
+    const dismissButton = document.getElementById('cutsceneWarningDismiss');
+    if (dismissButton) {
+        dismissButton.addEventListener('click', () => {
+            cutsceneWarningManager.suppress();
+            cutsceneWarningManager.hide();
+        });
+    }
+
+    const overlay = document.getElementById('cutsceneWarningOverlay');
+    if (overlay) {
+        overlay.addEventListener('click', event => {
+            if (event.target === overlay) {
+                cutsceneWarningManager.hide();
+            }
+        });
+    }
+});
 
 function initializeSingleSelectControl(selectId) {
     const select = document.getElementById(selectId);
