@@ -30,6 +30,97 @@
     user-select: none;
 }
 
+@property --rainbow-hue {
+    syntax: '<angle>';
+    inherits: false;
+    initial-value: 0deg;
+}
+
+@keyframes luck-rainbow-cycle {
+    to {
+        --rainbow-hue: 360deg;
+    }
+}
+
+body.luck-effect--million {
+    animation: luck-rainbow-cycle 6s linear infinite;
+    --rainbow-hue: 0deg;
+    --rainbow-edge-strong: hsl(var(--rainbow-hue) 100% 62%);
+    --rainbow-edge-soft: hsl(var(--rainbow-hue) 100% 72%);
+    --rainbow-edge-glow: hsla(var(--rainbow-hue), 100%, 58%, 0.35);
+}
+
+body.luck-effect--million :is(
+        .surface,
+        .interface-toggle,
+        .interface-button,
+        .preset-matrix button,
+        .preset-toggle__options button,
+        .preset-toggle__summary,
+        .roll-trigger,
+        .interface-select__summary,
+        .interface-select__option-button,
+        .interface-select__option--checkbox,
+        .skip-cinematic-button,
+        .toggle
+    ) {
+    --button-accent: var(--rainbow-edge-strong);
+    --button-border-color: var(--rainbow-edge-soft);
+    border-color: var(--rainbow-edge-soft);
+    box-shadow: inset 0 0 18px var(--rainbow-edge-glow);
+}
+
+body.luck-effect--million .surface {
+    --surface-edge-accent: var(--rainbow-edge-strong);
+    border-color: var(--rainbow-edge-soft);
+    box-shadow: var(--shadow-strong), 0 0 36px var(--rainbow-edge-glow);
+}
+
+body.luck-effect--ten-million {
+    --accent: hsl(var(--rainbow-hue) 100% 68%);
+    --accent-strong: hsl(var(--rainbow-hue) 100% 86%);
+    --accent-soft: hsla(var(--rainbow-hue), 100%, 72%, 0.2);
+    --accent-muted: hsla(var(--rainbow-hue), 95%, 58%, 0.45);
+    --surface-border: hsl(var(--rainbow-hue) 100% 58%);
+    --surface-glow: hsla(var(--rainbow-hue), 100%, 62%, 0.28);
+    --surface-gradient: linear-gradient(
+        160deg,
+        hsla(var(--rainbow-hue), 100%, 28%, 0.94),
+        hsla(calc(var(--rainbow-hue) + 40deg), 100%, 18%, 0.96)
+    );
+    --bg-base: hsl(calc(var(--rainbow-hue) + 200deg) 82% 6%);
+    --text-primary: hsl(var(--rainbow-hue) 100% 92%);
+    --text-secondary: hsl(var(--rainbow-hue) 100% 76%);
+    --text-tertiary: hsl(var(--rainbow-hue) 100% 64%);
+    --bg-overlay: hsla(var(--rainbow-hue), 100%, 20%, 0.58);
+}
+
+body.luck-effect--ten-million .surface {
+    box-shadow: var(--shadow-strong), 0 0 42px var(--rainbow-edge-glow);
+}
+
+body.luck-effect--ten-million .surface::after {
+    background: linear-gradient(
+            160deg,
+            hsla(var(--rainbow-hue), 100%, 70%, 0.2),
+            hsla(calc(var(--rainbow-hue) + 60deg), 100%, 18%, 0.92)
+        );
+}
+
+body.luck-effect--ten-million .interface-backdrop__veil {
+    background:
+        radial-gradient(circle at 22% 18%, hsla(var(--rainbow-hue), 100%, 70%, 0.32), transparent 48%),
+        radial-gradient(circle at 78% 72%, hsla(calc(var(--rainbow-hue) + 140deg), 100%, 58%, 0.28), transparent 52%);
+    opacity: 0.92;
+    mix-blend-mode: screen;
+}
+
+body.luck-effect--ten-million .interface-button,
+body.luck-effect--ten-million .interface-toggle,
+body.luck-effect--ten-million .roll-trigger {
+    box-shadow: inset 0 0 22px var(--rainbow-edge-glow);
+}
+
 * {
     box-sizing: border-box;
 }
@@ -492,14 +583,14 @@ body.biome--blood-rain .interface-backdrop__veil {
     position: relative;
     padding: clamp(16px, 2vw, 24px);
     background:
-        linear-gradient(var(--accent), var(--accent)) top left / var(--corner-size) var(--corner-thickness) no-repeat,
-        linear-gradient(var(--accent), var(--accent)) top left / var(--corner-thickness) var(--corner-size) no-repeat,
-        linear-gradient(var(--accent), var(--accent)) top right / var(--corner-size) var(--corner-thickness) no-repeat,
-        linear-gradient(var(--accent), var(--accent)) top right / var(--corner-thickness) var(--corner-size) no-repeat,
-        linear-gradient(var(--accent), var(--accent)) bottom left / var(--corner-size) var(--corner-thickness) no-repeat,
-        linear-gradient(var(--accent), var(--accent)) bottom left / var(--corner-thickness) var(--corner-size) no-repeat,
-        linear-gradient(var(--accent), var(--accent)) bottom right / var(--corner-size) var(--corner-thickness) no-repeat,
-        linear-gradient(var(--accent), var(--accent)) bottom right / var(--corner-thickness) var(--corner-size) no-repeat,
+        linear-gradient(var(--surface-edge-accent, var(--accent)), var(--surface-edge-accent, var(--accent))) top left / var(--corner-size) var(--corner-thickness) no-repeat,
+        linear-gradient(var(--surface-edge-accent, var(--accent)), var(--surface-edge-accent, var(--accent))) top left / var(--corner-thickness) var(--corner-size) no-repeat,
+        linear-gradient(var(--surface-edge-accent, var(--accent)), var(--surface-edge-accent, var(--accent))) top right / var(--corner-size) var(--corner-thickness) no-repeat,
+        linear-gradient(var(--surface-edge-accent, var(--accent)), var(--surface-edge-accent, var(--accent))) top right / var(--corner-thickness) var(--corner-size) no-repeat,
+        linear-gradient(var(--surface-edge-accent, var(--accent)), var(--surface-edge-accent, var(--accent))) bottom left / var(--corner-size) var(--corner-thickness) no-repeat,
+        linear-gradient(var(--surface-edge-accent, var(--accent)), var(--surface-edge-accent, var(--accent))) bottom left / var(--corner-thickness) var(--corner-size) no-repeat,
+        linear-gradient(var(--surface-edge-accent, var(--accent)), var(--surface-edge-accent, var(--accent))) bottom right / var(--corner-size) var(--corner-thickness) no-repeat,
+        linear-gradient(var(--surface-edge-accent, var(--accent)), var(--surface-edge-accent, var(--accent))) bottom right / var(--corner-thickness) var(--corner-size) no-repeat,
         var(--surface-gradient);
     border: 1px solid var(--surface-border);
     box-shadow: var(--shadow-strong);
@@ -1562,8 +1653,9 @@ body.biome--blood-rain .interface-backdrop__veil {
     width: 100%;
 }
 
+
 .form-field__select-shell--biome {
-    max-width: clamp(210px, 24vw, 225px);
+    max-width: clamp(260px, 32vw, 340px);
 }
 
 .biome-selector-row {
@@ -1574,7 +1666,7 @@ body.biome--blood-rain .interface-backdrop__veil {
 }
 
 .biome-selector-row > .form-field {
-    flex: 1 1 clamp(210px, 24vw, 240px);
+    flex: 1 1 clamp(260px, 32vw, 360px);
 }
 
 .form-field--events {

@@ -1047,6 +1047,25 @@ let lastVipMultiplier = 1;
 let lastXyzMultiplier = 1;
 let lastDaveMultiplier = 1;
 
+const MILLION_LUCK_PRESET = 1000000;
+const TEN_MILLION_LUCK_PRESET = 10000000;
+
+function syncLuckVisualEffects(luckValue) {
+    const body = document.body;
+    if (!body) {
+        return;
+    }
+
+    if (luckValue === TEN_MILLION_LUCK_PRESET) {
+        body.classList.add('luck-effect--million', 'luck-effect--ten-million');
+    } else if (luckValue === MILLION_LUCK_PRESET) {
+        body.classList.add('luck-effect--million');
+        body.classList.remove('luck-effect--ten-million');
+    } else {
+        body.classList.remove('luck-effect--million', 'luck-effect--ten-million');
+    }
+}
+
 function applyLuckValue(value, options = {}) {
     baseLuck = value;
     currentLuck = value;
@@ -1061,6 +1080,8 @@ function applyLuckValue(value, options = {}) {
         refreshCustomSelect('dave-luck-dropdown');
     }
     document.getElementById('luck-total').value = value;
+
+    syncLuckVisualEffects(value);
 
     if (typeof applyOblivionPresetOptions === 'function') {
         applyOblivionPresetOptions(options);
@@ -1107,6 +1128,7 @@ function recomputeLuckValue() {
             controls.dave.value = '1';
             refreshCustomSelect('dave-luck-dropdown');
         }
+        syncLuckVisualEffects(baseLuck);
         if (typeof applyOblivionPresetOptions === 'function') {
             applyOblivionPresetOptions({});
         }
@@ -2546,6 +2568,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 daveDropdown.value = '1';
                 refreshCustomSelect('dave-luck-dropdown');
             }
+            syncLuckVisualEffects(baseLuck);
         });
     }
 
