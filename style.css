@@ -901,18 +901,30 @@ body.biome--blood-rain .interface-backdrop__veil {
     position: relative;
     border-radius: 0;
     border: 1px solid var(--button-border-color, var(--surface-border));
+    --corner-fill-size: var(--button-corner-size, 14px);
+    --corner-line-thickness: var(--corner-thickness, 2px);
     background:
-        linear-gradient(var(--button-accent, var(--accent)), var(--button-accent, var(--accent))) top left / var(--button-corner-size) var(--corner-thickness) no-repeat,
-        linear-gradient(var(--button-accent, var(--accent)), var(--button-accent, var(--accent))) top left / var(--corner-thickness) var(--button-corner-size) no-repeat,
-        linear-gradient(var(--button-accent, var(--accent)), var(--button-accent, var(--accent))) top right / var(--button-corner-size) var(--corner-thickness) no-repeat,
-        linear-gradient(var(--button-accent, var(--accent)), var(--button-accent, var(--accent))) top right / var(--corner-thickness) var(--button-corner-size) no-repeat,
-        linear-gradient(var(--button-accent, var(--accent)), var(--button-accent, var(--accent))) bottom left / var(--button-corner-size) var(--corner-thickness) no-repeat,
-        linear-gradient(var(--button-accent, var(--accent)), var(--button-accent, var(--accent))) bottom left / var(--corner-thickness) var(--button-corner-size) no-repeat,
-        linear-gradient(var(--button-accent, var(--accent)), var(--button-accent, var(--accent))) bottom right / var(--button-corner-size) var(--corner-thickness) no-repeat,
-        linear-gradient(var(--button-accent, var(--accent)), var(--button-accent, var(--accent))) bottom right / var(--corner-thickness) var(--button-corner-size) no-repeat,
+        linear-gradient(var(--button-accent, var(--accent)), var(--button-accent, var(--accent))) top left no-repeat,
+        linear-gradient(var(--button-accent, var(--accent)), var(--button-accent, var(--accent))) top left no-repeat,
+        linear-gradient(var(--button-accent, var(--accent)), var(--button-accent, var(--accent))) top right no-repeat,
+        linear-gradient(var(--button-accent, var(--accent)), var(--button-accent, var(--accent))) top right no-repeat,
+        linear-gradient(var(--button-accent, var(--accent)), var(--button-accent, var(--accent))) bottom left no-repeat,
+        linear-gradient(var(--button-accent, var(--accent)), var(--button-accent, var(--accent))) bottom left no-repeat,
+        linear-gradient(var(--button-accent, var(--accent)), var(--button-accent, var(--accent))) bottom right no-repeat,
+        linear-gradient(var(--button-accent, var(--accent)), var(--button-accent, var(--accent))) bottom right no-repeat,
         var(--button-background, var(--surface-gradient));
     background-color: transparent;
     background-repeat: no-repeat;
+    background-size:
+        var(--corner-fill-size, var(--button-corner-size, 14px)) var(--corner-line-thickness, var(--corner-thickness, 2px)),
+        var(--corner-line-thickness, var(--corner-thickness, 2px)) var(--corner-fill-size, var(--button-corner-size, 14px)),
+        var(--corner-fill-size, var(--button-corner-size, 14px)) var(--corner-line-thickness, var(--corner-thickness, 2px)),
+        var(--corner-line-thickness, var(--corner-thickness, 2px)) var(--corner-fill-size, var(--button-corner-size, 14px)),
+        var(--corner-fill-size, var(--button-corner-size, 14px)) var(--corner-line-thickness, var(--corner-thickness, 2px)),
+        var(--corner-line-thickness, var(--corner-thickness, 2px)) var(--corner-fill-size, var(--button-corner-size, 14px)),
+        var(--corner-fill-size, var(--button-corner-size, 14px)) var(--corner-line-thickness, var(--corner-thickness, 2px)),
+        var(--corner-line-thickness, var(--corner-thickness, 2px)) var(--corner-fill-size, var(--button-corner-size, 14px)),
+        cover;
 }
 
 .interface-toggle:hover,
@@ -1712,7 +1724,8 @@ body.biome--blood-rain .interface-backdrop__veil {
     --button-border-color: rgba(95, 160, 230, 0.28);
     --button-accent: rgba(127, 227, 255, 0.38);
     box-shadow: inset 0 0 0 1px rgba(20, 36, 64, 0.35);
-    transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease, transform 0.2s ease;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease, transform 0.2s ease,
+        background-size 0.35s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .interface-select__option--checkbox::before {
@@ -1744,6 +1757,8 @@ body.biome--blood-rain .interface-backdrop__veil {
     box-shadow: inset 0 0 0 1px rgba(127, 227, 255, 0.32), inset 0 0 22px rgba(127, 227, 255, 0.12),
         0 16px 32px rgba(4, 10, 24, 0.55);
     color: var(--accent);
+    --corner-fill-size: 100%;
+    --corner-line-thickness: 4px;
 }
 
 .interface-select__option--checkbox.interface-select__option--active::before {
