@@ -136,8 +136,9 @@ body {
     background: var(--bg-base);
     color: var(--text-primary);
     display: flex;
-    justify-content: center;
-    align-items: stretch;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
     padding: clamp(16px, 3vw, 32px);
     position: relative;
     overflow-x: hidden;
@@ -950,13 +951,15 @@ body.biome--blood-rain .interface-backdrop__veil {
 }
 
 @media (min-width: 1200px) {
-    .interface-shell {
+    .interface-shell,
+    .interface-footer {
         margin-inline: auto;
         zoom: var(--ui-scale-desktop);
     }
 
     @supports not (zoom: 1) {
-        .interface-shell {
+        .interface-shell,
+        .interface-footer {
             transform: scale(var(--ui-scale-desktop));
             transform-origin: top center;
         }
@@ -2494,6 +2497,8 @@ select.form-field__input option {
 }
 
 .interface-footer {
+    width: min(1565px, 100%);
+    margin: clamp(16px, 2vw, 24px) auto 0;
     text-align: center;
     padding-block: clamp(12px, 1.8vw, 18px);
 }
