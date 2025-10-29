@@ -2225,6 +2225,22 @@ select.form-field__input option {
     gap: 10px;
 }
 
+.preset-matrix .preset-warning {
+    grid-column: 1 / -1;
+    margin: 2px 0 0;
+    padding: 4px 8px 0;
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    text-align: center;
+    color: rgba(255, 255, 255, 0.7);
+    opacity: 0.72;
+}
+
+.preset-matrix .preset-warning::before {
+    content: '';
+}
+
 .preset-matrix button {
     font-family: inherit;
     font-size: 11px;

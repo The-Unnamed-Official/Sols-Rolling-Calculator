@@ -202,6 +202,83 @@ const appState = {
     scrollLock: null
 };
 
+const LARGE_ROLL_WARNING_THRESHOLD = 10000000;
+
+const largeRollWarningManager = (() => {
+    let pendingAction = null;
+
+    const getOverlay = () => document.getElementById('rollWarningOverlay');
+
+    function hideOverlay() {
+        const overlay = getOverlay();
+        if (!overlay) {
+            return;
+        }
+        overlay.setAttribute('hidden', '');
+        overlay.setAttribute('aria-hidden', 'true');
+        overlay.style.display = 'none';
+        overlay.removeAttribute('data-visible');
+        overlay.removeAttribute('data-roll-count');
+    }
+
+    function focusPrimaryAction() {
+        const confirmButton = document.getElementById('rollWarningConfirm');
+        if (!confirmButton || typeof confirmButton.focus !== 'function') {
+            return;
+        }
+        try {
+            confirmButton.focus({ preventScroll: true });
+        } catch (error) {
+            confirmButton.focus();
+        }
+    }
+
+    return {
+        prompt(total, action) {
+            pendingAction = typeof action === 'function' ? action : null;
+            const overlay = getOverlay();
+            if (!overlay) {
+                if (pendingAction) {
+                    const next = pendingAction;
+                    pendingAction = null;
+                    next();
+                }
+                return false;
+            }
+
+            overlay.dataset.rollCount = `${total}`;
+            const countNode = document.getElementById('rollWarningCount');
+            if (countNode) {
+                countNode.textContent = formatWithCommas(total);
+            }
+
+            overlay.removeAttribute('hidden');
+            overlay.removeAttribute('aria-hidden');
+            overlay.style.display = '';
+            overlay.setAttribute('data-visible', 'true');
+            focusPrimaryAction();
+            return true;
+        },
+        confirm() {
+            const action = pendingAction;
+            pendingAction = null;
+            hideOverlay();
+            if (typeof action === 'function') {
+                action();
+            }
+        },
+        cancel() {
+            pendingAction = null;
+            hideOverlay();
+        },
+        hide: hideOverlay,
+        isVisible() {
+            const overlay = getOverlay();
+            return Boolean(overlay && !overlay.hasAttribute('hidden'));
+        }
+    };
+})();
+
 const cutsceneWarningManager = (() => {
     const storageKey = 'solsCutsceneWarningDismissed';
     let suppressed = null;
@@ -2336,6 +2413,13 @@ document.addEventListener('click', event => {
 
 document.addEventListener('keydown', event => {
     if (event.key === 'Escape') {
+        const rollOverlay = document.getElementById('rollWarningOverlay');
+        const rollOverlayVisible = rollOverlay && !rollOverlay.hasAttribute('hidden');
+        if (rollOverlayVisible) {
+            largeRollWarningManager.cancel();
+            return;
+        }
+
         const overlay = document.getElementById('cutsceneWarningOverlay');
         const overlayVisible = overlay && !overlay.hasAttribute('hidden');
         if (overlayVisible) {
@@ -2470,6 +2554,29 @@ document.addEventListener('DOMContentLoaded', () => {
         overlay.addEventListener('click', event => {
             if (event.target === overlay) {
                 cutsceneWarningManager.hide();
+            }
+        });
+    }
+
+    const rollConfirm = document.getElementById('rollWarningConfirm');
+    if (rollConfirm) {
+        rollConfirm.addEventListener('click', () => {
+            largeRollWarningManager.confirm();
+        });
+    }
+
+    const rollCancel = document.getElementById('rollWarningCancel');
+    if (rollCancel) {
+        rollCancel.addEventListener('click', () => {
+            largeRollWarningManager.cancel();
+        });
+    }
+
+    const rollOverlay = document.getElementById('rollWarningOverlay');
+    if (rollOverlay) {
+        rollOverlay.addEventListener('click', event => {
+            if (event.target === rollOverlay) {
+                largeRollWarningManager.cancel();
             }
         });
     }
@@ -3400,7 +3507,7 @@ function summarizeXpRewards(registry) {
 }
 
 // Run the roll simulation while keeping the UI responsive
-function runRollSimulation() {
+function runRollSimulation(options = {}) {
     if (simulationActive) return;
 
     if (!feedContainer) {
@@ -3429,6 +3536,29 @@ function runRollSimulation() {
         return;
     }
 
+    const bypassRollWarning = Boolean(options && options.bypassRollWarning);
+    const totalOverride = options && Number.isFinite(options.totalOverride)
+        ? Number.parseInt(options.totalOverride, 10)
+        : null;
+
+    let total = Number.isFinite(totalOverride)
+        ? totalOverride
+        : Number.parseInt(rollCountInput.value, 10);
+
+    if (!Number.isFinite(total) || total <= 0) {
+        total = 1;
+    }
+
+    if (!bypassRollWarning && total > LARGE_ROLL_WARNING_THRESHOLD) {
+        largeRollWarningManager.prompt(total, () => runRollSimulation({
+            bypassRollWarning: true,
+            totalOverride: total
+        }));
+        return;
+    }
+
+    rollCountInput.value = `${total}`;
+
     simulationActive = true;
     rollTriggerButton.disabled = true;
     rollTriggerButton.style.opacity = '0.5';
@@ -3437,12 +3567,6 @@ function runRollSimulation() {
     }
 
     playSoundEffect(audio.roll);
-
-    let total = Number.parseInt(rollCountInput.value, 10);
-    if (!Number.isFinite(total) || total <= 0) {
-        total = 1;
-        rollCountInput.value = '1';
-    }
 
     let parsedLuck = Number.parseFloat(luckField.value);
     if (!Number.isFinite(parsedLuck)) {

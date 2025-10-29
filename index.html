@@ -435,6 +435,7 @@
                             <button type="button" onclick="applyRollPreset(1000000)">1,000,000 Rolls</button>
                             <button type="button" onclick="applyRollPreset(10000000)">10,000,000 Rolls</button>
                             <button type="button" onclick="applyRollPreset(100000000)">100,000,000 Rolls</button>
+                            <p class="preset-warning preset-warning--slow-roll" id="hundred-million-roll-warning" role="status">⚠️ Processing 100,000,000 rolls can take a long time.</p>
                         </div>
                     </div>
                   </div>
@@ -476,6 +477,18 @@
             <div class="cutscene-warning__actions">
                 <button type="button" class="interface-button interface-button--minor" id="cutsceneWarningConfirm">Okay</button>
                 <button type="button" class="interface-button interface-button--ghost" id="cutsceneWarningDismiss">Don't show this again</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="rollWarningOverlay" class="cutscene-warning-overlay" hidden aria-hidden="true">
+        <div class="cutscene-warning surface surface--modal" role="dialog" aria-modal="true" aria-labelledby="rollWarningTitle">
+            <p class="cutscene-warning__message">
+                <span id="rollWarningTitle" class="cutscene-warning__note">Heads up</span>: Rolling <span id="rollWarningCount" class="cutscene-warning__ratio">more than 10,000,000</span> times may take a very long time depending on your computer or device. Continue?
+            </p>
+            <div class="cutscene-warning__actions">
+                <button type="button" class="interface-button interface-button--minor" id="rollWarningConfirm">Proceed Anyway</button>
+                <button type="button" class="interface-button interface-button--ghost" id="rollWarningCancel">Cancel</button>
             </div>
         </div>
     </div>
