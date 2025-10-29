@@ -199,51 +199,6 @@ body.luck-effect--million .surface {
     box-shadow: var(--shadow-strong), 0 0 36px var(--rainbow-edge-glow);
 }
 
-body.luck-effect--ten-million {
-    --accent: hsl(var(--rainbow-hue) 100% 68%);
-    --accent-strong: hsl(var(--rainbow-hue) 100% 86%);
-    --accent-soft: hsla(var(--rainbow-hue), 100%, 72%, 0.2);
-    --accent-muted: hsla(var(--rainbow-hue), 95%, 58%, 0.45);
-    --surface-border: hsl(var(--rainbow-hue) 100% 58%);
-    --surface-glow: hsla(var(--rainbow-hue), 100%, 62%, 0.28);
-    --surface-gradient: linear-gradient(
-        160deg,
-        hsla(var(--rainbow-hue), 100%, 28%, 0.94),
-        hsla(calc(var(--rainbow-hue) + 40deg), 100%, 18%, 0.96)
-    );
-    --bg-base: hsl(calc(var(--rainbow-hue) + 200deg) 82% 6%);
-    --text-primary: hsl(var(--rainbow-hue) 100% 92%);
-    --text-secondary: hsl(var(--rainbow-hue) 100% 76%);
-    --text-tertiary: hsl(var(--rainbow-hue) 100% 64%);
-    --bg-overlay: hsla(var(--rainbow-hue), 100%, 20%, 0.58);
-}
-
-body.luck-effect--ten-million .surface {
-    box-shadow: var(--shadow-strong), 0 0 42px var(--rainbow-edge-glow);
-}
-
-body.luck-effect--ten-million .surface::after {
-    background: linear-gradient(
-            160deg,
-            hsla(var(--rainbow-hue), 100%, 70%, 0.2),
-            hsla(calc(var(--rainbow-hue) + 60deg), 100%, 18%, 0.92)
-        );
-}
-
-body.luck-effect--ten-million .interface-backdrop__veil {
-    background:
-        radial-gradient(circle at 22% 18%, hsla(var(--rainbow-hue), 100%, 70%, 0.32), transparent 48%),
-        radial-gradient(circle at 78% 72%, hsla(calc(var(--rainbow-hue) + 140deg), 100%, 58%, 0.28), transparent 52%);
-    opacity: 0.92;
-    mix-blend-mode: screen;
-}
-
-body.luck-effect--ten-million .interface-button,
-body.luck-effect--ten-million .interface-toggle,
-body.luck-effect--ten-million .roll-trigger {
-    box-shadow: inset 0 0 22px var(--rainbow-edge-glow);
-}
-
 * {
     box-sizing: border-box;
 }
@@ -300,11 +255,11 @@ body.reduce-motion .banner__emblem--spinning img {
     opacity: 0;
     transition: opacity 0.6s ease;
     background:
-        radial-gradient(circle at 52% 48%, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0) 60%),
-        radial-gradient(circle at 28% 30%, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0) 55%),
-        radial-gradient(circle at 76% 68%, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0) 58%);
+        radial-gradient(circle at 52% 48%, rgba(255, 255, 255, 0.18) 0 6%, transparent 36%),
+        radial-gradient(circle at 24% 32%, rgba(255, 255, 255, 0.14) 0 4%, transparent 34%),
+        radial-gradient(circle at 78% 68%, rgba(255, 255, 255, 0.12) 0 5%, transparent 38%);
     mix-blend-mode: screen;
-    filter: saturate(1.2);
+    filter: saturate(1.2) contrast(1.12);
 }
 
 .luck-crack-overlay::before,
@@ -317,20 +272,26 @@ body.reduce-motion .banner__emblem--spinning img {
 
 .luck-crack-overlay::before {
     background-image:
-        linear-gradient(112deg, transparent 0 43%, rgba(255, 255, 255, 0.24) 45%, transparent 47%),
-        linear-gradient(178deg, transparent 0 48%, rgba(255, 255, 255, 0.2) 49%, transparent 51%),
-        linear-gradient(148deg, transparent 0 46%, rgba(255, 255, 255, 0.18) 47%, transparent 49%);
-    opacity: 0.45;
+        repeating-linear-gradient(118deg, transparent 0 42px, rgba(255, 255, 255, 0.34) 42px 43.5px),
+        repeating-linear-gradient(64deg, transparent 0 34px, rgba(255, 255, 255, 0.28) 34px 35.5px),
+        repeating-linear-gradient(0deg, transparent 0 26px, rgba(255, 255, 255, 0.18) 26px 27.2px),
+        repeating-linear-gradient(150deg, transparent 0 58px, rgba(255, 255, 255, 0.22) 58px 59.3px);
+    background-size: 200% 200%, 160% 160%, 120% 140%, 220% 220%;
+    background-position: center;
+    mix-blend-mode: screen;
+    opacity: 0.58;
 }
 
 .luck-crack-overlay::after {
     background-image:
-        radial-gradient(circle at 55% 46%, rgba(255, 255, 255, 0.22) 0 5%, transparent 22%),
-        conic-gradient(from 0deg at 55% 46%, transparent 0 20deg, rgba(255, 255, 255, 0.32) 20deg 24deg, transparent 24deg 40deg,
-            rgba(255, 255, 255, 0.25) 40deg 44deg, transparent 44deg 60deg,
-            rgba(255, 255, 255, 0.2) 60deg 64deg, transparent 64deg 360deg);
+        repeating-linear-gradient(132deg, transparent 0 28px, rgba(255, 255, 255, 0.6) 28px 29.2px),
+        repeating-linear-gradient(36deg, transparent 0 22px, rgba(255, 255, 255, 0.42) 22px 23.3px),
+        repeating-linear-gradient(90deg, transparent 0 16px, rgba(255, 255, 255, 0.25) 16px 17px),
+        repeating-conic-gradient(from 0deg at 55% 46%, rgba(255, 255, 255, 0.32) 0 2deg, transparent 2deg 10deg);
+    background-size: 220% 220%, 200% 200%, 180% 180%, 100% 100%;
+    background-position: 52% 42%, 32% 26%, 78% 74%, center;
     mix-blend-mode: screen;
-    opacity: 0.55;
+    opacity: 0.76;
 }
 
 .luck-crack-overlay--visible {

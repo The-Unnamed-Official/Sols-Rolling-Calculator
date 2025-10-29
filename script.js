@@ -1441,11 +1441,7 @@ function syncLuckVisualEffects(luckValue) {
         body.classList.remove('luck-effect--million');
     }
 
-    if (isTenMillionOrHigher && !reduceMotionActive) {
-        body.classList.add('luck-effect--ten-million');
-    } else {
-        body.classList.remove('luck-effect--ten-million');
-    }
+    body.classList.remove('luck-effect--ten-million');
 
     updateLuckCrackOverlay(luckValue, reduceMotionActive);
 }
