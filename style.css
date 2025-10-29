@@ -146,6 +146,29 @@ body {
     scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
 }
 
+body.reduce-motion {
+    scroll-behavior: auto;
+}
+
+body.reduce-motion *,
+body.reduce-motion *::before,
+body.reduce-motion *::after {
+    animation-duration: 0s !important;
+    animation-iteration-count: 1 !important;
+    animation-name: none !important;
+    transition-delay: 0s !important;
+    transition-duration: 0s !important;
+}
+
+body.reduce-motion .interface-backdrop__video,
+body.reduce-motion .cutscene-video {
+    display: none;
+}
+
+body.reduce-motion .banner__emblem--spinning img {
+    animation: none !important;
+}
+
 button {
     --button-scale: 1;
     --button-raise: 0px;
@@ -1797,13 +1820,21 @@ body.biome--blood-rain .interface-backdrop__veil {
     display: grid;
     gap: 10px;
     max-height: 290px;
-    width: 300px;
+    width: min(300px, calc(100vw - 32px));
+    max-width: 100%;
     overflow-y: auto;
     opacity: 0;
     pointer-events: none;
     transform: translateY(6px);
     transition: opacity 0.2s ease, transform 0.2s ease;
     z-index: 20;
+}
+
+.form-field--events .interface-select__menu {
+    left: 0;
+    right: auto;
+    transform-origin: bottom left;
+    width: min(340px, calc(100vw - 32px));
 }
 
 .interface-select[open] .interface-select__menu {
@@ -2085,6 +2116,13 @@ select.form-field__input option {
     --button-background: linear-gradient(96deg, rgba(16, 30, 52, 0.95), rgba(8, 16, 30, 0.92));
     --button-accent: rgba(127, 227, 255, 0.45);
     box-shadow: inset 0 0 12px rgba(100, 180, 255, 0.15);
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.toggle:hover,
+.toggle:focus-within {
+    border-color: var(--accent);
+    box-shadow: inset 0 0 18px rgba(127, 227, 255, 0.22), 0 0 0 2px rgba(127, 227, 255, 0.2);
 }
 
 .toggle__input {
@@ -2106,6 +2144,12 @@ select.form-field__input option {
     transition: background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
+.toggle:hover .toggle__track,
+.toggle:focus-within .toggle__track {
+    border-color: rgba(127, 227, 255, 0.55);
+    box-shadow: inset 0 0 16px rgba(127, 227, 255, 0.24);
+}
+
 .toggle__thumb {
     position: absolute;
     width: 24px;
@@ -2114,8 +2158,23 @@ select.form-field__input option {
     background: linear-gradient(160deg, rgba(127, 227, 255, 0.95), rgba(98, 210, 255, 0.9));
     top: 4px;
     left: 4px;
-    transition: transform 0.2s ease, background 0.2s ease;
+    transition: transform 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
     box-shadow: 0 8px 16px rgba(0, 0, 0, 0.45);
+    transform: translateX(var(--thumb-translate, 0));
+}
+
+.toggle:hover .toggle__thumb {
+    background: linear-gradient(160deg, rgba(160, 240, 255, 0.96), rgba(120, 230, 255, 0.92));
+    box-shadow: 0 10px 20px rgba(5, 15, 32, 0.55);
+}
+
+.toggle:active .toggle__thumb {
+    transform: translateX(var(--thumb-translate, 0)) scale(0.96);
+}
+
+.toggle__input:focus-visible + .toggle__track {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
 }
 
 .toggle__input:checked + .toggle__track {
@@ -2125,7 +2184,7 @@ select.form-field__input option {
 }
 
 .toggle__input:checked + .toggle__track + .toggle__thumb {
-    transform: translateX(28px);
+    --thumb-translate: 28px;
     background: linear-gradient(160deg, rgba(165, 255, 255, 0.95), rgba(127, 227, 255, 0.88));
 }
 
@@ -2629,6 +2688,10 @@ select.form-field__input option {
     .form-field--events {
         flex: 1 1 100%;
         min-width: 100%;
+    }
+
+    .form-field--events .interface-select__menu {
+        width: min(100%, calc(100vw - 32px));
     }
 }
 

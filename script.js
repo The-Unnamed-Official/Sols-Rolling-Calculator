@@ -164,8 +164,136 @@ function resolveRuneConfiguration(value) {
         : null;
 }
 
-const decimalFormatter = new Intl.NumberFormat();
+const decimalFormatter = new Intl.NumberFormat('en-US');
 const formatWithCommas = value => decimalFormatter.format(value);
+
+function sanitizeNumericInput(value) {
+    if (value === null || value === undefined) {
+        return '';
+    }
+    const source = String(value);
+    let result = '';
+    let hasDecimal = false;
+    for (const char of source) {
+        if (char >= '0' && char <= '9') {
+            result += char;
+        } else if (char === '.' && !hasDecimal) {
+            hasDecimal = true;
+            result += char;
+        }
+    }
+    if (result.startsWith('.')) {
+        result = `0${result}`;
+    }
+    return result;
+}
+
+function formatSanitizedNumericString(rawValue) {
+    if (!rawValue) {
+        return '';
+    }
+    const trimmed = rawValue.endsWith('.') ? rawValue.slice(0, -1) : rawValue;
+    if (!trimmed) {
+        return '';
+    }
+    const [integerPart = '0', fractionPart = ''] = trimmed.split('.');
+    const parsedInteger = Number.parseInt(integerPart, 10);
+    const safeInteger = Number.isFinite(parsedInteger) ? parsedInteger : 0;
+    const formattedInteger = formatWithCommas(safeInteger);
+    return fractionPart ? `${formattedInteger}.${fractionPart}` : formattedInteger;
+}
+
+function setNumericInputValue(input, numericValue, { format = false, min = null, max = null } = {}) {
+    if (!input) {
+        return;
+    }
+    if (!Number.isFinite(numericValue)) {
+        input.dataset.rawValue = '';
+        input.value = '';
+        return;
+    }
+    let value = numericValue;
+    if (Number.isFinite(min)) {
+        value = Math.max(min, value);
+    }
+    if (Number.isFinite(max)) {
+        value = Math.min(max, value);
+    }
+    const raw = sanitizeNumericInput(value.toString());
+    input.dataset.rawValue = raw;
+    input.value = format ? formatSanitizedNumericString(raw) : raw;
+}
+
+function getNumericInputValue(input, { min = null, max = null } = {}) {
+    if (!input) {
+        return NaN;
+    }
+    const raw = input.dataset.rawValue ?? sanitizeNumericInput(input.value);
+    if (!raw) {
+        return NaN;
+    }
+    let numeric = Number.parseFloat(raw);
+    if (!Number.isFinite(numeric)) {
+        return NaN;
+    }
+    if (Number.isFinite(min)) {
+        numeric = Math.max(min, numeric);
+    }
+    if (Number.isFinite(max)) {
+        numeric = Math.min(max, numeric);
+    }
+    return numeric;
+}
+
+function bindNumericInputFormatting(input, { min = null, max = null } = {}) {
+    if (!input) {
+        return;
+    }
+
+    const sanitizeToDataset = () => {
+        const sanitized = sanitizeNumericInput(input.value);
+        input.dataset.rawValue = sanitized;
+        input.value = sanitized;
+    };
+
+    input.addEventListener('input', () => {
+        sanitizeToDataset();
+    });
+
+    input.addEventListener('focus', () => {
+        const raw = input.dataset.rawValue ?? '';
+        input.value = raw;
+    });
+
+    input.addEventListener('blur', () => {
+        const raw = input.dataset.rawValue ?? sanitizeNumericInput(input.value);
+        if (!raw) {
+            input.value = '';
+            return;
+        }
+        let numeric = Number.parseFloat(raw);
+        if (!Number.isFinite(numeric)) {
+            input.dataset.rawValue = '';
+            input.value = '';
+            return;
+        }
+        if (Number.isFinite(min)) {
+            numeric = Math.max(min, numeric);
+        }
+        if (Number.isFinite(max)) {
+            numeric = Math.min(max, numeric);
+        }
+        setNumericInputValue(input, numeric, { format: true });
+    });
+
+    const initial = sanitizeNumericInput(input.value);
+    input.dataset.rawValue = initial;
+    if (initial) {
+        setNumericInputValue(input, Number.parseFloat(initial), { format: true, min, max });
+    } else {
+        input.value = '';
+    }
+}
 
 const uiHandles = {
     rollTriggerButton: document.querySelector('.roll-trigger'),
@@ -198,6 +326,7 @@ const appState = {
     },
     cinematic: false,
     glitch: true,
+    reduceMotion: false,
     videoPlaying: false,
     scrollLock: null
 };
@@ -742,7 +871,8 @@ function isGlitchBiomeSelected() {
 
 function updateGlitchPresentation() {
     const glitchBiomeActive = isGlitchBiomeSelected();
-    applyGlitchVisuals(appState.glitch && glitchBiomeActive, { forceTheme: glitchBiomeActive });
+    const enableGlitch = appState.glitch && glitchBiomeActive && !appState.reduceMotion;
+    applyGlitchVisuals(enableGlitch, { forceTheme: glitchBiomeActive });
 }
 
 function toggleGlitchEffects() {
@@ -755,6 +885,64 @@ function toggleGlitchEffects() {
 
     playSoundEffect(document.getElementById('clickSoundFx'), 'ui');
     updateGlitchPresentation();
+}
+
+function applyReducedMotionState(enabled) {
+    const body = document.body;
+    if (body) {
+        body.classList.toggle('reduce-motion', enabled);
+    }
+
+    const toggle = document.getElementById('reduceMotionToggle');
+    if (toggle) {
+        toggle.textContent = enabled ? 'Reduce Animations: On' : 'Reduce Animations: Off';
+        toggle.setAttribute('aria-pressed', enabled ? 'true' : 'false');
+    }
+
+    const videos = document.querySelectorAll('video');
+    videos.forEach(video => {
+        if (!video) {
+            return;
+        }
+        if (enabled) {
+            if (!video.paused) {
+                video.dataset.resumeOnMotion = 'true';
+                try {
+                    video.pause();
+                } catch (error) {
+                    console.warn('Unable to pause video for reduced motion preference', error);
+                }
+            }
+        } else if (video.dataset.resumeOnMotion === 'true') {
+            delete video.dataset.resumeOnMotion;
+            if (typeof video.play === 'function') {
+                const playPromise = video.play();
+                if (playPromise && typeof playPromise.catch === 'function') {
+                    playPromise.catch(() => {});
+                }
+            }
+        }
+    });
+
+    updateGlitchPresentation();
+}
+
+function toggleReducedMotion() {
+    appState.reduceMotion = !appState.reduceMotion;
+    applyReducedMotionState(appState.reduceMotion);
+    playSoundEffect(document.getElementById('clickSoundFx'), 'ui');
+}
+
+const reduceMotionMediaQuery = typeof window !== 'undefined' && typeof window.matchMedia === 'function'
+    ? window.matchMedia('(prefers-reduced-motion: reduce)')
+    : null;
+
+if (reduceMotionMediaQuery) {
+    appState.reduceMotion = reduceMotionMediaQuery.matches;
+    reduceMotionMediaQuery.addEventListener('change', event => {
+        appState.reduceMotion = event.matches;
+        applyReducedMotionState(appState.reduceMotion);
+    });
 }
 
 const biomeAssets = {
@@ -1249,7 +1437,10 @@ function applyLuckValue(value, options = {}) {
         document.getElementById('dave-luck-dropdown').value = '1';
         refreshCustomSelect('dave-luck-dropdown');
     }
-    document.getElementById('luck-total').value = value;
+    const luckInput = document.getElementById('luck-total');
+    if (luckInput) {
+        setNumericInputValue(luckInput, value, { format: true, min: 1 });
+    }
 
     syncLuckVisualEffects(value);
 
@@ -1267,7 +1458,7 @@ function applyRollPreset(value) {
         return;
     }
 
-    rollField.value = value;
+    setNumericInputValue(rollField, value, { format: true, min: 1, max: 100000000 });
     playSoundEffect(document.getElementById('clickSoundFx'), 'ui');
 }
 
@@ -1290,10 +1481,12 @@ function recomputeLuckValue() {
     };
 
     const luckField = controls.luckInput;
-    const enteredLuck = luckField && luckField.value ? parseFloat(luckField.value) : NaN;
-    if (luckField && luckField.value && Number.isFinite(enteredLuck) && enteredLuck !== currentLuck) {
-        baseLuck = enteredLuck;
-        currentLuck = enteredLuck;
+    const rawLuckValue = luckField ? (luckField.dataset.rawValue ?? '') : '';
+    const enteredLuck = rawLuckValue ? Number.parseFloat(rawLuckValue) : NaN;
+    if (luckField && rawLuckValue && Number.isFinite(enteredLuck) && enteredLuck !== currentLuck) {
+        const normalizedLuck = Math.max(1, Math.floor(enteredLuck));
+        baseLuck = normalizedLuck;
+        currentLuck = normalizedLuck;
         lastVipMultiplier = 1;
         lastXyzMultiplier = 1;
         lastDaveMultiplier = 1;
@@ -1308,6 +1501,8 @@ function recomputeLuckValue() {
             controls.dave.value = '1';
             refreshCustomSelect('dave-luck-dropdown');
         }
+        const shouldFormat = document.activeElement !== luckField;
+        setNumericInputValue(luckField, baseLuck, { format: shouldFormat, min: 1 });
         syncLuckVisualEffects(baseLuck);
         if (typeof applyOblivionPresetOptions === 'function') {
             applyOblivionPresetOptions({});
@@ -1323,12 +1518,17 @@ function recomputeLuckValue() {
     lastXyzMultiplier = multipliers.xyz;
     lastDaveMultiplier = multipliers.dave;
     if (luckField) {
-        luckField.value = currentLuck;
+        const shouldFormat = document.activeElement !== luckField;
+        setNumericInputValue(luckField, currentLuck, { format: shouldFormat, min: 1 });
     }
 }
 
 function resetLuckFields() {
-    document.getElementById('luck-total').value = 1;
+    const luckInput = document.getElementById('luck-total');
+    if (luckInput) {
+        const shouldFormat = document.activeElement !== luckInput;
+        setNumericInputValue(luckInput, 1, { format: shouldFormat, min: 1 });
+    }
     playSoundEffect(document.getElementById('clickSoundFx'), 'ui');
     recomputeLuckValue();
     if (typeof applyOblivionPresetOptions === 'function') {
@@ -1340,7 +1540,11 @@ function resetLuckFields() {
 }
 
 function resetRollCount() {
-    document.getElementById('roll-total').value = 1;
+    const rollField = document.getElementById('roll-total');
+    if (rollField) {
+        const shouldFormat = document.activeElement !== rollField;
+        setNumericInputValue(rollField, 1, { format: shouldFormat, min: 1, max: 100000000 });
+    }
     playSoundEffect(document.getElementById('clickSoundFx'), 'ui');
 }
 
@@ -3115,6 +3319,22 @@ document.addEventListener('DOMContentLoaded', () => {
         select.addEventListener('mouseenter', () => playSoundEffect(hoverSound, 'ui'));
     });
 
+    const luckField = document.getElementById('luck-total');
+    if (luckField) {
+        bindNumericInputFormatting(luckField, { min: 1 });
+        if (!luckField.dataset.rawValue) {
+            setNumericInputValue(luckField, baseLuck, { format: true, min: 1 });
+        }
+    }
+
+    const rollField = document.getElementById('roll-total');
+    if (rollField) {
+        bindNumericInputFormatting(rollField, { min: 1, max: 100000000 });
+        if (!rollField.dataset.rawValue) {
+            setNumericInputValue(rollField, 1, { format: true, min: 1, max: 100000000 });
+        }
+    }
+
     document.getElementById('vip-dropdown').addEventListener('change', recomputeLuckValue);
     const xyzToggle = document.getElementById('xyz-luck-toggle');
     if (xyzToggle) {
@@ -3125,12 +3345,13 @@ document.addEventListener('DOMContentLoaded', () => {
         daveDropdown.addEventListener('change', recomputeLuckValue);
     }
 
-    const luckField = document.getElementById('luck-total');
     if (luckField) {
         luckField.addEventListener('input', () => {
-            const value = parseInt(luckField.value, 10) || 1;
-            baseLuck = value;
-            currentLuck = value;
+            const raw = luckField.dataset.rawValue ?? '';
+            const parsed = raw ? Number.parseFloat(raw) : NaN;
+            const normalized = Number.isFinite(parsed) && parsed > 0 ? Math.floor(parsed) : 1;
+            baseLuck = normalized;
+            currentLuck = normalized;
             lastVipMultiplier = 1;
             lastXyzMultiplier = 1;
             lastDaveMultiplier = 1;
@@ -3174,6 +3395,8 @@ document.addEventListener('DOMContentLoaded', () => {
         glitchToggle.textContent = appState.glitch ? 'Glitch Effects: On' : 'Glitch Effects: Off';
         glitchToggle.setAttribute('aria-pressed', appState.glitch ? 'true' : 'false');
     }
+
+    applyReducedMotionState(appState.reduceMotion);
 
     const settingsMenu = document.getElementById('optionsMenu');
     const settingsToggleButton = document.getElementById('optionsMenuToggle');
@@ -3541,9 +3764,10 @@ function runRollSimulation(options = {}) {
         ? Number.parseInt(options.totalOverride, 10)
         : null;
 
+    const rollInputValue = getNumericInputValue(rollCountInput, { min: 1, max: 100000000 });
     let total = Number.isFinite(totalOverride)
         ? totalOverride
-        : Number.parseInt(rollCountInput.value, 10);
+        : rollInputValue;
 
     if (!Number.isFinite(total) || total <= 0) {
         total = 1;
@@ -3557,7 +3781,8 @@ function runRollSimulation(options = {}) {
         return;
     }
 
-    rollCountInput.value = `${total}`;
+    const shouldFormatRolls = document.activeElement !== rollCountInput;
+    setNumericInputValue(rollCountInput, total, { format: shouldFormatRolls, min: 1, max: 100000000 });
 
     simulationActive = true;
     rollTriggerButton.disabled = true;
@@ -3568,10 +3793,11 @@ function runRollSimulation(options = {}) {
 
     playSoundEffect(audio.roll);
 
-    let parsedLuck = Number.parseFloat(luckField.value);
+    let parsedLuck = getNumericInputValue(luckField, { min: 1 });
     if (!Number.isFinite(parsedLuck)) {
         parsedLuck = 1;
-        luckField.value = '1';
+        const shouldFormatLuck = document.activeElement !== luckField;
+        setNumericInputValue(luckField, parsedLuck, { format: shouldFormatLuck, min: 1 });
     }
     const luckValue = Math.max(0, parsedLuck);
     const selectionState = collectBiomeSelectionState();

@@ -88,6 +88,7 @@
                         <button class="interface-toggle options-menu__item" id="uiAudioToggle" type="button" onclick="toggleInterfaceAudio()" aria-pressed="false">UI Sound: Off</button>
                         <button class="interface-toggle options-menu__item" id="cinematicToggle" type="button" onclick="toggleCinematicMode()" aria-pressed="false">Cutscenes (Fullscreen recommended): Off</button>
                         <button class="interface-toggle options-menu__item" id="glitchEffectsToggle" type="button" onclick="toggleGlitchEffects()" aria-pressed="true">Glitch Effects: On</button>
+                        <button class="interface-toggle options-menu__item" id="reduceMotionToggle" type="button" onclick="toggleReducedMotion()" aria-pressed="false">Reduce Animations: Off</button>
                     </div>
                 </div>
             </div>
@@ -228,14 +229,14 @@
                     <label class="form-field" for="luck-total">
                         <span class="form-field__label">Luck Total</span>
                         <div class="form-field__combo">
-                            <input class="form-field__input" type="number" id="luck-total" placeholder="Total luck" min="1" required>
+                            <input class="form-field__input" type="text" inputmode="numeric" pattern="[0-9]*" id="luck-total" placeholder="Total luck" required>
                             <button class="interface-button interface-button--minor" type="button" onclick="resetLuckFields()">Reset</button>
                         </div>
                     </label>
                     <label class="form-field" for="roll-total">
                         <span class="form-field__label">Roll Amount</span>
                         <div class="form-field__combo">
-                            <input class="form-field__input" type="number" id="roll-total" min="1" max="100000000" placeholder="Roll count" required>
+                            <input class="form-field__input" type="text" inputmode="numeric" pattern="[0-9]*" id="roll-total" placeholder="Roll count" required>
                             <button class="interface-button interface-button--minor" type="button" onclick="resetRollCount()">Reset</button>
                         </div>
                     </label>
