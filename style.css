@@ -1779,8 +1779,6 @@ body.biome--blood-rain .interface-backdrop__veil {
 .interface-select__menu {
     position: absolute;
     bottom: calc(100% + 8px);
-    left: 0;
-    right: 0;
     background:
         linear-gradient(var(--accent), var(--accent)) top left / var(--corner-size) var(--corner-thickness) no-repeat,
         linear-gradient(var(--accent), var(--accent)) top left / var(--corner-thickness) var(--corner-size) no-repeat,
@@ -1799,6 +1797,7 @@ body.biome--blood-rain .interface-backdrop__veil {
     display: grid;
     gap: 10px;
     max-height: 290px;
+    width: 300px;
     overflow-y: auto;
     opacity: 0;
     pointer-events: none;
