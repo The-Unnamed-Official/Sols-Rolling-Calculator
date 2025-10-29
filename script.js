@@ -925,6 +925,12 @@ function applyReducedMotionState(enabled) {
     });
 
     updateGlitchPresentation();
+
+    if (enabled) {
+        resetLuckPresetAnimations();
+    }
+
+    syncLuckVisualEffects(currentLuck);
 }
 
 function toggleReducedMotion() {
@@ -1407,6 +1413,17 @@ let lastDaveMultiplier = 1;
 
 const MILLION_LUCK_PRESET = 1000000;
 const TEN_MILLION_LUCK_PRESET = 10000000;
+const LUCK_CRACK_THRESHOLD = 9999999;
+
+function updateLuckCrackOverlay(luckValue, reduceMotionActive) {
+    const overlay = document.getElementById('luck-crack-overlay');
+    if (!overlay) {
+        return;
+    }
+
+    const shouldShowCrack = !reduceMotionActive && luckValue >= LUCK_CRACK_THRESHOLD;
+    overlay.classList.toggle('luck-crack-overlay--visible', shouldShowCrack);
+}
 
 function syncLuckVisualEffects(luckValue) {
     const body = document.body;
@@ -1414,14 +1431,38 @@ function syncLuckVisualEffects(luckValue) {
         return;
     }
 
-    if (luckValue === TEN_MILLION_LUCK_PRESET) {
-        body.classList.add('luck-effect--million', 'luck-effect--ten-million');
-    } else if (luckValue === MILLION_LUCK_PRESET) {
+    const reduceMotionActive = body.classList.contains('reduce-motion') || appState.reduceMotion;
+    const isTenMillionOrHigher = luckValue >= TEN_MILLION_LUCK_PRESET;
+    const shouldApplyMillionEffect = luckValue === MILLION_LUCK_PRESET || isTenMillionOrHigher;
+
+    if (shouldApplyMillionEffect) {
         body.classList.add('luck-effect--million');
-        body.classList.remove('luck-effect--ten-million');
     } else {
-        body.classList.remove('luck-effect--million', 'luck-effect--ten-million');
+        body.classList.remove('luck-effect--million');
     }
+
+    if (isTenMillionOrHigher && !reduceMotionActive) {
+        body.classList.add('luck-effect--ten-million');
+    } else {
+        body.classList.remove('luck-effect--ten-million');
+    }
+
+    updateLuckCrackOverlay(luckValue, reduceMotionActive);
+}
+
+function resetLuckPresetAnimations() {
+    const animationClasses = ['luck-preset-button--pop', 'luck-preset-button--pop-spin'];
+    const targets = [
+        document.getElementById('luck-preset-one-million'),
+        document.getElementById('luck-preset-ten-million')
+    ];
+
+    targets.forEach(button => {
+        if (!button) {
+            return;
+        }
+        animationClasses.forEach(className => button.classList.remove(className));
+    });
 }
 
 function applyLuckValue(value, options = {}) {
@@ -1521,6 +1562,8 @@ function recomputeLuckValue() {
         const shouldFormat = document.activeElement !== luckField;
         setNumericInputValue(luckField, currentLuck, { format: shouldFormat, min: 1 });
     }
+
+    syncLuckVisualEffects(currentLuck);
 }
 
 function resetLuckFields() {
@@ -2737,9 +2780,50 @@ function initializeEventSelector() {
     enforceBiomeEventRestrictions();
 }
 
+function triggerLuckPresetButtonAnimation(button, className) {
+    if (!button) {
+        return;
+    }
+
+    button.classList.remove('luck-preset-button--pop', 'luck-preset-button--pop-spin');
+    // Force reflow so the animation can retrigger
+    void button.offsetWidth;
+    button.classList.add(className);
+}
+
+function bindLuckPresetButtonAnimation(button, className, animationNames) {
+    if (!button) {
+        return;
+    }
+
+    button.addEventListener('click', () => {
+        if (appState.reduceMotion) {
+            return;
+        }
+        triggerLuckPresetButtonAnimation(button, className);
+    });
+
+    button.addEventListener('animationend', event => {
+        if (animationNames.includes(event.animationName)) {
+            button.classList.remove(className);
+        }
+    });
+}
+
+function setupLuckPresetAnimations() {
+    resetLuckPresetAnimations();
+
+    const oneMillionButton = document.getElementById('luck-preset-one-million');
+    const tenMillionButton = document.getElementById('luck-preset-ten-million');
+
+    bindLuckPresetButtonAnimation(oneMillionButton, 'luck-preset-button--pop', ['luckPresetPop']);
+    bindLuckPresetButtonAnimation(tenMillionButton, 'luck-preset-button--pop-spin', ['luckPresetSpinPop']);
+}
+
 document.addEventListener('DOMContentLoaded', initializeEventSelector);
 document.addEventListener('DOMContentLoaded', updateOblivionPresetDisplay);
 document.addEventListener('DOMContentLoaded', updateDunePresetDisplay);
+document.addEventListener('DOMContentLoaded', setupLuckPresetAnimations);
 
 document.addEventListener('DOMContentLoaded', () => {
     const confirmButton = document.getElementById('cutsceneWarningConfirm');

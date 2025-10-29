@@ -25,6 +25,8 @@
         <div class="interface-backdrop__veil"></div>
     </div>
 
+    <div class="luck-crack-overlay" id="luck-crack-overlay" aria-hidden="true"></div>
+
     <audio id="ambientMusic" loop muted src="files/normalBiomeMusic.mp3" type="audio/mpeg" data-volume="0.18"></audio>
     <audio id="rollLoopSound" muted src="files/SolsRollSound.mp3" type="audio/mpeg"></audio>
     <audio id="clickSoundFx" muted src="files/SolsClickSound.mp3" type="audio/mpeg"></audio>
@@ -395,8 +397,8 @@
                             <span class="preset-collection__title-divider preset-collection__title-divider--end" aria-hidden="true"></span>
                         </h3>
                         <div class="preset-matrix" id="luck-preset-panel">
-                            <button type="button" onclick="applyLuckValue(10000000)">10 Million Preset 10,000,000×</button>
-                            <button type="button" onclick="applyLuckValue(1000000)">1 Million Preset 1,000,000×</button>
+                            <button type="button" id="luck-preset-ten-million" onclick="applyLuckValue(10000000)">10 Million Preset 10,000,000×</button>
+                            <button type="button" id="luck-preset-one-million" onclick="applyLuckValue(1000000)">1 Million Preset 1,000,000×</button>
                             <button type="button" onclick="applyLuckValue(700000)">Pump King's Blood 700,000×</button>
                             <details id="oblivion-preset-menu" class="preset-toggle">
                                 <summary class="preset-toggle__summary">
