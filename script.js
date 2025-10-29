@@ -75,6 +75,11 @@ function randomDecimalBetween(min, max) {
 
 const selectWidgetRegistry = new Map();
 
+const BIOME_PRIMARY_SELECT_ID = 'biome-primary-dropdown';
+const BIOME_OTHER_SELECT_ID = 'biome-other-dropdown';
+const BIOME_TIME_SELECT_ID = 'biome-time-dropdown';
+const DAY_RESTRICTED_BIOMES = new Set(['pumpkinMoon', 'graveyard', 'bloodRain']);
+
 const decimalFormatter = new Intl.NumberFormat();
 const formatWithCommas = value => decimalFormatter.format(value);
 
@@ -1165,33 +1170,43 @@ function resetRollCount() {
 }
 
 function setGlitchPreset() {
-    document.getElementById('biome-dropdown').value = 'glitch';
+    setPrimaryBiomeSelection('glitch');
+    setOtherBiomeSelection('none');
+    setTimeBiomeSelection('none');
     playSoundEffect(document.getElementById('clickSoundFx'), 'ui');
-    initializeBiomeInterface();
+    updateBiomeControlConstraints({ source: BIOME_PRIMARY_SELECT_ID });
 }
 
 function setDreamspacePreset() {
-    document.getElementById('biome-dropdown').value = 'dreamspace';
+    setPrimaryBiomeSelection('dreamspace');
+    setOtherBiomeSelection('none');
+    setTimeBiomeSelection('none');
     playSoundEffect(document.getElementById('clickSoundFx'), 'ui');
-    initializeBiomeInterface();
+    updateBiomeControlConstraints({ source: BIOME_PRIMARY_SELECT_ID });
 }
 
 function setLimboPreset() {
-    document.getElementById('biome-dropdown').value = 'limbo';
+    setPrimaryBiomeSelection('limbo');
+    setOtherBiomeSelection('none');
+    setTimeBiomeSelection('none');
     playSoundEffect(document.getElementById('clickSoundFx'), 'ui');
-    initializeBiomeInterface();
+    updateBiomeControlConstraints({ source: BIOME_PRIMARY_SELECT_ID });
 }
 
 function setRoePreset() {
-    document.getElementById('biome-dropdown').value = 'roe';
+    setOtherBiomeSelection('roe');
+    setPrimaryBiomeSelection('normal');
+    setTimeBiomeSelection('none');
     playSoundEffect(document.getElementById('clickSoundFx'), 'ui');
-    initializeBiomeInterface();
+    updateBiomeControlConstraints({ source: BIOME_OTHER_SELECT_ID });
 }
 
 function resetBiomeChoice() {
-    document.getElementById('biome-dropdown').value = 'normal';
+    setPrimaryBiomeSelection('normal');
+    setOtherBiomeSelection('none');
+    setTimeBiomeSelection('none');
     playSoundEffect(document.getElementById('clickSoundFx'), 'ui');
-    initializeBiomeInterface();
+    updateBiomeControlConstraints({ source: null });
 }
 
 function initializeBiomeInterface() {
@@ -1231,6 +1246,7 @@ function initializeBiomeInterface() {
     updateGlitchPresentation();
     recomputeLuckValue();
     refreshCustomSelect('biome-dropdown');
+    updateBiomeControlConstraints();
 }
 
 function playAuraVideo(videoId, options = {}) {
@@ -2281,6 +2297,7 @@ function enforceBiomeEventRestrictions() {
     }
 
     refreshCustomSelect('biome-dropdown');
+    updateBiomeControlConstraints();
 }
 
 function setEventToggleState(eventId, enabled) {
@@ -2370,10 +2387,13 @@ const BIOME_ICON_OVERRIDES = {
 };
 
 function getBiomeIconSource(value) {
-    if (!value) {
+    if (!value || value === 'none') {
         return null;
     }
     const iconKey = BIOME_ICON_OVERRIDES[value] || value;
+    if (!iconKey) {
+        return null;
+    }
     return `files/${iconKey}BiomeIcon.png`;
 }
 
@@ -2424,7 +2444,7 @@ function initializeSingleSelectControl(selectId) {
     const placeholder = summary.dataset.placeholder || summary.textContent.trim();
     menu.innerHTML = '';
 
-    const isBiomeSelect = selectId === 'biome-dropdown';
+    const isBiomeSelect = selectId === 'biome-dropdown' || selectId === BIOME_PRIMARY_SELECT_ID;
 
     const setElementContent = (element, option) => {
         if (!option) {
@@ -2514,11 +2534,264 @@ function refreshCustomSelect(selectId) {
     }
 }
 
+function findFirstEnabledOption(select, predicate = () => true) {
+    if (!select) return null;
+    return Array.from(select.options).find(option => !option.disabled && predicate(option));
+}
+
+function computeActiveBiomeValue() {
+    const primarySelect = document.getElementById(BIOME_PRIMARY_SELECT_ID);
+    const otherSelect = document.getElementById(BIOME_OTHER_SELECT_ID);
+    const timeSelect = document.getElementById(BIOME_TIME_SELECT_ID);
+
+    const otherValue = otherSelect ? otherSelect.value : 'none';
+    if (otherValue && otherValue !== 'none') {
+        return otherValue;
+    }
+
+    const timeValue = timeSelect ? timeSelect.value : 'none';
+    if (timeValue && timeValue !== 'none') {
+        return timeValue;
+    }
+
+    return primarySelect ? (primarySelect.value || 'normal') : 'normal';
+}
+
+function syncActiveBiomeSelection({ forceDispatch = false } = {}) {
+    const biomeSelect = document.getElementById('biome-dropdown');
+    if (!biomeSelect) {
+        return;
+    }
+
+    const previousValue = biomeSelect.value;
+    const nextValue = computeActiveBiomeValue();
+
+    if (previousValue !== nextValue) {
+        biomeSelect.value = nextValue;
+        biomeSelect.dispatchEvent(new Event('change', { bubbles: true }));
+    } else if (forceDispatch) {
+        biomeSelect.dispatchEvent(new Event('change', { bubbles: true }));
+    }
+}
+
+function updateBiomeControlConstraints({ source = null, triggerSync = true } = {}) {
+    const primarySelect = document.getElementById(BIOME_PRIMARY_SELECT_ID);
+    const otherSelect = document.getElementById(BIOME_OTHER_SELECT_ID);
+    const timeSelect = document.getElementById(BIOME_TIME_SELECT_ID);
+    const canonicalSelect = document.getElementById('biome-dropdown');
+    if (!primarySelect || !otherSelect || !timeSelect || !canonicalSelect) {
+        return;
+    }
+
+    let primaryChanged = false;
+    let otherChanged = false;
+    let timeChanged = false;
+
+    if (timeSelect.value === 'day' && DAY_RESTRICTED_BIOMES.has(primarySelect.value)) {
+        if (source === BIOME_TIME_SELECT_ID) {
+            const fallback = findFirstEnabledOption(primarySelect, option => !DAY_RESTRICTED_BIOMES.has(option.value));
+            if (fallback) {
+                primarySelect.value = fallback.value;
+                primaryChanged = true;
+            }
+        } else {
+            timeSelect.value = 'night';
+            timeChanged = true;
+        }
+    }
+
+    if (primarySelect.value === 'limbo' && otherSelect.value === 'roe') {
+        if (source === BIOME_PRIMARY_SELECT_ID) {
+            otherSelect.value = 'none';
+            otherChanged = true;
+        } else {
+            const fallback = findFirstEnabledOption(primarySelect, option => option.value !== 'limbo');
+            if (fallback) {
+                primarySelect.value = fallback.value;
+                primaryChanged = true;
+            } else {
+                otherSelect.value = 'none';
+                otherChanged = true;
+            }
+        }
+    }
+
+    if (otherSelect.value === 'roe' && primarySelect.value === 'limbo') {
+        if (source === BIOME_OTHER_SELECT_ID) {
+            const fallback = findFirstEnabledOption(primarySelect, option => option.value !== 'limbo');
+            if (fallback) {
+                primarySelect.value = fallback.value;
+                primaryChanged = true;
+            }
+        } else if (source !== BIOME_PRIMARY_SELECT_ID) {
+            otherSelect.value = 'none';
+            otherChanged = true;
+        }
+    }
+
+    const eventDisabledMap = new Map();
+    const eventTitleMap = new Map();
+    Array.from(canonicalSelect.options).forEach(option => {
+        eventDisabledMap.set(option.value, option.disabled);
+        eventTitleMap.set(option.value, option.title || '');
+    });
+
+    const daySelected = timeSelect.value === 'day';
+    Array.from(primarySelect.options).forEach(option => {
+        const disabledByEvent = eventDisabledMap.get(option.value) || false;
+        let disabledByConflict = false;
+        let conflictTitle = '';
+
+        if (daySelected && DAY_RESTRICTED_BIOMES.has(option.value)) {
+            disabledByConflict = true;
+            conflictTitle = 'Unavailable while Day is selected.';
+        }
+        if (otherSelect.value === 'roe' && option.value === 'limbo') {
+            disabledByConflict = true;
+            conflictTitle = 'Unavailable while Rune of Everything is active.';
+        }
+
+        option.disabled = disabledByEvent || disabledByConflict;
+        if (disabledByEvent) {
+            const eventTitle = eventTitleMap.get(option.value);
+            if (eventTitle) {
+                option.title = eventTitle;
+            } else if (conflictTitle) {
+                option.title = conflictTitle;
+            } else {
+                option.removeAttribute('title');
+            }
+        } else if (disabledByConflict) {
+            option.title = conflictTitle;
+        } else {
+            option.removeAttribute('title');
+        }
+    });
+
+    if (primarySelect.options[primarySelect.selectedIndex]?.disabled) {
+        const fallback = findFirstEnabledOption(primarySelect, option => !option.disabled);
+        if (fallback) {
+            primarySelect.value = fallback.value;
+            primaryChanged = true;
+        }
+    }
+
+    Array.from(otherSelect.options).forEach(option => {
+        let disabled = false;
+        let title = '';
+        if (option.value === 'roe' && primarySelect.value === 'limbo') {
+            disabled = true;
+            title = 'Unavailable while Limbo is selected.';
+        }
+        option.disabled = disabled;
+        if (title) {
+            option.title = title;
+        } else {
+            option.removeAttribute('title');
+        }
+    });
+
+    if (otherSelect.options[otherSelect.selectedIndex]?.disabled) {
+        otherSelect.value = 'none';
+        otherChanged = true;
+    }
+
+    Array.from(timeSelect.options).forEach(option => {
+        let disabled = false;
+        let title = '';
+        if (option.value === 'day' && DAY_RESTRICTED_BIOMES.has(primarySelect.value)) {
+            disabled = true;
+            title = 'Unavailable while Pumpkin Moon, Graveyard, or Blood Rain is selected.';
+        }
+        option.disabled = disabled;
+        if (title) {
+            option.title = title;
+        } else {
+            option.removeAttribute('title');
+        }
+    });
+
+    if (timeSelect.options[timeSelect.selectedIndex]?.disabled) {
+        const fallback = findFirstEnabledOption(timeSelect, option => !option.disabled && option.value !== 'none');
+        if (fallback) {
+            timeSelect.value = fallback.value;
+        } else {
+            timeSelect.value = 'none';
+        }
+        timeChanged = true;
+    }
+
+    refreshCustomSelect(BIOME_PRIMARY_SELECT_ID);
+    refreshCustomSelect(BIOME_OTHER_SELECT_ID);
+    refreshCustomSelect(BIOME_TIME_SELECT_ID);
+
+    if (triggerSync) {
+        syncActiveBiomeSelection({ forceDispatch: primaryChanged || otherChanged || timeChanged });
+    }
+}
+
+function setupBiomeControlDependencies() {
+    const primarySelect = document.getElementById(BIOME_PRIMARY_SELECT_ID);
+    const otherSelect = document.getElementById(BIOME_OTHER_SELECT_ID);
+    const timeSelect = document.getElementById(BIOME_TIME_SELECT_ID);
+
+    if (!primarySelect || !otherSelect || !timeSelect) {
+        return;
+    }
+
+    primarySelect.addEventListener('change', () => updateBiomeControlConstraints({ source: BIOME_PRIMARY_SELECT_ID }));
+    otherSelect.addEventListener('change', () => updateBiomeControlConstraints({ source: BIOME_OTHER_SELECT_ID }));
+    timeSelect.addEventListener('change', () => updateBiomeControlConstraints({ source: BIOME_TIME_SELECT_ID }));
+
+    updateBiomeControlConstraints({ triggerSync: false });
+    syncActiveBiomeSelection({ forceDispatch: true });
+}
+
+function setPrimaryBiomeSelection(value) {
+    const select = document.getElementById(BIOME_PRIMARY_SELECT_ID);
+    if (!select) {
+        return;
+    }
+    if (!Array.from(select.options).some(option => option.value === value)) {
+        return;
+    }
+    select.value = value;
+    refreshCustomSelect(BIOME_PRIMARY_SELECT_ID);
+}
+
+function setOtherBiomeSelection(value) {
+    const select = document.getElementById(BIOME_OTHER_SELECT_ID);
+    if (!select) {
+        return;
+    }
+    if (!Array.from(select.options).some(option => option.value === value)) {
+        return;
+    }
+    select.value = value;
+    refreshCustomSelect(BIOME_OTHER_SELECT_ID);
+}
+
+function setTimeBiomeSelection(value) {
+    const select = document.getElementById(BIOME_TIME_SELECT_ID);
+    if (!select) {
+        return;
+    }
+    if (!Array.from(select.options).some(option => option.value === value)) {
+        return;
+    }
+    select.value = value;
+    refreshCustomSelect(BIOME_TIME_SELECT_ID);
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     initializeSingleSelectControl('vip-dropdown');
     initializeSingleSelectControl('dave-luck-dropdown');
-    initializeSingleSelectControl('biome-dropdown');
+    initializeSingleSelectControl(BIOME_PRIMARY_SELECT_ID);
+    initializeSingleSelectControl(BIOME_OTHER_SELECT_ID);
+    initializeSingleSelectControl(BIOME_TIME_SELECT_ID);
 });
+
+document.addEventListener('DOMContentLoaded', setupBiomeControlDependencies);
 
 document.addEventListener('DOMContentLoaded', () => {
     const buttons = document.querySelectorAll('button');

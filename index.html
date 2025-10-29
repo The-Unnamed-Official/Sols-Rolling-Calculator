@@ -240,37 +240,81 @@
                         </div>
                     </label>
                     <div class="biome-selector-row">
-                        <label class="form-field form-field--select" for="biome-dropdown">
-                            <span class="form-field__label">Biome</span>
+                        <label class="form-field form-field--select" for="biome-primary-dropdown">
+                            <span class="form-field__label">Weather/Biome/Dimension</span>
                             <span class="form-field__select-shell form-field__select-shell--biome form-field__select-shell--custom">
-                                <select id="biome-dropdown" class="form-field__input form-field__input--native">
-                                    <option value="roe">Rune of Everything</option>
+                                <select id="biome-primary-dropdown" class="form-field__input form-field__input--native">
                                     <option value="normal" selected>Normal</option>
-                                    <option value="day">Day</option>
-                                    <option value="night">Night</option>
-                                    <option value="rainy">Rainy</option>
                                     <option value="windy">Windy</option>
                                     <option value="snowy">Snowy</option>
+                                    <option value="rainy">Rainy</option>
                                     <option value="sandstorm">Sandstorm</option>
-                                    <option value="hell">Hell</option>
                                     <option value="starfall">Starfall</option>
+                                    <option value="hell">Hell</option>
                                     <option value="corruption">Corruption</option>
                                     <option value="null">Null</option>
                                     <option value="dreamspace">Dreamspace</option>
                                     <option value="glitch">Glitch</option>
-                                    <option value="limbo">Limbo</option>
-                                    <option value="graveyard">Graveyard</option>
                                     <option value="pumpkinMoon">Pumpkin Moon</option>
+                                    <option value="graveyard">Graveyard</option>
                                     <option value="bloodRain">Blood Rain</option>
-                                    <option value="blazing">Blazing Sun</option>
                                     <option value="anotherRealm">Another Realm</option>
+                                    <option value="limbo">Limbo</option>
                                 </select>
-                                <details class="interface-select interface-select--single" data-select="biome-dropdown">
+                                <details class="interface-select interface-select--single" data-select="biome-primary-dropdown">
                                     <summary class="form-field__input interface-select__summary" role="button" aria-haspopup="listbox" aria-expanded="false">Normal</summary>
                                     <div class="interface-select__menu" role="listbox"></div>
                                 </details>
                             </span>
                         </label>
+                        <label class="form-field form-field--select" for="biome-other-dropdown">
+                            <span class="form-field__label">Other</span>
+                            <span class="form-field__select-shell form-field__select-shell--biome form-field__select-shell--custom">
+                                <select id="biome-other-dropdown" class="form-field__input form-field__input--native">
+                                    <option value="none" selected>None</option>
+                                    <option value="roe">Rune of Everything</option>
+                                </select>
+                                <details class="interface-select interface-select--single" data-select="biome-other-dropdown">
+                                    <summary class="form-field__input interface-select__summary" role="button" aria-haspopup="listbox" aria-expanded="false">None</summary>
+                                    <div class="interface-select__menu" role="listbox"></div>
+                                </details>
+                            </span>
+                        </label>
+                        <label class="form-field form-field--select" for="biome-time-dropdown">
+                            <span class="form-field__label">Time</span>
+                            <span class="form-field__select-shell form-field__select-shell--biome form-field__select-shell--custom">
+                                <select id="biome-time-dropdown" class="form-field__input form-field__input--native">
+                                    <option value="none" selected>Neutral</option>
+                                    <option value="day">Day</option>
+                                    <option value="night">Night</option>
+                                </select>
+                                <details class="interface-select interface-select--single" data-select="biome-time-dropdown">
+                                    <summary class="form-field__input interface-select__summary" role="button" aria-haspopup="listbox" aria-expanded="false">Neutral</summary>
+                                    <div class="interface-select__menu" role="listbox"></div>
+                                </details>
+                            </span>
+                        </label>
+                        <select id="biome-dropdown" class="form-field__input form-field__input--native" hidden aria-hidden="true" tabindex="-1">
+                            <option value="normal" selected>Normal</option>
+                            <option value="windy">Windy</option>
+                            <option value="snowy">Snowy</option>
+                            <option value="rainy">Rainy</option>
+                            <option value="sandstorm">Sandstorm</option>
+                            <option value="starfall">Starfall</option>
+                            <option value="hell">Hell</option>
+                            <option value="corruption">Corruption</option>
+                            <option value="null">Null</option>
+                            <option value="dreamspace">Dreamspace</option>
+                            <option value="glitch">Glitch</option>
+                            <option value="pumpkinMoon">Pumpkin Moon</option>
+                            <option value="graveyard">Graveyard</option>
+                            <option value="bloodRain">Blood Rain</option>
+                            <option value="anotherRealm">Another Realm</option>
+                            <option value="limbo">Limbo</option>
+                            <option value="roe">Rune of Everything</option>
+                            <option value="day">Day</option>
+                            <option value="night">Night</option>
+                        </select>
                         <div class="form-field form-field--events">
                             <span class="form-field__label">Events</span>
                             <details class="interface-select interface-select--multi" id="event-selector" data-select="event-selector">
