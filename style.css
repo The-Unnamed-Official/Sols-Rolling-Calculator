@@ -36,9 +36,132 @@
     initial-value: 0deg;
 }
 
+@property --button-pop-scale {
+    syntax: '<number>';
+    inherits: false;
+    initial-value: 1;
+}
+
+@property --button-pop-raise {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 0px;
+}
+
+@property --button-pop-rotation {
+    syntax: '<angle>';
+    inherits: false;
+    initial-value: 0deg;
+}
+
 @keyframes luck-rainbow-cycle {
     to {
         --rainbow-hue: 360deg;
+    }
+}
+
+@keyframes luckPresetMildShake {
+    0%,
+    100% {
+        transform: translateY(var(--button-raise)) scale(var(--button-scale)) translateX(0) rotate(0deg);
+    }
+    20% {
+        transform: translateY(var(--button-raise)) scale(var(--button-scale)) translateX(-1.6px) rotate(-0.8deg);
+    }
+    40% {
+        transform: translateY(var(--button-raise)) scale(var(--button-scale)) translateX(1.6px) rotate(0.8deg);
+    }
+    60% {
+        transform: translateY(var(--button-raise)) scale(var(--button-scale)) translateX(-1px) rotate(-0.5deg);
+    }
+    80% {
+        transform: translateY(var(--button-raise)) scale(var(--button-scale)) translateX(1px) rotate(0.5deg);
+    }
+}
+
+@keyframes luckPresetAggressiveShake {
+    0%,
+    100% {
+        transform: translateY(var(--button-raise)) scale(var(--button-scale)) translateX(0) rotate(0deg);
+    }
+    10% {
+        transform: translateY(var(--button-raise)) scale(var(--button-scale)) translateX(-4px) rotate(-3deg);
+    }
+    20% {
+        transform: translateY(var(--button-raise)) scale(var(--button-scale)) translateX(4px) rotate(3deg);
+    }
+    30% {
+        transform: translateY(var(--button-raise)) scale(var(--button-scale)) translateX(-5px) rotate(-4deg);
+    }
+    40% {
+        transform: translateY(var(--button-raise)) scale(var(--button-scale)) translateX(5px) rotate(4deg);
+    }
+    50% {
+        transform: translateY(var(--button-raise)) scale(var(--button-scale)) translateX(-3px) rotate(-2deg);
+    }
+    60% {
+        transform: translateY(var(--button-raise)) scale(var(--button-scale)) translateX(3px) rotate(2deg);
+    }
+    70% {
+        transform: translateY(var(--button-raise)) scale(var(--button-scale)) translateX(-2px) rotate(-1deg);
+    }
+    80% {
+        transform: translateY(var(--button-raise)) scale(var(--button-scale)) translateX(2px) rotate(1deg);
+    }
+    90% {
+        transform: translateY(var(--button-raise)) scale(var(--button-scale)) translateX(-1px) rotate(-0.5deg);
+    }
+}
+
+@keyframes luckPresetPop {
+    0% {
+        --button-pop-scale: 1;
+        --button-pop-raise: 0px;
+        --button-pop-rotation: 0deg;
+        box-shadow: 0 0 0 rgba(0, 0, 0, 0);
+    }
+    28% {
+        --button-pop-scale: 1.24;
+        --button-pop-raise: -14px;
+        box-shadow: 0 26px 48px rgba(0, 6, 18, 0.42), 0 0 28px rgba(127, 227, 255, 0.32);
+    }
+    58% {
+        --button-pop-scale: 1.08;
+        --button-pop-raise: -4px;
+        box-shadow: 0 16px 28px rgba(0, 6, 18, 0.32), 0 0 18px rgba(127, 227, 255, 0.24);
+    }
+    100% {
+        --button-pop-scale: 1;
+        --button-pop-raise: 0px;
+        --button-pop-rotation: 0deg;
+        box-shadow: 0 0 0 rgba(0, 0, 0, 0);
+    }
+}
+
+@keyframes luckPresetSpinPop {
+    0% {
+        --button-pop-scale: 1;
+        --button-pop-raise: 0px;
+        --button-pop-rotation: 0deg;
+        box-shadow: 0 0 0 rgba(0, 0, 0, 0);
+    }
+    30% {
+        --button-pop-scale: 1.24;
+        --button-pop-raise: -16px;
+        --button-pop-rotation: 120deg;
+        box-shadow: 0 30px 54px rgba(0, 6, 18, 0.46), 0 0 30px rgba(127, 227, 255, 0.34);
+    }
+    70% {
+        --button-pop-scale: 1.08;
+        --button-pop-raise: -6px;
+        --button-pop-rotation: 300deg;
+        box-shadow: 0 20px 34px rgba(0, 6, 18, 0.34), 0 0 24px rgba(127, 227, 255, 0.26);
+    }
+    100% {
+        --button-pop-scale: 1;
+        --button-pop-raise: 0px;
+        --button-pop-rotation: 360deg;
+        box-shadow: 0 0 0 rgba(0, 0, 0, 0);
     }
 }
 
@@ -76,51 +199,6 @@ body.luck-effect--million .surface {
     box-shadow: var(--shadow-strong), 0 0 36px var(--rainbow-edge-glow);
 }
 
-body.luck-effect--ten-million {
-    --accent: hsl(var(--rainbow-hue) 100% 68%);
-    --accent-strong: hsl(var(--rainbow-hue) 100% 86%);
-    --accent-soft: hsla(var(--rainbow-hue), 100%, 72%, 0.2);
-    --accent-muted: hsla(var(--rainbow-hue), 95%, 58%, 0.45);
-    --surface-border: hsl(var(--rainbow-hue) 100% 58%);
-    --surface-glow: hsla(var(--rainbow-hue), 100%, 62%, 0.28);
-    --surface-gradient: linear-gradient(
-        160deg,
-        hsla(var(--rainbow-hue), 100%, 28%, 0.94),
-        hsla(calc(var(--rainbow-hue) + 40deg), 100%, 18%, 0.96)
-    );
-    --bg-base: hsl(calc(var(--rainbow-hue) + 200deg) 82% 6%);
-    --text-primary: hsl(var(--rainbow-hue) 100% 92%);
-    --text-secondary: hsl(var(--rainbow-hue) 100% 76%);
-    --text-tertiary: hsl(var(--rainbow-hue) 100% 64%);
-    --bg-overlay: hsla(var(--rainbow-hue), 100%, 20%, 0.58);
-}
-
-body.luck-effect--ten-million .surface {
-    box-shadow: var(--shadow-strong), 0 0 42px var(--rainbow-edge-glow);
-}
-
-body.luck-effect--ten-million .surface::after {
-    background: linear-gradient(
-            160deg,
-            hsla(var(--rainbow-hue), 100%, 70%, 0.2),
-            hsla(calc(var(--rainbow-hue) + 60deg), 100%, 18%, 0.92)
-        );
-}
-
-body.luck-effect--ten-million .interface-backdrop__veil {
-    background:
-        radial-gradient(circle at 22% 18%, hsla(var(--rainbow-hue), 100%, 70%, 0.32), transparent 48%),
-        radial-gradient(circle at 78% 72%, hsla(calc(var(--rainbow-hue) + 140deg), 100%, 58%, 0.28), transparent 52%);
-    opacity: 0.92;
-    mix-blend-mode: screen;
-}
-
-body.luck-effect--ten-million .interface-button,
-body.luck-effect--ten-million .interface-toggle,
-body.luck-effect--ten-million .roll-trigger {
-    box-shadow: inset 0 0 22px var(--rainbow-edge-glow);
-}
-
 * {
     box-sizing: border-box;
 }
@@ -136,8 +214,9 @@ body {
     background: var(--bg-base);
     color: var(--text-primary);
     display: flex;
-    justify-content: center;
-    align-items: stretch;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
     padding: clamp(16px, 3vw, 32px);
     position: relative;
     overflow-x: hidden;
@@ -145,10 +224,96 @@ body {
     scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
 }
 
+body.reduce-motion {
+    scroll-behavior: auto;
+}
+
+body.reduce-motion *,
+body.reduce-motion *::before,
+body.reduce-motion *::after {
+    animation-duration: 0s !important;
+    animation-iteration-count: 1 !important;
+    animation-name: none !important;
+    transition-delay: 0s !important;
+    transition-duration: 0s !important;
+}
+
+body.reduce-motion .interface-backdrop__video,
+body.reduce-motion .cutscene-video {
+    display: none;
+}
+
+body.reduce-motion .banner__emblem--spinning img {
+    animation: none !important;
+}
+
+.luck-crack-overlay {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 540;
+    opacity: 0;
+    transition: opacity 0.6s ease;
+    background:
+        radial-gradient(circle at 52% 48%, rgba(255, 255, 255, 0.18) 0 6%, transparent 36%),
+        radial-gradient(circle at 24% 32%, rgba(255, 255, 255, 0.14) 0 4%, transparent 34%),
+        radial-gradient(circle at 78% 68%, rgba(255, 255, 255, 0.12) 0 5%, transparent 38%);
+    mix-blend-mode: screen;
+    filter: saturate(1.2) contrast(1.12);
+}
+
+.luck-crack-overlay::before,
+.luck-crack-overlay::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-repeat: no-repeat;
+}
+
+.luck-crack-overlay::before {
+    background-image:
+        repeating-linear-gradient(118deg, transparent 0 42px, rgba(255, 255, 255, 0.34) 42px 43.5px),
+        repeating-linear-gradient(64deg, transparent 0 34px, rgba(255, 255, 255, 0.28) 34px 35.5px),
+        repeating-linear-gradient(0deg, transparent 0 26px, rgba(255, 255, 255, 0.18) 26px 27.2px),
+        repeating-linear-gradient(150deg, transparent 0 58px, rgba(255, 255, 255, 0.22) 58px 59.3px);
+    background-size: 200% 200%, 160% 160%, 120% 140%, 220% 220%;
+    background-position: center;
+    mix-blend-mode: screen;
+    opacity: 0.58;
+}
+
+.luck-crack-overlay::after {
+    background-image:
+        repeating-linear-gradient(132deg, transparent 0 28px, rgba(255, 255, 255, 0.6) 28px 29.2px),
+        repeating-linear-gradient(36deg, transparent 0 22px, rgba(255, 255, 255, 0.42) 22px 23.3px),
+        repeating-linear-gradient(90deg, transparent 0 16px, rgba(255, 255, 255, 0.25) 16px 17px),
+        repeating-conic-gradient(from 0deg at 55% 46%, rgba(255, 255, 255, 0.32) 0 2deg, transparent 2deg 10deg);
+    background-size: 220% 220%, 200% 200%, 180% 180%, 100% 100%;
+    background-position: 52% 42%, 32% 26%, 78% 74%, center;
+    mix-blend-mode: screen;
+    opacity: 0.76;
+}
+
+.luck-crack-overlay--visible {
+    opacity: 0.88;
+}
+
+body.reduce-motion .luck-crack-overlay {
+    transition: none;
+}
+
 button {
     --button-scale: 1;
     --button-raise: 0px;
-    transform: translateY(var(--button-raise)) scale(var(--button-scale));
+    --button-pop-scale: 1;
+    --button-pop-raise: 0px;
+    --button-pop-rotation: 0deg;
+    transform:
+        translateY(var(--button-raise))
+        translateY(var(--button-pop-raise))
+        scale(var(--button-scale))
+        scale(var(--button-pop-scale))
+        rotate(var(--button-pop-rotation));
     transition: transform 0.2s ease;
     transform-origin: center;
     will-change: transform;
@@ -950,13 +1115,15 @@ body.biome--blood-rain .interface-backdrop__veil {
 }
 
 @media (min-width: 1200px) {
-    .interface-shell {
+    .interface-shell,
+    .interface-footer {
         margin-inline: auto;
         zoom: var(--ui-scale-desktop);
     }
 
     @supports not (zoom: 1) {
-        .interface-shell {
+        .interface-shell,
+        .interface-footer {
             transform: scale(var(--ui-scale-desktop));
             transform-origin: top center;
         }
@@ -1660,17 +1827,40 @@ body.biome--blood-rain .interface-backdrop__veil {
 
 .biome-selector-row {
     display: flex;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
     gap: 16px;
     align-items: flex-end;
 }
 
 .biome-selector-row > .form-field {
-    flex: 1 1 clamp(260px, 32vw, 360px);
+    flex: 1 1 0;
+    min-width: 0;
+    width: auto;
+}
+
+.biome-selector-row .form-field__select-shell--biome {
+    max-width: none;
+    width: 100%;
+}
+
+@media (max-width: 1100px) {
+    .biome-selector-row {
+        flex-wrap: wrap;
+    }
+
+    .biome-selector-row > .form-field {
+        flex: 1 1 clamp(240px, 46vw, 360px);
+    }
 }
 
 .form-field--events {
     min-width: clamp(200px, 25vw, 240px);
+}
+
+.event-selector-block {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
 }
 
 .interface-select {
@@ -1759,8 +1949,6 @@ body.biome--blood-rain .interface-backdrop__veil {
 .interface-select__menu {
     position: absolute;
     bottom: calc(100% + 8px);
-    left: 0;
-    right: 0;
     background:
         linear-gradient(var(--accent), var(--accent)) top left / var(--corner-size) var(--corner-thickness) no-repeat,
         linear-gradient(var(--accent), var(--accent)) top left / var(--corner-thickness) var(--corner-size) no-repeat,
@@ -1779,12 +1967,20 @@ body.biome--blood-rain .interface-backdrop__veil {
     display: grid;
     gap: 10px;
     max-height: 290px;
+    width: 233px;
     overflow-y: auto;
     opacity: 0;
     pointer-events: none;
     transform: translateY(6px);
     transition: opacity 0.2s ease, transform 0.2s ease;
     z-index: 20;
+}
+
+.form-field--events .interface-select__menu {
+    left: 0;
+    right: auto;
+    transform-origin: bottom left;
+    width: min(340px, calc(100vw - 32px));
 }
 
 .interface-select[open] .interface-select__menu {
@@ -2066,6 +2262,13 @@ select.form-field__input option {
     --button-background: linear-gradient(96deg, rgba(16, 30, 52, 0.95), rgba(8, 16, 30, 0.92));
     --button-accent: rgba(127, 227, 255, 0.45);
     box-shadow: inset 0 0 12px rgba(100, 180, 255, 0.15);
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.toggle:hover,
+.toggle:focus-within {
+    border-color: var(--accent);
+    box-shadow: inset 0 0 18px rgba(127, 227, 255, 0.22), 0 0 0 2px rgba(127, 227, 255, 0.2);
 }
 
 .toggle__input {
@@ -2087,6 +2290,12 @@ select.form-field__input option {
     transition: background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
+.toggle:hover .toggle__track,
+.toggle:focus-within .toggle__track {
+    border-color: rgba(127, 227, 255, 0.55);
+    box-shadow: inset 0 0 16px rgba(127, 227, 255, 0.24);
+}
+
 .toggle__thumb {
     position: absolute;
     width: 24px;
@@ -2095,8 +2304,23 @@ select.form-field__input option {
     background: linear-gradient(160deg, rgba(127, 227, 255, 0.95), rgba(98, 210, 255, 0.9));
     top: 4px;
     left: 4px;
-    transition: transform 0.2s ease, background 0.2s ease;
+    transition: transform 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
     box-shadow: 0 8px 16px rgba(0, 0, 0, 0.45);
+    transform: translateX(var(--thumb-translate, 0));
+}
+
+.toggle:hover .toggle__thumb {
+    background: linear-gradient(160deg, rgba(160, 240, 255, 0.96), rgba(120, 230, 255, 0.92));
+    box-shadow: 0 10px 20px rgba(5, 15, 32, 0.55);
+}
+
+.toggle:active .toggle__thumb {
+    transform: translateX(var(--thumb-translate, 0)) scale(0.96);
+}
+
+.toggle__input:focus-visible + .toggle__track {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
 }
 
 .toggle__input:checked + .toggle__track {
@@ -2106,7 +2330,7 @@ select.form-field__input option {
 }
 
 .toggle__input:checked + .toggle__track + .toggle__thumb {
-    transform: translateX(28px);
+    --thumb-translate: 28px;
     background: linear-gradient(160deg, rgba(165, 255, 255, 0.95), rgba(127, 227, 255, 0.88));
 }
 
@@ -2158,10 +2382,68 @@ select.form-field__input option {
     --button-background: rgba(10, 20, 36, 0.7);
 }
 
+.control-section--presets {
+    display: flex;
+    flex-direction: column;
+    gap: clamp(20px, 4vw, 32px);
+}
+
+.preset-collection {
+    display: flex;
+    flex-direction: column;
+    gap: clamp(12px, 2.5vw, 18px);
+}
+
+.preset-collection__title {
+    position: relative;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: clamp(12px, 2vw, 18px);
+    font-size: clamp(11px, 1.5vw, 13px);
+    letter-spacing: 0.26em;
+    text-transform: uppercase;
+    color: var(--text-primary);
+}
+
+.preset-collection__title-text {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.preset-collection__title-divider {
+    flex: 1 1 60px;
+    height: 1px;
+    background: linear-gradient(90deg, rgba(127, 227, 255, 0), rgba(127, 227, 255, 0.55));
+    transform: translateY(1px);
+}
+
+.preset-collection__title-divider--end {
+    background: linear-gradient(90deg, rgba(127, 227, 255, 0.55), rgba(127, 227, 255, 0));
+}
+
 .preset-matrix {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
     gap: 10px;
+}
+
+.preset-matrix .preset-warning {
+    grid-column: 1 / -1;
+    margin: 2px 0 0;
+    padding: 4px 8px 0;
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    text-align: center;
+    color: rgba(255, 255, 255, 0.7);
+    opacity: 0.72;
+}
+
+.preset-matrix .preset-warning::before {
+    content: '';
 }
 
 .preset-matrix button {
@@ -2175,6 +2457,9 @@ select.form-field__input option {
     color: var(--text-primary);
     cursor: pointer;
     transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease, background 0.25s ease;
+    position: relative;
+    overflow: visible;
+    z-index: 1;
 }
 
 .preset-matrix button:hover,
@@ -2199,6 +2484,28 @@ select.form-field__input option {
 .preset-toggle__options button:active {
     --button-scale: 0.97;
     --button-raise: 0px;
+}
+
+body:not(.reduce-motion) #luck-preset-one-million:hover,
+body:not(.reduce-motion) #luck-preset-one-million:focus-visible {
+    animation: luckPresetMildShake 0.62s ease-in-out infinite;
+}
+
+body:not(.reduce-motion) #luck-preset-ten-million:hover,
+body:not(.reduce-motion) #luck-preset-ten-million:focus-visible {
+    animation: luckPresetAggressiveShake 0.44s cubic-bezier(0.36, 0.07, 0.19, 0.97) infinite;
+}
+
+body:not(.reduce-motion) #luck-preset-one-million.luck-preset-button--pop,
+body:not(.reduce-motion) #luck-preset-one-million.luck-preset-button--pop:focus-visible {
+    animation: luckPresetPop 0.68s cubic-bezier(0.18, 0.72, 0.27, 1);
+    z-index: 3;
+}
+
+body:not(.reduce-motion) #luck-preset-ten-million.luck-preset-button--pop-spin,
+body:not(.reduce-motion) #luck-preset-ten-million.luck-preset-button--pop-spin:focus-visible {
+    animation: luckPresetSpinPop 1.4s cubic-bezier(0.2, 0.62, 0.25, 1.02);
+    z-index: 4;
 }
 
 .preset-toggle {
@@ -2435,6 +2742,8 @@ select.form-field__input option {
 }
 
 .interface-footer {
+    width: min(1565px, 100%);
+    margin: clamp(16px, 2vw, 24px) auto 0;
     text-align: center;
     padding-block: clamp(12px, 1.8vw, 18px);
 }
@@ -2550,6 +2859,10 @@ select.form-field__input option {
     .form-field--events {
         flex: 1 1 100%;
         min-width: 100%;
+    }
+
+    .form-field--events .interface-select__menu {
+        width: min(100%, calc(100vw - 32px));
     }
 }
 

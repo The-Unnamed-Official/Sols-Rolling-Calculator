@@ -75,8 +75,225 @@ function randomDecimalBetween(min, max) {
 
 const selectWidgetRegistry = new Map();
 
-const decimalFormatter = new Intl.NumberFormat();
+const BIOME_PRIMARY_SELECT_ID = 'biome-primary-dropdown';
+const BIOME_OTHER_SELECT_ID = 'biome-other-dropdown';
+const BIOME_TIME_SELECT_ID = 'biome-time-dropdown';
+const DAY_RESTRICTED_BIOMES = new Set(['pumpkinMoon', 'graveyard']);
+
+const RUNE_CONFIGURATION = Object.freeze({
+    windyRune: Object.freeze({
+        canonicalBiome: 'windy',
+        themeBiome: 'windy',
+        activeBiomes: Object.freeze(['windy']),
+        breakthroughBiomes: Object.freeze(['windy']),
+        icon: 'files/windyRuneIcon.png'
+    }),
+    snowyRune: Object.freeze({
+        canonicalBiome: 'snowy',
+        themeBiome: 'snowy',
+        activeBiomes: Object.freeze(['snowy']),
+        breakthroughBiomes: Object.freeze(['snowy']),
+        icon: 'files/snowyRuneIcon.png'
+    }),
+    rainyRune: Object.freeze({
+        canonicalBiome: 'rainy',
+        themeBiome: 'rainy',
+        activeBiomes: Object.freeze(['rainy']),
+        breakthroughBiomes: Object.freeze(['rainy']),
+        icon: 'files/rainyRuneIcon.png'
+    }),
+    sandstormRune: Object.freeze({
+        canonicalBiome: 'sandstorm',
+        themeBiome: 'sandstorm',
+        activeBiomes: Object.freeze(['sandstorm']),
+        breakthroughBiomes: Object.freeze(['sandstorm']),
+        icon: 'files/sandstormRuneIcon.png'
+    }),
+    hellRune: Object.freeze({
+        canonicalBiome: 'hell',
+        themeBiome: 'hell',
+        activeBiomes: Object.freeze(['hell']),
+        breakthroughBiomes: Object.freeze(['hell']),
+        icon: 'files/hellRuneIcon.png'
+    }),
+    starfallRune: Object.freeze({
+        canonicalBiome: 'starfall',
+        themeBiome: 'starfall',
+        activeBiomes: Object.freeze(['starfall']),
+        breakthroughBiomes: Object.freeze(['starfall']),
+        icon: 'files/starfallRuneIcon.png'
+    }),
+    corruptionRune: Object.freeze({
+        canonicalBiome: 'corruption',
+        themeBiome: 'corruption',
+        activeBiomes: Object.freeze(['corruption']),
+        breakthroughBiomes: Object.freeze(['corruption']),
+        icon: 'files/corruptionRuneIcon.png'
+    }),
+    nullRune: Object.freeze({
+        canonicalBiome: 'null',
+        themeBiome: 'null',
+        activeBiomes: Object.freeze(['null', 'limbo-null']),
+        breakthroughBiomes: Object.freeze(['null', 'limbo-null']),
+        icon: 'files/nullRuneIcon.png'
+    }),
+    eclipseRune: Object.freeze({
+        canonicalBiome: 'night',
+        themeBiome: 'night',
+        activeBiomes: Object.freeze(['day', 'night']),
+        breakthroughBiomes: Object.freeze(['day', 'night']),
+        icon: 'files/eclipseRuneIcon.png'
+    }),
+    roe: Object.freeze({
+        canonicalBiome: 'roe',
+        themeBiome: 'roe',
+        activeBiomes: Object.freeze(['glitch']),
+        breakthroughBiomes: Object.freeze(['glitch']),
+        icon: 'files/roeRuneIcon.png',
+        glitchLike: true,
+        exclusivityBiome: 'glitch'
+    })
+});
+
+function resolveRuneConfiguration(value) {
+    if (!value) {
+        return null;
+    }
+    return Object.prototype.hasOwnProperty.call(RUNE_CONFIGURATION, value)
+        ? RUNE_CONFIGURATION[value]
+        : null;
+}
+
+const decimalFormatter = new Intl.NumberFormat('en-US');
 const formatWithCommas = value => decimalFormatter.format(value);
+
+function sanitizeNumericInput(value) {
+    if (value === null || value === undefined) {
+        return '';
+    }
+    const source = String(value);
+    let result = '';
+    let hasDecimal = false;
+    for (const char of source) {
+        if (char >= '0' && char <= '9') {
+            result += char;
+        } else if (char === '.' && !hasDecimal) {
+            hasDecimal = true;
+            result += char;
+        }
+    }
+    if (result.startsWith('.')) {
+        result = `0${result}`;
+    }
+    return result;
+}
+
+function formatSanitizedNumericString(rawValue) {
+    if (!rawValue) {
+        return '';
+    }
+    const trimmed = rawValue.endsWith('.') ? rawValue.slice(0, -1) : rawValue;
+    if (!trimmed) {
+        return '';
+    }
+    const [integerPart = '0', fractionPart = ''] = trimmed.split('.');
+    const parsedInteger = Number.parseInt(integerPart, 10);
+    const safeInteger = Number.isFinite(parsedInteger) ? parsedInteger : 0;
+    const formattedInteger = formatWithCommas(safeInteger);
+    return fractionPart ? `${formattedInteger}.${fractionPart}` : formattedInteger;
+}
+
+function setNumericInputValue(input, numericValue, { format = false, min = null, max = null } = {}) {
+    if (!input) {
+        return;
+    }
+    if (!Number.isFinite(numericValue)) {
+        input.dataset.rawValue = '';
+        input.value = '';
+        return;
+    }
+    let value = numericValue;
+    if (Number.isFinite(min)) {
+        value = Math.max(min, value);
+    }
+    if (Number.isFinite(max)) {
+        value = Math.min(max, value);
+    }
+    const raw = sanitizeNumericInput(value.toString());
+    input.dataset.rawValue = raw;
+    input.value = format ? formatSanitizedNumericString(raw) : raw;
+}
+
+function getNumericInputValue(input, { min = null, max = null } = {}) {
+    if (!input) {
+        return NaN;
+    }
+    const raw = input.dataset.rawValue ?? sanitizeNumericInput(input.value);
+    if (!raw) {
+        return NaN;
+    }
+    let numeric = Number.parseFloat(raw);
+    if (!Number.isFinite(numeric)) {
+        return NaN;
+    }
+    if (Number.isFinite(min)) {
+        numeric = Math.max(min, numeric);
+    }
+    if (Number.isFinite(max)) {
+        numeric = Math.min(max, numeric);
+    }
+    return numeric;
+}
+
+function bindNumericInputFormatting(input, { min = null, max = null } = {}) {
+    if (!input) {
+        return;
+    }
+
+    const sanitizeToDataset = () => {
+        const sanitized = sanitizeNumericInput(input.value);
+        input.dataset.rawValue = sanitized;
+        input.value = sanitized;
+    };
+
+    input.addEventListener('input', () => {
+        sanitizeToDataset();
+    });
+
+    input.addEventListener('focus', () => {
+        const raw = input.dataset.rawValue ?? '';
+        input.value = raw;
+    });
+
+    input.addEventListener('blur', () => {
+        const raw = input.dataset.rawValue ?? sanitizeNumericInput(input.value);
+        if (!raw) {
+            input.value = '';
+            return;
+        }
+        let numeric = Number.parseFloat(raw);
+        if (!Number.isFinite(numeric)) {
+            input.dataset.rawValue = '';
+            input.value = '';
+            return;
+        }
+        if (Number.isFinite(min)) {
+            numeric = Math.max(min, numeric);
+        }
+        if (Number.isFinite(max)) {
+            numeric = Math.min(max, numeric);
+        }
+        setNumericInputValue(input, numeric, { format: true });
+    });
+
+    const initial = sanitizeNumericInput(input.value);
+    input.dataset.rawValue = initial;
+    if (initial) {
+        setNumericInputValue(input, Number.parseFloat(initial), { format: true, min, max });
+    } else {
+        input.value = '';
+    }
+}
 
 const uiHandles = {
     rollTriggerButton: document.querySelector('.roll-trigger'),
@@ -109,9 +326,87 @@ const appState = {
     },
     cinematic: false,
     glitch: true,
+    reduceMotion: false,
     videoPlaying: false,
     scrollLock: null
 };
+
+const LARGE_ROLL_WARNING_THRESHOLD = 9999999;
+
+const largeRollWarningManager = (() => {
+    let pendingAction = null;
+
+    const getOverlay = () => document.getElementById('rollWarningOverlay');
+
+    function hideOverlay() {
+        const overlay = getOverlay();
+        if (!overlay) {
+            return;
+        }
+        overlay.setAttribute('hidden', '');
+        overlay.setAttribute('aria-hidden', 'true');
+        overlay.style.display = 'none';
+        overlay.removeAttribute('data-visible');
+        overlay.removeAttribute('data-roll-count');
+    }
+
+    function focusPrimaryAction() {
+        const confirmButton = document.getElementById('rollWarningConfirm');
+        if (!confirmButton || typeof confirmButton.focus !== 'function') {
+            return;
+        }
+        try {
+            confirmButton.focus({ preventScroll: true });
+        } catch (error) {
+            confirmButton.focus();
+        }
+    }
+
+    return {
+        prompt(total, action) {
+            pendingAction = typeof action === 'function' ? action : null;
+            const overlay = getOverlay();
+            if (!overlay) {
+                if (pendingAction) {
+                    const next = pendingAction;
+                    pendingAction = null;
+                    next();
+                }
+                return false;
+            }
+
+            overlay.dataset.rollCount = `${total}`;
+            const countNode = document.getElementById('rollWarningCount');
+            if (countNode) {
+                countNode.textContent = formatWithCommas(total);
+            }
+
+            overlay.removeAttribute('hidden');
+            overlay.removeAttribute('aria-hidden');
+            overlay.style.display = '';
+            overlay.setAttribute('data-visible', 'true');
+            focusPrimaryAction();
+            return true;
+        },
+        confirm() {
+            const action = pendingAction;
+            pendingAction = null;
+            hideOverlay();
+            if (typeof action === 'function') {
+                action();
+            }
+        },
+        cancel() {
+            pendingAction = null;
+            hideOverlay();
+        },
+        hide: hideOverlay,
+        isVisible() {
+            const overlay = getOverlay();
+            return Boolean(overlay && !overlay.hasAttribute('hidden'));
+        }
+    };
+})();
 
 const cutsceneWarningManager = (() => {
     const storageKey = 'solsCutsceneWarningDismissed';
@@ -576,7 +871,8 @@ function isGlitchBiomeSelected() {
 
 function updateGlitchPresentation() {
     const glitchBiomeActive = isGlitchBiomeSelected();
-    applyGlitchVisuals(appState.glitch && glitchBiomeActive, { forceTheme: glitchBiomeActive });
+    const enableGlitch = appState.glitch && glitchBiomeActive && !appState.reduceMotion;
+    applyGlitchVisuals(enableGlitch, { forceTheme: glitchBiomeActive });
 }
 
 function toggleGlitchEffects() {
@@ -589,6 +885,70 @@ function toggleGlitchEffects() {
 
     playSoundEffect(document.getElementById('clickSoundFx'), 'ui');
     updateGlitchPresentation();
+}
+
+function applyReducedMotionState(enabled) {
+    const body = document.body;
+    if (body) {
+        body.classList.toggle('reduce-motion', enabled);
+    }
+
+    const toggle = document.getElementById('reduceMotionToggle');
+    if (toggle) {
+        toggle.textContent = enabled ? 'Reduce Animations: On' : 'Reduce Animations: Off';
+        toggle.setAttribute('aria-pressed', enabled ? 'true' : 'false');
+    }
+
+    const videos = document.querySelectorAll('video');
+    videos.forEach(video => {
+        if (!video) {
+            return;
+        }
+        if (enabled) {
+            if (!video.paused) {
+                video.dataset.resumeOnMotion = 'true';
+                try {
+                    video.pause();
+                } catch (error) {
+                    console.warn('Unable to pause video for reduced motion preference', error);
+                }
+            }
+        } else if (video.dataset.resumeOnMotion === 'true') {
+            delete video.dataset.resumeOnMotion;
+            if (typeof video.play === 'function') {
+                const playPromise = video.play();
+                if (playPromise && typeof playPromise.catch === 'function') {
+                    playPromise.catch(() => {});
+                }
+            }
+        }
+    });
+
+    updateGlitchPresentation();
+
+    if (enabled) {
+        resetLuckPresetAnimations();
+    }
+
+    syncLuckVisualEffects(currentLuck);
+}
+
+function toggleReducedMotion() {
+    appState.reduceMotion = !appState.reduceMotion;
+    applyReducedMotionState(appState.reduceMotion);
+    playSoundEffect(document.getElementById('clickSoundFx'), 'ui');
+}
+
+const reduceMotionMediaQuery = typeof window !== 'undefined' && typeof window.matchMedia === 'function'
+    ? window.matchMedia('(prefers-reduced-motion: reduce)')
+    : null;
+
+if (reduceMotionMediaQuery) {
+    appState.reduceMotion = reduceMotionMediaQuery.matches;
+    reduceMotionMediaQuery.addEventListener('change', event => {
+        appState.reduceMotion = event.matches;
+        applyReducedMotionState(appState.reduceMotion);
+    });
 }
 
 const biomeAssets = {
@@ -955,14 +1315,18 @@ function applyGlitchVisuals(enabled, options = {}) {
     }
 }
 
-function applyBiomeTheme(biome) {
-    const assetKey = Object.prototype.hasOwnProperty.call(biomeAssets, biome) ? biome : 'normal';
-    const assets = biomeAssets[assetKey];
-    const isVideoAsset = typeof assets.image === 'string' && /\.(webm|mp4|ogv|ogg)$/i.test(assets.image);
+function applyBiomeTheme(biome, selectionState = null) {
+    const selection = selectionState || collectBiomeSelectionState();
+    const themeCandidate = selection.themeBiome || biome;
+    const assetKey = Object.prototype.hasOwnProperty.call(biomeAssets, themeCandidate)
+        ? themeCandidate
+        : (Object.prototype.hasOwnProperty.call(biomeAssets, biome) ? biome : 'normal');
+    const assets = biomeAssets[assetKey] || biomeAssets.normal;
+    const isVideoAsset = assets && typeof assets.image === 'string' && /\.(webm|mp4|ogv|ogg)$/i.test(assets.image);
 
     const body = document.body;
     const root = document.documentElement;
-    const isBloodRain = biome === 'bloodRain';
+    const isBloodRain = assetKey === 'bloodRain';
     if (body) {
         body.classList.toggle('biome--blood-rain', isBloodRain);
     }
@@ -970,9 +1334,9 @@ function applyBiomeTheme(biome) {
         root.classList.toggle('biome--blood-rain', isBloodRain);
     }
 
-    updateBloodRainWeather(biome);
+    updateBloodRainWeather(assetKey);
 
-    if (root) {
+    if (root && assets) {
         root.style.setProperty('--biome-background', isVideoAsset ? 'none' : `url("${assets.image}")`);
     }
 
@@ -997,7 +1361,7 @@ function applyBiomeTheme(biome) {
             if (playPromise && typeof playPromise.catch === 'function') {
                 playPromise.catch(() => {});
             }
-        } else {
+        } else if (assets) {
             backdrop.classList.remove('interface-backdrop--video-active');
             backdrop.style.backgroundImage = `url("${assets.image}")`;
             if (backdropVideo) {
@@ -1017,7 +1381,7 @@ function applyBiomeTheme(biome) {
     }
 
     const bgMusic = document.getElementById('ambientMusic');
-    if (bgMusic) {
+    if (bgMusic && assets) {
         const currentSrc = bgMusic.getAttribute('data-current-src');
         const shouldUpdateMusic = currentSrc !== assets.music;
         if (shouldUpdateMusic) {
@@ -1049,6 +1413,20 @@ let lastDaveMultiplier = 1;
 
 const MILLION_LUCK_PRESET = 1000000;
 const TEN_MILLION_LUCK_PRESET = 10000000;
+const LUCK_CRACK_THRESHOLD = 9999999;
+
+function updateLuckCrackOverlay(luckValue, reduceMotionActive) {
+    const overlay = document.getElementById('luck-crack-overlay');
+    if (!overlay) {
+        return;
+    }
+
+    const isTenMillionPreset = luckValue === TEN_MILLION_LUCK_PRESET;
+    const shouldShowCrack = !reduceMotionActive &&
+        luckValue >= LUCK_CRACK_THRESHOLD &&
+        !isTenMillionPreset;
+    overlay.classList.toggle('luck-crack-overlay--visible', shouldShowCrack);
+}
 
 function syncLuckVisualEffects(luckValue) {
     const body = document.body;
@@ -1056,14 +1434,34 @@ function syncLuckVisualEffects(luckValue) {
         return;
     }
 
-    if (luckValue === TEN_MILLION_LUCK_PRESET) {
-        body.classList.add('luck-effect--million', 'luck-effect--ten-million');
-    } else if (luckValue === MILLION_LUCK_PRESET) {
+    const reduceMotionActive = body.classList.contains('reduce-motion') || appState.reduceMotion;
+    const isTenMillionPreset = luckValue === TEN_MILLION_LUCK_PRESET;
+    const shouldApplyMillionEffect = luckValue >= MILLION_LUCK_PRESET && !isTenMillionPreset;
+
+    if (shouldApplyMillionEffect) {
         body.classList.add('luck-effect--million');
-        body.classList.remove('luck-effect--ten-million');
     } else {
-        body.classList.remove('luck-effect--million', 'luck-effect--ten-million');
+        body.classList.remove('luck-effect--million');
     }
+
+    body.classList.remove('luck-effect--ten-million');
+
+    updateLuckCrackOverlay(luckValue, reduceMotionActive);
+}
+
+function resetLuckPresetAnimations() {
+    const animationClasses = ['luck-preset-button--pop', 'luck-preset-button--pop-spin'];
+    const targets = [
+        document.getElementById('luck-preset-one-million'),
+        document.getElementById('luck-preset-ten-million')
+    ];
+
+    targets.forEach(button => {
+        if (!button) {
+            return;
+        }
+        animationClasses.forEach(className => button.classList.remove(className));
+    });
 }
 
 function applyLuckValue(value, options = {}) {
@@ -1079,7 +1477,10 @@ function applyLuckValue(value, options = {}) {
         document.getElementById('dave-luck-dropdown').value = '1';
         refreshCustomSelect('dave-luck-dropdown');
     }
-    document.getElementById('luck-total').value = value;
+    const luckInput = document.getElementById('luck-total');
+    if (luckInput) {
+        setNumericInputValue(luckInput, value, { format: true, min: 1 });
+    }
 
     syncLuckVisualEffects(value);
 
@@ -1089,6 +1490,16 @@ function applyLuckValue(value, options = {}) {
     if (typeof applyDunePresetOptions === 'function') {
         applyDunePresetOptions(options);
     }
+}
+
+function applyRollPreset(value) {
+    const rollField = document.getElementById('roll-total');
+    if (!rollField) {
+        return;
+    }
+
+    setNumericInputValue(rollField, value, { format: true, min: 1, max: 100000000 });
+    playSoundEffect(document.getElementById('clickSoundFx'), 'ui');
 }
 
 function recomputeLuckValue() {
@@ -1110,10 +1521,12 @@ function recomputeLuckValue() {
     };
 
     const luckField = controls.luckInput;
-    const enteredLuck = luckField && luckField.value ? parseFloat(luckField.value) : NaN;
-    if (luckField && luckField.value && Number.isFinite(enteredLuck) && enteredLuck !== currentLuck) {
-        baseLuck = enteredLuck;
-        currentLuck = enteredLuck;
+    const rawLuckValue = luckField ? (luckField.dataset.rawValue ?? '') : '';
+    const enteredLuck = rawLuckValue ? Number.parseFloat(rawLuckValue) : NaN;
+    if (luckField && rawLuckValue && Number.isFinite(enteredLuck) && enteredLuck !== currentLuck) {
+        const normalizedLuck = Math.max(1, Math.floor(enteredLuck));
+        baseLuck = normalizedLuck;
+        currentLuck = normalizedLuck;
         lastVipMultiplier = 1;
         lastXyzMultiplier = 1;
         lastDaveMultiplier = 1;
@@ -1128,6 +1541,8 @@ function recomputeLuckValue() {
             controls.dave.value = '1';
             refreshCustomSelect('dave-luck-dropdown');
         }
+        const shouldFormat = document.activeElement !== luckField;
+        setNumericInputValue(luckField, baseLuck, { format: shouldFormat, min: 1 });
         syncLuckVisualEffects(baseLuck);
         if (typeof applyOblivionPresetOptions === 'function') {
             applyOblivionPresetOptions({});
@@ -1143,12 +1558,19 @@ function recomputeLuckValue() {
     lastXyzMultiplier = multipliers.xyz;
     lastDaveMultiplier = multipliers.dave;
     if (luckField) {
-        luckField.value = currentLuck;
+        const shouldFormat = document.activeElement !== luckField;
+        setNumericInputValue(luckField, currentLuck, { format: shouldFormat, min: 1 });
     }
+
+    syncLuckVisualEffects(currentLuck);
 }
 
 function resetLuckFields() {
-    document.getElementById('luck-total').value = 1;
+    const luckInput = document.getElementById('luck-total');
+    if (luckInput) {
+        const shouldFormat = document.activeElement !== luckInput;
+        setNumericInputValue(luckInput, 1, { format: shouldFormat, min: 1 });
+    }
     playSoundEffect(document.getElementById('clickSoundFx'), 'ui');
     recomputeLuckValue();
     if (typeof applyOblivionPresetOptions === 'function') {
@@ -1160,42 +1582,57 @@ function resetLuckFields() {
 }
 
 function resetRollCount() {
-    document.getElementById('roll-total').value = 1;
+    const rollField = document.getElementById('roll-total');
+    if (rollField) {
+        const shouldFormat = document.activeElement !== rollField;
+        setNumericInputValue(rollField, 1, { format: shouldFormat, min: 1, max: 100000000 });
+    }
     playSoundEffect(document.getElementById('clickSoundFx'), 'ui');
 }
 
 function setGlitchPreset() {
-    document.getElementById('biome-dropdown').value = 'glitch';
+    setPrimaryBiomeSelection('glitch');
+    setOtherBiomeSelection('none');
+    setTimeBiomeSelection('none');
     playSoundEffect(document.getElementById('clickSoundFx'), 'ui');
-    initializeBiomeInterface();
+    updateBiomeControlConstraints({ source: BIOME_PRIMARY_SELECT_ID });
 }
 
 function setDreamspacePreset() {
-    document.getElementById('biome-dropdown').value = 'dreamspace';
+    setPrimaryBiomeSelection('dreamspace');
+    setOtherBiomeSelection('none');
+    setTimeBiomeSelection('none');
     playSoundEffect(document.getElementById('clickSoundFx'), 'ui');
-    initializeBiomeInterface();
+    updateBiomeControlConstraints({ source: BIOME_PRIMARY_SELECT_ID });
 }
 
 function setLimboPreset() {
-    document.getElementById('biome-dropdown').value = 'limbo';
+    setPrimaryBiomeSelection('limbo');
+    setOtherBiomeSelection('none');
+    setTimeBiomeSelection('none');
     playSoundEffect(document.getElementById('clickSoundFx'), 'ui');
-    initializeBiomeInterface();
+    updateBiomeControlConstraints({ source: BIOME_PRIMARY_SELECT_ID });
 }
 
 function setRoePreset() {
-    document.getElementById('biome-dropdown').value = 'roe';
+    setOtherBiomeSelection('roe');
+    setPrimaryBiomeSelection('normal');
+    setTimeBiomeSelection('none');
     playSoundEffect(document.getElementById('clickSoundFx'), 'ui');
-    initializeBiomeInterface();
+    updateBiomeControlConstraints({ source: BIOME_OTHER_SELECT_ID });
 }
 
 function resetBiomeChoice() {
-    document.getElementById('biome-dropdown').value = 'normal';
+    setPrimaryBiomeSelection('normal');
+    setOtherBiomeSelection('none');
+    setTimeBiomeSelection('none');
     playSoundEffect(document.getElementById('clickSoundFx'), 'ui');
-    initializeBiomeInterface();
+    updateBiomeControlConstraints({ source: null });
 }
 
 function initializeBiomeInterface() {
-    const biome = document.getElementById('biome-dropdown').value;
+    const selectionState = collectBiomeSelectionState();
+    const biome = selectionState.canonicalBiome;
     const daveLuckContainer = document.getElementById('dave-luck-wrapper');
     const xyzLuckContainer = document.getElementById('xyz-luck-wrapper');
     const luckPresets = document.getElementById('luck-preset-panel');
@@ -1227,10 +1664,11 @@ function initializeBiomeInterface() {
             });
         }
     }
-    applyBiomeTheme(biome);
+    applyBiomeTheme(biome, selectionState);
     updateGlitchPresentation();
     recomputeLuckValue();
     refreshCustomSelect('biome-dropdown');
+    updateBiomeControlConstraints();
 }
 
 function playAuraVideo(videoId, options = {}) {
@@ -1483,7 +1921,8 @@ const auraOutlineOverrides = new Map([
     ['Ravage', 'sigil-outline-blood'],
     ['Arachnophobia', 'sigil-outline-blood'],
     ['Lamenthyr', 'sigil-outline-blood'],
-    ['Erebus', 'sigil-outline-blood']
+    ['Erebus', 'sigil-outline-blood'],
+    ['Wraithlight', 'sigil-outline-blood']
 ]);
 
 const glitchOutlineNames = new Set(['Fault', 'Glitch', 'Oppression']);
@@ -1676,6 +2115,7 @@ const AURA_BLUEPRINT_SOURCE = Object.freeze([
     { name: "Sovereign - 750,000,000", chance: 750000000 },
     { name: "Malediction - 730,000,000", chance: 730000000, nativeBiomes: ["glitch", "bloodRain"] },
     { name: "Banshee - 730,000,000", chance: 730000000, nativeBiomes: ["glitch", "graveyard"] },
+    { name: "Wraithlight - 695,000,000", chance: 695000000, nativeBiomes: ["glitch", "bloodRain"] },
     { name: "PROLOGUE - 666,616,111", chance: 666616111, nativeBiomes: ["limbo"] },
     { name: "Harvester - 666,000,000", chance: 666000000, nativeBiomes: ["graveyard"] },
     { name: "Apocalypse - 624,000,000", chance: 624000000, nativeBiomes: ["glitch", "graveyard"] },
@@ -2049,6 +2489,7 @@ const EVENT_AURA_LOOKUP = {
         "Accursed - 82,000,000",
         "Phantasma - 462,600,000",
         "Apocalypse - 624,000,000",
+        "Wraithlight - 695,000,000",
         "Malediction - 730,000,000",
         "Banshee - 730,000,000",
         "Ravage - 930,000,000",
@@ -2104,6 +2545,7 @@ const ROE_EXCLUSION_SET = new Set([
     "Arachnophobia - 940,000,000",
     "Lamenthyr - 1,000,000,000",
     "Erebus - 1,200,000,000",
+    "Wraithlight - 695,000,000",
     "Accursed - 82,000,000",
     "Dullahan - 72,000,000",
     "Soul Hunter - 40,000,000",
@@ -2221,6 +2663,13 @@ document.addEventListener('click', event => {
 
 document.addEventListener('keydown', event => {
     if (event.key === 'Escape') {
+        const rollOverlay = document.getElementById('rollWarningOverlay');
+        const rollOverlayVisible = rollOverlay && !rollOverlay.hasAttribute('hidden');
+        if (rollOverlayVisible) {
+            largeRollWarningManager.cancel();
+            return;
+        }
+
         const overlay = document.getElementById('cutsceneWarningOverlay');
         const overlayVisible = overlay && !overlay.hasAttribute('hidden');
         if (overlayVisible) {
@@ -2281,6 +2730,7 @@ function enforceBiomeEventRestrictions() {
     }
 
     refreshCustomSelect('biome-dropdown');
+    updateBiomeControlConstraints();
 }
 
 function setEventToggleState(eventId, enabled) {
@@ -2329,9 +2779,50 @@ function initializeEventSelector() {
     enforceBiomeEventRestrictions();
 }
 
+function triggerLuckPresetButtonAnimation(button, className) {
+    if (!button) {
+        return;
+    }
+
+    button.classList.remove('luck-preset-button--pop', 'luck-preset-button--pop-spin');
+    // Force reflow so the animation can retrigger
+    void button.offsetWidth;
+    button.classList.add(className);
+}
+
+function bindLuckPresetButtonAnimation(button, className, animationNames) {
+    if (!button) {
+        return;
+    }
+
+    button.addEventListener('click', () => {
+        if (appState.reduceMotion) {
+            return;
+        }
+        triggerLuckPresetButtonAnimation(button, className);
+    });
+
+    button.addEventListener('animationend', event => {
+        if (animationNames.includes(event.animationName)) {
+            button.classList.remove(className);
+        }
+    });
+}
+
+function setupLuckPresetAnimations() {
+    resetLuckPresetAnimations();
+
+    const oneMillionButton = document.getElementById('luck-preset-one-million');
+    const tenMillionButton = document.getElementById('luck-preset-ten-million');
+
+    bindLuckPresetButtonAnimation(oneMillionButton, 'luck-preset-button--pop', ['luckPresetPop']);
+    bindLuckPresetButtonAnimation(tenMillionButton, 'luck-preset-button--pop-spin', ['luckPresetSpinPop']);
+}
+
 document.addEventListener('DOMContentLoaded', initializeEventSelector);
 document.addEventListener('DOMContentLoaded', updateOblivionPresetDisplay);
 document.addEventListener('DOMContentLoaded', updateDunePresetDisplay);
+document.addEventListener('DOMContentLoaded', setupLuckPresetAnimations);
 
 document.addEventListener('DOMContentLoaded', () => {
     const confirmButton = document.getElementById('cutsceneWarningConfirm');
@@ -2357,24 +2848,51 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     }
+
+    const rollConfirm = document.getElementById('rollWarningConfirm');
+    if (rollConfirm) {
+        rollConfirm.addEventListener('click', () => {
+            largeRollWarningManager.confirm();
+        });
+    }
+
+    const rollCancel = document.getElementById('rollWarningCancel');
+    if (rollCancel) {
+        rollCancel.addEventListener('click', () => {
+            largeRollWarningManager.cancel();
+        });
+    }
+
+    const rollOverlay = document.getElementById('rollWarningOverlay');
+    if (rollOverlay) {
+        rollOverlay.addEventListener('click', event => {
+            if (event.target === rollOverlay) {
+                largeRollWarningManager.cancel();
+            }
+        });
+    }
 });
 
 const BIOME_ICON_OVERRIDES = {
-    normal: 'other',
-    day: 'other',
-    night: 'other',
-    pumpkinMoon: 'halloween',
-    graveyard: 'halloween',
-    bloodRain: 'halloween',
-    blazing: 'blazing'
+    none: 'files/otherBiomeIcon.png',
+    normal: 'files/otherBiomeIcon.png',
+    day: 'files/otherBiomeIcon.png',
+    night: 'files/otherBiomeIcon.png'
 };
 
 function getBiomeIconSource(value) {
     if (!value) {
         return null;
     }
-    const iconKey = BIOME_ICON_OVERRIDES[value] || value;
-    return `files/${iconKey}BiomeIcon.png`;
+    const runeConfig = resolveRuneConfiguration(value);
+    if (runeConfig && runeConfig.icon) {
+        return runeConfig.icon;
+    }
+    const override = BIOME_ICON_OVERRIDES[value];
+    if (override) {
+        return override;
+    }
+    return `files/${value}BiomeIcon.png`;
 }
 
 function populateBiomeOptionElement(target, option) {
@@ -2424,7 +2942,10 @@ function initializeSingleSelectControl(selectId) {
     const placeholder = summary.dataset.placeholder || summary.textContent.trim();
     menu.innerHTML = '';
 
-    const isBiomeSelect = selectId === 'biome-dropdown';
+    const isBiomeSelect = selectId === 'biome-dropdown'
+        || selectId === BIOME_PRIMARY_SELECT_ID
+        || selectId === BIOME_OTHER_SELECT_ID
+        || selectId === BIOME_TIME_SELECT_ID;
 
     const setElementContent = (element, option) => {
         if (!option) {
@@ -2514,11 +3035,354 @@ function refreshCustomSelect(selectId) {
     }
 }
 
+function findFirstEnabledOption(select, predicate = () => true) {
+    if (!select) return null;
+    return Array.from(select.options).find(option => !option.disabled && predicate(option));
+}
+
+function collectBiomeSelectionState() {
+    if (typeof document === 'undefined') {
+        return {
+            canonicalBiome: 'normal',
+            primaryBiome: 'normal',
+            timeBiome: 'none',
+            runeValue: 'none',
+            runeConfig: null,
+            themeBiome: 'normal',
+            activeBiomes: ['normal'],
+            breakthroughBiomes: ['normal']
+        };
+    }
+
+    const primarySelect = document.getElementById(BIOME_PRIMARY_SELECT_ID);
+    const otherSelect = document.getElementById(BIOME_OTHER_SELECT_ID);
+    const timeSelect = document.getElementById(BIOME_TIME_SELECT_ID);
+
+    const primaryBiome = primarySelect ? (primarySelect.value || 'normal') : 'normal';
+    const runeValue = otherSelect ? (otherSelect.value || 'none') : 'none';
+    const timeBiome = timeSelect ? (timeSelect.value || 'none') : 'none';
+
+    const runeConfig = resolveRuneConfiguration(runeValue);
+
+    const canonicalBiome = (() => {
+        if (runeConfig) {
+            return runeConfig.canonicalBiome || runeConfig.themeBiome || 'normal';
+        }
+        if (runeValue && runeValue !== 'none') {
+            return runeValue;
+        }
+        if (primaryBiome && primaryBiome !== 'none' && primaryBiome !== 'normal') {
+            return primaryBiome;
+        }
+        if (timeBiome && timeBiome !== 'none') {
+            return timeBiome;
+        }
+        if (primaryBiome && primaryBiome !== 'none') {
+            return primaryBiome;
+        }
+        return 'normal';
+    })();
+
+    const themeBiome = (() => {
+        if (runeConfig && runeConfig.themeBiome) {
+            return runeConfig.themeBiome;
+        }
+        if (primaryBiome && primaryBiome !== 'none' && primaryBiome !== 'normal') {
+            return primaryBiome;
+        }
+        if (timeBiome && timeBiome !== 'none') {
+            return timeBiome;
+        }
+        if (primaryBiome && primaryBiome !== 'none') {
+            return primaryBiome;
+        }
+        return canonicalBiome;
+    })();
+
+    const activeBiomeSet = new Set();
+    if (canonicalBiome && canonicalBiome !== 'none') {
+        activeBiomeSet.add(canonicalBiome);
+    }
+    if (primaryBiome && primaryBiome !== 'none') {
+        activeBiomeSet.add(primaryBiome);
+    }
+    if (timeBiome && timeBiome !== 'none') {
+        activeBiomeSet.add(timeBiome);
+    }
+    if (runeConfig && Array.isArray(runeConfig.activeBiomes)) {
+        for (const biomeId of runeConfig.activeBiomes) {
+            if (biomeId) {
+                activeBiomeSet.add(biomeId);
+            }
+        }
+    }
+
+    const breakthroughCandidates = [];
+    if (runeConfig && Array.isArray(runeConfig.breakthroughBiomes)) {
+        breakthroughCandidates.push(...runeConfig.breakthroughBiomes);
+    }
+    if (primaryBiome && primaryBiome !== 'none') {
+        breakthroughCandidates.push(primaryBiome);
+    }
+    if (timeBiome && timeBiome !== 'none') {
+        breakthroughCandidates.push(timeBiome);
+    }
+    breakthroughCandidates.push(canonicalBiome);
+
+    const uniqueBreakthroughs = [];
+    const seen = new Set();
+    for (const candidate of breakthroughCandidates) {
+        if (!candidate || seen.has(candidate)) {
+            continue;
+        }
+        seen.add(candidate);
+        uniqueBreakthroughs.push(candidate);
+    }
+
+    return {
+        canonicalBiome,
+        primaryBiome,
+        timeBiome,
+        runeValue,
+        runeConfig,
+        themeBiome,
+        activeBiomes: Array.from(activeBiomeSet),
+        breakthroughBiomes: uniqueBreakthroughs
+    };
+}
+
+function computeActiveBiomeValue() {
+    const selection = collectBiomeSelectionState();
+    return selection.canonicalBiome;
+}
+
+function syncActiveBiomeSelection({ forceDispatch = false } = {}) {
+    const biomeSelect = document.getElementById('biome-dropdown');
+    if (!biomeSelect) {
+        return;
+    }
+
+    const previousValue = biomeSelect.value;
+    const nextValue = computeActiveBiomeValue();
+
+    if (previousValue !== nextValue) {
+        biomeSelect.value = nextValue;
+        biomeSelect.dispatchEvent(new Event('change', { bubbles: true }));
+    } else if (forceDispatch) {
+        biomeSelect.dispatchEvent(new Event('change', { bubbles: true }));
+    }
+}
+
+function updateBiomeControlConstraints({ source = null, triggerSync = true } = {}) {
+    const primarySelect = document.getElementById(BIOME_PRIMARY_SELECT_ID);
+    const otherSelect = document.getElementById(BIOME_OTHER_SELECT_ID);
+    const timeSelect = document.getElementById(BIOME_TIME_SELECT_ID);
+    const canonicalSelect = document.getElementById('biome-dropdown');
+    if (!primarySelect || !otherSelect || !timeSelect || !canonicalSelect) {
+        return;
+    }
+
+    let primaryChanged = false;
+    let otherChanged = false;
+    let timeChanged = false;
+
+    const selectedRuneConfig = resolveRuneConfiguration(otherSelect.value);
+    const runeActive = selectedRuneConfig !== null;
+
+    if (timeSelect.value === 'day' && DAY_RESTRICTED_BIOMES.has(primarySelect.value)) {
+        if (source === BIOME_TIME_SELECT_ID) {
+            const fallback = findFirstEnabledOption(primarySelect, option => !DAY_RESTRICTED_BIOMES.has(option.value));
+            if (fallback) {
+                primarySelect.value = fallback.value;
+                primaryChanged = true;
+            }
+        } else {
+            timeSelect.value = 'night';
+            timeChanged = true;
+        }
+    }
+
+    if (primarySelect.value === 'limbo' && runeActive) {
+        if (source === BIOME_PRIMARY_SELECT_ID) {
+            otherSelect.value = 'none';
+            otherChanged = true;
+        } else {
+            const fallback = findFirstEnabledOption(primarySelect, option => option.value !== 'limbo');
+            if (fallback) {
+                primarySelect.value = fallback.value;
+                primaryChanged = true;
+            } else {
+                otherSelect.value = 'none';
+                otherChanged = true;
+            }
+        }
+    }
+
+    const eventDisabledMap = new Map();
+    const eventTitleMap = new Map();
+    Array.from(canonicalSelect.options).forEach(option => {
+        eventDisabledMap.set(option.value, option.disabled);
+        eventTitleMap.set(option.value, option.title || '');
+    });
+
+    const daySelected = timeSelect.value === 'day';
+    Array.from(primarySelect.options).forEach(option => {
+        const disabledByEvent = eventDisabledMap.get(option.value) || false;
+        let disabledByConflict = false;
+        let conflictTitle = '';
+
+        if (daySelected && DAY_RESTRICTED_BIOMES.has(option.value)) {
+            disabledByConflict = true;
+            conflictTitle = 'Unavailable while Day is selected.';
+        }
+        if (runeActive && option.value === 'limbo') {
+            disabledByConflict = true;
+            conflictTitle = 'Unavailable while a rune is active.';
+        }
+
+        option.disabled = disabledByEvent || disabledByConflict;
+        if (disabledByEvent) {
+            const eventTitle = eventTitleMap.get(option.value);
+            if (eventTitle) {
+                option.title = eventTitle;
+            } else if (conflictTitle) {
+                option.title = conflictTitle;
+            } else {
+                option.removeAttribute('title');
+            }
+        } else if (disabledByConflict) {
+            option.title = conflictTitle;
+        } else {
+            option.removeAttribute('title');
+        }
+    });
+
+    if (primarySelect.options[primarySelect.selectedIndex]?.disabled) {
+        const fallback = findFirstEnabledOption(primarySelect, option => !option.disabled);
+        if (fallback) {
+            primarySelect.value = fallback.value;
+            primaryChanged = true;
+        }
+    }
+
+    const limboSelected = primarySelect.value === 'limbo';
+    Array.from(otherSelect.options).forEach(option => {
+        const runeOption = resolveRuneConfiguration(option.value);
+        let disabled = false;
+        let title = '';
+        if (limboSelected && runeOption) {
+            disabled = true;
+            title = 'Unavailable while Limbo is selected.';
+        }
+        option.disabled = disabled;
+        if (title) {
+            option.title = title;
+        } else {
+            option.removeAttribute('title');
+        }
+    });
+
+    if (otherSelect.options[otherSelect.selectedIndex]?.disabled) {
+        otherSelect.value = 'none';
+        otherChanged = true;
+    }
+
+    Array.from(timeSelect.options).forEach(option => {
+        let disabled = false;
+        let title = '';
+        if (option.value === 'day' && DAY_RESTRICTED_BIOMES.has(primarySelect.value)) {
+            disabled = true;
+            title = 'Unavailable while Pumpkin Moon, Graveyard, or Blood Rain is selected.';
+        }
+        option.disabled = disabled;
+        if (title) {
+            option.title = title;
+        } else {
+            option.removeAttribute('title');
+        }
+    });
+
+    if (timeSelect.options[timeSelect.selectedIndex]?.disabled) {
+        const fallback = findFirstEnabledOption(timeSelect, option => !option.disabled && option.value !== 'none');
+        if (fallback) {
+            timeSelect.value = fallback.value;
+        } else {
+            timeSelect.value = 'none';
+        }
+        timeChanged = true;
+    }
+
+    refreshCustomSelect(BIOME_PRIMARY_SELECT_ID);
+    refreshCustomSelect(BIOME_OTHER_SELECT_ID);
+    refreshCustomSelect(BIOME_TIME_SELECT_ID);
+
+    if (triggerSync) {
+        syncActiveBiomeSelection({ forceDispatch: primaryChanged || otherChanged || timeChanged });
+    }
+}
+
+function setupBiomeControlDependencies() {
+    const primarySelect = document.getElementById(BIOME_PRIMARY_SELECT_ID);
+    const otherSelect = document.getElementById(BIOME_OTHER_SELECT_ID);
+    const timeSelect = document.getElementById(BIOME_TIME_SELECT_ID);
+
+    if (!primarySelect || !otherSelect || !timeSelect) {
+        return;
+    }
+
+    primarySelect.addEventListener('change', () => updateBiomeControlConstraints({ source: BIOME_PRIMARY_SELECT_ID }));
+    otherSelect.addEventListener('change', () => updateBiomeControlConstraints({ source: BIOME_OTHER_SELECT_ID }));
+    timeSelect.addEventListener('change', () => updateBiomeControlConstraints({ source: BIOME_TIME_SELECT_ID }));
+
+    updateBiomeControlConstraints({ triggerSync: false });
+    syncActiveBiomeSelection({ forceDispatch: true });
+}
+
+function setPrimaryBiomeSelection(value) {
+    const select = document.getElementById(BIOME_PRIMARY_SELECT_ID);
+    if (!select) {
+        return;
+    }
+    if (!Array.from(select.options).some(option => option.value === value)) {
+        return;
+    }
+    select.value = value;
+    refreshCustomSelect(BIOME_PRIMARY_SELECT_ID);
+}
+
+function setOtherBiomeSelection(value) {
+    const select = document.getElementById(BIOME_OTHER_SELECT_ID);
+    if (!select) {
+        return;
+    }
+    if (!Array.from(select.options).some(option => option.value === value)) {
+        return;
+    }
+    select.value = value;
+    refreshCustomSelect(BIOME_OTHER_SELECT_ID);
+}
+
+function setTimeBiomeSelection(value) {
+    const select = document.getElementById(BIOME_TIME_SELECT_ID);
+    if (!select) {
+        return;
+    }
+    if (!Array.from(select.options).some(option => option.value === value)) {
+        return;
+    }
+    select.value = value;
+    refreshCustomSelect(BIOME_TIME_SELECT_ID);
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     initializeSingleSelectControl('vip-dropdown');
     initializeSingleSelectControl('dave-luck-dropdown');
-    initializeSingleSelectControl('biome-dropdown');
+    initializeSingleSelectControl(BIOME_PRIMARY_SELECT_ID);
+    initializeSingleSelectControl(BIOME_OTHER_SELECT_ID);
+    initializeSingleSelectControl(BIOME_TIME_SELECT_ID);
 });
+
+document.addEventListener('DOMContentLoaded', setupBiomeControlDependencies);
 
 document.addEventListener('DOMContentLoaded', () => {
     const buttons = document.querySelectorAll('button');
@@ -2542,6 +3406,22 @@ document.addEventListener('DOMContentLoaded', () => {
         select.addEventListener('mouseenter', () => playSoundEffect(hoverSound, 'ui'));
     });
 
+    const luckField = document.getElementById('luck-total');
+    if (luckField) {
+        bindNumericInputFormatting(luckField, { min: 1 });
+        if (!luckField.dataset.rawValue) {
+            setNumericInputValue(luckField, baseLuck, { format: true, min: 1 });
+        }
+    }
+
+    const rollField = document.getElementById('roll-total');
+    if (rollField) {
+        bindNumericInputFormatting(rollField, { min: 1, max: 100000000 });
+        if (!rollField.dataset.rawValue) {
+            setNumericInputValue(rollField, 1, { format: true, min: 1, max: 100000000 });
+        }
+    }
+
     document.getElementById('vip-dropdown').addEventListener('change', recomputeLuckValue);
     const xyzToggle = document.getElementById('xyz-luck-toggle');
     if (xyzToggle) {
@@ -2552,12 +3432,13 @@ document.addEventListener('DOMContentLoaded', () => {
         daveDropdown.addEventListener('change', recomputeLuckValue);
     }
 
-    const luckField = document.getElementById('luck-total');
     if (luckField) {
         luckField.addEventListener('input', () => {
-            const value = parseInt(luckField.value, 10) || 1;
-            baseLuck = value;
-            currentLuck = value;
+            const raw = luckField.dataset.rawValue ?? '';
+            const parsed = raw ? Number.parseFloat(raw) : NaN;
+            const normalized = Number.isFinite(parsed) && parsed > 0 ? Math.floor(parsed) : 1;
+            baseLuck = normalized;
+            currentLuck = normalized;
             lastVipMultiplier = 1;
             lastXyzMultiplier = 1;
             lastDaveMultiplier = 1;
@@ -2601,6 +3482,8 @@ document.addEventListener('DOMContentLoaded', () => {
         glitchToggle.textContent = appState.glitch ? 'Glitch Effects: On' : 'Glitch Effects: Off';
         glitchToggle.setAttribute('aria-pressed', appState.glitch ? 'true' : 'false');
     }
+
+    applyReducedMotionState(appState.reduceMotion);
 
     const settingsMenu = document.getElementById('optionsMenu');
     const settingsToggleButton = document.getElementById('optionsMenuToggle');
@@ -2680,14 +3563,29 @@ function resolveXpTierForChance(chance) {
 
 const LIMBO_NATIVE_FILTER = ['limbo', 'limbo-null'];
 
-function createAuraEvaluationContext(biome, { eventChecker }) {
-    const isRoe = biome === 'roe';
+function createAuraEvaluationContext(selection, { eventChecker }) {
+    const selectionState = selection || collectBiomeSelectionState();
+    const biome = selectionState?.canonicalBiome || 'normal';
+    const runeConfig = selectionState?.runeConfig || resolveRuneConfiguration(selectionState?.runeValue);
+    const runeValue = selectionState?.runeValue || null;
+    const exclusivityBiome = runeConfig?.exclusivityBiome || biome;
+    const isRoe = biome === 'roe' || runeValue === 'roe';
+    const glitchLikeBiome = (biome === 'glitch') || isRoe || Boolean(runeConfig && runeConfig.glitchLike);
+    const activeBiomes = Array.isArray(selectionState?.activeBiomes) && selectionState.activeBiomes.length > 0
+        ? selectionState.activeBiomes
+        : [exclusivityBiome].filter(Boolean);
+    const breakthroughBiomes = Array.isArray(selectionState?.breakthroughBiomes) && selectionState.breakthroughBiomes.length > 0
+        ? selectionState.breakthroughBiomes
+        : [exclusivityBiome, biome].filter(Boolean);
+
     return {
         biome,
         isRoe,
-        glitchLikeBiome: biome === 'glitch' || isRoe,
-        exclusivityBiome: isRoe ? 'glitch' : biome,
-        eventChecker
+        glitchLikeBiome,
+        exclusivityBiome,
+        eventChecker,
+        activeBiomes,
+        breakthroughBiomes
     };
 }
 
@@ -2706,7 +3604,7 @@ function computeLimboEffectiveChance(aura, context) {
 }
 
 function computeStandardEffectiveChance(aura, context) {
-    const { biome, exclusivityBiome, glitchLikeBiome, isRoe } = context;
+    const { biome, exclusivityBiome, glitchLikeBiome, isRoe, activeBiomes, breakthroughBiomes } = context;
     if (aura.requiresOblivionPreset || aura.requiresDunePreset) return Infinity;
 
     const eventId = getAuraEventId(aura);
@@ -2725,7 +3623,12 @@ function computeStandardEffectiveChance(aura, context) {
             && eventEnabled
             && GLITCH_EVENT_WHITELIST.has(eventId);
 
-        if (!isAuraNativeTo(aura, 'limbo-null') && !isAuraNativeTo(aura, exclusivityBiome) && !allowEventGlitchAccess) {
+        const activeBiomeList = Array.isArray(activeBiomes) && activeBiomes.length > 0
+            ? activeBiomes
+            : [exclusivityBiome];
+        const matchesActiveBiome = auraMatchesAnyBiome(aura, activeBiomeList);
+
+        if (!isAuraNativeTo(aura, 'limbo-null') && !matchesActiveBiome && !allowEventGlitchAccess) {
             return Infinity;
         }
     }
@@ -2742,9 +3645,20 @@ function computeStandardEffectiveChance(aura, context) {
             }
             effectiveChance = minChance;
         } else {
-            const targetBiome = exclusivityBiome;
-            let multiplier = readBreakthroughMultiplier(aura, targetBiome);
-            if (!multiplier && targetBiome !== biome) {
+            const candidates = Array.isArray(breakthroughBiomes) && breakthroughBiomes.length > 0
+                ? breakthroughBiomes
+                : [exclusivityBiome, biome].filter(Boolean);
+            let multiplier = null;
+            for (const candidate of candidates) {
+                multiplier = readBreakthroughMultiplier(aura, candidate);
+                if (multiplier) {
+                    break;
+                }
+            }
+            if (!multiplier && exclusivityBiome && !candidates.includes(exclusivityBiome)) {
+                multiplier = readBreakthroughMultiplier(aura, exclusivityBiome);
+            }
+            if (!multiplier && biome && !candidates.includes(biome)) {
                 multiplier = readBreakthroughMultiplier(aura, biome);
             }
             if (multiplier) {
@@ -2903,7 +3817,7 @@ function summarizeXpRewards(registry) {
 }
 
 // Run the roll simulation while keeping the UI responsive
-function runRollSimulation() {
+function runRollSimulation(options = {}) {
     if (simulationActive) return;
 
     if (!feedContainer) {
@@ -2932,6 +3846,31 @@ function runRollSimulation() {
         return;
     }
 
+    const bypassRollWarning = Boolean(options && options.bypassRollWarning);
+    const totalOverride = options && Number.isFinite(options.totalOverride)
+        ? Number.parseInt(options.totalOverride, 10)
+        : null;
+
+    const rollInputValue = getNumericInputValue(rollCountInput, { min: 1, max: 100000000 });
+    let total = Number.isFinite(totalOverride)
+        ? totalOverride
+        : rollInputValue;
+
+    if (!Number.isFinite(total) || total <= 0) {
+        total = 1;
+    }
+
+    if (!bypassRollWarning && total > LARGE_ROLL_WARNING_THRESHOLD) {
+        largeRollWarningManager.prompt(total, () => runRollSimulation({
+            bypassRollWarning: true,
+            totalOverride: total
+        }));
+        return;
+    }
+
+    const shouldFormatRolls = document.activeElement !== rollCountInput;
+    setNumericInputValue(rollCountInput, total, { format: shouldFormatRolls, min: 1, max: 100000000 });
+
     simulationActive = true;
     rollTriggerButton.disabled = true;
     rollTriggerButton.style.opacity = '0.5';
@@ -2941,19 +3880,15 @@ function runRollSimulation() {
 
     playSoundEffect(audio.roll);
 
-    let total = Number.parseInt(rollCountInput.value, 10);
-    if (!Number.isFinite(total) || total <= 0) {
-        total = 1;
-        rollCountInput.value = '1';
-    }
-
-    let parsedLuck = Number.parseFloat(luckField.value);
+    let parsedLuck = getNumericInputValue(luckField, { min: 1 });
     if (!Number.isFinite(parsedLuck)) {
         parsedLuck = 1;
-        luckField.value = '1';
+        const shouldFormatLuck = document.activeElement !== luckField;
+        setNumericInputValue(luckField, parsedLuck, { format: shouldFormatLuck, min: 1 });
     }
     const luckValue = Math.max(0, parsedLuck);
-    const biome = biomeSelector ? biomeSelector.value : '';
+    const selectionState = collectBiomeSelectionState();
+    const biome = selectionState.canonicalBiome;
 
     const eventSnapshot = enabledEvents.size > 0 ? new Set(enabledEvents) : null;
     const isEventAuraEnabled = aura => {
@@ -2986,7 +3921,7 @@ function runRollSimulation() {
         }
     }
 
-    const evaluationContext = createAuraEvaluationContext(biome, { eventChecker: isEventAuraEnabled, eventSnapshot });
+    const evaluationContext = createAuraEvaluationContext(selectionState, { eventChecker: isEventAuraEnabled, eventSnapshot });
     const computedAuras = buildComputedAuraEntries(AURA_REGISTRY, evaluationContext, luckValue, breakthroughStatsMap);
 
     const activeDuneAura = (dunePresetEnabled && baseLuck >= DUNE_LUCK_TARGET) ? duneAuraData : null;
