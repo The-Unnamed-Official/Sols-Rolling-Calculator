@@ -202,7 +202,7 @@ const appState = {
     scrollLock: null
 };
 
-const LARGE_ROLL_WARNING_THRESHOLD = 10000000;
+const LARGE_ROLL_WARNING_THRESHOLD = 9999999;
 
 const largeRollWarningManager = (() => {
     let pendingAction = null;
