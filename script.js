@@ -78,7 +78,7 @@ const selectWidgetRegistry = new Map();
 const BIOME_PRIMARY_SELECT_ID = 'biome-primary-dropdown';
 const BIOME_OTHER_SELECT_ID = 'biome-other-dropdown';
 const BIOME_TIME_SELECT_ID = 'biome-time-dropdown';
-const DAY_RESTRICTED_BIOMES = new Set(['pumpkinMoon', 'graveyard', 'bloodRain']);
+const DAY_RESTRICTED_BIOMES = new Set(['pumpkinMoon', 'graveyard']);
 
 const decimalFormatter = new Intl.NumberFormat();
 const formatWithCommas = value => decimalFormatter.format(value);
