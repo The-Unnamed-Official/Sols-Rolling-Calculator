@@ -36,9 +36,132 @@
     initial-value: 0deg;
 }
 
+@property --button-pop-scale {
+    syntax: '<number>';
+    inherits: false;
+    initial-value: 1;
+}
+
+@property --button-pop-raise {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 0px;
+}
+
+@property --button-pop-rotation {
+    syntax: '<angle>';
+    inherits: false;
+    initial-value: 0deg;
+}
+
 @keyframes luck-rainbow-cycle {
     to {
         --rainbow-hue: 360deg;
+    }
+}
+
+@keyframes luckPresetMildShake {
+    0%,
+    100% {
+        transform: translateY(var(--button-raise)) scale(var(--button-scale)) translateX(0) rotate(0deg);
+    }
+    20% {
+        transform: translateY(var(--button-raise)) scale(var(--button-scale)) translateX(-1.6px) rotate(-0.8deg);
+    }
+    40% {
+        transform: translateY(var(--button-raise)) scale(var(--button-scale)) translateX(1.6px) rotate(0.8deg);
+    }
+    60% {
+        transform: translateY(var(--button-raise)) scale(var(--button-scale)) translateX(-1px) rotate(-0.5deg);
+    }
+    80% {
+        transform: translateY(var(--button-raise)) scale(var(--button-scale)) translateX(1px) rotate(0.5deg);
+    }
+}
+
+@keyframes luckPresetAggressiveShake {
+    0%,
+    100% {
+        transform: translateY(var(--button-raise)) scale(var(--button-scale)) translateX(0) rotate(0deg);
+    }
+    10% {
+        transform: translateY(var(--button-raise)) scale(var(--button-scale)) translateX(-4px) rotate(-3deg);
+    }
+    20% {
+        transform: translateY(var(--button-raise)) scale(var(--button-scale)) translateX(4px) rotate(3deg);
+    }
+    30% {
+        transform: translateY(var(--button-raise)) scale(var(--button-scale)) translateX(-5px) rotate(-4deg);
+    }
+    40% {
+        transform: translateY(var(--button-raise)) scale(var(--button-scale)) translateX(5px) rotate(4deg);
+    }
+    50% {
+        transform: translateY(var(--button-raise)) scale(var(--button-scale)) translateX(-3px) rotate(-2deg);
+    }
+    60% {
+        transform: translateY(var(--button-raise)) scale(var(--button-scale)) translateX(3px) rotate(2deg);
+    }
+    70% {
+        transform: translateY(var(--button-raise)) scale(var(--button-scale)) translateX(-2px) rotate(-1deg);
+    }
+    80% {
+        transform: translateY(var(--button-raise)) scale(var(--button-scale)) translateX(2px) rotate(1deg);
+    }
+    90% {
+        transform: translateY(var(--button-raise)) scale(var(--button-scale)) translateX(-1px) rotate(-0.5deg);
+    }
+}
+
+@keyframes luckPresetPop {
+    0% {
+        --button-pop-scale: 1;
+        --button-pop-raise: 0px;
+        --button-pop-rotation: 0deg;
+        box-shadow: 0 0 0 rgba(0, 0, 0, 0);
+    }
+    28% {
+        --button-pop-scale: 1.24;
+        --button-pop-raise: -14px;
+        box-shadow: 0 26px 48px rgba(0, 6, 18, 0.42), 0 0 28px rgba(127, 227, 255, 0.32);
+    }
+    58% {
+        --button-pop-scale: 1.08;
+        --button-pop-raise: -4px;
+        box-shadow: 0 16px 28px rgba(0, 6, 18, 0.32), 0 0 18px rgba(127, 227, 255, 0.24);
+    }
+    100% {
+        --button-pop-scale: 1;
+        --button-pop-raise: 0px;
+        --button-pop-rotation: 0deg;
+        box-shadow: 0 0 0 rgba(0, 0, 0, 0);
+    }
+}
+
+@keyframes luckPresetSpinPop {
+    0% {
+        --button-pop-scale: 1;
+        --button-pop-raise: 0px;
+        --button-pop-rotation: 0deg;
+        box-shadow: 0 0 0 rgba(0, 0, 0, 0);
+    }
+    24% {
+        --button-pop-scale: 1.3;
+        --button-pop-raise: -18px;
+        --button-pop-rotation: 40deg;
+        box-shadow: 0 34px 60px rgba(0, 6, 18, 0.48), 0 0 32px rgba(127, 227, 255, 0.38);
+    }
+    60% {
+        --button-pop-scale: 1.12;
+        --button-pop-raise: -6px;
+        --button-pop-rotation: 360deg;
+        box-shadow: 0 20px 36px rgba(0, 6, 18, 0.38), 0 0 26px rgba(127, 227, 255, 0.3);
+    }
+    100% {
+        --button-pop-scale: 1;
+        --button-pop-raise: 0px;
+        --button-pop-rotation: 360deg;
+        box-shadow: 0 0 0 rgba(0, 0, 0, 0);
     }
 }
 
@@ -169,10 +292,67 @@ body.reduce-motion .banner__emblem--spinning img {
     animation: none !important;
 }
 
+.luck-crack-overlay {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 540;
+    opacity: 0;
+    transition: opacity 0.6s ease;
+    background:
+        radial-gradient(circle at 52% 48%, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0) 60%),
+        radial-gradient(circle at 28% 30%, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0) 55%),
+        radial-gradient(circle at 76% 68%, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0) 58%);
+    mix-blend-mode: screen;
+    filter: saturate(1.2);
+}
+
+.luck-crack-overlay::before,
+.luck-crack-overlay::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-repeat: no-repeat;
+}
+
+.luck-crack-overlay::before {
+    background-image:
+        linear-gradient(112deg, transparent 0 43%, rgba(255, 255, 255, 0.24) 45%, transparent 47%),
+        linear-gradient(178deg, transparent 0 48%, rgba(255, 255, 255, 0.2) 49%, transparent 51%),
+        linear-gradient(148deg, transparent 0 46%, rgba(255, 255, 255, 0.18) 47%, transparent 49%);
+    opacity: 0.45;
+}
+
+.luck-crack-overlay::after {
+    background-image:
+        radial-gradient(circle at 55% 46%, rgba(255, 255, 255, 0.22) 0 5%, transparent 22%),
+        conic-gradient(from 0deg at 55% 46%, transparent 0 20deg, rgba(255, 255, 255, 0.32) 20deg 24deg, transparent 24deg 40deg,
+            rgba(255, 255, 255, 0.25) 40deg 44deg, transparent 44deg 60deg,
+            rgba(255, 255, 255, 0.2) 60deg 64deg, transparent 64deg 360deg);
+    mix-blend-mode: screen;
+    opacity: 0.55;
+}
+
+.luck-crack-overlay--visible {
+    opacity: 0.88;
+}
+
+body.reduce-motion .luck-crack-overlay {
+    transition: none;
+}
+
 button {
     --button-scale: 1;
     --button-raise: 0px;
-    transform: translateY(var(--button-raise)) scale(var(--button-scale));
+    --button-pop-scale: 1;
+    --button-pop-raise: 0px;
+    --button-pop-rotation: 0deg;
+    transform:
+        translateY(var(--button-raise))
+        translateY(var(--button-pop-raise))
+        scale(var(--button-scale))
+        scale(var(--button-pop-scale))
+        rotate(var(--button-pop-rotation));
     transition: transform 0.2s ease;
     transform-origin: center;
     will-change: transform;
@@ -2317,6 +2497,9 @@ select.form-field__input option {
     color: var(--text-primary);
     cursor: pointer;
     transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease, background 0.25s ease;
+    position: relative;
+    overflow: visible;
+    z-index: 1;
 }
 
 .preset-matrix button:hover,
@@ -2341,6 +2524,28 @@ select.form-field__input option {
 .preset-toggle__options button:active {
     --button-scale: 0.97;
     --button-raise: 0px;
+}
+
+body:not(.reduce-motion) #luck-preset-one-million:hover,
+body:not(.reduce-motion) #luck-preset-one-million:focus-visible {
+    animation: luckPresetMildShake 0.62s ease-in-out infinite;
+}
+
+body:not(.reduce-motion) #luck-preset-ten-million:hover,
+body:not(.reduce-motion) #luck-preset-ten-million:focus-visible {
+    animation: luckPresetAggressiveShake 0.44s cubic-bezier(0.36, 0.07, 0.19, 0.97) infinite;
+}
+
+body:not(.reduce-motion) #luck-preset-one-million.luck-preset-button--pop,
+body:not(.reduce-motion) #luck-preset-one-million.luck-preset-button--pop:focus-visible {
+    animation: luckPresetPop 0.68s cubic-bezier(0.18, 0.72, 0.27, 1);
+    z-index: 3;
+}
+
+body:not(.reduce-motion) #luck-preset-ten-million.luck-preset-button--pop-spin,
+body:not(.reduce-motion) #luck-preset-ten-million.luck-preset-button--pop-spin:focus-visible {
+    animation: luckPresetSpinPop 0.8s cubic-bezier(0.17, 0.67, 0.28, 1.04);
+    z-index: 4;
 }
 
 .preset-toggle {
