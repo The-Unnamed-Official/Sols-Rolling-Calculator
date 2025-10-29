@@ -1716,6 +1716,12 @@ body.biome--blood-rain .interface-backdrop__veil {
     min-width: clamp(200px, 25vw, 240px);
 }
 
+.event-selector-block {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+}
+
 .interface-select {
     position: relative;
     display: block;
