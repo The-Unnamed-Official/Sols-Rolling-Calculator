@@ -80,6 +80,90 @@ const BIOME_OTHER_SELECT_ID = 'biome-other-dropdown';
 const BIOME_TIME_SELECT_ID = 'biome-time-dropdown';
 const DAY_RESTRICTED_BIOMES = new Set(['pumpkinMoon', 'graveyard']);
 
+const RUNE_CONFIGURATION = Object.freeze({
+    windyRune: Object.freeze({
+        canonicalBiome: 'windy',
+        themeBiome: 'windy',
+        activeBiomes: Object.freeze(['windy']),
+        breakthroughBiomes: Object.freeze(['windy']),
+        icon: 'files/windyRuneIcon.png'
+    }),
+    snowyRune: Object.freeze({
+        canonicalBiome: 'snowy',
+        themeBiome: 'snowy',
+        activeBiomes: Object.freeze(['snowy']),
+        breakthroughBiomes: Object.freeze(['snowy']),
+        icon: 'files/snowyRuneIcon.png'
+    }),
+    rainyRune: Object.freeze({
+        canonicalBiome: 'rainy',
+        themeBiome: 'rainy',
+        activeBiomes: Object.freeze(['rainy']),
+        breakthroughBiomes: Object.freeze(['rainy']),
+        icon: 'files/rainyRuneIcon.png'
+    }),
+    sandstormRune: Object.freeze({
+        canonicalBiome: 'sandstorm',
+        themeBiome: 'sandstorm',
+        activeBiomes: Object.freeze(['sandstorm']),
+        breakthroughBiomes: Object.freeze(['sandstorm']),
+        icon: 'files/sandstormRuneIcon.png'
+    }),
+    hellRune: Object.freeze({
+        canonicalBiome: 'hell',
+        themeBiome: 'hell',
+        activeBiomes: Object.freeze(['hell']),
+        breakthroughBiomes: Object.freeze(['hell']),
+        icon: 'files/hellRuneIcon.png'
+    }),
+    starfallRune: Object.freeze({
+        canonicalBiome: 'starfall',
+        themeBiome: 'starfall',
+        activeBiomes: Object.freeze(['starfall']),
+        breakthroughBiomes: Object.freeze(['starfall']),
+        icon: 'files/starfallRuneIcon.png'
+    }),
+    corruptionRune: Object.freeze({
+        canonicalBiome: 'corruption',
+        themeBiome: 'corruption',
+        activeBiomes: Object.freeze(['corruption']),
+        breakthroughBiomes: Object.freeze(['corruption']),
+        icon: 'files/corruptionRuneIcon.png'
+    }),
+    nullRune: Object.freeze({
+        canonicalBiome: 'null',
+        themeBiome: 'null',
+        activeBiomes: Object.freeze(['null', 'limbo-null']),
+        breakthroughBiomes: Object.freeze(['null', 'limbo-null']),
+        icon: 'files/nullRuneIcon.png'
+    }),
+    eclipseRune: Object.freeze({
+        canonicalBiome: 'night',
+        themeBiome: 'night',
+        activeBiomes: Object.freeze(['day', 'night']),
+        breakthroughBiomes: Object.freeze(['day', 'night']),
+        icon: 'files/eclipseRuneIcon.png'
+    }),
+    roe: Object.freeze({
+        canonicalBiome: 'roe',
+        themeBiome: 'roe',
+        activeBiomes: Object.freeze(['glitch']),
+        breakthroughBiomes: Object.freeze(['glitch']),
+        icon: 'files/roeRuneIcon.png',
+        glitchLike: true,
+        exclusivityBiome: 'glitch'
+    })
+});
+
+function resolveRuneConfiguration(value) {
+    if (!value) {
+        return null;
+    }
+    return Object.prototype.hasOwnProperty.call(RUNE_CONFIGURATION, value)
+        ? RUNE_CONFIGURATION[value]
+        : null;
+}
+
 const decimalFormatter = new Intl.NumberFormat();
 const formatWithCommas = value => decimalFormatter.format(value);
 
@@ -960,14 +1044,18 @@ function applyGlitchVisuals(enabled, options = {}) {
     }
 }
 
-function applyBiomeTheme(biome) {
-    const assetKey = Object.prototype.hasOwnProperty.call(biomeAssets, biome) ? biome : 'normal';
-    const assets = biomeAssets[assetKey];
-    const isVideoAsset = typeof assets.image === 'string' && /\.(webm|mp4|ogv|ogg)$/i.test(assets.image);
+function applyBiomeTheme(biome, selectionState = null) {
+    const selection = selectionState || collectBiomeSelectionState();
+    const themeCandidate = selection.themeBiome || biome;
+    const assetKey = Object.prototype.hasOwnProperty.call(biomeAssets, themeCandidate)
+        ? themeCandidate
+        : (Object.prototype.hasOwnProperty.call(biomeAssets, biome) ? biome : 'normal');
+    const assets = biomeAssets[assetKey] || biomeAssets.normal;
+    const isVideoAsset = assets && typeof assets.image === 'string' && /\.(webm|mp4|ogv|ogg)$/i.test(assets.image);
 
     const body = document.body;
     const root = document.documentElement;
-    const isBloodRain = biome === 'bloodRain';
+    const isBloodRain = assetKey === 'bloodRain';
     if (body) {
         body.classList.toggle('biome--blood-rain', isBloodRain);
     }
@@ -975,9 +1063,9 @@ function applyBiomeTheme(biome) {
         root.classList.toggle('biome--blood-rain', isBloodRain);
     }
 
-    updateBloodRainWeather(biome);
+    updateBloodRainWeather(assetKey);
 
-    if (root) {
+    if (root && assets) {
         root.style.setProperty('--biome-background', isVideoAsset ? 'none' : `url("${assets.image}")`);
     }
 
@@ -1002,7 +1090,7 @@ function applyBiomeTheme(biome) {
             if (playPromise && typeof playPromise.catch === 'function') {
                 playPromise.catch(() => {});
             }
-        } else {
+        } else if (assets) {
             backdrop.classList.remove('interface-backdrop--video-active');
             backdrop.style.backgroundImage = `url("${assets.image}")`;
             if (backdropVideo) {
@@ -1022,7 +1110,7 @@ function applyBiomeTheme(biome) {
     }
 
     const bgMusic = document.getElementById('ambientMusic');
-    if (bgMusic) {
+    if (bgMusic && assets) {
         const currentSrc = bgMusic.getAttribute('data-current-src');
         const shouldUpdateMusic = currentSrc !== assets.music;
         if (shouldUpdateMusic) {
@@ -1210,7 +1298,8 @@ function resetBiomeChoice() {
 }
 
 function initializeBiomeInterface() {
-    const biome = document.getElementById('biome-dropdown').value;
+    const selectionState = collectBiomeSelectionState();
+    const biome = selectionState.canonicalBiome;
     const daveLuckContainer = document.getElementById('dave-luck-wrapper');
     const xyzLuckContainer = document.getElementById('xyz-luck-wrapper');
     const luckPresets = document.getElementById('luck-preset-panel');
@@ -1242,7 +1331,7 @@ function initializeBiomeInterface() {
             });
         }
     }
-    applyBiomeTheme(biome);
+    applyBiomeTheme(biome, selectionState);
     updateGlitchPresentation();
     recomputeLuckValue();
     refreshCustomSelect('biome-dropdown');
@@ -2377,24 +2466,25 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 const BIOME_ICON_OVERRIDES = {
-    normal: 'other',
-    day: 'other',
-    night: 'other',
-    pumpkinMoon: 'halloween',
-    graveyard: 'halloween',
-    bloodRain: 'halloween',
-    blazing: 'blazing'
+    none: 'files/otherBiomeIcon.png',
+    normal: 'files/otherBiomeIcon.png',
+    day: 'files/otherBiomeIcon.png',
+    night: 'files/otherBiomeIcon.png'
 };
 
 function getBiomeIconSource(value) {
-    if (!value || value === 'none') {
+    if (!value) {
         return null;
     }
-    const iconKey = BIOME_ICON_OVERRIDES[value] || value;
-    if (!iconKey) {
-        return null;
+    const runeConfig = resolveRuneConfiguration(value);
+    if (runeConfig && runeConfig.icon) {
+        return runeConfig.icon;
     }
-    return `files/${iconKey}BiomeIcon.png`;
+    const override = BIOME_ICON_OVERRIDES[value];
+    if (override) {
+        return override;
+    }
+    return `files/${value}BiomeIcon.png`;
 }
 
 function populateBiomeOptionElement(target, option) {
@@ -2444,7 +2534,10 @@ function initializeSingleSelectControl(selectId) {
     const placeholder = summary.dataset.placeholder || summary.textContent.trim();
     menu.innerHTML = '';
 
-    const isBiomeSelect = selectId === 'biome-dropdown' || selectId === BIOME_PRIMARY_SELECT_ID;
+    const isBiomeSelect = selectId === 'biome-dropdown'
+        || selectId === BIOME_PRIMARY_SELECT_ID
+        || selectId === BIOME_OTHER_SELECT_ID
+        || selectId === BIOME_TIME_SELECT_ID;
 
     const setElementContent = (element, option) => {
         if (!option) {
@@ -2539,22 +2632,120 @@ function findFirstEnabledOption(select, predicate = () => true) {
     return Array.from(select.options).find(option => !option.disabled && predicate(option));
 }
 
-function computeActiveBiomeValue() {
+function collectBiomeSelectionState() {
+    if (typeof document === 'undefined') {
+        return {
+            canonicalBiome: 'normal',
+            primaryBiome: 'normal',
+            timeBiome: 'none',
+            runeValue: 'none',
+            runeConfig: null,
+            themeBiome: 'normal',
+            activeBiomes: ['normal'],
+            breakthroughBiomes: ['normal']
+        };
+    }
+
     const primarySelect = document.getElementById(BIOME_PRIMARY_SELECT_ID);
     const otherSelect = document.getElementById(BIOME_OTHER_SELECT_ID);
     const timeSelect = document.getElementById(BIOME_TIME_SELECT_ID);
 
-    const otherValue = otherSelect ? otherSelect.value : 'none';
-    if (otherValue && otherValue !== 'none') {
-        return otherValue;
+    const primaryBiome = primarySelect ? (primarySelect.value || 'normal') : 'normal';
+    const runeValue = otherSelect ? (otherSelect.value || 'none') : 'none';
+    const timeBiome = timeSelect ? (timeSelect.value || 'none') : 'none';
+
+    const runeConfig = resolveRuneConfiguration(runeValue);
+
+    const canonicalBiome = (() => {
+        if (runeConfig) {
+            return runeConfig.canonicalBiome || runeConfig.themeBiome || 'normal';
+        }
+        if (runeValue && runeValue !== 'none') {
+            return runeValue;
+        }
+        if (primaryBiome && primaryBiome !== 'none' && primaryBiome !== 'normal') {
+            return primaryBiome;
+        }
+        if (timeBiome && timeBiome !== 'none') {
+            return timeBiome;
+        }
+        if (primaryBiome && primaryBiome !== 'none') {
+            return primaryBiome;
+        }
+        return 'normal';
+    })();
+
+    const themeBiome = (() => {
+        if (runeConfig && runeConfig.themeBiome) {
+            return runeConfig.themeBiome;
+        }
+        if (primaryBiome && primaryBiome !== 'none' && primaryBiome !== 'normal') {
+            return primaryBiome;
+        }
+        if (timeBiome && timeBiome !== 'none') {
+            return timeBiome;
+        }
+        if (primaryBiome && primaryBiome !== 'none') {
+            return primaryBiome;
+        }
+        return canonicalBiome;
+    })();
+
+    const activeBiomeSet = new Set();
+    if (canonicalBiome && canonicalBiome !== 'none') {
+        activeBiomeSet.add(canonicalBiome);
+    }
+    if (primaryBiome && primaryBiome !== 'none') {
+        activeBiomeSet.add(primaryBiome);
+    }
+    if (timeBiome && timeBiome !== 'none') {
+        activeBiomeSet.add(timeBiome);
+    }
+    if (runeConfig && Array.isArray(runeConfig.activeBiomes)) {
+        for (const biomeId of runeConfig.activeBiomes) {
+            if (biomeId) {
+                activeBiomeSet.add(biomeId);
+            }
+        }
     }
 
-    const timeValue = timeSelect ? timeSelect.value : 'none';
-    if (timeValue && timeValue !== 'none') {
-        return timeValue;
+    const breakthroughCandidates = [];
+    if (runeConfig && Array.isArray(runeConfig.breakthroughBiomes)) {
+        breakthroughCandidates.push(...runeConfig.breakthroughBiomes);
+    }
+    if (primaryBiome && primaryBiome !== 'none') {
+        breakthroughCandidates.push(primaryBiome);
+    }
+    if (timeBiome && timeBiome !== 'none') {
+        breakthroughCandidates.push(timeBiome);
+    }
+    breakthroughCandidates.push(canonicalBiome);
+
+    const uniqueBreakthroughs = [];
+    const seen = new Set();
+    for (const candidate of breakthroughCandidates) {
+        if (!candidate || seen.has(candidate)) {
+            continue;
+        }
+        seen.add(candidate);
+        uniqueBreakthroughs.push(candidate);
     }
 
-    return primarySelect ? (primarySelect.value || 'normal') : 'normal';
+    return {
+        canonicalBiome,
+        primaryBiome,
+        timeBiome,
+        runeValue,
+        runeConfig,
+        themeBiome,
+        activeBiomes: Array.from(activeBiomeSet),
+        breakthroughBiomes: uniqueBreakthroughs
+    };
+}
+
+function computeActiveBiomeValue() {
+    const selection = collectBiomeSelectionState();
+    return selection.canonicalBiome;
 }
 
 function syncActiveBiomeSelection({ forceDispatch = false } = {}) {
@@ -2587,6 +2778,9 @@ function updateBiomeControlConstraints({ source = null, triggerSync = true } = {
     let otherChanged = false;
     let timeChanged = false;
 
+    const selectedRuneConfig = resolveRuneConfiguration(otherSelect.value);
+    const runeActive = selectedRuneConfig !== null;
+
     if (timeSelect.value === 'day' && DAY_RESTRICTED_BIOMES.has(primarySelect.value)) {
         if (source === BIOME_TIME_SELECT_ID) {
             const fallback = findFirstEnabledOption(primarySelect, option => !DAY_RESTRICTED_BIOMES.has(option.value));
@@ -2600,7 +2794,7 @@ function updateBiomeControlConstraints({ source = null, triggerSync = true } = {
         }
     }
 
-    if (primarySelect.value === 'limbo' && otherSelect.value === 'roe') {
+    if (primarySelect.value === 'limbo' && runeActive) {
         if (source === BIOME_PRIMARY_SELECT_ID) {
             otherSelect.value = 'none';
             otherChanged = true;
@@ -2613,19 +2807,6 @@ function updateBiomeControlConstraints({ source = null, triggerSync = true } = {
                 otherSelect.value = 'none';
                 otherChanged = true;
             }
-        }
-    }
-
-    if (otherSelect.value === 'roe' && primarySelect.value === 'limbo') {
-        if (source === BIOME_OTHER_SELECT_ID) {
-            const fallback = findFirstEnabledOption(primarySelect, option => option.value !== 'limbo');
-            if (fallback) {
-                primarySelect.value = fallback.value;
-                primaryChanged = true;
-            }
-        } else if (source !== BIOME_PRIMARY_SELECT_ID) {
-            otherSelect.value = 'none';
-            otherChanged = true;
         }
     }
 
@@ -2646,9 +2827,9 @@ function updateBiomeControlConstraints({ source = null, triggerSync = true } = {
             disabledByConflict = true;
             conflictTitle = 'Unavailable while Day is selected.';
         }
-        if (otherSelect.value === 'roe' && option.value === 'limbo') {
+        if (runeActive && option.value === 'limbo') {
             disabledByConflict = true;
-            conflictTitle = 'Unavailable while Rune of Everything is active.';
+            conflictTitle = 'Unavailable while a rune is active.';
         }
 
         option.disabled = disabledByEvent || disabledByConflict;
@@ -2676,10 +2857,12 @@ function updateBiomeControlConstraints({ source = null, triggerSync = true } = {
         }
     }
 
+    const limboSelected = primarySelect.value === 'limbo';
     Array.from(otherSelect.options).forEach(option => {
+        const runeOption = resolveRuneConfiguration(option.value);
         let disabled = false;
         let title = '';
-        if (option.value === 'roe' && primarySelect.value === 'limbo') {
+        if (limboSelected && runeOption) {
             disabled = true;
             title = 'Unavailable while Limbo is selected.';
         }
@@ -2953,14 +3136,29 @@ function resolveXpTierForChance(chance) {
 
 const LIMBO_NATIVE_FILTER = ['limbo', 'limbo-null'];
 
-function createAuraEvaluationContext(biome, { eventChecker }) {
-    const isRoe = biome === 'roe';
+function createAuraEvaluationContext(selection, { eventChecker }) {
+    const selectionState = selection || collectBiomeSelectionState();
+    const biome = selectionState?.canonicalBiome || 'normal';
+    const runeConfig = selectionState?.runeConfig || resolveRuneConfiguration(selectionState?.runeValue);
+    const runeValue = selectionState?.runeValue || null;
+    const exclusivityBiome = runeConfig?.exclusivityBiome || biome;
+    const isRoe = biome === 'roe' || runeValue === 'roe';
+    const glitchLikeBiome = (biome === 'glitch') || isRoe || Boolean(runeConfig && runeConfig.glitchLike);
+    const activeBiomes = Array.isArray(selectionState?.activeBiomes) && selectionState.activeBiomes.length > 0
+        ? selectionState.activeBiomes
+        : [exclusivityBiome].filter(Boolean);
+    const breakthroughBiomes = Array.isArray(selectionState?.breakthroughBiomes) && selectionState.breakthroughBiomes.length > 0
+        ? selectionState.breakthroughBiomes
+        : [exclusivityBiome, biome].filter(Boolean);
+
     return {
         biome,
         isRoe,
-        glitchLikeBiome: biome === 'glitch' || isRoe,
-        exclusivityBiome: isRoe ? 'glitch' : biome,
-        eventChecker
+        glitchLikeBiome,
+        exclusivityBiome,
+        eventChecker,
+        activeBiomes,
+        breakthroughBiomes
     };
 }
 
@@ -2979,7 +3177,7 @@ function computeLimboEffectiveChance(aura, context) {
 }
 
 function computeStandardEffectiveChance(aura, context) {
-    const { biome, exclusivityBiome, glitchLikeBiome, isRoe } = context;
+    const { biome, exclusivityBiome, glitchLikeBiome, isRoe, activeBiomes, breakthroughBiomes } = context;
     if (aura.requiresOblivionPreset || aura.requiresDunePreset) return Infinity;
 
     const eventId = getAuraEventId(aura);
@@ -2998,7 +3196,12 @@ function computeStandardEffectiveChance(aura, context) {
             && eventEnabled
             && GLITCH_EVENT_WHITELIST.has(eventId);
 
-        if (!isAuraNativeTo(aura, 'limbo-null') && !isAuraNativeTo(aura, exclusivityBiome) && !allowEventGlitchAccess) {
+        const activeBiomeList = Array.isArray(activeBiomes) && activeBiomes.length > 0
+            ? activeBiomes
+            : [exclusivityBiome];
+        const matchesActiveBiome = auraMatchesAnyBiome(aura, activeBiomeList);
+
+        if (!isAuraNativeTo(aura, 'limbo-null') && !matchesActiveBiome && !allowEventGlitchAccess) {
             return Infinity;
         }
     }
@@ -3015,9 +3218,20 @@ function computeStandardEffectiveChance(aura, context) {
             }
             effectiveChance = minChance;
         } else {
-            const targetBiome = exclusivityBiome;
-            let multiplier = readBreakthroughMultiplier(aura, targetBiome);
-            if (!multiplier && targetBiome !== biome) {
+            const candidates = Array.isArray(breakthroughBiomes) && breakthroughBiomes.length > 0
+                ? breakthroughBiomes
+                : [exclusivityBiome, biome].filter(Boolean);
+            let multiplier = null;
+            for (const candidate of candidates) {
+                multiplier = readBreakthroughMultiplier(aura, candidate);
+                if (multiplier) {
+                    break;
+                }
+            }
+            if (!multiplier && exclusivityBiome && !candidates.includes(exclusivityBiome)) {
+                multiplier = readBreakthroughMultiplier(aura, exclusivityBiome);
+            }
+            if (!multiplier && biome && !candidates.includes(biome)) {
                 multiplier = readBreakthroughMultiplier(aura, biome);
             }
             if (multiplier) {
@@ -3226,7 +3440,8 @@ function runRollSimulation() {
         luckField.value = '1';
     }
     const luckValue = Math.max(0, parsedLuck);
-    const biome = biomeSelector ? biomeSelector.value : '';
+    const selectionState = collectBiomeSelectionState();
+    const biome = selectionState.canonicalBiome;
 
     const eventSnapshot = enabledEvents.size > 0 ? new Set(enabledEvents) : null;
     const isEventAuraEnabled = aura => {
@@ -3259,7 +3474,7 @@ function runRollSimulation() {
         }
     }
 
-    const evaluationContext = createAuraEvaluationContext(biome, { eventChecker: isEventAuraEnabled, eventSnapshot });
+    const evaluationContext = createAuraEvaluationContext(selectionState, { eventChecker: isEventAuraEnabled, eventSnapshot });
     const computedAuras = buildComputedAuraEntries(AURA_REGISTRY, evaluationContext, luckValue, breakthroughStatsMap);
 
     const activeDuneAura = (dunePresetEnabled && baseLuck >= DUNE_LUCK_TARGET) ? duneAuraData : null;
