@@ -1879,7 +1879,8 @@ const auraOutlineOverrides = new Map([
     ['Ravage', 'sigil-outline-blood'],
     ['Arachnophobia', 'sigil-outline-blood'],
     ['Lamenthyr', 'sigil-outline-blood'],
-    ['Erebus', 'sigil-outline-blood']
+    ['Erebus', 'sigil-outline-blood'],
+    ['Wraithlight', 'sigil-outline-blood']
 ]);
 
 const glitchOutlineNames = new Set(['Fault', 'Glitch', 'Oppression']);
@@ -2072,6 +2073,7 @@ const AURA_BLUEPRINT_SOURCE = Object.freeze([
     { name: "Sovereign - 750,000,000", chance: 750000000 },
     { name: "Malediction - 730,000,000", chance: 730000000, nativeBiomes: ["glitch", "bloodRain"] },
     { name: "Banshee - 730,000,000", chance: 730000000, nativeBiomes: ["glitch", "graveyard"] },
+    { name: "Wraithlight - 695,000,000", chance: 695000000, nativeBiomes: ["glitch", "bloodRain"] },
     { name: "PROLOGUE - 666,616,111", chance: 666616111, nativeBiomes: ["limbo"] },
     { name: "Harvester - 666,000,000", chance: 666000000, nativeBiomes: ["graveyard"] },
     { name: "Apocalypse - 624,000,000", chance: 624000000, nativeBiomes: ["glitch", "graveyard"] },
@@ -2445,6 +2447,7 @@ const EVENT_AURA_LOOKUP = {
         "Accursed - 82,000,000",
         "Phantasma - 462,600,000",
         "Apocalypse - 624,000,000",
+        "Wraithlight - 695,000,000",
         "Malediction - 730,000,000",
         "Banshee - 730,000,000",
         "Ravage - 930,000,000",
@@ -2500,6 +2503,7 @@ const ROE_EXCLUSION_SET = new Set([
     "Arachnophobia - 940,000,000",
     "Lamenthyr - 1,000,000,000",
     "Erebus - 1,200,000,000",
+    "Wraithlight - 695,000,000",
     "Accursed - 82,000,000",
     "Dullahan - 72,000,000",
     "Soul Hunter - 40,000,000",
