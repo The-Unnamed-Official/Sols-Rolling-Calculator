@@ -1660,13 +1660,30 @@ body.biome--blood-rain .interface-backdrop__veil {
 
 .biome-selector-row {
     display: flex;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
     gap: 16px;
     align-items: flex-end;
 }
 
 .biome-selector-row > .form-field {
-    flex: 1 1 clamp(260px, 32vw, 360px);
+    flex: 1 1 0;
+    min-width: 0;
+    width: auto;
+}
+
+.biome-selector-row .form-field__select-shell--biome {
+    max-width: none;
+    width: 100%;
+}
+
+@media (max-width: 1100px) {
+    .biome-selector-row {
+        flex-wrap: wrap;
+    }
+
+    .biome-selector-row > .form-field {
+        flex: 1 1 clamp(240px, 46vw, 360px);
+    }
 }
 
 .form-field--events {
@@ -2156,6 +2173,48 @@ select.form-field__input option {
 
 .interface-button--ghost {
     --button-background: rgba(10, 20, 36, 0.7);
+}
+
+.control-section--presets {
+    display: flex;
+    flex-direction: column;
+    gap: clamp(20px, 4vw, 32px);
+}
+
+.preset-collection {
+    display: flex;
+    flex-direction: column;
+    gap: clamp(12px, 2.5vw, 18px);
+}
+
+.preset-collection__title {
+    position: relative;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: clamp(12px, 2vw, 18px);
+    font-size: clamp(11px, 1.5vw, 13px);
+    letter-spacing: 0.26em;
+    text-transform: uppercase;
+    color: var(--text-primary);
+}
+
+.preset-collection__title-text {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.preset-collection__title-divider {
+    flex: 1 1 60px;
+    height: 1px;
+    background: linear-gradient(90deg, rgba(127, 227, 255, 0), rgba(127, 227, 255, 0.55));
+    transform: translateY(1px);
+}
+
+.preset-collection__title-divider--end {
+    background: linear-gradient(90deg, rgba(127, 227, 255, 0.55), rgba(127, 227, 255, 0));
 }
 
 .preset-matrix {
