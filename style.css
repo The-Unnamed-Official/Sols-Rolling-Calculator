@@ -1826,8 +1826,7 @@ body.biome--blood-rain .interface-backdrop__veil {
     display: grid;
     gap: 10px;
     max-height: 290px;
-    width: min(300px, calc(100vw - 32px));
-    max-width: 100%;
+    width: 233px;
     overflow-y: auto;
     opacity: 0;
     pointer-events: none;
