@@ -1421,7 +1421,10 @@ function updateLuckCrackOverlay(luckValue, reduceMotionActive) {
         return;
     }
 
-    const shouldShowCrack = !reduceMotionActive && luckValue >= LUCK_CRACK_THRESHOLD;
+    const isTenMillionPreset = luckValue === TEN_MILLION_LUCK_PRESET;
+    const shouldShowCrack = !reduceMotionActive &&
+        luckValue >= LUCK_CRACK_THRESHOLD &&
+        !isTenMillionPreset;
     overlay.classList.toggle('luck-crack-overlay--visible', shouldShowCrack);
 }
 
@@ -1432,8 +1435,8 @@ function syncLuckVisualEffects(luckValue) {
     }
 
     const reduceMotionActive = body.classList.contains('reduce-motion') || appState.reduceMotion;
-    const isTenMillionOrHigher = luckValue >= TEN_MILLION_LUCK_PRESET;
-    const shouldApplyMillionEffect = luckValue === MILLION_LUCK_PRESET || isTenMillionOrHigher;
+    const isTenMillionPreset = luckValue === TEN_MILLION_LUCK_PRESET;
+    const shouldApplyMillionEffect = luckValue >= MILLION_LUCK_PRESET && !isTenMillionPreset;
 
     if (shouldApplyMillionEffect) {
         body.classList.add('luck-effect--million');
