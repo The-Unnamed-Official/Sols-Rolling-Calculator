@@ -1184,6 +1184,16 @@ function applyLuckValue(value, options = {}) {
     }
 }
 
+function applyRollPreset(value) {
+    const rollField = document.getElementById('roll-total');
+    if (!rollField) {
+        return;
+    }
+
+    rollField.value = value;
+    playSoundEffect(document.getElementById('clickSoundFx'), 'ui');
+}
+
 function recomputeLuckValue() {
     const controls = {
         biome: document.getElementById('biome-dropdown'),
