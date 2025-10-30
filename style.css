@@ -3446,7 +3446,7 @@ body:not(.reduce-motion) #luck-preset-ten-million.luck-preset-button--pop-spin:f
     align-items: flex-end;
     gap: clamp(12px, 2vw, 18px);
     row-gap: clamp(18px, 3vh, 24px);
-    z-index: 4;
+    z-index: -1;
     pointer-events: none;
 }
 
@@ -3472,7 +3472,7 @@ body:not(.reduce-motion) #luck-preset-ten-million.luck-preset-button--pop-spin:f
         color 160ms ease,
         filter 160ms ease;
     position: relative;
-    transform: translateY(22px);
+    transform: translateY(15px);
     pointer-events: auto;
     top: -21px;
     z-index: -100 !important;
@@ -3485,7 +3485,7 @@ body:not(.reduce-motion) #luck-preset-ten-million.luck-preset-button--pop-spin:f
 
 .changelog-tab:not(.changelog-tab--active):hover,
 .changelog-tab:not(.changelog-tab--active):focus-visible {
-    transform: translateY(16px);
+    transform: translateY(7.5px);
     filter: none;
     color: var(--text-secondary);
     box-shadow:
