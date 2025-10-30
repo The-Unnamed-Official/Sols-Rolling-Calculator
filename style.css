@@ -786,13 +786,21 @@ body.biome--blood-rain .interface-backdrop__veil {
     letter-spacing: 0.22em;
     text-transform: uppercase;
     color: var(--text-secondary);
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.35em;
+}
+
+.banner__subtitle-divider {
+    color: var(--text-secondary);
 }
 
 .banner__version-button {
     font: inherit;
     text-transform: inherit;
     letter-spacing: inherit;
-    color: var(--text-primary);
+    color: #a5d9ff;
     background: none;
     border: none;
     padding: 0;
@@ -806,12 +814,36 @@ body.biome--blood-rain .interface-backdrop__veil {
 
 .banner__version-button:hover,
 .banner__version-button:focus-visible {
-    color: var(--accent-primary);
+    color: #d3ecff;
 }
 
 .banner__version-button:focus-visible {
     outline: 2px solid var(--accent-primary);
     outline-offset: 2px;
+}
+
+.banner__subtitle-author {
+    color: #7f8cff;
+    font-weight: 600;
+}
+
+.banner__subtitle-author-name {
+    font-size: 1.15em;
+    color: #8d9bff;
+}
+
+.banner__subtitle-updated {
+    color: #ffd6e8;
+    font-weight: 600;
+}
+
+.banner__subtitle-updated time {
+    font: inherit;
+}
+
+.banner__subtitle-eon {
+    color: #b4ffba;
+    font-weight: 600;
 }
 
 @keyframes glitch-surface {
