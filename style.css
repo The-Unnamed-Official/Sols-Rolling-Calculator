@@ -3415,6 +3415,9 @@ body:not(.reduce-motion) #luck-preset-ten-million.luck-preset-button--pop-spin:f
     background: rgba(3, 8, 18, 0.82);
     backdrop-filter: blur(6px);
     z-index: 9999;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 260ms cubic-bezier(0.24, 0.82, 0.25, 1);
 }
 
 .cutscene-warning-overlay[hidden],
@@ -3422,11 +3425,27 @@ body:not(.reduce-motion) #luck-preset-ten-million.luck-preset-button--pop-spin:f
     display: none !important;
 }
 
-.cutscene-warning-overlay:not([hidden]) .surface--modal,
-.modal-overlay:not([hidden]) .surface--modal {
+.cutscene-warning-overlay[data-visible],
+.modal-overlay[data-visible] {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.cutscene-warning-overlay[data-closing],
+.modal-overlay[data-closing] {
+    pointer-events: none;
+}
+
+.cutscene-warning-overlay[data-visible] .surface--modal,
+.modal-overlay[data-visible] .surface--modal {
     --corner-size: clamp(28px, 6vw, 36px);
     --corner-thickness: 3px;
     animation: modal-pop 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.cutscene-warning-overlay[data-closing] .surface--modal,
+.modal-overlay[data-closing] .surface--modal {
+    animation: modal-fade-out 0.28s cubic-bezier(0.4, 0, 0.2, 1) both;
 }
 
 .changelog-modal {
@@ -3518,6 +3537,16 @@ body:not(.reduce-motion) #luck-preset-ten-million.luck-preset-button--pop-spin:f
     filter: none;
 }
 
+.changelog-modal__panels {
+    display: block;
+    overflow: hidden;
+    transition: height 280ms cubic-bezier(0.24, 0.82, 0.25, 1);
+}
+
+.changelog-modal__panels--animating {
+    will-change: height;
+}
+
 .changelog-modal__panel {
     display: flex;
     flex-direction: column;
@@ -3569,10 +3598,21 @@ body:not(.reduce-motion) #luck-preset-ten-million.luck-preset-button--pop-spin:f
 }
 
 @media (prefers-reduced-motion: reduce) {
-    .cutscene-warning-overlay:not([hidden]) .surface--modal,
-    .modal-overlay:not([hidden]) .surface--modal {
+    .cutscene-warning-overlay,
+    .modal-overlay {
+        transition: none;
+    }
+
+    .cutscene-warning-overlay[data-visible] .surface--modal,
+    .cutscene-warning-overlay[data-closing] .surface--modal,
+    .modal-overlay[data-visible] .surface--modal,
+    .modal-overlay[data-closing] .surface--modal {
         animation: none;
         transform: none;
+    }
+
+    .changelog-modal__panels {
+        transition: none;
     }
 }
 
@@ -3634,6 +3674,17 @@ body:not(.reduce-motion) #luck-preset-ten-million.luck-preset-button--pop-spin:f
     }
     100% {
         transform: scale(1);
+    }
+}
+
+@keyframes modal-fade-out {
+    0% {
+        opacity: 1;
+        transform: scale(1);
+    }
+    100% {
+        opacity: 0;
+        transform: scale(0.97);
     }
 }
 
