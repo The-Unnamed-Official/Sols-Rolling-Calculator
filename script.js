@@ -2931,6 +2931,94 @@ function hideVersionChangelogOverlay({ focusTrigger = true } = {}) {
     versionChangelogOverlayState.lastFocusedElement = null;
 }
 
+function setupChangelogTabs() {
+    const tablist = document.querySelector('[data-changelog-tablist]');
+    if (!tablist) {
+        return;
+    }
+
+    const tabs = Array.from(tablist.querySelectorAll('[data-changelog-tab]'));
+    const panels = Array.from(document.querySelectorAll('[data-changelog-panel]'));
+
+    if (!tabs.length || !panels.length) {
+        return;
+    }
+
+    const panelLookup = new Map();
+    panels.forEach(panel => {
+        panelLookup.set(panel.dataset.changelogPanel, panel);
+    });
+
+    const activateTab = targetId => {
+        tabs.forEach(tab => {
+            const isActive = tab.dataset.changelogTab === targetId;
+            tab.setAttribute('aria-selected', isActive ? 'true' : 'false');
+            tab.setAttribute('tabindex', isActive ? '0' : '-1');
+            tab.classList.toggle('changelog-tab--active', isActive);
+        });
+
+        panelLookup.forEach((panel, panelId) => {
+            const isActive = panelId === targetId;
+            panel.hidden = !isActive;
+            panel.setAttribute('tabindex', isActive ? '0' : '-1');
+            if (isActive) {
+                panel.removeAttribute('aria-hidden');
+            } else {
+                panel.setAttribute('aria-hidden', 'true');
+            }
+        });
+    };
+
+    const focusTabByOffset = (currentTab, offset) => {
+        const currentIndex = tabs.indexOf(currentTab);
+        if (currentIndex === -1) {
+            return;
+        }
+        const nextIndex = (currentIndex + offset + tabs.length) % tabs.length;
+        const nextTab = tabs[nextIndex];
+        if (nextTab) {
+            nextTab.focus();
+            activateTab(nextTab.dataset.changelogTab);
+        }
+    };
+
+    tabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+            activateTab(tab.dataset.changelogTab);
+        });
+
+        tab.addEventListener('keydown', event => {
+            if (event.key === 'ArrowRight') {
+                event.preventDefault();
+                focusTabByOffset(tab, 1);
+            } else if (event.key === 'ArrowLeft') {
+                event.preventDefault();
+                focusTabByOffset(tab, -1);
+            } else if (event.key === 'Home') {
+                event.preventDefault();
+                const firstTab = tabs[0];
+                if (firstTab) {
+                    firstTab.focus();
+                    activateTab(firstTab.dataset.changelogTab);
+                }
+            } else if (event.key === 'End') {
+                event.preventDefault();
+                const lastTab = tabs[tabs.length - 1];
+                if (lastTab) {
+                    lastTab.focus();
+                    activateTab(lastTab.dataset.changelogTab);
+                }
+            }
+        });
+    });
+
+    const presetActiveTab = tabs.find(tab => tab.getAttribute('aria-selected') === 'true');
+    const initialTab = presetActiveTab || tabs[0];
+    if (initialTab) {
+        activateTab(initialTab.dataset.changelogTab);
+    }
+}
+
 function setupVersionChangelogOverlay() {
     const overlay = document.getElementById('versionChangelogOverlay');
     const trigger = document.getElementById('versionInfoButton');
@@ -2965,6 +3053,7 @@ document.addEventListener('DOMContentLoaded', initializeEventSelector);
 document.addEventListener('DOMContentLoaded', updateOblivionPresetDisplay);
 document.addEventListener('DOMContentLoaded', updateDunePresetDisplay);
 document.addEventListener('DOMContentLoaded', setupLuckPresetAnimations);
+document.addEventListener('DOMContentLoaded', setupChangelogTabs);
 document.addEventListener('DOMContentLoaded', setupVersionChangelogOverlay);
 
 document.addEventListener('DOMContentLoaded', () => {
