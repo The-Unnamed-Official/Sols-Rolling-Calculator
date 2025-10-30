@@ -10,6 +10,54 @@ const versionChangelogOverlayState = {
     lastFocusedElement: null
 };
 
+const CHANGELOG_VERSION_STORAGE_KEY = 'solsRollingCalculator:lastSeenChangelogVersion';
+
+function getCurrentChangelogVersionId() {
+    const trigger = document.getElementById('versionInfoButton');
+    if (!trigger) {
+        return null;
+    }
+
+    const explicitId = trigger.getAttribute('data-version-id');
+    if (explicitId) {
+        return explicitId;
+    }
+
+    const label = trigger.textContent;
+    return label ? label.trim() : null;
+}
+
+function maybeShowChangelogOnFirstVisit() {
+    const versionId = getCurrentChangelogVersionId();
+    if (!versionId) {
+        return;
+    }
+
+    let storage;
+    try {
+        storage = window.localStorage;
+    } catch (error) {
+        storage = null;
+    }
+
+    if (!storage) {
+        return;
+    }
+
+    const storedVersionId = storage.getItem(CHANGELOG_VERSION_STORAGE_KEY);
+    if (storedVersionId === versionId) {
+        return;
+    }
+
+    showVersionChangelogOverlay();
+
+    try {
+        storage.setItem(CHANGELOG_VERSION_STORAGE_KEY, versionId);
+    } catch (error) {
+        // Ignore storage write failures so the overlay logic can continue normally.
+    }
+}
+
 const randomToolkit = (() => {
     const toUint = value => (value >>> 0) & 0xffffffff;
     const sfc32 = (a, b, c, d) => {
@@ -3199,6 +3247,7 @@ document.addEventListener('DOMContentLoaded', updateDunePresetDisplay);
 document.addEventListener('DOMContentLoaded', setupLuckPresetAnimations);
 document.addEventListener('DOMContentLoaded', setupChangelogTabs);
 document.addEventListener('DOMContentLoaded', setupVersionChangelogOverlay);
+document.addEventListener('DOMContentLoaded', maybeShowChangelogOnFirstVisit);
 
 document.addEventListener('DOMContentLoaded', () => {
     const confirmButton = document.getElementById('cutsceneWarningConfirm');
