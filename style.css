@@ -2442,14 +2442,16 @@ select.form-field__input option {
 }
 
 .preset-matrix--compact {
-    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-    gap: 8px;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 6px;
 }
 
 .preset-matrix--compact button {
-    padding-block: 10px;
-    font-size: 0.82rem;
-    letter-spacing: 0.05em;
+    padding-block: 8px;
+    padding-inline: 10px;
+    font-size: 0.75rem;
+    letter-spacing: 0.08em;
+    line-height: 1.25;
 }
 
 .preset-matrix .preset-warning {
@@ -3373,6 +3375,12 @@ body:not(.reduce-motion) #luck-preset-ten-million.luck-preset-button--mega-pop:f
     }
 }
 
+@media (max-width: 980px) {
+    .preset-matrix--compact {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
 @media (max-width: 900px) {
     .interface-subgrid {
         grid-template-columns: 1fr;
@@ -3418,8 +3426,23 @@ body:not(.reduce-motion) #luck-preset-ten-million.luck-preset-button--mega-pop:f
         grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
     }
 
+    .preset-matrix--compact {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
     .roll-trigger {
         font-size: 18px;
+    }
+}
+
+@media (max-width: 540px) {
+    .preset-matrix--compact {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .preset-matrix--compact button {
+        font-size: 0.7rem;
+        letter-spacing: 0.06em;
     }
 }
 
