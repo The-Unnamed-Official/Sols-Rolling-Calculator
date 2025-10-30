@@ -1640,7 +1640,7 @@ function syncLuckVisualEffects(luckValue) {
 }
 
 function resetLuckPresetAnimations() {
-    const animationClasses = ['luck-preset-button--pop', 'luck-preset-button--pop-spin'];
+    const animationClasses = ['luck-preset-button--pop', 'luck-preset-button--mega-pop'];
     const targets = [
         document.getElementById('luck-preset-one-million'),
         document.getElementById('luck-preset-ten-million')
@@ -1692,6 +1692,18 @@ function applyRollPreset(value) {
     playSoundEffect(clickSoundEffectElement, 'ui');
 }
 
+// Applies a high-level device/buff preset by translating a multiplier into
+// a concrete luck total while leaving seasonal toggles unchanged.
+function applyDeviceBuffPreset(multiplier) {
+    const numericMultiplier = Number(multiplier);
+    if (!Number.isFinite(numericMultiplier) || numericMultiplier <= 0) {
+        return;
+    }
+
+    const targetLuck = Math.max(1, numericMultiplier);
+    applyLuckValue(targetLuck);
+}
+
 function recomputeLuckValue() {
     const controls = {
         biome: document.getElementById('biome-dropdown'),
@@ -1714,7 +1726,7 @@ function recomputeLuckValue() {
     const rawLuckValue = luckField ? (luckField.dataset.rawValue ?? '') : '';
     const enteredLuck = rawLuckValue ? Number.parseFloat(rawLuckValue) : NaN;
     if (luckField && rawLuckValue && Number.isFinite(enteredLuck) && enteredLuck !== currentLuck) {
-        const normalizedLuck = Math.max(1, Math.floor(enteredLuck));
+        const normalizedLuck = Math.max(1, enteredLuck);
         baseLuck = normalizedLuck;
         currentLuck = normalizedLuck;
         lastVipMultiplier = 1;
@@ -2974,7 +2986,7 @@ function triggerLuckPresetButtonAnimation(button, className) {
         return;
     }
 
-    button.classList.remove('luck-preset-button--pop', 'luck-preset-button--pop-spin');
+    button.classList.remove('luck-preset-button--pop', 'luck-preset-button--mega-pop');
     // Force reflow so the animation can retrigger
     void button.offsetWidth;
     button.classList.add(className);
@@ -3006,7 +3018,7 @@ function setupLuckPresetAnimations() {
     const tenMillionButton = document.getElementById('luck-preset-ten-million');
 
     bindLuckPresetButtonAnimation(oneMillionButton, 'luck-preset-button--pop', ['luckPresetPop']);
-    bindLuckPresetButtonAnimation(tenMillionButton, 'luck-preset-button--pop-spin', ['luckPresetSpinPop']);
+    bindLuckPresetButtonAnimation(tenMillionButton, 'luck-preset-button--mega-pop', ['luckPresetMegaPop']);
 }
 
 function setVersionButtonExpanded(state) {
@@ -3902,7 +3914,7 @@ document.addEventListener('DOMContentLoaded', () => {
         luckField.addEventListener('input', () => {
             const raw = luckField.dataset.rawValue ?? '';
             const parsed = raw ? Number.parseFloat(raw) : NaN;
-            const normalized = Number.isFinite(parsed) && parsed > 0 ? Math.floor(parsed) : 1;
+            const normalized = Number.isFinite(parsed) && parsed > 0 ? Math.max(1, parsed) : 1;
             baseLuck = normalized;
             currentLuck = normalized;
             lastVipMultiplier = 1;
