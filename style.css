@@ -2409,13 +2409,13 @@ select.form-field__input option {
 }
 
 .preset-collection__title--compact {
-    gap: clamp(8px, 1.4vw, 12px);
-    font-size: clamp(10px, 1.3vw, 12px);
-    letter-spacing: 0.2em;
+    gap: clamp(6px, 1.1vw, 10px);
+    font-size: clamp(10px, 1.2vw, 12px);
+    letter-spacing: 0.18em;
 }
 
 .preset-collection__title--compact .preset-collection__title-divider {
-    flex-basis: 44px;
+    flex: 0 0 clamp(28px, 4vw, 48px);
 }
 
 .preset-collection__title-text {

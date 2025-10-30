@@ -1693,36 +1693,15 @@ function applyRollPreset(value) {
 }
 
 // Applies a high-level device/buff preset by translating a multiplier into
-// a concrete luck total and optionally toggling seasonal events in bulk.
-function applyDeviceBuffPreset(multiplier, options = {}) {
+// a concrete luck total while leaving seasonal toggles unchanged.
+function applyDeviceBuffPreset(multiplier) {
     const numericMultiplier = Number(multiplier);
     if (!Number.isFinite(numericMultiplier) || numericMultiplier <= 0) {
         return;
     }
 
-    const targetLuck = Math.max(1, Math.round(MILLION_LUCK_PRESET * numericMultiplier));
+    const targetLuck = Math.max(1, numericMultiplier);
     applyLuckValue(targetLuck);
-
-    const { eventPreset = null } = options;
-    if (eventPreset === null || typeof setEventToggleState !== 'function') {
-        return;
-    }
-
-    let targetIds;
-    if (eventPreset === 'max') {
-        targetIds = EVENT_LIST.map(event => event.id);
-    } else if (eventPreset === 'none') {
-        targetIds = [];
-    } else if (Array.isArray(eventPreset)) {
-        targetIds = eventPreset.filter(Boolean);
-    } else {
-        return;
-    }
-
-    const targetSet = new Set(targetIds);
-    EVENT_LIST.forEach(event => {
-        setEventToggleState(event.id, targetSet.has(event.id));
-    });
 }
 
 function recomputeLuckValue() {
@@ -1747,7 +1726,7 @@ function recomputeLuckValue() {
     const rawLuckValue = luckField ? (luckField.dataset.rawValue ?? '') : '';
     const enteredLuck = rawLuckValue ? Number.parseFloat(rawLuckValue) : NaN;
     if (luckField && rawLuckValue && Number.isFinite(enteredLuck) && enteredLuck !== currentLuck) {
-        const normalizedLuck = Math.max(1, Math.floor(enteredLuck));
+        const normalizedLuck = Math.max(1, enteredLuck);
         baseLuck = normalizedLuck;
         currentLuck = normalizedLuck;
         lastVipMultiplier = 1;
@@ -3935,7 +3914,7 @@ document.addEventListener('DOMContentLoaded', () => {
         luckField.addEventListener('input', () => {
             const raw = luckField.dataset.rawValue ?? '';
             const parsed = raw ? Number.parseFloat(raw) : NaN;
-            const normalized = Number.isFinite(parsed) && parsed > 0 ? Math.floor(parsed) : 1;
+            const normalized = Number.isFinite(parsed) && parsed > 0 ? Math.max(1, parsed) : 1;
             baseLuck = normalized;
             currentLuck = normalized;
             lastVipMultiplier = 1;
