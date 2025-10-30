@@ -788,6 +788,32 @@ body.biome--blood-rain .interface-backdrop__veil {
     color: var(--text-secondary);
 }
 
+.banner__version-button {
+    font: inherit;
+    text-transform: inherit;
+    letter-spacing: inherit;
+    color: var(--text-primary);
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    display: inline;
+    text-decoration: underline;
+    text-decoration-thickness: 0.08em;
+    text-underline-offset: 0.4em;
+    transition: color 0.2s ease;
+}
+
+.banner__version-button:hover,
+.banner__version-button:focus-visible {
+    color: var(--accent-primary);
+}
+
+.banner__version-button:focus-visible {
+    outline: 2px solid var(--accent-primary);
+    outline-offset: 2px;
+}
+
 @keyframes glitch-surface {
     0% {
         transform: translate3d(0, 0, 0);
@@ -3346,7 +3372,8 @@ body:not(.reduce-motion) #luck-preset-ten-million.luck-preset-button--pop-spin:f
     }
 }
 
-.cutscene-warning-overlay {
+.cutscene-warning-overlay,
+.modal-overlay {
     position: fixed;
     inset: 0;
     display: flex;
@@ -3358,18 +3385,71 @@ body:not(.reduce-motion) #luck-preset-ten-million.luck-preset-button--pop-spin:f
     z-index: 9999;
 }
 
-.cutscene-warning-overlay[hidden] {
+.cutscene-warning-overlay[hidden],
+.modal-overlay[hidden] {
     display: none !important;
 }
 
-.cutscene-warning-overlay:not([hidden]) .surface--modal {
+.cutscene-warning-overlay:not([hidden]) .surface--modal,
+.modal-overlay:not([hidden]) .surface--modal {
     --corner-size: clamp(28px, 6vw, 36px);
     --corner-thickness: 3px;
     animation: modal-pop 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
+.changelog-modal {
+    display: flex;
+    flex-direction: column;
+    gap: clamp(16px, 3vh, 24px);
+}
+
+.changelog-modal__header {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.changelog-modal__title {
+    margin: 0;
+    font-size: clamp(20px, 3vw, 26px);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+}
+
+.changelog-modal__meta {
+    margin: 0;
+    font-size: clamp(13px, 1.8vw, 15px);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+}
+
+.changelog-modal__intro {
+    margin: 0;
+    color: var(--text-secondary);
+}
+
+.changelog-modal__list {
+    margin: 0;
+    padding-left: 1.4em;
+    display: flex;
+    flex-direction: column;
+    gap: 0.65em;
+    color: var(--text-primary);
+}
+
+.changelog-modal__list li {
+    line-height: 1.5;
+}
+
+.changelog-modal__actions {
+    display: flex;
+    justify-content: flex-end;
+}
+
 @media (prefers-reduced-motion: reduce) {
-    .cutscene-warning-overlay:not([hidden]) .surface--modal {
+    .cutscene-warning-overlay:not([hidden]) .surface--modal,
+    .modal-overlay:not([hidden]) .surface--modal {
         animation: none;
         transform: none;
     }
