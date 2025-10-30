@@ -5,6 +5,10 @@ let simulationActive = false;
 let lastSimulationSummary = null;
 let shareFeedbackTimerId = null;
 let imageShareModeRequester = null;
+const versionChangelogOverlayState = {
+    escapeHandler: null,
+    lastFocusedElement: null
+};
 
 const randomToolkit = (() => {
     const toUint = value => (value >>> 0) & 0xffffffff;
@@ -915,25 +919,17 @@ function isGlitchBiomeSelected() {
         return false;
     }
 
-    if (selection.canonicalBiome === 'glitch' || selection.themeBiome === 'glitch') {
+    const { canonicalBiome, themeBiome, primaryBiome, timeBiome } = selection;
+
+    if (canonicalBiome === 'glitch' || themeBiome === 'glitch') {
         return true;
     }
 
-    if (Array.isArray(selection.activeBiomes) && selection.activeBiomes.includes('glitch')) {
+    if (primaryBiome === 'glitch' || timeBiome === 'glitch') {
         return true;
     }
 
-    const runeConfig = selection.runeConfig;
-    if (runeConfig) {
-        if (runeConfig.glitchLike) {
-            return true;
-        }
-        if (runeConfig.canonicalBiome === 'glitch' || runeConfig.themeBiome === 'glitch') {
-            return true;
-        }
-    }
-
-    return selection.runeValue === 'glitch';
+    return false;
 }
 
 function updateGlitchPresentation() {
@@ -2866,10 +2862,110 @@ function setupLuckPresetAnimations() {
     bindLuckPresetButtonAnimation(tenMillionButton, 'luck-preset-button--pop-spin', ['luckPresetSpinPop']);
 }
 
+function setVersionButtonExpanded(state) {
+    const trigger = document.getElementById('versionInfoButton');
+    if (trigger) {
+        trigger.setAttribute('aria-expanded', state ? 'true' : 'false');
+    }
+}
+
+function showVersionChangelogOverlay() {
+    const overlay = document.getElementById('versionChangelogOverlay');
+    if (!overlay) {
+        return;
+    }
+
+    const activeElement = document.activeElement;
+    if (activeElement && typeof activeElement.focus === 'function') {
+        versionChangelogOverlayState.lastFocusedElement = activeElement;
+    } else {
+        versionChangelogOverlayState.lastFocusedElement = null;
+    }
+
+    overlay.removeAttribute('hidden');
+    setVersionButtonExpanded(true);
+
+    if (!versionChangelogOverlayState.escapeHandler) {
+        versionChangelogOverlayState.escapeHandler = event => {
+            if (event.key === 'Escape' || event.key === 'Esc') {
+                event.preventDefault();
+                hideVersionChangelogOverlay();
+            }
+        };
+        document.addEventListener('keydown', versionChangelogOverlayState.escapeHandler);
+    }
+
+    const closeButton = document.getElementById('versionChangelogClose');
+    if (closeButton) {
+        closeButton.focus();
+    }
+}
+
+function hideVersionChangelogOverlay({ focusTrigger = true } = {}) {
+    const overlay = document.getElementById('versionChangelogOverlay');
+    if (!overlay || overlay.hasAttribute('hidden')) {
+        setVersionButtonExpanded(false);
+        return;
+    }
+
+    overlay.setAttribute('hidden', '');
+    setVersionButtonExpanded(false);
+
+    if (versionChangelogOverlayState.escapeHandler) {
+        document.removeEventListener('keydown', versionChangelogOverlayState.escapeHandler);
+        versionChangelogOverlayState.escapeHandler = null;
+    }
+
+    if (focusTrigger) {
+        const focusTarget = versionChangelogOverlayState.lastFocusedElement;
+        if (focusTarget && typeof focusTarget.focus === 'function') {
+            focusTarget.focus();
+        } else {
+            const trigger = document.getElementById('versionInfoButton');
+            if (trigger) {
+                trigger.focus();
+            }
+        }
+    }
+
+    versionChangelogOverlayState.lastFocusedElement = null;
+}
+
+function setupVersionChangelogOverlay() {
+    const overlay = document.getElementById('versionChangelogOverlay');
+    const trigger = document.getElementById('versionInfoButton');
+    const closeButton = document.getElementById('versionChangelogClose');
+
+    if (!overlay || !trigger) {
+        return;
+    }
+
+    trigger.addEventListener('click', () => {
+        if (overlay.hasAttribute('hidden')) {
+            showVersionChangelogOverlay();
+        } else {
+            hideVersionChangelogOverlay();
+        }
+    });
+
+    if (closeButton) {
+        closeButton.addEventListener('click', () => {
+            hideVersionChangelogOverlay();
+        });
+    }
+
+    overlay.addEventListener('click', event => {
+        if (event.target === overlay) {
+            hideVersionChangelogOverlay();
+        }
+    });
+}
+
 document.addEventListener('DOMContentLoaded', initializeEventSelector);
 document.addEventListener('DOMContentLoaded', updateOblivionPresetDisplay);
 document.addEventListener('DOMContentLoaded', updateDunePresetDisplay);
 document.addEventListener('DOMContentLoaded', setupLuckPresetAnimations);
+document.addEventListener('DOMContentLoaded', setupVersionChangelogOverlay);
 
 document.addEventListener('DOMContentLoaded', () => {
     const confirmButton = document.getElementById('cutsceneWarningConfirm');

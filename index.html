@@ -77,7 +77,7 @@
                 </span>
                 <div class="banner__meta">
                     <h1 class="banner__title">Sols Rolling Simulator</h1>
-                    <p class="banner__subtitle">V1.2 ◉ By not.unnamed ◉ Updated 2025/10/29 ◉ Sol's RNG Eon 1-9</p>
+                    <p class="banner__subtitle"><button type="button" class="banner__version-button" id="versionInfoButton" aria-haspopup="dialog" aria-expanded="false" aria-label="View update notes for version V1.2">V1.2</button> ◉ By not.unnamed ◉ Updated 2025/10/29 ◉ Sol's RNG Eon 1-9</p>
                 </div>
             </div>
             <div class="masthead__controls">
@@ -492,6 +492,23 @@
             <div class="cutscene-warning__actions">
                 <button type="button" class="interface-button interface-button--minor" id="rollWarningConfirm">Proceed Anyway</button>
                 <button type="button" class="interface-button interface-button--ghost" id="rollWarningCancel">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="versionChangelogOverlay" class="modal-overlay" hidden>
+        <div class="surface surface--modal changelog-modal" role="dialog" aria-modal="true" aria-labelledby="versionChangelogTitle">
+            <header class="changelog-modal__header">
+                <h2 class="changelog-modal__title" id="versionChangelogTitle">Version V1.2 Update Notes</h2>
+                <p class="changelog-modal__meta">Updated 2025/10/29</p>
+            </header>
+            <p class="changelog-modal__intro">Latest changes:</p>
+            <ul class="changelog-modal__list">
+                <li>Rune of Everything no longer triggers glitch visuals outside of the Glitch biome.</li>
+                <li>The version label now opens this changelog so future updates are easier to share.</li>
+            </ul>
+            <div class="changelog-modal__actions">
+                <button type="button" class="interface-button interface-button--minor" id="versionChangelogClose">Close</button>
             </div>
         </div>
     </div>
