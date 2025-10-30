@@ -381,6 +381,92 @@ const appState = {
 };
 
 const LARGE_ROLL_WARNING_THRESHOLD = 9999999;
+const OVERLAY_TRANSITION_FALLBACK_MS = 320;
+
+function revealOverlay(overlay) {
+    if (!overlay) {
+        return;
+    }
+
+    overlay.removeAttribute('hidden');
+    overlay.removeAttribute('aria-hidden');
+    overlay.style.display = '';
+    overlay.removeAttribute('data-closing');
+
+    const makeVisible = () => {
+        overlay.setAttribute('data-visible', 'true');
+    };
+
+    if (typeof requestAnimationFrame === 'function') {
+        requestAnimationFrame(makeVisible);
+    } else {
+        makeVisible();
+    }
+}
+
+function concealOverlay(overlay, { onHidden } = {}) {
+    if (!overlay) {
+        if (typeof onHidden === 'function') {
+            onHidden();
+        }
+        return;
+    }
+
+    let completed = false;
+
+    const finalize = () => {
+        if (completed) {
+            return;
+        }
+        completed = true;
+        overlay.setAttribute('hidden', '');
+        overlay.setAttribute('aria-hidden', 'true');
+        overlay.style.display = 'none';
+        overlay.removeAttribute('data-visible');
+        overlay.removeAttribute('data-closing');
+        if (typeof onHidden === 'function') {
+            onHidden();
+        }
+    };
+
+    if (overlay.hasAttribute('hidden')) {
+        finalize();
+        return;
+    }
+
+    if (appState.reduceMotion) {
+        finalize();
+        return;
+    }
+
+    let fallbackId = null;
+
+    const clearListeners = () => {
+        overlay.removeEventListener('transitionend', handleTransitionEnd);
+        if (fallbackId !== null && typeof window !== 'undefined' && typeof window.clearTimeout === 'function') {
+            window.clearTimeout(fallbackId);
+        }
+    };
+
+    const handleTransitionEnd = event => {
+        if (event.target === overlay && event.propertyName === 'opacity') {
+            clearListeners();
+            finalize();
+        }
+    };
+
+    overlay.addEventListener('transitionend', handleTransitionEnd);
+
+    if (typeof window !== 'undefined' && typeof window.setTimeout === 'function') {
+        fallbackId = window.setTimeout(() => {
+            clearListeners();
+            finalize();
+        }, OVERLAY_TRANSITION_FALLBACK_MS);
+    }
+
+    overlay.setAttribute('data-closing', 'true');
+    overlay.removeAttribute('data-visible');
+}
 
 const largeRollWarningManager = (() => {
     let pendingAction = null;
@@ -392,11 +478,11 @@ const largeRollWarningManager = (() => {
         if (!overlay) {
             return;
         }
-        overlay.setAttribute('hidden', '');
-        overlay.setAttribute('aria-hidden', 'true');
-        overlay.style.display = 'none';
-        overlay.removeAttribute('data-visible');
-        overlay.removeAttribute('data-roll-count');
+        concealOverlay(overlay, {
+            onHidden: () => {
+                overlay.removeAttribute('data-roll-count');
+            }
+        });
     }
 
     function focusPrimaryAction() {
@@ -430,10 +516,7 @@ const largeRollWarningManager = (() => {
                 countNode.textContent = formatWithCommas(total);
             }
 
-            overlay.removeAttribute('hidden');
-            overlay.removeAttribute('aria-hidden');
-            overlay.style.display = '';
-            overlay.setAttribute('data-visible', 'true');
+            revealOverlay(overlay);
             focusPrimaryAction();
             return true;
         },
@@ -507,10 +590,7 @@ const cutsceneWarningManager = (() => {
             if (!overlay.hasAttribute('hidden')) {
                 return true;
             }
-            overlay.removeAttribute('hidden');
-            overlay.removeAttribute('aria-hidden');
-            overlay.style.display = '';
-            overlay.setAttribute('data-visible', 'true');
+            revealOverlay(overlay);
             focusPrimaryAction();
             return true;
         },
@@ -519,10 +599,7 @@ const cutsceneWarningManager = (() => {
             if (!overlay) {
                 return;
             }
-            overlay.setAttribute('hidden', '');
-            overlay.setAttribute('aria-hidden', 'true');
-            overlay.style.display = 'none';
-            overlay.removeAttribute('data-visible');
+            concealOverlay(overlay);
         },
         suppress() {
             suppressed = true;
@@ -2882,7 +2959,7 @@ function showVersionChangelogOverlay() {
         versionChangelogOverlayState.lastFocusedElement = null;
     }
 
-    overlay.removeAttribute('hidden');
+    revealOverlay(overlay);
     setVersionButtonExpanded(true);
 
     if (!versionChangelogOverlayState.escapeHandler) {
@@ -2903,12 +2980,11 @@ function showVersionChangelogOverlay() {
 
 function hideVersionChangelogOverlay({ focusTrigger = true } = {}) {
     const overlay = document.getElementById('versionChangelogOverlay');
-    if (!overlay || overlay.hasAttribute('hidden')) {
+    if (!overlay || overlay.hasAttribute('hidden') || overlay.hasAttribute('data-closing')) {
         setVersionButtonExpanded(false);
         return;
     }
 
-    overlay.setAttribute('hidden', '');
     setVersionButtonExpanded(false);
 
     if (versionChangelogOverlayState.escapeHandler) {
@@ -2916,19 +2992,24 @@ function hideVersionChangelogOverlay({ focusTrigger = true } = {}) {
         versionChangelogOverlayState.escapeHandler = null;
     }
 
-    if (focusTrigger) {
-        const focusTarget = versionChangelogOverlayState.lastFocusedElement;
-        if (focusTarget && typeof focusTarget.focus === 'function') {
-            focusTarget.focus();
-        } else {
+    const focusTarget = versionChangelogOverlayState.lastFocusedElement;
+    versionChangelogOverlayState.lastFocusedElement = null;
+
+    concealOverlay(overlay, {
+        onHidden: () => {
+            if (!focusTrigger) {
+                return;
+            }
+            if (focusTarget && typeof focusTarget.focus === 'function') {
+                focusTarget.focus();
+                return;
+            }
             const trigger = document.getElementById('versionInfoButton');
-            if (trigger) {
+            if (trigger && typeof trigger.focus === 'function') {
                 trigger.focus();
             }
         }
-    }
-
-    versionChangelogOverlayState.lastFocusedElement = null;
+    });
 }
 
 function setupChangelogTabs() {
@@ -2939,6 +3020,7 @@ function setupChangelogTabs() {
 
     const tabs = Array.from(tablist.querySelectorAll('[data-changelog-tab]'));
     const panels = Array.from(document.querySelectorAll('[data-changelog-panel]'));
+    const panelContainer = document.querySelector('[data-changelog-panels]');
 
     if (!tabs.length || !panels.length) {
         return;
@@ -2949,7 +3031,52 @@ function setupChangelogTabs() {
         panelLookup.set(panel.dataset.changelogPanel, panel);
     });
 
-    const activateTab = targetId => {
+    let activePanelId = null;
+
+    if (panelContainer) {
+        const releaseHeight = () => {
+            panelContainer.classList.remove('changelog-modal__panels--animating');
+            panelContainer.style.height = '';
+        };
+
+        panelContainer.addEventListener('transitionend', event => {
+            if (event.target === panelContainer && event.propertyName === 'height') {
+                releaseHeight();
+            }
+        });
+
+        panelContainer.addEventListener('transitioncancel', event => {
+            if (event.target === panelContainer && event.propertyName === 'height') {
+                releaseHeight();
+            }
+        });
+    }
+
+    const activateTab = (targetId, { animate = true } = {}) => {
+        const nextPanel = panelLookup.get(targetId);
+        if (!nextPanel) {
+            return;
+        }
+
+        const previousPanel = activePanelId ? panelLookup.get(activePanelId) : null;
+        const shouldAnimate = Boolean(
+            animate &&
+            panelContainer &&
+            previousPanel &&
+            previousPanel !== nextPanel &&
+            !appState.reduceMotion
+        );
+
+        if (panelContainer) {
+            if (shouldAnimate) {
+                panelContainer.classList.add('changelog-modal__panels--animating');
+                panelContainer.style.height = `${previousPanel.scrollHeight}px`;
+            } else {
+                panelContainer.classList.remove('changelog-modal__panels--animating');
+                panelContainer.style.height = '';
+            }
+        }
+
         tabs.forEach(tab => {
             const isActive = tab.dataset.changelogTab === targetId;
             tab.setAttribute('aria-selected', isActive ? 'true' : 'false');
@@ -2967,6 +3094,23 @@ function setupChangelogTabs() {
                 panel.setAttribute('aria-hidden', 'true');
             }
         });
+
+        if (panelContainer) {
+            if (shouldAnimate) {
+                const applyTargetHeight = () => {
+                    panelContainer.style.height = `${nextPanel.scrollHeight}px`;
+                };
+                if (typeof requestAnimationFrame === 'function') {
+                    requestAnimationFrame(applyTargetHeight);
+                } else {
+                    applyTargetHeight();
+                }
+            } else {
+                panelContainer.style.height = '';
+            }
+        }
+
+        activePanelId = targetId;
     };
 
     const focusTabByOffset = (currentTab, offset) => {
@@ -3015,7 +3159,7 @@ function setupChangelogTabs() {
     const presetActiveTab = tabs.find(tab => tab.getAttribute('aria-selected') === 'true');
     const initialTab = presetActiveTab || tabs[0];
     if (initialTab) {
-        activateTab(initialTab.dataset.changelogTab);
+        activateTab(initialTab.dataset.changelogTab, { animate: false });
     }
 }
 
