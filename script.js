@@ -865,8 +865,30 @@ function toggleCinematicMode() {
 }
 
 function isGlitchBiomeSelected() {
-    const biomeSelect = document.getElementById('biome-dropdown');
-    return biomeSelect ? biomeSelect.value === 'glitch' : false;
+    const selection = collectBiomeSelectionState();
+    if (!selection) {
+        return false;
+    }
+
+    if (selection.canonicalBiome === 'glitch' || selection.themeBiome === 'glitch') {
+        return true;
+    }
+
+    if (Array.isArray(selection.activeBiomes) && selection.activeBiomes.includes('glitch')) {
+        return true;
+    }
+
+    const runeConfig = selection.runeConfig;
+    if (runeConfig) {
+        if (runeConfig.glitchLike) {
+            return true;
+        }
+        if (runeConfig.canonicalBiome === 'glitch' || runeConfig.themeBiome === 'glitch') {
+            return true;
+        }
+    }
+
+    return selection.runeValue === 'glitch';
 }
 
 function updateGlitchPresentation() {
@@ -1412,21 +1434,6 @@ let lastXyzMultiplier = 1;
 let lastDaveMultiplier = 1;
 
 const MILLION_LUCK_PRESET = 1000000;
-const TEN_MILLION_LUCK_PRESET = 10000000;
-const LUCK_CRACK_THRESHOLD = 9999999;
-
-function updateLuckCrackOverlay(luckValue, reduceMotionActive) {
-    const overlay = document.getElementById('luck-crack-overlay');
-    if (!overlay) {
-        return;
-    }
-
-    const isTenMillionPreset = luckValue === TEN_MILLION_LUCK_PRESET;
-    const shouldShowCrack = !reduceMotionActive &&
-        luckValue >= LUCK_CRACK_THRESHOLD &&
-        !isTenMillionPreset;
-    overlay.classList.toggle('luck-crack-overlay--visible', shouldShowCrack);
-}
 
 function syncLuckVisualEffects(luckValue) {
     const body = document.body;
@@ -1434,9 +1441,7 @@ function syncLuckVisualEffects(luckValue) {
         return;
     }
 
-    const reduceMotionActive = body.classList.contains('reduce-motion') || appState.reduceMotion;
-    const isTenMillionPreset = luckValue === TEN_MILLION_LUCK_PRESET;
-    const shouldApplyMillionEffect = luckValue >= MILLION_LUCK_PRESET && !isTenMillionPreset;
+    const shouldApplyMillionEffect = luckValue >= MILLION_LUCK_PRESET;
 
     if (shouldApplyMillionEffect) {
         body.classList.add('luck-effect--million');
@@ -1444,9 +1449,6 @@ function syncLuckVisualEffects(luckValue) {
         body.classList.remove('luck-effect--million');
     }
 
-    body.classList.remove('luck-effect--ten-million');
-
-    updateLuckCrackOverlay(luckValue, reduceMotionActive);
 }
 
 function resetLuckPresetAnimations() {
