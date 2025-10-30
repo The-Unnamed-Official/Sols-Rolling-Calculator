@@ -3821,13 +3821,23 @@ function createAuraEvaluationContext(selection, { eventChecker }) {
     const runeValue = selectionState?.runeValue || null;
     const exclusivityBiome = runeConfig?.exclusivityBiome || biome;
     const isRoe = biome === 'roe' || runeValue === 'roe';
-    const glitchLikeBiome = (biome === 'glitch') || isRoe || Boolean(runeConfig && runeConfig.glitchLike);
-    const activeBiomes = Array.isArray(selectionState?.activeBiomes) && selectionState.activeBiomes.length > 0
-        ? selectionState.activeBiomes
+    const glitchExplicitlySelected = selectionState?.primaryBiome === 'glitch'
+        || selectionState?.timeBiome === 'glitch'
+        || biome === 'glitch'
+        || runeValue === 'glitch';
+    const glitchLikeBiome = glitchExplicitlySelected;
+
+    let activeBiomes = Array.isArray(selectionState?.activeBiomes) && selectionState.activeBiomes.length > 0
+        ? selectionState.activeBiomes.slice()
         : [exclusivityBiome].filter(Boolean);
-    const breakthroughBiomes = Array.isArray(selectionState?.breakthroughBiomes) && selectionState.breakthroughBiomes.length > 0
-        ? selectionState.breakthroughBiomes
+    let breakthroughBiomes = Array.isArray(selectionState?.breakthroughBiomes) && selectionState.breakthroughBiomes.length > 0
+        ? selectionState.breakthroughBiomes.slice()
         : [exclusivityBiome, biome].filter(Boolean);
+
+    if (!glitchExplicitlySelected && runeConfig?.exclusivityBiome === 'glitch') {
+        activeBiomes = activeBiomes.filter(biomeId => biomeId !== 'glitch');
+        breakthroughBiomes = breakthroughBiomes.filter(biomeId => biomeId !== 'glitch');
+    }
 
     return {
         biome,
