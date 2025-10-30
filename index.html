@@ -78,7 +78,7 @@
                 <div class="banner__meta">
                     <h1 class="banner__title">Sols Rolling Simulator</h1>
                     <p class="banner__subtitle">
-                        <button type="button" class="banner__version-button" id="versionInfoButton" aria-haspopup="dialog" aria-expanded="false" aria-label="View update notes for version V1.26" data-version-id="v126">V1.26</button>
+                        <button type="button" class="banner__version-button" id="versionInfoButton" aria-haspopup="dialog" aria-expanded="false" aria-label="View update notes for version V1.27" data-version-id="v127">V1.27</button>
                         <span class="banner__subtitle-divider" aria-hidden="true">◉</span>
                         <span class="banner__subtitle-author">By <span class="banner__subtitle-author-name">not.unnamed</span></span>
                         <span class="banner__subtitle-divider" aria-hidden="true">◉</span>
@@ -518,12 +518,21 @@
                 <button
                     type="button"
                     class="changelog-tab changelog-tab--active"
+                    id="changelog-tab-v127"
+                    role="tab"
+                    aria-controls="changelog-panel-v127"
+                    aria-selected="true"
+                    data-changelog-tab="v127"
+                >V1.27 (Latest Update)</button>
+                <button
+                    type="button"
+                    class="changelog-tab changelog-tab--active"
                     id="changelog-tab-v126"
                     role="tab"
                     aria-controls="changelog-panel-v126"
                     aria-selected="true"
                     data-changelog-tab="v126"
-                >V1.26 (Latest Update)</button>
+                >V1.26</button>
                 <button
                     type="button"
                     class="changelog-tab"
@@ -537,6 +546,24 @@
             </div>
 
             <div class="changelog-modal__panels" data-changelog-panels>
+                <section
+                    id="changelog-panel-v127"
+                    class="changelog-modal__panel"
+                    role="tabpanel"
+                    aria-labelledby="changelog-tab-v127"
+                    data-changelog-panel="v127"
+                    tabindex="0"
+                >
+                    <header class="changelog-modal__header">
+                        <h2 class="changelog-modal__title" id="versionChangelogTitle">Version V1.27 Update Notes</h2>
+                        <p class="changelog-modal__meta">Updated 2025/10/30</p>
+                    </header>
+                    <p class="changelog-modal__intro">Latest changes:</p>
+                    <ul class="changelog-modal__list">
+                        <li>Optimized code to run better.</li>
+                    </ul>
+                </section>
+
                 <section
                     id="changelog-panel-v126"
                     class="changelog-modal__panel"
@@ -566,7 +593,7 @@
                     tabindex="-1"
                 >
                     <header class="changelog-modal__header">
-                        <h2 class="changelog-modal__title">Version V1.25 Update Notes</h2>
+                        <h2 class="changelog-modal__title" id="versionChangelogTitle">Version V1.25 Update Notes</h2>
                         <p class="changelog-modal__meta">Updated 2025/10/30</p>
                     </header>
                     <p class="changelog-modal__intro">Highlights from the previous release:</p>
