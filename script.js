@@ -5,6 +5,58 @@ let simulationActive = false;
 let lastSimulationSummary = null;
 let shareFeedbackTimerId = null;
 let imageShareModeRequester = null;
+const versionChangelogOverlayState = {
+    escapeHandler: null,
+    lastFocusedElement: null
+};
+
+const CHANGELOG_VERSION_STORAGE_KEY = 'solsRollingCalculator:lastSeenChangelogVersion';
+
+function getCurrentChangelogVersionId() {
+    const trigger = document.getElementById('versionInfoButton');
+    if (!trigger) {
+        return null;
+    }
+
+    const explicitId = trigger.getAttribute('data-version-id');
+    if (explicitId) {
+        return explicitId;
+    }
+
+    const label = trigger.textContent;
+    return label ? label.trim() : null;
+}
+
+function maybeShowChangelogOnFirstVisit() {
+    const versionId = getCurrentChangelogVersionId();
+    if (!versionId) {
+        return;
+    }
+
+    let storage;
+    try {
+        storage = window.localStorage;
+    } catch (error) {
+        storage = null;
+    }
+
+    if (!storage) {
+        return;
+    }
+
+    const storedVersionId = storage.getItem(CHANGELOG_VERSION_STORAGE_KEY);
+    if (storedVersionId === versionId) {
+        return;
+    }
+
+    showVersionChangelogOverlay();
+
+    try {
+        storage.setItem(CHANGELOG_VERSION_STORAGE_KEY, versionId);
+    } catch (error) {
+        // Ignore storage write failures so the overlay logic can continue normally.
+    }
+}
 
 const randomToolkit = (() => {
     const toUint = value => (value >>> 0) & 0xffffffff;
@@ -203,6 +255,51 @@ function formatSanitizedNumericString(rawValue) {
     return fractionPart ? `${formattedInteger}.${fractionPart}` : formattedInteger;
 }
 
+function humanizeIdentifier(value) {
+    if (typeof value !== 'string' || value.length === 0) {
+        return '';
+    }
+    const separated = value
+        .replace(/([a-z])([A-Z0-9])/g, '$1 $2')
+        .replace(/([0-9])([a-zA-Z])/g, '$1 $2')
+        .replace(/[-_]/g, ' ');
+    return separated
+        .split(/\s+/)
+        .filter(Boolean)
+        .map(token => token.charAt(0).toUpperCase() + token.slice(1))
+        .join(' ');
+}
+
+function resolveSelectionLabel(selectId, value, { noneLabel = 'None', fallbackLabel = 'Unknown' } = {}) {
+    if (typeof value !== 'string' || value.length === 0) {
+        return fallbackLabel;
+    }
+
+    if (typeof document !== 'undefined') {
+        const select = document.getElementById(selectId);
+        if (select) {
+            const option = Array.from(select.options).find(entry => entry.value === value);
+            if (option && option.textContent) {
+                const label = option.textContent.trim();
+                if (label.length > 0) {
+                    return label;
+                }
+            }
+        }
+    }
+
+    if (value === 'none') {
+        return noneLabel;
+    }
+
+    const humanized = humanizeIdentifier(value);
+    if (humanized.length > 0) {
+        return humanized;
+    }
+
+    return fallbackLabel;
+}
+
 function setNumericInputValue(input, numericValue, { format = false, min = null, max = null } = {}) {
     if (!input) {
         return;
@@ -332,6 +429,92 @@ const appState = {
 };
 
 const LARGE_ROLL_WARNING_THRESHOLD = 9999999;
+const OVERLAY_TRANSITION_FALLBACK_MS = 320;
+
+function revealOverlay(overlay) {
+    if (!overlay) {
+        return;
+    }
+
+    overlay.removeAttribute('hidden');
+    overlay.removeAttribute('aria-hidden');
+    overlay.style.display = '';
+    overlay.removeAttribute('data-closing');
+
+    const makeVisible = () => {
+        overlay.setAttribute('data-visible', 'true');
+    };
+
+    if (typeof requestAnimationFrame === 'function') {
+        requestAnimationFrame(makeVisible);
+    } else {
+        makeVisible();
+    }
+}
+
+function concealOverlay(overlay, { onHidden } = {}) {
+    if (!overlay) {
+        if (typeof onHidden === 'function') {
+            onHidden();
+        }
+        return;
+    }
+
+    let completed = false;
+
+    const finalize = () => {
+        if (completed) {
+            return;
+        }
+        completed = true;
+        overlay.setAttribute('hidden', '');
+        overlay.setAttribute('aria-hidden', 'true');
+        overlay.style.display = 'none';
+        overlay.removeAttribute('data-visible');
+        overlay.removeAttribute('data-closing');
+        if (typeof onHidden === 'function') {
+            onHidden();
+        }
+    };
+
+    if (overlay.hasAttribute('hidden')) {
+        finalize();
+        return;
+    }
+
+    if (appState.reduceMotion) {
+        finalize();
+        return;
+    }
+
+    let fallbackId = null;
+
+    const clearListeners = () => {
+        overlay.removeEventListener('transitionend', handleTransitionEnd);
+        if (fallbackId !== null && typeof window !== 'undefined' && typeof window.clearTimeout === 'function') {
+            window.clearTimeout(fallbackId);
+        }
+    };
+
+    const handleTransitionEnd = event => {
+        if (event.target === overlay && event.propertyName === 'opacity') {
+            clearListeners();
+            finalize();
+        }
+    };
+
+    overlay.addEventListener('transitionend', handleTransitionEnd);
+
+    if (typeof window !== 'undefined' && typeof window.setTimeout === 'function') {
+        fallbackId = window.setTimeout(() => {
+            clearListeners();
+            finalize();
+        }, OVERLAY_TRANSITION_FALLBACK_MS);
+    }
+
+    overlay.setAttribute('data-closing', 'true');
+    overlay.removeAttribute('data-visible');
+}
 
 const largeRollWarningManager = (() => {
     let pendingAction = null;
@@ -343,11 +526,11 @@ const largeRollWarningManager = (() => {
         if (!overlay) {
             return;
         }
-        overlay.setAttribute('hidden', '');
-        overlay.setAttribute('aria-hidden', 'true');
-        overlay.style.display = 'none';
-        overlay.removeAttribute('data-visible');
-        overlay.removeAttribute('data-roll-count');
+        concealOverlay(overlay, {
+            onHidden: () => {
+                overlay.removeAttribute('data-roll-count');
+            }
+        });
     }
 
     function focusPrimaryAction() {
@@ -381,10 +564,7 @@ const largeRollWarningManager = (() => {
                 countNode.textContent = formatWithCommas(total);
             }
 
-            overlay.removeAttribute('hidden');
-            overlay.removeAttribute('aria-hidden');
-            overlay.style.display = '';
-            overlay.setAttribute('data-visible', 'true');
+            revealOverlay(overlay);
             focusPrimaryAction();
             return true;
         },
@@ -458,10 +638,7 @@ const cutsceneWarningManager = (() => {
             if (!overlay.hasAttribute('hidden')) {
                 return true;
             }
-            overlay.removeAttribute('hidden');
-            overlay.removeAttribute('aria-hidden');
-            overlay.style.display = '';
-            overlay.setAttribute('data-visible', 'true');
+            revealOverlay(overlay);
             focusPrimaryAction();
             return true;
         },
@@ -470,10 +647,7 @@ const cutsceneWarningManager = (() => {
             if (!overlay) {
                 return;
             }
-            overlay.setAttribute('hidden', '');
-            overlay.setAttribute('aria-hidden', 'true');
-            overlay.style.display = 'none';
-            overlay.removeAttribute('data-visible');
+            concealOverlay(overlay);
         },
         suppress() {
             suppressed = true;
@@ -865,8 +1039,22 @@ function toggleCinematicMode() {
 }
 
 function isGlitchBiomeSelected() {
-    const biomeSelect = document.getElementById('biome-dropdown');
-    return biomeSelect ? biomeSelect.value === 'glitch' : false;
+    const selection = collectBiomeSelectionState();
+    if (!selection) {
+        return false;
+    }
+
+    const { canonicalBiome, themeBiome, primaryBiome, timeBiome } = selection;
+
+    if (canonicalBiome === 'glitch' || themeBiome === 'glitch') {
+        return true;
+    }
+
+    if (primaryBiome === 'glitch' || timeBiome === 'glitch') {
+        return true;
+    }
+
+    return false;
 }
 
 function updateGlitchPresentation() {
@@ -1412,21 +1600,6 @@ let lastXyzMultiplier = 1;
 let lastDaveMultiplier = 1;
 
 const MILLION_LUCK_PRESET = 1000000;
-const TEN_MILLION_LUCK_PRESET = 10000000;
-const LUCK_CRACK_THRESHOLD = 9999999;
-
-function updateLuckCrackOverlay(luckValue, reduceMotionActive) {
-    const overlay = document.getElementById('luck-crack-overlay');
-    if (!overlay) {
-        return;
-    }
-
-    const isTenMillionPreset = luckValue === TEN_MILLION_LUCK_PRESET;
-    const shouldShowCrack = !reduceMotionActive &&
-        luckValue >= LUCK_CRACK_THRESHOLD &&
-        !isTenMillionPreset;
-    overlay.classList.toggle('luck-crack-overlay--visible', shouldShowCrack);
-}
 
 function syncLuckVisualEffects(luckValue) {
     const body = document.body;
@@ -1434,9 +1607,7 @@ function syncLuckVisualEffects(luckValue) {
         return;
     }
 
-    const reduceMotionActive = body.classList.contains('reduce-motion') || appState.reduceMotion;
-    const isTenMillionPreset = luckValue === TEN_MILLION_LUCK_PRESET;
-    const shouldApplyMillionEffect = luckValue >= MILLION_LUCK_PRESET && !isTenMillionPreset;
+    const shouldApplyMillionEffect = luckValue >= MILLION_LUCK_PRESET;
 
     if (shouldApplyMillionEffect) {
         body.classList.add('luck-effect--million');
@@ -1444,9 +1615,6 @@ function syncLuckVisualEffects(luckValue) {
         body.classList.remove('luck-effect--million');
     }
 
-    body.classList.remove('luck-effect--ten-million');
-
-    updateLuckCrackOverlay(luckValue, reduceMotionActive);
 }
 
 function resetLuckPresetAnimations() {
@@ -2819,10 +2987,267 @@ function setupLuckPresetAnimations() {
     bindLuckPresetButtonAnimation(tenMillionButton, 'luck-preset-button--pop-spin', ['luckPresetSpinPop']);
 }
 
+function setVersionButtonExpanded(state) {
+    const trigger = document.getElementById('versionInfoButton');
+    if (trigger) {
+        trigger.setAttribute('aria-expanded', state ? 'true' : 'false');
+    }
+}
+
+function showVersionChangelogOverlay() {
+    const overlay = document.getElementById('versionChangelogOverlay');
+    if (!overlay) {
+        return;
+    }
+
+    const activeElement = document.activeElement;
+    if (activeElement && typeof activeElement.focus === 'function') {
+        versionChangelogOverlayState.lastFocusedElement = activeElement;
+    } else {
+        versionChangelogOverlayState.lastFocusedElement = null;
+    }
+
+    revealOverlay(overlay);
+    setVersionButtonExpanded(true);
+
+    if (!versionChangelogOverlayState.escapeHandler) {
+        versionChangelogOverlayState.escapeHandler = event => {
+            if (event.key === 'Escape' || event.key === 'Esc') {
+                event.preventDefault();
+                hideVersionChangelogOverlay();
+            }
+        };
+        document.addEventListener('keydown', versionChangelogOverlayState.escapeHandler);
+    }
+
+    const closeButton = document.getElementById('versionChangelogClose');
+    if (closeButton) {
+        closeButton.focus();
+    }
+}
+
+function hideVersionChangelogOverlay({ focusTrigger = true } = {}) {
+    const overlay = document.getElementById('versionChangelogOverlay');
+    if (!overlay || overlay.hasAttribute('hidden') || overlay.hasAttribute('data-closing')) {
+        setVersionButtonExpanded(false);
+        return;
+    }
+
+    setVersionButtonExpanded(false);
+
+    if (versionChangelogOverlayState.escapeHandler) {
+        document.removeEventListener('keydown', versionChangelogOverlayState.escapeHandler);
+        versionChangelogOverlayState.escapeHandler = null;
+    }
+
+    const focusTarget = versionChangelogOverlayState.lastFocusedElement;
+    versionChangelogOverlayState.lastFocusedElement = null;
+
+    concealOverlay(overlay, {
+        onHidden: () => {
+            if (!focusTrigger) {
+                return;
+            }
+            if (focusTarget && typeof focusTarget.focus === 'function') {
+                focusTarget.focus();
+                return;
+            }
+            const trigger = document.getElementById('versionInfoButton');
+            if (trigger && typeof trigger.focus === 'function') {
+                trigger.focus();
+            }
+        }
+    });
+}
+
+function setupChangelogTabs() {
+    const tablist = document.querySelector('[data-changelog-tablist]');
+    if (!tablist) {
+        return;
+    }
+
+    const tabs = Array.from(tablist.querySelectorAll('[data-changelog-tab]'));
+    const panels = Array.from(document.querySelectorAll('[data-changelog-panel]'));
+    const panelContainer = document.querySelector('[data-changelog-panels]');
+
+    if (!tabs.length || !panels.length) {
+        return;
+    }
+
+    const panelLookup = new Map();
+    panels.forEach(panel => {
+        panelLookup.set(panel.dataset.changelogPanel, panel);
+    });
+
+    let activePanelId = null;
+
+    if (panelContainer) {
+        const releaseHeight = () => {
+            panelContainer.classList.remove('changelog-modal__panels--animating');
+            panelContainer.style.height = '';
+        };
+
+        panelContainer.addEventListener('transitionend', event => {
+            if (event.target === panelContainer && event.propertyName === 'height') {
+                releaseHeight();
+            }
+        });
+
+        panelContainer.addEventListener('transitioncancel', event => {
+            if (event.target === panelContainer && event.propertyName === 'height') {
+                releaseHeight();
+            }
+        });
+    }
+
+    const activateTab = (targetId, { animate = true } = {}) => {
+        const nextPanel = panelLookup.get(targetId);
+        if (!nextPanel) {
+            return;
+        }
+
+        const previousPanel = activePanelId ? panelLookup.get(activePanelId) : null;
+        const shouldAnimate = Boolean(
+            animate &&
+            panelContainer &&
+            previousPanel &&
+            previousPanel !== nextPanel &&
+            !appState.reduceMotion
+        );
+
+        if (panelContainer) {
+            if (shouldAnimate) {
+                panelContainer.classList.add('changelog-modal__panels--animating');
+                panelContainer.style.height = `${previousPanel.scrollHeight}px`;
+            } else {
+                panelContainer.classList.remove('changelog-modal__panels--animating');
+                panelContainer.style.height = '';
+            }
+        }
+
+        tabs.forEach(tab => {
+            const isActive = tab.dataset.changelogTab === targetId;
+            tab.setAttribute('aria-selected', isActive ? 'true' : 'false');
+            tab.setAttribute('tabindex', isActive ? '0' : '-1');
+            tab.classList.toggle('changelog-tab--active', isActive);
+        });
+
+        panelLookup.forEach((panel, panelId) => {
+            const isActive = panelId === targetId;
+            panel.hidden = !isActive;
+            panel.setAttribute('tabindex', isActive ? '0' : '-1');
+            if (isActive) {
+                panel.removeAttribute('aria-hidden');
+            } else {
+                panel.setAttribute('aria-hidden', 'true');
+            }
+        });
+
+        if (panelContainer) {
+            if (shouldAnimate) {
+                const applyTargetHeight = () => {
+                    panelContainer.style.height = `${nextPanel.scrollHeight}px`;
+                };
+                if (typeof requestAnimationFrame === 'function') {
+                    requestAnimationFrame(applyTargetHeight);
+                } else {
+                    applyTargetHeight();
+                }
+            } else {
+                panelContainer.style.height = '';
+            }
+        }
+
+        activePanelId = targetId;
+    };
+
+    const focusTabByOffset = (currentTab, offset) => {
+        const currentIndex = tabs.indexOf(currentTab);
+        if (currentIndex === -1) {
+            return;
+        }
+        const nextIndex = (currentIndex + offset + tabs.length) % tabs.length;
+        const nextTab = tabs[nextIndex];
+        if (nextTab) {
+            nextTab.focus();
+            activateTab(nextTab.dataset.changelogTab);
+        }
+    };
+
+    tabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+            activateTab(tab.dataset.changelogTab);
+        });
+
+        tab.addEventListener('keydown', event => {
+            if (event.key === 'ArrowRight') {
+                event.preventDefault();
+                focusTabByOffset(tab, 1);
+            } else if (event.key === 'ArrowLeft') {
+                event.preventDefault();
+                focusTabByOffset(tab, -1);
+            } else if (event.key === 'Home') {
+                event.preventDefault();
+                const firstTab = tabs[0];
+                if (firstTab) {
+                    firstTab.focus();
+                    activateTab(firstTab.dataset.changelogTab);
+                }
+            } else if (event.key === 'End') {
+                event.preventDefault();
+                const lastTab = tabs[tabs.length - 1];
+                if (lastTab) {
+                    lastTab.focus();
+                    activateTab(lastTab.dataset.changelogTab);
+                }
+            }
+        });
+    });
+
+    const presetActiveTab = tabs.find(tab => tab.getAttribute('aria-selected') === 'true');
+    const initialTab = presetActiveTab || tabs[0];
+    if (initialTab) {
+        activateTab(initialTab.dataset.changelogTab, { animate: false });
+    }
+}
+
+function setupVersionChangelogOverlay() {
+    const overlay = document.getElementById('versionChangelogOverlay');
+    const trigger = document.getElementById('versionInfoButton');
+    const closeButton = document.getElementById('versionChangelogClose');
+
+    if (!overlay || !trigger) {
+        return;
+    }
+
+    trigger.addEventListener('click', () => {
+        if (overlay.hasAttribute('hidden')) {
+            showVersionChangelogOverlay();
+        } else {
+            hideVersionChangelogOverlay();
+        }
+    });
+
+    if (closeButton) {
+        closeButton.addEventListener('click', () => {
+            hideVersionChangelogOverlay();
+        });
+    }
+
+    overlay.addEventListener('click', event => {
+        if (event.target === overlay) {
+            hideVersionChangelogOverlay();
+        }
+    });
+}
+
 document.addEventListener('DOMContentLoaded', initializeEventSelector);
 document.addEventListener('DOMContentLoaded', updateOblivionPresetDisplay);
 document.addEventListener('DOMContentLoaded', updateDunePresetDisplay);
 document.addEventListener('DOMContentLoaded', setupLuckPresetAnimations);
+document.addEventListener('DOMContentLoaded', setupChangelogTabs);
+document.addEventListener('DOMContentLoaded', setupVersionChangelogOverlay);
+document.addEventListener('DOMContentLoaded', maybeShowChangelogOnFirstVisit);
 
 document.addEventListener('DOMContentLoaded', () => {
     const confirmButton = document.getElementById('cutsceneWarningConfirm');
@@ -3048,6 +3473,7 @@ function collectBiomeSelectionState() {
             timeBiome: 'none',
             runeValue: 'none',
             runeConfig: null,
+            runeBiome: null,
             themeBiome: 'normal',
             activeBiomes: ['normal'],
             breakthroughBiomes: ['normal']
@@ -3063,37 +3489,38 @@ function collectBiomeSelectionState() {
     const timeBiome = timeSelect ? (timeSelect.value || 'none') : 'none';
 
     const runeConfig = resolveRuneConfiguration(runeValue);
+    const runeBiome = (() => {
+        if (!runeConfig) {
+            return (runeValue && runeValue !== 'none') ? runeValue : null;
+        }
+        return runeConfig.canonicalBiome || runeConfig.themeBiome || null;
+    })();
+
+    const hasPrimary = primaryBiome && primaryBiome !== 'none';
+    const hasDistinctPrimary = hasPrimary && primaryBiome !== 'normal';
+    const hasTime = timeBiome && timeBiome !== 'none';
 
     const canonicalBiome = (() => {
-        if (runeConfig) {
-            return runeConfig.canonicalBiome || runeConfig.themeBiome || 'normal';
-        }
-        if (runeValue && runeValue !== 'none') {
-            return runeValue;
-        }
-        if (primaryBiome && primaryBiome !== 'none' && primaryBiome !== 'normal') {
+        if (hasDistinctPrimary) {
             return primaryBiome;
         }
-        if (timeBiome && timeBiome !== 'none') {
+        if (hasTime) {
             return timeBiome;
         }
-        if (primaryBiome && primaryBiome !== 'none') {
+        if (hasPrimary) {
             return primaryBiome;
         }
         return 'normal';
     })();
 
     const themeBiome = (() => {
-        if (runeConfig && runeConfig.themeBiome) {
-            return runeConfig.themeBiome;
-        }
-        if (primaryBiome && primaryBiome !== 'none' && primaryBiome !== 'normal') {
+        if (hasDistinctPrimary) {
             return primaryBiome;
         }
-        if (timeBiome && timeBiome !== 'none') {
+        if (hasTime) {
             return timeBiome;
         }
-        if (primaryBiome && primaryBiome !== 'none') {
+        if (hasPrimary) {
             return primaryBiome;
         }
         return canonicalBiome;
@@ -3116,10 +3543,22 @@ function collectBiomeSelectionState() {
             }
         }
     }
+    if (runeBiome && runeBiome !== 'none') {
+        activeBiomeSet.add(runeBiome);
+    }
+    if (runeConfig && typeof runeConfig.exclusivityBiome === 'string' && runeConfig.exclusivityBiome.length > 0) {
+        activeBiomeSet.add(runeConfig.exclusivityBiome);
+    }
 
     const breakthroughCandidates = [];
     if (runeConfig && Array.isArray(runeConfig.breakthroughBiomes)) {
         breakthroughCandidates.push(...runeConfig.breakthroughBiomes);
+    }
+    if (runeBiome && runeBiome !== 'none') {
+        breakthroughCandidates.push(runeBiome);
+    }
+    if (runeConfig && typeof runeConfig.exclusivityBiome === 'string' && runeConfig.exclusivityBiome.length > 0) {
+        breakthroughCandidates.push(runeConfig.exclusivityBiome);
     }
     if (primaryBiome && primaryBiome !== 'none') {
         breakthroughCandidates.push(primaryBiome);
@@ -3145,6 +3584,7 @@ function collectBiomeSelectionState() {
         timeBiome,
         runeValue,
         runeConfig,
+        runeBiome,
         themeBiome,
         activeBiomes: Array.from(activeBiomeSet),
         breakthroughBiomes: uniqueBreakthroughs
@@ -3315,6 +3755,10 @@ function updateBiomeControlConstraints({ source = null, triggerSync = true } = {
     refreshCustomSelect(BIOME_PRIMARY_SELECT_ID);
     refreshCustomSelect(BIOME_OTHER_SELECT_ID);
     refreshCustomSelect(BIOME_TIME_SELECT_ID);
+
+    if (source === BIOME_OTHER_SELECT_ID) {
+        updateGlitchPresentation();
+    }
 
     if (triggerSync) {
         syncActiveBiomeSelection({ forceDispatch: primaryChanged || otherChanged || timeChanged });
@@ -3570,13 +4014,23 @@ function createAuraEvaluationContext(selection, { eventChecker }) {
     const runeValue = selectionState?.runeValue || null;
     const exclusivityBiome = runeConfig?.exclusivityBiome || biome;
     const isRoe = biome === 'roe' || runeValue === 'roe';
-    const glitchLikeBiome = (biome === 'glitch') || isRoe || Boolean(runeConfig && runeConfig.glitchLike);
-    const activeBiomes = Array.isArray(selectionState?.activeBiomes) && selectionState.activeBiomes.length > 0
-        ? selectionState.activeBiomes
+    const glitchExplicitlySelected = selectionState?.primaryBiome === 'glitch'
+        || selectionState?.timeBiome === 'glitch'
+        || biome === 'glitch'
+        || runeValue === 'glitch';
+    const glitchLikeBiome = glitchExplicitlySelected;
+
+    let activeBiomes = Array.isArray(selectionState?.activeBiomes) && selectionState.activeBiomes.length > 0
+        ? selectionState.activeBiomes.slice()
         : [exclusivityBiome].filter(Boolean);
-    const breakthroughBiomes = Array.isArray(selectionState?.breakthroughBiomes) && selectionState.breakthroughBiomes.length > 0
-        ? selectionState.breakthroughBiomes
+    let breakthroughBiomes = Array.isArray(selectionState?.breakthroughBiomes) && selectionState.breakthroughBiomes.length > 0
+        ? selectionState.breakthroughBiomes.slice()
         : [exclusivityBiome, biome].filter(Boolean);
+
+    if (!glitchExplicitlySelected && runeConfig?.exclusivityBiome === 'glitch') {
+        activeBiomes = activeBiomes.filter(biomeId => biomeId !== 'glitch');
+        breakthroughBiomes = breakthroughBiomes.filter(biomeId => biomeId !== 'glitch');
+    }
 
     return {
         biome,
@@ -3585,7 +4039,8 @@ function createAuraEvaluationContext(selection, { eventChecker }) {
         exclusivityBiome,
         eventChecker,
         activeBiomes,
-        breakthroughBiomes
+        breakthroughBiomes,
+        primaryBiome: selectionState?.primaryBiome || null
     };
 }
 
@@ -3604,14 +4059,24 @@ function computeLimboEffectiveChance(aura, context) {
 }
 
 function computeStandardEffectiveChance(aura, context) {
-    const { biome, exclusivityBiome, glitchLikeBiome, isRoe, activeBiomes, breakthroughBiomes } = context;
+    const { biome, exclusivityBiome, glitchLikeBiome, isRoe, activeBiomes, breakthroughBiomes, primaryBiome } = context;
     if (aura.requiresOblivionPreset || aura.requiresDunePreset) return Infinity;
 
     const eventId = getAuraEventId(aura);
     const eventEnabled = context.eventChecker(aura);
     if (!eventEnabled) return Infinity;
 
-    if (isRoe && ROE_EXCLUSION_SET.has(aura.name)) return Infinity;
+    if (isRoe && ROE_EXCLUSION_SET.has(aura.name)) {
+        const matchesActive = Array.isArray(activeBiomes) && activeBiomes.length > 0
+            ? auraMatchesAnyBiome(aura, activeBiomes)
+            : false;
+        if (!matchesActive) {
+            const glitchPrimarySelected = primaryBiome === 'glitch';
+            if (!glitchPrimarySelected) {
+                return Infinity;
+            }
+        }
+    }
 
     if (aura.nativeBiomes) {
         if (isAuraNativeTo(aura, 'limbo') && !isAuraNativeTo(aura, 'limbo-null')) {
@@ -3889,6 +4354,9 @@ function runRollSimulation(options = {}) {
     const luckValue = Math.max(0, parsedLuck);
     const selectionState = collectBiomeSelectionState();
     const biome = selectionState.canonicalBiome;
+    const primaryBiome = selectionState.primaryBiome;
+    const runeValue = selectionState.runeValue;
+    const timeBiome = selectionState.timeBiome;
 
     const eventSnapshot = enabledEvents.size > 0 ? new Set(enabledEvents) : null;
     const isEventAuraEnabled = aura => {
@@ -4065,18 +4533,21 @@ function runRollSimulation(options = {}) {
             playSoundEffect(audio.k1);
         }
 
-        let biomeLabel = biome;
-        if (biomeSelector) {
-            const selectedOption = (biomeSelector.selectedOptions && biomeSelector.selectedOptions.length > 0)
-                ? biomeSelector.selectedOptions[0]
-                : biomeSelector.options[biomeSelector.selectedIndex];
-            if (selectedOption && selectedOption.textContent) {
-                biomeLabel = selectedOption.textContent.trim();
-            }
-        }
-        if (!biomeLabel) {
-            biomeLabel = biome || 'Unknown';
-        }
+        const biomeLabel = resolveSelectionLabel(
+            BIOME_PRIMARY_SELECT_ID,
+            primaryBiome,
+            { noneLabel: 'None', fallbackLabel: biome || 'Unknown' }
+        );
+        const runeLabel = resolveSelectionLabel(
+            BIOME_OTHER_SELECT_ID,
+            runeValue,
+            { noneLabel: 'None', fallbackLabel: 'None' }
+        );
+        const timeLabel = resolveSelectionLabel(
+            BIOME_TIME_SELECT_ID,
+            timeBiome,
+            { noneLabel: 'Neutral', fallbackLabel: timeBiome || 'Neutral' }
+        );
 
         const usedEventIds = eventSnapshot ? Array.from(eventSnapshot) : [];
         const eventLabels = usedEventIds.map(id => EVENT_LABEL_MAP.get(id) || id);
@@ -4087,6 +4558,8 @@ function runRollSimulation(options = {}) {
             `Rolls: ${formatWithCommas(rolls)}<br>`,
             `Luck: ${formatWithCommas(luckValue)}<br>`,
             `Biome: ${biomeLabel}<br>`,
+            `Rune: ${runeLabel}<br>`,
+            `Time: ${timeLabel}<br>`,
             `Events: ${eventSummaryText}<br><br>`
         ];
 
@@ -4109,6 +4582,12 @@ function runRollSimulation(options = {}) {
             luck: luckValue,
             biomeId: biome,
             biomeLabel,
+            primaryBiomeId: primaryBiome,
+            primaryBiomeLabel: biomeLabel,
+            runeId: runeValue,
+            runeLabel,
+            timeId: timeBiome,
+            timeLabel,
             eventIds: usedEventIds,
             eventLabels,
             shareRecords,
@@ -4467,6 +4946,8 @@ function createDiscordShareText(summary) {
         `> **Rolls:** ${formatWithCommas(summary.rolls)}`,
         `> **Luck:** ${formatWithCommas(summary.luck)}`,
         `> **Biome:** ${summary.biomeLabel}`,
+        `> **Rune:** ${summary.runeLabel || 'None'}`,
+        `> **Time:** ${summary.timeLabel || 'Neutral'}`,
         `> **Events:** ${eventSummary}`,
         `> **Duration:** ${Math.max(0, Math.round(summary.executionSeconds))}s`,
         `> **Total XP:** ${formatWithCommas(summary.xpTotal)}`
@@ -4506,6 +4987,8 @@ function createPlainShareText(summary) {
         `Rolls: ${formatWithCommas(summary.rolls)}`,
         `Luck: ${formatWithCommas(summary.luck)}`,
         `Biome: ${summary.biomeLabel}`,
+        `Rune: ${summary.runeLabel || 'None'}`,
+        `Time: ${summary.timeLabel || 'Neutral'}`,
         `Events: ${eventSummary}`,
         `Duration: ${Math.max(0, Math.round(summary.executionSeconds))}s`,
         `Total XP: ${formatWithCommas(summary.xpTotal)}`,
@@ -5209,6 +5692,8 @@ async function generateShareImage(summary, mode = 'download') {
         `Rolls: ${formatWithCommas(summary.rolls)}`,
         `Luck: ${formatWithCommas(summary.luck)}`,
         `Biome: ${summary.biomeLabel}`,
+        `Rune: ${summary.runeLabel || 'None'}`,
+        `Time: ${summary.timeLabel || 'Neutral'}`,
         `Events: ${eventSummary}`,
         `Duration: ${Math.max(0, Math.round(summary.executionSeconds))}s`,
         `Total XP: ${formatWithCommas(summary.xpTotal)}`
