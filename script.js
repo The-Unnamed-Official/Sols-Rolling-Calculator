@@ -203,6 +203,51 @@ function formatSanitizedNumericString(rawValue) {
     return fractionPart ? `${formattedInteger}.${fractionPart}` : formattedInteger;
 }
 
+function humanizeIdentifier(value) {
+    if (typeof value !== 'string' || value.length === 0) {
+        return '';
+    }
+    const separated = value
+        .replace(/([a-z])([A-Z0-9])/g, '$1 $2')
+        .replace(/([0-9])([a-zA-Z])/g, '$1 $2')
+        .replace(/[-_]/g, ' ');
+    return separated
+        .split(/\s+/)
+        .filter(Boolean)
+        .map(token => token.charAt(0).toUpperCase() + token.slice(1))
+        .join(' ');
+}
+
+function resolveSelectionLabel(selectId, value, { noneLabel = 'None', fallbackLabel = 'Unknown' } = {}) {
+    if (typeof value !== 'string' || value.length === 0) {
+        return fallbackLabel;
+    }
+
+    if (typeof document !== 'undefined') {
+        const select = document.getElementById(selectId);
+        if (select) {
+            const option = Array.from(select.options).find(entry => entry.value === value);
+            if (option && option.textContent) {
+                const label = option.textContent.trim();
+                if (label.length > 0) {
+                    return label;
+                }
+            }
+        }
+    }
+
+    if (value === 'none') {
+        return noneLabel;
+    }
+
+    const humanized = humanizeIdentifier(value);
+    if (humanized.length > 0) {
+        return humanized;
+    }
+
+    return fallbackLabel;
+}
+
 function setNumericInputValue(input, numericValue, { format = false, min = null, max = null } = {}) {
     if (!input) {
         return;
@@ -3050,6 +3095,7 @@ function collectBiomeSelectionState() {
             timeBiome: 'none',
             runeValue: 'none',
             runeConfig: null,
+            runeBiome: null,
             themeBiome: 'normal',
             activeBiomes: ['normal'],
             breakthroughBiomes: ['normal']
@@ -3065,39 +3111,39 @@ function collectBiomeSelectionState() {
     const timeBiome = timeSelect ? (timeSelect.value || 'none') : 'none';
 
     const runeConfig = resolveRuneConfiguration(runeValue);
+    const runeBiome = (() => {
+        if (!runeConfig) {
+            return (runeValue && runeValue !== 'none') ? runeValue : null;
+        }
+        return runeConfig.canonicalBiome || runeConfig.themeBiome || null;
+    })();
+
+    const hasPrimary = primaryBiome && primaryBiome !== 'none';
+    const hasDistinctPrimary = hasPrimary && primaryBiome !== 'normal';
+    const hasTime = timeBiome && timeBiome !== 'none';
 
     const canonicalBiome = (() => {
-        if (runeConfig) {
-            return runeConfig.canonicalBiome || runeConfig.themeBiome || 'normal';
-        }
-        if (runeValue && runeValue !== 'none') {
-            return runeValue;
-        }
-        if (primaryBiome && primaryBiome !== 'none' && primaryBiome !== 'normal') {
+        if (hasDistinctPrimary) {
             return primaryBiome;
         }
-        if (timeBiome && timeBiome !== 'none') {
+        if (hasTime) {
             return timeBiome;
         }
-        if (primaryBiome && primaryBiome !== 'none') {
+        if (hasPrimary) {
             return primaryBiome;
         }
         return 'normal';
     })();
 
     const themeBiome = (() => {
-        const hasDistinctPrimary = primaryBiome && primaryBiome !== 'none' && primaryBiome !== 'normal';
         if (hasDistinctPrimary) {
             return primaryBiome;
         }
-        if (timeBiome && timeBiome !== 'none') {
+        if (hasTime) {
             return timeBiome;
         }
-        if (primaryBiome && primaryBiome !== 'none') {
+        if (hasPrimary) {
             return primaryBiome;
-        }
-        if (runeConfig) {
-            return 'normal';
         }
         return canonicalBiome;
     })();
@@ -3119,10 +3165,22 @@ function collectBiomeSelectionState() {
             }
         }
     }
+    if (runeBiome && runeBiome !== 'none') {
+        activeBiomeSet.add(runeBiome);
+    }
+    if (runeConfig && typeof runeConfig.exclusivityBiome === 'string' && runeConfig.exclusivityBiome.length > 0) {
+        activeBiomeSet.add(runeConfig.exclusivityBiome);
+    }
 
     const breakthroughCandidates = [];
     if (runeConfig && Array.isArray(runeConfig.breakthroughBiomes)) {
         breakthroughCandidates.push(...runeConfig.breakthroughBiomes);
+    }
+    if (runeBiome && runeBiome !== 'none') {
+        breakthroughCandidates.push(runeBiome);
+    }
+    if (runeConfig && typeof runeConfig.exclusivityBiome === 'string' && runeConfig.exclusivityBiome.length > 0) {
+        breakthroughCandidates.push(runeConfig.exclusivityBiome);
     }
     if (primaryBiome && primaryBiome !== 'none') {
         breakthroughCandidates.push(primaryBiome);
@@ -3148,6 +3206,7 @@ function collectBiomeSelectionState() {
         timeBiome,
         runeValue,
         runeConfig,
+        runeBiome,
         themeBiome,
         activeBiomes: Array.from(activeBiomeSet),
         breakthroughBiomes: uniqueBreakthroughs
@@ -3318,6 +3377,10 @@ function updateBiomeControlConstraints({ source = null, triggerSync = true } = {
     refreshCustomSelect(BIOME_PRIMARY_SELECT_ID);
     refreshCustomSelect(BIOME_OTHER_SELECT_ID);
     refreshCustomSelect(BIOME_TIME_SELECT_ID);
+
+    if (source === BIOME_OTHER_SELECT_ID) {
+        updateGlitchPresentation();
+    }
 
     if (triggerSync) {
         syncActiveBiomeSelection({ forceDispatch: primaryChanged || otherChanged || timeChanged });
@@ -3616,9 +3679,14 @@ function computeStandardEffectiveChance(aura, context) {
     if (!eventEnabled) return Infinity;
 
     if (isRoe && ROE_EXCLUSION_SET.has(aura.name)) {
-        const glitchPrimarySelected = primaryBiome === 'glitch';
-        if (!glitchPrimarySelected) {
-            return Infinity;
+        const matchesActive = Array.isArray(activeBiomes) && activeBiomes.length > 0
+            ? auraMatchesAnyBiome(aura, activeBiomes)
+            : false;
+        if (!matchesActive) {
+            const glitchPrimarySelected = primaryBiome === 'glitch';
+            if (!glitchPrimarySelected) {
+                return Infinity;
+            }
         }
     }
 
@@ -3898,6 +3966,9 @@ function runRollSimulation(options = {}) {
     const luckValue = Math.max(0, parsedLuck);
     const selectionState = collectBiomeSelectionState();
     const biome = selectionState.canonicalBiome;
+    const primaryBiome = selectionState.primaryBiome;
+    const runeValue = selectionState.runeValue;
+    const timeBiome = selectionState.timeBiome;
 
     const eventSnapshot = enabledEvents.size > 0 ? new Set(enabledEvents) : null;
     const isEventAuraEnabled = aura => {
@@ -4074,18 +4145,21 @@ function runRollSimulation(options = {}) {
             playSoundEffect(audio.k1);
         }
 
-        let biomeLabel = biome;
-        if (biomeSelector) {
-            const selectedOption = (biomeSelector.selectedOptions && biomeSelector.selectedOptions.length > 0)
-                ? biomeSelector.selectedOptions[0]
-                : biomeSelector.options[biomeSelector.selectedIndex];
-            if (selectedOption && selectedOption.textContent) {
-                biomeLabel = selectedOption.textContent.trim();
-            }
-        }
-        if (!biomeLabel) {
-            biomeLabel = biome || 'Unknown';
-        }
+        const biomeLabel = resolveSelectionLabel(
+            BIOME_PRIMARY_SELECT_ID,
+            primaryBiome,
+            { noneLabel: 'None', fallbackLabel: biome || 'Unknown' }
+        );
+        const runeLabel = resolveSelectionLabel(
+            BIOME_OTHER_SELECT_ID,
+            runeValue,
+            { noneLabel: 'None', fallbackLabel: 'None' }
+        );
+        const timeLabel = resolveSelectionLabel(
+            BIOME_TIME_SELECT_ID,
+            timeBiome,
+            { noneLabel: 'Neutral', fallbackLabel: timeBiome || 'Neutral' }
+        );
 
         const usedEventIds = eventSnapshot ? Array.from(eventSnapshot) : [];
         const eventLabels = usedEventIds.map(id => EVENT_LABEL_MAP.get(id) || id);
@@ -4096,6 +4170,8 @@ function runRollSimulation(options = {}) {
             `Rolls: ${formatWithCommas(rolls)}<br>`,
             `Luck: ${formatWithCommas(luckValue)}<br>`,
             `Biome: ${biomeLabel}<br>`,
+            `Rune: ${runeLabel}<br>`,
+            `Time: ${timeLabel}<br>`,
             `Events: ${eventSummaryText}<br><br>`
         ];
 
@@ -4118,6 +4194,12 @@ function runRollSimulation(options = {}) {
             luck: luckValue,
             biomeId: biome,
             biomeLabel,
+            primaryBiomeId: primaryBiome,
+            primaryBiomeLabel: biomeLabel,
+            runeId: runeValue,
+            runeLabel,
+            timeId: timeBiome,
+            timeLabel,
             eventIds: usedEventIds,
             eventLabels,
             shareRecords,
@@ -4476,6 +4558,8 @@ function createDiscordShareText(summary) {
         `> **Rolls:** ${formatWithCommas(summary.rolls)}`,
         `> **Luck:** ${formatWithCommas(summary.luck)}`,
         `> **Biome:** ${summary.biomeLabel}`,
+        `> **Rune:** ${summary.runeLabel || 'None'}`,
+        `> **Time:** ${summary.timeLabel || 'Neutral'}`,
         `> **Events:** ${eventSummary}`,
         `> **Duration:** ${Math.max(0, Math.round(summary.executionSeconds))}s`,
         `> **Total XP:** ${formatWithCommas(summary.xpTotal)}`
@@ -4515,6 +4599,8 @@ function createPlainShareText(summary) {
         `Rolls: ${formatWithCommas(summary.rolls)}`,
         `Luck: ${formatWithCommas(summary.luck)}`,
         `Biome: ${summary.biomeLabel}`,
+        `Rune: ${summary.runeLabel || 'None'}`,
+        `Time: ${summary.timeLabel || 'Neutral'}`,
         `Events: ${eventSummary}`,
         `Duration: ${Math.max(0, Math.round(summary.executionSeconds))}s`,
         `Total XP: ${formatWithCommas(summary.xpTotal)}`,
@@ -5218,6 +5304,8 @@ async function generateShareImage(summary, mode = 'download') {
         `Rolls: ${formatWithCommas(summary.rolls)}`,
         `Luck: ${formatWithCommas(summary.luck)}`,
         `Biome: ${summary.biomeLabel}`,
+        `Rune: ${summary.runeLabel || 'None'}`,
+        `Time: ${summary.timeLabel || 'Neutral'}`,
         `Events: ${eventSummary}`,
         `Duration: ${Math.max(0, Math.round(summary.executionSeconds))}s`,
         `Total XP: ${formatWithCommas(summary.xpTotal)}`
