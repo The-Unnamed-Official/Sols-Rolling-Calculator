@@ -1640,7 +1640,7 @@ function syncLuckVisualEffects(luckValue) {
 }
 
 function resetLuckPresetAnimations() {
-    const animationClasses = ['luck-preset-button--pop', 'luck-preset-button--pop-spin'];
+    const animationClasses = ['luck-preset-button--pop', 'luck-preset-button--mega-pop'];
     const targets = [
         document.getElementById('luck-preset-one-million'),
         document.getElementById('luck-preset-ten-million')
@@ -1690,6 +1690,39 @@ function applyRollPreset(value) {
 
     setNumericInputValue(rollField, value, { format: true, min: 1, max: 100000000 });
     playSoundEffect(clickSoundEffectElement, 'ui');
+}
+
+// Applies a high-level device/buff preset by translating a multiplier into
+// a concrete luck total and optionally toggling seasonal events in bulk.
+function applyDeviceBuffPreset(multiplier, options = {}) {
+    const numericMultiplier = Number(multiplier);
+    if (!Number.isFinite(numericMultiplier) || numericMultiplier <= 0) {
+        return;
+    }
+
+    const targetLuck = Math.max(1, Math.round(MILLION_LUCK_PRESET * numericMultiplier));
+    applyLuckValue(targetLuck);
+
+    const { eventPreset = null } = options;
+    if (eventPreset === null || typeof setEventToggleState !== 'function') {
+        return;
+    }
+
+    let targetIds;
+    if (eventPreset === 'max') {
+        targetIds = EVENT_LIST.map(event => event.id);
+    } else if (eventPreset === 'none') {
+        targetIds = [];
+    } else if (Array.isArray(eventPreset)) {
+        targetIds = eventPreset.filter(Boolean);
+    } else {
+        return;
+    }
+
+    const targetSet = new Set(targetIds);
+    EVENT_LIST.forEach(event => {
+        setEventToggleState(event.id, targetSet.has(event.id));
+    });
 }
 
 function recomputeLuckValue() {
@@ -2974,7 +3007,7 @@ function triggerLuckPresetButtonAnimation(button, className) {
         return;
     }
 
-    button.classList.remove('luck-preset-button--pop', 'luck-preset-button--pop-spin');
+    button.classList.remove('luck-preset-button--pop', 'luck-preset-button--mega-pop');
     // Force reflow so the animation can retrigger
     void button.offsetWidth;
     button.classList.add(className);
@@ -3006,7 +3039,7 @@ function setupLuckPresetAnimations() {
     const tenMillionButton = document.getElementById('luck-preset-ten-million');
 
     bindLuckPresetButtonAnimation(oneMillionButton, 'luck-preset-button--pop', ['luckPresetPop']);
-    bindLuckPresetButtonAnimation(tenMillionButton, 'luck-preset-button--pop-spin', ['luckPresetSpinPop']);
+    bindLuckPresetButtonAnimation(tenMillionButton, 'luck-preset-button--mega-pop', ['luckPresetMegaPop']);
 }
 
 function setVersionButtonExpanded(state) {

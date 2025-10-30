@@ -138,29 +138,27 @@
     }
 }
 
-@keyframes luckPresetSpinPop {
+@keyframes luckPresetMegaPop {
     0% {
         --button-pop-scale: 1;
         --button-pop-raise: 0px;
         --button-pop-rotation: 0deg;
         box-shadow: 0 0 0 rgba(0, 0, 0, 0);
     }
-    30% {
-        --button-pop-scale: 1.24;
-        --button-pop-raise: -16px;
-        --button-pop-rotation: 120deg;
-        box-shadow: 0 30px 54px rgba(0, 6, 18, 0.46), 0 0 30px rgba(127, 227, 255, 0.34);
+    24% {
+        --button-pop-scale: 1.52;
+        --button-pop-raise: -26px;
+        box-shadow: 0 38px 62px rgba(0, 6, 18, 0.5), 0 0 36px rgba(127, 227, 255, 0.42);
     }
-    70% {
-        --button-pop-scale: 1.08;
-        --button-pop-raise: -6px;
-        --button-pop-rotation: 300deg;
-        box-shadow: 0 20px 34px rgba(0, 6, 18, 0.34), 0 0 24px rgba(127, 227, 255, 0.26);
+    56% {
+        --button-pop-scale: 1.18;
+        --button-pop-raise: -8px;
+        box-shadow: 0 24px 38px rgba(0, 6, 18, 0.36), 0 0 24px rgba(127, 227, 255, 0.28);
     }
     100% {
         --button-pop-scale: 1;
         --button-pop-raise: 0px;
-        --button-pop-rotation: 360deg;
+        --button-pop-rotation: 0deg;
         box-shadow: 0 0 0 rgba(0, 0, 0, 0);
     }
 }
@@ -2410,6 +2408,16 @@ select.form-field__input option {
     color: var(--text-primary);
 }
 
+.preset-collection__title--compact {
+    gap: clamp(8px, 1.4vw, 12px);
+    font-size: clamp(10px, 1.3vw, 12px);
+    letter-spacing: 0.2em;
+}
+
+.preset-collection__title--compact .preset-collection__title-divider {
+    flex-basis: 44px;
+}
+
 .preset-collection__title-text {
     display: inline-flex;
     align-items: center;
@@ -2431,6 +2439,17 @@ select.form-field__input option {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
     gap: 10px;
+}
+
+.preset-matrix--compact {
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 8px;
+}
+
+.preset-matrix--compact button {
+    padding-block: 10px;
+    font-size: 0.82rem;
+    letter-spacing: 0.05em;
 }
 
 .preset-matrix .preset-warning {
@@ -2505,9 +2524,9 @@ body:not(.reduce-motion) #luck-preset-one-million.luck-preset-button--pop:focus-
     z-index: 3;
 }
 
-body:not(.reduce-motion) #luck-preset-ten-million.luck-preset-button--pop-spin,
-body:not(.reduce-motion) #luck-preset-ten-million.luck-preset-button--pop-spin:focus-visible {
-    animation: luckPresetSpinPop 1.4s cubic-bezier(0.2, 0.62, 0.25, 1.02);
+body:not(.reduce-motion) #luck-preset-ten-million.luck-preset-button--mega-pop,
+body:not(.reduce-motion) #luck-preset-ten-million.luck-preset-button--mega-pop:focus-visible {
+    animation: luckPresetMegaPop 0.9s cubic-bezier(0.18, 0.78, 0.24, 1.04);
     z-index: 4;
 }
 
@@ -3591,6 +3610,14 @@ body:not(.reduce-motion) #luck-preset-ten-million.luck-preset-button--pop-spin:f
     flex-direction: column;
     gap: 0.65em;
     color: var(--text-primary);
+}
+
+.changelog-modal__list--sub {
+    margin-top: 0.45em;
+    padding-left: 1.2em;
+    gap: 0.45em;
+    color: var(--text-secondary);
+    font-size: 0.95em;
 }
 
 .changelog-modal__list li {
