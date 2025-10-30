@@ -3525,6 +3525,10 @@ body:not(.reduce-motion) #luck-preset-ten-million.luck-preset-button--pop-spin:f
     z-index: 10 !important;
 }
 
+.changelog-modal__panel[hidden] {
+    display: none;
+}
+
 .changelog-modal__header {
     display: flex;
     flex-direction: column;
