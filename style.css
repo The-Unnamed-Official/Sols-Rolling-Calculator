@@ -3433,55 +3433,95 @@ body:not(.reduce-motion) #luck-preset-ten-million.luck-preset-button--pop-spin:f
     display: flex;
     flex-direction: column;
     gap: clamp(18px, 3vh, 28px);
+    position: relative;
 }
 
 .changelog-modal__tabbar {
+    position: absolute;
+    top: calc(clamp(24px, 4vw, 38px) - 64px);
+    left: clamp(24px, 4vw, 38px);
+    right: clamp(24px, 4vw, 38px);
     display: flex;
     flex-wrap: wrap;
-    gap: 12px;
     align-items: flex-end;
+    gap: clamp(12px, 2vw, 18px);
+    row-gap: clamp(18px, 3vh, 24px);
+    z-index: 4;
+    pointer-events: none;
 }
 
 .changelog-tab {
     appearance: none;
-    border: 0;
-    background: linear-gradient(180deg, rgba(255, 255, 255, 0.12) 0%, rgba(255, 255, 255, 0.02) 100%);
-    color: var(--text-primary);
+    border: none;
+    background: linear-gradient(180deg, rgba(30, 42, 66, 0.95) 0%, rgba(10, 16, 32, 0.9) 100%);
+    color: var(--text-secondary);
     font-family: "Sarpanch", sans-serif;
     font-size: clamp(13px, 1.6vw, 15px);
     letter-spacing: 0.16em;
     text-transform: uppercase;
-    padding: 12px 18px 10px;
-    border-radius: 10px 10px 0 0;
+    padding: 14px 20px 12px;
+    border-radius: 12px 12px 0 0;
     box-shadow:
-        inset 0 0 0 2px rgba(255, 255, 255, 0.12),
-        0 6px 18px rgba(7, 12, 26, 0.45);
+        inset 0 0 0 1px rgba(255, 255, 255, 0.1),
+        0 16px 28px rgba(2, 6, 14, 0.58);
     cursor: pointer;
-    transition: transform 160ms cubic-bezier(0.22, 1, 0.36, 1), box-shadow 160ms ease;
+    transition:
+        transform 160ms cubic-bezier(0.22, 1, 0.36, 1),
+        box-shadow 160ms ease,
+        background 160ms ease,
+        color 160ms ease,
+        filter 160ms ease;
+    position: relative;
+    transform: translateY(22px);
+    pointer-events: auto;
 }
 
 .changelog-tab:not(.changelog-tab--active) {
-    opacity: 0.78;
+    color: var(--text-tertiary);
+    filter: saturate(0.6) brightness(0.9);
 }
 
-.changelog-tab:hover,
-.changelog-tab:focus-visible {
-    transform: translateY(-2px);
+.changelog-tab:not(.changelog-tab--active):hover,
+.changelog-tab:not(.changelog-tab--active):focus-visible {
+    transform: translateY(16px);
+    filter: none;
+    color: var(--text-secondary);
     box-shadow:
-        inset 0 0 0 2px rgba(255, 255, 255, 0.18),
-        0 8px 24px rgba(7, 12, 26, 0.55);
+        inset 0 0 0 1px rgba(255, 255, 255, 0.16),
+        0 20px 30px rgba(4, 12, 26, 0.62);
+}
+
+.changelog-tab:focus-visible {
     outline: none;
-}
-
-.changelog-tab:focus-visible {
     box-shadow:
-        inset 0 0 0 2px #9de8ff,
-        0 10px 28px rgba(7, 12, 26, 0.6);
+        inset 0 0 0 1px #9de8ff,
+        0 22px 34px rgba(4, 12, 26, 0.68);
 }
 
 .changelog-tab--active {
-    opacity: 1;
-    background: linear-gradient(180deg, rgba(157, 232, 255, 0.35) 0%, rgba(255, 255, 255, 0.08) 100%);
+    color: var(--text-primary);
+    background: linear-gradient(180deg, rgba(157, 232, 255, 0.78) 0%, rgba(30, 58, 94, 0.98) 100%);
+    transform: translateY(0);
+    box-shadow:
+        inset 0 0 0 1px rgba(157, 232, 255, 0.65),
+        0 24px 36px rgba(4, 12, 26, 0.72);
+    z-index: 5;
+    filter: none;
+}
+
+.changelog-tab--active::after {
+    content: "";
+    position: absolute;
+    left: -1px;
+    right: -1px;
+    bottom: -22px;
+    height: 22px;
+    background: var(--surface-gradient);
+    border-left: 1px solid rgba(157, 232, 255, 0.65);
+    border-right: 1px solid rgba(157, 232, 255, 0.65);
+    border-bottom: none;
+    border-radius: 0 0 12px 12px;
+    z-index: -1;
 }
 
 .changelog-modal__panel {
@@ -3551,6 +3591,8 @@ body:not(.reduce-motion) #luck-preset-ten-million.luck-preset-button--pop-spin:f
 
 .surface--modal.changelog-modal {
     width: min(760px, 95vw);
+    padding-top: calc(clamp(24px, 4vw, 38px) + 68px);
+    overflow: visible;
 }
 
 .surface--modal::after {
