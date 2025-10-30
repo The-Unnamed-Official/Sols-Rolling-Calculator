@@ -506,6 +506,14 @@
 
     <div id="versionChangelogOverlay" class="modal-overlay" hidden>
         <div class="surface surface--modal changelog-modal" role="dialog" aria-modal="true" aria-labelledby="versionChangelogTitle">
+            <button
+                type="button"
+                class="interface-button interface-button--ghost changelog-modal__close"
+                id="versionChangelogClose"
+                aria-label="Close changelog dialog"
+            >
+                Close
+            </button>
             <div class="changelog-modal__tabbar" role="tablist" aria-label="Changelog versions" data-changelog-tablist>
                 <button
                     type="button"
@@ -515,17 +523,17 @@
                     aria-controls="changelog-panel-v126"
                     aria-selected="true"
                     data-changelog-tab="v126"
-                >V1.26</button>
+                >V1.26 (Latest Update)</button>
                 <button
                     type="button"
                     class="changelog-tab"
-                    id="changelog-tab-archive"
+                    id="changelog-tab-v125"
                     role="tab"
-                    aria-controls="changelog-panel-archive"
+                    aria-controls="changelog-panel-v125"
                     aria-selected="false"
                     tabindex="-1"
-                    data-changelog-tab="archive"
-                >Archive</button>
+                    data-changelog-tab="v125"
+                >V1.25</button>
             </div>
 
             <section
@@ -548,34 +556,27 @@
             </section>
 
             <section
-                id="changelog-panel-archive"
+                id="changelog-panel-v125"
                 class="changelog-modal__panel"
                 role="tabpanel"
-                aria-labelledby="changelog-tab-archive"
-                data-changelog-panel="archive"
+                aria-labelledby="changelog-tab-v125"
+                data-changelog-panel="v125"
                 hidden
                 tabindex="-1"
             >
                 <header class="changelog-modal__header">
-                    <h2 class="changelog-modal__title">Earlier Updates</h2>
-                    <p class="changelog-modal__meta">Last refreshed 2025/11/05</p>
+                    <h2 class="changelog-modal__title">Version V1.25 Update Notes</h2>
+                    <p class="changelog-modal__meta">Updated 2025/10/30</p>
                 </header>
-                <article class="changelog-modal__archive-entry" aria-labelledby="changelog-archive-v125-title">
-                    <h3 class="changelog-modal__archive-title" id="changelog-archive-v125-title">Version V1.25 &mdash; Updated 2025/10/30</h3>
-                    <p class="changelog-modal__intro">Highlights from the previous release:</p>
-                    <ul class="changelog-modal__list">
-                        <li>Rune of Everything no longer triggers glitch visuals outside of the Glitch biome.</li>
-                        <li>Runes in general no longer triggers any errors with excluded auras between biomes and runes.</li>
-                        <li>Different colors on the update details :D</li>
-                        <li>Resetting luck now also clears any Oblivion or Dune preset toggles, preventing stale potion presets from sticking around after adjustments.</li>
-                        <li>The version label now opens this changelog so future updates are easier to share.</li>
-                    </ul>
-                </article>
+                <p class="changelog-modal__intro">Highlights from the previous release:</p>
+                <ul class="changelog-modal__list">
+                    <li>Rune of Everything no longer triggers glitch visuals outside of the Glitch biome.</li>
+                    <li>Runes in general no longer triggers any errors with excluded auras between biomes and runes.</li>
+                    <li>Different colors on the update details :D</li>
+                    <li>Resetting luck now also clears any Oblivion or Dune preset toggles, preventing stale potion presets from sticking around after adjustments.</li>
+                    <li>The version label now opens this changelog so future updates are easier to share.</li>
+                </ul>
             </section>
-
-            <div class="changelog-modal__actions">
-                <button type="button" class="interface-button interface-button--minor" id="versionChangelogClose">Close</button>
-            </div>
         </div>
     </div>
 
