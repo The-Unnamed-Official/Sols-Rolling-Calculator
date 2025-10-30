@@ -1,6 +1,12 @@
 // Reference frequently accessed UI elements at module load
 let feedContainer = document.getElementById('simulation-feed');
 let luckField = document.getElementById('luck-total');
+const pageBody = document.body;
+const reduceMotionToggleButton = document.getElementById('reduceMotionToggle');
+const versionInfoButton = document.getElementById('versionInfoButton');
+const clickSoundEffectElement = document.getElementById('clickSoundFx');
+const cachedVideoElements = Array.from(document.querySelectorAll('video'));
+const LATEST_UPDATE_LABEL_SUFFIX = ' (Latest Update)';
 let simulationActive = false;
 let lastSimulationSummary = null;
 let shareFeedbackTimerId = null;
@@ -12,18 +18,42 @@ const versionChangelogOverlayState = {
 
 const CHANGELOG_VERSION_STORAGE_KEY = 'solsRollingCalculator:lastSeenChangelogVersion';
 
+function applyLatestUpdateBadgeToChangelogTabs(tabs) {
+    if (!Array.isArray(tabs) || !tabs.length) {
+        return;
+    }
+
+    let badgeAssigned = false;
+
+    tabs.forEach(tab => {
+        if (!tab) {
+            return;
+        }
+
+        const baseLabel = tab.dataset.baseLabel
+            || tab.textContent.replace(/\s*\(Latest Update\)\s*$/i, '').trim();
+        tab.dataset.baseLabel = baseLabel;
+
+        if (!badgeAssigned) {
+            tab.textContent = `${baseLabel}${LATEST_UPDATE_LABEL_SUFFIX}`;
+            badgeAssigned = true;
+        } else {
+            tab.textContent = baseLabel;
+        }
+    });
+}
+
 function getCurrentChangelogVersionId() {
-    const trigger = document.getElementById('versionInfoButton');
-    if (!trigger) {
+    if (!versionInfoButton) {
         return null;
     }
 
-    const explicitId = trigger.getAttribute('data-version-id');
+    const explicitId = versionInfoButton.getAttribute('data-version-id');
     if (explicitId) {
         return explicitId;
     }
 
-    const label = trigger.textContent;
+    const label = versionInfoButton.textContent;
     return label ? label.trim() : null;
 }
 
@@ -969,7 +999,7 @@ function toggleRollingAudio() {
 
     if (appState.audio.roll) {
         resumeAudioEngine();
-        playSoundEffect(document.getElementById('clickSoundFx'), 'ui');
+        playSoundEffect(clickSoundEffectElement, 'ui');
         if (bgMusic) {
             primeBackgroundMusic(bgMusic);
             if (glitchPresentationEnabled) {
@@ -1003,7 +1033,7 @@ function toggleInterfaceAudio() {
     }
 
     if (appState.audio.ui) {
-        playSoundEffect(document.getElementById('clickSoundFx'), 'ui');
+        playSoundEffect(clickSoundEffectElement, 'ui');
     }
 }
 
@@ -1016,7 +1046,7 @@ function toggleCinematicMode() {
         cutsceneToggle.setAttribute('aria-pressed', appState.cinematic ? 'true' : 'false');
     }
 
-    const clickSound = document.getElementById('clickSoundFx');
+    const clickSound = clickSoundEffectElement;
     if (clickSound) {
         playSoundEffect(clickSound, 'ui');
     }
@@ -1071,24 +1101,21 @@ function toggleGlitchEffects() {
         glitchToggle.setAttribute('aria-pressed', appState.glitch ? 'true' : 'false');
     }
 
-    playSoundEffect(document.getElementById('clickSoundFx'), 'ui');
+    playSoundEffect(clickSoundEffectElement, 'ui');
     updateGlitchPresentation();
 }
 
 function applyReducedMotionState(enabled) {
-    const body = document.body;
-    if (body) {
-        body.classList.toggle('reduce-motion', enabled);
+    if (pageBody) {
+        pageBody.classList.toggle('reduce-motion', enabled);
     }
 
-    const toggle = document.getElementById('reduceMotionToggle');
-    if (toggle) {
-        toggle.textContent = enabled ? 'Reduce Animations: On' : 'Reduce Animations: Off';
-        toggle.setAttribute('aria-pressed', enabled ? 'true' : 'false');
+    if (reduceMotionToggleButton) {
+        reduceMotionToggleButton.textContent = enabled ? 'Reduce Animations: On' : 'Reduce Animations: Off';
+        reduceMotionToggleButton.setAttribute('aria-pressed', enabled ? 'true' : 'false');
     }
 
-    const videos = document.querySelectorAll('video');
-    videos.forEach(video => {
+    cachedVideoElements.forEach(video => {
         if (!video) {
             return;
         }
@@ -1124,7 +1151,7 @@ function applyReducedMotionState(enabled) {
 function toggleReducedMotion() {
     appState.reduceMotion = !appState.reduceMotion;
     applyReducedMotionState(appState.reduceMotion);
-    playSoundEffect(document.getElementById('clickSoundFx'), 'ui');
+    playSoundEffect(clickSoundEffectElement, 'ui');
 }
 
 const reduceMotionMediaQuery = typeof window !== 'undefined' && typeof window.matchMedia === 'function'
@@ -1602,23 +1629,18 @@ let lastDaveMultiplier = 1;
 const MILLION_LUCK_PRESET = 1000000;
 
 function syncLuckVisualEffects(luckValue) {
-    const body = document.body;
-    if (!body) {
+    if (!pageBody) {
         return;
     }
 
-    const shouldApplyMillionEffect = luckValue >= MILLION_LUCK_PRESET;
+    const shouldApplyMillionEffect = luckValue >= MILLION_LUCK_PRESET && !appState.reduceMotion;
 
-    if (shouldApplyMillionEffect) {
-        body.classList.add('luck-effect--million');
-    } else {
-        body.classList.remove('luck-effect--million');
-    }
+    pageBody.classList.toggle('luck-effect--million', shouldApplyMillionEffect);
 
 }
 
 function resetLuckPresetAnimations() {
-    const animationClasses = ['luck-preset-button--pop', 'luck-preset-button--pop-spin'];
+    const animationClasses = ['luck-preset-button--pop', 'luck-preset-button--mega-pop'];
     const targets = [
         document.getElementById('luck-preset-one-million'),
         document.getElementById('luck-preset-ten-million')
@@ -1667,7 +1689,19 @@ function applyRollPreset(value) {
     }
 
     setNumericInputValue(rollField, value, { format: true, min: 1, max: 100000000 });
-    playSoundEffect(document.getElementById('clickSoundFx'), 'ui');
+    playSoundEffect(clickSoundEffectElement, 'ui');
+}
+
+// Applies a high-level device/buff preset by translating a multiplier into
+// a concrete luck total while leaving seasonal toggles unchanged.
+function applyDeviceBuffPreset(multiplier) {
+    const numericMultiplier = Number(multiplier);
+    if (!Number.isFinite(numericMultiplier) || numericMultiplier <= 0) {
+        return;
+    }
+
+    const targetLuck = Math.max(1, numericMultiplier);
+    applyLuckValue(targetLuck);
 }
 
 function recomputeLuckValue() {
@@ -1692,7 +1726,7 @@ function recomputeLuckValue() {
     const rawLuckValue = luckField ? (luckField.dataset.rawValue ?? '') : '';
     const enteredLuck = rawLuckValue ? Number.parseFloat(rawLuckValue) : NaN;
     if (luckField && rawLuckValue && Number.isFinite(enteredLuck) && enteredLuck !== currentLuck) {
-        const normalizedLuck = Math.max(1, Math.floor(enteredLuck));
+        const normalizedLuck = Math.max(1, enteredLuck);
         baseLuck = normalizedLuck;
         currentLuck = normalizedLuck;
         lastVipMultiplier = 1;
@@ -1739,7 +1773,7 @@ function resetLuckFields() {
         const shouldFormat = document.activeElement !== luckInput;
         setNumericInputValue(luckInput, 1, { format: shouldFormat, min: 1 });
     }
-    playSoundEffect(document.getElementById('clickSoundFx'), 'ui');
+    playSoundEffect(clickSoundEffectElement, 'ui');
     recomputeLuckValue();
     if (typeof applyOblivionPresetOptions === 'function') {
         applyOblivionPresetOptions({});
@@ -1755,14 +1789,14 @@ function resetRollCount() {
         const shouldFormat = document.activeElement !== rollField;
         setNumericInputValue(rollField, 1, { format: shouldFormat, min: 1, max: 100000000 });
     }
-    playSoundEffect(document.getElementById('clickSoundFx'), 'ui');
+    playSoundEffect(clickSoundEffectElement, 'ui');
 }
 
 function setGlitchPreset() {
     setPrimaryBiomeSelection('glitch');
     setOtherBiomeSelection('none');
     setTimeBiomeSelection('none');
-    playSoundEffect(document.getElementById('clickSoundFx'), 'ui');
+    playSoundEffect(clickSoundEffectElement, 'ui');
     updateBiomeControlConstraints({ source: BIOME_PRIMARY_SELECT_ID });
 }
 
@@ -1770,7 +1804,7 @@ function setDreamspacePreset() {
     setPrimaryBiomeSelection('dreamspace');
     setOtherBiomeSelection('none');
     setTimeBiomeSelection('none');
-    playSoundEffect(document.getElementById('clickSoundFx'), 'ui');
+    playSoundEffect(clickSoundEffectElement, 'ui');
     updateBiomeControlConstraints({ source: BIOME_PRIMARY_SELECT_ID });
 }
 
@@ -1778,7 +1812,7 @@ function setLimboPreset() {
     setPrimaryBiomeSelection('limbo');
     setOtherBiomeSelection('none');
     setTimeBiomeSelection('none');
-    playSoundEffect(document.getElementById('clickSoundFx'), 'ui');
+    playSoundEffect(clickSoundEffectElement, 'ui');
     updateBiomeControlConstraints({ source: BIOME_PRIMARY_SELECT_ID });
 }
 
@@ -1786,7 +1820,7 @@ function setRoePreset() {
     setOtherBiomeSelection('roe');
     setPrimaryBiomeSelection('normal');
     setTimeBiomeSelection('none');
-    playSoundEffect(document.getElementById('clickSoundFx'), 'ui');
+    playSoundEffect(clickSoundEffectElement, 'ui');
     updateBiomeControlConstraints({ source: BIOME_OTHER_SELECT_ID });
 }
 
@@ -1794,7 +1828,7 @@ function resetBiomeChoice() {
     setPrimaryBiomeSelection('normal');
     setOtherBiomeSelection('none');
     setTimeBiomeSelection('none');
-    playSoundEffect(document.getElementById('clickSoundFx'), 'ui');
+    playSoundEffect(clickSoundEffectElement, 'ui');
     updateBiomeControlConstraints({ source: null });
 }
 
@@ -2952,7 +2986,7 @@ function triggerLuckPresetButtonAnimation(button, className) {
         return;
     }
 
-    button.classList.remove('luck-preset-button--pop', 'luck-preset-button--pop-spin');
+    button.classList.remove('luck-preset-button--pop', 'luck-preset-button--mega-pop');
     // Force reflow so the animation can retrigger
     void button.offsetWidth;
     button.classList.add(className);
@@ -2984,13 +3018,12 @@ function setupLuckPresetAnimations() {
     const tenMillionButton = document.getElementById('luck-preset-ten-million');
 
     bindLuckPresetButtonAnimation(oneMillionButton, 'luck-preset-button--pop', ['luckPresetPop']);
-    bindLuckPresetButtonAnimation(tenMillionButton, 'luck-preset-button--pop-spin', ['luckPresetSpinPop']);
+    bindLuckPresetButtonAnimation(tenMillionButton, 'luck-preset-button--mega-pop', ['luckPresetMegaPop']);
 }
 
 function setVersionButtonExpanded(state) {
-    const trigger = document.getElementById('versionInfoButton');
-    if (trigger) {
-        trigger.setAttribute('aria-expanded', state ? 'true' : 'false');
+    if (versionInfoButton) {
+        versionInfoButton.setAttribute('aria-expanded', state ? 'true' : 'false');
     }
 }
 
@@ -3052,9 +3085,8 @@ function hideVersionChangelogOverlay({ focusTrigger = true } = {}) {
                 focusTarget.focus();
                 return;
             }
-            const trigger = document.getElementById('versionInfoButton');
-            if (trigger && typeof trigger.focus === 'function') {
-                trigger.focus();
+            if (versionInfoButton && typeof versionInfoButton.focus === 'function') {
+                versionInfoButton.focus();
             }
         }
     });
@@ -3073,6 +3105,8 @@ function setupChangelogTabs() {
     if (!tabs.length || !panels.length) {
         return;
     }
+
+    applyLatestUpdateBadgeToChangelogTabs(tabs);
 
     const panelLookup = new Map();
     panels.forEach(panel => {
@@ -3213,7 +3247,7 @@ function setupChangelogTabs() {
 
 function setupVersionChangelogOverlay() {
     const overlay = document.getElementById('versionChangelogOverlay');
-    const trigger = document.getElementById('versionInfoButton');
+    const trigger = versionInfoButton;
     const closeButton = document.getElementById('versionChangelogClose');
 
     if (!overlay || !trigger) {
@@ -3832,7 +3866,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const buttons = document.querySelectorAll('button');
     const inputs = document.querySelectorAll('input');
     const selects = document.querySelectorAll('select');
-    const clickSound = document.getElementById('clickSoundFx');
+    const clickSound = clickSoundEffectElement;
     const hoverSound = document.getElementById('hoverSoundFx');
 
     buttons.forEach(button => {
@@ -3880,7 +3914,7 @@ document.addEventListener('DOMContentLoaded', () => {
         luckField.addEventListener('input', () => {
             const raw = luckField.dataset.rawValue ?? '';
             const parsed = raw ? Number.parseFloat(raw) : NaN;
-            const normalized = Number.isFinite(parsed) && parsed > 0 ? Math.floor(parsed) : 1;
+            const normalized = Number.isFinite(parsed) && parsed > 0 ? Math.max(1, parsed) : 1;
             baseLuck = normalized;
             currentLuck = normalized;
             lastVipMultiplier = 1;
