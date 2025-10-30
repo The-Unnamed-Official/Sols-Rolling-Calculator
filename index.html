@@ -78,7 +78,7 @@
                 <div class="banner__meta">
                     <h1 class="banner__title">Sols Rolling Simulator</h1>
                     <p class="banner__subtitle">
-                        <button type="button" class="banner__version-button" id="versionInfoButton" aria-haspopup="dialog" aria-expanded="false" aria-label="View update notes for version V1.25">V1.25</button>
+                        <button type="button" class="banner__version-button" id="versionInfoButton" aria-haspopup="dialog" aria-expanded="false" aria-label="View update notes for version V1.26">V1.26</button>
                         <span class="banner__subtitle-divider" aria-hidden="true">◉</span>
                         <span class="banner__subtitle-author">By <span class="banner__subtitle-author-name">not.unnamed</span></span>
                         <span class="banner__subtitle-divider" aria-hidden="true">◉</span>
@@ -510,12 +510,12 @@
                 <button
                     type="button"
                     class="changelog-tab changelog-tab--active"
-                    id="changelog-tab-v125"
+                    id="changelog-tab-v126"
                     role="tab"
-                    aria-controls="changelog-panel-v125"
+                    aria-controls="changelog-panel-v126"
                     aria-selected="true"
-                    data-changelog-tab="v125"
-                >V1.25</button>
+                    data-changelog-tab="v126"
+                >V1.26</button>
                 <button
                     type="button"
                     class="changelog-tab"
@@ -529,24 +529,21 @@
             </div>
 
             <section
-                id="changelog-panel-v125"
+                id="changelog-panel-v126"
                 class="changelog-modal__panel"
                 role="tabpanel"
-                aria-labelledby="changelog-tab-v125"
-                data-changelog-panel="v125"
+                aria-labelledby="changelog-tab-v126"
+                data-changelog-panel="v126"
                 tabindex="0"
             >
                 <header class="changelog-modal__header">
-                    <h2 class="changelog-modal__title" id="versionChangelogTitle">Version V1.25 Update Notes</h2>
-                    <p class="changelog-modal__meta">Updated 2025/10/30</p>
+                    <h2 class="changelog-modal__title" id="versionChangelogTitle">Version V1.26 Update Notes</h2>
+                    <p class="changelog-modal__meta">Updated 2025/11/05</p>
                 </header>
                 <p class="changelog-modal__intro">Latest changes:</p>
                 <ul class="changelog-modal__list">
-                    <li>Rune of Everything no longer triggers glitch visuals outside of the Glitch biome.</li>
-                    <li>Runes in general no longer triggers any errors with excluded auras between biomes and runes.</li>
-                    <li>Different colors on the update details :D</li>
-                    <li>Resetting luck now also clears any Oblivion or Dune preset toggles, preventing stale potion presets from sticking around after adjustments.</li>
-                    <li>The version label now opens this changelog so future updates are easier to share.</li>
+                    <li>Fixed a compatibility bug that caused archived presets saved before the Rune update to load with incorrect modifiers.</li>
+                    <li>Added an archive tab with the full V1.25 notes so you can revisit the previous update at any time.</li>
                 </ul>
             </section>
 
@@ -561,9 +558,19 @@
             >
                 <header class="changelog-modal__header">
                     <h2 class="changelog-modal__title">Earlier Updates</h2>
-                    <p class="changelog-modal__meta">Archive in progress</p>
+                    <p class="changelog-modal__meta">Last refreshed 2025/11/05</p>
                 </header>
-                <p class="changelog-modal__intro">A consolidated view of previous patch notes will live here soon. Check back after the next update for a browsable history.</p>
+                <article class="changelog-modal__archive-entry" aria-labelledby="changelog-archive-v125-title">
+                    <h3 class="changelog-modal__archive-title" id="changelog-archive-v125-title">Version V1.25 &mdash; Updated 2025/10/30</h3>
+                    <p class="changelog-modal__intro">Highlights from the previous release:</p>
+                    <ul class="changelog-modal__list">
+                        <li>Rune of Everything no longer triggers glitch visuals outside of the Glitch biome.</li>
+                        <li>Runes in general no longer triggers any errors with excluded auras between biomes and runes.</li>
+                        <li>Different colors on the update details :D</li>
+                        <li>Resetting luck now also clears any Oblivion or Dune preset toggles, preventing stale potion presets from sticking around after adjustments.</li>
+                        <li>The version label now opens this changelog so future updates are easier to share.</li>
+                    </ul>
+                </article>
             </section>
 
             <div class="changelog-modal__actions">
