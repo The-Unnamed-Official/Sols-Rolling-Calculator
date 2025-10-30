@@ -3436,6 +3436,13 @@ body:not(.reduce-motion) #luck-preset-ten-million.luck-preset-button--pop-spin:f
     position: relative;
 }
 
+.changelog-modal__close {
+    position: absolute;
+    top: clamp(16px, 3vw, 28px);
+    right: clamp(16px, 3vw, 28px);
+    z-index: 20;
+}
+
 .changelog-modal__tabbar {
     position: absolute;
     top: calc(clamp(24px, 4vw, 38px) - 64px);
@@ -3544,18 +3551,6 @@ body:not(.reduce-motion) #luck-preset-ten-million.luck-preset-button--pop-spin:f
     color: var(--text-secondary);
 }
 
-.changelog-modal__archive-entry {
-    margin-top: 1.75rem;
-}
-
-.changelog-modal__archive-title {
-    margin: 0 0 0.75rem 0;
-    font-size: clamp(17px, 2.5vw, 20px);
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: var(--text-primary);
-}
-
 .changelog-modal__list {
     margin: 0;
     padding-left: 1.4em;
@@ -3567,11 +3562,6 @@ body:not(.reduce-motion) #luck-preset-ten-million.luck-preset-button--pop-spin:f
 
 .changelog-modal__list li {
     line-height: 1.5;
-}
-
-.changelog-modal__actions {
-    display: flex;
-    justify-content: flex-end;
 }
 
 @media (prefers-reduced-motion: reduce) {
