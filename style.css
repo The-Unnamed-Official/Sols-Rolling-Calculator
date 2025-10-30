@@ -3446,7 +3446,7 @@ body:not(.reduce-motion) #luck-preset-ten-million.luck-preset-button--pop-spin:f
     align-items: flex-end;
     gap: clamp(12px, 2vw, 18px);
     row-gap: clamp(18px, 3vh, 24px);
-    z-index: 4;
+    z-index: -1;
     pointer-events: none;
 }
 
