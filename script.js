@@ -789,14 +789,6 @@ function applyMediaGain(element) {
     element.volume = Math.max(0, Math.min(gainValue, 1));
 }
 
-function detectTouchFirstPlatform() {
-    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
-        || (window.matchMedia('(max-width: 768px)').matches)
-        || ('ontouchstart' in window)
-        || (navigator.maxTouchPoints > 0)
-        || (navigator.msMaxTouchPoints > 0);
-}
-
 function isSoundChannelActive(category) {
     if (category === 'ui') return appState.audio.ui;
     return appState.audio.roll;
@@ -1877,18 +1869,6 @@ function playAuraVideo(videoId, options = {}) {
     const manageAmbient = options.manageAmbient !== false;
     return new Promise(resolve => {
         if (!appState.cinematic) {
-            resolve();
-            return;
-        }
-
-        if (detectTouchFirstPlatform()) {
-            const bgMusic = document.getElementById('ambientMusic');
-            if (bgMusic && !bgMusic.paused) {
-                bgMusic.pause();
-                window.setTimeout(() => {
-                    if (appState.audio.roll) bgMusic.play();
-                }, 500);
-            }
             resolve();
             return;
         }

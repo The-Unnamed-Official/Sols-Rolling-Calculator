@@ -78,7 +78,7 @@
                 <div class="banner__meta">
                     <h1 class="banner__title">Sols Rolling Simulator</h1>
                     <p class="banner__subtitle">
-                        <button type="button" class="banner__version-button" id="versionInfoButton" aria-haspopup="dialog" aria-expanded="false" aria-label="View update notes for version V1.27" data-version-id="v127">V1.27</button>
+                        <button type="button" class="banner__version-button" id="versionInfoButton" aria-haspopup="dialog" aria-expanded="false" aria-label="View update notes for version V1.28" data-version-id="v128">V1.28</button>
                         <span class="banner__subtitle-divider" aria-hidden="true">◉</span>
                         <span class="banner__subtitle-author">By <span class="banner__subtitle-author-name">not.unnamed</span></span>
                         <span class="banner__subtitle-divider" aria-hidden="true">◉</span>
@@ -498,7 +498,7 @@
     <div id="cutsceneWarningOverlay" class="cutscene-warning-overlay" hidden>
         <div class="cutscene-warning surface surface--modal" role="dialog" aria-modal="true" aria-labelledby="cutsceneWarningTitle">
             <p class="cutscene-warning__message">
-                <span id="cutsceneWarningTitle" class="cutscene-warning__note">Note</span>: If your screen is less than <span class="cutscene-warning__ratio">1280×720</span> (similar to many phones and tablets), cutscenes will not play because of aspect ratio and the size of the cutscenes :P I'll see what I can do on a later notice :3
+                <span id="cutsceneWarningTitle" class="cutscene-warning__note">Note</span>: Cutscenes will now play on every screen size, but it is <u>HEAVILY</u> recommended to use a 16:9 ratio display with a resolution higher than <span class="cutscene-warning__ratio">1280×720</span> for the best experience.
             </p>
             <div class="cutscene-warning__actions">
                 <button type="button" class="interface-button interface-button--minor" id="cutsceneWarningConfirm">Okay</button>
@@ -533,19 +533,30 @@
                 <button
                     type="button"
                     class="changelog-tab changelog-tab--active"
+                    id="changelog-tab-v128"
+                    role="tab"
+                    aria-controls="changelog-panel-v128"
+                    aria-selected="true"
+                    data-changelog-tab="v128"
+                >V1.28</button>
+                <button
+                    type="button"
+                    class="changelog-tab"
                     id="changelog-tab-v127"
                     role="tab"
                     aria-controls="changelog-panel-v127"
-                    aria-selected="true"
+                    aria-selected="false"
+                    tabindex="-1"
                     data-changelog-tab="v127"
                 >V1.27</button>
                 <button
                     type="button"
-                    class="changelog-tab changelog-tab--active"
+                    class="changelog-tab"
                     id="changelog-tab-v126"
                     role="tab"
                     aria-controls="changelog-panel-v126"
-                    aria-selected="true"
+                    aria-selected="false"
+                    tabindex="-1"
                     data-changelog-tab="v126"
                 >V1.26</button>
                 <button
@@ -562,15 +573,34 @@
 
             <div class="changelog-modal__panels" data-changelog-panels>
                 <section
+                    id="changelog-panel-v128"
+                    class="changelog-modal__panel"
+                    role="tabpanel"
+                    aria-labelledby="changelog-tab-v128"
+                    data-changelog-panel="v128"
+                    tabindex="0"
+                >
+                    <header class="changelog-modal__header">
+                        <h2 class="changelog-modal__title" id="versionChangelogTitle">Version V1.28 Update Notes</h2>
+                        <p class="changelog-modal__meta">Updated 2025/10/30</p>
+                    </header>
+                    <p class="changelog-modal__intro">Latest changes:</p>
+                    <ul class="changelog-modal__list">
+                        <li>Cutscenes now play regardless of your screen size. Fair warning: they can look odd on displays that aren't 16:9.</li>
+                    </ul>
+                </section>
+
+                <section
                     id="changelog-panel-v127"
                     class="changelog-modal__panel"
                     role="tabpanel"
                     aria-labelledby="changelog-tab-v127"
                     data-changelog-panel="v127"
-                    tabindex="0"
+                    hidden
+                    tabindex="-1"
                 >
                     <header class="changelog-modal__header">
-                        <h2 class="changelog-modal__title" id="versionChangelogTitle">Version V1.27 Update Notes</h2>
+                        <h2 class="changelog-modal__title">Version V1.27 Update Notes</h2>
                         <p class="changelog-modal__meta">Updated 2025/10/30</p>
                     </header>
                     <p class="changelog-modal__intro">Latest changes:</p>
@@ -593,10 +623,11 @@
                     role="tabpanel"
                     aria-labelledby="changelog-tab-v126"
                     data-changelog-panel="v126"
-                    tabindex="0"
+                    hidden
+                    tabindex="-1"
                 >
                     <header class="changelog-modal__header">
-                        <h2 class="changelog-modal__title" id="versionChangelogTitle">Version V1.26 Update Notes</h2>
+                        <h2 class="changelog-modal__title">Version V1.26 Update Notes</h2>
                         <p class="changelog-modal__meta">Updated 2025/10/30</p>
                     </header>
                     <p class="changelog-modal__intro">Latest changes:</p>
@@ -616,7 +647,7 @@
                     tabindex="-1"
                 >
                     <header class="changelog-modal__header">
-                        <h2 class="changelog-modal__title" id="versionChangelogTitle">Version V1.25 Update Notes</h2>
+                        <h2 class="changelog-modal__title">Version V1.25 Update Notes</h2>
                         <p class="changelog-modal__meta">Updated 2025/10/30</p>
                     </header>
                     <p class="changelog-modal__intro">Highlights from the previous release:</p>
