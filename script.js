@@ -3084,10 +3084,8 @@ function collectBiomeSelectionState() {
     })();
 
     const themeBiome = (() => {
-        if (runeConfig && runeConfig.themeBiome) {
-            return runeConfig.themeBiome;
-        }
-        if (primaryBiome && primaryBiome !== 'none' && primaryBiome !== 'normal') {
+        const hasDistinctPrimary = primaryBiome && primaryBiome !== 'none' && primaryBiome !== 'normal';
+        if (hasDistinctPrimary) {
             return primaryBiome;
         }
         if (timeBiome && timeBiome !== 'none') {
@@ -3095,6 +3093,9 @@ function collectBiomeSelectionState() {
         }
         if (primaryBiome && primaryBiome !== 'none') {
             return primaryBiome;
+        }
+        if (runeConfig) {
+            return 'normal';
         }
         return canonicalBiome;
     })();
@@ -3585,7 +3586,8 @@ function createAuraEvaluationContext(selection, { eventChecker }) {
         exclusivityBiome,
         eventChecker,
         activeBiomes,
-        breakthroughBiomes
+        breakthroughBiomes,
+        primaryBiome: selectionState?.primaryBiome || null
     };
 }
 
@@ -3604,14 +3606,19 @@ function computeLimboEffectiveChance(aura, context) {
 }
 
 function computeStandardEffectiveChance(aura, context) {
-    const { biome, exclusivityBiome, glitchLikeBiome, isRoe, activeBiomes, breakthroughBiomes } = context;
+    const { biome, exclusivityBiome, glitchLikeBiome, isRoe, activeBiomes, breakthroughBiomes, primaryBiome } = context;
     if (aura.requiresOblivionPreset || aura.requiresDunePreset) return Infinity;
 
     const eventId = getAuraEventId(aura);
     const eventEnabled = context.eventChecker(aura);
     if (!eventEnabled) return Infinity;
 
-    if (isRoe && ROE_EXCLUSION_SET.has(aura.name)) return Infinity;
+    if (isRoe && ROE_EXCLUSION_SET.has(aura.name)) {
+        const glitchPrimarySelected = primaryBiome === 'glitch';
+        if (!glitchPrimarySelected) {
+            return Infinity;
+        }
+    }
 
     if (aura.nativeBiomes) {
         if (isAuraNativeTo(aura, 'limbo') && !isAuraNativeTo(aura, 'limbo-null')) {
