@@ -78,13 +78,13 @@
                 <div class="banner__meta">
                     <h1 class="banner__title">Sols Rolling Simulator</h1>
                     <p class="banner__subtitle">
-                        <button type="button" class="banner__version-button" id="versionInfoButton" aria-haspopup="dialog" aria-expanded="false" aria-label="View update notes for version V1.28" data-version-id="v128">V1.28</button>
+                        <button type="button" class="banner__version-button" id="versionInfoButton" aria-haspopup="dialog" aria-expanded="false" aria-label="View update notes for version V1.3" data-version-id="v13">V1.3</button>
                         <span class="banner__subtitle-divider" aria-hidden="true">◉</span>
                         <span class="banner__subtitle-author">By <span class="banner__subtitle-author-name">not.unnamed</span></span>
                         <span class="banner__subtitle-divider" aria-hidden="true">◉</span>
-                        <span class="banner__subtitle-updated">Updated <time datetime="2025-10-29">2025/10/30</time></span>
+                        <span class="banner__subtitle-updated">Updated <time datetime="2025-10-29">2025/11/02</time></span>
                         <span class="banner__subtitle-divider" aria-hidden="true">◉</span>
-                        <span class="banner__subtitle-eon">Sol's RNG Eon 1-9</span>
+                        <span class="banner__subtitle-eon">Sol's RNG Eon 1-9.5</span>
                     </p>
                 </div>
             </div>
@@ -420,6 +420,7 @@
                             <button type="button" id="void-heart-trigger" style="display:none;" onclick="applyLuckValue(300000)">Void Heart 300,000×</button>
                             <button type="button" onclick="applyLuckValue(200000)">Heavenly + Bound 200,000×</button>
                             <button type="button" onclick="applyLuckValue(150000)">Heavenly Potion 150,000×</button>
+                            <button type="button" onclick="applyLuckValue(75000)">Candy Corn 75,000×</button>
                             <button type="button" onclick="applyLuckValue(50000)">Bound Potion 50,000×</button>
                             <details id="dune-preset-menu" class="preset-toggle">
                                 <summary class="preset-toggle__summary">
@@ -533,10 +534,20 @@
                 <button
                     type="button"
                     class="changelog-tab changelog-tab--active"
+                    id="changelog-tab-v13"
+                    role="tab"
+                    aria-controls="changelog-panel-v13"
+                    aria-selected="true"
+                    data-changelog-tab="v13"
+                >V1.3</button>
+                <button
+                    type="button"
+                    class="changelog-tab"
                     id="changelog-tab-v128"
                     role="tab"
                     aria-controls="changelog-panel-v128"
-                    aria-selected="true"
+                    aria-selected="false"
+                    tabindex="-1"
                     data-changelog-tab="v128"
                 >V1.28</button>
                 <button
@@ -573,12 +584,54 @@
 
             <div class="changelog-modal__panels" data-changelog-panels>
                 <section
+                    id="changelog-panel-v13"
+                    class="changelog-modal__panel"
+                    role="tabpanel"
+                    aria-labelledby="changelog-tab-v13"
+                    data-changelog-panel="v13"
+                    tabindex="0"
+                >
+                    <header class="changelog-modal__header">
+                        <h2 class="changelog-modal__title" id="versionChangelogTitle">Version V1.3 Update Notes</h2>
+                        <p class="changelog-modal__meta">Updated 2025/11/02</p>
+                    </header>
+                    <p class="changelog-modal__intro">Latest changes:</p>
+                    <ul class="changelog-modal__list">
+                        <li>
+                            Update EVENT_AURA_LOOKUP and ROE_EXCLUSION_SET to reflect new/updated aura listings
+                        </li>
+                        <li>
+                            Update banner/version button to V1.3, bump updated date and eon label; add V1.3 changelog tab and panel, demote/hide V1.28 tab
+                        </li>
+                        <li>
+                            Add Candy Corn 75,000× luck preset in presets UI
+                        </li>
+                        <li>
+                            Extend auraOutlineOverrides and AURA_BLUEPRINT_SOURCE with Halloween Part 2 Event Auras:
+                            <ul class="changelog-modal__list changelog-modal__list--sub">
+                                <li>Afterparty - 440,000,000 | Graveyard</li>
+                                <li>Graveborn - 290,000,000 | Graveyard</li>
+                                <li>Crimson - 120,000,000 | Blood Rain</li>
+                                <li>Grief - 88,250,000 | Graveyard</li>
+                                <li>Bloodgarden - 88,000,000 | Blood Rain</li>
+                                <li>Reaper - 66,000,000 | Blood Rain</li>
+                                <li>Shucks - 4,460,000 | Blood Rain</li>
+                                <li>Werewolf - 3,600,000 | Graveyard</li>
+                                <li>Lunar : Cultist - 2,000,000 | Graveyard</li>
+                                <li>Celestial : Wicked - 1,500,000 | Pumpkin Moon</li>
+                            </ul>
+                        </li>
+                    </ul>
+                </section>
+
+                <section
                     id="changelog-panel-v128"
                     class="changelog-modal__panel"
                     role="tabpanel"
                     aria-labelledby="changelog-tab-v128"
                     data-changelog-panel="v128"
-                    tabindex="0"
+                    hidden
+                    tabindex="-1"
                 >
                     <header class="changelog-modal__header">
                         <h2 class="changelog-modal__title" id="versionChangelogTitle">Version V1.28 Update Notes</h2>
