@@ -2707,6 +2707,7 @@ const EVENT_AURA_LOOKUP = {
         "Werewolf - 3,600,000",
         "Crimson - 120,000,000",
         "Lunar : Cultist - 2,000,000",
+        "Afterparty - 440,000,000"
     ],
 };
 
