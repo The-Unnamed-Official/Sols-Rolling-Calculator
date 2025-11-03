@@ -78,7 +78,7 @@
                 <div class="banner__meta">
                     <h1 class="banner__title">Sols Rolling Simulator</h1>
                     <p class="banner__subtitle">
-                        <button type="button" class="banner__version-button" id="versionInfoButton" aria-haspopup="dialog" aria-expanded="false" aria-label="View update notes for version V1.31" data-version-id="v131">V1.31</button>
+                        <button type="button" class="banner__version-button" id="versionInfoButton" aria-haspopup="dialog" aria-expanded="false" aria-label="View update notes for version V1.315" data-version-id="v1315">V1.315</button>
                         <span class="banner__subtitle-divider" aria-hidden="true">◉</span>
                         <span class="banner__subtitle-author">By <span class="banner__subtitle-author-name">not.unnamed</span></span>
                         <span class="banner__subtitle-divider" aria-hidden="true">◉</span>
@@ -547,10 +547,20 @@
                 <button
                     type="button"
                     class="changelog-tab changelog-tab--active"
+                    id="changelog-tab-v1315"
+                    role="tab"
+                    aria-controls="changelog-panel-v1315"
+                    aria-selected="true"
+                    data-changelog-tab="v1315"
+                >V1.315</button>
+                <button
+                    type="button"
+                    class="changelog-tab"
                     id="changelog-tab-v131"
                     role="tab"
                     aria-controls="changelog-panel-v131"
-                    aria-selected="true"
+                    aria-selected="false"
+                    tabindex="-1"
                     data-changelog-tab="v131"
                 >V1.31</button>
                 <button
@@ -607,12 +617,36 @@
 
             <div class="changelog-modal__panels" data-changelog-panels>
                 <section
+                    id="changelog-panel-v1315"
+                    class="changelog-modal__panel"
+                    role="tabpanel"
+                    aria-labelledby="changelog-tab-v1315"
+                    data-changelog-panel="v1315"
+                    tabindex="0"
+                >
+                    <header class="changelog-modal__header">
+                        <h2 class="changelog-modal__title" id="versionChangelogTitle">Version V1.315 Update Notes</h2>
+                        <p class="changelog-modal__meta">Updated 2025/11/03</p>
+                    </header>
+                    <p class="changelog-modal__intro">Latest changes:</p>
+                    <ul class="changelog-modal__list">
+                        <li>
+                            New luck switch to stack luck presets instead of replacing them.
+                        </li>
+                        <li>
+                            Fixed Project Repository link.
+                        </li>
+                    </ul>
+                </section>
+
+                <section
                     id="changelog-panel-v131"
                     class="changelog-modal__panel"
                     role="tabpanel"
                     aria-labelledby="changelog-tab-v131"
                     data-changelog-panel="v131"
-                    tabindex="0"
+                    hidden
+                    tabindex="-1"
                 >
                     <header class="changelog-modal__header">
                         <h2 class="changelog-modal__title" id="versionChangelogTitle">Version V1.31 Update Notes</h2>
@@ -620,9 +654,6 @@
                     </header>
                     <p class="changelog-modal__intro">Latest changes:</p>
                     <ul class="changelog-modal__list">
-                        <li>
-                            New luck switch to stack luck presets instead of replacing them
-                        </li>
                         <li>
                             Add new luck presets:
                             <ul class="changelog-modal__list changelog-modal__list--sub">
