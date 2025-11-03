@@ -1646,25 +1646,64 @@ function resetLuckPresetAnimations() {
     });
 }
 
+function isLuckPresetAddModeEnabled() {
+    const toggle = document.getElementById('luck-preset-add-toggle');
+    return Boolean(toggle && toggle.checked);
+}
+
 function applyLuckValue(value, options = {}) {
-    baseLuck = value;
-    currentLuck = value;
-    lastVipMultiplier = 1;
-    lastXyzMultiplier = 1;
-    lastDaveMultiplier = 1;
-    document.getElementById('vip-dropdown').value = '1';
-    document.getElementById('xyz-luck-toggle').checked = false;
-    refreshCustomSelect('vip-dropdown');
-    if (document.getElementById('dave-luck-dropdown')) {
-        document.getElementById('dave-luck-dropdown').value = '1';
-        refreshCustomSelect('dave-luck-dropdown');
-    }
-    const luckInput = document.getElementById('luck-total');
-    if (luckInput) {
-        setNumericInputValue(luckInput, value, { format: true, min: 1 });
+    const numericValue = Number(value);
+    if (!Number.isFinite(numericValue)) {
+        return;
     }
 
-    syncLuckVisualEffects(value);
+    const luckInput = document.getElementById('luck-total');
+    const shouldFormat = luckInput ? document.activeElement !== luckInput : true;
+
+    if (isLuckPresetAddModeEnabled()) {
+        const hasExistingLuck = Boolean(luckInput && (luckInput.dataset.rawValue ?? '').length > 0);
+        const startingBaseLuck = hasExistingLuck && Number.isFinite(baseLuck) ? Math.max(1, baseLuck) : 0;
+        const updatedBaseLuck = Math.max(0, startingBaseLuck) + numericValue;
+        baseLuck = Math.max(1, updatedBaseLuck);
+
+        const updatedCurrentLuck = baseLuck * lastVipMultiplier * lastXyzMultiplier * lastDaveMultiplier;
+        currentLuck = updatedCurrentLuck;
+
+        if (luckInput) {
+            setNumericInputValue(luckInput, updatedCurrentLuck, { format: shouldFormat, min: 1 });
+        }
+
+        syncLuckVisualEffects(updatedCurrentLuck);
+    } else {
+        baseLuck = Math.max(1, numericValue);
+        currentLuck = baseLuck;
+        lastVipMultiplier = 1;
+        lastXyzMultiplier = 1;
+        lastDaveMultiplier = 1;
+
+        const vipDropdown = document.getElementById('vip-dropdown');
+        if (vipDropdown) {
+            vipDropdown.value = '1';
+            refreshCustomSelect('vip-dropdown');
+        }
+
+        const xyzToggle = document.getElementById('xyz-luck-toggle');
+        if (xyzToggle) {
+            xyzToggle.checked = false;
+        }
+
+        const daveDropdown = document.getElementById('dave-luck-dropdown');
+        if (daveDropdown) {
+            daveDropdown.value = '1';
+            refreshCustomSelect('dave-luck-dropdown');
+        }
+
+        if (luckInput) {
+            setNumericInputValue(luckInput, baseLuck, { format: shouldFormat, min: 1 });
+        }
+
+        syncLuckVisualEffects(baseLuck);
+    }
 
     if (typeof applyOblivionPresetOptions === 'function') {
         applyOblivionPresetOptions(options);

@@ -393,6 +393,14 @@
                 <header class="surface__header">
                     <h2 class="surface__title" id="presets-heading">Quick Presets</h2>
                     <p class="surface__subtitle">Instantly configure popular luck and event-ready presets.</p>
+                    <div class="preset-mode-toggle">
+                        <span class="preset-mode-toggle__label" id="luck-preset-add-label">Stackable luck presets</span>
+                        <label class="toggle toggle-preset">
+                            <input type="checkbox" id="luck-preset-add-toggle" class="toggle__input" aria-labelledby="luck-preset-add-label">
+                            <span class="toggle__track"></span>
+                            <span class="toggle__thumb"></span>
+                        </label>
+                    </div>
                     <span class="preset-signoff__name">Aaden</span>
                 </header>
                 <div class="control-section control-section--presets">
@@ -612,6 +620,9 @@
                     </header>
                     <p class="changelog-modal__intro">Latest changes:</p>
                     <ul class="changelog-modal__list">
+                        <li>
+                            New luck switch to stack luck presets instead of replacing them
+                        </li>
                         <li>
                             Add new luck presets:
                             <ul class="changelog-modal__list changelog-modal__list--sub">
