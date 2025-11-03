@@ -1319,6 +1319,21 @@ body.biome--blood-rain .interface-backdrop__veil {
     color: var(--text-tertiary);
 }
 
+.preset-mode-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding-top: 4px;
+}
+
+.preset-mode-toggle__label {
+    font-size: 12px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+}
+
 .resource-board {
     display: grid;
     grid-template-columns: 1fr;
