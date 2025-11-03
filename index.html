@@ -78,11 +78,11 @@
                 <div class="banner__meta">
                     <h1 class="banner__title">Sols Rolling Simulator</h1>
                     <p class="banner__subtitle">
-                        <button type="button" class="banner__version-button" id="versionInfoButton" aria-haspopup="dialog" aria-expanded="false" aria-label="View update notes for version V1.3" data-version-id="v13">V1.3</button>
+                        <button type="button" class="banner__version-button" id="versionInfoButton" aria-haspopup="dialog" aria-expanded="false" aria-label="View update notes for version V1.31" data-version-id="v131">V1.31</button>
                         <span class="banner__subtitle-divider" aria-hidden="true">◉</span>
                         <span class="banner__subtitle-author">By <span class="banner__subtitle-author-name">not.unnamed</span></span>
                         <span class="banner__subtitle-divider" aria-hidden="true">◉</span>
-                        <span class="banner__subtitle-updated">Updated <time datetime="2025-10-29">2025/11/02</time></span>
+                        <span class="banner__subtitle-updated">Updated <time datetime="2025-10-29">2025/11/03</time></span>
                         <span class="banner__subtitle-divider" aria-hidden="true">◉</span>
                         <span class="banner__subtitle-eon">Sol's RNG Eon 1-9.5</span>
                     </p>
@@ -406,6 +406,7 @@
                             <button type="button" id="luck-preset-ten-million" onclick="applyLuckValue(10000000)">10 Million Preset 10,000,000×</button>
                             <button type="button" id="luck-preset-one-million" onclick="applyLuckValue(1000000)">1 Million Preset 1,000,000×</button>
                             <button type="button" onclick="applyLuckValue(700000)">Pump King's Blood 700,000×</button>
+                            <button type="button" onclick="applyLuckValue(690000)">Godlike + Heavenly + Candy Corn + Bound + Popping + Tutorial Potion 690,000×</button>
                             <details id="oblivion-preset-menu" class="preset-toggle">
                                 <summary class="preset-toggle__summary">
                                     <span class="preset-toggle__title">Oblivion / Godlike + Bound + Heavenly 600,000×</span>
@@ -432,6 +433,7 @@
                                     <button type="button" onclick="handleDunePresetSelection('popping')">Popping Potion Preset 10,000×</button>
                                 </div>
                             </details>
+                            <button type="button" onclick="applyLuckValue(5000)">Tutorial Potion 5,000×</button>
                         </div>
                     </div>
                     <div class="preset-collection preset-collection--compact">
@@ -456,6 +458,9 @@
                             <span class="preset-collection__title-divider preset-collection__title-divider--end" aria-hidden="true"></span>
                         </h3>
                         <div class="preset-matrix" id="roll-preset-panel">
+                            <button type="button" onclick="applyRollPreset(100)">100 Rolls</button>
+                            <button type="button" onclick="applyRollPreset(250)">250 Rolls</button>
+                            <button type="button" onclick="applyRollPreset(500)">500 Rolls</button>
                             <button type="button" onclick="applyRollPreset(1000)">1,000 Rolls</button>
                             <button type="button" onclick="applyRollPreset(10000)">10,000 Rolls</button>
                             <button type="button" onclick="applyRollPreset(100000)">100,000 Rolls</button>
@@ -534,10 +539,20 @@
                 <button
                     type="button"
                     class="changelog-tab changelog-tab--active"
+                    id="changelog-tab-v131"
+                    role="tab"
+                    aria-controls="changelog-panel-v131"
+                    aria-selected="true"
+                    data-changelog-tab="v131"
+                >V1.31</button>
+                <button
+                    type="button"
+                    class="changelog-tab"
                     id="changelog-tab-v13"
                     role="tab"
                     aria-controls="changelog-panel-v13"
-                    aria-selected="true"
+                    aria-selected="false"
+                    tabindex="-1"
                     data-changelog-tab="v13"
                 >V1.3</button>
                 <button
@@ -584,12 +599,48 @@
 
             <div class="changelog-modal__panels" data-changelog-panels>
                 <section
+                    id="changelog-panel-v131"
+                    class="changelog-modal__panel"
+                    role="tabpanel"
+                    aria-labelledby="changelog-tab-v131"
+                    data-changelog-panel="v131"
+                    tabindex="0"
+                >
+                    <header class="changelog-modal__header">
+                        <h2 class="changelog-modal__title" id="versionChangelogTitle">Version V1.31 Update Notes</h2>
+                        <p class="changelog-modal__meta">Updated 2025/11/03</p>
+                    </header>
+                    <p class="changelog-modal__intro">Latest changes:</p>
+                    <ul class="changelog-modal__list">
+                        <li>
+                            Add new luck presets:
+                            <ul class="changelog-modal__list changelog-modal__list--sub">
+                                <li>Godlike + Heavenly + Candy Corn + Bound + Popping + Tutorial Potion (690,000×)</li>
+                                <li>Tutorial Potion (5,000×)</li>
+                            </ul>
+                        </li>
+                        <li>
+                            Add new roll presets:
+                            <ul class="changelog-modal__list changelog-modal__list--sub">
+                                <li>100 Rolls</li>
+                                <li>250 Rolls</li>
+                                <li>500 Rolls</li>
+                            </ul>
+                        </li>
+                        <li>
+                            Minor markup adjustments to support the above
+                        </li>
+                    </ul>
+                </section>
+
+                <section
                     id="changelog-panel-v13"
                     class="changelog-modal__panel"
                     role="tabpanel"
                     aria-labelledby="changelog-tab-v13"
                     data-changelog-panel="v13"
-                    tabindex="0"
+                    hidden
+                    tabindex="-1"
                 >
                     <header class="changelog-modal__header">
                         <h2 class="changelog-modal__title" id="versionChangelogTitle">Version V1.3 Update Notes</h2>
