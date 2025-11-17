@@ -707,7 +707,7 @@ body.biome--blood-rain .interface-backdrop__veil {
 
 .surface.interface-header {
     overflow: visible;
-    z-index: 5;
+    z-index: 40;
 }
 
 .surface::after {
