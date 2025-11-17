@@ -1012,6 +1012,16 @@ function applyMediaGain(element, { category = 'obtain', fallbackGain } = {}) {
     const channelMultiplier = getChannelVolumeMultiplier(category);
     const resolvedGain = baseGain * channelMultiplier;
 
+    const shouldMute = resolvedGain <= 0;
+    if (shouldMute) {
+        element.muted = true;
+    } else {
+        element.muted = false;
+        if (typeof element.removeAttribute === 'function') {
+            element.removeAttribute('muted');
+        }
+    }
+
     const channelEnabled = isSoundChannelActive(category);
     const context = channelEnabled && canUseMediaElementSource(element) ? resumeAudioEngine() : null;
     if (context) {
