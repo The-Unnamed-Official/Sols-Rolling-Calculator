@@ -450,9 +450,11 @@ const uiHandles = {
 const appState = {
     audio: {
         roll: true,
+        obtain: true,
         ui: true,
         musicVolume: DEFAULT_AUDIO_LEVEL,
         obtainVolume: DEFAULT_AUDIO_LEVEL,
+        obtainLastVolume: DEFAULT_AUDIO_LEVEL,
         uiVolume: DEFAULT_AUDIO_LEVEL,
         uiLastVolume: DEFAULT_AUDIO_LEVEL,
         cutsceneVolume: DEFAULT_AUDIO_LEVEL,
@@ -628,14 +630,16 @@ function updateAudioSliderLabel(channel, percentValue) {
 }
 
 function updateUiToggleStatus() {
-    const uiStatus = document.querySelector('[data-audio-ui-status]');
-    if (uiStatus) {
-        uiStatus.textContent = appState.audio.ui ? 'On' : 'Muted';
-    }
-
     const uiToggle = document.getElementById('audioUiToggle');
     if (uiToggle) {
         uiToggle.checked = appState.audio.ui;
+    }
+}
+
+function updateObtainToggleStatus() {
+    const obtainToggle = document.getElementById('audioObtainToggle');
+    if (obtainToggle) {
+        obtainToggle.checked = appState.audio.obtain;
     }
 }
 
@@ -654,6 +658,11 @@ function setChannelVolume(channel, normalized) {
         appState.audio.musicVolume = value;
     } else {
         appState.audio.obtainVolume = value;
+        if (value > 0) {
+            appState.audio.obtainLastVolume = value;
+        }
+        appState.audio.obtain = value > 0;
+        updateObtainToggleStatus();
     }
 
     const rollingActive = (appState.audio.obtainVolume ?? 0) > 0
@@ -724,13 +733,17 @@ function initializeAudioSettingsPanel() {
         }
     });
 
+    const obtainToggle = document.getElementById('audioObtainToggle');
+    if (obtainToggle) {
+        obtainToggle.checked = appState.audio.obtain;
+        obtainToggle.addEventListener('change', () => {
+            toggleObtainAudio();
+        });
+    }
+
     const uiToggle = document.getElementById('audioUiToggle');
-    const uiStatus = overlay.querySelector('[data-audio-ui-status]');
     if (uiToggle) {
         uiToggle.checked = appState.audio.ui;
-        if (uiStatus) {
-            uiStatus.textContent = appState.audio.ui ? 'On' : 'Muted';
-        }
 
         uiToggle.addEventListener('change', () => {
             toggleInterfaceAudio();
@@ -742,6 +755,7 @@ function initializeAudioSettingsPanel() {
         showAudioSettingsOverlay();
     });
 
+    setChannelVolume('obtain', appState.audio.obtainVolume);
     setChannelVolume('ui', appState.audio.uiVolume);
 }
 
@@ -1315,6 +1329,13 @@ function toggleRollingAudio() {
         soundToggle.textContent = appState.audio.roll ? 'Audio: On' : 'Audio: Off';
         soundToggle.setAttribute('aria-pressed', appState.audio.roll);
     }
+}
+
+function toggleObtainAudio() {
+    const enableObtain = !appState.audio.obtain;
+    const restoredVolume = appState.audio.obtainLastVolume > 0 ? appState.audio.obtainLastVolume : DEFAULT_AUDIO_LEVEL;
+    setChannelVolume('obtain', enableObtain ? restoredVolume : 0);
+    resumeAudioEngine();
 }
 
 function toggleInterfaceAudio() {
