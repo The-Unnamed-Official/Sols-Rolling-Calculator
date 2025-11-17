@@ -576,68 +576,60 @@
                 <h2 class="audio-modal__title" id="audioSettingsTitle">Audio Settings</h2>
                 <p class="audio-modal__hint">Adjust the volume for each channel independently.</p>
             </div>
-            <div class="audio-modal__controls">
-                <div class="audio-modal__grid">
-                    <label class="audio-slider" for="audioObtainVolume">
-                        <div class="audio-slider__label-row">
-                            <span class="audio-slider__label">Obtain Sounds</span>
-                            <span class="audio-slider__value" data-audio-value="obtain">50%</span>
+                <div class="audio-modal__controls">
+                    <div class="audio-modal__grid">
+                        <label class="audio-slider" for="audioMusicVolume">
+                            <div class="audio-slider__label-row">
+                                <span class="audio-slider__label">Background Music</span>
+                                <span class="audio-slider__value" data-audio-value="music">50%</span>
+                            </div>
+                            <input
+                                type="range"
+                                id="audioMusicVolume"
+                                class="audio-slider__input"
+                                min="0"
+                                max="100"
+                                value="50"
+                                step="1"
+                                data-audio-channel="music"
+                            >
+                        </label>
+                        <label class="audio-slider" for="audioCutsceneVolume">
+                            <div class="audio-slider__label-row">
+                                <span class="audio-slider__label">Cutscene Sounds</span>
+                                <span class="audio-slider__value" data-audio-value="cutscene">50%</span>
+                            </div>
+                            <input
+                                type="range"
+                                id="audioCutsceneVolume"
+                                class="audio-slider__input"
+                                min="0"
+                                max="100"
+                                value="50"
+                                step="1"
+                                data-audio-channel="cutscene"
+                            >
+                        </label>
+                    </div>
+                    <div class="audio-modal__toggles">
+                        <div class="audio-modal__toggle">
+                            <span class="audio-modal__toggle-label" id="audioObtainToggleLabel">Obtain Sounds</span>
+                            <label class="toggle" aria-labelledby="audioObtainToggleLabel">
+                                <input type="checkbox" id="audioObtainToggle" class="toggle__input" checked>
+                                <span class="toggle__track"></span>
+                                <span class="toggle__thumb"></span>
+                            </label>
                         </div>
-                        <input
-                            type="range"
-                            id="audioObtainVolume"
-                            class="audio-slider__input"
-                            min="0"
-                            max="100"
-                            value="50"
-                            step="1"
-                            data-audio-channel="obtain"
-                        >
-                    </label>
-                    <label class="audio-slider" for="audioMusicVolume">
-                        <div class="audio-slider__label-row">
-                            <span class="audio-slider__label">Background Music</span>
-                            <span class="audio-slider__value" data-audio-value="music">50%</span>
+                        <div class="audio-modal__toggle">
+                            <span class="audio-modal__toggle-label" id="audioUiToggleLabel">UI Sounds</span>
+                            <label class="toggle" aria-labelledby="audioUiToggleLabel">
+                                <input type="checkbox" id="audioUiToggle" class="toggle__input" checked>
+                                <span class="toggle__track"></span>
+                                <span class="toggle__thumb"></span>
+                            </label>
                         </div>
-                        <input
-                            type="range"
-                            id="audioMusicVolume"
-                            class="audio-slider__input"
-                            min="0"
-                            max="100"
-                            value="50"
-                            step="1"
-                            data-audio-channel="music"
-                        >
-                    </label>
-                    <label class="audio-slider" for="audioCutsceneVolume">
-                        <div class="audio-slider__label-row">
-                            <span class="audio-slider__label">Cutscene Sounds</span>
-                            <span class="audio-slider__value" data-audio-value="cutscene">50%</span>
-                        </div>
-                        <input
-                            type="range"
-                            id="audioCutsceneVolume"
-                            class="audio-slider__input"
-                            min="0"
-                            max="100"
-                            value="50"
-                            step="1"
-                            data-audio-channel="cutscene"
-                        >
-                    </label>
-                    <label class="audio-switch" for="audioUiToggle">
-                        <div class="audio-switch__label-row">
-                            <span class="audio-switch__label">UI Sounds</span>
-                            <span class="audio-switch__status" data-audio-ui-status>On</span>
-                        </div>
-                        <input type="checkbox" id="audioUiToggle" class="audio-switch__input" checked>
-                        <span class="audio-switch__track" aria-hidden="true">
-                            <span class="audio-switch__thumb"></span>
-                        </span>
-                    </label>
+                    </div>
                 </div>
-            </div>
         </div>
     </div>
 

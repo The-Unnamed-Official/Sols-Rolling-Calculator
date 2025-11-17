@@ -3731,8 +3731,29 @@ body:not(.reduce-motion) #luck-preset-ten-million.luck-preset-button--mega-pop:f
     gap: 16px;
 }
 
+.audio-modal__toggles {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    align-items: center;
+    gap: 16px;
+}
+
+.audio-modal__toggle {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.audio-modal__toggle-label {
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
 .audio-slider,
-.audio-switch {
+.audio-switch,
+.audio-modal__toggle {
     position: relative;
     display: flex;
     flex-direction: column;
