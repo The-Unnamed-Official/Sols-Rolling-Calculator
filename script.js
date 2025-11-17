@@ -2375,11 +2375,12 @@ const AURA_BLUEPRINT_SOURCE = Object.freeze([
     { name: "Archangel - 250,000,000", chance: 250000000 },
     { name: "Surfer : Shard Surfer - 225,000,000", chance: 225000000, breakthroughs: { snowy: 3 } },
     { name: "HYPER-VOLT : EVER-STORM - 225,000,000", chance: 225000000 },
-    { name: "Lumenpool - 220,000,000", chance: 220000000, nativeBiomes: ["rainy"] },
+    { name: "Lumenpoll - 220,000,000", chance: 220000000, nativeBiomes: ["rainy"] },
     { name: "Oppression - 220,000,000", chance: 220000000, nativeBiomes: ["glitch"], cutscene: "oppression-cutscene" },
     { name: "Impeached - 200,000,000", chance: 200000000, breakthroughs: { corruption: 5 } },
     { name: "Nightmare Sky - 190,000,000", chance: 190000000, nativeBiomes: ["pumpkinMoon"] },
-    { name: "Felled - 180,000,000", chance: 180000000, nativeBiomes: ["hell"] },
+    { name: "Breakthrough - 180,000,000", chance: 180000000, nativeBiomes: ["hell"] },
+    { name: "Felled - 180,000,000", chance: 180000000 },
     { name: "Twilight : Withering Grace - 180,000,000", chance: 180000000, breakthroughs: { night: 10 } },
     { name: "Symphony - 175,000,000", chance: 175000000 },
     { name: "Glock : the glock of the sky - 170,000,000", chance: 170000000 },
@@ -5500,11 +5501,15 @@ const SHARE_IMAGE_EFFECT_HANDLERS = Object.freeze({
         }
     },
     'sigil-effect-nyctophobia': styleSet => {
-        styleSet.name.fill = '#000000';
-        styleSet.name.shadowLayers = [
+        const baseFill = SHARE_IMAGE_BASE_NAME_STYLE.fill;
+        const hasCustomFill = styleSet.name.fill !== baseFill;
+        styleSet.name.shadowLayers.push(
             { color: 'rgba(255, 255, 255, 0.82)', blur: 6, offsetX: 0, offsetY: 0 },
             { color: 'rgba(0, 0, 0, 0.9)', blur: 0, offsetX: 1, offsetY: 1 }
-        ];
+        );
+        if (!hasCustomFill) {
+            styleSet.name.fill = '#000000';
+        }
         const nyctoFrames = [
             'N̵̮̖͎͐Y̸̱̝͕̏̔͆C̶̫̒̀͌T̵̻̪̓͛̕O̸̪͗͌͝P̷̳̙̏͘H̶͔̮͒̓͝O̵̱̲̎̽͗B̸̗̤̅͐͝I̷͎̫̠̐̏͝Ḁ̶̯̺͋',
             'N̵̗̙̊̒Y̴̢͕͕͋̑͠C̵̘͛̐͘T̴̢͉͂͌O̷̺͇̐̕̚P̵̮̾̅̓H̸̦̫̑̀͠O̸̘͚̾͂B̵̨̮̈́͌Ḭ̵̱̇̓͠A̸̯̼̓̊',
