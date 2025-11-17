@@ -664,6 +664,17 @@ function setChannelVolume(channel, normalized) {
     updateAudioSliderLabel(channel, value * 100);
     applyChannelVolumeToElements(channel);
 
+    if (channel === 'music' || channel === 'cutscene' || channel === 'obtain') {
+        resumeAudioEngine();
+        const selector = `[data-audio-channel="${channel}"]`;
+        document.querySelectorAll(selector).forEach(element => {
+            element.muted = false;
+            if (typeof element.removeAttribute === 'function') {
+                element.removeAttribute('muted');
+            }
+        });
+    }
+
     if (channel === 'ui') {
         resumeAudioEngine();
         document.querySelectorAll('[data-audio-channel="ui"]').forEach(element => {
@@ -732,6 +743,39 @@ function initializeAudioSettingsPanel() {
     });
 
     setChannelVolume('ui', appState.audio.uiVolume);
+}
+
+function initializeRollTriggerFloating() {
+    const cta = document.querySelector('.control-section--cta');
+    const controlsSurface = document.querySelector('.surface--controls');
+    if (!cta || !controlsSurface) return;
+
+    let ticking = false;
+
+    const updateMetrics = () => {
+        const controlsRect = controlsSurface.getBoundingClientRect();
+        const ctaRect = cta.getBoundingClientRect();
+        const topOffset = Number.parseFloat(getComputedStyle(cta).top) || 0;
+        const shouldFloat = controlsRect.bottom <= (ctaRect.height + topOffset);
+
+        cta.style.setProperty('--roll-cta-width', `${controlsRect.width}px`);
+        cta.style.setProperty('--roll-cta-left', `${controlsRect.left}px`);
+        cta.classList.toggle('control-section--cta--floating', shouldFloat);
+    };
+
+    const requestSync = () => {
+        if (ticking) return;
+        ticking = true;
+        requestAnimationFrame(() => {
+            updateMetrics();
+            ticking = false;
+        });
+    };
+
+    window.addEventListener('scroll', requestSync, { passive: true });
+    window.addEventListener('resize', requestSync, { passive: true });
+
+    requestSync();
 }
 
 function beginSimulationExperience() {
@@ -3601,6 +3645,7 @@ document.addEventListener('DOMContentLoaded', setupChangelogTabs);
 document.addEventListener('DOMContentLoaded', setupVersionChangelogOverlay);
 document.addEventListener('DOMContentLoaded', maybeShowChangelogOnFirstVisit);
 document.addEventListener('DOMContentLoaded', initializeIntroOverlay);
+document.addEventListener('DOMContentLoaded', initializeRollTriggerFloating);
 
 document.addEventListener('DOMContentLoaded', () => {
     const confirmButton = document.getElementById('cutsceneWarningConfirm');
