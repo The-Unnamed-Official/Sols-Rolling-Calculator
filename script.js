@@ -2146,6 +2146,7 @@ function resolveAuraStyleClass(aura) {
     if (name.startsWith('Pixelation')) classes.push('sigil-effect-pixelation');
     if (name.startsWith('Luminosity')) classes.push('sigil-effect-luminosity');
     if (name.startsWith('Equinox')) classes.push('sigil-effect-equinox');
+    if (name.startsWith('Nyctophobia')) classes.push('sigil-effect-nyctophobia');
 
     const auraData = typeof aura === 'string' ? null : aura;
 
@@ -2309,6 +2310,7 @@ const AURA_BLUEPRINT_SOURCE = Object.freeze([
     { name: "Luminosity - 1,200,000,000", chance: 1200000000, cutscene: "luminosity-cutscene" },
     { name: "Erebus - 1,200,000,000", chance: 1200000000, nativeBiomes: ["glitch", "bloodRain"], cutscene: "erebus-cutscene" },
     { name: "Pixelation - 1,073,741,824", chance: 1073741824, cutscene: "pixelation-cutscene" },
+    { name: "Nyctophobia - 1,011,111,010", chance: 1011111010, nativeBiomes: ["limbo"], cutscene: "nyctophobia-cutscene" },
     { name: "Lamenthyr - 1,000,000,000", chance: 1000000000, nativeBiomes: ["glitch", "bloodRain"], cutscene: "lamenthyr-cutscene" },
     { name: "Arachnophobia - 940,000,000", chance: 940000000, nativeBiomes: ["glitch", "pumpkinMoon"] },
     { name: "Ravage - 930,000,000", chance: 930000000, nativeBiomes: ["glitch", "graveyard"] },
@@ -2354,9 +2356,11 @@ const AURA_BLUEPRINT_SOURCE = Object.freeze([
     { name: "Archangel - 250,000,000", chance: 250000000 },
     { name: "Surfer : Shard Surfer - 225,000,000", chance: 225000000, breakthroughs: { snowy: 3 } },
     { name: "HYPER-VOLT : EVER-STORM - 225,000,000", chance: 225000000 },
+    { name: "Lumenpool - 220,000,000", chance: 220000000, nativeBiomes: ["rainy"] },
     { name: "Oppression - 220,000,000", chance: 220000000, nativeBiomes: ["glitch"], cutscene: "oppression-cutscene" },
     { name: "Impeached - 200,000,000", chance: 200000000, breakthroughs: { corruption: 5 } },
     { name: "Nightmare Sky - 190,000,000", chance: 190000000, nativeBiomes: ["pumpkinMoon"] },
+    { name: "Felled - 180,000,000", chance: 180000000, nativeBiomes: ["hell"] },
     { name: "Twilight : Withering Grace - 180,000,000", chance: 180000000, breakthroughs: { night: 10 } },
     { name: "Symphony - 175,000,000", chance: 175000000 },
     { name: "Glock : the glock of the sky - 170,000,000", chance: 170000000 },
@@ -2376,6 +2380,7 @@ const AURA_BLUEPRINT_SOURCE = Object.freeze([
     { name: "Winter Fantasy - 72,000,000", chance: 72000000, breakthroughs: { snowy: 3 } },
     { name: "Dullahan - 72,000,000", chance: 72000000, nativeBiomes: ["graveyard"] },
     { name: "Reaper - 66,000,000", chance: 66000000, nativeBiomes: ["glitch", "bloodRain"] },
+    { name: "Antivirus - 62,500,000", chance: 62500000 },
     { name: "Twilight : Iridescent Memory - 60,000,000", chance: 60000000, breakthroughs: { night: 10 } },
     { name: "SENTINEL - 60,000,000", chance: 60000000 },
     { name: "Matrix - 50,000,000", chance: 50000000 },
@@ -2750,7 +2755,7 @@ function getAuraEventId(aura) {
     return auraEventIndex.get(aura.name) || null;
 }
 
-const CUTSCENE_PRIORITY_SEQUENCE = ["oblivion-cutscene", "memory-cutscene", "neferkhaf-cutscene", "equinox-cutscene", "erebus-cutscene", "luminosity-cutscene", "pixelation-cutscene", "lamenthyr-cutscene", "dreammetric-cutscene", "oppression-cutscene"];
+const CUTSCENE_PRIORITY_SEQUENCE = ["oblivion-cutscene", "memory-cutscene", "neferkhaf-cutscene", "equinox-cutscene", "erebus-cutscene", "luminosity-cutscene", "pixelation-cutscene", "nyctophobia-cutscene", "lamenthyr-cutscene", "dreammetric-cutscene", "oppression-cutscene"];
 
 oblivionAuraData = AURA_REGISTRY.find(aura => aura.name === OBLIVION_AURA_LABEL) || null;
 memoryAuraData = AURA_REGISTRY.find(aura => aura.name === MEMORY_AURA_LABEL) || null;
@@ -5445,6 +5450,24 @@ const SHARE_IMAGE_EFFECT_HANDLERS = Object.freeze({
             styleSet.subtitle.fill = 'rgba(214, 228, 255, 0.78)';
             styleSet.subtitle.letterSpacing = 1.4;
             styleSet.subtitle.lineHeightMultiplier = 1.25;
+        }
+    },
+    'sigil-effect-nyctophobia': styleSet => {
+        styleSet.name.fill = '#000000';
+        styleSet.name.shadowLayers = [
+            { color: 'rgba(255, 255, 255, 0.82)', blur: 6, offsetX: 0, offsetY: 0 },
+            { color: 'rgba(0, 0, 0, 0.9)', blur: 0, offsetX: 1, offsetY: 1 }
+        ];
+        const nyctoFrames = [
+            'N̵̮̖͎͐Y̸̱̝͕̏̔͆C̶̫̒̀͌T̵̻̪̓͛̕O̸̪͗͌͝P̷̳̙̏͘H̶͔̮͒̓͝O̵̱̲̎̽͗B̸̗̤̅͐͝I̷͎̫̠̐̏͝Ḁ̶̯̺͋',
+            'N̵̗̙̊̒Y̴̢͕͕͋̑͠C̵̘͛̐͘T̴̢͉͂͌O̷̺͇̐̕̚P̵̮̾̅̓H̸̦̫̑̀͠O̸̘͚̾͂B̵̨̮̈́͌Ḭ̵̱̇̓͠A̸̯̼̓̊',
+            'N̸̺̯̓̑Y̷̪͓̆̿͝C̷̼̫̍̿̚T̸̯̘̿̿̕Ǫ̶̖̅͘P̵̨̩͋͌̕H̴̰̺̎͘͝O̵̠̺̒͛͝B̴̖͕̾̑̕I̵̙̖̐͠A̵̤͕͗̒̕',
+            'Ṅ̷̢̤̗Y̷̡̯͂̎͝C̷̢̛̘̏͗T̴̥͚̽̋O̷̢͖͌͘P̶̫̥͋̿H̶̖̦͂̓́O̵̪͂̍̈́B̴̥̃̔̔I̵̪̩͒̕A̷̯̞͗͠',
+            'N̵͚̠̟̯͂Ỵ̷̱̊̌C̸̣̈́Ṱ̸̣̌̂̉͂O̵P̷̬͒Ḩ̷̤̉̾̀O̶͈͙̕B̸̻͑I̸͓̩̥͐̈́͝A̶̱̣̟̝̎'
+        ];
+        styleSet.name.transform = () => nyctoFrames[0];
+        if (styleSet.subtitle) {
+            styleSet.subtitle.fill = 'rgba(255, 255, 255, 0.82)';
         }
     }
 });
