@@ -25,16 +25,16 @@
         <div class="interface-backdrop__veil"></div>
     </div>
 
-    <audio id="ambientMusic" loop muted src="files/normalBiomeMusic.mp3" type="audio/mpeg" data-volume="0.18" data-audio-channel="rolling"></audio>
-    <audio id="rollLoopSound" muted src="files/SolsRollSound.mp3" type="audio/mpeg" data-audio-channel="rolling"></audio>
+    <audio id="ambientMusic" loop muted src="files/normalBiomeMusic.mp3" type="audio/mpeg" data-volume="0.18" data-audio-channel="music"></audio>
+    <audio id="rollLoopSound" muted src="files/SolsRollSound.mp3" type="audio/mpeg" data-audio-channel="obtain"></audio>
     <audio id="clickSoundFx" muted src="files/SolsClickSound.mp3" type="audio/mpeg" data-audio-channel="ui"></audio>
     <audio id="hoverSoundFx" muted src="files/SolsHoverSound.mp3" type="audio/mpeg" data-audio-channel="ui"></audio>
-    <audio id="thousandSound" muted src="files/1_000Roll.ogg" type="audio/ogg" data-audio-channel="rolling"></audio>
-    <audio id="tenThousandSound" muted src="files/10_000Roll.ogg" type="audio/ogg" data-audio-channel="rolling"></audio>
-    <audio id="hundredThousandSound" muted src="files/100_000Roll.ogg" type="audio/ogg" data-audio-channel="rolling"></audio>
-    <audio id="tenMillionSound" muted src="files/10_000_000Roll.ogg" type="audio/ogg" data-audio-channel="rolling"></audio>
-    <audio id="hundredMillionSound" muted src="files/100_000_000Roll.ogg" type="audio/ogg" data-audio-channel="rolling"></audio>
-    <audio id="limbo99mSoundFx" muted src="files/99mLimboRollSound.mp3" type="audio/mpeg" data-boost="6.7" data-audio-channel="rolling"></audio>
+    <audio id="thousandSound" muted src="files/1_000Roll.ogg" type="audio/ogg" data-audio-channel="obtain"></audio>
+    <audio id="tenThousandSound" muted src="files/10_000Roll.ogg" type="audio/ogg" data-audio-channel="obtain"></audio>
+    <audio id="hundredThousandSound" muted src="files/100_000Roll.ogg" type="audio/ogg" data-audio-channel="obtain"></audio>
+    <audio id="tenMillionSound" muted src="files/10_000_000Roll.ogg" type="audio/ogg" data-audio-channel="obtain"></audio>
+    <audio id="hundredMillionSound" muted src="files/100_000_000Roll.ogg" type="audio/ogg" data-audio-channel="obtain"></audio>
+    <audio id="limbo99mSoundFx" muted src="files/99mLimboRollSound.mp3" type="audio/mpeg" data-boost="6.7" data-audio-channel="obtain"></audio>
 
     <video id="oblivion-cutscene" class="cutscene-video" preload="auto" data-audio-channel="cutscene">
         <source src="files/oblivionCutscene.webm" type="video/webm">
@@ -71,6 +71,16 @@
     </video>
 
     <div id="cinematic-overlay" class="cinematic-overlay" aria-hidden="true"></div>
+
+    <div id="introOverlay" class="intro-overlay" role="dialog" aria-modal="true" aria-label="Start the simulation">
+        <div class="intro-overlay__panel">
+            <div class="intro-overlay__logo" role="img" aria-label="Sols Rolling Simulator">
+                <img src="files/logo.png" alt="Sols Rolling Simulator logo">
+            </div>
+            <p class="intro-overlay__copy">Begin the experience to unlock audio playback.</p>
+            <button type="button" class="intro-overlay__start-button" id="startExperienceButton">Start Simulation</button>
+        </div>
+    </div>
 
     <div class="interface-shell">
         <header class="surface interface-header" role="banner">
@@ -567,54 +577,66 @@
                 <p class="audio-modal__hint">Adjust the volume for each channel independently.</p>
             </div>
             <div class="audio-modal__controls">
-                <label class="audio-slider" for="audioRollVolume">
-                    <div class="audio-slider__label-row">
-                        <span class="audio-slider__label">Other Sounds</span>
-                        <span class="audio-slider__value" data-audio-value="rolling">50%</span>
-                    </div>
-                    <input
-                        type="range"
-                        id="audioRollVolume"
-                        class="audio-slider__input"
-                        min="0"
-                        max="100"
-                        value="50"
-                        step="1"
-                        data-audio-channel="rolling"
-                    >
-                </label>
-                <label class="audio-slider" for="audioUiVolume">
-                    <div class="audio-slider__label-row">
-                        <span class="audio-slider__label">UI Sounds</span>
-                        <span class="audio-slider__value" data-audio-value="ui">50%</span>
-                    </div>
-                    <input
-                        type="range"
-                        id="audioUiVolume"
-                        class="audio-slider__input"
-                        min="0"
-                        max="100"
-                        value="50"
-                        step="1"
-                        data-audio-channel="ui"
-                    >
-                </label>
-                <label class="audio-slider" for="audioCutsceneVolume">
-                    <div class="audio-slider__label-row">
-                        <span class="audio-slider__label">Cutscene Sounds</span>
-                        <span class="audio-slider__value" data-audio-value="cutscene">50%</span>
-                    </div>
-                    <input
-                        type="range"
-                        id="audioCutsceneVolume"
-                        class="audio-slider__input"
-                        min="0"
-                        max="100"
-                        value="50"
-                        step="1"
-                        data-audio-channel="cutscene"
-                    >
-                </label>
+                <div class="audio-modal__grid">
+                    <label class="audio-slider" for="audioObtainVolume">
+                        <div class="audio-slider__label-row">
+                            <span class="audio-slider__label">Obtain Sounds</span>
+                            <span class="audio-slider__value" data-audio-value="obtain">50%</span>
+                        </div>
+                        <input
+                            type="range"
+                            id="audioObtainVolume"
+                            class="audio-slider__input"
+                            min="0"
+                            max="100"
+                            value="50"
+                            step="1"
+                            data-audio-channel="obtain"
+                        >
+                    </label>
+                    <label class="audio-slider" for="audioMusicVolume">
+                        <div class="audio-slider__label-row">
+                            <span class="audio-slider__label">Background Music</span>
+                            <span class="audio-slider__value" data-audio-value="music">50%</span>
+                        </div>
+                        <input
+                            type="range"
+                            id="audioMusicVolume"
+                            class="audio-slider__input"
+                            min="0"
+                            max="100"
+                            value="50"
+                            step="1"
+                            data-audio-channel="music"
+                        >
+                    </label>
+                    <label class="audio-slider" for="audioCutsceneVolume">
+                        <div class="audio-slider__label-row">
+                            <span class="audio-slider__label">Cutscene Sounds</span>
+                            <span class="audio-slider__value" data-audio-value="cutscene">50%</span>
+                        </div>
+                        <input
+                            type="range"
+                            id="audioCutsceneVolume"
+                            class="audio-slider__input"
+                            min="0"
+                            max="100"
+                            value="50"
+                            step="1"
+                            data-audio-channel="cutscene"
+                        >
+                    </label>
+                    <label class="audio-switch" for="audioUiToggle">
+                        <div class="audio-switch__label-row">
+                            <span class="audio-switch__label">UI Sounds</span>
+                            <span class="audio-switch__status" data-audio-ui-status>On</span>
+                        </div>
+                        <input type="checkbox" id="audioUiToggle" class="audio-switch__input" checked>
+                        <span class="audio-switch__track" aria-hidden="true">
+                            <span class="audio-switch__thumb"></span>
+                        </span>
+                    </label>
+                </div>
             </div>
         </div>
     </div>
@@ -756,10 +778,11 @@
                             </ul>
                         </li>
                         <li>
-                            Audio settings cleanup:
+                            Audio and start flow improvements:
                             <ul class="changelog-modal__list changelog-modal__list--sub">
-                                <li>Moved the master Audio control to the top of the Settings menu.</li>
-                                <li>Removed separate Other Sounds and UI Sounds toggles; channel sliders now start at 0%.</li>
+                                <li>Added a start screen with a centered logo and Start Simulation button to kick off audio playback reliably.</li>
+                                <li>Split the former Other Sounds channel into Background Music and Obtain Sounds sliders.</li>
+                                <li>Replaced the UI volume slider with a clean toggle and restyled the audio controls to match the switch aesthetic.</li>
                             </ul>
                         </li>
                     </ul>
