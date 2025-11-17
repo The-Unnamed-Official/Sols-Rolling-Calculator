@@ -16,6 +16,10 @@ const versionChangelogOverlayState = {
     lastFocusedElement: null
 };
 
+const audioOverlayState = {
+    lastFocusedElement: null
+};
+
 const CHANGELOG_VERSION_STORAGE_KEY = 'solsRollingCalculator:lastSeenChangelogVersion';
 
 function applyLatestUpdateBadgeToChangelogTabs(tabs) {
@@ -445,6 +449,9 @@ const appState = {
     audio: {
         roll: false,
         ui: false,
+        rollVolume: 1,
+        uiVolume: 1,
+        cutsceneVolume: 1,
         context: null,
         bufferCache: new Map(),
         bufferPromises: new Map(),
@@ -544,6 +551,116 @@ function concealOverlay(overlay, { onHidden } = {}) {
 
     overlay.setAttribute('data-closing', 'true');
     overlay.removeAttribute('data-visible');
+}
+
+function applyChannelVolumeToElements(channel) {
+    if (typeof document === 'undefined') return;
+
+    const category = channel === 'ui' ? 'ui' : channel === 'cutscene' ? 'cutscene' : 'rolling';
+    const selector = `[data-audio-channel="${channel}"]`;
+    document.querySelectorAll(selector).forEach(element => {
+        applyMediaGain(element, { category });
+    });
+
+    if (channel === 'rolling') {
+        const bgMusic = document.getElementById('ambientMusic');
+        synchronizeBackgroundRouting(bgMusic);
+    }
+}
+
+function showAudioSettingsOverlay() {
+    const overlay = document.getElementById('audioSettingsOverlay');
+    const closeButton = document.getElementById('audioSettingsClose');
+    if (!overlay || !closeButton) return;
+
+    audioOverlayState.lastFocusedElement = document.activeElement;
+    revealOverlay(overlay);
+    closeButton.focus({ preventScroll: true });
+}
+
+function hideAudioSettingsOverlay() {
+    const overlay = document.getElementById('audioSettingsOverlay');
+    if (!overlay) return;
+
+    concealOverlay(overlay, {
+        onHidden: () => {
+            const last = audioOverlayState.lastFocusedElement;
+            if (last && typeof last.focus === 'function') {
+                last.focus({ preventScroll: true });
+            }
+            audioOverlayState.lastFocusedElement = null;
+        }
+    });
+}
+
+function updateAudioSliderLabel(channel, percentValue) {
+    const overlay = document.getElementById('audioSettingsOverlay');
+    if (!overlay) return;
+
+    const label = overlay.querySelector(`.audio-slider__value[data-audio-value="${channel}"]`);
+    if (label) {
+        label.textContent = `${Math.round(percentValue)}%`;
+    }
+}
+
+function setChannelVolume(channel, normalized) {
+    const value = clamp01(normalized);
+    if (channel === 'ui') {
+        appState.audio.uiVolume = value;
+    } else if (channel === 'cutscene') {
+        appState.audio.cutsceneVolume = value;
+    } else {
+        appState.audio.rollVolume = value;
+    }
+
+    updateAudioSliderLabel(channel, value * 100);
+    applyChannelVolumeToElements(channel);
+}
+
+function initializeAudioSettingsPanel() {
+    const overlay = document.getElementById('audioSettingsOverlay');
+    const openButton = document.getElementById('audioSettingsButton');
+    const closeButton = document.getElementById('audioSettingsClose');
+    if (!overlay || !openButton || !closeButton) return;
+
+    const inputs = Array.from(overlay.querySelectorAll('.audio-slider__input'));
+    inputs.forEach(input => {
+        const channel = input.dataset.audioChannel || 'rolling';
+        const defaultValue = channel === 'ui'
+            ? appState.audio.uiVolume
+            : channel === 'cutscene'
+                ? appState.audio.cutsceneVolume
+                : appState.audio.rollVolume;
+        const percent = Math.round(clamp01(defaultValue) * 100);
+        input.value = percent;
+        updateAudioSliderLabel(channel, percent);
+
+        setChannelVolume(channel, percent / 100);
+
+        input.addEventListener('input', () => {
+            const normalized = clamp01(Number.parseFloat(input.value) / 100);
+            setChannelVolume(channel, normalized);
+        });
+    });
+
+    overlay.addEventListener('click', event => {
+        if (event.target === overlay) {
+            hideAudioSettingsOverlay();
+        }
+    });
+
+    overlay.addEventListener('keydown', event => {
+        if (event.key === 'Escape') {
+            hideAudioSettingsOverlay();
+        }
+    });
+
+    openButton.addEventListener('click', event => {
+        event.preventDefault();
+        showAudioSettingsOverlay();
+    });
+
+    closeButton.addEventListener('click', hideAudioSettingsOverlay);
 }
 
 const largeRollWarningManager = (() => {
@@ -759,16 +876,39 @@ function canUseMediaElementSource(element) {
     }
 }
 
-function applyMediaGain(element) {
-    if (!element) return;
-    const dataset = element.dataset || {};
+function clamp01(value) {
+    if (!Number.isFinite(value)) return 0;
+    return Math.max(0, Math.min(1, value));
+}
+
+function getChannelVolumeMultiplier(category = 'rolling') {
+    if (category === 'ui') return clamp01(appState.audio.uiVolume ?? 1);
+    if (category === 'cutscene') return clamp01(appState.audio.cutsceneVolume ?? 1);
+    return clamp01(appState.audio.rollVolume ?? 1);
+}
+
+function resolveBaseGain(element, fallback = 1) {
+    const dataset = element?.dataset || {};
     const gainValueRaw = dataset.gain ?? dataset.boost ?? dataset.volume;
-    if (gainValueRaw === undefined) return;
+    const gainValue = Number.parseFloat(gainValueRaw);
+    if (Number.isFinite(gainValue) && gainValue > 0) {
+        return gainValue;
+    }
+    if (element && typeof element.volume === 'number' && element.volume > 0) {
+        return element.volume;
+    }
+    return fallback;
+}
 
-    let gainValue = Number.parseFloat(gainValueRaw);
-    if (!Number.isFinite(gainValue) || gainValue <= 0) return;
+function applyMediaGain(element, { category = 'rolling', fallbackGain } = {}) {
+    if (!element) return;
 
-    const context = canUseMediaElementSource(element) ? resumeAudioEngine() : null;
+    const baseGain = resolveBaseGain(element, fallbackGain ?? 1);
+    const channelMultiplier = getChannelVolumeMultiplier(category);
+    const resolvedGain = baseGain * channelMultiplier;
+
+    const channelEnabled = isSoundChannelActive(category);
+    const context = channelEnabled && canUseMediaElementSource(element) ? resumeAudioEngine() : null;
     if (context) {
         try {
             let entry = appState.audio.gainMap.get(element);
@@ -779,18 +919,21 @@ function applyMediaGain(element) {
                 entry = { gainNode };
                 appState.audio.gainMap.set(element, entry);
             }
-            entry.gainNode.gain.value = gainValue;
+            entry.gainNode.gain.value = resolvedGain;
             return;
         } catch (error) {
             console.warn('Unable to configure media element gain', error);
         }
     }
 
-    element.volume = Math.max(0, Math.min(gainValue, 1));
+    element.volume = clamp01(resolvedGain);
 }
 
 function isSoundChannelActive(category) {
+    const channelVolume = getChannelVolumeMultiplier(category);
+    if (channelVolume <= 0) return false;
     if (category === 'ui') return appState.audio.ui;
+    if (category === 'cutscene') return appState.audio.roll;
     return appState.audio.roll;
 }
 
@@ -798,6 +941,11 @@ function playSoundEffect(audioElement, category = 'rolling') {
     if (!audioElement) return;
     if (!isSoundChannelActive(category)) return;
     if (category !== 'ui' && appState.videoPlaying) return;
+
+    const baseGain = resolveBaseGain(audioElement, category === 'ui' ? 0.3 : 1);
+    const channelMultiplier = getChannelVolumeMultiplier(category);
+    const playbackGain = baseGain * channelMultiplier;
+    if (playbackGain <= 0) return;
 
     const spawnFallbackPlayer = () => {
         const sourceUrl = normalizeMediaSource(audioElement);
@@ -817,16 +965,7 @@ function playSoundEffect(audioElement, category = 'rolling') {
         fallbackPlayer.playsInline = true;
         fallbackPlayer.autoplay = false;
 
-        const dataset = audioElement.dataset || {};
-        const gainValueRaw = dataset.gain ?? dataset.boost ?? dataset.volume;
-        if (gainValueRaw !== undefined) {
-            const gainValue = Number.parseFloat(gainValueRaw);
-            if (Number.isFinite(gainValue) && gainValue > 0) {
-                fallbackPlayer.volume = Math.max(0, Math.min(gainValue, 1));
-            }
-        } else {
-            fallbackPlayer.volume = audioElement.volume;
-        }
+        fallbackPlayer.volume = clamp01(playbackGain);
 
         const cleanup = () => {
             fallbackPlayer.pause();
@@ -900,9 +1039,7 @@ function playSoundEffect(audioElement, category = 'rolling') {
         const source = context.createBufferSource();
         source.buffer = buffer;
         const gainNode = context.createGain();
-        if (category === 'ui') {
-            gainNode.gain.value = 0.3;
-        }
+        gainNode.gain.value = playbackGain;
         source.connect(gainNode).connect(context.destination);
         source.start(0);
     });
@@ -919,12 +1056,17 @@ function computeBackgroundMusicBase(bgMusic) {
     return 0.18;
 }
 
+function computeEffectiveBackgroundVolume(bgMusic) {
+    const base = computeBackgroundMusicBase(bgMusic);
+    return clamp01(base * getChannelVolumeMultiplier('rolling'));
+}
+
 function synchronizeBackgroundRouting(bgMusic) {
     if (!bgMusic) {
         return { baseVolume: 0.18, chain: null };
     }
 
-    const baseVolume = computeBackgroundMusicBase(bgMusic);
+    const baseVolume = computeEffectiveBackgroundVolume(bgMusic);
     const chain = ensureGlitchAudioChain(bgMusic);
 
     if (chain && chain.gainNode) {
@@ -999,6 +1141,7 @@ function toggleRollingAudio() {
             }
             startBackgroundMusic(bgMusic);
         }
+        applyChannelVolumeToElements('rolling');
     } else if (bgMusic) {
         bgMusic.muted = true;
         if (typeof bgMusic.setAttribute === 'function') {
@@ -1247,7 +1390,7 @@ function scheduleGlitchWarbleCycle(bgMusic, chain) {
 
     resetGlitchWarbleTimer();
 
-    const baseGain = chain.baseGain ?? computeBackgroundMusicBase(bgMusic);
+    const baseGain = chain.baseGain ?? computeEffectiveBackgroundVolume(bgMusic);
     const context = chain.context;
     const duration = randomDecimalBetween(0.18, 0.45);
     const wobble = randomDecimalBetween(0.08, 0.18);
@@ -1327,7 +1470,7 @@ function ensureGlitchAudioChain(audioElement) {
 
     if (!glitchUiState.gainNode) {
         glitchUiState.gainNode = context.createGain();
-        glitchUiState.gainNode.gain.value = computeBackgroundMusicBase(audioElement);
+        glitchUiState.gainNode.gain.value = computeEffectiveBackgroundVolume(audioElement);
     }
 
     const desiredPipeline = shouldUseGlitchBaseEffect() ? 'glitch' : 'clean';
@@ -1384,7 +1527,7 @@ function updateGlitchAudioControls(enabled) {
         scheduleGlitchWarbleCycle(bgMusic, chain);
     } else {
         resetGlitchWarbleTimer();
-        const baseVolume = chain.baseGain ?? computeBackgroundMusicBase(bgMusic);
+        const baseVolume = chain.baseGain ?? computeEffectiveBackgroundVolume(bgMusic);
         if (typeof chain.gainNode.gain.setTargetAtTime === 'function') {
             chain.gainNode.gain.setTargetAtTime(baseVolume, chain.context.currentTime, 0.1);
         } else {
@@ -1927,7 +2070,7 @@ function playAuraVideo(videoId, options = {}) {
         }
 
         if (appState.audio.roll) {
-            applyMediaGain(video);
+            applyMediaGain(video, { category: 'cutscene' });
         }
 
         appState.videoPlaying = true;
@@ -2163,6 +2306,7 @@ function resolveAuraStyleClass(aura) {
     if (name.startsWith('Pixelation')) classes.push('sigil-effect-pixelation');
     if (name.startsWith('Luminosity')) classes.push('sigil-effect-luminosity');
     if (name.startsWith('Equinox')) classes.push('sigil-effect-equinox');
+    if (name.startsWith('Megaphone')) classes.push('sigil-effect-megaphone');
     if (name.startsWith('Nyctophobia')) classes.push('sigil-effect-nyctophobia');
 
     const auraData = typeof aura === 'string' ? null : aura;
@@ -4005,6 +4149,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initializeBiomeInterface();
 
     setupShareInterface();
+    initializeAudioSettingsPanel();
 
     const soundToggle = document.getElementById('rollAudioToggle');
     if (soundToggle) {
