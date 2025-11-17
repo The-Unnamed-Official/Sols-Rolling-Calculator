@@ -1618,6 +1618,7 @@ let lastVipMultiplier = 1;
 let lastXyzMultiplier = 1;
 let lastXcMultiplier = 1;
 let lastDaveMultiplier = 1;
+let lastDorcelessnessMultiplier = 1;
 
 const MILLION_LUCK_PRESET = 1000000;
 
@@ -1654,9 +1655,12 @@ function applyLuckValue(value, options = {}) {
     lastXyzMultiplier = 1;
     lastXcMultiplier = 1;
     lastDaveMultiplier = 1;
+    lastDorcelessnessMultiplier = 1;
     document.getElementById('vip-dropdown').value = '1';
     document.getElementById('xyz-luck-toggle').checked = false;
     document.getElementById('xc-luck-toggle').checked = false;
+    document.getElementById('dorcelessness-luck-toggle').checked = false;
+    document.getElementById('yg-blessing-toggle').checked = false;
     refreshCustomSelect('vip-dropdown');
     if (document.getElementById('dave-luck-dropdown')) {
         document.getElementById('dave-luck-dropdown').value = '1';
@@ -1705,6 +1709,7 @@ function recomputeLuckValue() {
         vip: document.getElementById('vip-dropdown'),
         xyz: document.getElementById('xyz-luck-toggle'),
         xc: document.getElementById('xc-luck-toggle'),
+        dorcelessness: document.getElementById('dorcelessness-luck-toggle'),
         dave: document.getElementById('dave-luck-dropdown'),
         luckInput: document.getElementById('luck-total')
     };
@@ -1716,6 +1721,7 @@ function recomputeLuckValue() {
         vip: parseFloat(controls.vip ? controls.vip.value : '1') || 1,
         xyz: controls.xyz && controls.xyz.checked ? 2 : 1,
         xc: controls.xc && controls.xc.checked ? 2 : 1,
+        dorcelessness: controls.dorcelessness && controls.dorcelessness.checked ? 2 : 1,
         dave: isLimboBiome && controls.dave ? parseFloat(controls.dave.value) || 1 : 1
     };
 
@@ -1730,6 +1736,7 @@ function recomputeLuckValue() {
         lastXyzMultiplier = 1;
         lastXcMultiplier = 1;
         lastDaveMultiplier = 1;
+        lastDorcelessnessMultiplier = 1;
         if (controls.vip) {
             controls.vip.value = '1';
             refreshCustomSelect('vip-dropdown');
@@ -1739,6 +1746,9 @@ function recomputeLuckValue() {
         }
         if (controls.xc) {
             controls.xc.checked = false;
+        }
+        if (controls.dorcelessness) {
+            controls.dorcelessness.checked = false;
         }
         if (controls.dave) {
             controls.dave.value = '1';
@@ -1756,11 +1766,12 @@ function recomputeLuckValue() {
         return;
     }
 
-    currentLuck = baseLuck * multipliers.vip * multipliers.xyz * multipliers.xc * multipliers.dave;
+    currentLuck = baseLuck * multipliers.vip * multipliers.xyz * multipliers.xc * multipliers.dorcelessness * multipliers.dave;
     lastVipMultiplier = multipliers.vip;
     lastXyzMultiplier = multipliers.xyz;
     lastXcMultiplier = multipliers.xc;
     lastDaveMultiplier = multipliers.dave;
+    lastDorcelessnessMultiplier = multipliers.dorcelessness;
     if (luckField) {
         const shouldFormat = document.activeElement !== luckField;
         setNumericInputValue(luckField, currentLuck, { format: shouldFormat, min: 1 });
@@ -1840,12 +1851,16 @@ function initializeBiomeInterface() {
     const daveLuckContainer = document.getElementById('dave-luck-wrapper');
     const xyzLuckContainer = document.getElementById('xyz-luck-wrapper');
     const xcLuckContainer = document.getElementById('xc-luck-wrapper');
+    const dorcelessnessLuckContainer = document.getElementById('dorcelessness-luck-wrapper');
+    const ygBlessingContainer = document.getElementById('yg-blessing-wrapper');
     const luckPresets = document.getElementById('luck-preset-panel');
     const voidHeartBtn = document.getElementById('void-heart-trigger');
     if (biome === 'limbo') {
         if (daveLuckContainer) daveLuckContainer.style.display = '';
         if (xyzLuckContainer) xyzLuckContainer.style.display = '';
         if (xcLuckContainer) xcLuckContainer.style.display = '';
+        if (dorcelessnessLuckContainer) dorcelessnessLuckContainer.style.display = '';
+        if (ygBlessingContainer) ygBlessingContainer.style.display = '';
         if (luckPresets) {
             Array.from(luckPresets.children).forEach(btn => {
                 if (btn === voidHeartBtn) {
@@ -1861,6 +1876,8 @@ function initializeBiomeInterface() {
         if (daveLuckContainer) daveLuckContainer.style.display = 'none';
         if (xyzLuckContainer) xyzLuckContainer.style.display = '';
         if (xcLuckContainer) xcLuckContainer.style.display = '';
+        if (dorcelessnessLuckContainer) dorcelessnessLuckContainer.style.display = '';
+        if (ygBlessingContainer) ygBlessingContainer.style.display = '';
         if (luckPresets) {
             Array.from(luckPresets.children).forEach(btn => {
                 if (btn === voidHeartBtn) {
@@ -2302,6 +2319,8 @@ function determineResultPriority(aura, baseChance) {
     return baseChance;
 }
 
+const MEGAPHONE_AURA_NAME = 'Megaphone - 5,000';
+
 const AURA_BLUEPRINT_SOURCE = Object.freeze([
     { name: "Oblivion", chance: 2000, requiresOblivionPreset: true, ignoreLuck: true, fixedRollThreshold: 1, subtitle: "The Truth Seeker", cutscene: "oblivion-cutscene", disableRarityClass: true },
     { name: "Memory", chance: 200000, requiresOblivionPreset: true, ignoreLuck: true, fixedRollThreshold: 1, subtitle: "The Fallen", cutscene: "memory-cutscene", disableRarityClass: true },
@@ -2494,7 +2513,7 @@ const AURA_BLUEPRINT_SOURCE = Object.freeze([
     { name: "Hazard - 7,000", chance: 7000, breakthroughs: { corruption: 5 } },
     { name: "Flushed : Heart Eye - 6,900", chance: 6900 },
     { name: "Flushed - 6,900", chance: 6900 },
-    { name: "Megaphone - 5,000", chance: 5000 },
+    { name: MEGAPHONE_AURA_NAME, chance: 5000, requiresYgBlessing: true },
     { name: "Bleeding - 4,444", chance: 4444 },
     { name: "Sidereum - 4,096", chance: 4096 },
     { name: "Flora - 3,700", chance: 3700 },
@@ -3946,6 +3965,10 @@ document.addEventListener('DOMContentLoaded', () => {
     if (xcToggle) {
         xcToggle.addEventListener('change', recomputeLuckValue);
     }
+    const dorcelessnessToggle = document.getElementById('dorcelessness-luck-toggle');
+    if (dorcelessnessToggle) {
+        dorcelessnessToggle.addEventListener('change', recomputeLuckValue);
+    }
     const daveDropdown = document.getElementById('dave-luck-dropdown');
     if (daveDropdown) {
         daveDropdown.addEventListener('change', recomputeLuckValue);
@@ -3962,9 +3985,12 @@ document.addEventListener('DOMContentLoaded', () => {
             lastXyzMultiplier = 1;
             lastXcMultiplier = 1;
             lastDaveMultiplier = 1;
+            lastDorcelessnessMultiplier = 1;
             document.getElementById('vip-dropdown').value = '1';
             document.getElementById('xyz-luck-toggle').checked = false;
             document.getElementById('xc-luck-toggle').checked = false;
+            document.getElementById('dorcelessness-luck-toggle').checked = false;
+            document.getElementById('yg-blessing-toggle').checked = false;
             refreshCustomSelect('vip-dropdown');
             if (daveDropdown) {
                 daveDropdown.value = '1';
@@ -4084,6 +4110,15 @@ function resolveXpTierForChance(chance) {
 
 const LIMBO_NATIVE_FILTER = ['limbo', 'limbo-null'];
 
+function isYgBlessingEnabled() {
+    if (typeof document === 'undefined') {
+        return false;
+    }
+
+    const toggle = document.getElementById('yg-blessing-toggle');
+    return Boolean(toggle && toggle.checked);
+}
+
 function createAuraEvaluationContext(selection, { eventChecker }) {
     const selectionState = selection || collectBiomeSelectionState();
     const biome = selectionState?.canonicalBiome || 'normal';
@@ -4117,7 +4152,8 @@ function createAuraEvaluationContext(selection, { eventChecker }) {
         eventChecker,
         activeBiomes,
         breakthroughBiomes,
-        primaryBiome: selectionState?.primaryBiome || null
+        primaryBiome: selectionState?.primaryBiome || null,
+        ygBlessingActive: isYgBlessingEnabled()
     };
 }
 
@@ -4213,6 +4249,17 @@ function computeStandardEffectiveChance(aura, context) {
 }
 
 function determineAuraEffectiveChance(aura, context) {
+    if (aura?.requiresYgBlessing) {
+        const blessingActive = context?.ygBlessingActive === true;
+        const canonicalBiome = context?.biome || 'normal';
+        if (!blessingActive) {
+            return Infinity;
+        }
+        if (canonicalBiome === 'limbo' || canonicalBiome === 'limbo-null') {
+            return Infinity;
+        }
+    }
+
     if (context.biome === 'limbo') {
         return computeLimboEffectiveChance(aura, context);
     }
