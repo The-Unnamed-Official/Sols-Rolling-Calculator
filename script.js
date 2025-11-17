@@ -426,6 +426,8 @@ function bindNumericInputFormatting(input, { min = null, max = null } = {}) {
     }
 }
 
+const DEFAULT_AUDIO_LEVEL = 0.5;
+
 const uiHandles = {
     rollTriggerButton: document.querySelector('.roll-trigger'),
     brandMark: document.querySelector('.banner__emblem'),
@@ -447,11 +449,11 @@ const uiHandles = {
 
 const appState = {
     audio: {
-        roll: false,
-        ui: false,
-        rollVolume: 0,
-        uiVolume: 0,
-        cutsceneVolume: 0,
+        roll: true,
+        ui: true,
+        rollVolume: DEFAULT_AUDIO_LEVEL,
+        uiVolume: DEFAULT_AUDIO_LEVEL,
+        cutsceneVolume: DEFAULT_AUDIO_LEVEL,
         context: null,
         bufferCache: new Map(),
         bufferPromises: new Map(),
