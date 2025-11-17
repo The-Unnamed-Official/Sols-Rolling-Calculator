@@ -3617,6 +3617,11 @@ body:not(.reduce-motion) #luck-preset-ten-million.luck-preset-button--mega-pop:f
       position: absolute;
       top: clamp(16px, 3vw, 24px);
       right: clamp(16px, 3vw, 24px);
+      display: grid;
+      place-items: center;
+      inline-size: clamp(52px, 9vw, 68px);
+      block-size: clamp(52px, 9vw, 68px);
+      padding: 0;
   }
 
   .audio-modal__header {
