@@ -1616,6 +1616,7 @@ let baseLuck = 1;
 let currentLuck = 1;
 let lastVipMultiplier = 1;
 let lastXyzMultiplier = 1;
+let lastXcMultiplier = 1;
 let lastDaveMultiplier = 1;
 
 const MILLION_LUCK_PRESET = 1000000;
@@ -1646,64 +1647,27 @@ function resetLuckPresetAnimations() {
     });
 }
 
-function isLuckPresetAddModeEnabled() {
-    const toggle = document.getElementById('luck-preset-add-toggle');
-    return Boolean(toggle && toggle.checked);
-}
-
 function applyLuckValue(value, options = {}) {
-    const numericValue = Number(value);
-    if (!Number.isFinite(numericValue)) {
-        return;
+    baseLuck = value;
+    currentLuck = value;
+    lastVipMultiplier = 1;
+    lastXyzMultiplier = 1;
+    lastXcMultiplier = 1;
+    lastDaveMultiplier = 1;
+    document.getElementById('vip-dropdown').value = '1';
+    document.getElementById('xyz-luck-toggle').checked = false;
+    document.getElementById('xc-luck-toggle').checked = false;
+    refreshCustomSelect('vip-dropdown');
+    if (document.getElementById('dave-luck-dropdown')) {
+        document.getElementById('dave-luck-dropdown').value = '1';
+        refreshCustomSelect('dave-luck-dropdown');
     }
-
     const luckInput = document.getElementById('luck-total');
-    const shouldFormat = luckInput ? document.activeElement !== luckInput : true;
-
-    if (isLuckPresetAddModeEnabled()) {
-        const hasExistingLuck = Boolean(luckInput && (luckInput.dataset.rawValue ?? '').length > 0);
-        const startingBaseLuck = hasExistingLuck && Number.isFinite(baseLuck) ? Math.max(1, baseLuck) : 0;
-        const updatedBaseLuck = Math.max(0, startingBaseLuck) + numericValue;
-        baseLuck = Math.max(1, updatedBaseLuck);
-
-        const updatedCurrentLuck = baseLuck * lastVipMultiplier * lastXyzMultiplier * lastDaveMultiplier;
-        currentLuck = updatedCurrentLuck;
-
-        if (luckInput) {
-            setNumericInputValue(luckInput, updatedCurrentLuck, { format: shouldFormat, min: 1 });
-        }
-
-        syncLuckVisualEffects(updatedCurrentLuck);
-    } else {
-        baseLuck = Math.max(1, numericValue);
-        currentLuck = baseLuck;
-        lastVipMultiplier = 1;
-        lastXyzMultiplier = 1;
-        lastDaveMultiplier = 1;
-
-        const vipDropdown = document.getElementById('vip-dropdown');
-        if (vipDropdown) {
-            vipDropdown.value = '1';
-            refreshCustomSelect('vip-dropdown');
-        }
-
-        const xyzToggle = document.getElementById('xyz-luck-toggle');
-        if (xyzToggle) {
-            xyzToggle.checked = false;
-        }
-
-        const daveDropdown = document.getElementById('dave-luck-dropdown');
-        if (daveDropdown) {
-            daveDropdown.value = '1';
-            refreshCustomSelect('dave-luck-dropdown');
-        }
-
-        if (luckInput) {
-            setNumericInputValue(luckInput, baseLuck, { format: shouldFormat, min: 1 });
-        }
-
-        syncLuckVisualEffects(baseLuck);
+    if (luckInput) {
+        setNumericInputValue(luckInput, value, { format: true, min: 1 });
     }
+
+    syncLuckVisualEffects(value);
 
     if (typeof applyOblivionPresetOptions === 'function') {
         applyOblivionPresetOptions(options);
@@ -1740,6 +1704,7 @@ function recomputeLuckValue() {
         biome: document.getElementById('biome-dropdown'),
         vip: document.getElementById('vip-dropdown'),
         xyz: document.getElementById('xyz-luck-toggle'),
+        xc: document.getElementById('xc-luck-toggle'),
         dave: document.getElementById('dave-luck-dropdown'),
         luckInput: document.getElementById('luck-total')
     };
@@ -1750,6 +1715,7 @@ function recomputeLuckValue() {
     const multipliers = {
         vip: parseFloat(controls.vip ? controls.vip.value : '1') || 1,
         xyz: controls.xyz && controls.xyz.checked ? 2 : 1,
+        xc: controls.xc && controls.xc.checked ? 2 : 1,
         dave: isLimboBiome && controls.dave ? parseFloat(controls.dave.value) || 1 : 1
     };
 
@@ -1762,6 +1728,7 @@ function recomputeLuckValue() {
         currentLuck = normalizedLuck;
         lastVipMultiplier = 1;
         lastXyzMultiplier = 1;
+        lastXcMultiplier = 1;
         lastDaveMultiplier = 1;
         if (controls.vip) {
             controls.vip.value = '1';
@@ -1769,6 +1736,9 @@ function recomputeLuckValue() {
         }
         if (controls.xyz) {
             controls.xyz.checked = false;
+        }
+        if (controls.xc) {
+            controls.xc.checked = false;
         }
         if (controls.dave) {
             controls.dave.value = '1';
@@ -1786,9 +1756,10 @@ function recomputeLuckValue() {
         return;
     }
 
-    currentLuck = baseLuck * multipliers.vip * multipliers.xyz * multipliers.dave;
+    currentLuck = baseLuck * multipliers.vip * multipliers.xyz * multipliers.xc * multipliers.dave;
     lastVipMultiplier = multipliers.vip;
     lastXyzMultiplier = multipliers.xyz;
+    lastXcMultiplier = multipliers.xc;
     lastDaveMultiplier = multipliers.dave;
     if (luckField) {
         const shouldFormat = document.activeElement !== luckField;
@@ -1868,11 +1839,13 @@ function initializeBiomeInterface() {
     const biome = selectionState.canonicalBiome;
     const daveLuckContainer = document.getElementById('dave-luck-wrapper');
     const xyzLuckContainer = document.getElementById('xyz-luck-wrapper');
+    const xcLuckContainer = document.getElementById('xc-luck-wrapper');
     const luckPresets = document.getElementById('luck-preset-panel');
     const voidHeartBtn = document.getElementById('void-heart-trigger');
     if (biome === 'limbo') {
         if (daveLuckContainer) daveLuckContainer.style.display = '';
         if (xyzLuckContainer) xyzLuckContainer.style.display = '';
+        if (xcLuckContainer) xcLuckContainer.style.display = '';
         if (luckPresets) {
             Array.from(luckPresets.children).forEach(btn => {
                 if (btn === voidHeartBtn) {
@@ -1887,6 +1860,7 @@ function initializeBiomeInterface() {
     } else {
         if (daveLuckContainer) daveLuckContainer.style.display = 'none';
         if (xyzLuckContainer) xyzLuckContainer.style.display = '';
+        if (xcLuckContainer) xcLuckContainer.style.display = '';
         if (luckPresets) {
             Array.from(luckPresets.children).forEach(btn => {
                 if (btn === voidHeartBtn) {
@@ -2376,7 +2350,7 @@ const AURA_BLUEPRINT_SOURCE = Object.freeze([
     { name: "Bloodlust - 300,000,000", chance: 300000000, breakthroughs: { hell: 6 } },
     { name: "Exotic : Void - 299,999,999", chance: 299999999 },
     { name: "Graveborn - 290,000,000", chance: 290000000, nativeBiomes: ["glitch", "graveyard"] },
-    { name: "Astral : Legendarium - 267,200,000", chance: 267200000, breakthroughs: { starfall: 5 } },
+    { name: "Astral : Zodiac - 267,200,000", chance: 267200000, breakthroughs: { starfall: 5 } },
     { name: "Archangel - 250,000,000", chance: 250000000 },
     { name: "Surfer : Shard Surfer - 225,000,000", chance: 225000000, breakthroughs: { snowy: 3 } },
     { name: "HYPER-VOLT : EVER-STORM - 225,000,000", chance: 225000000 },
@@ -3963,6 +3937,10 @@ document.addEventListener('DOMContentLoaded', () => {
     if (xyzToggle) {
         xyzToggle.addEventListener('change', recomputeLuckValue);
     }
+    const xcToggle = document.getElementById('xc-luck-toggle');
+    if (xcToggle) {
+        xcToggle.addEventListener('change', recomputeLuckValue);
+    }
     const daveDropdown = document.getElementById('dave-luck-dropdown');
     if (daveDropdown) {
         daveDropdown.addEventListener('change', recomputeLuckValue);
@@ -3977,9 +3955,11 @@ document.addEventListener('DOMContentLoaded', () => {
             currentLuck = normalized;
             lastVipMultiplier = 1;
             lastXyzMultiplier = 1;
+            lastXcMultiplier = 1;
             lastDaveMultiplier = 1;
             document.getElementById('vip-dropdown').value = '1';
             document.getElementById('xyz-luck-toggle').checked = false;
+            document.getElementById('xc-luck-toggle').checked = false;
             refreshCustomSelect('vip-dropdown');
             if (daveDropdown) {
                 daveDropdown.value = '1';

@@ -1292,8 +1292,24 @@ body.biome--blood-rain .interface-backdrop__veil {
 }
 
 .feed__mythic-label {
-    color: rgba(46, 255, 238, 0.8);
     margin-right: 8px;
+    animation: mythicaldudeFade 2s infinite;
+    color: #12ffeb;
+}
+
+@keyframes mythicaldudeFade {
+    0%, 100% {
+        opacity: 200%;
+        font-size: clamp(13px, 1.5vw, 13px);
+        color: #7907d6;
+    }
+    25% {
+        color: #12ffeb;
+    }
+    50% {
+        opacity: 10%;
+        font-size: clamp(8px, 1.6vw, 10px);
+    }
 }
 
 .surface__header {
