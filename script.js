@@ -572,12 +572,19 @@ function applyChannelVolumeToElements(channel) {
 
 function showAudioSettingsOverlay() {
     const overlay = document.getElementById('audioSettingsOverlay');
-    const closeButton = document.getElementById('audioSettingsClose');
-    if (!overlay || !closeButton) return;
+    if (!overlay) return;
 
     audioOverlayState.lastFocusedElement = document.activeElement;
     revealOverlay(overlay);
-    closeButton.focus({ preventScroll: true });
+
+    const firstInput = overlay.querySelector('.audio-slider__input');
+    if (firstInput && typeof firstInput.focus === 'function') {
+        try {
+            firstInput.focus({ preventScroll: true });
+        } catch (error) {
+            firstInput.focus();
+        }
+    }
 }
 
 function hideAudioSettingsOverlay() {
@@ -603,6 +610,12 @@ function updateAudioSliderLabel(channel, percentValue) {
     if (label) {
         label.textContent = `${Math.round(percentValue)}%`;
     }
+
+    const input = overlay.querySelector(`.audio-slider__input[data-audio-channel="${channel}"]`);
+    if (input) {
+        const clamped = clamp01(percentValue / 100);
+        input.style.setProperty('--audio-slider-progress', `${Math.round(clamped * 100)}%`);
+    }
 }
 
 function setChannelVolume(channel, normalized) {
@@ -621,13 +634,22 @@ function setChannelVolume(channel, normalized) {
 
     updateAudioSliderLabel(channel, value * 100);
     applyChannelVolumeToElements(channel);
+
+    if (channel === 'ui') {
+        resumeAudioEngine();
+        document.querySelectorAll('[data-audio-channel="ui"]').forEach(element => {
+            element.muted = false;
+            if (typeof element.removeAttribute === 'function') {
+                element.removeAttribute('muted');
+            }
+        });
+    }
 }
 
 function initializeAudioSettingsPanel() {
     const overlay = document.getElementById('audioSettingsOverlay');
     const openButton = document.getElementById('audioSettingsButton');
-    const closeButton = document.getElementById('audioSettingsClose');
-    if (!overlay || !openButton || !closeButton) return;
+    if (!overlay || !openButton) return;
 
     const inputs = Array.from(overlay.querySelectorAll('.audio-slider__input'));
     inputs.forEach(input => {
@@ -639,8 +661,6 @@ function initializeAudioSettingsPanel() {
                 : appState.audio.rollVolume;
         const percent = Math.round(clamp01(defaultValue) * 100);
         input.value = percent;
-        updateAudioSliderLabel(channel, percent);
-
         setChannelVolume(channel, percent / 100);
 
         input.addEventListener('input', () => {
@@ -665,8 +685,6 @@ function initializeAudioSettingsPanel() {
         event.preventDefault();
         showAudioSettingsOverlay();
     });
-
-    closeButton.addEventListener('click', hideAudioSettingsOverlay);
 }
 
 const largeRollWarningManager = (() => {
@@ -5600,6 +5618,31 @@ const SHARE_IMAGE_EFFECT_HANDLERS = Object.freeze({
         ];
         styleSet.name.fill = '#ff004c';
         styleSet.name.transform = text => text.toUpperCase();
+    },
+    'sigil-effect-megaphone': styleSet => {
+        const font = '700 24px "Press Start 2P", "Sarpanch", sans-serif';
+        styleSet.name.font = font;
+        styleSet.name.letterSpacing = 1.8;
+        styleSet.name.lineHeightMultiplier = 1.2;
+        styleSet.name.fill = (ctx, x, y, width) => {
+            const gradient = ctx.createLinearGradient(x, y, x + width, y + width * 0.2);
+            gradient.addColorStop(0, '#a7ffe7');
+            gradient.addColorStop(0.45, '#6bf5c6');
+            gradient.addColorStop(1, '#38c9a2');
+            return gradient;
+        };
+        styleSet.name.shadowLayers = [
+            { color: 'rgba(0, 40, 32, 0.85)', blur: 0, offsetX: 1, offsetY: 1 },
+            { color: 'rgba(60, 220, 200, 0.4)', blur: 10, offsetX: 0, offsetY: 2 },
+            { color: 'rgba(14, 28, 24, 0.65)', blur: 18, offsetX: 0, offsetY: 6 }
+        ];
+        styleSet.name.transform = text => text.toUpperCase();
+        if (styleSet.subtitle) {
+            styleSet.subtitle.font = '600 16px "Sarpanch", sans-serif';
+            styleSet.subtitle.fill = 'rgba(140, 244, 214, 0.9)';
+            styleSet.subtitle.letterSpacing = 1.2;
+            styleSet.subtitle.lineHeightMultiplier = 1.2;
+        }
     },
     'sigil-effect-luminosity': styleSet => {
         styleSet.name.shadowLayers = [
