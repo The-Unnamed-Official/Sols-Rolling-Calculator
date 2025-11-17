@@ -95,12 +95,10 @@
                 <div class="options-menu" id="optionsMenu">
                     <button class="interface-toggle options-menu__trigger" id="optionsMenuToggle" type="button" aria-haspopup="menu" aria-expanded="false" aria-controls="optionsMenuPanel">Settings</button>
                     <div class="options-menu__surface" id="optionsMenuPanel" aria-labelledby="optionsMenuToggle">
-                        <button class="interface-toggle options-menu__item" id="rollAudioToggle" type="button" onclick="toggleRollingAudio()" aria-pressed="false">Other Sounds: Off</button>
-                        <button class="interface-toggle options-menu__item" id="uiAudioToggle" type="button" onclick="toggleInterfaceAudio()" aria-pressed="false">UI Sound: Off</button>
+                        <button class="interface-toggle options-menu__item" id="audioSettingsButton" type="button">Audio</button>
                         <button class="interface-toggle options-menu__item" id="cinematicToggle" type="button" onclick="toggleCinematicMode()" aria-pressed="false">Cutscenes (Fullscreen recommended): Off</button>
                         <button class="interface-toggle options-menu__item" id="glitchEffectsToggle" type="button" onclick="toggleGlitchEffects()" aria-pressed="true">Glitch Effects: On</button>
                         <button class="interface-toggle options-menu__item" id="reduceMotionToggle" type="button" onclick="toggleReducedMotion()" aria-pressed="false">Reduce Animations: Off</button>
-                        <button class="interface-toggle options-menu__item" id="audioSettingsButton" type="button">Audio</button>
                     </div>
                 </div>
             </div>
@@ -580,7 +578,7 @@
                 <label class="audio-slider" for="audioRollVolume">
                     <div class="audio-slider__label-row">
                         <span class="audio-slider__label">Other Sounds</span>
-                        <span class="audio-slider__value" data-audio-value="rolling">100%</span>
+                        <span class="audio-slider__value" data-audio-value="rolling">0%</span>
                     </div>
                     <input
                         type="range"
@@ -588,7 +586,7 @@
                         class="audio-slider__input"
                         min="0"
                         max="100"
-                        value="100"
+                        value="0"
                         step="1"
                         data-audio-channel="rolling"
                     >
@@ -596,7 +594,7 @@
                 <label class="audio-slider" for="audioUiVolume">
                     <div class="audio-slider__label-row">
                         <span class="audio-slider__label">UI Sounds</span>
-                        <span class="audio-slider__value" data-audio-value="ui">100%</span>
+                        <span class="audio-slider__value" data-audio-value="ui">0%</span>
                     </div>
                     <input
                         type="range"
@@ -604,7 +602,7 @@
                         class="audio-slider__input"
                         min="0"
                         max="100"
-                        value="100"
+                        value="0"
                         step="1"
                         data-audio-channel="ui"
                     >
@@ -612,7 +610,7 @@
                 <label class="audio-slider" for="audioCutsceneVolume">
                     <div class="audio-slider__label-row">
                         <span class="audio-slider__label">Cutscene Sounds</span>
-                        <span class="audio-slider__value" data-audio-value="cutscene">100%</span>
+                        <span class="audio-slider__value" data-audio-value="cutscene">0%</span>
                     </div>
                     <input
                         type="range"
@@ -620,7 +618,7 @@
                         class="audio-slider__input"
                         min="0"
                         max="100"
-                        value="100"
+                        value="0"
                         step="1"
                         data-audio-channel="cutscene"
                     >
@@ -753,6 +751,13 @@
                                 <li>Lumenpool — 220,000,000.</li>
                                 <li>Felled — 180,000,000.</li>
                                 <li>Megaphone — 5,000 while YG Blessing is active.</li>
+                            </ul>
+                        </li>
+                        <li>
+                            Audio settings cleanup:
+                            <ul class="changelog-modal__list changelog-modal__list--sub">
+                                <li>Moved the master Audio control to the top of the Settings menu.</li>
+                                <li>Removed separate Other Sounds and UI Sounds toggles; channel sliders now start at 0%.</li>
                             </ul>
                         </li>
                     </ul>

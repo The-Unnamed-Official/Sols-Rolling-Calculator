@@ -449,9 +449,9 @@ const appState = {
     audio: {
         roll: false,
         ui: false,
-        rollVolume: 1,
-        uiVolume: 1,
-        cutsceneVolume: 1,
+        rollVolume: 0,
+        uiVolume: 0,
+        cutsceneVolume: 0,
         context: null,
         bufferCache: new Map(),
         bufferPromises: new Map(),
@@ -607,11 +607,15 @@ function setChannelVolume(channel, normalized) {
     const value = clamp01(normalized);
     if (channel === 'ui') {
         appState.audio.uiVolume = value;
+        appState.audio.ui = value > 0;
     } else if (channel === 'cutscene') {
         appState.audio.cutsceneVolume = value;
     } else {
         appState.audio.rollVolume = value;
     }
+
+    const rollingActive = (appState.audio.rollVolume ?? 0) > 0 || (appState.audio.cutsceneVolume ?? 0) > 0;
+    appState.audio.roll = rollingActive;
 
     updateAudioSliderLabel(channel, value * 100);
     applyChannelVolumeToElements(channel);
@@ -4150,18 +4154,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     setupShareInterface();
     initializeAudioSettingsPanel();
-
-    const soundToggle = document.getElementById('rollAudioToggle');
-    if (soundToggle) {
-        soundToggle.textContent = 'Other Sounds: Off';
-        soundToggle.setAttribute('aria-pressed', 'false');
-    }
-
-    const uiSoundToggle = document.getElementById('uiAudioToggle');
-    if (uiSoundToggle) {
-        uiSoundToggle.textContent = 'UI Sound: Off';
-        uiSoundToggle.setAttribute('aria-pressed', 'false');
-    }
 
     const cutsceneToggle = document.getElementById('cinematicToggle');
     if (cutsceneToggle) {
