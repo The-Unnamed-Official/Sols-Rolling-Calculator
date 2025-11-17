@@ -1246,6 +1246,7 @@ body.biome--blood-rain .interface-backdrop__veil {
     display: flex;
     flex-direction: column;
     gap: clamp(14px, 2vw, 20px);
+    overflow: visible;
 }
 
 .surface--side {
@@ -2745,6 +2746,9 @@ body:not(.reduce-motion) #luck-preset-ten-million.luck-preset-button--mega-pop:f
     align-items: center;
     justify-content: center;
     background: linear-gradient(180deg, rgba(8, 14, 28, 0.82), rgba(4, 9, 20, 0.9));
+    position: sticky;
+    top: clamp(12px, 2vw, 18px);
+    z-index: 4;
 }
 
 .roll-trigger {
