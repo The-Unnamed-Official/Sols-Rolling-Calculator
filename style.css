@@ -3242,11 +3242,15 @@ body:not(.reduce-motion) #luck-preset-ten-million.luck-preset-button--mega-pop:f
     position: relative;
     display: inline-flex;
     align-items: center;
-    color: transparent;
     letter-spacing: 0.08em;
+    color: #000000;
     text-shadow:
-        0 0 6px rgba(255, 255, 255, 0.75),
-        0 0 12px rgba(255, 255, 255, 0.4);
+        0 0 6px rgba(255, 255, 255, 0.86),
+        0 0 14px rgba(255, 255, 255, 0.42),
+        1px 1px 0 rgba(0, 0, 0, 0.85),
+        -1px 1px 0 rgba(0, 0, 0, 0.85),
+        1px -1px 0 rgba(0, 0, 0, 0.85),
+        -1px -1px 0 rgba(0, 0, 0, 0.85);
 }
 
 .sigil-effect-nyctophobia::after {
@@ -3262,7 +3266,7 @@ body:not(.reduce-motion) #luck-preset-ten-million.luck-preset-button--mega-pop:f
         1px -1px 0 rgba(0, 0, 0, 0.85),
         -1px -1px 0 rgba(0, 0, 0, 0.85);
     animation:
-        aura-nyctophobia-words 1.1s steps(1, end) infinite,
+        aura-nyctophobia-words 0.2s steps(1, end) infinite,
         aura-nyctophobia-flicker 1.8s ease-in-out infinite;
     white-space: nowrap;
     transform-origin: center;
