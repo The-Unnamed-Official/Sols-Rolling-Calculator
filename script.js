@@ -16,6 +16,10 @@ const versionChangelogOverlayState = {
     lastFocusedElement: null
 };
 
+const audioOverlayState = {
+    lastFocusedElement: null
+};
+
 const CHANGELOG_VERSION_STORAGE_KEY = 'solsRollingCalculator:lastSeenChangelogVersion';
 
 function applyLatestUpdateBadgeToChangelogTabs(tabs) {
@@ -422,6 +426,8 @@ function bindNumericInputFormatting(input, { min = null, max = null } = {}) {
     }
 }
 
+const DEFAULT_AUDIO_LEVEL = 0.5;
+
 const uiHandles = {
     rollTriggerButton: document.querySelector('.roll-trigger'),
     brandMark: document.querySelector('.banner__emblem'),
@@ -443,8 +449,15 @@ const uiHandles = {
 
 const appState = {
     audio: {
-        roll: false,
-        ui: false,
+        roll: true,
+        obtain: true,
+        ui: true,
+        musicVolume: DEFAULT_AUDIO_LEVEL,
+        obtainVolume: DEFAULT_AUDIO_LEVEL,
+        obtainLastVolume: DEFAULT_AUDIO_LEVEL,
+        uiVolume: DEFAULT_AUDIO_LEVEL,
+        uiLastVolume: DEFAULT_AUDIO_LEVEL,
+        cutsceneVolume: DEFAULT_AUDIO_LEVEL,
         context: null,
         bufferCache: new Map(),
         bufferPromises: new Map(),
@@ -544,6 +557,272 @@ function concealOverlay(overlay, { onHidden } = {}) {
 
     overlay.setAttribute('data-closing', 'true');
     overlay.removeAttribute('data-visible');
+}
+
+function applyChannelVolumeToElements(channel) {
+    if (typeof document === 'undefined') return;
+
+    let category = 'obtain';
+    if (channel === 'ui') {
+        category = 'ui';
+    } else if (channel === 'cutscene') {
+        category = 'cutscene';
+    } else if (channel === 'music') {
+        category = 'music';
+    }
+    const selector = `[data-audio-channel="${channel}"]`;
+    document.querySelectorAll(selector).forEach(element => {
+        applyMediaGain(element, { category });
+    });
+
+    if (channel === 'music') {
+        const bgMusic = document.getElementById('ambientMusic');
+        synchronizeBackgroundRouting(bgMusic);
+    }
+}
+
+function showAudioSettingsOverlay() {
+    const overlay = document.getElementById('audioSettingsOverlay');
+    if (!overlay) return;
+
+    audioOverlayState.lastFocusedElement = document.activeElement;
+    revealOverlay(overlay);
+
+    const firstInput = overlay.querySelector('.audio-slider__input');
+    if (firstInput && typeof firstInput.focus === 'function') {
+        try {
+            firstInput.focus({ preventScroll: true });
+        } catch (error) {
+            firstInput.focus();
+        }
+    }
+}
+
+function hideAudioSettingsOverlay() {
+    const overlay = document.getElementById('audioSettingsOverlay');
+    if (!overlay) return;
+
+    concealOverlay(overlay, {
+        onHidden: () => {
+            const last = audioOverlayState.lastFocusedElement;
+            if (last && typeof last.focus === 'function') {
+                last.focus({ preventScroll: true });
+            }
+            audioOverlayState.lastFocusedElement = null;
+        }
+    });
+}
+
+function updateAudioSliderLabel(channel, percentValue) {
+    const overlay = document.getElementById('audioSettingsOverlay');
+    if (!overlay) return;
+
+    const label = overlay.querySelector(`.audio-slider__value[data-audio-value="${channel}"]`);
+    if (label) {
+        label.textContent = `${Math.round(percentValue)}%`;
+    }
+
+    const input = overlay.querySelector(`.audio-slider__input[data-audio-channel="${channel}"]`);
+    if (input) {
+        const clamped = clamp01(percentValue / 100);
+        input.style.setProperty('--audio-slider-progress', `${Math.round(clamped * 100)}%`);
+    }
+}
+
+function updateUiToggleStatus() {
+    const uiToggle = document.getElementById('audioUiToggle');
+    if (uiToggle) {
+        uiToggle.checked = appState.audio.ui;
+    }
+}
+
+function updateObtainToggleStatus() {
+    const obtainToggle = document.getElementById('audioObtainToggle');
+    if (obtainToggle) {
+        obtainToggle.checked = appState.audio.obtain;
+    }
+}
+
+function setChannelVolume(channel, normalized) {
+    const value = clamp01(normalized);
+    if (channel === 'ui') {
+        appState.audio.uiVolume = value;
+        if (value > 0) {
+            appState.audio.uiLastVolume = value;
+        }
+        appState.audio.ui = value > 0;
+        updateUiToggleStatus();
+    } else if (channel === 'cutscene') {
+        appState.audio.cutsceneVolume = value;
+    } else if (channel === 'music') {
+        appState.audio.musicVolume = value;
+    } else {
+        appState.audio.obtainVolume = value;
+        if (value > 0) {
+            appState.audio.obtainLastVolume = value;
+        }
+        appState.audio.obtain = value > 0;
+        updateObtainToggleStatus();
+    }
+
+    const rollingActive = (appState.audio.obtainVolume ?? 0) > 0
+        || (appState.audio.musicVolume ?? 0) > 0
+        || (appState.audio.cutsceneVolume ?? 0) > 0;
+    appState.audio.roll = rollingActive;
+
+    updateAudioSliderLabel(channel, value * 100);
+    applyChannelVolumeToElements(channel);
+
+    if (channel === 'music' || channel === 'cutscene' || channel === 'obtain') {
+        resumeAudioEngine();
+        const selector = `[data-audio-channel="${channel}"]`;
+        document.querySelectorAll(selector).forEach(element => {
+            element.muted = false;
+            if (typeof element.removeAttribute === 'function') {
+                element.removeAttribute('muted');
+            }
+        });
+    }
+
+    if (channel === 'ui') {
+        resumeAudioEngine();
+        document.querySelectorAll('[data-audio-channel="ui"]').forEach(element => {
+            element.muted = false;
+            if (typeof element.removeAttribute === 'function') {
+                element.removeAttribute('muted');
+            }
+        });
+    }
+}
+
+function initializeAudioSettingsPanel() {
+    const overlay = document.getElementById('audioSettingsOverlay');
+    const openButton = document.getElementById('audioSettingsButton');
+    if (!overlay || !openButton) return;
+
+    const inputs = Array.from(overlay.querySelectorAll('.audio-slider__input'));
+    inputs.forEach(input => {
+        const channel = input.dataset.audioChannel || 'obtain';
+        let defaultValue = appState.audio.obtainVolume;
+        if (channel === 'ui') {
+            defaultValue = appState.audio.uiVolume;
+        } else if (channel === 'cutscene') {
+            defaultValue = appState.audio.cutsceneVolume;
+        } else if (channel === 'music') {
+            defaultValue = appState.audio.musicVolume;
+        }
+        const percent = Math.round(clamp01(defaultValue) * 100);
+        input.value = percent;
+        setChannelVolume(channel, percent / 100);
+
+        input.addEventListener('input', () => {
+            const normalized = clamp01(Number.parseFloat(input.value) / 100);
+            setChannelVolume(channel, normalized);
+        });
+    });
+
+    overlay.addEventListener('click', event => {
+        if (event.target === overlay) {
+            hideAudioSettingsOverlay();
+        }
+    });
+
+    overlay.addEventListener('keydown', event => {
+        if (event.key === 'Escape') {
+            hideAudioSettingsOverlay();
+        }
+    });
+
+    const obtainToggle = document.getElementById('audioObtainToggle');
+    if (obtainToggle) {
+        obtainToggle.checked = appState.audio.obtain;
+        obtainToggle.addEventListener('change', () => {
+            toggleObtainAudio();
+        });
+    }
+
+    const uiToggle = document.getElementById('audioUiToggle');
+    if (uiToggle) {
+        uiToggle.checked = appState.audio.ui;
+
+        uiToggle.addEventListener('change', () => {
+            toggleInterfaceAudio();
+        });
+    }
+
+    openButton.addEventListener('click', event => {
+        event.preventDefault();
+        showAudioSettingsOverlay();
+    });
+
+    setChannelVolume('obtain', appState.audio.obtainVolume);
+    setChannelVolume('ui', appState.audio.uiVolume);
+}
+
+function initializeRollTriggerFloating() {
+    const cta = document.querySelector('.control-section--cta');
+    const controlsSurface = document.querySelector('.surface--controls');
+    if (!cta || !controlsSurface) return;
+
+    let ticking = false;
+
+    const updateMetrics = () => {
+        const controlsRect = controlsSurface.getBoundingClientRect();
+        const ctaRect = cta.getBoundingClientRect();
+        const topOffset = Number.parseFloat(getComputedStyle(cta).top) || 0;
+        const shouldFloat = controlsRect.bottom <= (ctaRect.height + topOffset);
+
+        cta.style.setProperty('--roll-cta-width', `${controlsRect.width}px`);
+        cta.style.setProperty('--roll-cta-left', `${controlsRect.left}px`);
+        cta.classList.toggle('control-section--cta--floating', shouldFloat);
+    };
+
+    const requestSync = () => {
+        if (ticking) return;
+        ticking = true;
+        requestAnimationFrame(() => {
+            updateMetrics();
+            ticking = false;
+        });
+    };
+
+    window.addEventListener('scroll', requestSync, { passive: true });
+    window.addEventListener('resize', requestSync, { passive: true });
+
+    requestSync();
+}
+
+function beginSimulationExperience() {
+    const overlay = document.getElementById('introOverlay');
+    const startButton = document.getElementById('startExperienceButton');
+    const bgMusic = document.getElementById('ambientMusic');
+
+    if (startButton && typeof startButton.blur === 'function') {
+        startButton.blur();
+    }
+
+    resumeAudioEngine();
+    if (bgMusic) {
+        primeBackgroundMusic(bgMusic);
+        startBackgroundMusic(bgMusic);
+    }
+
+    if (overlay) {
+        overlay.setAttribute('hidden', '');
+        overlay.setAttribute('aria-hidden', 'true');
+    }
+}
+
+function initializeIntroOverlay() {
+    const overlay = document.getElementById('introOverlay');
+    const startButton = document.getElementById('startExperienceButton');
+    if (!overlay || !startButton) {
+        return;
+    }
+
+    startButton.addEventListener('click', () => {
+        beginSimulationExperience();
+    });
 }
 
 const largeRollWarningManager = (() => {
@@ -759,16 +1038,50 @@ function canUseMediaElementSource(element) {
     }
 }
 
-function applyMediaGain(element) {
-    if (!element) return;
-    const dataset = element.dataset || {};
+function clamp01(value) {
+    if (!Number.isFinite(value)) return 0;
+    return Math.max(0, Math.min(1, value));
+}
+
+function getChannelVolumeMultiplier(category = 'obtain') {
+    if (category === 'ui') return clamp01(appState.audio.uiVolume ?? 1);
+    if (category === 'cutscene') return clamp01(appState.audio.cutsceneVolume ?? 1);
+    if (category === 'music') return clamp01(appState.audio.musicVolume ?? 1);
+    return clamp01(appState.audio.obtainVolume ?? 1);
+}
+
+function resolveBaseGain(element, fallback = 1) {
+    const dataset = element?.dataset || {};
     const gainValueRaw = dataset.gain ?? dataset.boost ?? dataset.volume;
-    if (gainValueRaw === undefined) return;
+    const gainValue = Number.parseFloat(gainValueRaw);
+    if (Number.isFinite(gainValue) && gainValue > 0) {
+        return gainValue;
+    }
+    if (element && typeof element.volume === 'number' && element.volume > 0) {
+        return element.volume;
+    }
+    return fallback;
+}
 
-    let gainValue = Number.parseFloat(gainValueRaw);
-    if (!Number.isFinite(gainValue) || gainValue <= 0) return;
+function applyMediaGain(element, { category = 'obtain', fallbackGain } = {}) {
+    if (!element) return;
 
-    const context = canUseMediaElementSource(element) ? resumeAudioEngine() : null;
+    const baseGain = resolveBaseGain(element, fallbackGain ?? 1);
+    const channelMultiplier = getChannelVolumeMultiplier(category);
+    const resolvedGain = baseGain * channelMultiplier;
+
+    const shouldMute = resolvedGain <= 0;
+    if (shouldMute) {
+        element.muted = true;
+    } else {
+        element.muted = false;
+        if (typeof element.removeAttribute === 'function') {
+            element.removeAttribute('muted');
+        }
+    }
+
+    const channelEnabled = isSoundChannelActive(category);
+    const context = channelEnabled && canUseMediaElementSource(element) ? resumeAudioEngine() : null;
     if (context) {
         try {
             let entry = appState.audio.gainMap.get(element);
@@ -779,18 +1092,21 @@ function applyMediaGain(element) {
                 entry = { gainNode };
                 appState.audio.gainMap.set(element, entry);
             }
-            entry.gainNode.gain.value = gainValue;
+            entry.gainNode.gain.value = resolvedGain;
             return;
         } catch (error) {
             console.warn('Unable to configure media element gain', error);
         }
     }
 
-    element.volume = Math.max(0, Math.min(gainValue, 1));
+    element.volume = clamp01(resolvedGain);
 }
 
 function isSoundChannelActive(category) {
+    const channelVolume = getChannelVolumeMultiplier(category);
+    if (channelVolume <= 0) return false;
     if (category === 'ui') return appState.audio.ui;
+    if (category === 'cutscene') return appState.audio.roll;
     return appState.audio.roll;
 }
 
@@ -798,6 +1114,11 @@ function playSoundEffect(audioElement, category = 'rolling') {
     if (!audioElement) return;
     if (!isSoundChannelActive(category)) return;
     if (category !== 'ui' && appState.videoPlaying) return;
+
+    const baseGain = resolveBaseGain(audioElement, category === 'ui' ? 0.3 : 1);
+    const channelMultiplier = getChannelVolumeMultiplier(category);
+    const playbackGain = baseGain * channelMultiplier;
+    if (playbackGain <= 0) return;
 
     const spawnFallbackPlayer = () => {
         const sourceUrl = normalizeMediaSource(audioElement);
@@ -817,16 +1138,7 @@ function playSoundEffect(audioElement, category = 'rolling') {
         fallbackPlayer.playsInline = true;
         fallbackPlayer.autoplay = false;
 
-        const dataset = audioElement.dataset || {};
-        const gainValueRaw = dataset.gain ?? dataset.boost ?? dataset.volume;
-        if (gainValueRaw !== undefined) {
-            const gainValue = Number.parseFloat(gainValueRaw);
-            if (Number.isFinite(gainValue) && gainValue > 0) {
-                fallbackPlayer.volume = Math.max(0, Math.min(gainValue, 1));
-            }
-        } else {
-            fallbackPlayer.volume = audioElement.volume;
-        }
+        fallbackPlayer.volume = clamp01(playbackGain);
 
         const cleanup = () => {
             fallbackPlayer.pause();
@@ -900,9 +1212,7 @@ function playSoundEffect(audioElement, category = 'rolling') {
         const source = context.createBufferSource();
         source.buffer = buffer;
         const gainNode = context.createGain();
-        if (category === 'ui') {
-            gainNode.gain.value = 0.3;
-        }
+        gainNode.gain.value = playbackGain;
         source.connect(gainNode).connect(context.destination);
         source.start(0);
     });
@@ -919,12 +1229,17 @@ function computeBackgroundMusicBase(bgMusic) {
     return 0.18;
 }
 
+function computeEffectiveBackgroundVolume(bgMusic) {
+    const base = computeBackgroundMusicBase(bgMusic);
+    return clamp01(base * getChannelVolumeMultiplier('music'));
+}
+
 function synchronizeBackgroundRouting(bgMusic) {
     if (!bgMusic) {
         return { baseVolume: 0.18, chain: null };
     }
 
-    const baseVolume = computeBackgroundMusicBase(bgMusic);
+    const baseVolume = computeEffectiveBackgroundVolume(bgMusic);
     const chain = ensureGlitchAudioChain(bgMusic);
 
     if (chain && chain.gainNode) {
@@ -999,6 +1314,8 @@ function toggleRollingAudio() {
             }
             startBackgroundMusic(bgMusic);
         }
+        applyChannelVolumeToElements('music');
+        applyChannelVolumeToElements('obtain');
     } else if (bgMusic) {
         bgMusic.muted = true;
         if (typeof bgMusic.setAttribute === 'function') {
@@ -1009,13 +1326,22 @@ function toggleRollingAudio() {
     }
 
     if (soundToggle) {
-        soundToggle.textContent = appState.audio.roll ? 'Other Sounds: On' : 'Other Sounds: Off';
+        soundToggle.textContent = appState.audio.roll ? 'Audio: On' : 'Audio: Off';
         soundToggle.setAttribute('aria-pressed', appState.audio.roll);
     }
 }
 
+function toggleObtainAudio() {
+    const enableObtain = !appState.audio.obtain;
+    const restoredVolume = appState.audio.obtainLastVolume > 0 ? appState.audio.obtainLastVolume : DEFAULT_AUDIO_LEVEL;
+    setChannelVolume('obtain', enableObtain ? restoredVolume : 0);
+    resumeAudioEngine();
+}
+
 function toggleInterfaceAudio() {
-    appState.audio.ui = !appState.audio.ui;
+    const enableUi = !appState.audio.ui;
+    const restoredVolume = appState.audio.uiLastVolume > 0 ? appState.audio.uiLastVolume : DEFAULT_AUDIO_LEVEL;
+    setChannelVolume('ui', enableUi ? restoredVolume : 0);
     resumeAudioEngine();
 
     const uiSoundToggle = document.getElementById('uiAudioToggle');
@@ -1247,7 +1573,7 @@ function scheduleGlitchWarbleCycle(bgMusic, chain) {
 
     resetGlitchWarbleTimer();
 
-    const baseGain = chain.baseGain ?? computeBackgroundMusicBase(bgMusic);
+    const baseGain = chain.baseGain ?? computeEffectiveBackgroundVolume(bgMusic);
     const context = chain.context;
     const duration = randomDecimalBetween(0.18, 0.45);
     const wobble = randomDecimalBetween(0.08, 0.18);
@@ -1294,12 +1620,12 @@ function ensureGlitchAudioChain(audioElement) {
 
     const context = resumeAudioEngine();
     if (!context) {
-        applyMediaGain(audioElement);
+        applyMediaGain(audioElement, { category: 'music' });
         return null;
     }
 
     if (!canUseMediaElementSource(audioElement)) {
-        applyMediaGain(audioElement);
+        applyMediaGain(audioElement, { category: 'music' });
         return null;
     }
 
@@ -1327,7 +1653,7 @@ function ensureGlitchAudioChain(audioElement) {
 
     if (!glitchUiState.gainNode) {
         glitchUiState.gainNode = context.createGain();
-        glitchUiState.gainNode.gain.value = computeBackgroundMusicBase(audioElement);
+        glitchUiState.gainNode.gain.value = computeEffectiveBackgroundVolume(audioElement);
     }
 
     const desiredPipeline = shouldUseGlitchBaseEffect() ? 'glitch' : 'clean';
@@ -1384,7 +1710,7 @@ function updateGlitchAudioControls(enabled) {
         scheduleGlitchWarbleCycle(bgMusic, chain);
     } else {
         resetGlitchWarbleTimer();
-        const baseVolume = chain.baseGain ?? computeBackgroundMusicBase(bgMusic);
+        const baseVolume = chain.baseGain ?? computeEffectiveBackgroundVolume(bgMusic);
         if (typeof chain.gainNode.gain.setTargetAtTime === 'function') {
             chain.gainNode.gain.setTargetAtTime(baseVolume, chain.context.currentTime, 0.1);
         } else {
@@ -1616,7 +1942,9 @@ let baseLuck = 1;
 let currentLuck = 1;
 let lastVipMultiplier = 1;
 let lastXyzMultiplier = 1;
+let lastXcMultiplier = 1;
 let lastDaveMultiplier = 1;
+let lastDorcelessnessMultiplier = 1;
 
 const MILLION_LUCK_PRESET = 1000000;
 
@@ -1646,64 +1974,30 @@ function resetLuckPresetAnimations() {
     });
 }
 
-function isLuckPresetAddModeEnabled() {
-    const toggle = document.getElementById('luck-preset-add-toggle');
-    return Boolean(toggle && toggle.checked);
-}
-
 function applyLuckValue(value, options = {}) {
-    const numericValue = Number(value);
-    if (!Number.isFinite(numericValue)) {
-        return;
+    baseLuck = value;
+    currentLuck = value;
+    lastVipMultiplier = 1;
+    lastXyzMultiplier = 1;
+    lastXcMultiplier = 1;
+    lastDaveMultiplier = 1;
+    lastDorcelessnessMultiplier = 1;
+    document.getElementById('vip-dropdown').value = '1';
+    document.getElementById('xyz-luck-toggle').checked = false;
+    document.getElementById('xc-luck-toggle').checked = false;
+    document.getElementById('dorcelessness-luck-toggle').checked = false;
+    document.getElementById('yg-blessing-toggle').checked = false;
+    refreshCustomSelect('vip-dropdown');
+    if (document.getElementById('dave-luck-dropdown')) {
+        document.getElementById('dave-luck-dropdown').value = '1';
+        refreshCustomSelect('dave-luck-dropdown');
     }
-
     const luckInput = document.getElementById('luck-total');
-    const shouldFormat = luckInput ? document.activeElement !== luckInput : true;
-
-    if (isLuckPresetAddModeEnabled()) {
-        const hasExistingLuck = Boolean(luckInput && (luckInput.dataset.rawValue ?? '').length > 0);
-        const startingBaseLuck = hasExistingLuck && Number.isFinite(baseLuck) ? Math.max(1, baseLuck) : 0;
-        const updatedBaseLuck = Math.max(0, startingBaseLuck) + numericValue;
-        baseLuck = Math.max(1, updatedBaseLuck);
-
-        const updatedCurrentLuck = baseLuck * lastVipMultiplier * lastXyzMultiplier * lastDaveMultiplier;
-        currentLuck = updatedCurrentLuck;
-
-        if (luckInput) {
-            setNumericInputValue(luckInput, updatedCurrentLuck, { format: shouldFormat, min: 1 });
-        }
-
-        syncLuckVisualEffects(updatedCurrentLuck);
-    } else {
-        baseLuck = Math.max(1, numericValue);
-        currentLuck = baseLuck;
-        lastVipMultiplier = 1;
-        lastXyzMultiplier = 1;
-        lastDaveMultiplier = 1;
-
-        const vipDropdown = document.getElementById('vip-dropdown');
-        if (vipDropdown) {
-            vipDropdown.value = '1';
-            refreshCustomSelect('vip-dropdown');
-        }
-
-        const xyzToggle = document.getElementById('xyz-luck-toggle');
-        if (xyzToggle) {
-            xyzToggle.checked = false;
-        }
-
-        const daveDropdown = document.getElementById('dave-luck-dropdown');
-        if (daveDropdown) {
-            daveDropdown.value = '1';
-            refreshCustomSelect('dave-luck-dropdown');
-        }
-
-        if (luckInput) {
-            setNumericInputValue(luckInput, baseLuck, { format: shouldFormat, min: 1 });
-        }
-
-        syncLuckVisualEffects(baseLuck);
+    if (luckInput) {
+        setNumericInputValue(luckInput, value, { format: true, min: 1 });
     }
+
+    syncLuckVisualEffects(value);
 
     if (typeof applyOblivionPresetOptions === 'function') {
         applyOblivionPresetOptions(options);
@@ -1740,6 +2034,8 @@ function recomputeLuckValue() {
         biome: document.getElementById('biome-dropdown'),
         vip: document.getElementById('vip-dropdown'),
         xyz: document.getElementById('xyz-luck-toggle'),
+        xc: document.getElementById('xc-luck-toggle'),
+        dorcelessness: document.getElementById('dorcelessness-luck-toggle'),
         dave: document.getElementById('dave-luck-dropdown'),
         luckInput: document.getElementById('luck-total')
     };
@@ -1750,6 +2046,8 @@ function recomputeLuckValue() {
     const multipliers = {
         vip: parseFloat(controls.vip ? controls.vip.value : '1') || 1,
         xyz: controls.xyz && controls.xyz.checked ? 2 : 1,
+        xc: controls.xc && controls.xc.checked ? 2 : 1,
+        dorcelessness: controls.dorcelessness && controls.dorcelessness.checked ? 2 : 1,
         dave: isLimboBiome && controls.dave ? parseFloat(controls.dave.value) || 1 : 1
     };
 
@@ -1762,13 +2060,21 @@ function recomputeLuckValue() {
         currentLuck = normalizedLuck;
         lastVipMultiplier = 1;
         lastXyzMultiplier = 1;
+        lastXcMultiplier = 1;
         lastDaveMultiplier = 1;
+        lastDorcelessnessMultiplier = 1;
         if (controls.vip) {
             controls.vip.value = '1';
             refreshCustomSelect('vip-dropdown');
         }
         if (controls.xyz) {
             controls.xyz.checked = false;
+        }
+        if (controls.xc) {
+            controls.xc.checked = false;
+        }
+        if (controls.dorcelessness) {
+            controls.dorcelessness.checked = false;
         }
         if (controls.dave) {
             controls.dave.value = '1';
@@ -1786,10 +2092,12 @@ function recomputeLuckValue() {
         return;
     }
 
-    currentLuck = baseLuck * multipliers.vip * multipliers.xyz * multipliers.dave;
+    currentLuck = baseLuck * multipliers.vip * multipliers.xyz * multipliers.xc * multipliers.dorcelessness * multipliers.dave;
     lastVipMultiplier = multipliers.vip;
     lastXyzMultiplier = multipliers.xyz;
+    lastXcMultiplier = multipliers.xc;
     lastDaveMultiplier = multipliers.dave;
+    lastDorcelessnessMultiplier = multipliers.dorcelessness;
     if (luckField) {
         const shouldFormat = document.activeElement !== luckField;
         setNumericInputValue(luckField, currentLuck, { format: shouldFormat, min: 1 });
@@ -1868,11 +2176,17 @@ function initializeBiomeInterface() {
     const biome = selectionState.canonicalBiome;
     const daveLuckContainer = document.getElementById('dave-luck-wrapper');
     const xyzLuckContainer = document.getElementById('xyz-luck-wrapper');
+    const xcLuckContainer = document.getElementById('xc-luck-wrapper');
+    const dorcelessnessLuckContainer = document.getElementById('dorcelessness-luck-wrapper');
+    const ygBlessingContainer = document.getElementById('yg-blessing-wrapper');
     const luckPresets = document.getElementById('luck-preset-panel');
     const voidHeartBtn = document.getElementById('void-heart-trigger');
     if (biome === 'limbo') {
         if (daveLuckContainer) daveLuckContainer.style.display = '';
         if (xyzLuckContainer) xyzLuckContainer.style.display = '';
+        if (xcLuckContainer) xcLuckContainer.style.display = '';
+        if (dorcelessnessLuckContainer) dorcelessnessLuckContainer.style.display = '';
+        if (ygBlessingContainer) ygBlessingContainer.style.display = '';
         if (luckPresets) {
             Array.from(luckPresets.children).forEach(btn => {
                 if (btn === voidHeartBtn) {
@@ -1887,6 +2201,9 @@ function initializeBiomeInterface() {
     } else {
         if (daveLuckContainer) daveLuckContainer.style.display = 'none';
         if (xyzLuckContainer) xyzLuckContainer.style.display = '';
+        if (xcLuckContainer) xcLuckContainer.style.display = '';
+        if (dorcelessnessLuckContainer) dorcelessnessLuckContainer.style.display = '';
+        if (ygBlessingContainer) ygBlessingContainer.style.display = '';
         if (luckPresets) {
             Array.from(luckPresets.children).forEach(btn => {
                 if (btn === voidHeartBtn) {
@@ -1936,7 +2253,7 @@ function playAuraVideo(videoId, options = {}) {
         }
 
         if (appState.audio.roll) {
-            applyMediaGain(video);
+            applyMediaGain(video, { category: 'cutscene' });
         }
 
         appState.videoPlaying = true;
@@ -2172,6 +2489,8 @@ function resolveAuraStyleClass(aura) {
     if (name.startsWith('Pixelation')) classes.push('sigil-effect-pixelation');
     if (name.startsWith('Luminosity')) classes.push('sigil-effect-luminosity');
     if (name.startsWith('Equinox')) classes.push('sigil-effect-equinox');
+    if (name.startsWith('Megaphone')) classes.push('sigil-effect-megaphone');
+    if (name.startsWith('Nyctophobia')) classes.push('sigil-effect-nyctophobia');
 
     const auraData = typeof aura === 'string' ? null : aura;
 
@@ -2327,6 +2646,8 @@ function determineResultPriority(aura, baseChance) {
     return baseChance;
 }
 
+const MEGAPHONE_AURA_NAME = 'Megaphone - 5,000';
+
 const AURA_BLUEPRINT_SOURCE = Object.freeze([
     { name: "Oblivion", chance: 2000, requiresOblivionPreset: true, ignoreLuck: true, fixedRollThreshold: 1, subtitle: "The Truth Seeker", cutscene: "oblivion-cutscene", disableRarityClass: true },
     { name: "Memory", chance: 200000, requiresOblivionPreset: true, ignoreLuck: true, fixedRollThreshold: 1, subtitle: "The Fallen", cutscene: "memory-cutscene", disableRarityClass: true },
@@ -2335,6 +2656,7 @@ const AURA_BLUEPRINT_SOURCE = Object.freeze([
     { name: "Luminosity - 1,200,000,000", chance: 1200000000, cutscene: "luminosity-cutscene" },
     { name: "Erebus - 1,200,000,000", chance: 1200000000, nativeBiomes: ["glitch", "bloodRain"], cutscene: "erebus-cutscene" },
     { name: "Pixelation - 1,073,741,824", chance: 1073741824, cutscene: "pixelation-cutscene" },
+    { name: "Nyctophobia - 1,011,111,010", chance: 1011111010, nativeBiomes: ["limbo"], cutscene: "nyctophobia-cutscene" },
     { name: "Lamenthyr - 1,000,000,000", chance: 1000000000, nativeBiomes: ["glitch", "bloodRain"], cutscene: "lamenthyr-cutscene" },
     { name: "Arachnophobia - 940,000,000", chance: 940000000, nativeBiomes: ["glitch", "pumpkinMoon"] },
     { name: "Ravage - 930,000,000", chance: 930000000, nativeBiomes: ["glitch", "graveyard"] },
@@ -2376,13 +2698,15 @@ const AURA_BLUEPRINT_SOURCE = Object.freeze([
     { name: "Bloodlust - 300,000,000", chance: 300000000, breakthroughs: { hell: 6 } },
     { name: "Exotic : Void - 299,999,999", chance: 299999999 },
     { name: "Graveborn - 290,000,000", chance: 290000000, nativeBiomes: ["glitch", "graveyard"] },
-    { name: "Astral : Legendarium - 267,200,000", chance: 267200000, breakthroughs: { starfall: 5 } },
+    { name: "Astral : Zodiac - 267,200,000", chance: 267200000, breakthroughs: { starfall: 5 } },
     { name: "Archangel - 250,000,000", chance: 250000000 },
     { name: "Surfer : Shard Surfer - 225,000,000", chance: 225000000, breakthroughs: { snowy: 3 } },
     { name: "HYPER-VOLT : EVER-STORM - 225,000,000", chance: 225000000 },
+    { name: "Lumenpool - 220,000,000", chance: 220000000, breakthroughs: { rainy: 4 } },
     { name: "Oppression - 220,000,000", chance: 220000000, nativeBiomes: ["glitch"], cutscene: "oppression-cutscene" },
     { name: "Impeached - 200,000,000", chance: 200000000, breakthroughs: { corruption: 5 } },
     { name: "Nightmare Sky - 190,000,000", chance: 190000000, nativeBiomes: ["pumpkinMoon"] },
+    { name: "Felled - 180,000,000", chance: 180000000, breakthroughs: { hell: 6 } },
     { name: "Twilight : Withering Grace - 180,000,000", chance: 180000000, breakthroughs: { night: 10 } },
     { name: "Symphony - 175,000,000", chance: 175000000 },
     { name: "Glock : the glock of the sky - 170,000,000", chance: 170000000 },
@@ -2402,6 +2726,7 @@ const AURA_BLUEPRINT_SOURCE = Object.freeze([
     { name: "Winter Fantasy - 72,000,000", chance: 72000000, breakthroughs: { snowy: 3 } },
     { name: "Dullahan - 72,000,000", chance: 72000000, nativeBiomes: ["graveyard"] },
     { name: "Reaper - 66,000,000", chance: 66000000, nativeBiomes: ["glitch", "bloodRain"] },
+    { name: "Antivirus - 62,500,000", chance: 62500000 },
     { name: "Twilight : Iridescent Memory - 60,000,000", chance: 60000000, breakthroughs: { night: 10 } },
     { name: "SENTINEL - 60,000,000", chance: 60000000 },
     { name: "Matrix - 50,000,000", chance: 50000000 },
@@ -2515,7 +2840,7 @@ const AURA_BLUEPRINT_SOURCE = Object.freeze([
     { name: "Hazard - 7,000", chance: 7000, breakthroughs: { corruption: 5 } },
     { name: "Flushed : Heart Eye - 6,900", chance: 6900 },
     { name: "Flushed - 6,900", chance: 6900 },
-    { name: "Megaphone - 5,000", chance: 5000 },
+    { name: MEGAPHONE_AURA_NAME, chance: 5000, requiresYgBlessing: true },
     { name: "Bleeding - 4,444", chance: 4444 },
     { name: "Sidereum - 4,096", chance: 4096 },
     { name: "Flora - 3,700", chance: 3700 },
@@ -2776,7 +3101,7 @@ function getAuraEventId(aura) {
     return auraEventIndex.get(aura.name) || null;
 }
 
-const CUTSCENE_PRIORITY_SEQUENCE = ["oblivion-cutscene", "memory-cutscene", "neferkhaf-cutscene", "equinox-cutscene", "erebus-cutscene", "luminosity-cutscene", "pixelation-cutscene", "lamenthyr-cutscene", "dreammetric-cutscene", "oppression-cutscene"];
+const CUTSCENE_PRIORITY_SEQUENCE = ["oblivion-cutscene", "memory-cutscene", "neferkhaf-cutscene", "equinox-cutscene", "erebus-cutscene", "luminosity-cutscene", "pixelation-cutscene", "nyctophobia-cutscene", "lamenthyr-cutscene", "dreammetric-cutscene", "oppression-cutscene"];
 
 oblivionAuraData = AURA_REGISTRY.find(aura => aura.name === OBLIVION_AURA_LABEL) || null;
 memoryAuraData = AURA_REGISTRY.find(aura => aura.name === MEMORY_AURA_LABEL) || null;
@@ -3340,6 +3665,8 @@ document.addEventListener('DOMContentLoaded', setupLuckPresetAnimations);
 document.addEventListener('DOMContentLoaded', setupChangelogTabs);
 document.addEventListener('DOMContentLoaded', setupVersionChangelogOverlay);
 document.addEventListener('DOMContentLoaded', maybeShowChangelogOnFirstVisit);
+document.addEventListener('DOMContentLoaded', initializeIntroOverlay);
+document.addEventListener('DOMContentLoaded', initializeRollTriggerFloating);
 
 document.addEventListener('DOMContentLoaded', () => {
     const confirmButton = document.getElementById('cutsceneWarningConfirm');
@@ -3963,6 +4290,14 @@ document.addEventListener('DOMContentLoaded', () => {
     if (xyzToggle) {
         xyzToggle.addEventListener('change', recomputeLuckValue);
     }
+    const xcToggle = document.getElementById('xc-luck-toggle');
+    if (xcToggle) {
+        xcToggle.addEventListener('change', recomputeLuckValue);
+    }
+    const dorcelessnessToggle = document.getElementById('dorcelessness-luck-toggle');
+    if (dorcelessnessToggle) {
+        dorcelessnessToggle.addEventListener('change', recomputeLuckValue);
+    }
     const daveDropdown = document.getElementById('dave-luck-dropdown');
     if (daveDropdown) {
         daveDropdown.addEventListener('change', recomputeLuckValue);
@@ -3977,9 +4312,14 @@ document.addEventListener('DOMContentLoaded', () => {
             currentLuck = normalized;
             lastVipMultiplier = 1;
             lastXyzMultiplier = 1;
+            lastXcMultiplier = 1;
             lastDaveMultiplier = 1;
+            lastDorcelessnessMultiplier = 1;
             document.getElementById('vip-dropdown').value = '1';
             document.getElementById('xyz-luck-toggle').checked = false;
+            document.getElementById('xc-luck-toggle').checked = false;
+            document.getElementById('dorcelessness-luck-toggle').checked = false;
+            document.getElementById('yg-blessing-toggle').checked = false;
             refreshCustomSelect('vip-dropdown');
             if (daveDropdown) {
                 daveDropdown.value = '1';
@@ -3994,18 +4334,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initializeBiomeInterface();
 
     setupShareInterface();
-
-    const soundToggle = document.getElementById('rollAudioToggle');
-    if (soundToggle) {
-        soundToggle.textContent = 'Other Sounds: Off';
-        soundToggle.setAttribute('aria-pressed', 'false');
-    }
-
-    const uiSoundToggle = document.getElementById('uiAudioToggle');
-    if (uiSoundToggle) {
-        uiSoundToggle.textContent = 'UI Sound: Off';
-        uiSoundToggle.setAttribute('aria-pressed', 'false');
-    }
+    initializeAudioSettingsPanel();
 
     const cutsceneToggle = document.getElementById('cinematicToggle');
     if (cutsceneToggle) {
@@ -4099,6 +4428,15 @@ function resolveXpTierForChance(chance) {
 
 const LIMBO_NATIVE_FILTER = ['limbo', 'limbo-null'];
 
+function isYgBlessingEnabled() {
+    if (typeof document === 'undefined') {
+        return false;
+    }
+
+    const toggle = document.getElementById('yg-blessing-toggle');
+    return Boolean(toggle && toggle.checked);
+}
+
 function createAuraEvaluationContext(selection, { eventChecker }) {
     const selectionState = selection || collectBiomeSelectionState();
     const biome = selectionState?.canonicalBiome || 'normal';
@@ -4132,7 +4470,8 @@ function createAuraEvaluationContext(selection, { eventChecker }) {
         eventChecker,
         activeBiomes,
         breakthroughBiomes,
-        primaryBiome: selectionState?.primaryBiome || null
+        primaryBiome: selectionState?.primaryBiome || null,
+        ygBlessingActive: isYgBlessingEnabled()
     };
 }
 
@@ -4228,6 +4567,17 @@ function computeStandardEffectiveChance(aura, context) {
 }
 
 function determineAuraEffectiveChance(aura, context) {
+    if (aura?.requiresYgBlessing) {
+        const blessingActive = context?.ygBlessingActive === true;
+        const canonicalBiome = context?.biome || 'normal';
+        if (!blessingActive) {
+            return Infinity;
+        }
+        if (canonicalBiome === 'limbo' || canonicalBiome === 'limbo-null') {
+            return Infinity;
+        }
+    }
+
     if (context.biome === 'limbo') {
         return computeLimboEffectiveChance(aura, context);
     }
@@ -4435,7 +4785,7 @@ function runRollSimulation(options = {}) {
         brandMark.classList.add('banner__emblem--spinning');
     }
 
-    playSoundEffect(audio.roll);
+    playSoundEffect(audio.roll, 'obtain');
 
     let parsedLuck = getNumericInputValue(luckField, { min: 1 });
     if (!Number.isFinite(parsedLuck)) {
@@ -4611,18 +4961,18 @@ function runRollSimulation(options = {}) {
 
         if (highestChance >= 99999999) {
             if (biome === 'limbo') {
-                playSoundEffect(audio.limbo99m);
+                playSoundEffect(audio.limbo99m, 'obtain');
             } else {
-                playSoundEffect(audio.m100);
+                playSoundEffect(audio.m100, 'obtain');
             }
         } else if (highestChance >= 10000000) {
-            playSoundEffect(audio.m10);
+            playSoundEffect(audio.m10, 'obtain');
         } else if (highestChance >= 1000000) {
-            playSoundEffect(audio.k100);
+            playSoundEffect(audio.k100, 'obtain');
         } else if (highestChance >= 100000) {
-            playSoundEffect(audio.k10);
+            playSoundEffect(audio.k10, 'obtain');
         } else if (highestChance >= 1000) {
-            playSoundEffect(audio.k1);
+            playSoundEffect(audio.k1, 'obtain');
         }
 
         const biomeLabel = resolveSelectionLabel(
@@ -5430,6 +5780,31 @@ const SHARE_IMAGE_EFFECT_HANDLERS = Object.freeze({
         styleSet.name.fill = '#ff004c';
         styleSet.name.transform = text => text.toUpperCase();
     },
+    'sigil-effect-megaphone': styleSet => {
+        const font = '700 24px "Press Start 2P", "Sarpanch", sans-serif';
+        styleSet.name.font = font;
+        styleSet.name.letterSpacing = 1.8;
+        styleSet.name.lineHeightMultiplier = 1.2;
+        styleSet.name.fill = (ctx, x, y, width) => {
+            const gradient = ctx.createLinearGradient(x, y, x + width, y + width * 0.2);
+            gradient.addColorStop(0, '#a7ffe7');
+            gradient.addColorStop(0.45, '#6bf5c6');
+            gradient.addColorStop(1, '#38c9a2');
+            return gradient;
+        };
+        styleSet.name.shadowLayers = [
+            { color: 'rgba(0, 40, 32, 0.85)', blur: 0, offsetX: 1, offsetY: 1 },
+            { color: 'rgba(60, 220, 200, 0.4)', blur: 10, offsetX: 0, offsetY: 2 },
+            { color: 'rgba(14, 28, 24, 0.65)', blur: 18, offsetX: 0, offsetY: 6 }
+        ];
+        styleSet.name.transform = text => text.toUpperCase();
+        if (styleSet.subtitle) {
+            styleSet.subtitle.font = '600 16px "Sarpanch", sans-serif';
+            styleSet.subtitle.fill = 'rgba(140, 244, 214, 0.9)';
+            styleSet.subtitle.letterSpacing = 1.2;
+            styleSet.subtitle.lineHeightMultiplier = 1.2;
+        }
+    },
     'sigil-effect-luminosity': styleSet => {
         styleSet.name.shadowLayers = [
             { color: 'rgba(142, 230, 255, 0.85)', blur: 18, offsetX: 0, offsetY: 3 }
@@ -5465,6 +5840,28 @@ const SHARE_IMAGE_EFFECT_HANDLERS = Object.freeze({
             styleSet.subtitle.fill = 'rgba(214, 228, 255, 0.78)';
             styleSet.subtitle.letterSpacing = 1.4;
             styleSet.subtitle.lineHeightMultiplier = 1.25;
+        }
+    },
+    'sigil-effect-nyctophobia': styleSet => {
+        const baseFill = SHARE_IMAGE_BASE_NAME_STYLE.fill;
+        const hasCustomFill = styleSet.name.fill !== baseFill;
+        styleSet.name.shadowLayers.push(
+            { color: 'rgba(255, 255, 255, 0.82)', blur: 6, offsetX: 0, offsetY: 0 },
+            { color: 'rgba(0, 0, 0, 0.9)', blur: 0, offsetX: 1, offsetY: 1 }
+        );
+        if (!hasCustomFill) {
+            styleSet.name.fill = '#000000';
+        }
+        const nyctoFrames = [
+            'N̵̮̖͎͐Y̸̱̝͕̏̔͆C̶̫̒̀͌T̵̻̪̓͛̕O̸̪͗͌͝P̷̳̙̏͘H̶͔̮͒̓͝O̵̱̲̎̽͗B̸̗̤̅͐͝I̷͎̫̠̐̏͝Ḁ̶̯̺͋',
+            'N̵̗̙̊̒Y̴̢͕͕͋̑͠C̵̘͛̐͘T̴̢͉͂͌O̷̺͇̐̕̚P̵̮̾̅̓H̸̦̫̑̀͠O̸̘͚̾͂B̵̨̮̈́͌Ḭ̵̱̇̓͠A̸̯̼̓̊',
+            'N̸̺̯̓̑Y̷̪͓̆̿͝C̷̼̫̍̿̚T̸̯̘̿̿̕Ǫ̶̖̅͘P̵̨̩͋͌̕H̴̰̺̎͘͝O̵̠̺̒͛͝B̴̖͕̾̑̕I̵̙̖̐͠A̵̤͕͗̒̕',
+            'Ṅ̷̢̤̗Y̷̡̯͂̎͝C̷̢̛̘̏͗T̴̥͚̽̋O̷̢͖͌͘P̶̫̥͋̿H̶̖̦͂̓́O̵̪͂̍̈́B̴̥̃̔̔I̵̪̩͒̕A̷̯̞͗͠',
+            'N̵͚̠̟̯͂Ỵ̷̱̊̌C̸̣̈́Ṱ̸̣̌̂̉͂O̵P̷̬͒Ḩ̷̤̉̾̀O̶͈͙̕B̸̻͑I̸͓̩̥͐̈́͝A̶̱̣̟̝̎'
+        ];
+        styleSet.name.transform = () => nyctoFrames[0];
+        if (styleSet.subtitle) {
+            styleSet.subtitle.fill = 'rgba(255, 255, 255, 0.82)';
         }
     }
 });

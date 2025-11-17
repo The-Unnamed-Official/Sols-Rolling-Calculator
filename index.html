@@ -25,49 +25,62 @@
         <div class="interface-backdrop__veil"></div>
     </div>
 
-    <audio id="ambientMusic" loop muted src="files/normalBiomeMusic.mp3" type="audio/mpeg" data-volume="0.18"></audio>
-    <audio id="rollLoopSound" muted src="files/SolsRollSound.mp3" type="audio/mpeg"></audio>
-    <audio id="clickSoundFx" muted src="files/SolsClickSound.mp3" type="audio/mpeg"></audio>
-    <audio id="hoverSoundFx" muted src="files/SolsHoverSound.mp3" type="audio/mpeg"></audio>
-    <audio id="thousandSound" muted src="files/1_000Roll.ogg" type="audio/ogg"></audio>
-    <audio id="tenThousandSound" muted src="files/10_000Roll.ogg" type="audio/ogg"></audio>
-    <audio id="hundredThousandSound" muted src="files/100_000Roll.ogg" type="audio/ogg"></audio>
-    <audio id="tenMillionSound" muted src="files/10_000_000Roll.ogg" type="audio/ogg"></audio>
-    <audio id="hundredMillionSound" muted src="files/100_000_000Roll.ogg" type="audio/ogg"></audio>
-    <audio id="limbo99mSoundFx" muted src="files/99mLimboRollSound.mp3" type="audio/mpeg" data-boost="6.7"></audio>
+    <audio id="ambientMusic" loop muted src="files/normalBiomeMusic.mp3" type="audio/mpeg" data-volume="0.18" data-audio-channel="music"></audio>
+    <audio id="rollLoopSound" muted src="files/SolsRollSound.mp3" type="audio/mpeg" data-audio-channel="obtain"></audio>
+    <audio id="clickSoundFx" muted src="files/SolsClickSound.mp3" type="audio/mpeg" data-audio-channel="ui"></audio>
+    <audio id="hoverSoundFx" muted src="files/SolsHoverSound.mp3" type="audio/mpeg" data-audio-channel="ui"></audio>
+    <audio id="thousandSound" muted src="files/1_000Roll.ogg" type="audio/ogg" data-audio-channel="obtain"></audio>
+    <audio id="tenThousandSound" muted src="files/10_000Roll.ogg" type="audio/ogg" data-audio-channel="obtain"></audio>
+    <audio id="hundredThousandSound" muted src="files/100_000Roll.ogg" type="audio/ogg" data-audio-channel="obtain"></audio>
+    <audio id="tenMillionSound" muted src="files/10_000_000Roll.ogg" type="audio/ogg" data-audio-channel="obtain"></audio>
+    <audio id="hundredMillionSound" muted src="files/100_000_000Roll.ogg" type="audio/ogg" data-audio-channel="obtain"></audio>
+    <audio id="limbo99mSoundFx" muted src="files/99mLimboRollSound.mp3" type="audio/mpeg" data-boost="6.7" data-audio-channel="obtain"></audio>
 
-    <video id="oblivion-cutscene" class="cutscene-video" preload="auto">
+    <video id="oblivion-cutscene" class="cutscene-video" preload="auto" data-audio-channel="cutscene">
         <source src="files/oblivionCutscene.webm" type="video/webm">
     </video>
-    <video id="memory-cutscene" class="cutscene-video" preload="auto">
+    <video id="memory-cutscene" class="cutscene-video" preload="auto" data-audio-channel="cutscene">
         <source src="files/memoryCutscene.webm" type="video/webm">
     </video>
-    <video id="neferkhaf-cutscene" class="cutscene-video" preload="auto">
+    <video id="neferkhaf-cutscene" class="cutscene-video" preload="auto" data-audio-channel="cutscene">
         <source src="files/neferkhafCutscene.webm" type="video/webm">
     </video>
-    <video id="equinox-cutscene" class="cutscene-video" preload="auto">
+    <video id="equinox-cutscene" class="cutscene-video" preload="auto" data-audio-channel="cutscene">
         <source src="files/equinoxCutscene.webm" type="video/webm">
     </video>
-    <video id="luminosity-cutscene" class="cutscene-video" preload="auto">
+    <video id="luminosity-cutscene" class="cutscene-video" preload="auto" data-audio-channel="cutscene">
         <source src="files/luminosityCutscene.webm" type="video/webm">
     </video>
-    <video id="pixelation-cutscene" class="cutscene-video" preload="auto">
+    <video id="pixelation-cutscene" class="cutscene-video" preload="auto" data-audio-channel="cutscene">
         <source src="files/pixelationCutscene.webm" type="video/webm">
     </video>
-    <video id="dreammetric-cutscene" class="cutscene-video" preload="auto">
+    <video id="nyctophobia-cutscene" class="cutscene-video" preload="auto" data-audio-channel="cutscene">
+        <source src="files/nyctophobiaCutscene.webm" type="video/webm">
+    </video>
+    <video id="dreammetric-cutscene" class="cutscene-video" preload="auto" data-audio-channel="cutscene">
         <source src="files/dreammetricCutscene.webm" type="video/webm">
     </video>
-    <video id="oppression-cutscene" class="cutscene-video" preload="auto">
+    <video id="oppression-cutscene" class="cutscene-video" preload="auto" data-audio-channel="cutscene">
         <source src="files/oppressionCutscene.webm" type="video/webm">
     </video>
-    <video id="lamenthyr-cutscene" class="cutscene-video" preload="auto">
+    <video id="lamenthyr-cutscene" class="cutscene-video" preload="auto" data-audio-channel="cutscene">
         <source src="files/lamenthyrCutscene.webm" type="video/webm">
     </video>
-    <video id="erebus-cutscene" class="cutscene-video" preload="auto">
+    <video id="erebus-cutscene" class="cutscene-video" preload="auto" data-audio-channel="cutscene">
         <source src="files/erebusCutscene.webm" type="video/webm">
     </video>
 
     <div id="cinematic-overlay" class="cinematic-overlay" aria-hidden="true"></div>
+
+    <div id="introOverlay" class="intro-overlay" role="dialog" aria-modal="true" aria-label="Start the simulation">
+        <div class="intro-overlay__panel">
+            <div class="intro-overlay__logo" role="img" aria-label="Sols Rolling Simulator">
+                <img src="files/logo.png" alt="Sols Rolling Simulator logo">
+            </div>
+            <p class="intro-overlay__copy">Begin the experience to unlock audio playback.</p>
+            <button type="button" class="intro-overlay__start-button" id="startExperienceButton">Start Simulation</button>
+        </div>
+    </div>
 
     <div class="interface-shell">
         <header class="surface interface-header" role="banner">
@@ -78,13 +91,13 @@
                 <div class="banner__meta">
                     <h1 class="banner__title">Sols Rolling Simulator</h1>
                     <p class="banner__subtitle">
-                        <button type="button" class="banner__version-button" id="versionInfoButton" aria-haspopup="dialog" aria-expanded="false" aria-label="View update notes for version V1.315" data-version-id="v1315">V1.315</button>
+                        <button type="button" class="banner__version-button" id="versionInfoButton" aria-haspopup="dialog" aria-expanded="false" aria-label="View update notes for version V1.4" data-version-id="v14">V1.4</button>
                         <span class="banner__subtitle-divider" aria-hidden="true">◉</span>
                         <span class="banner__subtitle-author">By <span class="banner__subtitle-author-name">not.unnamed</span></span>
                         <span class="banner__subtitle-divider" aria-hidden="true">◉</span>
-                        <span class="banner__subtitle-updated">Updated <time datetime="2025-10-29">2025/11/03</time></span>
+                        <span class="banner__subtitle-updated">Updated <time datetime="2025-11-17">2025/11/17</time></span>
                         <span class="banner__subtitle-divider" aria-hidden="true">◉</span>
-                        <span class="banner__subtitle-eon">Sol's RNG Eon 1-9.5</span>
+                        <span class="banner__subtitle-eon">Sol's RNG Eon 1-10</span>
                     </p>
                 </div>
             </div>
@@ -92,8 +105,7 @@
                 <div class="options-menu" id="optionsMenu">
                     <button class="interface-toggle options-menu__trigger" id="optionsMenuToggle" type="button" aria-haspopup="menu" aria-expanded="false" aria-controls="optionsMenuPanel">Settings</button>
                     <div class="options-menu__surface" id="optionsMenuPanel" aria-labelledby="optionsMenuToggle">
-                        <button class="interface-toggle options-menu__item" id="rollAudioToggle" type="button" onclick="toggleRollingAudio()" aria-pressed="false">Other Sounds: Off</button>
-                        <button class="interface-toggle options-menu__item" id="uiAudioToggle" type="button" onclick="toggleInterfaceAudio()" aria-pressed="false">UI Sound: Off</button>
+                        <button class="interface-toggle options-menu__item" id="audioSettingsButton" type="button">Audio</button>
                         <button class="interface-toggle options-menu__item" id="cinematicToggle" type="button" onclick="toggleCinematicMode()" aria-pressed="false">Cutscenes (Fullscreen recommended): Off</button>
                         <button class="interface-toggle options-menu__item" id="glitchEffectsToggle" type="button" onclick="toggleGlitchEffects()" aria-pressed="true">Glitch Effects: On</button>
                         <button class="interface-toggle options-menu__item" id="reduceMotionToggle" type="button" onclick="toggleReducedMotion()" aria-pressed="false">Reduce Animations: Off</button>
@@ -214,9 +226,33 @@
                         </span>
                     </div>
                     <div id="xyz-luck-wrapper" class="form-field form-field--toggle">
-                        <span class="form-field__label">XYZ Luck (2×)</span>
+                        <span class="form-field__label">XYZ Event (2×)</span>
                         <label class="toggle">
                             <input type="checkbox" id="xyz-luck-toggle" class="toggle__input">
+                            <span class="toggle__track"></span>
+                            <span class="toggle__thumb"></span>
+                        </label>
+                    </div>
+                    <div id="xc-luck-wrapper" class="form-field form-field--toggle">
+                        <span class="form-field__label">XC Event (2×)</span>
+                        <label class="toggle">
+                            <input type="checkbox" id="xc-luck-toggle" class="toggle__input">
+                            <span class="toggle__track"></span>
+                            <span class="toggle__thumb"></span>
+                        </label>
+                    </div>
+                    <div id="dorcelessness-luck-wrapper" class="form-field form-field--toggle">
+                        <span class="form-field__label">Dorcelessness (2×)</span>
+                        <label class="toggle">
+                            <input type="checkbox" id="dorcelessness-luck-toggle" class="toggle__input">
+                            <span class="toggle__track"></span>
+                            <span class="toggle__thumb"></span>
+                        </label>
+                    </div>
+                    <div id="yg-blessing-wrapper" class="form-field form-field--toggle">
+                        <span class="form-field__label">YG Blessing</span>
+                        <label class="toggle">
+                            <input type="checkbox" id="yg-blessing-toggle" class="toggle__input">
                             <span class="toggle__track"></span>
                             <span class="toggle__thumb"></span>
                         </label>
@@ -505,6 +541,7 @@
                 <li class="footer-credits__item">Oppression cutscene courtesy of <a href="https://www.youtube.com/watch?v=dgqkpBYNxiU" target="_blank" rel="noopener">SorrVriety</a>.</li>
                 <li class="footer-credits__item">Oblivion cutscene courtesy of <a href="https://www.youtube.com/watch?v=clQxiIRH8Ps" target="_blank" rel="noopener">Mr-yani</a>.</li>
                 <li class="footer-credits__item">Neferkhaf cutscene courtesy of <a href="https://www.reddit.com/r/SolsRNG/comments/1n3wot3/new_neferkhaf_cutscene/" target="_blank" rel="noopener">Sirothereal</a>.</li>
+                <li class="footer-credits__item">Nyctophobia cutscene courtesy of <a href="https://www.youtube.com/watch?v=KIK2iTCnfkw" target="_blank" rel="noopener">lmpixel & kito</a>.</li>
             </ul>
         </details>
     </footer>
@@ -533,6 +570,69 @@
         </div>
     </div>
 
+    <div id="audioSettingsOverlay" class="modal-overlay" hidden>
+        <div class="surface surface--modal audio-modal" role="dialog" aria-modal="true" aria-labelledby="audioSettingsTitle">
+            <div class="audio-modal__header">
+                <h2 class="audio-modal__title" id="audioSettingsTitle">Audio Settings</h2>
+                <p class="audio-modal__hint">Adjust the volume for each channel independently.</p>
+            </div>
+                <div class="audio-modal__controls">
+                    <div class="audio-modal__grid">
+                        <label class="audio-slider" for="audioMusicVolume">
+                            <div class="audio-slider__label-row">
+                                <span class="audio-slider__label">Background Music</span>
+                                <span class="audio-slider__value" data-audio-value="music">50%</span>
+                            </div>
+                            <input
+                                type="range"
+                                id="audioMusicVolume"
+                                class="audio-slider__input"
+                                min="0"
+                                max="100"
+                                value="50"
+                                step="1"
+                                data-audio-channel="music"
+                            >
+                        </label>
+                        <label class="audio-slider" for="audioCutsceneVolume">
+                            <div class="audio-slider__label-row">
+                                <span class="audio-slider__label">Cutscene Sounds</span>
+                                <span class="audio-slider__value" data-audio-value="cutscene">50%</span>
+                            </div>
+                            <input
+                                type="range"
+                                id="audioCutsceneVolume"
+                                class="audio-slider__input"
+                                min="0"
+                                max="100"
+                                value="50"
+                                step="1"
+                                data-audio-channel="cutscene"
+                            >
+                        </label>
+                    </div>
+                    <div class="audio-modal__toggles">
+                        <div class="audio-modal__toggle">
+                            <span class="audio-modal__toggle-label" id="audioObtainToggleLabel">Obtain Sounds</span>
+                            <label class="toggle" aria-labelledby="audioObtainToggleLabel">
+                                <input type="checkbox" id="audioObtainToggle" class="toggle__input" checked>
+                                <span class="toggle__track"></span>
+                                <span class="toggle__thumb"></span>
+                            </label>
+                        </div>
+                        <div class="audio-modal__toggle">
+                            <span class="audio-modal__toggle-label" id="audioUiToggleLabel">UI Sounds</span>
+                            <label class="toggle" aria-labelledby="audioUiToggleLabel">
+                                <input type="checkbox" id="audioUiToggle" class="toggle__input" checked>
+                                <span class="toggle__track"></span>
+                                <span class="toggle__thumb"></span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+        </div>
+    </div>
+
     <div id="versionChangelogOverlay" class="modal-overlay" hidden>
         <div class="surface surface--modal changelog-modal" role="dialog" aria-modal="true" aria-labelledby="versionChangelogTitle">
             <button
@@ -547,10 +647,20 @@
                 <button
                     type="button"
                     class="changelog-tab changelog-tab--active"
+                    id="changelog-tab-v14"
+                    role="tab"
+                    aria-controls="changelog-panel-v14"
+                    aria-selected="true"
+                    data-changelog-tab="v14"
+                >V1.4</button>
+                <button
+                    type="button"
+                    class="changelog-tab"
                     id="changelog-tab-v1315"
                     role="tab"
                     aria-controls="changelog-panel-v1315"
-                    aria-selected="true"
+                    aria-selected="false"
+                    tabindex="-1"
                     data-changelog-tab="v1315"
                 >V1.315</button>
                 <button
@@ -617,12 +727,74 @@
 
             <div class="changelog-modal__panels" data-changelog-panels>
                 <section
+                    id="changelog-panel-v14"
+                    class="changelog-modal__panel"
+                    role="tabpanel"
+                    aria-labelledby="changelog-tab-v14"
+                    data-changelog-panel="v14"
+                    tabindex="0"
+                >
+                    <header class="changelog-modal__header">
+                        <h2 class="changelog-modal__title" id="versionChangelogTitle">Version V1.4 Update Notes</h2>
+                        <p class="changelog-modal__meta">Updated 2025/11/17</p>
+                    </header>
+                    <p class="changelog-modal__intro">Latest changes:</p>
+                    <ul class="changelog-modal__list">
+                        <li>
+                            Added new luck toggles and renamed event switches:
+                            <ul class="changelog-modal__list changelog-modal__list--sub">
+                                <li>Dorcelessness (2×) has been added to the event switch lineup.</li>
+                                <li>XC Luck has been added to the event switch lineup.</li>
+                                <li>XYZ and XC luck switches renamed to XYZ Event (2×) and XC Event (2×).</li>
+                                <li>New YG Blessing toggle unlocks special aura behavior.</li>
+                            </ul>
+                        </li>
+                        <li>
+                            Accessibility and navigation updates:
+                            <ul class="changelog-modal__list changelog-modal__list--sub">
+                                <li>Added a Start Menu to guide players into the simulation with clearer controls.</li>
+                                <li>Made the roll button sticky so it stays in view for easier keyboard and screen reader access.</li>
+                            </ul>
+                        </li>
+                        <li>
+                            Expanded aura roster and conditions:
+                            <ul class="changelog-modal__list changelog-modal__list--sub">
+                                <li><p class="sigil-effect-nyctophobia">N̵͚̠̟̯͂Ỵ̷̱̊̌C̸̣̈́Ṱ̸̣̌̂̉͂O̵P̷̬͒H̷̨̤̉̾̀O̶͈͙̕B̸̻͑I̸͓̩̥͐̈́͝A̶̱̣̟̝̎ — 1,011,111,010</p> inside Limbo.</li>
+                                <li>Lumenpool — 220,000,000.</li>
+                                <ul>
+                                    <li>55,000,000 inside Rainy.</li>
+                                </ul>
+                                <li>Felled — 180,000,000.</li>
+                                <ul>
+                                    <li>30,000,000 inside Hell.</li>
+                                </ul>
+                                <li>Antivirus — 62,500,000.</li>
+                                <li>Megaphone — 5,000
+                                <ul>
+                                    <li>while YG Blessing is active.</li>
+                                </ul>
+                                </li>
+                            </ul>
+                        </li>
+                        <li>
+                            Audio and start flow improvements:
+                            <ul class="changelog-modal__list changelog-modal__list--sub">
+                                <li>Added a start screen with a centered logo and Start Simulation button to kick off audio playback reliably.</li>
+                                <li>Split the former Other Sounds channel into Background Music and Obtain Sounds sliders.</li>
+                                <li>Replaced the UI volume slider with a clean toggle and restyled the audio controls to match the switch aesthetic.</li>
+                            </ul>
+                        </li>
+                    </ul>
+                </section>
+
+                <section
                     id="changelog-panel-v1315"
                     class="changelog-modal__panel"
                     role="tabpanel"
                     aria-labelledby="changelog-tab-v1315"
                     data-changelog-panel="v1315"
-                    tabindex="0"
+                    hidden
+                    tabindex="-1"
                 >
                     <header class="changelog-modal__header">
                         <h2 class="changelog-modal__title" id="versionChangelogTitle">Version V1.315 Update Notes</h2>
