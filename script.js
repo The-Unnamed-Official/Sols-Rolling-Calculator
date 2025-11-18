@@ -6361,3 +6361,116 @@ function wrapTextLines(context, text, maxWidth) {
 
     return lines;
 }
+
+// Node and economy upgrade rule definitions
+// Green nodes sit between blue and gold in the progression, inherit red health, move 3× faster,
+// and appear at half the rate of blue nodes. Economy upgrades maintain their existing rules while
+// Bit Condenser and crit bonuses follow the new scaling requests.
+const NODE_BASELINE_STATS = Object.freeze({
+    blue: Object.freeze({
+        color: 'blue',
+        tierPosition: 'early',
+        health: 100,
+        movementSpeed: 1,
+        spawnChance: 0.1
+    }),
+    gold: Object.freeze({
+        color: 'gold',
+        tierPosition: 'late',
+        health: 150,
+        movementSpeed: 0.75,
+        spawnChance: 0.02
+    }),
+    red: Object.freeze({
+        color: 'red',
+        tierPosition: 'challenge',
+        health: 120,
+        movementSpeed: 1.05,
+        spawnChance: 0.05
+    })
+});
+
+function createNodeDefinitions(baseConfig = NODE_BASELINE_STATS) {
+    const blue = baseConfig.blue || {};
+    const red = baseConfig.red || {};
+
+    const green = Object.freeze({
+        color: 'green',
+        tierPosition: 'between-blue-and-gold',
+        health: red.health ?? 0,
+        movementSpeed: (red.movementSpeed ?? 1) * 3,
+        spawnChance: (blue.spawnChance ?? 0) / 2
+    });
+
+    return Object.freeze({
+        ...baseConfig,
+        green,
+        tierOrder: Object.freeze(['blue', 'green', 'gold'])
+    });
+}
+
+const NODE_DEFINITIONS = createNodeDefinitions();
+
+const ECONOMY_UPGRADE_RULES = Object.freeze({
+    bitCondenserBaseReward: 5,
+    bitCondenserScaling: 3.3,
+    critScaling: 1.5
+});
+
+function calculateBitCondenserReward(level, rules = ECONOMY_UPGRADE_RULES) {
+    if (!Number.isFinite(level) || level <= 0) {
+        return 0;
+    }
+
+    const reward = rules.bitCondenserBaseReward * Math.pow(rules.bitCondenserScaling, level - 1);
+    return Number.parseFloat(reward.toFixed(2));
+}
+
+function calculateCritMultiplier(level, rules = ECONOMY_UPGRADE_RULES) {
+    if (!Number.isFinite(level) || level <= 0) {
+        return 1;
+    }
+
+    const multiplier = Math.pow(rules.critScaling, level);
+    return Number.parseFloat(multiplier.toFixed(2));
+}
+
+function evaluateUpgradeAttempt({
+    upgradeType,
+    currentLevel = 0,
+    cost = 0,
+    skillCheckPassed = false,
+    rules = ECONOMY_UPGRADE_RULES
+} = {}) {
+    const normalizedCost = Number.isFinite(cost) ? Math.max(0, cost) : 0;
+    const normalizedLevel = Number.isFinite(currentLevel) ? Math.max(0, currentLevel) : 0;
+
+    if (!skillCheckPassed) {
+        return {
+            success: false,
+            newLevel: normalizedLevel,
+            currencySpent: normalizedCost * 2,
+            reward: upgradeType === 'crit' ? calculateCritMultiplier(normalizedLevel, rules) : 0
+        };
+    }
+
+    const newLevel = normalizedLevel + 1;
+    const reward = upgradeType === 'crit'
+        ? calculateCritMultiplier(newLevel, rules)
+        : calculateBitCondenserReward(newLevel, rules);
+
+    return {
+        success: true,
+        newLevel,
+        currencySpent: normalizedCost,
+        reward
+    };
+}
+
+if (typeof window !== 'undefined') {
+    window.SOLS_NODE_RULES = NODE_DEFINITIONS;
+    window.SOLS_ECONOMY_UPGRADE_RULES = ECONOMY_UPGRADE_RULES;
+    window.calculateBitCondenserReward = calculateBitCondenserReward;
+    window.calculateCritMultiplier = calculateCritMultiplier;
+    window.evaluateUpgradeAttempt = evaluateUpgradeAttempt;
+}
