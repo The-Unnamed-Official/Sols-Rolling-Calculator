@@ -91,11 +91,11 @@
                 <div class="banner__meta">
                     <h1 class="banner__title">Sols Rolling Simulator</h1>
                     <p class="banner__subtitle">
-                        <button type="button" class="banner__version-button" id="versionInfoButton" aria-haspopup="dialog" aria-expanded="false" aria-label="View update notes for version V1.4" data-version-id="v14">V1.4</button>
+                        <button type="button" class="banner__version-button" id="versionInfoButton" aria-haspopup="dialog" aria-expanded="false" aria-label="View update notes for version V1.401" data-version-id="v1401">V1.401</button>
                         <span class="banner__subtitle-divider" aria-hidden="true">◉</span>
                         <span class="banner__subtitle-author">By <span class="banner__subtitle-author-name">not.unnamed</span></span>
                         <span class="banner__subtitle-divider" aria-hidden="true">◉</span>
-                        <span class="banner__subtitle-updated">Updated <time datetime="2025-11-17">2025/11/17</time></span>
+                        <span class="banner__subtitle-updated">Updated <time datetime="2025-11-19">2025/11/19</time></span>
                         <span class="banner__subtitle-divider" aria-hidden="true">◉</span>
                         <span class="banner__subtitle-eon">Sol's RNG Eon 1-10</span>
                     </p>
@@ -647,6 +647,16 @@
                 <button
                     type="button"
                     class="changelog-tab changelog-tab--active"
+                    id="changelog-tab-v1401"
+                    role="tab"
+                    aria-controls="changelog-panel-v1401"
+                    aria-selected="false"
+                    tabindex="-1"
+                    data-changelog-tab="v1401"
+                >V1.401</button>
+                <button
+                    type="button"
+                    class="changelog-tab changelog-tab--active"
                     id="changelog-tab-v14"
                     role="tab"
                     aria-controls="changelog-panel-v14"
@@ -727,12 +737,37 @@
 
             <div class="changelog-modal__panels" data-changelog-panels>
                 <section
+                    id="changelog-panel-v1401"
+                    class="changelog-modal__panel"
+                    role="tabpanel"
+                    aria-labelledby="changelog-tab-v1401"
+                    data-changelog-panel="v1401"
+                    tabindex="0"
+                >
+                    <header class="changelog-modal__header">
+                        <h2 class="changelog-modal__title" id="versionChangelogTitle">Version V1.401 Update Notes</h2>
+                        <p class="changelog-modal__meta">Updated 2025/11/19</p>
+                    </header>
+                    <p class="changelog-modal__intro">Latest changes:</p>
+                    <ul class="changelog-modal__list">
+                        <li>
+                            Fixed Undead : Devil's rarity
+                            <ul>
+                                <li>Previously: 1 in 120,000</li>
+                                <li>Updated: 1 in 666,666</li>
+                            </ul>
+                        </li>
+                    </ul>
+                </section>
+
+                <section
                     id="changelog-panel-v14"
                     class="changelog-modal__panel"
                     role="tabpanel"
                     aria-labelledby="changelog-tab-v14"
                     data-changelog-panel="v14"
-                    tabindex="0"
+                    hidden
+                    tabindex="-1"
                 >
                     <header class="changelog-modal__header">
                         <h2 class="changelog-modal__title" id="versionChangelogTitle">Version V1.4 Update Notes</h2>
