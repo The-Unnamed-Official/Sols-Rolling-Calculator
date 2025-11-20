@@ -1499,6 +1499,15 @@ let lastDorcelessnessMultiplier = 1;
 
 const MILLION_LUCK_PRESET = 1000000;
 
+function isLuckPresetStackingEnabled() {
+    if (typeof document === 'undefined') {
+        return false;
+    }
+
+    const toggle = document.getElementById('luck-preset-add-toggle');
+    return Boolean(toggle && toggle.checked);
+}
+
 function syncLuckVisualEffects(luckValue) {
     if (!pageBody) {
         return;
@@ -1526,29 +1535,42 @@ function resetLuckPresetAnimations() {
 }
 
 function applyLuckValue(value, options = {}) {
-    baseLuck = value;
-    currentLuck = value;
-    lastVipMultiplier = 1;
-    lastXyzMultiplier = 1;
-    lastXcMultiplier = 1;
-    lastDaveMultiplier = 1;
-    lastDorcelessnessMultiplier = 1;
-    document.getElementById('vip-dropdown').value = '1';
-    document.getElementById('xyz-luck-toggle').checked = false;
-    document.getElementById('xc-luck-toggle').checked = false;
-    document.getElementById('dorcelessness-luck-toggle').checked = false;
-    document.getElementById('yg-blessing-toggle').checked = false;
-    refreshCustomSelect('vip-dropdown');
-    if (document.getElementById('dave-luck-dropdown')) {
-        document.getElementById('dave-luck-dropdown').value = '1';
-        refreshCustomSelect('dave-luck-dropdown');
-    }
+    const stackPresets = isLuckPresetStackingEnabled();
     const luckInput = document.getElementById('luck-total');
-    if (luckInput) {
-        setNumericInputValue(luckInput, value, { format: true, min: 1 });
+    const existingLuck = luckInput ? getNumericInputValue(luckInput, { min: 1 }) : baseLuck;
+    const startingLuck = Number.isFinite(existingLuck) ? existingLuck : baseLuck;
+    const targetLuck = stackPresets ? startingLuck + value : value;
+
+    baseLuck = targetLuck;
+
+    if (!stackPresets) {
+        currentLuck = targetLuck;
+        lastVipMultiplier = 1;
+        lastXyzMultiplier = 1;
+        lastXcMultiplier = 1;
+        lastDaveMultiplier = 1;
+        lastDorcelessnessMultiplier = 1;
+        document.getElementById('vip-dropdown').value = '1';
+        document.getElementById('xyz-luck-toggle').checked = false;
+        document.getElementById('xc-luck-toggle').checked = false;
+        document.getElementById('dorcelessness-luck-toggle').checked = false;
+        document.getElementById('yg-blessing-toggle').checked = false;
+        refreshCustomSelect('vip-dropdown');
+        if (document.getElementById('dave-luck-dropdown')) {
+            document.getElementById('dave-luck-dropdown').value = '1';
+            refreshCustomSelect('dave-luck-dropdown');
+        }
     }
 
-    syncLuckVisualEffects(value);
+    if (luckInput) {
+        setNumericInputValue(luckInput, targetLuck, { format: true, min: 1 });
+    }
+
+    syncLuckVisualEffects(targetLuck);
+
+    if (stackPresets) {
+        recomputeLuckValue();
+    }
 
     if (typeof applyOblivionPresetOptions === 'function') {
         applyOblivionPresetOptions(options);
