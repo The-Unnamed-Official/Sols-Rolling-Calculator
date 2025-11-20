@@ -1841,33 +1841,26 @@ function initializeBiomeInterface() {
         if (xcLuckContainer) xcLuckContainer.style.display = '';
         if (dorcelessnessLuckContainer) dorcelessnessLuckContainer.style.display = '';
         if (ygBlessingContainer) ygBlessingContainer.style.display = '';
-        if (luckPresets) {
-            luckPresets.querySelectorAll('button[data-luck-value]').forEach(button => {
-                const wrapper = button.closest('.preset-button') || button;
-                const isVoidHeartButton = voidHeartBtn && button === voidHeartBtn;
-                const isVipOrDave = button.textContent.includes('VIP') || button.textContent.includes('Dave');
-                const shouldShow = Boolean(isVoidHeartButton || isVipOrDave);
-
-                wrapper.style.display = shouldShow ? '' : 'none';
-                button.style.display = shouldShow ? '' : 'none';
-            });
-        }
     } else {
         if (daveLuckContainer) daveLuckContainer.style.display = 'none';
         if (xyzLuckContainer) xyzLuckContainer.style.display = '';
         if (xcLuckContainer) xcLuckContainer.style.display = '';
         if (dorcelessnessLuckContainer) dorcelessnessLuckContainer.style.display = '';
         if (ygBlessingContainer) ygBlessingContainer.style.display = '';
-        if (luckPresets) {
-            luckPresets.querySelectorAll('button[data-luck-value]').forEach(button => {
-                const wrapper = button.closest('.preset-button') || button;
-                const isVoidHeartButton = voidHeartBtn && button === voidHeartBtn;
-                const shouldShow = !isVoidHeartButton;
+    }
 
-                wrapper.style.display = shouldShow ? '' : 'none';
-                button.style.display = shouldShow ? '' : 'none';
-            });
-        }
+    if (luckPresets) {
+        const isLimbo = biome === 'limbo';
+        Array.from(luckPresets.children).forEach(element => {
+            const containsVoidHeart = Boolean(voidHeartBtn && (element === voidHeartBtn || element.contains(voidHeartBtn)));
+            const shouldShow = isLimbo ? containsVoidHeart : !containsVoidHeart;
+
+            element.style.display = shouldShow ? '' : 'none';
+
+            if (containsVoidHeart && voidHeartBtn) {
+                voidHeartBtn.style.display = shouldShow ? '' : 'none';
+            }
+        });
     }
     applyBiomeTheme(biome, selectionState);
     updateGlitchPresentation();
