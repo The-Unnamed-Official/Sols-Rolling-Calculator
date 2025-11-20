@@ -94,11 +94,11 @@
                 <div class="banner__meta">
                     <h1 class="banner__title">Sols Rolling Simulator</h1>
                     <p class="banner__subtitle">
-                        <button type="button" class="banner__version-button" id="versionInfoButton" aria-haspopup="dialog" aria-expanded="false" aria-label="View update notes for version V1.401" data-version-id="v1401">V1.401</button>
+                        <button type="button" class="banner__version-button" id="versionInfoButton" aria-haspopup="dialog" aria-expanded="false" aria-label="View update notes for version V1.410" data-version-id="v1410">V1.410</button>
                         <span class="banner__subtitle-divider" aria-hidden="true">◉</span>
                         <span class="banner__subtitle-author">By <span class="banner__subtitle-author-name">not.unnamed</span></span>
                         <span class="banner__subtitle-divider" aria-hidden="true">◉</span>
-                        <span class="banner__subtitle-updated">Updated <time datetime="2025-11-19">2025/11/19</time></span>
+                        <span class="banner__subtitle-updated">Updated <time datetime="2025-11-20">2025/11/20</time></span>
                         <span class="banner__subtitle-divider" aria-hidden="true">◉</span>
                         <span class="banner__subtitle-eon">Sol's RNG Eon 1-10</span>
                     </p>
@@ -650,6 +650,15 @@
                 <button
                     type="button"
                     class="changelog-tab changelog-tab--active"
+                    id="changelog-tab-v1410"
+                    role="tab"
+                    aria-controls="changelog-panel-v1410"
+                    aria-selected="true"
+                    data-changelog-tab="v1410"
+                >V1.410</button>
+                <button
+                    type="button"
+                    class="changelog-tab"
                     id="changelog-tab-v1401"
                     role="tab"
                     aria-controls="changelog-panel-v1401"
@@ -659,12 +668,13 @@
                 >V1.401</button>
                 <button
                     type="button"
-                    class="changelog-tab changelog-tab--active"
+                    class="changelog-tab"
                     id="changelog-tab-v14"
                     role="tab"
                     aria-controls="changelog-panel-v14"
-                    aria-selected="true"
+                    aria-selected="false"
                     data-changelog-tab="v14"
+                    tabindex="-1"
                 >V1.4</button>
                 <button
                     type="button"
@@ -740,12 +750,33 @@
 
             <div class="changelog-modal__panels" data-changelog-panels>
                 <section
+                    id="changelog-panel-v1410"
+                    class="changelog-modal__panel"
+                    role="tabpanel"
+                    aria-labelledby="changelog-tab-v1410"
+                    data-changelog-panel="v1410"
+                    tabindex="0"
+                >
+                    <header class="changelog-modal__header">
+                        <h2 class="changelog-modal__title" id="versionChangelogTitle">Version V1.410 Update Notes</h2>
+                        <p class="changelog-modal__meta">Updated 2025/11/20</p>
+                    </header>
+                    <p class="changelog-modal__intro">Latest changes:</p>
+                    <ul class="changelog-modal__list">
+                        <li>Logged the new files bundled for this patch so players can see exactly what fresh assets shipped with V1.410.</li>
+                        <li>Outlined the efficiency gains and optimization work focused on utter performance improvements throughout the simulator.</li>
+                        <li>Fixed the stackable switch behavior so stacking toggles now respect the latest preset combinations without conflicts.</li>
+                    </ul>
+                </section>
+
+                <section
                     id="changelog-panel-v1401"
                     class="changelog-modal__panel"
                     role="tabpanel"
                     aria-labelledby="changelog-tab-v1401"
                     data-changelog-panel="v1401"
-                    tabindex="0"
+                    hidden
+                    tabindex="-1"
                 >
                     <header class="changelog-modal__header">
                         <h2 class="changelog-modal__title" id="versionChangelogTitle">Version V1.401 Update Notes</h2>
