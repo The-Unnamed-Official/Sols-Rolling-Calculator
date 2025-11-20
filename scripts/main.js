@@ -1611,7 +1611,7 @@ function createLuckPresetSubtractButton(button, presetValue) {
 
     subtractButton.type = 'button';
     subtractButton.className = 'preset-button__subtract';
-    subtractButton.textContent = '−';
+    subtractButton.textContent = 'Decrease';
     subtractButton.dataset.luckValue = String(presetValue);
     subtractButton.setAttribute('aria-label', `Remove ${formattedValue} luck`);
     subtractButton.addEventListener('click', event => {
