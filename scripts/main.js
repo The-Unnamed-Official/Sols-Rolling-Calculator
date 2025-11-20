@@ -1841,32 +1841,26 @@ function initializeBiomeInterface() {
         if (xcLuckContainer) xcLuckContainer.style.display = '';
         if (dorcelessnessLuckContainer) dorcelessnessLuckContainer.style.display = '';
         if (ygBlessingContainer) ygBlessingContainer.style.display = '';
-        if (luckPresets) {
-            Array.from(luckPresets.children).forEach(btn => {
-                if (btn === voidHeartBtn) {
-                    btn.style.display = '';
-                } else if (btn.textContent.includes('VIP') || btn.textContent.includes('Dave') || btn === voidHeartBtn) {
-                    btn.style.display = '';
-                } else {
-                    btn.style.display = 'none';
-                }
-            });
-        }
     } else {
         if (daveLuckContainer) daveLuckContainer.style.display = 'none';
         if (xyzLuckContainer) xyzLuckContainer.style.display = '';
         if (xcLuckContainer) xcLuckContainer.style.display = '';
         if (dorcelessnessLuckContainer) dorcelessnessLuckContainer.style.display = '';
         if (ygBlessingContainer) ygBlessingContainer.style.display = '';
-        if (luckPresets) {
-            Array.from(luckPresets.children).forEach(btn => {
-                if (btn === voidHeartBtn) {
-                    btn.style.display = 'none';
-                } else {
-                    btn.style.display = '';
-                }
-            });
-        }
+    }
+
+    if (luckPresets) {
+        const isLimbo = biome === 'limbo';
+        Array.from(luckPresets.children).forEach(element => {
+            const containsVoidHeart = Boolean(voidHeartBtn && (element === voidHeartBtn || element.contains(voidHeartBtn)));
+            const shouldShow = isLimbo ? containsVoidHeart : !containsVoidHeart;
+
+            element.style.display = shouldShow ? '' : 'none';
+
+            if (containsVoidHeart && voidHeartBtn) {
+                voidHeartBtn.style.display = shouldShow ? '' : 'none';
+            }
+        });
     }
     applyBiomeTheme(biome, selectionState);
     updateGlitchPresentation();

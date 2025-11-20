@@ -748,12 +748,16 @@ select.form-field__input option {
     width: 100%;
 }
 
+body.luck-preset--stackable .preset-button > button {
+    padding-right: 48px;
+}
+
 .preset-button__subtract {
     position: absolute;
-    top: 6px;
-    right: 6px;
-    width: 28px;
-    height: 28px;
+    top: 50%;
+    right: 10px;
+    width: 26px;
+    height: 26px;
     padding: 0;
     font-size: 18px;
     font-weight: 700;
@@ -762,13 +766,15 @@ select.form-field__input option {
     border-radius: 6px;
     display: none;
     align-items: center;
+    justify-items: center;
     justify-content: center;
+    transform: translateY(-50%);
     --button-background: rgba(255, 255, 255, 0.08);
     --button-border-color: rgba(95, 160, 230, 0.7);
 }
 
 body.luck-preset--stackable .preset-button__subtract {
-    display: inline-flex;
+    display: inline-grid;
 }
 
 .preset-matrix button:hover,
