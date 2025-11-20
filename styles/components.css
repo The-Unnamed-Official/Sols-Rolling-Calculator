@@ -752,12 +752,12 @@ body.luck-preset--stackable .preset-button > button {
     padding-right: 48px;
 }
 
-.preset-button__subtract {
+.preset-button .preset-button__subtract {
     position: absolute;
     top: 50%;
-    right: 10px;
-    width: 26px;
-    height: 26px;
+    right: 12px;
+    width: 28px;
+    height: 28px;
     padding: 0;
     font-size: 18px;
     font-weight: 700;
@@ -766,11 +766,27 @@ body.luck-preset--stackable .preset-button > button {
     border-radius: 6px;
     display: none;
     align-items: center;
-    justify-items: center;
     justify-content: center;
+    line-height: 1;
+    text-align: center;
     transform: translateY(-50%);
     --button-background: rgba(255, 255, 255, 0.08);
     --button-border-color: rgba(95, 160, 230, 0.7);
+}
+
+.preset-button__subtract {
+    aspect-ratio: 1 / 1;
+    min-width: 0;
+    display: grid;
+    place-items: center;
+}
+
+.preset-button__subtract::before {
+    content: '';
+    width: 14px;
+    height: 2px;
+    background: currentColor;
+    border-radius: 2px;
 }
 
 body.luck-preset--stackable .preset-button__subtract {
