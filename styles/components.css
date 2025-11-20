@@ -754,8 +754,8 @@ body.luck-preset--stackable .preset-button > button {
 
 .preset-button .preset-button__subtract {
     position: absolute;
-    inset-block-start: 50%;
-    inset-inline-end: 10px;
+    top: 50%;
+    right: 12px;
     width: 28px;
     height: 28px;
     padding: 0;
@@ -768,6 +768,7 @@ body.luck-preset--stackable .preset-button > button {
     align-items: center;
     justify-content: center;
     line-height: 1;
+    text-align: center;
     transform: translateY(-50%);
     --button-background: rgba(255, 255, 255, 0.08);
     --button-border-color: rgba(95, 160, 230, 0.7);
@@ -776,7 +777,16 @@ body.luck-preset--stackable .preset-button > button {
 .preset-button__subtract {
     aspect-ratio: 1 / 1;
     min-width: 0;
+    display: grid;
     place-items: center;
+}
+
+.preset-button__subtract::before {
+    content: '';
+    width: 14px;
+    height: 2px;
+    background: currentColor;
+    border-radius: 2px;
 }
 
 body.luck-preset--stackable .preset-button__subtract {
