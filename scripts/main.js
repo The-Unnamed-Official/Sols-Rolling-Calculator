@@ -1539,7 +1539,7 @@ function applyLuckValue(value, options = {}) {
     const luckInput = document.getElementById('luck-total');
     const existingLuck = luckInput ? getNumericInputValue(luckInput, { min: 1 }) : baseLuck;
     const startingLuck = Number.isFinite(existingLuck) ? existingLuck : baseLuck;
-    const targetLuck = stackPresets ? startingLuck + value : value;
+    const targetLuck = Math.max(1, stackPresets ? startingLuck + value : value);
 
     baseLuck = targetLuck;
 
@@ -1578,6 +1578,87 @@ function applyLuckValue(value, options = {}) {
     if (typeof applyDunePresetOptions === 'function') {
         applyDunePresetOptions(options);
     }
+}
+
+function applyLuckPresetDelta(presetValue) {
+    const numericPresetValue = Number(presetValue);
+    const stackPresets = isLuckPresetStackingEnabled();
+
+    if (!stackPresets || !Number.isFinite(numericPresetValue) || numericPresetValue <= 0) {
+        return;
+    }
+
+    applyLuckValue(-numericPresetValue);
+}
+
+function syncLuckPresetSubtractButtons() {
+    const stackable = isLuckPresetStackingEnabled();
+
+    if (document.body) {
+        document.body.classList.toggle('luck-preset--stackable', stackable);
+    }
+
+    const subtractButtons = document.querySelectorAll('.preset-button__subtract');
+    subtractButtons.forEach(button => {
+        button.tabIndex = stackable ? 0 : -1;
+        button.setAttribute('aria-hidden', stackable ? 'false' : 'true');
+    });
+}
+
+function createLuckPresetSubtractButton(button, presetValue) {
+    const subtractButton = document.createElement('button');
+    const formattedValue = Number(presetValue).toLocaleString('en-US');
+
+    subtractButton.type = 'button';
+    subtractButton.className = 'preset-button__subtract';
+    subtractButton.textContent = '−';
+    subtractButton.dataset.luckValue = String(presetValue);
+    subtractButton.setAttribute('aria-label', `Remove ${formattedValue} luck`);
+    subtractButton.addEventListener('click', event => {
+        event.stopPropagation();
+        applyLuckPresetDelta(presetValue);
+    });
+
+    return subtractButton;
+}
+
+function setupLuckPresetSubtractButtons() {
+    const panel = document.getElementById('luck-preset-panel');
+
+    if (!panel) {
+        return;
+    }
+
+    const presetButtons = panel.querySelectorAll('button[data-luck-value]');
+    presetButtons.forEach(button => {
+        const presetValue = Number(button.dataset.luckValue);
+        if (!Number.isFinite(presetValue) || button.closest('.preset-button')) {
+            return;
+        }
+
+        const wrapper = document.createElement('div');
+        wrapper.className = 'preset-button';
+        wrapper.style.display = button.style.display;
+        button.style.display = '';
+
+        const parent = button.parentNode;
+        if (!parent) {
+            return;
+        }
+
+        parent.insertBefore(wrapper, button);
+        wrapper.appendChild(button);
+
+        const subtractButton = createLuckPresetSubtractButton(button, presetValue);
+        wrapper.appendChild(subtractButton);
+    });
+
+    const toggle = document.getElementById('luck-preset-add-toggle');
+    if (toggle) {
+        toggle.addEventListener('change', syncLuckPresetSubtractButtons);
+    }
+
+    syncLuckPresetSubtractButtons();
 }
 
 function applyRollPreset(value) {
@@ -3234,6 +3315,7 @@ function setupVersionChangelogOverlay() {
 document.addEventListener('DOMContentLoaded', initializeEventSelector);
 document.addEventListener('DOMContentLoaded', updateOblivionPresetDisplay);
 document.addEventListener('DOMContentLoaded', updateDunePresetDisplay);
+document.addEventListener('DOMContentLoaded', setupLuckPresetSubtractButtons);
 document.addEventListener('DOMContentLoaded', setupLuckPresetAnimations);
 document.addEventListener('DOMContentLoaded', setupChangelogTabs);
 document.addEventListener('DOMContentLoaded', setupVersionChangelogOverlay);

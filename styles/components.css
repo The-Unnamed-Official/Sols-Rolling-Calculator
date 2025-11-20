@@ -740,6 +740,37 @@ select.form-field__input option {
     z-index: 1;
 }
 
+.preset-button {
+    position: relative;
+}
+
+.preset-button > button {
+    width: 100%;
+}
+
+.preset-button__subtract {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: normal;
+    text-transform: none;
+    border-radius: 6px;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    --button-background: rgba(255, 255, 255, 0.08);
+    --button-border-color: rgba(95, 160, 230, 0.7);
+}
+
+body.luck-preset--stackable .preset-button__subtract {
+    display: inline-flex;
+}
+
 .preset-matrix button:hover,
 .preset-matrix button:focus-visible,
 .preset-toggle__options button:hover,
