@@ -92,72 +92,6 @@ function maybeShowChangelogOnFirstVisit() {
     }
 }
 
-const randomToolkit = (() => {
-    const toUint = value => (value >>> 0) & 0xffffffff;
-    const sfc32 = (a, b, c, d) => {
-        return () => {
-            a = toUint(a);
-            b = toUint(b);
-            c = toUint(c);
-            d = toUint(d);
-
-            const t = (toUint(a + b) + d) | 0;
-            d = (d + 1) | 0;
-            a = b ^ (b >>> 9);
-            b = (c + (c << 3)) | 0;
-            c = (c << 21) | (c >>> 11);
-            c = (c + t) | 0;
-
-            return (t >>> 0) / 0x100000000;
-        };
-    };
-
-    const captureSeedWord = () => {
-        if (typeof crypto !== 'undefined' && typeof crypto.getRandomValues === 'function') {
-            const buffer = new Uint32Array(1);
-            crypto.getRandomValues(buffer);
-            return buffer[0];
-        }
-        const time = Date.now();
-        const wobble = Math.floor(Math.random() * 0xffffffff);
-        return toUint(time ^ wobble ^ (performance.now() * 1000));
-    };
-
-    const seeds = [captureSeedWord(), captureSeedWord(), captureSeedWord(), captureSeedWord()];
-    const engine = sfc32(seeds[0], seeds[1], seeds[2], seeds[3]);
-
-    for (let i = 0; i < 12; i++) {
-        engine();
-    }
-
-    return {
-        sample() {
-            return engine();
-        },
-        integer(min, max) {
-            const low = Math.ceil(min);
-            const high = Math.floor(max);
-            if (high <= low) return low;
-            const span = (high - low) + 1;
-            return low + Math.floor(engine() * span);
-        },
-        decimal(min, max) {
-            return engine() * (max - min) + min;
-        }
-    };
-})();
-
-function drawEntropy() {
-    return randomToolkit.sample();
-}
-
-function randomIntegerBetween(min, max) {
-    return randomToolkit.integer(min, max);
-}
-
-function randomDecimalBetween(min, max) {
-    return randomToolkit.decimal(min, max);
-}
 
 const selectWidgetRegistry = new Map();
 
@@ -250,314 +184,8 @@ function resolveRuneConfiguration(value) {
         : null;
 }
 
-const decimalFormatter = new Intl.NumberFormat('en-US');
-const formatWithCommas = value => decimalFormatter.format(value);
 
-function sanitizeNumericInput(value) {
-    if (value === null || value === undefined) {
-        return '';
-    }
-    const source = String(value);
-    let result = '';
-    let hasDecimal = false;
-    for (const char of source) {
-        if (char >= '0' && char <= '9') {
-            result += char;
-        } else if (char === '.' && !hasDecimal) {
-            hasDecimal = true;
-            result += char;
-        }
-    }
-    if (result.startsWith('.')) {
-        result = `0${result}`;
-    }
-    return result;
-}
 
-function formatSanitizedNumericString(rawValue) {
-    if (!rawValue) {
-        return '';
-    }
-    const trimmed = rawValue.endsWith('.') ? rawValue.slice(0, -1) : rawValue;
-    if (!trimmed) {
-        return '';
-    }
-    const [integerPart = '0', fractionPart = ''] = trimmed.split('.');
-    const parsedInteger = Number.parseInt(integerPart, 10);
-    const safeInteger = Number.isFinite(parsedInteger) ? parsedInteger : 0;
-    const formattedInteger = formatWithCommas(safeInteger);
-    return fractionPart ? `${formattedInteger}.${fractionPart}` : formattedInteger;
-}
-
-function humanizeIdentifier(value) {
-    if (typeof value !== 'string' || value.length === 0) {
-        return '';
-    }
-    const separated = value
-        .replace(/([a-z])([A-Z0-9])/g, '$1 $2')
-        .replace(/([0-9])([a-zA-Z])/g, '$1 $2')
-        .replace(/[-_]/g, ' ');
-    return separated
-        .split(/\s+/)
-        .filter(Boolean)
-        .map(token => token.charAt(0).toUpperCase() + token.slice(1))
-        .join(' ');
-}
-
-function resolveSelectionLabel(selectId, value, { noneLabel = 'None', fallbackLabel = 'Unknown' } = {}) {
-    if (typeof value !== 'string' || value.length === 0) {
-        return fallbackLabel;
-    }
-
-    if (typeof document !== 'undefined') {
-        const select = document.getElementById(selectId);
-        if (select) {
-            const option = Array.from(select.options).find(entry => entry.value === value);
-            if (option && option.textContent) {
-                const label = option.textContent.trim();
-                if (label.length > 0) {
-                    return label;
-                }
-            }
-        }
-    }
-
-    if (value === 'none') {
-        return noneLabel;
-    }
-
-    const humanized = humanizeIdentifier(value);
-    if (humanized.length > 0) {
-        return humanized;
-    }
-
-    return fallbackLabel;
-}
-
-function setNumericInputValue(input, numericValue, { format = false, min = null, max = null } = {}) {
-    if (!input) {
-        return;
-    }
-    if (!Number.isFinite(numericValue)) {
-        input.dataset.rawValue = '';
-        input.value = '';
-        return;
-    }
-    let value = numericValue;
-    if (Number.isFinite(min)) {
-        value = Math.max(min, value);
-    }
-    if (Number.isFinite(max)) {
-        value = Math.min(max, value);
-    }
-    const raw = sanitizeNumericInput(value.toString());
-    input.dataset.rawValue = raw;
-    input.value = format ? formatSanitizedNumericString(raw) : raw;
-}
-
-function getNumericInputValue(input, { min = null, max = null } = {}) {
-    if (!input) {
-        return NaN;
-    }
-    const raw = input.dataset.rawValue ?? sanitizeNumericInput(input.value);
-    if (!raw) {
-        return NaN;
-    }
-    let numeric = Number.parseFloat(raw);
-    if (!Number.isFinite(numeric)) {
-        return NaN;
-    }
-    if (Number.isFinite(min)) {
-        numeric = Math.max(min, numeric);
-    }
-    if (Number.isFinite(max)) {
-        numeric = Math.min(max, numeric);
-    }
-    return numeric;
-}
-
-function bindNumericInputFormatting(input, { min = null, max = null } = {}) {
-    if (!input) {
-        return;
-    }
-
-    const sanitizeToDataset = () => {
-        const sanitized = sanitizeNumericInput(input.value);
-        input.dataset.rawValue = sanitized;
-        input.value = sanitized;
-    };
-
-    input.addEventListener('input', () => {
-        sanitizeToDataset();
-    });
-
-    input.addEventListener('focus', () => {
-        const raw = input.dataset.rawValue ?? '';
-        input.value = raw;
-    });
-
-    input.addEventListener('blur', () => {
-        const raw = input.dataset.rawValue ?? sanitizeNumericInput(input.value);
-        if (!raw) {
-            input.value = '';
-            return;
-        }
-        let numeric = Number.parseFloat(raw);
-        if (!Number.isFinite(numeric)) {
-            input.dataset.rawValue = '';
-            input.value = '';
-            return;
-        }
-        if (Number.isFinite(min)) {
-            numeric = Math.max(min, numeric);
-        }
-        if (Number.isFinite(max)) {
-            numeric = Math.min(max, numeric);
-        }
-        setNumericInputValue(input, numeric, { format: true });
-    });
-
-    const initial = sanitizeNumericInput(input.value);
-    input.dataset.rawValue = initial;
-    if (initial) {
-        setNumericInputValue(input, Number.parseFloat(initial), { format: true, min, max });
-    } else {
-        input.value = '';
-    }
-}
-
-const DEFAULT_AUDIO_LEVEL = 0.5;
-
-const uiHandles = {
-    rollTriggerButton: document.querySelector('.roll-trigger'),
-    brandMark: document.querySelector('.banner__emblem'),
-    rollCountInput: document.getElementById('roll-total'),
-    biomeSelector: document.getElementById('biome-dropdown'),
-    progressPanel: document.querySelector('.loading-indicator'),
-    progressBarFill: document.querySelector('.loading-indicator__fill'),
-    progressLabel: document.querySelector('.loading-indicator__value'),
-    audio: {
-        roll: document.getElementById('rollLoopSound'),
-        k1: document.getElementById('thousandSound'),
-        k10: document.getElementById('tenThousandSound'),
-        k100: document.getElementById('hundredThousandSound'),
-        m10: document.getElementById('tenMillionSound'),
-        m100: document.getElementById('hundredMillionSound'),
-        limbo99m: document.getElementById('limbo99mSoundFx')
-    }
-};
-
-const appState = {
-    audio: {
-        roll: true,
-        obtain: true,
-        ui: true,
-        musicVolume: DEFAULT_AUDIO_LEVEL,
-        obtainVolume: DEFAULT_AUDIO_LEVEL,
-        obtainLastVolume: DEFAULT_AUDIO_LEVEL,
-        uiVolume: DEFAULT_AUDIO_LEVEL,
-        uiLastVolume: DEFAULT_AUDIO_LEVEL,
-        cutsceneVolume: DEFAULT_AUDIO_LEVEL,
-        context: null,
-        bufferCache: new Map(),
-        bufferPromises: new Map(),
-        gainMap: new WeakMap(),
-        fallbackPlayers: new Set()
-    },
-    cinematic: false,
-    glitch: true,
-    reduceMotion: false,
-    videoPlaying: false,
-    scrollLock: null
-};
-
-const LARGE_ROLL_WARNING_THRESHOLD = 9999999;
-const OVERLAY_TRANSITION_FALLBACK_MS = 320;
-
-function revealOverlay(overlay) {
-    if (!overlay) {
-        return;
-    }
-
-    overlay.removeAttribute('hidden');
-    overlay.removeAttribute('aria-hidden');
-    overlay.style.display = '';
-    overlay.removeAttribute('data-closing');
-
-    const makeVisible = () => {
-        overlay.setAttribute('data-visible', 'true');
-    };
-
-    if (typeof requestAnimationFrame === 'function') {
-        requestAnimationFrame(makeVisible);
-    } else {
-        makeVisible();
-    }
-}
-
-function concealOverlay(overlay, { onHidden } = {}) {
-    if (!overlay) {
-        if (typeof onHidden === 'function') {
-            onHidden();
-        }
-        return;
-    }
-
-    let completed = false;
-
-    const finalize = () => {
-        if (completed) {
-            return;
-        }
-        completed = true;
-        overlay.setAttribute('hidden', '');
-        overlay.setAttribute('aria-hidden', 'true');
-        overlay.style.display = 'none';
-        overlay.removeAttribute('data-visible');
-        overlay.removeAttribute('data-closing');
-        if (typeof onHidden === 'function') {
-            onHidden();
-        }
-    };
-
-    if (overlay.hasAttribute('hidden')) {
-        finalize();
-        return;
-    }
-
-    if (appState.reduceMotion) {
-        finalize();
-        return;
-    }
-
-    let fallbackId = null;
-
-    const clearListeners = () => {
-        overlay.removeEventListener('transitionend', handleTransitionEnd);
-        if (fallbackId !== null && typeof window !== 'undefined' && typeof window.clearTimeout === 'function') {
-            window.clearTimeout(fallbackId);
-        }
-    };
-
-    const handleTransitionEnd = event => {
-        if (event.target === overlay && event.propertyName === 'opacity') {
-            clearListeners();
-            finalize();
-        }
-    };
-
-    overlay.addEventListener('transitionend', handleTransitionEnd);
-
-    if (typeof window !== 'undefined' && typeof window.setTimeout === 'function') {
-        fallbackId = window.setTimeout(() => {
-            clearListeners();
-            finalize();
-        }, OVERLAY_TRANSITION_FALLBACK_MS);
-    }
-
-    overlay.setAttribute('data-closing', 'true');
-    overlay.removeAttribute('data-visible');
-}
 
 function applyChannelVolumeToElements(channel) {
     if (typeof document === 'undefined') return;
@@ -825,78 +453,6 @@ function initializeIntroOverlay() {
     });
 }
 
-const largeRollWarningManager = (() => {
-    let pendingAction = null;
-
-    const getOverlay = () => document.getElementById('rollWarningOverlay');
-
-    function hideOverlay() {
-        const overlay = getOverlay();
-        if (!overlay) {
-            return;
-        }
-        concealOverlay(overlay, {
-            onHidden: () => {
-                overlay.removeAttribute('data-roll-count');
-            }
-        });
-    }
-
-    function focusPrimaryAction() {
-        const confirmButton = document.getElementById('rollWarningConfirm');
-        if (!confirmButton || typeof confirmButton.focus !== 'function') {
-            return;
-        }
-        try {
-            confirmButton.focus({ preventScroll: true });
-        } catch (error) {
-            confirmButton.focus();
-        }
-    }
-
-    return {
-        prompt(total, action) {
-            pendingAction = typeof action === 'function' ? action : null;
-            const overlay = getOverlay();
-            if (!overlay) {
-                if (pendingAction) {
-                    const next = pendingAction;
-                    pendingAction = null;
-                    next();
-                }
-                return false;
-            }
-
-            overlay.dataset.rollCount = `${total}`;
-            const countNode = document.getElementById('rollWarningCount');
-            if (countNode) {
-                countNode.textContent = formatWithCommas(total);
-            }
-
-            revealOverlay(overlay);
-            focusPrimaryAction();
-            return true;
-        },
-        confirm() {
-            const action = pendingAction;
-            pendingAction = null;
-            hideOverlay();
-            if (typeof action === 'function') {
-                action();
-            }
-        },
-        cancel() {
-            pendingAction = null;
-            hideOverlay();
-        },
-        hide: hideOverlay,
-        isVisible() {
-            const overlay = getOverlay();
-            return Boolean(overlay && !overlay.hasAttribute('hidden'));
-        }
-    };
-})();
-
 const cutsceneWarningManager = (() => {
     const storageKey = 'solsCutsceneWarningDismissed';
     let suppressed = null;
@@ -1036,11 +592,6 @@ function canUseMediaElementSource(element) {
     } catch (error) {
         return false;
     }
-}
-
-function clamp01(value) {
-    if (!Number.isFinite(value)) return 0;
-    return Math.max(0, Math.min(1, value));
 }
 
 function getChannelVolumeMultiplier(category = 'obtain') {
@@ -1948,6 +1499,15 @@ let lastDorcelessnessMultiplier = 1;
 
 const MILLION_LUCK_PRESET = 1000000;
 
+function isLuckPresetStackingEnabled() {
+    if (typeof document === 'undefined') {
+        return false;
+    }
+
+    const toggle = document.getElementById('luck-preset-add-toggle');
+    return Boolean(toggle && toggle.checked);
+}
+
 function syncLuckVisualEffects(luckValue) {
     if (!pageBody) {
         return;
@@ -1975,29 +1535,42 @@ function resetLuckPresetAnimations() {
 }
 
 function applyLuckValue(value, options = {}) {
-    baseLuck = value;
-    currentLuck = value;
-    lastVipMultiplier = 1;
-    lastXyzMultiplier = 1;
-    lastXcMultiplier = 1;
-    lastDaveMultiplier = 1;
-    lastDorcelessnessMultiplier = 1;
-    document.getElementById('vip-dropdown').value = '1';
-    document.getElementById('xyz-luck-toggle').checked = false;
-    document.getElementById('xc-luck-toggle').checked = false;
-    document.getElementById('dorcelessness-luck-toggle').checked = false;
-    document.getElementById('yg-blessing-toggle').checked = false;
-    refreshCustomSelect('vip-dropdown');
-    if (document.getElementById('dave-luck-dropdown')) {
-        document.getElementById('dave-luck-dropdown').value = '1';
-        refreshCustomSelect('dave-luck-dropdown');
-    }
+    const stackPresets = isLuckPresetStackingEnabled();
     const luckInput = document.getElementById('luck-total');
-    if (luckInput) {
-        setNumericInputValue(luckInput, value, { format: true, min: 1 });
+    const existingLuck = luckInput ? getNumericInputValue(luckInput, { min: 1 }) : baseLuck;
+    const startingLuck = Number.isFinite(existingLuck) ? existingLuck : baseLuck;
+    const targetLuck = Math.max(1, stackPresets ? startingLuck + value : value);
+
+    baseLuck = targetLuck;
+
+    if (!stackPresets) {
+        currentLuck = targetLuck;
+        lastVipMultiplier = 1;
+        lastXyzMultiplier = 1;
+        lastXcMultiplier = 1;
+        lastDaveMultiplier = 1;
+        lastDorcelessnessMultiplier = 1;
+        document.getElementById('vip-dropdown').value = '1';
+        document.getElementById('xyz-luck-toggle').checked = false;
+        document.getElementById('xc-luck-toggle').checked = false;
+        document.getElementById('dorcelessness-luck-toggle').checked = false;
+        document.getElementById('yg-blessing-toggle').checked = false;
+        refreshCustomSelect('vip-dropdown');
+        if (document.getElementById('dave-luck-dropdown')) {
+            document.getElementById('dave-luck-dropdown').value = '1';
+            refreshCustomSelect('dave-luck-dropdown');
+        }
     }
 
-    syncLuckVisualEffects(value);
+    if (luckInput) {
+        setNumericInputValue(luckInput, targetLuck, { format: true, min: 1 });
+    }
+
+    syncLuckVisualEffects(targetLuck);
+
+    if (stackPresets) {
+        recomputeLuckValue();
+    }
 
     if (typeof applyOblivionPresetOptions === 'function') {
         applyOblivionPresetOptions(options);
@@ -2005,6 +1578,87 @@ function applyLuckValue(value, options = {}) {
     if (typeof applyDunePresetOptions === 'function') {
         applyDunePresetOptions(options);
     }
+}
+
+function applyLuckPresetDelta(presetValue) {
+    const numericPresetValue = Number(presetValue);
+    const stackPresets = isLuckPresetStackingEnabled();
+
+    if (!stackPresets || !Number.isFinite(numericPresetValue) || numericPresetValue <= 0) {
+        return;
+    }
+
+    applyLuckValue(-numericPresetValue);
+}
+
+function syncLuckPresetSubtractButtons() {
+    const stackable = isLuckPresetStackingEnabled();
+
+    if (document.body) {
+        document.body.classList.toggle('luck-preset--stackable', stackable);
+    }
+
+    const subtractButtons = document.querySelectorAll('.preset-button__subtract');
+    subtractButtons.forEach(button => {
+        button.tabIndex = stackable ? 0 : -1;
+        button.setAttribute('aria-hidden', stackable ? 'false' : 'true');
+    });
+}
+
+function createLuckPresetSubtractButton(button, presetValue) {
+    const subtractButton = document.createElement('button');
+    const formattedValue = Number(presetValue).toLocaleString('en-US');
+
+    subtractButton.type = 'button';
+    subtractButton.className = 'preset-button__subtract';
+    subtractButton.textContent = 'Decrease';
+    subtractButton.dataset.luckValue = String(presetValue);
+    subtractButton.setAttribute('aria-label', `Remove ${formattedValue} luck`);
+    subtractButton.addEventListener('click', event => {
+        event.stopPropagation();
+        applyLuckPresetDelta(presetValue);
+    });
+
+    return subtractButton;
+}
+
+function setupLuckPresetSubtractButtons() {
+    const panel = document.getElementById('luck-preset-panel');
+
+    if (!panel) {
+        return;
+    }
+
+    const presetButtons = panel.querySelectorAll('button[data-luck-value]');
+    presetButtons.forEach(button => {
+        const presetValue = Number(button.dataset.luckValue);
+        if (!Number.isFinite(presetValue) || button.closest('.preset-button')) {
+            return;
+        }
+
+        const wrapper = document.createElement('div');
+        wrapper.className = 'preset-button';
+        wrapper.style.display = button.style.display;
+        button.style.display = '';
+
+        const parent = button.parentNode;
+        if (!parent) {
+            return;
+        }
+
+        parent.insertBefore(wrapper, button);
+        wrapper.appendChild(button);
+
+        const subtractButton = createLuckPresetSubtractButton(button, presetValue);
+        wrapper.appendChild(subtractButton);
+    });
+
+    const toggle = document.getElementById('luck-preset-add-toggle');
+    if (toggle) {
+        toggle.addEventListener('change', syncLuckPresetSubtractButtons);
+    }
+
+    syncLuckPresetSubtractButtons();
 }
 
 function applyRollPreset(value) {
@@ -2187,32 +1841,26 @@ function initializeBiomeInterface() {
         if (xcLuckContainer) xcLuckContainer.style.display = '';
         if (dorcelessnessLuckContainer) dorcelessnessLuckContainer.style.display = '';
         if (ygBlessingContainer) ygBlessingContainer.style.display = '';
-        if (luckPresets) {
-            Array.from(luckPresets.children).forEach(btn => {
-                if (btn === voidHeartBtn) {
-                    btn.style.display = '';
-                } else if (btn.textContent.includes('VIP') || btn.textContent.includes('Dave') || btn === voidHeartBtn) {
-                    btn.style.display = '';
-                } else {
-                    btn.style.display = 'none';
-                }
-            });
-        }
     } else {
         if (daveLuckContainer) daveLuckContainer.style.display = 'none';
         if (xyzLuckContainer) xyzLuckContainer.style.display = '';
         if (xcLuckContainer) xcLuckContainer.style.display = '';
         if (dorcelessnessLuckContainer) dorcelessnessLuckContainer.style.display = '';
         if (ygBlessingContainer) ygBlessingContainer.style.display = '';
-        if (luckPresets) {
-            Array.from(luckPresets.children).forEach(btn => {
-                if (btn === voidHeartBtn) {
-                    btn.style.display = 'none';
-                } else {
-                    btn.style.display = '';
-                }
-            });
-        }
+    }
+
+    if (luckPresets) {
+        const isLimbo = biome === 'limbo';
+        Array.from(luckPresets.children).forEach(element => {
+            const containsVoidHeart = Boolean(voidHeartBtn && (element === voidHeartBtn || element.contains(voidHeartBtn)));
+            const shouldShow = isLimbo ? containsVoidHeart : !containsVoidHeart;
+
+            element.style.display = shouldShow ? '' : 'none';
+
+            if (containsVoidHeart && voidHeartBtn) {
+                voidHeartBtn.style.display = shouldShow ? '' : 'none';
+            }
+        });
     }
     applyBiomeTheme(biome, selectionState);
     updateGlitchPresentation();
@@ -3661,6 +3309,7 @@ function setupVersionChangelogOverlay() {
 document.addEventListener('DOMContentLoaded', initializeEventSelector);
 document.addEventListener('DOMContentLoaded', updateOblivionPresetDisplay);
 document.addEventListener('DOMContentLoaded', updateDunePresetDisplay);
+document.addEventListener('DOMContentLoaded', setupLuckPresetSubtractButtons);
 document.addEventListener('DOMContentLoaded', setupLuckPresetAnimations);
 document.addEventListener('DOMContentLoaded', setupChangelogTabs);
 document.addEventListener('DOMContentLoaded', setupVersionChangelogOverlay);

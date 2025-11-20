@@ -1,0 +1,679 @@
+:root {
+    color-scheme: dark;
+    --bg-base: #02060f;
+    --bg-overlay: rgba(1, 5, 12, 0.5);
+    --surface-bg: rgba(7, 12, 24, 0.92);
+    --surface-gradient: linear-gradient(155deg, rgba(10, 16, 32, 0.96), rgba(2, 6, 14, 0.98));
+    --surface-border: rgba(120, 188, 255, 0.5);
+    --surface-glow: rgba(46, 116, 196, 0.42);
+    --accent: #7fe3ff;
+    --accent-strong: #c5f6ff;
+    --accent-soft: rgba(112, 216, 255, 0.14);
+    --accent-muted: rgba(46, 116, 196, 0.35);
+    --accent-rgb: 127 227 255;
+    --scrollbar-track: rgba(4, 10, 22, 0.82);
+    --scrollbar-track-outline: rgba(127, 227, 255, 0.12);
+    --scrollbar-thumb: rgb(var(--accent-rgb) / 0.5);
+    --scrollbar-thumb-hover: rgb(var(--accent-rgb) / 0.7);
+    --scrollbar-thumb-active: rgb(var(--accent-rgb) / 0.88);
+    --text-primary: #f6f8ff;
+    --text-secondary: rgba(199, 219, 255, 0.68);
+    --text-tertiary: rgba(158, 192, 243, 0.52);
+    --surface-alt: rgba(4, 10, 22, 0.72);
+    --shadow-strong: 0 28px 60px rgba(0, 6, 18, 0.66);
+    --shadow-soft: 0 18px 34px rgba(6, 16, 36, 0.55);
+    --corner-size: 28px;
+    --corner-thickness: 2px;
+    --button-corner-size: 10px;
+    --font-base: 'Sarpanch', 'Segoe UI', sans-serif;
+    --ui-scale-desktop: 0.88;
+    user-select: none;
+}
+
+@property --rainbow-hue {
+    syntax: '<angle>';
+    inherits: false;
+    initial-value: 0deg;
+}
+
+@property --button-pop-scale {
+    syntax: '<number>';
+    inherits: false;
+    initial-value: 1;
+}
+
+@property --button-pop-raise {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 0px;
+}
+
+@property --button-pop-rotation {
+    syntax: '<angle>';
+    inherits: false;
+    initial-value: 0deg;
+}
+
+@keyframes luck-rainbow-cycle {
+    to {
+        --rainbow-hue: 360deg;
+    }
+}
+
+@keyframes luckPresetMildShake {
+    0%,
+    100% {
+        transform: translateY(var(--button-raise)) scale(var(--button-scale)) translateX(0) rotate(0deg);
+    }
+    20% {
+        transform: translateY(var(--button-raise)) scale(var(--button-scale)) translateX(-1.6px) rotate(-0.8deg);
+    }
+    40% {
+        transform: translateY(var(--button-raise)) scale(var(--button-scale)) translateX(1.6px) rotate(0.8deg);
+    }
+    60% {
+        transform: translateY(var(--button-raise)) scale(var(--button-scale)) translateX(-1px) rotate(-0.5deg);
+    }
+    80% {
+        transform: translateY(var(--button-raise)) scale(var(--button-scale)) translateX(1px) rotate(0.5deg);
+    }
+}
+
+@keyframes luckPresetAggressiveShake {
+    0%,
+    100% {
+        transform: translateY(var(--button-raise)) scale(var(--button-scale)) translateX(0) rotate(0deg);
+    }
+    10% {
+        transform: translateY(var(--button-raise)) scale(var(--button-scale)) translateX(-4px) rotate(-3deg);
+    }
+    20% {
+        transform: translateY(var(--button-raise)) scale(var(--button-scale)) translateX(4px) rotate(3deg);
+    }
+    30% {
+        transform: translateY(var(--button-raise)) scale(var(--button-scale)) translateX(-5px) rotate(-4deg);
+    }
+    40% {
+        transform: translateY(var(--button-raise)) scale(var(--button-scale)) translateX(5px) rotate(4deg);
+    }
+    50% {
+        transform: translateY(var(--button-raise)) scale(var(--button-scale)) translateX(-3px) rotate(-2deg);
+    }
+    60% {
+        transform: translateY(var(--button-raise)) scale(var(--button-scale)) translateX(3px) rotate(2deg);
+    }
+    70% {
+        transform: translateY(var(--button-raise)) scale(var(--button-scale)) translateX(-2px) rotate(-1deg);
+    }
+    80% {
+        transform: translateY(var(--button-raise)) scale(var(--button-scale)) translateX(2px) rotate(1deg);
+    }
+    90% {
+        transform: translateY(var(--button-raise)) scale(var(--button-scale)) translateX(-1px) rotate(-0.5deg);
+    }
+}
+
+@keyframes luckPresetPop {
+    0% {
+        --button-pop-scale: 1;
+        --button-pop-raise: 0px;
+        --button-pop-rotation: 0deg;
+        box-shadow: 0 0 0 rgba(0, 0, 0, 0);
+    }
+    28% {
+        --button-pop-scale: 1.24;
+        --button-pop-raise: -14px;
+        box-shadow: 0 26px 48px rgba(0, 6, 18, 0.42), 0 0 28px rgba(127, 227, 255, 0.32);
+    }
+    58% {
+        --button-pop-scale: 1.08;
+        --button-pop-raise: -4px;
+        box-shadow: 0 16px 28px rgba(0, 6, 18, 0.32), 0 0 18px rgba(127, 227, 255, 0.24);
+    }
+    100% {
+        --button-pop-scale: 1;
+        --button-pop-raise: 0px;
+        --button-pop-rotation: 0deg;
+        box-shadow: 0 0 0 rgba(0, 0, 0, 0);
+    }
+}
+
+@keyframes luckPresetMegaPop {
+    0% {
+        --button-pop-scale: 1;
+        --button-pop-raise: 0px;
+        --button-pop-rotation: 0deg;
+        box-shadow: 0 0 0 rgba(0, 0, 0, 0);
+    }
+    24% {
+        --button-pop-scale: 1.52;
+        --button-pop-raise: -26px;
+        box-shadow: 0 38px 62px rgba(0, 6, 18, 0.5), 0 0 36px rgba(127, 227, 255, 0.42);
+    }
+    56% {
+        --button-pop-scale: 1.18;
+        --button-pop-raise: -8px;
+        box-shadow: 0 24px 38px rgba(0, 6, 18, 0.36), 0 0 24px rgba(127, 227, 255, 0.28);
+    }
+    100% {
+        --button-pop-scale: 1;
+        --button-pop-raise: 0px;
+        --button-pop-rotation: 0deg;
+        box-shadow: 0 0 0 rgba(0, 0, 0, 0);
+    }
+}
+
+body.luck-effect--million {
+    animation: luck-rainbow-cycle 6s linear infinite;
+    --rainbow-hue: 0deg;
+    --rainbow-edge-strong: hsl(var(--rainbow-hue) 100% 62%);
+    --rainbow-edge-soft: hsl(var(--rainbow-hue) 100% 72%);
+    --rainbow-edge-glow: hsla(var(--rainbow-hue), 100%, 58%, 0.35);
+}
+
+body.luck-effect--million :is(
+        .surface,
+        .interface-toggle,
+        .interface-button,
+        .preset-matrix button,
+        .preset-toggle__options button,
+        .preset-toggle__summary,
+        .roll-trigger,
+        .interface-select__summary,
+        .interface-select__option-button,
+        .interface-select__option--checkbox,
+        .skip-cinematic-button,
+        .toggle
+    ) {
+    --button-accent: var(--rainbow-edge-strong);
+    --button-border-color: var(--rainbow-edge-soft);
+    border-color: var(--rainbow-edge-soft);
+    box-shadow: inset 0 0 18px var(--rainbow-edge-glow);
+}
+
+body.luck-effect--million .surface {
+    --surface-edge-accent: var(--rainbow-edge-strong);
+    border-color: var(--rainbow-edge-soft);
+    box-shadow: var(--shadow-strong), 0 0 36px var(--rainbow-edge-glow);
+}
+
+* {
+    box-sizing: border-box;
+}
+
+html, body {
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    min-height: 100vh;
+    font-family: var(--font-base);
+    background: var(--bg-base);
+    color: var(--text-primary);
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+    padding: clamp(16px, 3vw, 32px);
+    position: relative;
+    overflow-x: hidden;
+    scrollbar-width: thin;
+    scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
+}
+
+body.reduce-motion {
+    scroll-behavior: auto;
+}
+
+body.reduce-motion *,
+body.reduce-motion *::before,
+body.reduce-motion *::after {
+    animation-duration: 0s !important;
+    animation-iteration-count: 1 !important;
+    animation-name: none !important;
+    transition-delay: 0s !important;
+    transition-duration: 0s !important;
+}
+
+body.reduce-motion .interface-backdrop__video,
+body.reduce-motion .cutscene-video {
+    display: none;
+}
+
+body.reduce-motion .banner__emblem--spinning img {
+    animation: none !important;
+}
+
+button {
+    --button-scale: 1;
+    --button-raise: 0px;
+    --button-pop-scale: 1;
+    --button-pop-raise: 0px;
+    --button-pop-rotation: 0deg;
+    transform:
+        translateY(var(--button-raise))
+        translateY(var(--button-pop-raise))
+        scale(var(--button-scale))
+        scale(var(--button-pop-scale))
+        rotate(var(--button-pop-rotation));
+    transition: transform 0.2s ease;
+    transform-origin: center;
+    will-change: transform;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    button {
+        transition: none;
+        transform: none !important;
+    }
+}
+
+*::-webkit-scrollbar {
+    width: 12px;
+    height: 12px;
+}
+
+*::-webkit-scrollbar-track {
+    background: var(--scrollbar-track);
+    border-radius: 999px;
+    box-shadow: inset 0 0 0 1px var(--scrollbar-track-outline);
+}
+
+*::-webkit-scrollbar-thumb {
+    background: linear-gradient(140deg, rgb(var(--accent-rgb) / 0.85), var(--scrollbar-thumb));
+    border-radius: 999px;
+    border: 2px solid rgba(2, 6, 14, 0.9);
+    box-shadow: 0 0 14px rgb(var(--accent-rgb) / 0.32);
+}
+
+*::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(140deg, rgb(var(--accent-rgb) / 0.95), var(--scrollbar-thumb-hover));
+}
+
+*::-webkit-scrollbar-thumb:active {
+    background: linear-gradient(140deg, rgb(var(--accent-rgb) / 1), var(--scrollbar-thumb-active));
+}
+
+body.biome--glitch {
+    --bg-base: #050010;
+    --surface-border: rgba(255, 100, 246, 0.52);
+    --surface-glow: rgba(255, 100, 246, 0.24);
+    --accent: #ff64f6;
+    --accent-strong: #ffd7ff;
+    --accent-soft: rgba(255, 100, 246, 0.18);
+    --accent-muted: rgba(255, 100, 246, 0.32);
+    --accent-rgb: 255 100 246;
+    --scrollbar-track: rgba(18, 0, 34, 0.82);
+    --scrollbar-track-outline: rgba(255, 100, 246, 0.18);
+    --scrollbar-thumb: rgb(var(--accent-rgb) / 0.55);
+    --scrollbar-thumb-hover: rgb(var(--accent-rgb) / 0.75);
+    --scrollbar-thumb-active: rgb(var(--accent-rgb) / 0.92);
+    --text-secondary: rgba(222, 206, 255, 0.78);
+    --text-tertiary: rgba(188, 180, 255, 0.54);
+}
+
+body.biome--glitch .interface-backdrop {
+    filter: hue-rotate(-18deg) saturate(1.35) contrast(1.08);
+}
+
+body.biome--glitch .interface-backdrop__veil {
+    opacity: 0.85;
+    mix-blend-mode: screen;
+    animation: glitch-noise 12s steps(2, end) infinite;
+}
+
+body.biome--glitch::before,
+body.biome--glitch::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    transition: opacity 0.4s ease;
+}
+
+body.biome--glitch::before {
+    background:
+        repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.04) 0 1px, transparent 1px 3px),
+        repeating-linear-gradient(90deg, rgba(255, 92, 231, 0.08) 0 2px, transparent 2px 6px);
+    mix-blend-mode: screen;
+    opacity: 0.22;
+}
+
+body.biome--glitch::after {
+    background:
+        radial-gradient(circle at 18% 18%, rgba(255, 92, 231, 0.22), transparent 48%),
+        radial-gradient(circle at 82% 24%, rgba(72, 214, 255, 0.2), transparent 50%);
+    mix-blend-mode: lighten;
+    opacity: 0.18;
+}
+
+body.biome--glitch .surface {
+    border-color: rgba(255, 100, 246, 0.45);
+    box-shadow: 0 28px 60px rgba(18, 0, 34, 0.68), 0 0 34px rgba(255, 100, 246, 0.18);
+}
+
+body.biome--glitch .surface::after {
+    background: radial-gradient(circle at 50% 0%, rgba(255, 100, 246, 0.12), transparent 44%),
+                linear-gradient(160deg, rgba(22, 6, 32, 0.96), rgba(6, 0, 14, 0.98));
+}
+
+body.biome--glitch .interface-toggle,
+body.biome--glitch .roll-trigger {
+    --button-background: linear-gradient(92deg, rgba(38, 0, 64, 0.9), rgba(10, 0, 24, 0.92));
+    --button-border-color: rgba(255, 100, 246, 0.42);
+    --button-accent: rgba(255, 100, 246, 0.6);
+    color: #fff;
+}
+
+body.biome--glitch .resource-link {
+    box-shadow: 0 10px 24px rgba(20, 0, 40, 0.55);
+}
+
+body.is-glitching::before,
+body.is-glitching::after {
+    opacity: 0.52;
+    animation: glitch-noise 0.46s steps(4, end) infinite;
+    filter: saturate(1.4) contrast(1.18);
+}
+
+body.is-glitching .interface-backdrop__veil {
+    animation-duration: 1.6s;
+    filter: hue-rotate(18deg) saturate(1.65) blur(2px);
+}
+
+body.is-glitching .interface-shell {
+    animation: glitch-shell 0.16s steps(3, end) infinite;
+    filter: contrast(1.38) saturate(1.8) brightness(1.08);
+    transform-origin: 50% 12%;
+}
+
+body.is-glitching .surface {
+    animation: glitch-surface 0.18s steps(3, end) infinite;
+    filter: saturate(1.6) contrast(1.22) brightness(1.05);
+    box-shadow: 0 0 24px rgba(255, 100, 246, 0.32), 0 18px 42px rgba(18, 0, 34, 0.7);
+}
+
+body.is-glitching .surface::after {
+    animation: glitch-flicker 0.18s steps(3, end) infinite;
+    mix-blend-mode: screen;
+}
+
+body.is-glitching .surface::before {
+    content: '';
+    position: absolute;
+    inset: -6px;
+    background:
+        linear-gradient(0deg, rgba(0, 0, 0, 0.55), rgba(0, 0, 0, 0.35)),
+        linear-gradient(90deg, rgba(0, 0, 0, 0.9) 50%, transparent 50%),
+        linear-gradient(0deg, rgba(0, 0, 0, 0.9) 50%, transparent 50%),
+        repeating-linear-gradient(180deg, rgba(255, 255, 255, 0.06) 0 2px, transparent 2px 4px);
+    background-size: 200% 200%, 120px 120px, 120px 120px, 6px 6px;
+    background-position: center;
+    mix-blend-mode: hard-light;
+    opacity: 0.65;
+    filter: blur(0.2px) contrast(1.4);
+    animation: glitch-fracture 0.22s steps(4, end) infinite;
+    z-index: 2;
+    pointer-events: none;
+}
+
+body.is-glitching .interface-shell::after {
+    content: '';
+    position: absolute;
+    inset: -6px;
+    border: 2px solid rgba(255, 100, 246, 0.38);
+    pointer-events: none;
+    mix-blend-mode: screen;
+    animation: glitch-outline 0.16s steps(3, end) infinite;
+    box-shadow: 0 0 36px rgba(255, 100, 246, 0.28);
+}
+
+body.is-glitching .interface-shell::before {
+    content: '';
+    position: absolute;
+    inset: -12px;
+    background:
+        repeating-conic-gradient(from 45deg, rgba(0, 0, 0, 0.8) 0 12deg, transparent 12deg 24deg),
+        repeating-linear-gradient(120deg, rgba(255, 255, 255, 0.08) 0 18px, transparent 18px 36px);
+    mix-blend-mode: multiply;
+    opacity: 0.4;
+    animation: glitch-shard 0.18s steps(3, end) infinite;
+    pointer-events: none;
+    z-index: 1;
+}
+
+body.is-glitching .surface > * {
+    animation: glitch-content 0.2s steps(4, end) infinite;
+    filter: saturate(1.2) contrast(1.2);
+}
+
+body.is-glitching .surface > *:nth-child(odd) {
+    animation-duration: 0.18s;
+}
+
+body.is-glitching .interface-toggle,
+body.is-glitching .roll-trigger,
+body.is-glitching .form-field__input,
+body.is-glitching .interface-select__summary,
+body.is-glitching .interface-select__option-button,
+body.is-glitching .toggle__track,
+body.is-glitching .toggle__thumb,
+body.is-glitching .resource-link {
+    animation: glitch-translate 0.16s steps(3, end) infinite;
+    filter: hue-rotate(-12deg) saturate(1.4);
+}
+
+body.is-glitching .interface-toggle,
+body.is-glitching .roll-trigger {
+    box-shadow: 0 0 28px rgba(255, 100, 246, 0.38);
+}
+
+body.is-glitching .resource-link {
+    box-shadow: 0 0 32px rgba(255, 100, 246, 0.28);
+    transform: perspective(500px) translateZ(6px);
+}
+
+body.is-glitching .banner__title,
+body.is-glitching .surface__title,
+body.is-glitching .feed__tip-label,
+body.is-glitching .feed__mythic-label {
+    animation: glitch-chroma 0.32s steps(3, end) infinite;
+}
+
+body.is-glitching .feed__viewport {
+    animation: glitch-flicker 0.18s steps(3, end) infinite;
+    filter: saturate(1.5) blur(0.6px);
+}
+
+body.is-glitching .feed__viewport::before,
+body.is-glitching .feed__viewport::after {
+    content: '';
+    position: absolute;
+    inset: -2px;
+    pointer-events: none;
+    mix-blend-mode: difference;
+}
+
+body.is-glitching .feed__viewport::before {
+    background:
+        repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.12) 0 6px, transparent 6px 12px),
+        linear-gradient(90deg, rgba(0, 0, 0, 0.85) 50%, transparent 50%),
+        linear-gradient(0deg, rgba(0, 0, 0, 0.85) 50%, transparent 50%);
+    background-size: 12px 12px, 110px 110px, 110px 110px;
+    animation: glitch-fracture 0.22s steps(4, end) infinite;
+    opacity: 0.8;
+}
+
+body.is-glitching .feed__viewport::after {
+    background: linear-gradient(90deg, rgba(255, 0, 170, 0.35), rgba(0, 255, 255, 0.3));
+    animation: glitch-scan 1s steps(6, end) infinite;
+    opacity: 0.45;
+}
+
+.interface-backdrop {
+    position: fixed;
+    inset: 0;
+    background-color: var(--bg-base);
+    background-image: var(--biome-background, url("files/normalBiomeImage.jpg"));
+    background-position: center top;
+    background-repeat: no-repeat;
+    background-size: 100% 100%;
+    background-attachment: fixed;
+    z-index: -2;
+    overflow: hidden;
+}
+
+.interface-backdrop__video {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.6s ease;
+    pointer-events: none;
+    z-index: 0;
+}
+
+.interface-backdrop--video-active .interface-backdrop__video {
+    opacity: 1;
+    visibility: visible;
+}
+
+.interface-backdrop__veil {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at 20% 20%, rgba(30, 80, 180, 0.28), transparent 42%),
+                radial-gradient(circle at 80% 15%, rgba(18, 42, 110, 0.22), transparent 28%),
+                linear-gradient(135deg, rgba(2, 6, 16, 0.42), rgba(1, 4, 12, 0.5));
+    backdrop-filter: blur(5px);
+    z-index: 1;
+}
+
+.climate {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    overflow: hidden;
+}
+
+.climate--blood-rain {
+    display: none;
+    z-index: 2;
+    position: relative;
+    isolation: isolate;
+}
+
+.climate--blood-rain::before,
+.climate--blood-rain::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    transition: opacity 0.4s ease;
+}
+
+.climate--blood-rain::before {
+    background: linear-gradient(180deg, rgba(42, 0, 6, 0.65), rgba(10, 0, 2, 0.92));
+    z-index: -2;
+}
+
+.climate--blood-rain::after {
+    background:
+        radial-gradient(circle at 18% -10%, rgba(142, 16, 26, 0.35), transparent 55%),
+        radial-gradient(circle at 82% -5%, rgba(214, 42, 52, 0.25), transparent 58%);
+    mix-blend-mode: plus-lighter;
+    z-index: -1;
+}
+
+body.biome--blood-rain .climate--blood-rain {
+    display: block;
+}
+
+body.biome--blood-rain .climate--blood-rain::before,
+body.biome--blood-rain .climate--blood-rain::after {
+    opacity: 0.35;
+}
+
+body.biome--blood-rain .interface-backdrop__veil {
+    background:
+        radial-gradient(circle at 32% 12%, rgba(168, 8, 26, 0.32), transparent 58%),
+        radial-gradient(circle at 68% 6%, rgba(92, 0, 12, 0.35), transparent 60%),
+        linear-gradient(180deg, rgba(8, 0, 2, 0.82), rgba(4, 0, 0, 0.92));
+    backdrop-filter: blur(4px) saturate(1.1);
+}
+
+.scarlet-rain-drop {
+    position: absolute;
+    top: calc(-18% - var(--start-offset, 0%));
+    left: var(--x, 50%);
+    width: calc(2px * var(--thickness, 1));
+    height: calc(70px * var(--length, 1));
+    background: linear-gradient(180deg, rgba(255, 68, 76, 0.95), rgba(168, 0, 18, 0.8) 55%, rgba(80, 0, 8, 0));
+    border-radius: 999px;
+    opacity: var(--opacity, 0.85);
+    filter: drop-shadow(0 0 8px rgba(255, 44, 68, 0.4));
+    animation: blood-rain-fall var(--duration, 1.8s) linear infinite;
+    animation-delay: calc(-1 * var(--delay, 0s));
+    transform: translate3d(calc(-50% + var(--drift, 0px)), -120%, 0) skewX(var(--skew, 0deg));
+    will-change: transform, opacity;
+}
+
+.scarlet-rain-drop::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, rgba(255, 190, 190, 0.65), transparent 62%);
+    opacity: 0.6;
+    border-radius: inherit;
+    mix-blend-mode: screen;
+}
+
+.scarlet-rain-drop::before {
+    content: '';
+    position: absolute;
+    bottom: -6px;
+    left: 50%;
+    width: calc(6px * var(--thickness, 1));
+    height: calc(6px * var(--thickness, 1));
+    background: radial-gradient(circle, rgba(255, 52, 68, 0.65) 0%, rgba(150, 0, 14, 0) 70%);
+    transform: translateX(-50%) scale(0.6, 0.25);
+    opacity: 0;
+    animation: blood-rain-splash var(--duration, 1.8s) linear infinite;
+    animation-delay: calc(-1 * var(--delay, 0s));
+}
+
+@keyframes blood-rain-fall {
+    0% {
+        transform: translate3d(calc(-50% + var(--drift, 0px)), -140%, 0) skewX(var(--skew, 0deg));
+        opacity: 0;
+    }
+    10% {
+        opacity: var(--opacity, 0.8);
+    }
+    92% {
+        opacity: var(--opacity, 0.85);
+    }
+    100% {
+        transform: translate3d(calc(-50% + var(--drift, 0px)), 160%, 0) skewX(var(--skew, 0deg));
+        opacity: 0;
+    }
+}
+
+@keyframes blood-rain-splash {
+    0%, 80% {
+        opacity: 0;
+        transform: translateX(-50%) scale(0.5, 0.15);
+    }
+    90% {
+        opacity: 0.4;
+        transform: translateX(-50%) scale(1.1, 0.45);
+    }
+    100% {
+        opacity: 0;
+        transform: translateX(-50%) scale(1.2, 0.2);
+    }
+}
