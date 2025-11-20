@@ -1842,14 +1842,14 @@ function initializeBiomeInterface() {
         if (dorcelessnessLuckContainer) dorcelessnessLuckContainer.style.display = '';
         if (ygBlessingContainer) ygBlessingContainer.style.display = '';
         if (luckPresets) {
-            Array.from(luckPresets.children).forEach(btn => {
-                if (btn === voidHeartBtn) {
-                    btn.style.display = '';
-                } else if (btn.textContent.includes('VIP') || btn.textContent.includes('Dave') || btn === voidHeartBtn) {
-                    btn.style.display = '';
-                } else {
-                    btn.style.display = 'none';
-                }
+            luckPresets.querySelectorAll('button[data-luck-value]').forEach(button => {
+                const wrapper = button.closest('.preset-button') || button;
+                const isVoidHeartButton = voidHeartBtn && button === voidHeartBtn;
+                const isVipOrDave = button.textContent.includes('VIP') || button.textContent.includes('Dave');
+                const shouldShow = Boolean(isVoidHeartButton || isVipOrDave);
+
+                wrapper.style.display = shouldShow ? '' : 'none';
+                button.style.display = shouldShow ? '' : 'none';
             });
         }
     } else {
@@ -1859,12 +1859,13 @@ function initializeBiomeInterface() {
         if (dorcelessnessLuckContainer) dorcelessnessLuckContainer.style.display = '';
         if (ygBlessingContainer) ygBlessingContainer.style.display = '';
         if (luckPresets) {
-            Array.from(luckPresets.children).forEach(btn => {
-                if (btn === voidHeartBtn) {
-                    btn.style.display = 'none';
-                } else {
-                    btn.style.display = '';
-                }
+            luckPresets.querySelectorAll('button[data-luck-value]').forEach(button => {
+                const wrapper = button.closest('.preset-button') || button;
+                const isVoidHeartButton = voidHeartBtn && button === voidHeartBtn;
+                const shouldShow = !isVoidHeartButton;
+
+                wrapper.style.display = shouldShow ? '' : 'none';
+                button.style.display = shouldShow ? '' : 'none';
             });
         }
     }
