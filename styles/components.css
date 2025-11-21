@@ -724,6 +724,17 @@ select.form-field__input option {
     content: '';
 }
 
+.preset-detail-display {
+    margin-top: 1.25rem;
+    padding: 0.875rem 1rem;
+    border-radius: 8px;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.02));
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    color: #dbefff;
+    font-size: 0.95rem;
+    line-height: 1.4;
+}
+
 .preset-matrix button {
     font-family: inherit;
     font-size: 11px;
@@ -736,7 +747,9 @@ select.form-field__input option {
     cursor: pointer;
     transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease, background 0.25s ease;
     position: relative;
-    overflow: visible;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
     z-index: 1;
 }
 

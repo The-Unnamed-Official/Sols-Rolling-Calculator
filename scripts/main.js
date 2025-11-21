@@ -3052,6 +3052,64 @@ function setupLuckPresetAnimations() {
     bindLuckPresetButtonAnimation(tenMillionButton, 'luck-preset-button--mega-pop', ['luckPresetMegaPop']);
 }
 
+function extractPresetBaseLabel(label) {
+    if (typeof label !== 'string') {
+        return '';
+    }
+
+    const trimmed = label.trim();
+    if (!trimmed) {
+        return '';
+    }
+
+    const dashSplit = trimmed.split(/\s+-\s+/)[0];
+    const multiplierSplit = dashSplit.split(/\s+x/i)[0];
+    const numericPruned = multiplierSplit.replace(/\s+[0-9].*$/, '').trim();
+
+    return numericPruned || multiplierSplit.trim() || trimmed;
+}
+
+function updatePresetDetailDisplay(message) {
+    const detailTarget = document.getElementById('upgradeDetailDisplay');
+    if (!detailTarget) {
+        return;
+    }
+
+    const content = typeof message === 'string' && message.trim().length > 0
+        ? message.trim()
+        : 'Select a preset to view its full description.';
+
+    detailTarget.textContent = content;
+}
+
+function setupPresetDetailDisplay() {
+    if (typeof document === 'undefined') {
+        return;
+    }
+
+    const buttons = document.querySelectorAll('.preset-matrix button, .preset-toggle__options button');
+    if (buttons.length === 0) {
+        return;
+    }
+
+    buttons.forEach(button => {
+        const fullLabel = (button.textContent || '').trim();
+        if (!fullLabel) {
+            return;
+        }
+
+        const baseLabel = extractPresetBaseLabel(fullLabel);
+        button.dataset.fullLabel = fullLabel;
+        button.textContent = baseLabel;
+        button.title = fullLabel;
+
+        button.addEventListener('click', () => {
+            const detail = button.dataset.fullLabel || baseLabel;
+            updatePresetDetailDisplay(detail);
+        });
+    });
+}
+
 function setVersionButtonExpanded(state) {
     if (versionInfoButton) {
         versionInfoButton.setAttribute('aria-expanded', state ? 'true' : 'false');
@@ -3311,6 +3369,7 @@ document.addEventListener('DOMContentLoaded', updateOblivionPresetDisplay);
 document.addEventListener('DOMContentLoaded', updateDunePresetDisplay);
 document.addEventListener('DOMContentLoaded', setupLuckPresetSubtractButtons);
 document.addEventListener('DOMContentLoaded', setupLuckPresetAnimations);
+document.addEventListener('DOMContentLoaded', setupPresetDetailDisplay);
 document.addEventListener('DOMContentLoaded', setupChangelogTabs);
 document.addEventListener('DOMContentLoaded', setupVersionChangelogOverlay);
 document.addEventListener('DOMContentLoaded', maybeShowChangelogOnFirstVisit);
@@ -4884,7 +4943,7 @@ function notifyShareResult(message, tone = 'success') {
         window.clearTimeout(shareFeedbackTimerId);
     }
 
-    const timeout = tone === 'error' ? 4200 : 2600;
+    const timeout = tone === 'error' ? 6200 : 4600;
     const reset = () => {
         trigger.textContent = trigger.dataset.defaultLabel || defaultLabel;
         trigger.classList.remove('feed-share__trigger--success', 'feed-share__trigger--error');
