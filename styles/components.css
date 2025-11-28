@@ -203,7 +203,8 @@
 
 .interface-select__menu {
     position: absolute;
-    bottom: calc(100% + 8px);
+    top: calc(100% + 8px);
+    left: 0;
     background:
         linear-gradient(var(--accent), var(--accent)) top left / var(--corner-size) var(--corner-thickness) no-repeat,
         linear-gradient(var(--accent), var(--accent)) top left / var(--corner-thickness) var(--corner-size) no-repeat,
@@ -239,7 +240,7 @@ details[data-select="vip-dropdown"] {
 .form-field--events .interface-select__menu {
     left: 0;
     right: auto;
-    transform-origin: bottom left;
+    transform-origin: top left;
     width: min(340px, calc(100vw - 32px));
 }
 
