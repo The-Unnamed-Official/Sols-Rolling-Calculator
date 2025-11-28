@@ -99,6 +99,8 @@ const BIOME_PRIMARY_SELECT_ID = 'biome-primary-dropdown';
 const BIOME_OTHER_SELECT_ID = 'biome-other-dropdown';
 const BIOME_TIME_SELECT_ID = 'biome-time-dropdown';
 const DAY_RESTRICTED_BIOMES = new Set(['pumpkinMoon', 'graveyard']);
+const CYBERSPACE_ILLUSIONARY_WARNING_STORAGE_KEY = 'solsRollingCalculator:hideCyberspaceIllusionaryWarning';
+let lastPrimaryBiomeSelection = null;
 
 const RUNE_CONFIGURATION = Object.freeze({
     windyRune: Object.freeze({
@@ -524,6 +526,222 @@ const cutsceneWarningManager = (() => {
             } catch (error) {
                 // Ignore storage errors
             }
+        }
+    };
+})();
+
+const rotationPromptManager = (() => {
+    let pendingAction = null;
+
+    const getOverlay = () => document.getElementById('rotationPromptOverlay');
+
+    function isPortraitOrientation() {
+        if (typeof window === 'undefined') {
+            return false;
+        }
+        if (window.matchMedia && window.matchMedia('(orientation: portrait)').matches) {
+            return true;
+        }
+        return window.innerHeight > window.innerWidth;
+    }
+
+    function isMobileOrTablet() {
+        if (typeof navigator !== 'undefined') {
+            const ua = navigator.userAgent || navigator.vendor || '';
+            if (/android|iphone|ipad|ipod|iemobile|mobile/i.test(ua)) {
+                return true;
+            }
+            if (/tablet|kindle|silk|playbook|nexus 7|nexus 9/i.test(ua)) {
+                return true;
+            }
+        }
+        if (typeof window !== 'undefined') {
+            const width = Math.min(window.innerWidth || 0, window.outerWidth || window.innerWidth || 0);
+            return width > 0 && width <= 1100;
+        }
+        return false;
+    }
+
+    function detectFormFactor() {
+        if (typeof window === 'undefined') {
+            return null;
+        }
+        const width = Math.min(window.innerWidth || 0, window.outerWidth || window.innerWidth || 0);
+        if (width && width <= 768) {
+            return 'phone';
+        }
+        if (width && width <= 1100) {
+            return 'tablet';
+        }
+        return null;
+    }
+
+    function focusPrimaryAction() {
+        const confirmButton = document.getElementById('rotationPromptConfirm');
+        if (!confirmButton || typeof confirmButton.focus !== 'function') {
+            return;
+        }
+        try {
+            confirmButton.focus({ preventScroll: true });
+        } catch (error) {
+            confirmButton.focus();
+        }
+    }
+
+    function prepareOverlay(overlay) {
+        if (!overlay) {
+            return;
+        }
+        const formFactor = detectFormFactor();
+        const prompt = overlay.querySelector('.rotation-prompt');
+        if (!prompt) {
+            return;
+        }
+        if (formFactor) {
+            prompt.setAttribute('data-form-factor', formFactor);
+        } else {
+            prompt.removeAttribute('data-form-factor');
+        }
+    }
+
+    function shouldPrompt() {
+        if (!appState.cinematic) {
+            return false;
+        }
+        if (cutsceneWarningManager.isSuppressed()) {
+            return false;
+        }
+        return isPortraitOrientation() && isMobileOrTablet();
+    }
+
+    return {
+        shouldPrompt,
+        prompt(action) {
+            pendingAction = typeof action === 'function' ? action : null;
+
+            if (!shouldPrompt()) {
+                if (pendingAction) {
+                    const next = pendingAction;
+                    pendingAction = null;
+                    next();
+                }
+                return false;
+            }
+
+            const overlay = getOverlay();
+            if (!overlay) {
+                if (pendingAction) {
+                    const next = pendingAction;
+                    pendingAction = null;
+                    next();
+                }
+                return false;
+            }
+
+            prepareOverlay(overlay);
+            revealOverlay(overlay);
+            focusPrimaryAction();
+            return true;
+        },
+        confirm() {
+            const overlay = getOverlay();
+            const action = pendingAction;
+            pendingAction = null;
+            concealOverlay(overlay);
+            if (typeof action === 'function') {
+                action();
+            }
+        },
+        dismiss() {
+            cutsceneWarningManager.suppress();
+            this.confirm();
+        },
+        hide() {
+            pendingAction = null;
+            concealOverlay(getOverlay());
+        },
+        hasPendingAction() {
+            return typeof pendingAction === 'function';
+        }
+    };
+})();
+
+const cyberspaceIllusionaryWarningManager = (() => {
+    let suppressed = null;
+
+    const getOverlay = () => document.getElementById('cyberspaceIllusionaryOverlay');
+
+    function readSuppressedPreference() {
+        if (suppressed !== null) {
+            return suppressed;
+        }
+
+        if (typeof window === 'undefined') {
+            suppressed = false;
+            return suppressed;
+        }
+
+        try {
+            suppressed = window.localStorage.getItem(CYBERSPACE_ILLUSIONARY_WARNING_STORAGE_KEY) === 'true';
+        } catch (error) {
+            suppressed = false;
+        }
+
+        return suppressed;
+    }
+
+    function focusPrimaryAction() {
+        const confirmButton = document.getElementById('cyberspaceIllusionaryConfirm');
+        if (!confirmButton || typeof confirmButton.focus !== 'function') {
+            return;
+        }
+
+        try {
+            confirmButton.focus({ preventScroll: true });
+        } catch (error) {
+            confirmButton.focus();
+        }
+    }
+
+    return {
+        isSuppressed() {
+            return readSuppressedPreference();
+        },
+        show() {
+            if (readSuppressedPreference()) {
+                return false;
+            }
+
+            const overlay = getOverlay();
+            if (!overlay) {
+                return false;
+            }
+
+            if (!overlay.hasAttribute('hidden')) {
+                return true;
+            }
+
+            revealOverlay(overlay);
+            focusPrimaryAction();
+            return true;
+        },
+        hide() {
+            concealOverlay(getOverlay());
+        },
+        suppress() {
+            suppressed = true;
+            if (typeof window !== 'undefined') {
+                try {
+                    window.localStorage.setItem(CYBERSPACE_ILLUSIONARY_WARNING_STORAGE_KEY, 'true');
+                } catch (error) {
+                    // Ignore storage issues so the overlay can still be hidden.
+                }
+            }
+            this.hide();
+        },
+        isVisible() {
+            const overlay = getOverlay();
+            return Boolean(overlay && !overlay.hasAttribute('hidden'));
         }
     };
 })();
@@ -1050,6 +1268,7 @@ const biomeAssets = {
     null: { image: 'files/nullBiomeImage.jpg', music: 'files/nullBiomeMusic.mp3' },
     dreamspace: { image: 'files/dreamspaceBiomeImage.jpg', music: 'files/dreamspaceBiomeMusic.mp3' },
     glitch: { image: 'files/glitchBiomeImage.webm', music: 'files/glitchBiomeMusic.mp3' },
+    cyberspace: { image: 'files/cyberspaceBiomeImage.jpg', music: 'files/cyberspaceBiomeMusic.mp3' },
     anotherRealm: { image: 'files/anotherRealmBiomeImage.jpg', music: 'files/anotherRealmBiomeMusic.mp3' },
     graveyard: { image: 'files/graveyardBiomeImage.jpg', music: 'files/graveyardBiomeMusic.mp3' },
     pumpkinMoon: { image: 'files/pumpkinMoonBiomeImage.jpg', music: 'files/pumpkinMoonBiomeMusic.mp3' },
@@ -1499,6 +1718,30 @@ let lastDorcelessnessMultiplier = 1;
 
 const MILLION_LUCK_PRESET = 1000000;
 
+const LUCK_SELECTION_SOURCE = Object.freeze({
+    CUSTOM: 'custom',
+    STANDARD_PRESET: 'standard-preset',
+    DEVICE_PRESET: 'device-preset',
+    MANUAL: 'manual'
+});
+
+let currentLuckSelectionSource = LUCK_SELECTION_SOURCE.CUSTOM;
+
+function setLuckSelectionSource(source) {
+    if (typeof source !== 'string') {
+        return;
+    }
+
+    const allowedSources = Object.values(LUCK_SELECTION_SOURCE);
+    if (allowedSources.includes(source)) {
+        currentLuckSelectionSource = source;
+    }
+}
+
+function getLuckSelectionSource() {
+    return currentLuckSelectionSource || LUCK_SELECTION_SOURCE.CUSTOM;
+}
+
 function isLuckPresetStackingEnabled() {
     if (typeof document === 'undefined') {
         return false;
@@ -1535,6 +1778,10 @@ function resetLuckPresetAnimations() {
 }
 
 function applyLuckValue(value, options = {}) {
+    if (options.luckSource) {
+        setLuckSelectionSource(options.luckSource);
+    }
+
     const stackPresets = isLuckPresetStackingEnabled();
     const luckInput = document.getElementById('luck-total');
     const existingLuck = luckInput ? getNumericInputValue(luckInput, { min: 1 }) : baseLuck;
@@ -1680,7 +1927,7 @@ function applyDeviceBuffPreset(multiplier) {
     }
 
     const targetLuck = Math.max(1, numericMultiplier);
-    applyLuckValue(targetLuck);
+    applyLuckValue(targetLuck, { luckSource: LUCK_SELECTION_SOURCE.DEVICE_PRESET });
 }
 
 function recomputeLuckValue() {
@@ -1712,6 +1959,7 @@ function recomputeLuckValue() {
         const normalizedLuck = Math.max(1, enteredLuck);
         baseLuck = normalizedLuck;
         currentLuck = normalizedLuck;
+        setLuckSelectionSource(LUCK_SELECTION_SOURCE.MANUAL);
         lastVipMultiplier = 1;
         lastXyzMultiplier = 1;
         lastXcMultiplier = 1;
@@ -1815,6 +2063,14 @@ function setRoePreset() {
     setTimeBiomeSelection('none');
     playSoundEffect(clickSoundEffectElement, 'ui');
     updateBiomeControlConstraints({ source: BIOME_OTHER_SELECT_ID });
+}
+
+function setCyberspacePreset() {
+    setPrimaryBiomeSelection('cyberspace');
+    setOtherBiomeSelection('none');
+    setTimeBiomeSelection('none');
+    playSoundEffect(clickSoundEffectElement, 'ui');
+    updateBiomeControlConstraints({ source: BIOME_PRIMARY_SELECT_ID });
 }
 
 function resetBiomeChoice() {
@@ -2123,6 +2379,7 @@ const auraOutlineOverrides = new Map([
 
 const glitchOutlineNames = new Set(['Fault', 'Glitch', 'Oppression']);
 const dreamspaceOutlineNames = new Set(['Dreammetric', '★★★', '★★', '★']);
+const cyberspaceOutlineNames = new Set(['Illusionary']);
 
 function resolveAuraStyleClass(aura) {
     if (!aura) return '';
@@ -2153,6 +2410,10 @@ function resolveAuraStyleClass(aura) {
 
     if (dreamspaceOutlineNames.has(shortName)) {
         classes.push('sigil-outline-dreamspace');
+    }
+
+    if (cyberspaceOutlineNames.has(shortName)) {
+        classes.push('sigil-outline-cyberspace');
     }
 
     const overrideClass = auraOutlineOverrides.get(shortName);
@@ -2194,6 +2455,7 @@ function handleOblivionPresetSelection(presetKey) {
         options.presetLabel = 'Godlike + Heavenly + Bound';
     }
 
+    options.luckSource = LUCK_SELECTION_SOURCE.STANDARD_PRESET;
     applyLuckValue(OBLIVION_LUCK_TARGET, options);
 
     const dropdown = document.getElementById('oblivion-preset-menu');
@@ -2216,6 +2478,7 @@ function handleDunePresetSelection(presetKey) {
         options.dunePresetLabel = 'Popping Potion Preset';
     }
 
+    options.luckSource = LUCK_SELECTION_SOURCE.STANDARD_PRESET;
     applyLuckValue(DUNE_LUCK_TARGET, options);
 
     const dropdown = document.getElementById('dune-preset-menu');
@@ -2354,6 +2617,7 @@ const AURA_BLUEPRINT_SOURCE = Object.freeze([
     { name: "Oppression - 220,000,000", chance: 220000000, nativeBiomes: ["glitch"], cutscene: "oppression-cutscene" },
     { name: "Impeached - 200,000,000", chance: 200000000, breakthroughs: { corruption: 5 } },
     { name: "Nightmare Sky - 190,000,000", chance: 190000000, nativeBiomes: ["pumpkinMoon"] },
+    { name: "Illusionary - 190,000,000", chance: 190000000, nativeBiomes: ["cyberspace"], cutscene: "illusionary-cutscene" },
     { name: "Felled - 180,000,000", chance: 180000000, breakthroughs: { hell: 6 } },
     { name: "Twilight : Withering Grace - 180,000,000", chance: 180000000, breakthroughs: { night: 10 } },
     { name: "Symphony - 175,000,000", chance: 175000000 },
@@ -2749,7 +3013,7 @@ function getAuraEventId(aura) {
     return auraEventIndex.get(aura.name) || null;
 }
 
-const CUTSCENE_PRIORITY_SEQUENCE = ["oblivion-cutscene", "memory-cutscene", "neferkhaf-cutscene", "equinox-cutscene", "erebus-cutscene", "luminosity-cutscene", "pixelation-cutscene", "nyctophobia-cutscene", "lamenthyr-cutscene", "dreammetric-cutscene", "oppression-cutscene"];
+const CUTSCENE_PRIORITY_SEQUENCE = ["oblivion-cutscene", "memory-cutscene", "neferkhaf-cutscene", "illusionary-cutscene", "equinox-cutscene", "erebus-cutscene", "luminosity-cutscene", "pixelation-cutscene", "nyctophobia-cutscene", "lamenthyr-cutscene", "dreammetric-cutscene", "oppression-cutscene"];
 
 oblivionAuraData = AURA_REGISTRY.find(aura => aura.name === OBLIVION_AURA_LABEL) || null;
 memoryAuraData = AURA_REGISTRY.find(aura => aura.name === MEMORY_AURA_LABEL) || null;
@@ -2907,6 +3171,20 @@ document.addEventListener('keydown', event => {
         const overlayVisible = overlay && !overlay.hasAttribute('hidden');
         if (overlayVisible) {
             cutsceneWarningManager.hide();
+            return;
+        }
+
+        const rotationOverlay = document.getElementById('rotationPromptOverlay');
+        const rotationOverlayVisible = rotationOverlay && !rotationOverlay.hasAttribute('hidden');
+        if (rotationOverlayVisible) {
+            rotationPromptManager.hide();
+            return;
+        }
+
+        const cyberspaceOverlay = document.getElementById('cyberspaceIllusionaryOverlay');
+        const cyberspaceOverlayVisible = cyberspaceOverlay && !cyberspaceOverlay.hasAttribute('hidden');
+        if (cyberspaceOverlayVisible) {
+            cyberspaceIllusionaryWarningManager.hide();
             return;
         }
         closeOpenSelectMenus(null, { focusSummary: true });
@@ -3338,6 +3616,52 @@ document.addEventListener('DOMContentLoaded', () => {
         overlay.addEventListener('click', event => {
             if (event.target === overlay) {
                 cutsceneWarningManager.hide();
+            }
+        });
+    }
+
+    const rotationConfirm = document.getElementById('rotationPromptConfirm');
+    if (rotationConfirm) {
+        rotationConfirm.addEventListener('click', () => {
+            rotationPromptManager.confirm();
+        });
+    }
+
+    const rotationDismiss = document.getElementById('rotationPromptDismiss');
+    if (rotationDismiss) {
+        rotationDismiss.addEventListener('click', () => {
+            rotationPromptManager.dismiss();
+        });
+    }
+
+    const rotationOverlay = document.getElementById('rotationPromptOverlay');
+    if (rotationOverlay) {
+        rotationOverlay.addEventListener('click', event => {
+            if (event.target === rotationOverlay) {
+                rotationPromptManager.hide();
+            }
+        });
+    }
+
+    const cyberspaceConfirm = document.getElementById('cyberspaceIllusionaryConfirm');
+    if (cyberspaceConfirm) {
+        cyberspaceConfirm.addEventListener('click', () => {
+            cyberspaceIllusionaryWarningManager.hide();
+        });
+    }
+
+    const cyberspaceDismiss = document.getElementById('cyberspaceIllusionaryDismiss');
+    if (cyberspaceDismiss) {
+        cyberspaceDismiss.addEventListener('click', () => {
+            cyberspaceIllusionaryWarningManager.suppress();
+        });
+    }
+
+    const cyberspaceOverlay = document.getElementById('cyberspaceIllusionaryOverlay');
+    if (cyberspaceOverlay) {
+        cyberspaceOverlay.addEventListener('click', event => {
+            if (event.target === cyberspaceOverlay) {
+                cyberspaceIllusionaryWarningManager.hide();
             }
         });
     }
@@ -3820,6 +4144,14 @@ function updateBiomeControlConstraints({ source = null, triggerSync = true } = {
         timeChanged = true;
     }
 
+    const currentPrimarySelection = primarySelect.value;
+    if (currentPrimarySelection !== lastPrimaryBiomeSelection) {
+        if (currentPrimarySelection === 'cyberspace' && !cyberspaceIllusionaryWarningManager.isSuppressed()) {
+            cyberspaceIllusionaryWarningManager.show();
+        }
+        lastPrimaryBiomeSelection = currentPrimarySelection;
+    }
+
     refreshCustomSelect(BIOME_PRIMARY_SELECT_ID);
     refreshCustomSelect(BIOME_OTHER_SELECT_ID);
     refreshCustomSelect(BIOME_TIME_SELECT_ID);
@@ -3959,6 +4291,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const normalized = Number.isFinite(parsed) && parsed > 0 ? Math.max(1, parsed) : 1;
             baseLuck = normalized;
             currentLuck = normalized;
+            setLuckSelectionSource(LUCK_SELECTION_SOURCE.MANUAL);
             lastVipMultiplier = 1;
             lastXyzMultiplier = 1;
             lastXcMultiplier = 1;
@@ -4086,7 +4419,7 @@ function isYgBlessingEnabled() {
     return Boolean(toggle && toggle.checked);
 }
 
-function createAuraEvaluationContext(selection, { eventChecker }) {
+function createAuraEvaluationContext(selection, { eventChecker, luckValue } = {}) {
     const selectionState = selection || collectBiomeSelectionState();
     const biome = selectionState?.canonicalBiome || 'normal';
     const runeConfig = selectionState?.runeConfig || resolveRuneConfiguration(selectionState?.runeValue);
@@ -4120,8 +4453,17 @@ function createAuraEvaluationContext(selection, { eventChecker }) {
         activeBiomes,
         breakthroughBiomes,
         primaryBiome: selectionState?.primaryBiome || null,
-        ygBlessingActive: isYgBlessingEnabled()
+        ygBlessingActive: isYgBlessingEnabled(),
+        luckSource: getLuckSelectionSource(),
+        luckValue: Number.isFinite(luckValue) ? luckValue : currentLuck
     };
+}
+
+function isIllusionaryAura(aura) {
+    if (!aura || typeof aura.name !== 'string') {
+        return false;
+    }
+    return aura.name.startsWith('Illusionary');
 }
 
 function computeLimboEffectiveChance(aura, context) {
@@ -4145,6 +4487,13 @@ function computeStandardEffectiveChance(aura, context) {
     const eventId = getAuraEventId(aura);
     const eventEnabled = context.eventChecker(aura);
     if (!eventEnabled) return Infinity;
+
+    if (isIllusionaryAura(aura)) {
+        const luckValue = Number.isFinite(context?.luckValue) ? context.luckValue : currentLuck;
+        if (luckValue !== 1) {
+            return Infinity;
+        }
+    }
 
     if (isRoe && ROE_EXCLUSION_SET.has(aura.name)) {
         const matchesActive = Array.isArray(activeBiomes) && activeBiomes.length > 0
@@ -4403,6 +4752,7 @@ function runRollSimulation(options = {}) {
     }
 
     const bypassRollWarning = Boolean(options && options.bypassRollWarning);
+    const bypassRotationPrompt = Boolean(options && options.bypassRotationPrompt);
     const totalOverride = options && Number.isFinite(options.totalOverride)
         ? Number.parseInt(options.totalOverride, 10)
         : null;
@@ -4414,6 +4764,15 @@ function runRollSimulation(options = {}) {
 
     if (!Number.isFinite(total) || total <= 0) {
         total = 1;
+    }
+
+    if (!bypassRotationPrompt && rotationPromptManager.shouldPrompt()) {
+        rotationPromptManager.prompt(() => runRollSimulation({
+            ...options,
+            bypassRotationPrompt: true,
+            totalOverride: total
+        }));
+        return;
     }
 
     if (!bypassRollWarning && total > LARGE_ROLL_WARNING_THRESHOLD) {
@@ -4480,7 +4839,11 @@ function runRollSimulation(options = {}) {
         }
     }
 
-    const evaluationContext = createAuraEvaluationContext(selectionState, { eventChecker: isEventAuraEnabled, eventSnapshot });
+    const evaluationContext = createAuraEvaluationContext(selectionState, {
+        eventChecker: isEventAuraEnabled,
+        eventSnapshot,
+        luckValue
+    });
     const computedAuras = buildComputedAuraEntries(AURA_REGISTRY, evaluationContext, luckValue, breakthroughStatsMap);
 
     const activeDuneAura = (dunePresetEnabled && baseLuck >= DUNE_LUCK_TARGET) ? duneAuraData : null;
@@ -5322,6 +5685,17 @@ const SHARE_IMAGE_OUTLINE_STYLES = Object.freeze({
             { color: 'rgba(255, 110, 220, 0.96)', blur: 0, offsetX: -3, offsetY: 0 },
             { color: 'rgba(255, 110, 220, 0.96)', blur: 0, offsetX: 0, offsetY: 3 },
             { color: 'rgba(255, 110, 220, 0.96)', blur: 0, offsetX: 0, offsetY: -3 }
+        ]
+    },
+    'sigil-outline-cyberspace': {
+        fill: '#ffe9ff',
+        shadows: [
+            { color: 'rgba(140, 251, 255, 0.95)', blur: 10 },
+            { color: 'rgba(90, 203, 255, 0.85)', blur: 18 },
+            { color: 'rgba(110, 202, 255, 0.96)', blur: 0, offsetX: 3, offsetY: 0 },
+            { color: 'rgba(110, 185, 255, 0.96)', blur: 0, offsetX: -3, offsetY: 0 },
+            { color: 'rgba(110, 185, 255, 0.96)', blur: 0, offsetX: 0, offsetY: 3 },
+            { color: 'rgba(110, 156, 255, 0.96)', blur: 0, offsetX: 0, offsetY: -3 }
         ]
     }
 });

@@ -181,6 +181,22 @@
         -3px -3px 0 rgba(255, 110, 220, 0.92);
 }
 
+.sigil-outline-cyberspace {
+    color: #ffe9ff;
+    text-shadow:
+        0 0 10px rgba(140, 203, 255, 0.95),
+        0 0 18px rgba(90, 162, 255, 0.85),
+        0 0 32px rgba(90, 189, 255, 0.75),
+        3px 0 0 rgba(110, 202, 255, 0.96),
+        -3px 0 0 rgba(110, 173, 255, 0.96),
+        0 3px 0 rgba(110, 202, 255, 0.96),
+        0 -3px 0 rgba(110, 168, 255, 0.96),
+        3px 3px 0 rgba(110, 190, 255, 0.92),
+        -3px 3px 0 rgba(110, 168, 255, 0.92),
+        3px -3px 0 rgba(110, 120, 255, 0.92),
+        -3px -3px 0 rgba(110, 124, 255, 0.92);
+}
+
 .sigil-effect-oblivion,
 .sigil-effect-memory,
 .sigil-effect-neferkhaf,
@@ -1145,6 +1161,63 @@
     display: flex;
     flex-direction: column;
     gap: 12px;
+}
+
+.rotation-prompt {
+    gap: clamp(16px, 3vh, 24px);
+}
+
+.rotation-prompt__icons {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: clamp(16px, 4vw, 28px);
+    color: var(--text-primary);
+}
+
+.rotation-prompt__icon {
+    font-size: clamp(36px, 10vw, 64px);
+    width: clamp(60px, 14vw, 88px);
+    height: clamp(60px, 14vw, 88px);
+    display: grid;
+    place-items: center;
+    animation: rotationPulse 2.4s ease-in-out infinite;
+}
+
+.rotation-prompt__icon--tablet {
+    animation-delay: 0.22s;
+}
+
+.rotation-prompt__message {
+    margin-top: -4px;
+}
+
+.rotation-prompt[data-form-factor="phone"] .rotation-prompt__icon--tablet,
+.rotation-prompt[data-form-factor="tablet"] .rotation-prompt__icon--phone {
+    opacity: 0.55;
+}
+
+@keyframes rotationPulse {
+    0% {
+        transform: rotate(0deg);
+        opacity: 1;
+    }
+    40% {
+        transform: rotate(90deg);
+        opacity: 1;
+    }
+    55% {
+        transform: rotate(90deg);
+        opacity: 0;
+    }
+    75% {
+        transform: rotate(0deg);
+        opacity: 0;
+    }
+    100% {
+        transform: rotate(0deg);
+        opacity: 1;
+    }
 }
 
 @keyframes modal-pop {

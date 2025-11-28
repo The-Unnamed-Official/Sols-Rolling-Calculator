@@ -20,6 +20,7 @@
     <link rel="stylesheet" href="styles/layout.css">
     <link rel="stylesheet" href="styles/components.css">
     <link rel="stylesheet" href="styles/utilities.css">
+    <script src="https://kit.fontawesome.com/fe85db6219.js" crossorigin="anonymous"></script>
 </head>
 <body>
     <div class="interface-backdrop" aria-hidden="true">
@@ -66,6 +67,9 @@
     <video id="oppression-cutscene" class="cutscene-video" preload="auto" data-audio-channel="cutscene">
         <source src="files/oppressionCutscene.webm" type="video/webm">
     </video>
+    <video id="illusionary-cutscene" class="cutscene-video" preload="auto" data-audio-channel="cutscene">
+        <source src="files/illusionaryCutscene.webm" type="video/webm">
+    </video>
     <video id="lamenthyr-cutscene" class="cutscene-video" preload="auto" data-audio-channel="cutscene">
         <source src="files/lamenthyrCutscene.webm" type="video/webm">
     </video>
@@ -94,13 +98,13 @@
                 <div class="banner__meta">
                     <h1 class="banner__title">Sols Rolling Simulator</h1>
                     <p class="banner__subtitle">
-                        <button type="button" class="banner__version-button" id="versionInfoButton" aria-haspopup="dialog" aria-expanded="false" aria-label="View update notes for version V1.412" data-version-id="v1412">V1.412</button>
+                        <button type="button" class="banner__version-button" id="versionInfoButton" aria-haspopup="dialog" aria-expanded="false" aria-label="View update notes for version V1.450" data-version-id="v1450">V1.450</button>
                         <span class="banner__subtitle-divider" aria-hidden="true">◉</span>
                         <span class="banner__subtitle-author">By <span class="banner__subtitle-author-name">not.unnamed</span></span>
                         <span class="banner__subtitle-divider" aria-hidden="true">◉</span>
-                        <span class="banner__subtitle-updated">Updated <time datetime="2025-11-20">2025/11/20</time></span>
+                        <span class="banner__subtitle-updated">Updated <time datetime="2025-11-28">2025/11/28</time></span>
                         <span class="banner__subtitle-divider" aria-hidden="true">◉</span>
-                        <span class="banner__subtitle-eon">Sol's RNG Eon 1-10</span>
+                        <span class="banner__subtitle-eon">Sol's RNG Eon 1-10.5</span>
                     </p>
                 </div>
             </div>
@@ -301,6 +305,7 @@
                                     <option value="hell">Hell</option>
                                     <option value="corruption">Corruption</option>
                                     <option value="null">Null</option>
+                                    <option value="cyberspace">Cyberspace</option>
                                     <option value="dreamspace">Dreamspace</option>
                                     <option value="glitch">Glitch</option>
                                     <option value="pumpkinMoon">Pumpkin Moon</option>
@@ -361,6 +366,7 @@
                             <option value="hell">Hell</option>
                             <option value="corruption">Corruption</option>
                             <option value="null">Null</option>
+                            <option value="cyberspace">Cyberspace</option>
                             <option value="dreamspace">Dreamspace</option>
                             <option value="glitch">Glitch</option>
                             <option value="pumpkinMoon">Pumpkin Moon</option>
@@ -420,6 +426,7 @@
                     </div>
                     <div class="quick-action-group">
                         <button class="interface-button interface-button--ghost" type="button" onclick="setGlitchPreset()">Set Glitch</button>
+                        <button class="interface-button interface-button--ghost" type="button" onclick="setCyberspacePreset()">Set Cyberspace</button>
                         <button class="interface-button interface-button--ghost" type="button" onclick="setDreamspacePreset()">Set Dreamspace</button>
                         <button class="interface-button interface-button--ghost" type="button" onclick="setLimboPreset()">Set Limbo</button>
                         <button class="interface-button interface-button--ghost" type="button" onclick="setRoePreset()">Use RoE</button>
@@ -450,10 +457,10 @@
                             <span class="preset-collection__title-divider preset-collection__title-divider--end" aria-hidden="true"></span>
                         </h3>
                         <div class="preset-matrix" id="luck-preset-panel">
-                            <button type="button" id="luck-preset-ten-million" data-luck-value="10000000" onclick="applyLuckValue(10000000)">10 Million Preset 10,000,000×</button>
-                            <button type="button" id="luck-preset-one-million" data-luck-value="1000000" onclick="applyLuckValue(1000000)">1 Million Preset 1,000,000×</button>
-                            <button type="button" data-luck-value="700000" onclick="applyLuckValue(700000)">Pump King's Blood 700,000×</button>
-                            <button type="button" data-luck-value="690000" onclick="applyLuckValue(690000)">Godlike + Heavenly + Candy Corn + Bound + Popping + Tutorial Potion 690,000×</button>
+                            <button type="button" id="luck-preset-ten-million" data-luck-value="10000000" onclick="applyLuckValue(10000000, { luckSource: 'standard-preset' })">10 Million Preset 10,000,000×</button>
+                            <button type="button" id="luck-preset-one-million" data-luck-value="1000000" onclick="applyLuckValue(1000000, { luckSource: 'standard-preset' })">1 Million Preset 1,000,000×</button>
+                            <button type="button" data-luck-value="700000" onclick="applyLuckValue(700000, { luckSource: 'standard-preset' })">Pump King's Blood 700,000×</button>
+                            <button type="button" data-luck-value="690000" onclick="applyLuckValue(690000, { luckSource: 'standard-preset' })">Godlike + Heavenly + Candy Corn + Bound + Popping + Tutorial Potion 690,000×</button>
                             <details id="oblivion-preset-menu" class="preset-toggle">
                                 <summary class="preset-toggle__summary">
                                     <span class="preset-toggle__title">Oblivion / Godlike + Bound + Heavenly 600,000×</span>
@@ -464,12 +471,12 @@
                                     <button type="button" data-luck-value="600000" onclick="handleOblivionPresetSelection('classic')">Godlike + Heavenly + Bound 600,000×</button>
                                 </div>
                             </details>
-                            <button type="button" data-luck-value="400000" onclick="applyLuckValue(400000)">Godlike Potion 400,000×</button>
-                            <button type="button" id="void-heart-trigger" data-luck-value="300000" style="display:none;" onclick="applyLuckValue(300000)">Void Heart 300,000×</button>
-                            <button type="button" data-luck-value="200000" onclick="applyLuckValue(200000)">Heavenly + Bound 200,000×</button>
-                            <button type="button" data-luck-value="150000" onclick="applyLuckValue(150000)">Heavenly Potion 150,000×</button>
-                            <button type="button" data-luck-value="75000" onclick="applyLuckValue(75000)">Candy Corn 75,000×</button>
-                            <button type="button" data-luck-value="50000" onclick="applyLuckValue(50000)">Bound Potion 50,000×</button>
+                            <button type="button" data-luck-value="400000" onclick="applyLuckValue(400000, { luckSource: 'standard-preset' })">Godlike Potion 400,000×</button>
+                            <button type="button" id="void-heart-trigger" data-luck-value="300000" style="display:none;" onclick="applyLuckValue(300000, { luckSource: 'standard-preset' })">Void Heart 300,000×</button>
+                            <button type="button" data-luck-value="200000" onclick="applyLuckValue(200000, { luckSource: 'standard-preset' })">Heavenly + Bound 200,000×</button>
+                            <button type="button" data-luck-value="150000" onclick="applyLuckValue(150000, { luckSource: 'standard-preset' })">Heavenly Potion 150,000×</button>
+                            <button type="button" data-luck-value="75000" onclick="applyLuckValue(75000, { luckSource: 'standard-preset' })">Candy Corn 75,000×</button>
+                            <button type="button" data-luck-value="50000" onclick="applyLuckValue(50000, { luckSource: 'standard-preset' })">Bound Potion 50,000×</button>
                             <details id="dune-preset-menu" class="preset-toggle">
                                 <summary class="preset-toggle__summary">
                                     <span class="preset-toggle__title">Popping Potion / Potion of Dune 10,000×</span>
@@ -480,7 +487,7 @@
                                     <button type="button" data-luck-value="10000" onclick="handleDunePresetSelection('popping')">Popping Potion Preset 10,000×</button>
                                 </div>
                             </details>
-                            <button type="button" data-luck-value="5000" onclick="applyLuckValue(5000)">Tutorial Potion 5,000×</button>
+                            <button type="button" data-luck-value="5000" onclick="applyLuckValue(5000, { luckSource: 'standard-preset' })">Tutorial Potion 5,000×</button>
                         </div>
                     </div>
                     <div class="preset-collection preset-collection--compact">
@@ -557,6 +564,34 @@
             <div class="cutscene-warning__actions">
                 <button type="button" class="interface-button interface-button--minor" id="cutsceneWarningConfirm">Okay</button>
                 <button type="button" class="interface-button interface-button--ghost" id="cutsceneWarningDismiss">Don't show this again</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="rotationPromptOverlay" class="cutscene-warning-overlay" hidden>
+        <div class="cutscene-warning surface surface--modal rotation-prompt" role="dialog" aria-modal="true" aria-labelledby="rotationPromptTitle">
+            <div class="rotation-prompt__icons" aria-hidden="true">
+                <span class="rotation-prompt__icon rotation-prompt__icon--phone" aria-hidden="true"><i class="fa-solid fa-mobile"></i></span>
+                <span class="rotation-prompt__icon rotation-prompt__icon--tablet" aria-hidden="true"><i class="fa-solid fa-tablet"></i></span>
+            </div>
+            <p class="cutscene-warning__message rotation-prompt__message">
+                <span id="rotationPromptTitle" class="cutscene-warning__note">Rotate for the best cutscenes</span>: If possible, rotate your device to landscape before rolling to enjoy cutscenes in their intended view.
+            </p>
+            <div class="cutscene-warning__actions">
+                <button type="button" class="interface-button interface-button--minor" id="rotationPromptConfirm">Got it</button>
+                <button type="button" class="interface-button interface-button--ghost" id="rotationPromptDismiss">Never show this again</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="cyberspaceIllusionaryOverlay" class="cutscene-warning-overlay" hidden aria-hidden="true">
+        <div class="cutscene-warning surface surface--modal" role="dialog" aria-modal="true" aria-labelledby="cyberspaceIllusionaryTitle">
+            <p class="cutscene-warning__message">
+                <span id="cyberspaceIllusionaryTitle" class="cutscene-warning__note">Cyberspace notice</span>: Illusionary can only be obtained in Cyberspace when your luck is set to exactly <span class="cutscene-warning__ratio">1</span>. Any higher luck value will prevent it from being obtainable.
+            </p>
+            <div class="cutscene-warning__actions">
+                <button type="button" class="interface-button interface-button--minor" id="cyberspaceIllusionaryConfirm">Understood</button>
+                <button type="button" class="interface-button interface-button--ghost" id="cyberspaceIllusionaryDismiss">Never show again</button>
             </div>
         </div>
     </div>
@@ -650,11 +685,21 @@
                 <button
                     type="button"
                     class="changelog-tab changelog-tab--active"
+                    id="changelog-tab-v1450"
+                    role="tab"
+                    aria-controls="changelog-panel-v1450"
+                    aria-selected="true"
+                    data-changelog-tab="v1450"
+                >V1.450</button>
+                <button
+                    type="button"
+                    class="changelog-tab"
                     id="changelog-tab-v1412"
                     role="tab"
                     aria-controls="changelog-panel-v1412"
-                    aria-selected="true"
+                    aria-selected="false"
                     data-changelog-tab="v1412"
+                    tabindex="-1"
                 >V1.412</button>
                 <button
                     type="button"
@@ -770,12 +815,34 @@
 
             <div class="changelog-modal__panels" data-changelog-panels>
                 <section
+                    id="changelog-panel-v1450"
+                    class="changelog-modal__panel"
+                    role="tabpanel"
+                    aria-labelledby="changelog-tab-v1450"
+                    data-changelog-panel="v1450"
+                    tabindex="0"
+                >
+                    <header class="changelog-modal__header">
+                        <h2 class="changelog-modal__title" id="versionChangelogTitle">Version V1.450 Update Notes</h2>
+                        <p class="changelog-modal__meta">Updated 2025/11/28</p>
+                    </header>
+                    <p class="changelog-modal__intro">Latest changes:</p>
+                    <ul class="changelog-modal__list">
+                        <li>Introduced the Cyberspace biome along with the Illusionary aura, obtainable exclusively in Cyberspace at a rarity of 1 in 190,000,000 when luck is set to 1.</li>
+                        <li>Fixed the VIP dropdown so it now opens downward instead of clipping behind the roll button.</li>
+                        <li>Added a “rotate your device if possible” prompt for users on tablets or phones in portrait mode.</li>
+                        <li>Implemented assorted functionality fixes and critical crash resolutions on specific devices.</li>
+                    </ul>
+                </section>
+
+                <section
                     id="changelog-panel-v1412"
                     class="changelog-modal__panel"
                     role="tabpanel"
                     aria-labelledby="changelog-tab-v1412"
                     data-changelog-panel="v1412"
-                    tabindex="0"
+                    hidden
+                    tabindex="-1"
                 >
                     <header class="changelog-modal__header">
                         <h2 class="changelog-modal__title" id="versionChangelogTitle">Version V1.412 Update Notes</h2>
