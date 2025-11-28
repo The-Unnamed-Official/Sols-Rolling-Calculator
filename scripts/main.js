@@ -99,6 +99,8 @@ const BIOME_PRIMARY_SELECT_ID = 'biome-primary-dropdown';
 const BIOME_OTHER_SELECT_ID = 'biome-other-dropdown';
 const BIOME_TIME_SELECT_ID = 'biome-time-dropdown';
 const DAY_RESTRICTED_BIOMES = new Set(['pumpkinMoon', 'graveyard']);
+const CYBERSPACE_ILLUSIONARY_WARNING_STORAGE_KEY = 'solsRollingCalculator:hideCyberspaceIllusionaryWarning';
+let lastPrimaryBiomeSelection = null;
 
 const RUNE_CONFIGURATION = Object.freeze({
     windyRune: Object.freeze({
@@ -660,6 +662,86 @@ const rotationPromptManager = (() => {
         },
         hasPendingAction() {
             return typeof pendingAction === 'function';
+        }
+    };
+})();
+
+const cyberspaceIllusionaryWarningManager = (() => {
+    let suppressed = null;
+
+    const getOverlay = () => document.getElementById('cyberspaceIllusionaryOverlay');
+
+    function readSuppressedPreference() {
+        if (suppressed !== null) {
+            return suppressed;
+        }
+
+        if (typeof window === 'undefined') {
+            suppressed = false;
+            return suppressed;
+        }
+
+        try {
+            suppressed = window.localStorage.getItem(CYBERSPACE_ILLUSIONARY_WARNING_STORAGE_KEY) === 'true';
+        } catch (error) {
+            suppressed = false;
+        }
+
+        return suppressed;
+    }
+
+    function focusPrimaryAction() {
+        const confirmButton = document.getElementById('cyberspaceIllusionaryConfirm');
+        if (!confirmButton || typeof confirmButton.focus !== 'function') {
+            return;
+        }
+
+        try {
+            confirmButton.focus({ preventScroll: true });
+        } catch (error) {
+            confirmButton.focus();
+        }
+    }
+
+    return {
+        isSuppressed() {
+            return readSuppressedPreference();
+        },
+        show() {
+            if (readSuppressedPreference()) {
+                return false;
+            }
+
+            const overlay = getOverlay();
+            if (!overlay) {
+                return false;
+            }
+
+            if (!overlay.hasAttribute('hidden')) {
+                return true;
+            }
+
+            revealOverlay(overlay);
+            focusPrimaryAction();
+            return true;
+        },
+        hide() {
+            concealOverlay(getOverlay());
+        },
+        suppress() {
+            suppressed = true;
+            if (typeof window !== 'undefined') {
+                try {
+                    window.localStorage.setItem(CYBERSPACE_ILLUSIONARY_WARNING_STORAGE_KEY, 'true');
+                } catch (error) {
+                    // Ignore storage issues so the overlay can still be hidden.
+                }
+            }
+            this.hide();
+        },
+        isVisible() {
+            const overlay = getOverlay();
+            return Boolean(overlay && !overlay.hasAttribute('hidden'));
         }
     };
 })();
@@ -3098,6 +3180,13 @@ document.addEventListener('keydown', event => {
             rotationPromptManager.hide();
             return;
         }
+
+        const cyberspaceOverlay = document.getElementById('cyberspaceIllusionaryOverlay');
+        const cyberspaceOverlayVisible = cyberspaceOverlay && !cyberspaceOverlay.hasAttribute('hidden');
+        if (cyberspaceOverlayVisible) {
+            cyberspaceIllusionaryWarningManager.hide();
+            return;
+        }
         closeOpenSelectMenus(null, { focusSummary: true });
     }
 });
@@ -3550,6 +3639,29 @@ document.addEventListener('DOMContentLoaded', () => {
         rotationOverlay.addEventListener('click', event => {
             if (event.target === rotationOverlay) {
                 rotationPromptManager.hide();
+            }
+        });
+    }
+
+    const cyberspaceConfirm = document.getElementById('cyberspaceIllusionaryConfirm');
+    if (cyberspaceConfirm) {
+        cyberspaceConfirm.addEventListener('click', () => {
+            cyberspaceIllusionaryWarningManager.hide();
+        });
+    }
+
+    const cyberspaceDismiss = document.getElementById('cyberspaceIllusionaryDismiss');
+    if (cyberspaceDismiss) {
+        cyberspaceDismiss.addEventListener('click', () => {
+            cyberspaceIllusionaryWarningManager.suppress();
+        });
+    }
+
+    const cyberspaceOverlay = document.getElementById('cyberspaceIllusionaryOverlay');
+    if (cyberspaceOverlay) {
+        cyberspaceOverlay.addEventListener('click', event => {
+            if (event.target === cyberspaceOverlay) {
+                cyberspaceIllusionaryWarningManager.hide();
             }
         });
     }
@@ -4030,6 +4142,14 @@ function updateBiomeControlConstraints({ source = null, triggerSync = true } = {
             timeSelect.value = 'none';
         }
         timeChanged = true;
+    }
+
+    const currentPrimarySelection = primarySelect.value;
+    if (currentPrimarySelection !== lastPrimaryBiomeSelection) {
+        if (currentPrimarySelection === 'cyberspace' && !cyberspaceIllusionaryWarningManager.isSuppressed()) {
+            cyberspaceIllusionaryWarningManager.show();
+        }
+        lastPrimaryBiomeSelection = currentPrimarySelection;
     }
 
     refreshCustomSelect(BIOME_PRIMARY_SELECT_ID);
