@@ -1181,10 +1181,6 @@
     height: clamp(60px, 14vw, 88px);
     display: grid;
     place-items: center;
-    background: rgba(127, 227, 255, 0.1);
-    border: 1px solid rgba(127, 227, 255, 0.32);
-    border-radius: 18px;
-    box-shadow: 0 12px 36px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.08);
     animation: rotationPulse 2.4s ease-in-out infinite;
 }
 
