@@ -528,6 +528,142 @@ const cutsceneWarningManager = (() => {
     };
 })();
 
+const rotationPromptManager = (() => {
+    let pendingAction = null;
+
+    const getOverlay = () => document.getElementById('rotationPromptOverlay');
+
+    function isPortraitOrientation() {
+        if (typeof window === 'undefined') {
+            return false;
+        }
+        if (window.matchMedia && window.matchMedia('(orientation: portrait)').matches) {
+            return true;
+        }
+        return window.innerHeight > window.innerWidth;
+    }
+
+    function isMobileOrTablet() {
+        if (typeof navigator !== 'undefined') {
+            const ua = navigator.userAgent || navigator.vendor || '';
+            if (/android|iphone|ipad|ipod|iemobile|mobile/i.test(ua)) {
+                return true;
+            }
+            if (/tablet|kindle|silk|playbook|nexus 7|nexus 9/i.test(ua)) {
+                return true;
+            }
+        }
+        if (typeof window !== 'undefined') {
+            const width = Math.min(window.innerWidth || 0, window.outerWidth || window.innerWidth || 0);
+            return width > 0 && width <= 1100;
+        }
+        return false;
+    }
+
+    function detectFormFactor() {
+        if (typeof window === 'undefined') {
+            return null;
+        }
+        const width = Math.min(window.innerWidth || 0, window.outerWidth || window.innerWidth || 0);
+        if (width && width <= 768) {
+            return 'phone';
+        }
+        if (width && width <= 1100) {
+            return 'tablet';
+        }
+        return null;
+    }
+
+    function focusPrimaryAction() {
+        const confirmButton = document.getElementById('rotationPromptConfirm');
+        if (!confirmButton || typeof confirmButton.focus !== 'function') {
+            return;
+        }
+        try {
+            confirmButton.focus({ preventScroll: true });
+        } catch (error) {
+            confirmButton.focus();
+        }
+    }
+
+    function prepareOverlay(overlay) {
+        if (!overlay) {
+            return;
+        }
+        const formFactor = detectFormFactor();
+        const prompt = overlay.querySelector('.rotation-prompt');
+        if (!prompt) {
+            return;
+        }
+        if (formFactor) {
+            prompt.setAttribute('data-form-factor', formFactor);
+        } else {
+            prompt.removeAttribute('data-form-factor');
+        }
+    }
+
+    function shouldPrompt() {
+        if (!appState.cinematic) {
+            return false;
+        }
+        if (cutsceneWarningManager.isSuppressed()) {
+            return false;
+        }
+        return isPortraitOrientation() && isMobileOrTablet();
+    }
+
+    return {
+        shouldPrompt,
+        prompt(action) {
+            pendingAction = typeof action === 'function' ? action : null;
+
+            if (!shouldPrompt()) {
+                if (pendingAction) {
+                    const next = pendingAction;
+                    pendingAction = null;
+                    next();
+                }
+                return false;
+            }
+
+            const overlay = getOverlay();
+            if (!overlay) {
+                if (pendingAction) {
+                    const next = pendingAction;
+                    pendingAction = null;
+                    next();
+                }
+                return false;
+            }
+
+            prepareOverlay(overlay);
+            revealOverlay(overlay);
+            focusPrimaryAction();
+            return true;
+        },
+        confirm() {
+            const overlay = getOverlay();
+            const action = pendingAction;
+            pendingAction = null;
+            concealOverlay(overlay);
+            if (typeof action === 'function') {
+                action();
+            }
+        },
+        dismiss() {
+            cutsceneWarningManager.suppress();
+            this.confirm();
+        },
+        hide() {
+            pendingAction = null;
+            concealOverlay(getOverlay());
+        },
+        hasPendingAction() {
+            return typeof pendingAction === 'function';
+        }
+    };
+})();
+
 const glitchUiState = {
     loopTimeoutId: null,
     activeTimeoutId: null,
@@ -2955,6 +3091,13 @@ document.addEventListener('keydown', event => {
             cutsceneWarningManager.hide();
             return;
         }
+
+        const rotationOverlay = document.getElementById('rotationPromptOverlay');
+        const rotationOverlayVisible = rotationOverlay && !rotationOverlay.hasAttribute('hidden');
+        if (rotationOverlayVisible) {
+            rotationPromptManager.hide();
+            return;
+        }
         closeOpenSelectMenus(null, { focusSummary: true });
     }
 });
@@ -3384,6 +3527,29 @@ document.addEventListener('DOMContentLoaded', () => {
         overlay.addEventListener('click', event => {
             if (event.target === overlay) {
                 cutsceneWarningManager.hide();
+            }
+        });
+    }
+
+    const rotationConfirm = document.getElementById('rotationPromptConfirm');
+    if (rotationConfirm) {
+        rotationConfirm.addEventListener('click', () => {
+            rotationPromptManager.confirm();
+        });
+    }
+
+    const rotationDismiss = document.getElementById('rotationPromptDismiss');
+    if (rotationDismiss) {
+        rotationDismiss.addEventListener('click', () => {
+            rotationPromptManager.dismiss();
+        });
+    }
+
+    const rotationOverlay = document.getElementById('rotationPromptOverlay');
+    if (rotationOverlay) {
+        rotationOverlay.addEventListener('click', event => {
+            if (event.target === rotationOverlay) {
+                rotationPromptManager.hide();
             }
         });
     }
@@ -4466,6 +4632,7 @@ function runRollSimulation(options = {}) {
     }
 
     const bypassRollWarning = Boolean(options && options.bypassRollWarning);
+    const bypassRotationPrompt = Boolean(options && options.bypassRotationPrompt);
     const totalOverride = options && Number.isFinite(options.totalOverride)
         ? Number.parseInt(options.totalOverride, 10)
         : null;
@@ -4477,6 +4644,15 @@ function runRollSimulation(options = {}) {
 
     if (!Number.isFinite(total) || total <= 0) {
         total = 1;
+    }
+
+    if (!bypassRotationPrompt && rotationPromptManager.shouldPrompt()) {
+        rotationPromptManager.prompt(() => runRollSimulation({
+            ...options,
+            bypassRotationPrompt: true,
+            totalOverride: total
+        }));
+        return;
     }
 
     if (!bypassRollWarning && total > LARGE_ROLL_WARNING_THRESHOLD) {
