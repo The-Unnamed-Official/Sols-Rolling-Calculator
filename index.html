@@ -456,10 +456,10 @@
                             <span class="preset-collection__title-divider preset-collection__title-divider--end" aria-hidden="true"></span>
                         </h3>
                         <div class="preset-matrix" id="luck-preset-panel">
-                            <button type="button" id="luck-preset-ten-million" data-luck-value="10000000" onclick="applyLuckValue(10000000)">10 Million Preset 10,000,000×</button>
-                            <button type="button" id="luck-preset-one-million" data-luck-value="1000000" onclick="applyLuckValue(1000000)">1 Million Preset 1,000,000×</button>
-                            <button type="button" data-luck-value="700000" onclick="applyLuckValue(700000)">Pump King's Blood 700,000×</button>
-                            <button type="button" data-luck-value="690000" onclick="applyLuckValue(690000)">Godlike + Heavenly + Candy Corn + Bound + Popping + Tutorial Potion 690,000×</button>
+                            <button type="button" id="luck-preset-ten-million" data-luck-value="10000000" onclick="applyLuckValue(10000000, { luckSource: 'standard-preset' })">10 Million Preset 10,000,000×</button>
+                            <button type="button" id="luck-preset-one-million" data-luck-value="1000000" onclick="applyLuckValue(1000000, { luckSource: 'standard-preset' })">1 Million Preset 1,000,000×</button>
+                            <button type="button" data-luck-value="700000" onclick="applyLuckValue(700000, { luckSource: 'standard-preset' })">Pump King's Blood 700,000×</button>
+                            <button type="button" data-luck-value="690000" onclick="applyLuckValue(690000, { luckSource: 'standard-preset' })">Godlike + Heavenly + Candy Corn + Bound + Popping + Tutorial Potion 690,000×</button>
                             <details id="oblivion-preset-menu" class="preset-toggle">
                                 <summary class="preset-toggle__summary">
                                     <span class="preset-toggle__title">Oblivion / Godlike + Bound + Heavenly 600,000×</span>
@@ -470,12 +470,12 @@
                                     <button type="button" data-luck-value="600000" onclick="handleOblivionPresetSelection('classic')">Godlike + Heavenly + Bound 600,000×</button>
                                 </div>
                             </details>
-                            <button type="button" data-luck-value="400000" onclick="applyLuckValue(400000)">Godlike Potion 400,000×</button>
-                            <button type="button" id="void-heart-trigger" data-luck-value="300000" style="display:none;" onclick="applyLuckValue(300000)">Void Heart 300,000×</button>
-                            <button type="button" data-luck-value="200000" onclick="applyLuckValue(200000)">Heavenly + Bound 200,000×</button>
-                            <button type="button" data-luck-value="150000" onclick="applyLuckValue(150000)">Heavenly Potion 150,000×</button>
-                            <button type="button" data-luck-value="75000" onclick="applyLuckValue(75000)">Candy Corn 75,000×</button>
-                            <button type="button" data-luck-value="50000" onclick="applyLuckValue(50000)">Bound Potion 50,000×</button>
+                            <button type="button" data-luck-value="400000" onclick="applyLuckValue(400000, { luckSource: 'standard-preset' })">Godlike Potion 400,000×</button>
+                            <button type="button" id="void-heart-trigger" data-luck-value="300000" style="display:none;" onclick="applyLuckValue(300000, { luckSource: 'standard-preset' })">Void Heart 300,000×</button>
+                            <button type="button" data-luck-value="200000" onclick="applyLuckValue(200000, { luckSource: 'standard-preset' })">Heavenly + Bound 200,000×</button>
+                            <button type="button" data-luck-value="150000" onclick="applyLuckValue(150000, { luckSource: 'standard-preset' })">Heavenly Potion 150,000×</button>
+                            <button type="button" data-luck-value="75000" onclick="applyLuckValue(75000, { luckSource: 'standard-preset' })">Candy Corn 75,000×</button>
+                            <button type="button" data-luck-value="50000" onclick="applyLuckValue(50000, { luckSource: 'standard-preset' })">Bound Potion 50,000×</button>
                             <details id="dune-preset-menu" class="preset-toggle">
                                 <summary class="preset-toggle__summary">
                                     <span class="preset-toggle__title">Popping Potion / Potion of Dune 10,000×</span>
@@ -486,7 +486,7 @@
                                     <button type="button" data-luck-value="10000" onclick="handleDunePresetSelection('popping')">Popping Potion Preset 10,000×</button>
                                 </div>
                             </details>
-                            <button type="button" data-luck-value="5000" onclick="applyLuckValue(5000)">Tutorial Potion 5,000×</button>
+                            <button type="button" data-luck-value="5000" onclick="applyLuckValue(5000, { luckSource: 'standard-preset' })">Tutorial Potion 5,000×</button>
                         </div>
                     </div>
                     <div class="preset-collection preset-collection--compact">
