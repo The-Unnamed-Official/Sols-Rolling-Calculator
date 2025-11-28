@@ -4133,7 +4133,7 @@ function isYgBlessingEnabled() {
     return Boolean(toggle && toggle.checked);
 }
 
-function createAuraEvaluationContext(selection, { eventChecker }) {
+function createAuraEvaluationContext(selection, { eventChecker, luckValue } = {}) {
     const selectionState = selection || collectBiomeSelectionState();
     const biome = selectionState?.canonicalBiome || 'normal';
     const runeConfig = selectionState?.runeConfig || resolveRuneConfiguration(selectionState?.runeValue);
@@ -4168,7 +4168,8 @@ function createAuraEvaluationContext(selection, { eventChecker }) {
         breakthroughBiomes,
         primaryBiome: selectionState?.primaryBiome || null,
         ygBlessingActive: isYgBlessingEnabled(),
-        luckSource: getLuckSelectionSource()
+        luckSource: getLuckSelectionSource(),
+        luckValue: Number.isFinite(luckValue) ? luckValue : currentLuck
     };
 }
 
@@ -4201,8 +4202,9 @@ function computeStandardEffectiveChance(aura, context) {
     const eventEnabled = context.eventChecker(aura);
     if (!eventEnabled) return Infinity;
 
-    if (biome === 'cyberspace' && isIllusionaryAura(aura)) {
-        if (context.luckSource !== LUCK_SELECTION_SOURCE.DEVICE_PRESET) {
+    if (isIllusionaryAura(aura)) {
+        const luckValue = Number.isFinite(context?.luckValue) ? context.luckValue : currentLuck;
+        if (luckValue !== 1) {
             return Infinity;
         }
     }
@@ -4541,7 +4543,11 @@ function runRollSimulation(options = {}) {
         }
     }
 
-    const evaluationContext = createAuraEvaluationContext(selectionState, { eventChecker: isEventAuraEnabled, eventSnapshot });
+    const evaluationContext = createAuraEvaluationContext(selectionState, {
+        eventChecker: isEventAuraEnabled,
+        eventSnapshot,
+        luckValue
+    });
     const computedAuras = buildComputedAuraEntries(AURA_REGISTRY, evaluationContext, luckValue, breakthroughStatsMap);
 
     const activeDuneAura = (dunePresetEnabled && baseLuck >= DUNE_LUCK_TARGET) ? duneAuraData : null;
