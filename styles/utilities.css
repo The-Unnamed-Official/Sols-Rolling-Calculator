@@ -181,6 +181,22 @@
         -3px -3px 0 rgba(255, 110, 220, 0.92);
 }
 
+.sigil-outline-cyberspace {
+    color: #ffe9ff;
+    text-shadow:
+        0 0 10px rgba(140, 203, 255, 0.95),
+        0 0 18px rgba(90, 162, 255, 0.85),
+        0 0 32px rgba(90, 189, 255, 0.75),
+        3px 0 0 rgba(110, 202, 255, 0.96),
+        -3px 0 0 rgba(110, 173, 255, 0.96),
+        0 3px 0 rgba(110, 202, 255, 0.96),
+        0 -3px 0 rgba(110, 168, 255, 0.96),
+        3px 3px 0 rgba(110, 190, 255, 0.92),
+        -3px 3px 0 rgba(110, 168, 255, 0.92),
+        3px -3px 0 rgba(110, 120, 255, 0.92),
+        -3px -3px 0 rgba(110, 124, 255, 0.92);
+}
+
 .sigil-effect-oblivion,
 .sigil-effect-memory,
 .sigil-effect-neferkhaf,

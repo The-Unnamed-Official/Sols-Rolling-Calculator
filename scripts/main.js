@@ -1050,6 +1050,7 @@ const biomeAssets = {
     null: { image: 'files/nullBiomeImage.jpg', music: 'files/nullBiomeMusic.mp3' },
     dreamspace: { image: 'files/dreamspaceBiomeImage.jpg', music: 'files/dreamspaceBiomeMusic.mp3' },
     glitch: { image: 'files/glitchBiomeImage.webm', music: 'files/glitchBiomeMusic.mp3' },
+    cyberspace: { image: 'files/cyberspaceBiomeImage.jpg', music: 'files/cyberspaceBiomeMusic.mp3' },
     anotherRealm: { image: 'files/anotherRealmBiomeImage.jpg', music: 'files/anotherRealmBiomeMusic.mp3' },
     graveyard: { image: 'files/graveyardBiomeImage.jpg', music: 'files/graveyardBiomeMusic.mp3' },
     pumpkinMoon: { image: 'files/pumpkinMoonBiomeImage.jpg', music: 'files/pumpkinMoonBiomeMusic.mp3' },
@@ -1817,6 +1818,14 @@ function setRoePreset() {
     updateBiomeControlConstraints({ source: BIOME_OTHER_SELECT_ID });
 }
 
+function setCyberspacePreset() {
+    setPrimaryBiomeSelection('cyberspace');
+    setOtherBiomeSelection('none');
+    setTimeBiomeSelection('none');
+    playSoundEffect(clickSoundEffectElement, 'ui');
+    updateBiomeControlConstraints({ source: BIOME_PRIMARY_SELECT_ID });
+}
+
 function resetBiomeChoice() {
     setPrimaryBiomeSelection('normal');
     setOtherBiomeSelection('none');
@@ -2123,6 +2132,7 @@ const auraOutlineOverrides = new Map([
 
 const glitchOutlineNames = new Set(['Fault', 'Glitch', 'Oppression']);
 const dreamspaceOutlineNames = new Set(['Dreammetric', '★★★', '★★', '★']);
+const cyberspaceOutlineNames = new Set(['Illusionary']);
 
 function resolveAuraStyleClass(aura) {
     if (!aura) return '';
@@ -2153,6 +2163,10 @@ function resolveAuraStyleClass(aura) {
 
     if (dreamspaceOutlineNames.has(shortName)) {
         classes.push('sigil-outline-dreamspace');
+    }
+
+    if (cyberspaceOutlineNames.has(shortName)) {
+        classes.push('sigil-outline-cyberspace');
     }
 
     const overrideClass = auraOutlineOverrides.get(shortName);
@@ -2354,6 +2368,7 @@ const AURA_BLUEPRINT_SOURCE = Object.freeze([
     { name: "Oppression - 220,000,000", chance: 220000000, nativeBiomes: ["glitch"], cutscene: "oppression-cutscene" },
     { name: "Impeached - 200,000,000", chance: 200000000, breakthroughs: { corruption: 5 } },
     { name: "Nightmare Sky - 190,000,000", chance: 190000000, nativeBiomes: ["pumpkinMoon"] },
+    { name: "Illusionary - 190,000,000", chance: 190000000, nativeBiomes: ["cyberspace"], cutscene: "illusionary-cutscene" },
     { name: "Felled - 180,000,000", chance: 180000000, breakthroughs: { hell: 6 } },
     { name: "Twilight : Withering Grace - 180,000,000", chance: 180000000, breakthroughs: { night: 10 } },
     { name: "Symphony - 175,000,000", chance: 175000000 },
@@ -2749,7 +2764,7 @@ function getAuraEventId(aura) {
     return auraEventIndex.get(aura.name) || null;
 }
 
-const CUTSCENE_PRIORITY_SEQUENCE = ["oblivion-cutscene", "memory-cutscene", "neferkhaf-cutscene", "equinox-cutscene", "erebus-cutscene", "luminosity-cutscene", "pixelation-cutscene", "nyctophobia-cutscene", "lamenthyr-cutscene", "dreammetric-cutscene", "oppression-cutscene"];
+const CUTSCENE_PRIORITY_SEQUENCE = ["oblivion-cutscene", "memory-cutscene", "neferkhaf-cutscene", "illusionary-cutscene", "equinox-cutscene", "erebus-cutscene", "luminosity-cutscene", "pixelation-cutscene", "nyctophobia-cutscene", "lamenthyr-cutscene", "dreammetric-cutscene", "oppression-cutscene"];
 
 oblivionAuraData = AURA_REGISTRY.find(aura => aura.name === OBLIVION_AURA_LABEL) || null;
 memoryAuraData = AURA_REGISTRY.find(aura => aura.name === MEMORY_AURA_LABEL) || null;
@@ -5322,6 +5337,17 @@ const SHARE_IMAGE_OUTLINE_STYLES = Object.freeze({
             { color: 'rgba(255, 110, 220, 0.96)', blur: 0, offsetX: -3, offsetY: 0 },
             { color: 'rgba(255, 110, 220, 0.96)', blur: 0, offsetX: 0, offsetY: 3 },
             { color: 'rgba(255, 110, 220, 0.96)', blur: 0, offsetX: 0, offsetY: -3 }
+        ]
+    },
+    'sigil-outline-cyberspace': {
+        fill: '#ffe9ff',
+        shadows: [
+            { color: 'rgba(140, 251, 255, 0.95)', blur: 10 },
+            { color: 'rgba(90, 203, 255, 0.85)', blur: 18 },
+            { color: 'rgba(110, 202, 255, 0.96)', blur: 0, offsetX: 3, offsetY: 0 },
+            { color: 'rgba(110, 185, 255, 0.96)', blur: 0, offsetX: -3, offsetY: 0 },
+            { color: 'rgba(110, 185, 255, 0.96)', blur: 0, offsetX: 0, offsetY: 3 },
+            { color: 'rgba(110, 156, 255, 0.96)', blur: 0, offsetX: 0, offsetY: -3 }
         ]
     }
 });
