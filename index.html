@@ -9,6 +9,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Sarpanch:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@500;600;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-2oB+xIPZOy7bZ6QJqz2V68ZuB/mIF59yN1DT+J22jX4kSXLhRZFoa9qQ1kB9s3ZqCguqNcUzL+wI9pFe7L6Fpg==" crossorigin="anonymous" referrerpolicy="no-referrer">
     <link rel="icon" type="image/png" sizes="16x16" href="files/favicon-16.png">
     <link rel="icon" type="image/png" sizes="32x32" href="files/favicon-32.png">
     <link rel="icon" type="image/png" sizes="48x48" href="files/favicon-48.png">
@@ -563,6 +564,22 @@
             <div class="cutscene-warning__actions">
                 <button type="button" class="interface-button interface-button--minor" id="cutsceneWarningConfirm">Okay</button>
                 <button type="button" class="interface-button interface-button--ghost" id="cutsceneWarningDismiss">Don't show this again</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="rotationPromptOverlay" class="cutscene-warning-overlay" hidden>
+        <div class="cutscene-warning surface surface--modal rotation-prompt" role="dialog" aria-modal="true" aria-labelledby="rotationPromptTitle">
+            <div class="rotation-prompt__icons" aria-hidden="true">
+                <span class="rotation-prompt__icon rotation-prompt__icon--phone" aria-hidden="true"><i class="fa-solid fa-mobile"></i></span>
+                <span class="rotation-prompt__icon rotation-prompt__icon--tablet" aria-hidden="true"><i class="fa-solid fa-tablet"></i></span>
+            </div>
+            <p class="cutscene-warning__message rotation-prompt__message">
+                <span id="rotationPromptTitle" class="cutscene-warning__note">Rotate for the best cutscenes</span>: If possible, rotate your device to landscape before rolling to enjoy cutscenes in their intended view.
+            </p>
+            <div class="cutscene-warning__actions">
+                <button type="button" class="interface-button interface-button--minor" id="rotationPromptConfirm">Got it</button>
+                <button type="button" class="interface-button interface-button--ghost" id="rotationPromptDismiss">Never show this again</button>
             </div>
         </div>
     </div>
