@@ -231,6 +231,11 @@
     z-index: 20;
 }
 
+details[data-select="vip-dropdown"] {
+    position: relative;
+    z-index: 60;
+}
+
 .form-field--events .interface-select__menu {
     left: 0;
     right: auto;

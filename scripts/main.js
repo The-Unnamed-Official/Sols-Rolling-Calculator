@@ -1500,6 +1500,30 @@ let lastDorcelessnessMultiplier = 1;
 
 const MILLION_LUCK_PRESET = 1000000;
 
+const LUCK_SELECTION_SOURCE = Object.freeze({
+    CUSTOM: 'custom',
+    STANDARD_PRESET: 'standard-preset',
+    DEVICE_PRESET: 'device-preset',
+    MANUAL: 'manual'
+});
+
+let currentLuckSelectionSource = LUCK_SELECTION_SOURCE.CUSTOM;
+
+function setLuckSelectionSource(source) {
+    if (typeof source !== 'string') {
+        return;
+    }
+
+    const allowedSources = Object.values(LUCK_SELECTION_SOURCE);
+    if (allowedSources.includes(source)) {
+        currentLuckSelectionSource = source;
+    }
+}
+
+function getLuckSelectionSource() {
+    return currentLuckSelectionSource || LUCK_SELECTION_SOURCE.CUSTOM;
+}
+
 function isLuckPresetStackingEnabled() {
     if (typeof document === 'undefined') {
         return false;
@@ -1536,6 +1560,10 @@ function resetLuckPresetAnimations() {
 }
 
 function applyLuckValue(value, options = {}) {
+    if (options.luckSource) {
+        setLuckSelectionSource(options.luckSource);
+    }
+
     const stackPresets = isLuckPresetStackingEnabled();
     const luckInput = document.getElementById('luck-total');
     const existingLuck = luckInput ? getNumericInputValue(luckInput, { min: 1 }) : baseLuck;
@@ -1681,7 +1709,7 @@ function applyDeviceBuffPreset(multiplier) {
     }
 
     const targetLuck = Math.max(1, numericMultiplier);
-    applyLuckValue(targetLuck);
+    applyLuckValue(targetLuck, { luckSource: LUCK_SELECTION_SOURCE.DEVICE_PRESET });
 }
 
 function recomputeLuckValue() {
@@ -1713,6 +1741,7 @@ function recomputeLuckValue() {
         const normalizedLuck = Math.max(1, enteredLuck);
         baseLuck = normalizedLuck;
         currentLuck = normalizedLuck;
+        setLuckSelectionSource(LUCK_SELECTION_SOURCE.MANUAL);
         lastVipMultiplier = 1;
         lastXyzMultiplier = 1;
         lastXcMultiplier = 1;
@@ -2208,6 +2237,7 @@ function handleOblivionPresetSelection(presetKey) {
         options.presetLabel = 'Godlike + Heavenly + Bound';
     }
 
+    options.luckSource = LUCK_SELECTION_SOURCE.STANDARD_PRESET;
     applyLuckValue(OBLIVION_LUCK_TARGET, options);
 
     const dropdown = document.getElementById('oblivion-preset-menu');
@@ -2230,6 +2260,7 @@ function handleDunePresetSelection(presetKey) {
         options.dunePresetLabel = 'Popping Potion Preset';
     }
 
+    options.luckSource = LUCK_SELECTION_SOURCE.STANDARD_PRESET;
     applyLuckValue(DUNE_LUCK_TARGET, options);
 
     const dropdown = document.getElementById('dune-preset-menu');
@@ -3974,6 +4005,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const normalized = Number.isFinite(parsed) && parsed > 0 ? Math.max(1, parsed) : 1;
             baseLuck = normalized;
             currentLuck = normalized;
+            setLuckSelectionSource(LUCK_SELECTION_SOURCE.MANUAL);
             lastVipMultiplier = 1;
             lastXyzMultiplier = 1;
             lastXcMultiplier = 1;
@@ -4135,8 +4167,16 @@ function createAuraEvaluationContext(selection, { eventChecker }) {
         activeBiomes,
         breakthroughBiomes,
         primaryBiome: selectionState?.primaryBiome || null,
-        ygBlessingActive: isYgBlessingEnabled()
+        ygBlessingActive: isYgBlessingEnabled(),
+        luckSource: getLuckSelectionSource()
     };
+}
+
+function isIllusionaryAura(aura) {
+    if (!aura || typeof aura.name !== 'string') {
+        return false;
+    }
+    return aura.name.startsWith('Illusionary');
 }
 
 function computeLimboEffectiveChance(aura, context) {
@@ -4160,6 +4200,12 @@ function computeStandardEffectiveChance(aura, context) {
     const eventId = getAuraEventId(aura);
     const eventEnabled = context.eventChecker(aura);
     if (!eventEnabled) return Infinity;
+
+    if (biome === 'cyberspace' && isIllusionaryAura(aura)) {
+        if (context.luckSource !== LUCK_SELECTION_SOURCE.DEVICE_PRESET) {
+            return Infinity;
+        }
+    }
 
     if (isRoe && ROE_EXCLUSION_SET.has(aura.name)) {
         const matchesActive = Array.isArray(activeBiomes) && activeBiomes.length > 0
