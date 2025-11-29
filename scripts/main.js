@@ -2379,7 +2379,7 @@ const auraOutlineOverrides = new Map([
 
 const glitchOutlineNames = new Set(['Fault', 'Glitch', 'Oppression']);
 const dreamspaceOutlineNames = new Set(['Dreammetric', '★★★', '★★', '★']);
-const cyberspaceOutlineExclusions = new Set(['Pixelation', 'Illusionary']);
+const cyberspaceOutlineExclusions = new Set(['Pixelation']);
 
 function resolveAuraStyleClass(aura) {
     if (!aura) return '';
@@ -4514,6 +4514,17 @@ function computeStandardEffectiveChance(aura, context) {
             ? activeBiomes
             : [exclusivityBiome];
         const matchesActiveBiome = auraMatchesAnyBiome(aura, activeBiomeList);
+
+        const cyberspaceNative = isAuraNativeTo(aura, 'cyberspace');
+        const cyberspaceActive = activeBiomeList.includes('cyberspace');
+        const glitchBiomeSelected = glitchLikeBiome
+            || biome === 'glitch'
+            || exclusivityBiome === 'glitch'
+            || primaryBiome === 'glitch';
+
+        if (cyberspaceNative && glitchBiomeSelected && !cyberspaceActive) {
+            return Infinity;
+        }
 
         if (!isAuraNativeTo(aura, 'limbo-null') && !matchesActiveBiome && !allowEventGlitchAccess) {
             return Infinity;
