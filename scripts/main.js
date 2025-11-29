@@ -2412,7 +2412,12 @@ function resolveAuraStyleClass(aura) {
         classes.push('sigil-outline-dreamspace');
     }
 
-    if (auraData && isAuraNativeTo(auraData, 'cyberspace') && !cyberspaceOutlineExclusions.has(shortName)) {
+    const isCyberspaceAligned = auraData && (
+        isAuraNativeTo(auraData, 'cyberspace') ||
+        (auraData.breakthroughs && auraData.breakthroughs.has('cyberspace'))
+    );
+
+    if (isCyberspaceAligned && !cyberspaceOutlineExclusions.has(shortName)) {
         classes.push('sigil-outline-cyberspace');
     }
 
