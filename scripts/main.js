@@ -2389,7 +2389,7 @@ const glitchOutlineNames = new Set(['Fault', 'Glitch', 'Oppression']);
 const dreamspaceOutlineNames = new Set(['Dreammetric', '★★★', '★★', '★']);
 const cyberspaceOutlineExclusions = new Set(['Pixelation', 'Illusionary']);
 
-function resolveAuraStyleClass(aura) {
+function resolveAuraStyleClass(aura, biome) {
     if (!aura) return '';
 
     const name = typeof aura === 'string' ? aura : aura.name;
@@ -2420,10 +2420,12 @@ function resolveAuraStyleClass(aura) {
         classes.push('sigil-outline-dreamspace');
     }
 
-    const isCyberspaceAligned = auraData && (
-        isAuraNativeTo(auraData, 'cyberspace') ||
-        (auraData.breakthroughs && auraData.breakthroughs.has('cyberspace'))
-    );
+    const isCyberspaceAligned = auraData
+        && biome === 'cyberspace'
+        && (
+            isAuraNativeTo(auraData, 'cyberspace')
+            || (auraData.breakthroughs && auraData.breakthroughs.has('cyberspace'))
+        );
 
     if (isCyberspaceAligned && !cyberspaceOutlineExclusions.has(shortName)) {
         classes.push('sigil-outline-cyberspace');
@@ -4530,14 +4532,14 @@ function computeStandardEffectiveChance(aura, context) {
         const matchesActiveBiome = auraMatchesAnyBiome(aura, activeBiomeList);
 
         const cyberspaceNative = isAuraNativeTo(aura, 'cyberspace');
-        const cyberspaceActive = activeBiomeList.includes('cyberspace');
-        const cyberspaceOnly = cyberspaceActive && activeBiomeList.every(biomeId => biomeId === 'cyberspace');
+        const inCyberspace = biome === 'cyberspace';
+        const cyberspaceActive = inCyberspace || activeBiomeList.includes('cyberspace');
 
         const treatCyberspaceNativeAsNonNative = cyberspaceNative && !cyberspaceActive;
         const resolvedActiveMatch = treatCyberspaceNativeAsNonNative ? true : matchesActiveBiome;
 
         allowCyberspaceNativeRarity = cyberspaceNative
-            ? (!cyberspaceActive ? false : cyberspaceOnly)
+            ? inCyberspace
             : true;
 
         if (!isAuraNativeTo(aura, 'limbo-null') && !resolvedActiveMatch && !allowEventGlitchAccess) {
@@ -4644,7 +4646,7 @@ function buildResultEntries(registry, biome, breakthroughStatsMap) {
         if (winCount <= 0) continue;
 
         const rarityClass = typeof resolveRarityClass === 'function' ? resolveRarityClass(aura, biome) : '';
-        const specialClass = typeof resolveAuraStyleClass === 'function' ? resolveAuraStyleClass(aura) : '';
+        const specialClass = typeof resolveAuraStyleClass === 'function' ? resolveAuraStyleClass(aura, biome) : '';
         const eventClass = getAuraEventId(aura) ? 'sigil-event-text' : '';
         const classAttr = [rarityClass, specialClass, eventClass].filter(Boolean).join(' ');
         const formattedName = formatAuraNameMarkup(aura);
