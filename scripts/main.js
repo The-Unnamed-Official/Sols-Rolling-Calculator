@@ -2315,7 +2315,15 @@ function resolveRarityClass(aura, biome) {
     if (aura && aura.name === 'Fault') return 'rarity-tier-challenged';
     const hasLimboNative = auraMatchesAnyBiome(aura, ['limbo', 'limbo-null']);
     if (hasLimboNative && biome === 'limbo') return 'rarity-tier-limbo';
-    if (aura && aura.nativeBiomes && !aura.nativeBiomes.has('limbo-null')) return 'rarity-tier-challenged';
+    const cyberspaceNative = auraMatchesAnyBiome(aura, ['cyberspace']);
+    const hasNativeBiomes = aura && aura.nativeBiomes;
+    if (
+        hasNativeBiomes
+        && !aura.nativeBiomes.has('limbo-null')
+        && (!cyberspaceNative || biome === 'cyberspace')
+    ) {
+        return 'rarity-tier-challenged';
+    }
     const chance = aura.chance;
     if (chance >= 1000000000) return 'rarity-tier-transcendent';
     if (chance >= 99999999) return 'rarity-tier-glorious';
@@ -4524,18 +4532,15 @@ function computeStandardEffectiveChance(aura, context) {
         const cyberspaceNative = isAuraNativeTo(aura, 'cyberspace');
         const cyberspaceActive = activeBiomeList.includes('cyberspace');
         const cyberspaceOnly = cyberspaceActive && activeBiomeList.every(biomeId => biomeId === 'cyberspace');
-        const glitchBiomeSelected = glitchLikeBiome
-            || biome === 'glitch'
-            || exclusivityBiome === 'glitch'
-            || primaryBiome === 'glitch';
 
-        if (cyberspaceNative && glitchBiomeSelected && !cyberspaceActive) {
-            return Infinity;
-        }
+        const treatCyberspaceNativeAsNonNative = cyberspaceNative && !cyberspaceActive;
+        const resolvedActiveMatch = treatCyberspaceNativeAsNonNative ? true : matchesActiveBiome;
 
-        allowCyberspaceNativeRarity = cyberspaceNative ? cyberspaceOnly : true;
+        allowCyberspaceNativeRarity = cyberspaceNative
+            ? (!cyberspaceActive ? false : cyberspaceOnly)
+            : true;
 
-        if (!isAuraNativeTo(aura, 'limbo-null') && !matchesActiveBiome && !allowEventGlitchAccess) {
+        if (!isAuraNativeTo(aura, 'limbo-null') && !resolvedActiveMatch && !allowEventGlitchAccess) {
             return Infinity;
         }
     }
