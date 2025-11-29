@@ -4500,6 +4500,7 @@ function computeStandardEffectiveChance(aura, context) {
         }
     }
 
+    let allowCyberspaceNativeRarity = true;
     if (aura.nativeBiomes) {
         if (isAuraNativeTo(aura, 'limbo') && !isAuraNativeTo(aura, 'limbo-null')) {
             return Infinity;
@@ -4517,6 +4518,7 @@ function computeStandardEffectiveChance(aura, context) {
 
         const cyberspaceNative = isAuraNativeTo(aura, 'cyberspace');
         const cyberspaceActive = activeBiomeList.includes('cyberspace');
+        const cyberspaceOnly = cyberspaceActive && activeBiomeList.every(biomeId => biomeId === 'cyberspace');
         const glitchBiomeSelected = glitchLikeBiome
             || biome === 'glitch'
             || exclusivityBiome === 'glitch'
@@ -4526,6 +4528,8 @@ function computeStandardEffectiveChance(aura, context) {
             return Infinity;
         }
 
+        allowCyberspaceNativeRarity = cyberspaceNative ? cyberspaceOnly : true;
+
         if (!isAuraNativeTo(aura, 'limbo-null') && !matchesActiveBiome && !allowEventGlitchAccess) {
             return Infinity;
         }
@@ -4533,7 +4537,9 @@ function computeStandardEffectiveChance(aura, context) {
 
     let effectiveChance = aura.chance;
     if (aura.breakthroughs) {
-        if (glitchLikeBiome && (!isRoe || !ROE_BREAKTHROUGH_BLOCKLIST.has(aura.name))) {
+        if (glitchLikeBiome
+            && (!isRoe || !ROE_BREAKTHROUGH_BLOCKLIST.has(aura.name))
+            && allowCyberspaceNativeRarity) {
             let minChance = aura.chance;
             for (const multiplier of aura.breakthroughs.values()) {
                 const scaled = Math.floor(aura.chance / multiplier);
@@ -4548,6 +4554,9 @@ function computeStandardEffectiveChance(aura, context) {
                 : [exclusivityBiome, biome].filter(Boolean);
             let multiplier = null;
             for (const candidate of candidates) {
+                if (!allowCyberspaceNativeRarity && candidate === 'cyberspace') {
+                    continue;
+                }
                 multiplier = readBreakthroughMultiplier(aura, candidate);
                 if (multiplier) {
                     break;
