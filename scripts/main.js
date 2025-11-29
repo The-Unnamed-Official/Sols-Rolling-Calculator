@@ -2315,7 +2315,15 @@ function resolveRarityClass(aura, biome) {
     if (aura && aura.name === 'Fault') return 'rarity-tier-challenged';
     const hasLimboNative = auraMatchesAnyBiome(aura, ['limbo', 'limbo-null']);
     if (hasLimboNative && biome === 'limbo') return 'rarity-tier-limbo';
-    if (aura && aura.nativeBiomes && !aura.nativeBiomes.has('limbo-null')) return 'rarity-tier-challenged';
+    const cyberspaceNative = auraMatchesAnyBiome(aura, ['cyberspace']);
+    const hasNativeBiomes = aura && aura.nativeBiomes;
+    if (
+        hasNativeBiomes
+        && !aura.nativeBiomes.has('limbo-null')
+        && (!cyberspaceNative || biome === 'cyberspace')
+    ) {
+        return 'rarity-tier-challenged';
+    }
     const chance = aura.chance;
     if (chance >= 1000000000) return 'rarity-tier-transcendent';
     if (chance >= 99999999) return 'rarity-tier-glorious';
@@ -2379,9 +2387,9 @@ const auraOutlineOverrides = new Map([
 
 const glitchOutlineNames = new Set(['Fault', 'Glitch', 'Oppression']);
 const dreamspaceOutlineNames = new Set(['Dreammetric', '★★★', '★★', '★']);
-const cyberspaceOutlineNames = new Set(['Illusionary']);
+const cyberspaceOutlineExclusions = new Set(['Pixelation', 'Illusionary']);
 
-function resolveAuraStyleClass(aura) {
+function resolveAuraStyleClass(aura, biome) {
     if (!aura) return '';
 
     const name = typeof aura === 'string' ? aura : aura.name;
@@ -2412,7 +2420,14 @@ function resolveAuraStyleClass(aura) {
         classes.push('sigil-outline-dreamspace');
     }
 
-    if (cyberspaceOutlineNames.has(shortName)) {
+    const isCyberspaceAligned = auraData
+        && biome === 'cyberspace'
+        && (
+            isAuraNativeTo(auraData, 'cyberspace')
+            || (auraData.breakthroughs && auraData.breakthroughs.has('cyberspace'))
+        );
+
+    if (isCyberspaceAligned && !cyberspaceOutlineExclusions.has(shortName)) {
         classes.push('sigil-outline-cyberspace');
     }
 
@@ -2566,14 +2581,14 @@ const AURA_BLUEPRINT_SOURCE = Object.freeze([
     { name: "Equinox - 2,500,000,000", chance: 2500000000, cutscene: "equinox-cutscene" },
     { name: "Luminosity - 1,200,000,000", chance: 1200000000, cutscene: "luminosity-cutscene" },
     { name: "Erebus - 1,200,000,000", chance: 1200000000, nativeBiomes: ["glitch", "bloodRain"], cutscene: "erebus-cutscene" },
-    { name: "Pixelation - 1,073,741,824", chance: 1073741824, cutscene: "pixelation-cutscene" },
+    { name: "Pixelation - 1,073,741,824", chance: 1073741824, breakthroughs: { cyberspace: 2 }, nativeBiomes: ["cyberspace"], cutscene: "pixelation-cutscene" },
     { name: "Nyctophobia - 1,011,111,010", chance: 1011111010, nativeBiomes: ["limbo"], cutscene: "nyctophobia-cutscene" },
     { name: "Lamenthyr - 1,000,000,000", chance: 1000000000, nativeBiomes: ["glitch", "bloodRain"], cutscene: "lamenthyr-cutscene" },
     { name: "Arachnophobia - 940,000,000", chance: 940000000, nativeBiomes: ["glitch", "pumpkinMoon"] },
     { name: "Ravage - 930,000,000", chance: 930000000, nativeBiomes: ["glitch", "graveyard"] },
     { name: "Dreamscape - 850,000,000", chance: 850000000, nativeBiomes: ["limbo"] },
-    { name: "Aegis - 825,000,000", chance: 825000000 },
-    { name: "Aegis : Watergun - 825,000,000", chance: 825000000, breakthroughs: { blazing: 2 }},
+    { name: "Aegis - 825,000,000", chance: 825000000, breakthroughs: { cyberspace: 2 }, nativeBiomes: ["cyberspace"] },
+    { name: "Aegis : Watergun - 825,000,000", chance: 825000000, breakthroughs: { blazing: 2 } },
     { name: "Apostolos : Veil - 800,000,000", chance: 800000000, nativeBiomes: ["graveyard", "pumpkinMoon"] },
     { name: "Ruins : Withered - 800,000,000", chance: 800000000 },
     { name: "Sovereign - 750,000,000", chance: 750000000 },
@@ -2583,12 +2598,11 @@ const AURA_BLUEPRINT_SOURCE = Object.freeze([
     { name: "PROLOGUE - 666,616,111", chance: 666616111, nativeBiomes: ["limbo"] },
     { name: "Harvester - 666,000,000", chance: 666000000, nativeBiomes: ["graveyard"] },
     { name: "Apocalypse - 624,000,000", chance: 624000000, nativeBiomes: ["glitch", "graveyard"] },
-    { name: "Matrix : Reality - 601,020,102", chance: 601020102 },
+    { name: "Matrix : Reality - 601,020,102", chance: 601020102, breakthroughs: { cyberspace: 2 }, nativeBiomes: ["cyberspace"] },
     { name: "Sophyra - 570,000,000", chance: 570000000 },
     { name: "Elude - 555,555,555", chance: 555555555, nativeBiomes: ["limbo"] },
-    { name: "Dreammetric - 520,000,000", chance: 520000000, nativeBiomes: ["glitch", "dreamspace"], cutscene: "dreammetric-cutscene" },
     { name: "Atlas : Yuletide - 510,000,000", chance: 510000000, breakthroughs: { snowy: 3 } },
-    { name: "Matrix : Overdrive - 503,000,000", chance: 503000000 },
+    { name: "Matrix : Overdrive - 503,000,000", chance: 503000000, breakthroughs: { cyberspace: 2 }, nativeBiomes: ["cyberspace"] },
     { name: "Ruins - 500,000,000", chance: 500000000 },
     { name: "Phantasma - 462,600,000", chance: 462600000, nativeBiomes: ["glitch", "pumpkinMoon"] },
     { name: "Kyawthuite : Remembrance - 450,000,000", chance: 450000000 },
@@ -2602,6 +2616,7 @@ const AURA_BLUEPRINT_SOURCE = Object.freeze([
     { name: "Flora : Evergreen - 370,073,730", chance: 370073730 },
     { name: "Atlas - 360,000,000", chance: 360000000, breakthroughs: { sandstorm: 4 } },
     { name: "Jazz : Orchestra - 336,870,912", chance: 336870912 },
+    { name: "Dreammetric - 320,000,000", chance: 320000000, nativeBiomes: ["dreamspace"], cutscene: "dreammetric-cutscene" },
     { name: "LOTUSFALL - 320,000,000", chance: 320000000 },
     { name: "Maelstrom - 309,999,999", chance: 309999999, breakthroughs: { windy: 3 } },
     { name: "Manta - 300,000,000", chance: 300000000, breakthroughs: { blazing: 2 } },
@@ -2629,7 +2644,7 @@ const AURA_BLUEPRINT_SOURCE = Object.freeze([
     { name: "Express - 90,000,000", chance: 90000000, breakthroughs: { snowy: 3 } },
     { name: "Grief - 88,250,000", chance: 88250000, nativeBiomes: ["glitch", "graveyard"] },
     { name: "Bloodgarden - 88,000,000", chance: 88000000, nativeBiomes: ["glitch", "bloodRain"] },
-    { name: "Virtual : Worldwide - 87,500,000", chance: 87500000 },
+    { name: "Virtual : Worldwide - 87,500,000", chance: 87500000, breakthroughs: { cyberspace: 2 }, nativeBiomes: ["cyberspace"] },
     { name: "Harnessed : Elements - 85,000,000", chance: 85000000 },
     { name: "Accursed - 82,000,000", chance: 82000000, nativeBiomes: ["glitch", "bloodRain"] },
     { name: "Sailor : Flying Dutchman - 80,000,000", chance: 80000000, breakthroughs: { rainy: 4 } },
@@ -2637,16 +2652,16 @@ const AURA_BLUEPRINT_SOURCE = Object.freeze([
     { name: "Winter Fantasy - 72,000,000", chance: 72000000, breakthroughs: { snowy: 3 } },
     { name: "Dullahan - 72,000,000", chance: 72000000, nativeBiomes: ["graveyard"] },
     { name: "Reaper - 66,000,000", chance: 66000000, nativeBiomes: ["glitch", "bloodRain"] },
-    { name: "Antivirus - 62,500,000", chance: 62500000 },
+    { name: "Antivirus - 62,500,000", chance: 62500000, breakthroughs: { cyberspace: 2 }, nativeBiomes: ["cyberspace"] },
     { name: "Twilight : Iridescent Memory - 60,000,000", chance: 60000000, breakthroughs: { night: 10 } },
     { name: "SENTINEL - 60,000,000", chance: 60000000 },
-    { name: "Matrix - 50,000,000", chance: 50000000 },
+    { name: "Matrix - 50,000,000", chance: 50000000, breakthroughs: { cyberspace: 2 }, nativeBiomes: ["cyberspace"] },
     { name: "Runic - 50,000,000", chance: 50000000 },
     { name: "Exotic : APEX - 49,999,500", chance: 49999500 },
     { name: "Overseer - 45,000,000", chance: 45000000 },
     { name: "Santa Frost - 45,000,000", chance: 45000000, breakthroughs: { snowy: 3 } },
     { name: "{J u x t a p o s i t i o n} - 40,440,400", chance: 40440400, nativeBiomes: ["limbo"] },
-    { name: "Virtual : Fatal Error - 40,413,000", chance: 40413000 },
+    { name: "Virtual : Fatal Error - 40,413,000", chance: 40413000, breakthroughs: { cyberspace: 2 }, nativeBiomes: ["cyberspace"] },
     { name: "Chromatic : Kromat1k - 40,000,000", chance: 40000000 },
     { name: "Soul Hunter - 40,000,000", chance: 40000000, nativeBiomes: ["graveyard"] },
     { name: "Ethereal - 35,000,000", chance: 35000000 },
@@ -2665,7 +2680,7 @@ const AURA_BLUEPRINT_SOURCE = Object.freeze([
     { name: "Glitch - 12,210,110", chance: 12210110, nativeBiomes: ["glitch"] },
     { name: "Wonderland - 12,000,000", chance: 12000000, breakthroughs: { snowy: 3 } },
     { name: "Sailor - 12,000,000", chance: 12000000, breakthroughs: { rainy: 4 } },
-    { name: "Illusionary - 10,000,000", chance: 10000000, nativeBiomes: ["cyberspace"], cutscene: "illusionary-cutscene" },
+    { name: "Illusionary - 10,000,000", chance: 10000000, nativeBiomes: ["cyberspace"], ignoreLuck: true, fixedRollThreshold: 1, cutscene: "illusionary-cutscene" },
     { name: "Moonflower - 10,000,000", chance: 10000000, nativeBiomes: ["pumpkinMoon"] },
     { name: "Starscourge - 10,000,000", chance: 10000000, breakthroughs: { starfall: 5 } },
     { name: "Stargazer - 9,200,000", chance: 9200000, breakthroughs: { starfall: 5 } },
@@ -2695,7 +2710,7 @@ const AURA_BLUEPRINT_SOURCE = Object.freeze([
     { name: "Headless - 3,200,000", chance: 3200000, nativeBiomes: ["glitch", "graveyard"] },
     { name: "Lunar : Nightfall - 3,000,000", chance: 3000000, nativeBiomes: ["graveyard"] },
     { name: "Parasite - 3,000,000", chance: 3000000, breakthroughs: { corruption: 5 } },
-    { name: "Virtual - 2,500,000", chance: 2500000 },
+    { name: "Virtual - 2,500,000", chance: 2500000, breakthroughs: { cyberspace: 2 }, nativeBiomes: ["cyberspace"] },
     { name: "Undefined : Defined - 2,222,000", chance: 2222000, breakthroughs: { null: 1000 } },
     { name: "Bounded : Unbound - 2,000,000", chance: 2000000 },
     { name: "Gravitational - 2,000,000", chance: 2000000 },
@@ -2744,7 +2759,7 @@ const AURA_BLUEPRINT_SOURCE = Object.freeze([
     { name: "Rage : Heated - 12,800", chance: 12800 },
     { name: "Corrosive - 12,000", chance: 12000, breakthroughs: { corruption: 5 } },
     { name: "Undead - 12,000", chance: 12000, breakthroughs: { hell: 6 } },
-    { name: "★★★ - 10,000", chance: 10000, nativeBiomes: ["glitch", "dreamspace"] },
+    { name: "★★★ - 10,000", chance: 10000, nativeBiomes: ["dreamspace"] },
     { name: "Atomic : Riboneucleic - 9876", chance: 9876 },
     { name: "Lost Soul - 9,200", chance: 9200 },
     { name: "Honey - 8,335", chance: 8335 },
@@ -2758,7 +2773,7 @@ const AURA_BLUEPRINT_SOURCE = Object.freeze([
     { name: "Flora - 3,700", chance: 3700 },
     { name: "Cola - 3,999", chance: 3999 },
     { name: "Pukeko - 3,198", chance: 3198 },
-    { name: "Player - 3,000", chance: 3000 },
+    { name: "Player - 3,000", chance: 3000, breakthroughs: { cyberspace: 2 }, nativeBiomes: ["cyberspace"] },
     { name: "Fault - 3,000", chance: 3000, nativeBiomes: ["glitch"] },
     { name: "Glacier - 2,304", chance: 2304, breakthroughs: { snowy: 3 } },
     { name: "Ash - 2,300", chance: 2300 },
@@ -2767,7 +2782,7 @@ const AURA_BLUEPRINT_SOURCE = Object.freeze([
     { name: "Atomic - 1,180", chance: 1180 },
     { name: "Precious - 1,024", chance: 1024 },
     { name: "Diaboli - 1,004", chance: 1004 },
-    { name: "★★ - 1,000", chance: 1000, nativeBiomes: ["glitch", "dreamspace"] },
+    { name: "★★ - 1,000", chance: 1000, nativeBiomes: ["dreamspace"] },
     { name: "Wind - 900", chance: 900, breakthroughs: { windy: 3 } },
     { name: "Aquamarine - 900", chance: 900 },
     { name: "Sapphire - 800", chance: 800 },
@@ -2775,11 +2790,11 @@ const AURA_BLUEPRINT_SOURCE = Object.freeze([
     { name: "Ink - 700", chance: 700 },
     { name: "Gilded - 512", chance: 512, breakthroughs: { sandstorm: 4 } },
     { name: "Emerald - 500", chance: 500 },
-    { name: "Forbidden - 404", chance: 404 },
+    { name: "Forbidden - 404", chance: 404, breakthroughs: { cyberspace: 2 }, nativeBiomes: ["cyberspace"] },
     { name: "Ruby - 350", chance: 350 },
     { name: "Topaz - 150", chance: 150 },
     { name: "Rage - 128", chance: 128 },
-    { name: "★ - 100", chance: 100, nativeBiomes: ["glitch", "dreamspace"] },
+    { name: "★ - 100", chance: 100, nativeBiomes: ["dreamspace"] },
     { name: "Crystallized - 64", chance: 64 },
     { name: "Divinus : Love - 32", chance: 32 },
     { name: "Divinus - 32", chance: 32 },
@@ -4488,13 +4503,6 @@ function computeStandardEffectiveChance(aura, context) {
     const eventEnabled = context.eventChecker(aura);
     if (!eventEnabled) return Infinity;
 
-    if (isIllusionaryAura(aura)) {
-        const luckValue = Number.isFinite(context?.luckValue) ? context.luckValue : currentLuck;
-        if (luckValue !== 1) {
-            return Infinity;
-        }
-    }
-
     if (isRoe && ROE_EXCLUSION_SET.has(aura.name)) {
         const matchesActive = Array.isArray(activeBiomes) && activeBiomes.length > 0
             ? auraMatchesAnyBiome(aura, activeBiomes)
@@ -4507,6 +4515,7 @@ function computeStandardEffectiveChance(aura, context) {
         }
     }
 
+    let allowCyberspaceNativeRarity = true;
     if (aura.nativeBiomes) {
         if (isAuraNativeTo(aura, 'limbo') && !isAuraNativeTo(aura, 'limbo-null')) {
             return Infinity;
@@ -4522,14 +4531,27 @@ function computeStandardEffectiveChance(aura, context) {
             : [exclusivityBiome];
         const matchesActiveBiome = auraMatchesAnyBiome(aura, activeBiomeList);
 
-        if (!isAuraNativeTo(aura, 'limbo-null') && !matchesActiveBiome && !allowEventGlitchAccess) {
+        const cyberspaceNative = isAuraNativeTo(aura, 'cyberspace');
+        const inCyberspace = biome === 'cyberspace';
+        const cyberspaceActive = inCyberspace || activeBiomeList.includes('cyberspace');
+
+        const treatCyberspaceNativeAsNonNative = cyberspaceNative && !cyberspaceActive;
+        const resolvedActiveMatch = treatCyberspaceNativeAsNonNative ? true : matchesActiveBiome;
+
+        allowCyberspaceNativeRarity = cyberspaceNative
+            ? inCyberspace
+            : true;
+
+        if (!isAuraNativeTo(aura, 'limbo-null') && !resolvedActiveMatch && !allowEventGlitchAccess) {
             return Infinity;
         }
     }
 
     let effectiveChance = aura.chance;
     if (aura.breakthroughs) {
-        if (glitchLikeBiome && (!isRoe || !ROE_BREAKTHROUGH_BLOCKLIST.has(aura.name))) {
+        if (glitchLikeBiome
+            && (!isRoe || !ROE_BREAKTHROUGH_BLOCKLIST.has(aura.name))
+            && allowCyberspaceNativeRarity) {
             let minChance = aura.chance;
             for (const multiplier of aura.breakthroughs.values()) {
                 const scaled = Math.floor(aura.chance / multiplier);
@@ -4544,6 +4566,9 @@ function computeStandardEffectiveChance(aura, context) {
                 : [exclusivityBiome, biome].filter(Boolean);
             let multiplier = null;
             for (const candidate of candidates) {
+                if (!allowCyberspaceNativeRarity && candidate === 'cyberspace') {
+                    continue;
+                }
                 multiplier = readBreakthroughMultiplier(aura, candidate);
                 if (multiplier) {
                     break;
@@ -4621,7 +4646,7 @@ function buildResultEntries(registry, biome, breakthroughStatsMap) {
         if (winCount <= 0) continue;
 
         const rarityClass = typeof resolveRarityClass === 'function' ? resolveRarityClass(aura, biome) : '';
-        const specialClass = typeof resolveAuraStyleClass === 'function' ? resolveAuraStyleClass(aura) : '';
+        const specialClass = typeof resolveAuraStyleClass === 'function' ? resolveAuraStyleClass(aura, biome) : '';
         const eventClass = getAuraEventId(aura) ? 'sigil-event-text' : '';
         const classAttr = [rarityClass, specialClass, eventClass].filter(Boolean).join(' ');
         const formattedName = formatAuraNameMarkup(aura);
@@ -5688,14 +5713,14 @@ const SHARE_IMAGE_OUTLINE_STYLES = Object.freeze({
         ]
     },
     'sigil-outline-cyberspace': {
-        fill: '#ffe9ff',
+        fill: '#e1edff',
         shadows: [
-            { color: 'rgba(140, 251, 255, 0.95)', blur: 10 },
-            { color: 'rgba(90, 203, 255, 0.85)', blur: 18 },
-            { color: 'rgba(110, 202, 255, 0.96)', blur: 0, offsetX: 3, offsetY: 0 },
-            { color: 'rgba(110, 185, 255, 0.96)', blur: 0, offsetX: -3, offsetY: 0 },
-            { color: 'rgba(110, 185, 255, 0.96)', blur: 0, offsetX: 0, offsetY: 3 },
-            { color: 'rgba(110, 156, 255, 0.96)', blur: 0, offsetX: 0, offsetY: -3 }
+            { color: 'rgba(60, 120, 200, 0.95)', blur: 10 },
+            { color: 'rgba(40, 90, 170, 0.85)', blur: 18 },
+            { color: 'rgba(35, 90, 175, 0.96)', blur: 0, offsetX: 3, offsetY: 0 },
+            { color: 'rgba(35, 90, 175, 0.96)', blur: 0, offsetX: -3, offsetY: 0 },
+            { color: 'rgba(35, 90, 175, 0.96)', blur: 0, offsetX: 0, offsetY: 3 },
+            { color: 'rgba(35, 70, 135, 0.96)', blur: 0, offsetX: 0, offsetY: -3 }
         ]
     }
 });

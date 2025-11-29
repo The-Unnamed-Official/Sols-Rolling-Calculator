@@ -98,11 +98,11 @@
                 <div class="banner__meta">
                     <h1 class="banner__title">Sols Rolling Simulator</h1>
                     <p class="banner__subtitle">
-                        <button type="button" class="banner__version-button" id="versionInfoButton" aria-haspopup="dialog" aria-expanded="false" aria-label="View update notes for version V1.455" data-version-id="v1455">V1.455</button>
+                        <button type="button" class="banner__version-button" id="versionInfoButton" aria-haspopup="dialog" aria-expanded="false" aria-label="View update notes for version V1.476" data-version-id="v1476">V1.476</button>
                         <span class="banner__subtitle-divider" aria-hidden="true">◉</span>
                         <span class="banner__subtitle-author">By <span class="banner__subtitle-author-name">not.unnamed</span></span>
                         <span class="banner__subtitle-divider" aria-hidden="true">◉</span>
-                        <span class="banner__subtitle-updated">Updated <time datetime="2025-11-28">2025/11/28</time></span>
+                        <span class="banner__subtitle-updated">Updated <time datetime="2025-11-29">2025/11/29</time></span>
                         <span class="banner__subtitle-divider" aria-hidden="true">◉</span>
                         <span class="banner__subtitle-eon">Sol's RNG Eon 1-10.5</span>
                     </p>
@@ -589,7 +589,7 @@
     <div id="cyberspaceIllusionaryOverlay" class="cutscene-warning-overlay" hidden aria-hidden="true">
         <div class="cutscene-warning surface surface--modal" role="dialog" aria-modal="true" aria-labelledby="cyberspaceIllusionaryTitle">
             <p class="cutscene-warning__message">
-                <span id="cyberspaceIllusionaryTitle" class="cutscene-warning__note">Cyberspace notice</span>: Illusionary can only be obtained in Cyberspace when your luck is set to exactly <span class="cutscene-warning__ratio">1</span>. Any higher luck value will prevent it from being obtainable.
+                <span id="cyberspaceIllusionaryTitle" class="cutscene-warning__note">Cyberspace notice</span>: Illusionary rolls at a true <span class="cutscene-warning__ratio">1 in 10,000,000</span> chance in Cyberspace. Your luck value does not affect this roll, so feel free to use any luck level.
             </p>
             <div class="cutscene-warning__actions">
                 <button type="button" class="interface-button interface-button--minor" id="cyberspaceIllusionaryConfirm">Understood</button>
@@ -687,11 +687,31 @@
                 <button
                     type="button"
                     class="changelog-tab changelog-tab--active"
+                    id="changelog-tab-v1476"
+                    role="tab"
+                    aria-controls="changelog-panel-v1476"
+                    aria-selected="true"
+                    data-changelog-tab="v1476"
+                >V1.476</button>
+                <button
+                    type="button"
+                    class="changelog-tab"
+                    id="changelog-tab-v1460"
+                    role="tab"
+                    aria-controls="changelog-panel-v1460"
+                    aria-selected="false"
+                    data-changelog-tab="v1460"
+                    tabindex="-1"
+                >V1.460</button>
+                <button
+                    type="button"
+                    class="changelog-tab"
                     id="changelog-tab-v1455"
                     role="tab"
                     aria-controls="changelog-panel-v1455"
-                    aria-selected="true"
+                    aria-selected="false"
                     data-changelog-tab="v1455"
+                    tabindex="-1"
                 >V1.455</button>
                 <button
                     type="button"
@@ -827,12 +847,53 @@
 
             <div class="changelog-modal__panels" data-changelog-panels>
                 <section
+                    id="changelog-panel-v1476"
+                    class="changelog-modal__panel"
+                    role="tabpanel"
+                    aria-labelledby="changelog-tab-v1476"
+                    data-changelog-panel="v1476"
+                    tabindex="0"
+                >
+                    <header class="changelog-modal__header">
+                        <h2 class="changelog-modal__title" id="versionChangelogTitle">Version V1.476 Update Notes</h2>
+                        <p class="changelog-modal__meta">Updated 2025/11/29</p>
+                    </header>
+                    <p class="changelog-modal__intro">Latest changes:</p>
+                    <ul class="changelog-modal__list">
+                        <li>Cyberspace background song WILL BE CHANGED AS SOON AS I GET MY HANDS ON THE CURRENTLY USED SONG.</li>
+                        <li>Summarized wide fixes so native auras are correctly treated as native in Cyberspace and their displayed rarity matches expectations.</li>
+                        <li>Addressed multiple Cyberspace behavior issues that previously stopped the biome from functioning correctly and threw unnecessary error messages.</li>
+                        <li>Restored native outline indicators inside Cyberspace while preventing Cyberspace-native outlines from appearing outside the biome.</li>
+                        <li>Collected numerous additional Cyberspace bug fixes to stabilize native pulls and related interactions.</li>
+                    </ul>
+                </section>
+                <section
+                    id="changelog-panel-v1460"
+                    class="changelog-modal__panel"
+                    role="tabpanel"
+                    aria-labelledby="changelog-tab-v1460"
+                    data-changelog-panel="v1460"
+                    hidden
+                    tabindex="-1"
+                >
+                    <header class="changelog-modal__header">
+                        <h2 class="changelog-modal__title" id="versionChangelogTitle">Version V1.460 Update Notes</h2>
+                        <p class="changelog-modal__meta">Updated 2025/11/29</p>
+                    </header>
+                    <p class="changelog-modal__intro">Latest changes:</p>
+                    <ul class="changelog-modal__list">
+                        <li>Declared several auras as native to the Cyberspace biome and ensured they are no longer treated as native while in the Glitch biome.</li>
+                        <li>Clarified Illusionary stays a 10,000,000 rarity roll in Cyberspace that ignores your luck stat entirely.</li>
+                    </ul>
+                </section>
+                <section
                     id="changelog-panel-v1455"
                     class="changelog-modal__panel"
                     role="tabpanel"
                     aria-labelledby="changelog-tab-v1455"
                     data-changelog-panel="v1455"
-                    tabindex="0"
+                    hidden
+                    tabindex="-1"
                 >
                     <header class="changelog-modal__header">
                         <h2 class="changelog-modal__title" id="versionChangelogTitle">Version V1.455 Update Notes</h2>
@@ -858,7 +919,7 @@
                     </header>
                     <p class="changelog-modal__intro">Latest changes:</p>
                     <ul class="changelog-modal__list">
-                        <li>Introduced the Cyberspace biome along with the Illusionary aura, obtainable exclusively in Cyberspace at a rarity of 1 in 190,000,000 when luck is set to 1.</li>
+                        <li>Introduced the Cyberspace biome along with the Illusionary aura, obtainable exclusively in Cyberspace at a fixed rarity that ignores your luck value.</li>
                         <li>Fixed the VIP dropdown so it now opens downward instead of clipping behind the roll button.</li>
                         <li>Added a “rotate your device if possible” prompt for users on tablets or phones in portrait mode.</li>
                         <li>Implemented assorted functionality fixes and critical crash resolutions on specific devices.</li>
