@@ -2379,7 +2379,7 @@ const auraOutlineOverrides = new Map([
 
 const glitchOutlineNames = new Set(['Fault', 'Glitch', 'Oppression']);
 const dreamspaceOutlineNames = new Set(['Dreammetric', '★★★', '★★', '★']);
-const cyberspaceOutlineExclusions = new Set(['Pixelation']);
+const cyberspaceOutlineExclusions = new Set(['Pixelation', 'Illusionary']);
 
 function resolveAuraStyleClass(aura) {
     if (!aura) return '';
