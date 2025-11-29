@@ -98,7 +98,7 @@
                 <div class="banner__meta">
                     <h1 class="banner__title">Sols Rolling Simulator</h1>
                     <p class="banner__subtitle">
-                        <button type="button" class="banner__version-button" id="versionInfoButton" aria-haspopup="dialog" aria-expanded="false" aria-label="View update notes for version V1.450" data-version-id="v1450">V1.450</button>
+                        <button type="button" class="banner__version-button" id="versionInfoButton" aria-haspopup="dialog" aria-expanded="false" aria-label="View update notes for version V1.455" data-version-id="v1455">V1.455</button>
                         <span class="banner__subtitle-divider" aria-hidden="true">◉</span>
                         <span class="banner__subtitle-author">By <span class="banner__subtitle-author-name">not.unnamed</span></span>
                         <span class="banner__subtitle-divider" aria-hidden="true">◉</span>
@@ -552,6 +552,8 @@
                 <li class="footer-credits__item">Oblivion cutscene courtesy of <a href="https://www.youtube.com/watch?v=clQxiIRH8Ps" target="_blank" rel="noopener">Mr-yani</a>.</li>
                 <li class="footer-credits__item">Neferkhaf cutscene courtesy of <a href="https://www.reddit.com/r/SolsRNG/comments/1n3wot3/new_neferkhaf_cutscene/" target="_blank" rel="noopener">Sirothereal</a>.</li>
                 <li class="footer-credits__item">Nyctophobia cutscene courtesy of <a href="https://www.youtube.com/watch?v=KIK2iTCnfkw" target="_blank" rel="noopener">lmpixel & kito</a>.</li>
+                <li class="footer-credits__item">Cyberspace song courtesy of <a href="https://www.youtube.com/watch?v=NoVoyrNZ7o0" target="_blank" rel="noopener">53_Axis</a>.</li>
+                <li class="footer-credits__item">Dreamspace song courtesy of <a href="https://www.youtube.com/watch?v=nVvKPZ2soyU" target="_blank" rel="noopener">53_Axis</a>.</li>
             </ul>
         </details>
     </footer>
@@ -685,11 +687,21 @@
                 <button
                     type="button"
                     class="changelog-tab changelog-tab--active"
+                    id="changelog-tab-v1455"
+                    role="tab"
+                    aria-controls="changelog-panel-v1455"
+                    aria-selected="true"
+                    data-changelog-tab="v1455"
+                >V1.455</button>
+                <button
+                    type="button"
+                    class="changelog-tab changelog-tab--active"
                     id="changelog-tab-v1450"
                     role="tab"
                     aria-controls="changelog-panel-v1450"
-                    aria-selected="true"
+                    aria-selected="false"
                     data-changelog-tab="v1450"
+                    tabindex="-1"
                 >V1.450</button>
                 <button
                     type="button"
@@ -815,12 +827,30 @@
 
             <div class="changelog-modal__panels" data-changelog-panels>
                 <section
+                    id="changelog-panel-v1455"
+                    class="changelog-modal__panel"
+                    role="tabpanel"
+                    aria-labelledby="changelog-tab-v1455"
+                    data-changelog-panel="v1455"
+                    tabindex="0"
+                >
+                    <header class="changelog-modal__header">
+                        <h2 class="changelog-modal__title" id="versionChangelogTitle">Version V1.455 Update Notes</h2>
+                        <p class="changelog-modal__meta">Updated 2025/11/28</p>
+                    </header>
+                    <p class="changelog-modal__intro">Latest changes:</p>
+                    <ul class="changelog-modal__list">
+                        <li>Changed Illusionary's rarity to 10,000,000.</li>
+                    </ul>
+                </section>
+                <section
                     id="changelog-panel-v1450"
                     class="changelog-modal__panel"
                     role="tabpanel"
                     aria-labelledby="changelog-tab-v1450"
                     data-changelog-panel="v1450"
-                    tabindex="0"
+                    hidden
+                    tabindex="-1"
                 >
                     <header class="changelog-modal__header">
                         <h2 class="changelog-modal__title" id="versionChangelogTitle">Version V1.450 Update Notes</h2>
