@@ -2379,7 +2379,7 @@ const auraOutlineOverrides = new Map([
 
 const glitchOutlineNames = new Set(['Fault', 'Glitch', 'Oppression']);
 const dreamspaceOutlineNames = new Set(['Dreammetric', '★★★', '★★', '★']);
-const cyberspaceOutlineNames = new Set(['Illusionary']);
+const cyberspaceOutlineExclusions = new Set(['Pixelation', 'Illusionary']);
 
 function resolveAuraStyleClass(aura) {
     if (!aura) return '';
@@ -2412,7 +2412,7 @@ function resolveAuraStyleClass(aura) {
         classes.push('sigil-outline-dreamspace');
     }
 
-    if (cyberspaceOutlineNames.has(shortName)) {
+    if (auraData && isAuraNativeTo(auraData, 'cyberspace') && !cyberspaceOutlineExclusions.has(shortName)) {
         classes.push('sigil-outline-cyberspace');
     }
 
@@ -5681,14 +5681,14 @@ const SHARE_IMAGE_OUTLINE_STYLES = Object.freeze({
         ]
     },
     'sigil-outline-cyberspace': {
-        fill: '#ffe9ff',
+        fill: '#e1edff',
         shadows: [
-            { color: 'rgba(140, 251, 255, 0.95)', blur: 10 },
-            { color: 'rgba(90, 203, 255, 0.85)', blur: 18 },
-            { color: 'rgba(110, 202, 255, 0.96)', blur: 0, offsetX: 3, offsetY: 0 },
-            { color: 'rgba(110, 185, 255, 0.96)', blur: 0, offsetX: -3, offsetY: 0 },
-            { color: 'rgba(110, 185, 255, 0.96)', blur: 0, offsetX: 0, offsetY: 3 },
-            { color: 'rgba(110, 156, 255, 0.96)', blur: 0, offsetX: 0, offsetY: -3 }
+            { color: 'rgba(60, 120, 200, 0.95)', blur: 10 },
+            { color: 'rgba(40, 90, 170, 0.85)', blur: 18 },
+            { color: 'rgba(35, 90, 175, 0.96)', blur: 0, offsetX: 3, offsetY: 0 },
+            { color: 'rgba(35, 90, 175, 0.96)', blur: 0, offsetX: -3, offsetY: 0 },
+            { color: 'rgba(35, 90, 175, 0.96)', blur: 0, offsetX: 0, offsetY: 3 },
+            { color: 'rgba(35, 70, 135, 0.96)', blur: 0, offsetX: 0, offsetY: -3 }
         ]
     }
 });
