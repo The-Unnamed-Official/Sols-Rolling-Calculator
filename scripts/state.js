@@ -5,6 +5,7 @@
 
     const uiHandles = {
         rollTriggerButton: document.querySelector('.roll-trigger'),
+        cancelRollButton: document.getElementById('rollCancelButton'),
         brandMark: document.querySelector('.banner__emblem'),
         rollCountInput: document.getElementById('roll-total'),
         biomeSelector: document.getElementById('biome-dropdown'),
