@@ -1084,6 +1084,44 @@ body:not(.reduce-motion) #luck-preset-ten-million.luck-preset-button--mega-pop:f
     --button-raise: 0px;
 }
 
+.roll-cancel {
+    width: 100%;
+    margin-top: 10px;
+    padding: 12px 16px;
+    font-family: inherit;
+    font-size: 15px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: #ffe2e2;
+    background: linear-gradient(180deg, rgba(74, 4, 4, 0.95), rgba(36, 0, 0, 0.92));
+    border: 1px solid rgba(255, 118, 118, 0.55);
+    border-radius: 8px;
+    box-shadow: inset 0 0 18px rgba(255, 112, 112, 0.24), 0 10px 20px rgba(0, 0, 0, 0.45);
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease, background 0.25s ease;
+}
+
+.roll-cancel:hover,
+.roll-cancel:focus-visible {
+    border-color: rgba(255, 142, 142, 0.78);
+    box-shadow: inset 0 0 20px rgba(255, 142, 142, 0.28), 0 14px 24px rgba(0, 0, 0, 0.48);
+    transform: translateY(-1px) scale(1.02);
+}
+
+.roll-cancel:focus-visible {
+    outline: 2px solid rgba(255, 142, 142, 0.78);
+    outline-offset: 3px;
+}
+
+.roll-cancel:active {
+    transform: translateY(0) scale(0.98);
+}
+
+.roll-cancel:disabled {
+    opacity: 0.65;
+    cursor: not-allowed;
+}
+
 .interface-footer {
     width: min(1565px, 100%);
     margin: clamp(16px, 2vw, 24px) auto 0;

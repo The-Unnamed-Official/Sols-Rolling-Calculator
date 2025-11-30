@@ -8,6 +8,7 @@ const clickSoundEffectElement = document.getElementById('clickSoundFx');
 const cachedVideoElements = Array.from(document.querySelectorAll('video'));
 const LATEST_UPDATE_LABEL_SUFFIX = ' (Latest Update)';
 let simulationActive = false;
+let cancelRollRequested = false;
 let lastSimulationSummary = null;
 let shareFeedbackTimerId = null;
 let imageShareModeRequester = null;
@@ -3610,6 +3611,7 @@ document.addEventListener('DOMContentLoaded', setupVersionChangelogOverlay);
 document.addEventListener('DOMContentLoaded', maybeShowChangelogOnFirstVisit);
 document.addEventListener('DOMContentLoaded', initializeIntroOverlay);
 document.addEventListener('DOMContentLoaded', initializeRollTriggerFloating);
+document.addEventListener('DOMContentLoaded', setupRollCancellationControl);
 
 document.addEventListener('DOMContentLoaded', () => {
     const confirmButton = document.getElementById('cutsceneWarningConfirm');
@@ -4747,6 +4749,30 @@ function summarizeXpRewards(registry) {
     return { totalXp, lines };
 }
 
+function requestRollCancellation() {
+    if (!simulationActive || cancelRollRequested) {
+        return;
+    }
+
+    cancelRollRequested = true;
+    const { cancelRollButton } = uiHandles;
+    if (cancelRollButton) {
+        cancelRollButton.disabled = true;
+        cancelRollButton.textContent = 'Cancelling...';
+    }
+}
+
+function setupRollCancellationControl() {
+    const { cancelRollButton } = uiHandles;
+    if (!cancelRollButton) {
+        return;
+    }
+
+    cancelRollButton.addEventListener('click', () => {
+        requestRollCancellation();
+    });
+}
+
 // Run the roll simulation while keeping the UI responsive
 function runRollSimulation(options = {}) {
     if (simulationActive) return;
@@ -4764,6 +4790,7 @@ function runRollSimulation(options = {}) {
 
     const {
         rollTriggerButton,
+        cancelRollButton,
         brandMark,
         rollCountInput,
         biomeSelector,
@@ -4813,8 +4840,14 @@ function runRollSimulation(options = {}) {
     setNumericInputValue(rollCountInput, total, { format: shouldFormatRolls, min: 1, max: 100000000 });
 
     simulationActive = true;
+    cancelRollRequested = false;
     rollTriggerButton.disabled = true;
     rollTriggerButton.style.opacity = '0.5';
+    if (cancelRollButton) {
+        cancelRollButton.hidden = false;
+        cancelRollButton.disabled = false;
+        cancelRollButton.textContent = 'Cancel Roll';
+    }
     if (brandMark) {
         brandMark.classList.add('banner__emblem--spinning');
     }
@@ -4908,60 +4941,7 @@ function runRollSimulation(options = {}) {
 
     const sampleEntropy = (typeof drawEntropy === 'function') ? drawEntropy : Math.random;
 
-    function performSingleRollCheck() {
-        if (duneProbability > 0 && sampleEntropy() < duneProbability) {
-            recordAuraWin(activeDuneAura);
-            rolls++;
-            return;
-        }
-        if (memoryProbability > 0 && sampleEntropy() < memoryProbability) {
-            recordAuraWin(activeMemoryAura);
-            rolls++;
-            return;
-        }
-        if (oblivionProbability > 0 && sampleEntropy() < oblivionProbability) {
-            recordAuraWin(activeOblivionAura);
-            rolls++;
-            return;
-        }
-
-        for (let j = 0; j < computedAuras.length; j++) {
-            const entry = computedAuras[j];
-            if (entry.successRatio > 0 && sampleEntropy() < entry.successRatio) {
-                recordAuraWin(entry.aura);
-                if (entry.breakthroughStats) {
-                    entry.breakthroughStats.count++;
-                }
-                break;
-            }
-        }
-        rolls++;
-    }
-
-    function processRollSequence() {
-        const deadline = performance.now() + MAX_FRAME_DURATION;
-        let processedThisChunk = 0;
-
-        while (currentRoll < total && processedThisChunk < MAX_ROLLS_PER_CHUNK) {
-            performSingleRollCheck();
-            currentRoll++;
-            processedThisChunk++;
-
-            if (processedThisChunk % CHECK_INTERVAL === 0 && performance.now() >= deadline) {
-                break;
-            }
-        }
-
-        if (updateProgress) {
-            const progress = (currentRoll / total) * 100;
-            queueAnimationFrame(() => updateProgress(progress));
-        }
-
-        if (currentRoll < total) {
-            queueAnimationFrame(processRollSequence);
-            return;
-        }
-
+    const finalizeSimulation = cancelled => {
         if (progressPanel) {
             progressPanel.style.display = 'none';
             progressPanel.classList.remove('loading-indicator--active');
@@ -4972,7 +4952,18 @@ function runRollSimulation(options = {}) {
         if (brandMark) {
             brandMark.classList.remove('banner__emblem--spinning');
         }
+        if (cancelRollButton) {
+            cancelRollButton.hidden = true;
+            cancelRollButton.disabled = false;
+            cancelRollButton.textContent = 'Cancel Roll';
+        }
         simulationActive = false;
+        cancelRollRequested = false;
+
+        if (cancelled) {
+            feedContainer.textContent = 'Rolling canceled.';
+            return;
+        }
 
         const endTime = performance.now();
         const executionTime = ((endTime - startTime) / 1000).toFixed(0);
@@ -5076,6 +5067,74 @@ function runRollSimulation(options = {}) {
             xpLines,
             executionSeconds: Number.isFinite(executionSeconds) ? executionSeconds : 0
         };
+    };
+
+    function performSingleRollCheck() {
+        if (duneProbability > 0 && sampleEntropy() < duneProbability) {
+            recordAuraWin(activeDuneAura);
+            rolls++;
+            return;
+        }
+        if (memoryProbability > 0 && sampleEntropy() < memoryProbability) {
+            recordAuraWin(activeMemoryAura);
+            rolls++;
+            return;
+        }
+
+        if (oblivionProbability > 0 && sampleEntropy() < oblivionProbability) {
+            recordAuraWin(activeOblivionAura);
+            rolls++;
+            return;
+        }
+
+        for (let j = 0; j < computedAuras.length; j++) {
+            const entry = computedAuras[j];
+            if (entry.successRatio > 0 && sampleEntropy() < entry.successRatio) {
+                recordAuraWin(entry.aura);
+                if (entry.breakthroughStats) {
+                    entry.breakthroughStats.count++;
+                }
+                break;
+            }
+        }
+
+        rolls++;
+    }
+
+    function processRollSequence() {
+        if (cancelRollRequested) {
+            finalizeSimulation(true);
+            return;
+        }
+
+        const deadline = performance.now() + MAX_FRAME_DURATION;
+        let processedThisChunk = 0;
+
+        while (currentRoll < total && processedThisChunk < MAX_ROLLS_PER_CHUNK) {
+            performSingleRollCheck();
+            currentRoll++;
+            processedThisChunk++;
+
+            if (processedThisChunk % CHECK_INTERVAL === 0 && performance.now() >= deadline) {
+                break;
+            }
+
+        }
+
+        if (updateProgress) {
+            const progress = (currentRoll / total) * 100;
+
+            queueAnimationFrame(() => updateProgress(progress));
+
+        }
+
+        if (currentRoll < total) {
+            queueAnimationFrame(processRollSequence);
+            return;
+        }
+
+        finalizeSimulation(false);
+
     }
 
     queueAnimationFrame(processRollSequence);
