@@ -2336,6 +2336,7 @@ function resolveRarityClass(aura, biome) {
 }
 
 const auraOutlineOverrides = new Map([
+    ['Illusionary', 'sigil-outline-illusionary'],
     ['Prowler', 'sigil-outline-prowler'],
     ['Divinus : Love', 'sigil-outline-valentine'],
     ['Flushed : Heart Eye', 'sigil-outline-valentine'],
@@ -5688,6 +5689,19 @@ const SHARE_IMAGE_OUTLINE_STYLES = Object.freeze({
             { color: 'rgba(60, 0, 0, 0.95)', blur: 0, offsetX: -1, offsetY: 1 },
             { color: 'rgba(60, 0, 0, 0.95)', blur: 0, offsetX: 1, offsetY: -1 },
             { color: 'rgba(60, 0, 0, 0.95)', blur: 0, offsetX: -1, offsetY: -1 }
+        ]
+    },
+    'sigil-outline-illusionary': {
+        fill: '#f7fbff',
+        shadows: [
+            { color: 'rgba(255, 255, 255, 0.95)', blur: 12 },
+            { color: 'rgba(176, 216, 255, 0.88)', blur: 22 },
+            { color: 'rgba(255, 255, 255, 0.95)', blur: 0, offsetX: 4, offsetY: 0 },
+            { color: 'rgba(134, 194, 255, 0.95)', blur: 0, offsetX: -4, offsetY: 0 },
+            { color: 'rgba(255, 255, 255, 0.92)', blur: 0, offsetX: 0, offsetY: 4 },
+            { color: 'rgba(134, 194, 255, 0.92)', blur: 0, offsetX: 0, offsetY: -4 },
+            { color: 'rgba(255, 255, 255, 0.8)', blur: 0, offsetX: 6, offsetY: 2 },
+            { color: 'rgba(176, 216, 255, 0.82)', blur: 0, offsetX: -6, offsetY: -2 }
         ]
     },
     'sigil-outline-glitch': {
