@@ -98,11 +98,11 @@
                 <div class="banner__meta">
                     <h1 class="banner__title">Sols Rolling Simulator</h1>
                     <p class="banner__subtitle">
-                        <button type="button" class="banner__version-button" id="versionInfoButton" aria-haspopup="dialog" aria-expanded="false" aria-label="View update notes for version V1.477" data-version-id="v1477">V1.477</button>
+                        <button type="button" class="banner__version-button" id="versionInfoButton" aria-haspopup="dialog" aria-expanded="false" aria-label="View update notes for version V1.479" data-version-id="v1479">V1.479</button>
                         <span class="banner__subtitle-divider" aria-hidden="true">◉</span>
                         <span class="banner__subtitle-author">By <span class="banner__subtitle-author-name">not.unnamed</span></span>
                         <span class="banner__subtitle-divider" aria-hidden="true">◉</span>
-                        <span class="banner__subtitle-updated">Updated <time datetime="2025-11-29">2025/11/29</time></span>
+                        <span class="banner__subtitle-updated">Updated <time datetime="2025-11-29">2025/11/30</time></span>
                         <span class="banner__subtitle-divider" aria-hidden="true">◉</span>
                         <span class="banner__subtitle-eon">Sol's RNG Eon 1-10.5</span>
                     </p>
@@ -554,6 +554,7 @@
                 <li class="footer-credits__item">Nyctophobia cutscene courtesy of <a href="https://www.youtube.com/watch?v=KIK2iTCnfkw" target="_blank" rel="noopener">lmpixel & kito</a>.</li>
                 <li class="footer-credits__item">Cyberspace song courtesy of <a href="https://open.spotify.com/track/1ZyGEzIDZgwWZucfoCPq9h" target="_blank" rel="noopener">Veens</a>.</li>
                 <li class="footer-credits__item">Dreamspace song courtesy of <a href="https://www.youtube.com/watch?v=nVvKPZ2soyU" target="_blank" rel="noopener">53_Axis</a>.</li>
+                <li class="footer-credits__item">Illusionary cutscene courtesy of <a href="https://www.reddit.com/r/SolsRNG/comments/1pall7r/illusionary_cutscene" target="_blank" rel="noopener">Chromm & segyun(person who obtained Illusionary)</a></li>
             </ul>
         </details>
     </footer>
@@ -687,11 +688,21 @@
                 <button
                     type="button"
                     class="changelog-tab changelog-tab--active"
+                    id="changelog-tab-v1479"
+                    role="tab"
+                    aria-controls="changelog-panel-v1479"
+                    aria-selected="true"
+                    data-changelog-tab="v1479"
+                >V1.479</button>
+                <button
+                    type="button"
+                    class="changelog-tab changelog-tab--active"
                     id="changelog-tab-v1477"
                     role="tab"
                     aria-controls="changelog-panel-v1477"
-                    aria-selected="true"
+                    aria-selected="false"
                     data-changelog-tab="v1477"
+                    tabindex="-1"
                 >V1.477</button>
                 <button
                     type="button"
@@ -723,146 +734,34 @@
                     data-changelog-tab="v1455"
                     tabindex="-1"
                 >V1.455</button>
-                <button
-                    type="button"
-                    class="changelog-tab changelog-tab--active"
-                    id="changelog-tab-v1450"
-                    role="tab"
-                    aria-controls="changelog-panel-v1450"
-                    aria-selected="false"
-                    data-changelog-tab="v1450"
-                    tabindex="-1"
-                >V1.450</button>
-                <button
-                    type="button"
-                    class="changelog-tab"
-                    id="changelog-tab-v1412"
-                    role="tab"
-                    aria-controls="changelog-panel-v1412"
-                    aria-selected="false"
-                    data-changelog-tab="v1412"
-                    tabindex="-1"
-                >V1.412</button>
-                <button
-                    type="button"
-                    class="changelog-tab"
-                    id="changelog-tab-v1411"
-                    role="tab"
-                    aria-controls="changelog-panel-v1411"
-                    aria-selected="false"
-                    data-changelog-tab="v1411"
-                    tabindex="-1"
-                >V1.411</button>
-                <button
-                    type="button"
-                    class="changelog-tab"
-                    id="changelog-tab-v1410"
-                    role="tab"
-                    aria-controls="changelog-panel-v1410"
-                    aria-selected="false"
-                    data-changelog-tab="v1410"
-                    tabindex="-1"
-                >V1.410</button>
-                <button
-                    type="button"
-                    class="changelog-tab"
-                    id="changelog-tab-v1401"
-                    role="tab"
-                    aria-controls="changelog-panel-v1401"
-                    aria-selected="false"
-                    tabindex="-1"
-                    data-changelog-tab="v1401"
-                >V1.401</button>
-                <button
-                    type="button"
-                    class="changelog-tab"
-                    id="changelog-tab-v14"
-                    role="tab"
-                    aria-controls="changelog-panel-v14"
-                    aria-selected="false"
-                    data-changelog-tab="v14"
-                    tabindex="-1"
-                >V1.4</button>
-                <button
-                    type="button"
-                    class="changelog-tab"
-                    id="changelog-tab-v1315"
-                    role="tab"
-                    aria-controls="changelog-panel-v1315"
-                    aria-selected="false"
-                    tabindex="-1"
-                    data-changelog-tab="v1315"
-                >V1.315</button>
-                <button
-                    type="button"
-                    class="changelog-tab"
-                    id="changelog-tab-v131"
-                    role="tab"
-                    aria-controls="changelog-panel-v131"
-                    aria-selected="false"
-                    tabindex="-1"
-                    data-changelog-tab="v131"
-                >V1.31</button>
-                <button
-                    type="button"
-                    class="changelog-tab"
-                    id="changelog-tab-v13"
-                    role="tab"
-                    aria-controls="changelog-panel-v13"
-                    aria-selected="false"
-                    tabindex="-1"
-                    data-changelog-tab="v13"
-                >V1.3</button>
-                <button
-                    type="button"
-                    class="changelog-tab"
-                    id="changelog-tab-v128"
-                    role="tab"
-                    aria-controls="changelog-panel-v128"
-                    aria-selected="false"
-                    tabindex="-1"
-                    data-changelog-tab="v128"
-                >V1.28</button>
-                <button
-                    type="button"
-                    class="changelog-tab"
-                    id="changelog-tab-v127"
-                    role="tab"
-                    aria-controls="changelog-panel-v127"
-                    aria-selected="false"
-                    tabindex="-1"
-                    data-changelog-tab="v127"
-                >V1.27</button>
-                <button
-                    type="button"
-                    class="changelog-tab"
-                    id="changelog-tab-v126"
-                    role="tab"
-                    aria-controls="changelog-panel-v126"
-                    aria-selected="false"
-                    tabindex="-1"
-                    data-changelog-tab="v126"
-                >V1.26</button>
-                <button
-                    type="button"
-                    class="changelog-tab"
-                    id="changelog-tab-v125"
-                    role="tab"
-                    aria-controls="changelog-panel-v125"
-                    aria-selected="false"
-                    tabindex="-1"
-                    data-changelog-tab="v125"
-                >V1.25</button>
             </div>
 
             <div class="changelog-modal__panels" data-changelog-panels>
+                <section
+                    id="changelog-panel-v1479"
+                    class="changelog-modal__panel"
+                    role="tabpanel"
+                    aria-labelledby="changelog-tab-v1479"
+                    data-changelog-panel="v1479"
+                    tabindex="0"
+                >
+                    <header class="changelog-modal__header">
+                        <h2 class="changelog-modal__title" id="versionChangelogTitle">Version V1.479 Update Notes</h2>
+                        <p class="changelog-modal__meta">Updated 2025/11/30</p>
+                    </header>
+                    <p class="changelog-modal__intro">Latest changes:</p>
+                    <ul class="changelog-modal__list">
+                        <li>Illusionary's real cutscene has been set as the cutscene now when obtaining <a class="sigil-outline-cyberspace">Illusionary</a>.</li>
+                    </ul>
+                </section>
                 <section
                     id="changelog-panel-v1477"
                     class="changelog-modal__panel"
                     role="tabpanel"
                     aria-labelledby="changelog-tab-v1477"
                     data-changelog-panel="v1477"
-                    tabindex="0"
+                    hidden
+                    tabindex="-1"
                 >
                     <header class="changelog-modal__header">
                         <h2 class="changelog-modal__title" id="versionChangelogTitle">Version V1.477 Update Notes</h2>
@@ -930,366 +829,6 @@
                     <p class="changelog-modal__intro">Latest changes:</p>
                     <ul class="changelog-modal__list">
                         <li>Changed Illusionary's rarity to 10,000,000.</li>
-                    </ul>
-                </section>
-                <section
-                    id="changelog-panel-v1450"
-                    class="changelog-modal__panel"
-                    role="tabpanel"
-                    aria-labelledby="changelog-tab-v1450"
-                    data-changelog-panel="v1450"
-                    hidden
-                    tabindex="-1"
-                >
-                    <header class="changelog-modal__header">
-                        <h2 class="changelog-modal__title" id="versionChangelogTitle">Version V1.450 Update Notes</h2>
-                        <p class="changelog-modal__meta">Updated 2025/11/28</p>
-                    </header>
-                    <p class="changelog-modal__intro">Latest changes:</p>
-                    <ul class="changelog-modal__list">
-                        <li>Introduced the Cyberspace biome along with the Illusionary aura, obtainable exclusively in Cyberspace at a fixed rarity that ignores your luck value.</li>
-                        <li>Fixed the VIP dropdown so it now opens downward instead of clipping behind the roll button.</li>
-                        <li>Added a “rotate your device if possible” prompt for users on tablets or phones in portrait mode.</li>
-                        <li>Implemented assorted functionality fixes and critical crash resolutions on specific devices.</li>
-                    </ul>
-                </section>
-
-                <section
-                    id="changelog-panel-v1412"
-                    class="changelog-modal__panel"
-                    role="tabpanel"
-                    aria-labelledby="changelog-tab-v1412"
-                    data-changelog-panel="v1412"
-                    hidden
-                    tabindex="-1"
-                >
-                    <header class="changelog-modal__header">
-                        <h2 class="changelog-modal__title" id="versionChangelogTitle">Version V1.412 Update Notes</h2>
-                        <p class="changelog-modal__meta">Updated 2025/11/20</p>
-                    </header>
-                    <p class="changelog-modal__intro">Latest changes:</p>
-                    <ul class="changelog-modal__list">
-                        <li>Documented the new luck removal buttons for stackable presets so you can quickly peel off a buff instead of restarting from scratch.</li>
-                        <li>Fixed Limbo preset filtering so Void Hearts are the only potion shown in Limbo, while they stay hidden outside of Limbo.</li>
-                        <li>Repositioned the stackable preset remove control into the main button as a compact square on the right for quicker buff removal.</li>
-                    </ul>
-                </section>
-
-                <section
-                    id="changelog-panel-v1411"
-                    class="changelog-modal__panel"
-                    role="tabpanel"
-                    aria-labelledby="changelog-tab-v1411"
-                    data-changelog-panel="v1411"
-                    hidden
-                    tabindex="-1"
-                >
-                    <header class="changelog-modal__header">
-                        <h2 class="changelog-modal__title" id="versionChangelogTitle">Version V1.411 Update Notes</h2>
-                        <p class="changelog-modal__meta">Updated 2025/11/20</p>
-                    </header>
-                    <p class="changelog-modal__intro">Latest changes:</p>
-                    <ul class="changelog-modal__list">
-                        <li>Corrected Void Heart visibility so it only appears when you're in Limbo and hides when you're not.</li>
-                    </ul>
-                </section>
-
-                <section
-                    id="changelog-panel-v1410"
-                    class="changelog-modal__panel"
-                    role="tabpanel"
-                    aria-labelledby="changelog-tab-v1410"
-                    data-changelog-panel="v1410"
-                    hidden
-                    tabindex="-1"
-                >
-                    <header class="changelog-modal__header">
-                        <h2 class="changelog-modal__title" id="versionChangelogTitle">Version V1.410 Update Notes</h2>
-                        <p class="changelog-modal__meta">Updated 2025/11/20</p>
-                    </header>
-                    <p class="changelog-modal__intro">Latest changes:</p>
-                    <ul class="changelog-modal__list">
-                        <li>Logged the new files bundled for this patch so players can see exactly what fresh assets shipped with V1.410.</li>
-                        <li>Outlined the efficiency gains and optimization work focused on utter performance improvements throughout the simulator.</li>
-                        <li>Fixed the stackable switch behavior so stacking toggles now respect the latest preset combinations without conflicts.</li>
-                    </ul>
-                </section>
-
-                <section
-                    id="changelog-panel-v1401"
-                    class="changelog-modal__panel"
-                    role="tabpanel"
-                    aria-labelledby="changelog-tab-v1401"
-                    data-changelog-panel="v1401"
-                    hidden
-                    tabindex="-1"
-                >
-                    <header class="changelog-modal__header">
-                        <h2 class="changelog-modal__title" id="versionChangelogTitle">Version V1.401 Update Notes</h2>
-                        <p class="changelog-modal__meta">Updated 2025/11/19</p>
-                    </header>
-                    <p class="changelog-modal__intro">Latest changes:</p>
-                    <ul class="changelog-modal__list">
-                        <li>
-                            Fixed Undead : Devil's rarity
-                            <ul>
-                                <li>Previously: 1 in 120,000</li>
-                                <li>Updated: 1 in 666,666</li>
-                            </ul>
-                        </li>
-                    </ul>
-                </section>
-
-                <section
-                    id="changelog-panel-v14"
-                    class="changelog-modal__panel"
-                    role="tabpanel"
-                    aria-labelledby="changelog-tab-v14"
-                    data-changelog-panel="v14"
-                    hidden
-                    tabindex="-1"
-                >
-                    <header class="changelog-modal__header">
-                        <h2 class="changelog-modal__title" id="versionChangelogTitle">Version V1.4 Update Notes</h2>
-                        <p class="changelog-modal__meta">Updated 2025/11/17</p>
-                    </header>
-                    <p class="changelog-modal__intro">Latest changes:</p>
-                    <ul class="changelog-modal__list">
-                        <li>
-                            Added new luck toggles and renamed event switches:
-                            <ul class="changelog-modal__list changelog-modal__list--sub">
-                                <li>Dorcelessness (2×) has been added to the event switch lineup.</li>
-                                <li>XC Luck has been added to the event switch lineup.</li>
-                                <li>XYZ and XC luck switches renamed to XYZ Event (2×) and XC Event (2×).</li>
-                                <li>New YG Blessing toggle unlocks special aura behavior.</li>
-                            </ul>
-                        </li>
-                        <li>
-                            Accessibility and navigation updates:
-                            <ul class="changelog-modal__list changelog-modal__list--sub">
-                                <li>Added a Start Menu to guide players into the simulation with clearer controls.</li>
-                                <li>Made the roll button sticky so it stays in view for easier keyboard and screen reader access.</li>
-                            </ul>
-                        </li>
-                        <li>
-                            Expanded aura roster and conditions:
-                            <ul class="changelog-modal__list changelog-modal__list--sub">
-                                <li><p class="sigil-effect-nyctophobia">N̵͚̠̟̯͂Ỵ̷̱̊̌C̸̣̈́Ṱ̸̣̌̂̉͂O̵P̷̬͒H̷̨̤̉̾̀O̶͈͙̕B̸̻͑I̸͓̩̥͐̈́͝A̶̱̣̟̝̎ — 1,011,111,010</p> inside Limbo.</li>
-                                <li>Lumenpool — 220,000,000.</li>
-                                <ul>
-                                    <li>55,000,000 inside Rainy.</li>
-                                </ul>
-                                <li>Felled — 180,000,000.</li>
-                                <ul>
-                                    <li>30,000,000 inside Hell.</li>
-                                </ul>
-                                <li>Antivirus — 62,500,000.</li>
-                                <li>Megaphone — 5,000
-                                <ul>
-                                    <li>while YG Blessing is active.</li>
-                                </ul>
-                                </li>
-                            </ul>
-                        </li>
-                        <li>
-                            Audio and start flow improvements:
-                            <ul class="changelog-modal__list changelog-modal__list--sub">
-                                <li>Added a start screen with a centered logo and Start Simulation button to kick off audio playback reliably.</li>
-                                <li>Split the former Other Sounds channel into Background Music and Obtain Sounds sliders.</li>
-                                <li>Replaced the UI volume slider with a clean toggle and restyled the audio controls to match the switch aesthetic.</li>
-                            </ul>
-                        </li>
-                    </ul>
-                </section>
-
-                <section
-                    id="changelog-panel-v1315"
-                    class="changelog-modal__panel"
-                    role="tabpanel"
-                    aria-labelledby="changelog-tab-v1315"
-                    data-changelog-panel="v1315"
-                    hidden
-                    tabindex="-1"
-                >
-                    <header class="changelog-modal__header">
-                        <h2 class="changelog-modal__title" id="versionChangelogTitle">Version V1.315 Update Notes</h2>
-                        <p class="changelog-modal__meta">Updated 2025/11/03</p>
-                    </header>
-                    <p class="changelog-modal__intro">Latest changes:</p>
-                    <ul class="changelog-modal__list">
-                        <li>
-                            New luck switch to stack luck presets instead of replacing them.
-                        </li>
-                        <li>
-                            Fixed Project Repository link.
-                        </li>
-                    </ul>
-                </section>
-
-                <section
-                    id="changelog-panel-v131"
-                    class="changelog-modal__panel"
-                    role="tabpanel"
-                    aria-labelledby="changelog-tab-v131"
-                    data-changelog-panel="v131"
-                    hidden
-                    tabindex="-1"
-                >
-                    <header class="changelog-modal__header">
-                        <h2 class="changelog-modal__title" id="versionChangelogTitle">Version V1.31 Update Notes</h2>
-                        <p class="changelog-modal__meta">Updated 2025/11/03</p>
-                    </header>
-                    <p class="changelog-modal__intro">Latest changes:</p>
-                    <ul class="changelog-modal__list">
-                        <li>
-                            Add new luck presets:
-                            <ul class="changelog-modal__list changelog-modal__list--sub">
-                                <li>Godlike + Heavenly + Candy Corn + Bound + Popping + Tutorial Potion (690,000×)</li>
-                                <li>Tutorial Potion (5,000×)</li>
-                            </ul>
-                        </li>
-                        <li>
-                            Add new roll presets:
-                            <ul class="changelog-modal__list changelog-modal__list--sub">
-                                <li>100 Rolls</li>
-                                <li>250 Rolls</li>
-                                <li>500 Rolls</li>
-                            </ul>
-                        </li>
-                        <li>
-                            Minor markup adjustments to support the above
-                        </li>
-                    </ul>
-                </section>
-
-                <section
-                    id="changelog-panel-v13"
-                    class="changelog-modal__panel"
-                    role="tabpanel"
-                    aria-labelledby="changelog-tab-v13"
-                    data-changelog-panel="v13"
-                    hidden
-                    tabindex="-1"
-                >
-                    <header class="changelog-modal__header">
-                        <h2 class="changelog-modal__title" id="versionChangelogTitle">Version V1.3 Update Notes</h2>
-                        <p class="changelog-modal__meta">Updated 2025/11/02</p>
-                    </header>
-                    <p class="changelog-modal__intro">Latest changes:</p>
-                    <ul class="changelog-modal__list">
-                        <li>
-                            Update EVENT_AURA_LOOKUP and ROE_EXCLUSION_SET to reflect new/updated aura listings
-                        </li>
-                        <li>
-                            Update banner/version button to V1.3, bump updated date and eon label; add V1.3 changelog tab and panel, demote/hide V1.28 tab
-                        </li>
-                        <li>
-                            Add Candy Corn 75,000× luck preset in presets UI
-                        </li>
-                        <li>
-                            Extend auraOutlineOverrides and AURA_BLUEPRINT_SOURCE with Halloween Part 2 Event Auras:
-                            <ul class="changelog-modal__list changelog-modal__list--sub">
-                                <li>Afterparty - 440,000,000 | Graveyard</li>
-                                <li>Graveborn - 290,000,000 | Graveyard</li>
-                                <li>Crimson - 120,000,000 | Blood Rain</li>
-                                <li>Grief - 88,250,000 | Graveyard</li>
-                                <li>Bloodgarden - 88,000,000 | Blood Rain</li>
-                                <li>Reaper - 66,000,000 | Blood Rain</li>
-                                <li>Shucks - 4,460,000 | Blood Rain</li>
-                                <li>Werewolf - 3,600,000 | Graveyard</li>
-                                <li>Lunar : Cultist - 2,000,000 | Graveyard</li>
-                                <li>Celestial : Wicked - 1,500,000 | Pumpkin Moon</li>
-                            </ul>
-                        </li>
-                    </ul>
-                </section>
-
-                <section
-                    id="changelog-panel-v128"
-                    class="changelog-modal__panel"
-                    role="tabpanel"
-                    aria-labelledby="changelog-tab-v128"
-                    data-changelog-panel="v128"
-                    hidden
-                    tabindex="-1"
-                >
-                    <header class="changelog-modal__header">
-                        <h2 class="changelog-modal__title" id="versionChangelogTitle">Version V1.28 Update Notes</h2>
-                        <p class="changelog-modal__meta">Updated 2025/10/30</p>
-                    </header>
-                    <p class="changelog-modal__intro">Latest changes:</p>
-                    <ul class="changelog-modal__list">
-                        <li>Cutscenes now play regardless of your screen size. Fair warning: they can look odd on displays that aren't 16:9.</li>
-                    </ul>
-                </section>
-
-                <section
-                    id="changelog-panel-v127"
-                    class="changelog-modal__panel"
-                    role="tabpanel"
-                    aria-labelledby="changelog-tab-v127"
-                    data-changelog-panel="v127"
-                    hidden
-                    tabindex="-1"
-                >
-                    <header class="changelog-modal__header">
-                        <h2 class="changelog-modal__title">Version V1.27 Update Notes</h2>
-                        <p class="changelog-modal__meta">Updated 2025/10/30</p>
-                    </header>
-                    <p class="changelog-modal__intro">Latest changes:</p>
-                    <ul class="changelog-modal__list">
-                        <li>
-                            Introduced Quick Device &amp; Buff Presets for rapid endgame setups.
-                            <ul class="changelog-modal__list changelog-modal__list--sub">
-                                <li>Six Genesis Drive loadouts covering Max Luck, Pole Light Core, Bonus Roll, and event buff combinations.</li>
-                                <li>Multipliers now map directly to their displayed decimal values for precise planning.</li>
-                            </ul>
-                        </li>
-                        <li>Reworked the 10 Million luck preset to deliver a mega-pop celebration instead of a spinning animation.</li>
-                        <li>Optimized code to run better.</li>
-                    </ul>
-                </section>
-
-                <section
-                    id="changelog-panel-v126"
-                    class="changelog-modal__panel"
-                    role="tabpanel"
-                    aria-labelledby="changelog-tab-v126"
-                    data-changelog-panel="v126"
-                    hidden
-                    tabindex="-1"
-                >
-                    <header class="changelog-modal__header">
-                        <h2 class="changelog-modal__title">Version V1.26 Update Notes</h2>
-                        <p class="changelog-modal__meta">Updated 2025/10/30</p>
-                    </header>
-                    <p class="changelog-modal__intro">Latest changes:</p>
-                    <ul class="changelog-modal__list">
-                        <li>Fixed a compatibility bug that caused archived presets saved before the Rune update to load with incorrect modifiers.</li>
-                        <li>Added an archive tab with the full V1.25 notes so you can revisit the previous update at any time.</li>
-                    </ul>
-                </section>
-
-                <section
-                    id="changelog-panel-v125"
-                    class="changelog-modal__panel"
-                    role="tabpanel"
-                    aria-labelledby="changelog-tab-v125"
-                    data-changelog-panel="v125"
-                    hidden
-                    tabindex="-1"
-                >
-                    <header class="changelog-modal__header">
-                        <h2 class="changelog-modal__title">Version V1.25 Update Notes</h2>
-                        <p class="changelog-modal__meta">Updated 2025/10/30</p>
-                    </header>
-                    <p class="changelog-modal__intro">Highlights from the previous release:</p>
-                    <ul class="changelog-modal__list">
-                        <li>Rune of Everything no longer triggers glitch visuals outside of the Glitch biome.</li>
-                        <li>Runes in general no longer triggers any errors with excluded auras between biomes and runes.</li>
-                        <li>Different colors on the update details :D</li>
-                        <li>Resetting luck now also clears any Oblivion or Dune preset toggles, preventing stale potion presets from sticking around after adjustments.</li>
-                        <li>The version label now opens this changelog so future updates are easier to share.</li>
                     </ul>
                 </section>
             </div>
