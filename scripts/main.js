@@ -3037,6 +3037,16 @@ const EVENT_BIOME_CONDITION_MESSAGES = Object.freeze({
 const enabledEvents = new Set([""]);
 const auraEventIndex = new Map();
 
+function biomeEventRequirementsMet(biomeId) {
+    const requiredEvent = BIOME_EVENT_CONSTRAINTS[biomeId];
+    if (!requiredEvent) {
+        return true;
+    }
+
+    const requiredEvents = Array.isArray(requiredEvent) ? requiredEvent : [requiredEvent];
+    return requiredEvents.some(eventId => enabledEvents.has(eventId));
+}
+
 const GLITCH_EVENT_WHITELIST = new Set([
     "halloween24",
     "halloween25",
@@ -4217,7 +4227,9 @@ function updateBiomeControlConstraints({ source = null, triggerSync = true } = {
         if (currentPrimarySelection === 'cyberspace' && !cyberspaceIllusionaryWarningManager.isSuppressed()) {
             cyberspaceIllusionaryWarningManager.show();
         }
-        if (EVENT_BIOME_CONDITION_MESSAGES[currentPrimarySelection]) {
+        const unmetRequirements = EVENT_BIOME_CONDITION_MESSAGES[currentPrimarySelection]
+            && !biomeEventRequirementsMet(currentPrimarySelection);
+        if (unmetRequirements) {
             showBiomeConditionOverlay(currentPrimarySelection);
         }
         lastPrimaryBiomeSelection = currentPrimarySelection;
