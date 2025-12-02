@@ -98,11 +98,11 @@
                 <div class="banner__meta">
                     <h1 class="banner__title">Sols Rolling Simulator</h1>
                     <p class="banner__subtitle">
-                        <button type="button" class="banner__version-button" id="versionInfoButton" aria-haspopup="dialog" aria-expanded="false" aria-label="View update notes for version V1.479" data-version-id="v1479">V1.479</button>
+                        <button type="button" class="banner__version-button" id="versionInfoButton" aria-haspopup="dialog" aria-expanded="false" aria-label="View update notes for version V1.484" data-version-id="v1484">V1.484</button>
                         <span class="banner__subtitle-divider" aria-hidden="true">◉</span>
                         <span class="banner__subtitle-author">By <span class="banner__subtitle-author-name">not.unnamed</span></span>
                         <span class="banner__subtitle-divider" aria-hidden="true">◉</span>
-                        <span class="banner__subtitle-updated">Updated <time datetime="2025-11-29">2025/12/1</time></span>
+                        <span class="banner__subtitle-updated">Updated <time datetime="2025-12-05">2025/12/5</time></span>
                         <span class="banner__subtitle-divider" aria-hidden="true">◉</span>
                         <span class="banner__subtitle-eon">Sol's RNG Eon 1-11</span>
                     </p>
@@ -605,6 +605,18 @@
         </div>
     </div>
 
+    <div id="biomeConditionOverlay" class="cutscene-warning-overlay" hidden aria-hidden="true">
+        <div class="cutscene-warning surface surface--modal" role="dialog" aria-modal="true" aria-labelledby="biomeConditionTitle">
+            <p class="cutscene-warning__message">
+                <span id="biomeConditionTitle" class="cutscene-warning__note">Biome requirements</span>:
+                <span id="biomeConditionBody">Ensure required events and time settings are active.</span>
+            </p>
+            <div class="cutscene-warning__actions">
+                <button type="button" class="interface-button interface-button--minor" id="biomeConditionClose">Got it</button>
+            </div>
+        </div>
+    </div>
+
     <div id="rollWarningOverlay" class="cutscene-warning-overlay" hidden aria-hidden="true">
         <div class="cutscene-warning surface surface--modal" role="dialog" aria-modal="true" aria-labelledby="rollWarningTitle">
             <p class="cutscene-warning__message">
@@ -694,15 +706,25 @@
                 <button
                     type="button"
                     class="changelog-tab changelog-tab--active"
+                    id="changelog-tab-v1484"
+                    role="tab"
+                    aria-controls="changelog-panel-v1484"
+                    aria-selected="true"
+                    data-changelog-tab="v1484"
+                >V1.484</button>
+                <button
+                    type="button"
+                    class="changelog-tab"
                     id="changelog-tab-v1479"
                     role="tab"
                     aria-controls="changelog-panel-v1479"
-                    aria-selected="true"
+                    aria-selected="false"
                     data-changelog-tab="v1479"
+                    tabindex="-1"
                 >V1.479</button>
                 <button
                     type="button"
-                    class="changelog-tab changelog-tab--active"
+                    class="changelog-tab"
                     id="changelog-tab-v1477"
                     role="tab"
                     aria-controls="changelog-panel-v1477"
@@ -712,7 +734,7 @@
                 >V1.477</button>
                 <button
                     type="button"
-                    class="changelog-tab changelog-tab--active"
+                    class="changelog-tab"
                     id="changelog-tab-v1476"
                     role="tab"
                     aria-controls="changelog-panel-v1476"
@@ -744,12 +766,32 @@
 
             <div class="changelog-modal__panels" data-changelog-panels>
                 <section
+                    id="changelog-panel-v1484"
+                    class="changelog-modal__panel"
+                    role="tabpanel"
+                    aria-labelledby="changelog-tab-v1484"
+                    data-changelog-panel="v1484"
+                    tabindex="0"
+                >
+                    <header class="changelog-modal__header">
+                        <h2 class="changelog-modal__title" id="versionChangelogTitle">Version V1.484 Update Notes</h2>
+                        <p class="changelog-modal__meta">Updated 2025/12/5</p>
+                    </header>
+                    <p class="changelog-modal__intro">Latest changes:</p>
+                    <ul class="changelog-modal__list">
+                        <li>Introduced the Unknown biome from XC's Live Event.</li>
+                        <li>Rune of Everything now restores native rarities when enabled.</li>
+                        <li>Event biome selections now surface their activation requirements.</li>
+                    </ul>
+                </section>
+                <section
                     id="changelog-panel-v1479"
                     class="changelog-modal__panel"
                     role="tabpanel"
                     aria-labelledby="changelog-tab-v1479"
                     data-changelog-panel="v1479"
-                    tabindex="0"
+                    hidden
+                    tabindex="-1"
                 >
                     <header class="changelog-modal__header">
                         <h2 class="changelog-modal__title" id="versionChangelogTitle">Version V1.479 Update Notes</h2>

@@ -3027,6 +3027,13 @@ const BIOME_EVENT_CONSTRAINTS = {
     blazing: ["summer25"],
 };
 
+const EVENT_BIOME_CONDITION_MESSAGES = Object.freeze({
+    graveyard: 'Requires Night time with Halloween 2024 or Halloween 2025 enabled.',
+    pumpkinMoon: 'Requires Night time with Halloween 2024 or Halloween 2025 enabled.',
+    bloodRain: 'Requires Halloween 2025 enabled.',
+    blazing: 'Requires Summer 2025 enabled.',
+});
+
 const enabledEvents = new Set([""]);
 const auraEventIndex = new Map();
 
@@ -3275,6 +3282,33 @@ function enforceBiomeEventRestrictions() {
 
     refreshCustomSelect('biome-dropdown');
     updateBiomeControlConstraints();
+}
+
+function showBiomeConditionOverlay(biomeId) {
+    if (!biomeId || typeof document === 'undefined') {
+        return;
+    }
+
+    const message = EVENT_BIOME_CONDITION_MESSAGES[biomeId];
+    if (!message) {
+        return;
+    }
+
+    const overlay = document.getElementById('biomeConditionOverlay');
+    const title = document.getElementById('biomeConditionTitle');
+    const body = document.getElementById('biomeConditionBody');
+
+    if (!overlay || !title || !body || typeof revealOverlay !== 'function') {
+        return;
+    }
+
+    const label = typeof resolveSelectionLabel === 'function'
+        ? resolveSelectionLabel(BIOME_PRIMARY_SELECT_ID, biomeId, { fallbackLabel: 'Biome' })
+        : 'Biome requirements';
+
+    title.textContent = `${label} requirements`;
+    body.textContent = message;
+    revealOverlay(overlay);
 }
 
 function setEventToggleState(eventId, enabled) {
@@ -4183,6 +4217,9 @@ function updateBiomeControlConstraints({ source = null, triggerSync = true } = {
         if (currentPrimarySelection === 'cyberspace' && !cyberspaceIllusionaryWarningManager.isSuppressed()) {
             cyberspaceIllusionaryWarningManager.show();
         }
+        if (EVENT_BIOME_CONDITION_MESSAGES[currentPrimarySelection]) {
+            showBiomeConditionOverlay(currentPrimarySelection);
+        }
         lastPrimaryBiomeSelection = currentPrimarySelection;
     }
 
@@ -4351,6 +4388,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
     setupShareInterface();
     initializeAudioSettingsPanel();
+
+    const biomeConditionOverlay = document.getElementById('biomeConditionOverlay');
+    const biomeConditionClose = document.getElementById('biomeConditionClose');
+    if (biomeConditionOverlay && biomeConditionClose) {
+        biomeConditionClose.addEventListener('click', () => concealOverlay(biomeConditionOverlay));
+        biomeConditionOverlay.addEventListener('click', event => {
+            if (event.target === biomeConditionOverlay) {
+                concealOverlay(biomeConditionOverlay);
+            }
+        });
+    }
 
     const cutsceneToggle = document.getElementById('cinematicToggle');
     if (cutsceneToggle) {
@@ -4558,7 +4606,7 @@ function computeStandardEffectiveChance(aura, context) {
         const resolvedActiveMatch = treatCyberspaceNativeAsNonNative ? true : matchesActiveBiome;
 
         allowCyberspaceNativeRarity = cyberspaceNative
-            ? inCyberspace
+            ? (inCyberspace || isRoe)
             : true;
 
         if (!isAuraNativeTo(aura, 'limbo-null') && !resolvedActiveMatch && !allowEventGlitchAccess) {
@@ -4794,7 +4842,11 @@ function renderHarvesterCurseLayer(count) {
         const card = document.createElement('div');
         card.className = 'harvester-curse__card';
         card.style.setProperty('--harvester-tilt', `${(Math.random() * 12 - 6).toFixed(2)}deg`);
-        card.style.setProperty('--harvester-delay', `${Math.floor(Math.random() * 220)}ms`);
+        card.style.setProperty('--harvester-delay', `${Math.floor(Math.random() * 120)}ms`);
+        card.style.setProperty('--harvester-rumble-speed', `${70 + Math.floor(Math.random() * 60)}ms`);
+        card.style.setProperty('--harvester-jux-speed', `${55 + Math.floor(Math.random() * 45)}ms`);
+        card.style.left = `${4 + Math.random() * 92}vw`;
+        card.style.top = `${4 + Math.random() * 92}vh`;
         card.innerHTML = [
             '<span class="harvester-curse__line harvester-curse__line--i">I</span>',
             '<span class="harvester-curse__line">HATE</span>',
