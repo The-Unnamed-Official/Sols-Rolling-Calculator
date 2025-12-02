@@ -103,6 +103,19 @@ const DAY_RESTRICTED_BIOMES = new Set(['pumpkinMoon', 'graveyard']);
 const CYBERSPACE_ILLUSIONARY_WARNING_STORAGE_KEY = 'solsRollingCalculator:hideCyberspaceIllusionaryWarning';
 let lastPrimaryBiomeSelection = null;
 
+const ROE_NATIVE_BIOMES = Object.freeze([
+    'glitch',
+    'windy',
+    'snowy',
+    'rainy',
+    'sandstorm',
+    'hell',
+    'starfall',
+    'corruption',
+    'null',
+    'limbo-null'
+]);
+
 const RUNE_CONFIGURATION = Object.freeze({
     windyRune: Object.freeze({
         canonicalBiome: 'windy',
@@ -170,8 +183,8 @@ const RUNE_CONFIGURATION = Object.freeze({
     roe: Object.freeze({
         canonicalBiome: 'roe',
         themeBiome: 'roe',
-        activeBiomes: Object.freeze(['glitch']),
-        breakthroughBiomes: Object.freeze(['glitch']),
+        activeBiomes: ROE_NATIVE_BIOMES,
+        breakthroughBiomes: ROE_NATIVE_BIOMES,
         icon: 'files/roeRuneIcon.png',
         glitchLike: true,
         exclusivityBiome: 'glitch'
@@ -2926,6 +2939,10 @@ const EVENT_LIST = [
 ];
 
 const EVENT_LABEL_MAP = new Map(EVENT_LIST.map(({ id, label }) => [id, label]));
+const HALLOWEEN_2024_EVENT_ID = 'halloween24';
+const HARVESTER_AURA_NAME = 'Harvester - 666,000,000';
+const HARVESTER_CURSE_LAYER_ID = 'harvester-curse-layer';
+let harvesterCurseTimeoutId = null;
 
 const EVENT_AURA_LOOKUP = {
     valentine24: [
@@ -4749,6 +4766,53 @@ function summarizeXpRewards(registry) {
     return { totalXp, lines };
 }
 
+function clearHarvesterCurseLayer() {
+    if (typeof document === 'undefined') return;
+    if (harvesterCurseTimeoutId !== null) {
+        clearTimeout(harvesterCurseTimeoutId);
+        harvesterCurseTimeoutId = null;
+    }
+    const existing = document.getElementById(HARVESTER_CURSE_LAYER_ID);
+    if (existing && existing.parentElement) {
+        existing.parentElement.removeChild(existing);
+    }
+}
+
+function renderHarvesterCurseLayer(count) {
+    if (typeof document === 'undefined') return;
+    clearHarvesterCurseLayer();
+
+    if (!count || count <= 0) {
+        return;
+    }
+
+    const layer = document.createElement('div');
+    layer.id = HARVESTER_CURSE_LAYER_ID;
+    layer.className = 'harvester-curse';
+
+    const visibleStacks = Math.min(count, 24);
+    for (let i = 0; i < visibleStacks; i++) {
+        const card = document.createElement('div');
+        card.className = 'harvester-curse__card';
+        card.style.setProperty('--harvester-tilt', `${(Math.random() * 12 - 6).toFixed(2)}deg`);
+        card.style.setProperty('--harvester-delay', `${Math.floor(Math.random() * 220)}ms`);
+        card.innerHTML = [
+            '<span class="harvester-curse__line harvester-curse__line--i">I</span>',
+            '<span class="harvester-curse__line">HATE</span>',
+            '<span class="harvester-curse__line harvester-curse__line--jux">JUX</span>'
+        ].join('');
+        layer.appendChild(card);
+    }
+
+    document.body.appendChild(layer);
+
+    const lifetimeMs = Math.min(14000, 5000 + (visibleStacks * 320));
+    harvesterCurseTimeoutId = setTimeout(() => {
+        harvesterCurseTimeoutId = null;
+        clearHarvesterCurseLayer();
+    }, lifetimeMs);
+}
+
 function requestRollCancellation() {
     if (!simulationActive || cancelRollRequested) {
         return;
@@ -4787,6 +4851,8 @@ function runRollSimulation(options = {}) {
     if (!feedContainer || !luckField) {
         return;
     }
+
+    clearHarvesterCurseLayer();
 
     const {
         rollTriggerButton,
@@ -4962,6 +5028,7 @@ function runRollSimulation(options = {}) {
 
         if (cancelled) {
             feedContainer.textContent = 'Rolling canceled.';
+            clearHarvesterCurseLayer();
             return;
         }
 
@@ -5046,6 +5113,18 @@ function runRollSimulation(options = {}) {
         }
 
         feedContainer.innerHTML = resultChunks.join('');
+
+        const harvesterAura = AURA_REGISTRY.find(aura => aura.name === HARVESTER_AURA_NAME) || null;
+        const harvesterCount = harvesterAura ? readAuraWinCount(harvesterAura) : 0;
+        const halloween24Active = eventSnapshot
+            ? eventSnapshot.has(HALLOWEEN_2024_EVENT_ID)
+            : enabledEvents.has(HALLOWEEN_2024_EVENT_ID);
+
+        if (halloween24Active && harvesterCount > 0) {
+            renderHarvesterCurseLayer(harvesterCount);
+        } else {
+            clearHarvesterCurseLayer();
+        }
 
         const executionSeconds = Number.parseFloat(executionTime);
         lastSimulationSummary = {
