@@ -1297,22 +1297,19 @@ body:not(.reduce-motion) #luck-preset-ten-million.luck-preset-button--mega-pop:f
     position: fixed;
     inset: 0;
     padding: clamp(12px, 4vw, 24px);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-wrap: wrap;
-    gap: clamp(8px, 2vw, 18px);
+    overflow: hidden;
     pointer-events: none;
     z-index: 1100;
 }
 
 .harvester-curse__card {
+    position: absolute;
     min-width: 120px;
     padding: 14px 16px;
-    background: linear-gradient(135deg, #b30000, #2b0000);
-    border: 1px solid rgba(255, 80, 80, 0.6);
+    background: transparent;
+    border: none;
     color: #ffe6e6;
-    box-shadow: 0 14px 28px rgba(0, 0, 0, 0.55), inset 0 0 18px rgba(180, 0, 0, 0.35);
+    box-shadow: none;
     display: inline-flex;
     flex-direction: column;
     align-items: center;
@@ -1321,9 +1318,9 @@ body:not(.reduce-motion) #luck-preset-ten-million.luck-preset-button--mega-pop:f
     text-transform: uppercase;
     letter-spacing: 0.2em;
     font-family: 'Courier New', monospace;
-    text-shadow: 0 0 12px rgba(255, 72, 72, 0.3);
+    text-shadow: 0 0 16px rgba(255, 72, 72, 0.5);
     transform: rotate(var(--harvester-tilt, 0deg));
-    animation: harvester-rumble 0.28s infinite alternate ease-in-out;
+    animation: harvester-rumble var(--harvester-rumble-speed, 0.12s) infinite alternate ease-in-out;
     animation-delay: var(--harvester-delay, 0ms);
     border-radius: 10px;
 }
@@ -1341,7 +1338,7 @@ body:not(.reduce-motion) #luck-preset-ten-million.luck-preset-button--mega-pop:f
 .harvester-curse__line--jux {
     color: #b3006b;
     text-shadow: 0 0 10px rgba(215, 0, 90, 0.8), 0 0 14px rgba(120, 0, 60, 0.7);
-    animation: harvester-jux 0.18s infinite alternate ease-in-out;
+    animation: harvester-jux var(--harvester-jux-speed, 0.08s) infinite alternate ease-in-out;
     letter-spacing: 0.28em;
 }
 
