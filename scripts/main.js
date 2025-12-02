@@ -3011,7 +3011,7 @@ const BIOME_EVENT_CONSTRAINTS = {
     blazing: "summer25",
 };
 
-const enabledEvents = new Set(["halloween25"]);
+// const enabledEvents = new Set(["halloween25"]);
 const auraEventIndex = new Map();
 
 const GLITCH_EVENT_WHITELIST = new Set([
