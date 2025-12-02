@@ -3944,10 +3944,16 @@ function initializeSingleSelectControl(selectId) {
 
         optionButtons.forEach(({ button, option }) => {
             const isActive = option.value === select.value;
+            const hasBiomeConditionHelp = isBiomeSelect
+                && option.disabled
+                && Boolean(EVENT_BIOME_CONDITION_MESSAGES[option.value]);
+
             setElementContent(button, option);
             button.classList.toggle('interface-select__option-button--active', isActive);
             button.classList.toggle('interface-select__option-button--disabled', option.disabled);
-            button.disabled = !!option.disabled;
+            button.classList.toggle('interface-select__option-button--condition', hasBiomeConditionHelp);
+            button.disabled = !!option.disabled && !hasBiomeConditionHelp;
+
             if (option.disabled) {
                 button.setAttribute('aria-disabled', 'true');
             } else {
