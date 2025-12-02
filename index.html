@@ -98,11 +98,11 @@
                 <div class="banner__meta">
                     <h1 class="banner__title">Sols Rolling Simulator</h1>
                     <p class="banner__subtitle">
-                        <button type="button" class="banner__version-button" id="versionInfoButton" aria-haspopup="dialog" aria-expanded="false" aria-label="View update notes for version V1.479" data-version-id="v1479">V1.479</button>
+                        <button type="button" class="banner__version-button" id="versionInfoButton" aria-haspopup="dialog" aria-expanded="false" aria-label="View update notes for version V1.484" data-version-id="v1484">V1.484</button>
                         <span class="banner__subtitle-divider" aria-hidden="true">◉</span>
                         <span class="banner__subtitle-author">By <span class="banner__subtitle-author-name">not.unnamed</span></span>
                         <span class="banner__subtitle-divider" aria-hidden="true">◉</span>
-                        <span class="banner__subtitle-updated">Updated <time datetime="2025-11-29">2025/12/1</time></span>
+                        <span class="banner__subtitle-updated">Updated <time datetime="2025-12-05">2025/12/2</time></span>
                         <span class="banner__subtitle-divider" aria-hidden="true">◉</span>
                         <span class="banner__subtitle-eon">Sol's RNG Eon 1-11</span>
                     </p>
@@ -278,6 +278,17 @@
                     <p class="surface__subtitle">Tune your luck totals, roll counts, biome, and seasonal event modifiers.</p>
                 </header>
                 <div class="control-section">
+                    <div class="form-field form-field--toggle">
+                        <span class="form-field__label">Dev Biomes</span>
+                        <p>Enable to access experimental biomes like Another Realm and Unknown.</p>
+                        <label class="toggle">
+                            <input type="checkbox" id="dev-biomes-toggle" class="toggle__input">
+                            <span class="toggle__track"></span>
+                            <span class="toggle__thumb"></span>
+                        </label>
+                    </div>
+                </div>
+                <div class="control-section">
                     <label class="form-field" for="luck-total">
                         <span class="form-field__label">Luck Total</span>
                         <div class="form-field__combo">
@@ -309,11 +320,13 @@
                                     <option value="cyberspace">Cyberspace</option>
                                     <option value="dreamspace">Dreamspace</option>
                                     <option value="glitch">Glitch</option>
+                                    <option value="limbo">Limbo</option>
+                                    <option value="blazing">Blazing Sun</option>
                                     <option value="pumpkinMoon">Pumpkin Moon</option>
                                     <option value="graveyard">Graveyard</option>
                                     <option value="bloodRain">Blood Rain</option>
                                     <option value="anotherRealm">Another Realm</option>
-                                    <option value="limbo">Limbo</option>
+                                    <option value="unknown">Unknown</option>
                                 </select>
                                 <details class="interface-select interface-select--single" data-select="biome-primary-dropdown">
                                     <summary class="form-field__input interface-select__summary" role="button" aria-haspopup="listbox" aria-expanded="false">Normal</summary>
@@ -374,6 +387,8 @@
                             <option value="graveyard">Graveyard</option>
                             <option value="bloodRain">Blood Rain</option>
                             <option value="anotherRealm">Another Realm</option>
+                            <option value="unknown">Unknown</option>
+                            <option value="blazing">Blazing Sun</option>
                             <option value="limbo">Limbo</option>
                             <option value="roe">Rune of Everything</option>
                             <option value="day">Day</option>
@@ -553,9 +568,10 @@
                 <li class="footer-credits__item">Oblivion cutscene courtesy of <a href="https://www.youtube.com/watch?v=clQxiIRH8Ps" target="_blank" rel="noopener">Mr-yani</a>.</li>
                 <li class="footer-credits__item">Neferkhaf cutscene courtesy of <a href="https://www.reddit.com/r/SolsRNG/comments/1n3wot3/new_neferkhaf_cutscene/" target="_blank" rel="noopener">Sirothereal</a>.</li>
                 <li class="footer-credits__item">Nyctophobia cutscene courtesy of <a href="https://www.youtube.com/watch?v=KIK2iTCnfkw" target="_blank" rel="noopener">lmpixel & kito</a>.</li>
+                <li class="footer-credits__item">Illusionary cutscene courtesy of <a href="https://www.reddit.com/r/SolsRNG/comments/1pall7r/illusionary_cutscene" target="_blank" rel="noopener">Chromm & segyun(person who obtained Illusionary)</a></li>
                 <li class="footer-credits__item">Cyberspace song courtesy of <a href="https://open.spotify.com/track/1ZyGEzIDZgwWZucfoCPq9h" target="_blank" rel="noopener">Veens</a>.</li>
                 <li class="footer-credits__item">Dreamspace song courtesy of <a href="https://www.youtube.com/watch?v=nVvKPZ2soyU" target="_blank" rel="noopener">53_Axis</a>.</li>
-                <li class="footer-credits__item">Illusionary cutscene courtesy of <a href="https://www.reddit.com/r/SolsRNG/comments/1pall7r/illusionary_cutscene" target="_blank" rel="noopener">Chromm & segyun(person who obtained Illusionary)</a></li>
+                <li class="footer-credits__item">Unkown biome song courtesy of <a href="https://www.youtube.com/watch?v=LLng8n_1eOY" target="_blank" rel="noopener">Derpcat</a>.</li>
             </ul>
         </details>
     </footer>
@@ -596,6 +612,18 @@
             <div class="cutscene-warning__actions">
                 <button type="button" class="interface-button interface-button--minor" id="cyberspaceIllusionaryConfirm">Understood</button>
                 <button type="button" class="interface-button interface-button--ghost" id="cyberspaceIllusionaryDismiss">Never show again</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="biomeConditionOverlay" class="cutscene-warning-overlay" hidden aria-hidden="true">
+        <div class="cutscene-warning surface surface--modal" role="dialog" aria-modal="true" aria-labelledby="biomeConditionTitle">
+            <p class="cutscene-warning__message">
+                <span id="biomeConditionTitle" class="cutscene-warning__note">Biome requirements</span>:
+                <span id="biomeConditionBody">Ensure required events and time settings are active.</span>
+            </p>
+            <div class="cutscene-warning__actions">
+                <button type="button" class="interface-button interface-button--minor" id="biomeConditionClose">Got it</button>
             </div>
         </div>
     </div>
@@ -689,15 +717,25 @@
                 <button
                     type="button"
                     class="changelog-tab changelog-tab--active"
+                    id="changelog-tab-v1484"
+                    role="tab"
+                    aria-controls="changelog-panel-v1484"
+                    aria-selected="true"
+                    data-changelog-tab="v1484"
+                >V1.484</button>
+                <button
+                    type="button"
+                    class="changelog-tab"
                     id="changelog-tab-v1479"
                     role="tab"
                     aria-controls="changelog-panel-v1479"
-                    aria-selected="true"
+                    aria-selected="false"
                     data-changelog-tab="v1479"
+                    tabindex="-1"
                 >V1.479</button>
                 <button
                     type="button"
-                    class="changelog-tab changelog-tab--active"
+                    class="changelog-tab"
                     id="changelog-tab-v1477"
                     role="tab"
                     aria-controls="changelog-panel-v1477"
@@ -707,7 +745,7 @@
                 >V1.477</button>
                 <button
                     type="button"
-                    class="changelog-tab changelog-tab--active"
+                    class="changelog-tab"
                     id="changelog-tab-v1476"
                     role="tab"
                     aria-controls="changelog-panel-v1476"
@@ -715,36 +753,50 @@
                     data-changelog-tab="v1476"
                     tabindex="-1"
                 >V1.476</button>
-                <button
-                    type="button"
-                    class="changelog-tab"
-                    id="changelog-tab-v1460"
-                    role="tab"
-                    aria-controls="changelog-panel-v1460"
-                    aria-selected="false"
-                    data-changelog-tab="v1460"
-                    tabindex="-1"
-                >V1.460</button>
-                <button
-                    type="button"
-                    class="changelog-tab"
-                    id="changelog-tab-v1455"
-                    role="tab"
-                    aria-controls="changelog-panel-v1455"
-                    aria-selected="false"
-                    data-changelog-tab="v1455"
-                    tabindex="-1"
-                >V1.455</button>
             </div>
 
             <div class="changelog-modal__panels" data-changelog-panels>
+                <section
+                    id="changelog-panel-v1484"
+                    class="changelog-modal__panel"
+                    role="tabpanel"
+                    aria-labelledby="changelog-tab-v1484"
+                    data-changelog-panel="v1484"
+                    tabindex="0"
+                >
+                    <header class="changelog-modal__header">
+                        <h2 class="changelog-modal__title" id="versionChangelogTitle">Version V1.484 Update Notes</h2>
+                        <p class="changelog-modal__meta">Updated 2025/12/2</p>
+                    </header>
+                    <p class="changelog-modal__intro">Latest changes:</p>
+                    <ul class="changelog-modal__list">
+                        <li>Introduced the Unknown biome from XC's Live Event. Along with the absolute banger of a song included!!</li>
+                        <li>Rune of Everything now restores native rarities when enabled.</li>
+                        <li>Event biome selections now surface their activation requirements.</li>
+                        <li>Requirements for some biomes now pop up when clicking on them for better flow being:</li>
+                            <ul>
+                                <li>Blazing Sun</li>
+                                <li>Pumpkin Moon</li>
+                                <li>Graveyard</li>
+                                <li>Blood Rain</li>
+                                <li>Another Realm</li>
+                                <li>Unknown</li>
+                            </ul>
+                        <li>Made Dev Biomes require a new switch to be activated to select:</li>
+                            <ul>
+                                <li>Another Realm</li>
+                                <li>Unknown</li>
+                            </ul>
+                    </ul>
+                </section>
                 <section
                     id="changelog-panel-v1479"
                     class="changelog-modal__panel"
                     role="tabpanel"
                     aria-labelledby="changelog-tab-v1479"
                     data-changelog-panel="v1479"
-                    tabindex="0"
+                    hidden
+                    tabindex="-1"
                 >
                     <header class="changelog-modal__header">
                         <h2 class="changelog-modal__title" id="versionChangelogTitle">Version V1.479 Update Notes</h2>

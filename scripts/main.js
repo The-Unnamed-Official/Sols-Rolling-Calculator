@@ -102,6 +102,19 @@ const BIOME_TIME_SELECT_ID = 'biome-time-dropdown';
 const DAY_RESTRICTED_BIOMES = new Set(['pumpkinMoon', 'graveyard']);
 const CYBERSPACE_ILLUSIONARY_WARNING_STORAGE_KEY = 'solsRollingCalculator:hideCyberspaceIllusionaryWarning';
 let lastPrimaryBiomeSelection = null;
+const DEV_BIOME_IDS = new Set(['anotherRealm', 'unknown']);
+let devBiomesEnabled = false;
+
+const ROE_NATIVE_BIOMES = Object.freeze([
+    'windy',
+    'snowy',
+    'rainy',
+    'sandstorm',
+    'hell',
+    'starfall',
+    'corruption',
+    'null'
+]);
 
 const RUNE_CONFIGURATION = Object.freeze({
     windyRune: Object.freeze({
@@ -170,8 +183,8 @@ const RUNE_CONFIGURATION = Object.freeze({
     roe: Object.freeze({
         canonicalBiome: 'roe',
         themeBiome: 'roe',
-        activeBiomes: Object.freeze(['glitch']),
-        breakthroughBiomes: Object.freeze(['glitch']),
+        activeBiomes: ROE_NATIVE_BIOMES,
+        breakthroughBiomes: ROE_NATIVE_BIOMES,
         icon: 'files/roeRuneIcon.png',
         glitchLike: true,
         exclusivityBiome: 'glitch'
@@ -1271,6 +1284,7 @@ const biomeAssets = {
     glitch: { image: 'files/glitchBiomeImage.webm', music: 'files/glitchBiomeMusic.mp3' },
     cyberspace: { image: 'files/cyberspaceBiomeImage.jpg', music: 'files/cyberspaceBiomeMusic.mp3' },
     anotherRealm: { image: 'files/anotherRealmBiomeImage.jpg', music: 'files/anotherRealmBiomeMusic.mp3' },
+    unknown: { image: 'files/unknownBiomeImage.png', music: 'files/unknownBiomeMusic.mp3' },
     graveyard: { image: 'files/graveyardBiomeImage.jpg', music: 'files/graveyardBiomeMusic.mp3' },
     pumpkinMoon: { image: 'files/pumpkinMoonBiomeImage.jpg', music: 'files/pumpkinMoonBiomeMusic.mp3' },
     bloodRain: { image: 'files/bloodRainBiomeImage.jpg', music: 'files/bloodRainBiomeMusic.mp3' },
@@ -2926,6 +2940,10 @@ const EVENT_LIST = [
 ];
 
 const EVENT_LABEL_MAP = new Map(EVENT_LIST.map(({ id, label }) => [id, label]));
+const HALLOWEEN_2024_EVENT_ID = 'halloween24';
+const HARVESTER_AURA_NAME = 'Harvester - 666,000,000';
+const HARVESTER_CURSE_LAYER_ID = 'harvester-curse-layer';
+let harvesterCurseTimeoutId = null;
 
 const EVENT_AURA_LOOKUP = {
     valentine24: [
@@ -3008,11 +3026,38 @@ const BIOME_EVENT_CONSTRAINTS = {
     graveyard: ["halloween24", "halloween25"],
     pumpkinMoon: ["halloween24", "halloween25"],
     bloodRain: ["halloween25"],
-    blazing: "summer25",
+    blazing: ["summer25"],
 };
 
-const enabledEvents = new Set(["halloween25"]);
+const EVENT_BIOME_CONDITION_MESSAGES = Object.freeze({
+    anotherRealm: 'Requires Dev Biomes to be enabled under run parameters.',
+    graveyard: 'Requires Night time with Halloween 2024 or Halloween 2025 enabled.',
+    pumpkinMoon: 'Requires Night time with Halloween 2024 or Halloween 2025 enabled.',
+    bloodRain: 'Requires Halloween 2025 enabled.',
+    blazing: 'Requires Summer 2025 enabled.',
+    unknown: 'Requires Dev Biomes to be enabled under run parameters.',
+});
+
+const enabledEvents = new Set([""]);
 const auraEventIndex = new Map();
+
+function biomeEventRequirementsMet(biomeId) {
+    if (!biomeId) {
+        return true;
+    }
+
+    if (DEV_BIOME_IDS.has(biomeId) && !devBiomesEnabled) {
+        return false;
+    }
+
+    const requiredEvent = BIOME_EVENT_CONSTRAINTS[biomeId];
+    if (!requiredEvent) {
+        return true;
+    }
+
+    const requiredEvents = Array.isArray(requiredEvent) ? requiredEvent : [requiredEvent];
+    return requiredEvents.some(eventId => enabledEvents.has(eventId));
+}
 
 const GLITCH_EVENT_WHITELIST = new Set([
     "halloween24",
@@ -3216,34 +3261,43 @@ function enforceBiomeEventRestrictions() {
     let resetToDefault = false;
 
     Array.from(biomeSelector.options).forEach(option => {
-        const requiredEvent = BIOME_EVENT_CONSTRAINTS[option.value];
-        if (!requiredEvent) {
-            option.disabled = false;
-            option.removeAttribute('title');
-            return;
+        let disabled = false;
+        let title = '';
+
+        if (DEV_BIOME_IDS.has(option.value) && !devBiomesEnabled) {
+            disabled = true;
+            title = 'Enable Dev Biomes to access this biome.';
         }
-        const requiredEvents = Array.isArray(requiredEvent) ? requiredEvent : [requiredEvent];
-        const enabled = requiredEvents.some(eventId => enabledEvents.has(eventId));
-        option.disabled = !enabled;
-        if (!enabled) {
-            const eventLabels = requiredEvents
-                .map(eventId => EVENT_LIST.find(event => event.id === eventId)?.label)
-                .filter(Boolean);
-            if (eventLabels.length > 0) {
-                let labelText = eventLabels[0];
-                if (eventLabels.length === 2) {
-                    labelText = `${eventLabels[0]} or ${eventLabels[1]}`;
-                } else if (eventLabels.length > 2) {
-                    labelText = `${eventLabels.slice(0, -1).join(', ')}, or ${eventLabels[eventLabels.length - 1]}`;
+
+        const requiredEvent = BIOME_EVENT_CONSTRAINTS[option.value];
+        if (requiredEvent) {
+            const requiredEvents = Array.isArray(requiredEvent) ? requiredEvent : [requiredEvent];
+            const enabled = requiredEvents.some(eventId => enabledEvents.has(eventId));
+            if (!enabled) {
+                disabled = true;
+                const eventLabels = requiredEvents
+                    .map(eventId => EVENT_LIST.find(event => event.id === eventId)?.label)
+                    .filter(Boolean);
+                if (eventLabels.length > 0) {
+                    let labelText = eventLabels[0];
+                    if (eventLabels.length === 2) {
+                        labelText = `${eventLabels[0]} or ${eventLabels[1]}`;
+                    } else if (eventLabels.length > 2) {
+                        labelText = `${eventLabels.slice(0, -1).join(', ')}, or ${eventLabels[eventLabels.length - 1]}`;
+                    }
+                    title = title || `${labelText} must be enabled to access this biome.`;
                 }
-                option.title = `${labelText} must be enabled to access this biome.`;
-            } else {
-                option.removeAttribute('title');
             }
+        }
+
+        option.disabled = disabled;
+        if (title) {
+            option.title = title;
         } else {
             option.removeAttribute('title');
         }
-        if (!enabled && option.value === currentValue) {
+
+        if (disabled && option.value === currentValue) {
             resetToDefault = true;
         }
     });
@@ -3259,6 +3313,33 @@ function enforceBiomeEventRestrictions() {
 
     refreshCustomSelect('biome-dropdown');
     updateBiomeControlConstraints();
+}
+
+function showBiomeConditionOverlay(biomeId) {
+    if (!biomeId || typeof document === 'undefined') {
+        return;
+    }
+
+    const message = EVENT_BIOME_CONDITION_MESSAGES[biomeId];
+    if (!message) {
+        return;
+    }
+
+    const overlay = document.getElementById('biomeConditionOverlay');
+    const title = document.getElementById('biomeConditionTitle');
+    const body = document.getElementById('biomeConditionBody');
+
+    if (!overlay || !title || !body || typeof revealOverlay !== 'function') {
+        return;
+    }
+
+    const label = typeof resolveSelectionLabel === 'function'
+        ? resolveSelectionLabel(BIOME_PRIMARY_SELECT_ID, biomeId, { fallbackLabel: 'Biome' })
+        : 'Biome requirements';
+
+    title.textContent = `${label} requirements`;
+    body.textContent = message;
+    revealOverlay(overlay);
 }
 
 function setEventToggleState(eventId, enabled) {
@@ -3305,6 +3386,22 @@ function initializeEventSelector() {
 
     updateEventSummary();
     enforceBiomeEventRestrictions();
+}
+
+function initializeDevBiomeToggle() {
+    const toggle = document.getElementById('dev-biomes-toggle');
+    if (!toggle) {
+        return;
+    }
+
+    const applyState = () => {
+        devBiomesEnabled = toggle.checked;
+        enforceBiomeEventRestrictions();
+    };
+
+    applyState();
+
+    toggle.addEventListener('change', applyState);
 }
 
 function triggerLuckPresetButtonAnimation(button, className) {
@@ -3602,6 +3699,7 @@ function setupVersionChangelogOverlay() {
 }
 
 document.addEventListener('DOMContentLoaded', initializeEventSelector);
+document.addEventListener('DOMContentLoaded', initializeDevBiomeToggle);
 document.addEventListener('DOMContentLoaded', updateOblivionPresetDisplay);
 document.addEventListener('DOMContentLoaded', updateDunePresetDisplay);
 document.addEventListener('DOMContentLoaded', setupLuckPresetSubtractButtons);
@@ -3806,7 +3904,12 @@ function initializeSingleSelectControl(selectId) {
         setElementContent(button, option);
         button.setAttribute('role', 'option');
         button.addEventListener('click', () => {
-            if (option.disabled) return;
+            if (option.disabled) {
+                if (isBiomeSelect) {
+                    showBiomeConditionOverlay(option.value);
+                }
+                return;
+            }
             const valueChanged = select.value !== option.value;
             if (valueChanged) {
                 select.value = option.value;
@@ -3841,10 +3944,16 @@ function initializeSingleSelectControl(selectId) {
 
         optionButtons.forEach(({ button, option }) => {
             const isActive = option.value === select.value;
+            const hasBiomeConditionHelp = isBiomeSelect
+                && option.disabled
+                && Boolean(EVENT_BIOME_CONDITION_MESSAGES[option.value]);
+
             setElementContent(button, option);
             button.classList.toggle('interface-select__option-button--active', isActive);
             button.classList.toggle('interface-select__option-button--disabled', option.disabled);
-            button.disabled = !!option.disabled;
+            button.classList.toggle('interface-select__option-button--condition', hasBiomeConditionHelp);
+            button.disabled = !!option.disabled && !hasBiomeConditionHelp;
+
             if (option.disabled) {
                 button.setAttribute('aria-disabled', 'true');
             } else {
@@ -4167,6 +4276,11 @@ function updateBiomeControlConstraints({ source = null, triggerSync = true } = {
         if (currentPrimarySelection === 'cyberspace' && !cyberspaceIllusionaryWarningManager.isSuppressed()) {
             cyberspaceIllusionaryWarningManager.show();
         }
+        const unmetRequirements = EVENT_BIOME_CONDITION_MESSAGES[currentPrimarySelection]
+            && !biomeEventRequirementsMet(currentPrimarySelection);
+        if (unmetRequirements) {
+            showBiomeConditionOverlay(currentPrimarySelection);
+        }
         lastPrimaryBiomeSelection = currentPrimarySelection;
     }
 
@@ -4335,6 +4449,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
     setupShareInterface();
     initializeAudioSettingsPanel();
+
+    const biomeConditionOverlay = document.getElementById('biomeConditionOverlay');
+    const biomeConditionClose = document.getElementById('biomeConditionClose');
+    if (biomeConditionOverlay && biomeConditionClose) {
+        biomeConditionClose.addEventListener('click', () => concealOverlay(biomeConditionOverlay));
+        biomeConditionOverlay.addEventListener('click', event => {
+            if (event.target === biomeConditionOverlay) {
+                concealOverlay(biomeConditionOverlay);
+            }
+        });
+    }
 
     const cutsceneToggle = document.getElementById('cinematicToggle');
     if (cutsceneToggle) {
@@ -4542,7 +4667,7 @@ function computeStandardEffectiveChance(aura, context) {
         const resolvedActiveMatch = treatCyberspaceNativeAsNonNative ? true : matchesActiveBiome;
 
         allowCyberspaceNativeRarity = cyberspaceNative
-            ? inCyberspace
+            ? (inCyberspace || isRoe)
             : true;
 
         if (!isAuraNativeTo(aura, 'limbo-null') && !resolvedActiveMatch && !allowEventGlitchAccess) {
@@ -4749,6 +4874,57 @@ function summarizeXpRewards(registry) {
     return { totalXp, lines };
 }
 
+function clearHarvesterCurseLayer() {
+    if (typeof document === 'undefined') return;
+    if (harvesterCurseTimeoutId !== null) {
+        clearTimeout(harvesterCurseTimeoutId);
+        harvesterCurseTimeoutId = null;
+    }
+    const existing = document.getElementById(HARVESTER_CURSE_LAYER_ID);
+    if (existing && existing.parentElement) {
+        existing.parentElement.removeChild(existing);
+    }
+}
+
+function renderHarvesterCurseLayer(count) {
+    if (typeof document === 'undefined') return;
+    clearHarvesterCurseLayer();
+
+    if (!count || count <= 0) {
+        return;
+    }
+
+    const layer = document.createElement('div');
+    layer.id = HARVESTER_CURSE_LAYER_ID;
+    layer.className = 'harvester-curse';
+
+    const visibleStacks = Math.min(count, 24);
+    for (let i = 0; i < visibleStacks; i++) {
+        const card = document.createElement('div');
+        card.className = 'harvester-curse__card';
+        card.style.setProperty('--harvester-tilt', `${(Math.random() * 12 - 6).toFixed(2)}deg`);
+        card.style.setProperty('--harvester-delay', `${Math.floor(Math.random() * 120)}ms`);
+        card.style.setProperty('--harvester-rumble-speed', `${70 + Math.floor(Math.random() * 60)}ms`);
+        card.style.setProperty('--harvester-jux-speed', `${55 + Math.floor(Math.random() * 45)}ms`);
+        card.style.left = `${4 + Math.random() * 92}vw`;
+        card.style.top = `${4 + Math.random() * 92}vh`;
+        card.innerHTML = [
+            '<span class="harvester-curse__line harvester-curse__line--i">I</span>',
+            '<span class="harvester-curse__line">HATE</span>',
+            '<span class="harvester-curse__line harvester-curse__line--jux">JUX</span>'
+        ].join('');
+        layer.appendChild(card);
+    }
+
+    document.body.appendChild(layer);
+
+    const lifetimeMs = Math.min(14000, 5000 + (visibleStacks * 320));
+    harvesterCurseTimeoutId = setTimeout(() => {
+        harvesterCurseTimeoutId = null;
+        clearHarvesterCurseLayer();
+    }, lifetimeMs);
+}
+
 function requestRollCancellation() {
     if (!simulationActive || cancelRollRequested) {
         return;
@@ -4787,6 +4963,8 @@ function runRollSimulation(options = {}) {
     if (!feedContainer || !luckField) {
         return;
     }
+
+    clearHarvesterCurseLayer();
 
     const {
         rollTriggerButton,
@@ -4962,6 +5140,7 @@ function runRollSimulation(options = {}) {
 
         if (cancelled) {
             feedContainer.textContent = 'Rolling canceled.';
+            clearHarvesterCurseLayer();
             return;
         }
 
@@ -5046,6 +5225,18 @@ function runRollSimulation(options = {}) {
         }
 
         feedContainer.innerHTML = resultChunks.join('');
+
+        const harvesterAura = AURA_REGISTRY.find(aura => aura.name === HARVESTER_AURA_NAME) || null;
+        const harvesterCount = harvesterAura ? readAuraWinCount(harvesterAura) : 0;
+        const halloween24Active = eventSnapshot
+            ? eventSnapshot.has(HALLOWEEN_2024_EVENT_ID)
+            : enabledEvents.has(HALLOWEEN_2024_EVENT_ID);
+
+        if (halloween24Active && harvesterCount > 0) {
+            renderHarvesterCurseLayer(harvesterCount);
+        } else {
+            clearHarvesterCurseLayer();
+        }
 
         const executionSeconds = Number.parseFloat(executionTime);
         lastSimulationSummary = {
