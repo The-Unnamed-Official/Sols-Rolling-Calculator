@@ -2743,7 +2743,7 @@ const AURA_BLUEPRINT_SOURCE = Object.freeze([
     { name: "Undead : Devil - 666,666", chance: 666666, breakthroughs: { hell: 6 } },
     { name: "Warlock - 666,000", chance: 666000 },
     { name: "Pump : Trickster - 600,000", chance: 600000, nativeBiomes: ["glitch", "pumpkinMoon"] },
-    { name: "Prowler - 540,000", chance: 540000, nativeBiomes: ["anotherRealm"] },
+    { name: "Prowler - 540,000", chance: 540000, nativeBiomes: ["anotherRealm"], cutscene: "prowler-cutscene" },
     { name: "Raven - 500,000", chance: 500000, nativeBiomes: ["limbo"] },
     { name: "Terror - 400,000", chance: 400000 },
     { name: "Celestial - 350,000", chance: 350000 },
@@ -3075,7 +3075,7 @@ function getAuraEventId(aura) {
     return auraEventIndex.get(aura.name) || null;
 }
 
-const CUTSCENE_PRIORITY_SEQUENCE = ["oblivion-cutscene", "memory-cutscene", "neferkhaf-cutscene", "illusionary-cutscene", "equinox-cutscene", "erebus-cutscene", "luminosity-cutscene", "pixelation-cutscene", "nyctophobia-cutscene", "lamenthyr-cutscene", "dreammetric-cutscene", "oppression-cutscene"];
+const CUTSCENE_PRIORITY_SEQUENCE = ["oblivion-cutscene", "memory-cutscene", "neferkhaf-cutscene", "illusionary-cutscene", "equinox-cutscene", "erebus-cutscene", "luminosity-cutscene", "pixelation-cutscene", "nyctophobia-cutscene", "lamenthyr-cutscene", "dreammetric-cutscene", "oppression-cutscene", "prowler-cutscene"];
 
 oblivionAuraData = AURA_REGISTRY.find(aura => aura.name === OBLIVION_AURA_LABEL) || null;
 memoryAuraData = AURA_REGISTRY.find(aura => aura.name === MEMORY_AURA_LABEL) || null;
