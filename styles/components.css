@@ -408,6 +408,10 @@ details[data-select="vip-dropdown"] {
     cursor: not-allowed;
 }
 
+.interface-select__option-button--condition {
+    cursor: help;
+}
+
 .interface-select__option-button:active {
     --button-scale: 0.97;
     --button-raise: 0px;
