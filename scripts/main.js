@@ -104,7 +104,6 @@ const CYBERSPACE_ILLUSIONARY_WARNING_STORAGE_KEY = 'solsRollingCalculator:hideCy
 let lastPrimaryBiomeSelection = null;
 
 const ROE_NATIVE_BIOMES = Object.freeze([
-    'glitch',
     'windy',
     'snowy',
     'rainy',
@@ -112,8 +111,7 @@ const ROE_NATIVE_BIOMES = Object.freeze([
     'hell',
     'starfall',
     'corruption',
-    'null',
-    'limbo-null'
+    'null'
 ]);
 
 const RUNE_CONFIGURATION = Object.freeze({
@@ -1284,6 +1282,7 @@ const biomeAssets = {
     glitch: { image: 'files/glitchBiomeImage.webm', music: 'files/glitchBiomeMusic.mp3' },
     cyberspace: { image: 'files/cyberspaceBiomeImage.jpg', music: 'files/cyberspaceBiomeMusic.mp3' },
     anotherRealm: { image: 'files/anotherRealmBiomeImage.jpg', music: 'files/anotherRealmBiomeMusic.mp3' },
+    unknown: { image: 'files/unknownBiomeImage.png', music: 'files/unknownBiomeMusic.mp3' },
     graveyard: { image: 'files/graveyardBiomeImage.jpg', music: 'files/graveyardBiomeMusic.mp3' },
     pumpkinMoon: { image: 'files/pumpkinMoonBiomeImage.jpg', music: 'files/pumpkinMoonBiomeMusic.mp3' },
     bloodRain: { image: 'files/bloodRainBiomeImage.jpg', music: 'files/bloodRainBiomeMusic.mp3' },
@@ -3025,10 +3024,10 @@ const BIOME_EVENT_CONSTRAINTS = {
     graveyard: ["halloween24", "halloween25"],
     pumpkinMoon: ["halloween24", "halloween25"],
     bloodRain: ["halloween25"],
-    blazing: "summer25",
+    blazing: ["summer25"],
 };
 
-// const enabledEvents = new Set(["halloween25"]);
+const enabledEvents = new Set([""]);
 const auraEventIndex = new Map();
 
 const GLITCH_EVENT_WHITELIST = new Set([
