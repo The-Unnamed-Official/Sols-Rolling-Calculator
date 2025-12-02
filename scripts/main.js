@@ -102,6 +102,8 @@ const BIOME_TIME_SELECT_ID = 'biome-time-dropdown';
 const DAY_RESTRICTED_BIOMES = new Set(['pumpkinMoon', 'graveyard']);
 const CYBERSPACE_ILLUSIONARY_WARNING_STORAGE_KEY = 'solsRollingCalculator:hideCyberspaceIllusionaryWarning';
 let lastPrimaryBiomeSelection = null;
+const DEV_BIOME_IDS = new Set(['anotherRealm', 'unknown']);
+let devBiomesEnabled = false;
 
 const ROE_NATIVE_BIOMES = Object.freeze([
     'windy',
@@ -3028,16 +3030,26 @@ const BIOME_EVENT_CONSTRAINTS = {
 };
 
 const EVENT_BIOME_CONDITION_MESSAGES = Object.freeze({
+    anotherRealm: 'Requires Dev Biomes to be enabled under run parameters.',
     graveyard: 'Requires Night time with Halloween 2024 or Halloween 2025 enabled.',
     pumpkinMoon: 'Requires Night time with Halloween 2024 or Halloween 2025 enabled.',
     bloodRain: 'Requires Halloween 2025 enabled.',
     blazing: 'Requires Summer 2025 enabled.',
+    unknown: 'Requires Dev Biomes to be enabled under run parameters.',
 });
 
 const enabledEvents = new Set([""]);
 const auraEventIndex = new Map();
 
 function biomeEventRequirementsMet(biomeId) {
+    if (!biomeId) {
+        return true;
+    }
+
+    if (DEV_BIOME_IDS.has(biomeId) && !devBiomesEnabled) {
+        return false;
+    }
+
     const requiredEvent = BIOME_EVENT_CONSTRAINTS[biomeId];
     if (!requiredEvent) {
         return true;
@@ -3249,34 +3261,43 @@ function enforceBiomeEventRestrictions() {
     let resetToDefault = false;
 
     Array.from(biomeSelector.options).forEach(option => {
-        const requiredEvent = BIOME_EVENT_CONSTRAINTS[option.value];
-        if (!requiredEvent) {
-            option.disabled = false;
-            option.removeAttribute('title');
-            return;
+        let disabled = false;
+        let title = '';
+
+        if (DEV_BIOME_IDS.has(option.value) && !devBiomesEnabled) {
+            disabled = true;
+            title = 'Enable Dev Biomes to access this biome.';
         }
-        const requiredEvents = Array.isArray(requiredEvent) ? requiredEvent : [requiredEvent];
-        const enabled = requiredEvents.some(eventId => enabledEvents.has(eventId));
-        option.disabled = !enabled;
-        if (!enabled) {
-            const eventLabels = requiredEvents
-                .map(eventId => EVENT_LIST.find(event => event.id === eventId)?.label)
-                .filter(Boolean);
-            if (eventLabels.length > 0) {
-                let labelText = eventLabels[0];
-                if (eventLabels.length === 2) {
-                    labelText = `${eventLabels[0]} or ${eventLabels[1]}`;
-                } else if (eventLabels.length > 2) {
-                    labelText = `${eventLabels.slice(0, -1).join(', ')}, or ${eventLabels[eventLabels.length - 1]}`;
+
+        const requiredEvent = BIOME_EVENT_CONSTRAINTS[option.value];
+        if (requiredEvent) {
+            const requiredEvents = Array.isArray(requiredEvent) ? requiredEvent : [requiredEvent];
+            const enabled = requiredEvents.some(eventId => enabledEvents.has(eventId));
+            if (!enabled) {
+                disabled = true;
+                const eventLabels = requiredEvents
+                    .map(eventId => EVENT_LIST.find(event => event.id === eventId)?.label)
+                    .filter(Boolean);
+                if (eventLabels.length > 0) {
+                    let labelText = eventLabels[0];
+                    if (eventLabels.length === 2) {
+                        labelText = `${eventLabels[0]} or ${eventLabels[1]}`;
+                    } else if (eventLabels.length > 2) {
+                        labelText = `${eventLabels.slice(0, -1).join(', ')}, or ${eventLabels[eventLabels.length - 1]}`;
+                    }
+                    title = title || `${labelText} must be enabled to access this biome.`;
                 }
-                option.title = `${labelText} must be enabled to access this biome.`;
-            } else {
-                option.removeAttribute('title');
             }
+        }
+
+        option.disabled = disabled;
+        if (title) {
+            option.title = title;
         } else {
             option.removeAttribute('title');
         }
-        if (!enabled && option.value === currentValue) {
+
+        if (disabled && option.value === currentValue) {
             resetToDefault = true;
         }
     });
@@ -3365,6 +3386,22 @@ function initializeEventSelector() {
 
     updateEventSummary();
     enforceBiomeEventRestrictions();
+}
+
+function initializeDevBiomeToggle() {
+    const toggle = document.getElementById('dev-biomes-toggle');
+    if (!toggle) {
+        return;
+    }
+
+    const applyState = () => {
+        devBiomesEnabled = toggle.checked;
+        enforceBiomeEventRestrictions();
+    };
+
+    applyState();
+
+    toggle.addEventListener('change', applyState);
 }
 
 function triggerLuckPresetButtonAnimation(button, className) {
@@ -3662,6 +3699,7 @@ function setupVersionChangelogOverlay() {
 }
 
 document.addEventListener('DOMContentLoaded', initializeEventSelector);
+document.addEventListener('DOMContentLoaded', initializeDevBiomeToggle);
 document.addEventListener('DOMContentLoaded', updateOblivionPresetDisplay);
 document.addEventListener('DOMContentLoaded', updateDunePresetDisplay);
 document.addEventListener('DOMContentLoaded', setupLuckPresetSubtractButtons);
@@ -3866,7 +3904,12 @@ function initializeSingleSelectControl(selectId) {
         setElementContent(button, option);
         button.setAttribute('role', 'option');
         button.addEventListener('click', () => {
-            if (option.disabled) return;
+            if (option.disabled) {
+                if (isBiomeSelect) {
+                    showBiomeConditionOverlay(option.value);
+                }
+                return;
+            }
             const valueChanged = select.value !== option.value;
             if (valueChanged) {
                 select.value = option.value;
