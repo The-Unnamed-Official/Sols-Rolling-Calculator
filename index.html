@@ -102,7 +102,7 @@
                 <div class="banner__meta">
                     <h1 class="banner__title">Sols Rolling Simulator</h1>
                     <p class="banner__subtitle">
-                        <button type="button" class="banner__version-button" id="versionInfoButton" aria-haspopup="dialog" aria-expanded="false" aria-label="View update notes for version V1.488" data-version-id="v1488">V1.488</button>
+                        <button type="button" class="banner__version-button" id="versionInfoButton" aria-haspopup="dialog" aria-expanded="false" aria-label="View update notes for version V1.489" data-version-id="v1489">V1.489</button>
                         <span class="banner__subtitle-divider" aria-hidden="true">◉</span>
                         <span class="banner__subtitle-author">By <span class="banner__subtitle-author-name">not.unnamed</span></span>
                         <span class="banner__subtitle-divider" aria-hidden="true">◉</span>
@@ -755,50 +755,38 @@
                     data-changelog-tab="v1484"
                     tabindex="-1"
                 >V1.484</button>
-                <button
-                    type="button"
-                    class="changelog-tab"
-                    id="changelog-tab-v1479"
-                    role="tab"
-                    aria-controls="changelog-panel-v1479"
-                    aria-selected="false"
-                    data-changelog-tab="v1479"
-                    tabindex="-1"
-                >V1.479</button>
-                <button
-                    type="button"
-                    class="changelog-tab"
-                    id="changelog-tab-v1477"
-                    role="tab"
-                    aria-controls="changelog-panel-v1477"
-                    aria-selected="false"
-                    data-changelog-tab="v1477"
-                    tabindex="-1"
-                >V1.477</button>
-                <button
-                    type="button"
-                    class="changelog-tab"
-                    id="changelog-tab-v1476"
-                    role="tab"
-                    aria-controls="changelog-panel-v1476"
-                    aria-selected="false"
-                    data-changelog-tab="v1476"
-                    tabindex="-1"
-                >V1.476</button>
             </div>
 
             <div class="changelog-modal__panels" data-changelog-panels>
+                <section
+                    id="changelog-panel-v1489"
+                    class="changelog-modal__panel"
+                    role="tabpanel"
+                    aria-labelledby="changelog-tab-v1489"
+                    data-changelog-panel="v1489"
+                    tabindex="0"
+                >
+                    <header class="changelog-modal__header">
+                        <h2 class="changelog-modal__title" id="versionChangelogTitle">Version V1.489 Update Notes</h2>
+                        <p class="changelog-modal__meta">Updated 2025/12/3</p>
+                    </header>
+                    <p class="changelog-modal__intro">Latest changes:</p>
+                    <ul class="changelog-modal__list">
+                        <li>Resolved an issue with requirement hints on biomes and runes from hovering over them. They will now only appear when clicking on them.</span>.</li>
+                    </ul>
+                </section>
                 <section
                     id="changelog-panel-v1488"
                     class="changelog-modal__panel"
                     role="tabpanel"
                     aria-labelledby="changelog-tab-v1488"
                     data-changelog-panel="v1488"
-                    tabindex="0"
+                    hidden
+                    tabindex="-1"
                 >
                     <header class="changelog-modal__header">
                         <h2 class="changelog-modal__title" id="versionChangelogTitle">Version V1.488 Update Notes</h2>
-                        <p class="changelog-modal__meta">Updated 2025/12/7</p>
+                        <p class="changelog-modal__meta">Updated 2025/12/3</p>
                     </header>
                     <p class="changelog-modal__intro">Latest changes:</p>
                     <ul class="changelog-modal__list">
@@ -859,102 +847,6 @@
                                 <li>Another Realm</li>
                                 <li>Unknown</li>
                             </ul>
-                    </ul>
-                </section>
-                <section
-                    id="changelog-panel-v1479"
-                    class="changelog-modal__panel"
-                    role="tabpanel"
-                    aria-labelledby="changelog-tab-v1479"
-                    data-changelog-panel="v1479"
-                    hidden
-                    tabindex="-1"
-                >
-                    <header class="changelog-modal__header">
-                        <h2 class="changelog-modal__title" id="versionChangelogTitle">Version V1.479 Update Notes</h2>
-                        <p class="changelog-modal__meta">Updated 2025/11/30</p>
-                    </header>
-                    <p class="changelog-modal__intro">Latest changes:</p>
-                    <ul class="changelog-modal__list">
-                        <li>Illusionary's real cutscene has been set as the cutscene now when obtaining <a class="sigil-outline-cyberspace">Illusionary</a>.</li>
-                        <li>Added a Cancel Rolling button for better accessability and flow for usage of the Rolling Simulator.</li>
-                    </ul>
-                </section>
-                <section
-                    id="changelog-panel-v1477"
-                    class="changelog-modal__panel"
-                    role="tabpanel"
-                    aria-labelledby="changelog-tab-v1477"
-                    data-changelog-panel="v1477"
-                    hidden
-                    tabindex="-1"
-                >
-                    <header class="changelog-modal__header">
-                        <h2 class="changelog-modal__title" id="versionChangelogTitle">Version V1.477 Update Notes</h2>
-                        <p class="changelog-modal__meta">Updated 2025/11/29</p>
-                    </header>
-                    <p class="changelog-modal__intro">Latest changes:</p>
-                    <ul class="changelog-modal__list">
-                        <li>Cyberspace background song have been fixed to the live one used in Sol's RNG :D.</li>
-                    </ul>
-                </section>
-                <section
-                    id="changelog-panel-v1476"
-                    class="changelog-modal__panel"
-                    role="tabpanel"
-                    aria-labelledby="changelog-tab-v1476"
-                    data-changelog-panel="v1476"
-                    hidden
-                    tabindex="-1"
-                >
-                    <header class="changelog-modal__header">
-                        <h2 class="changelog-modal__title" id="versionChangelogTitle">Version V1.476 Update Notes</h2>
-                        <p class="changelog-modal__meta">Updated 2025/11/29</p>
-                    </header>
-                    <p class="changelog-modal__intro">Latest changes:</p>
-                    <ul class="changelog-modal__list">
-                        <li>Cyberspace background song WILL BE CHANGED AS SOON AS I GET MY HANDS ON THE CURRENTLY USED SONG.</li>
-                        <li>Summarized wide fixes so native auras are correctly treated as native in Cyberspace and their displayed rarity matches expectations.</li>
-                        <li>Addressed multiple Cyberspace behavior issues that previously stopped the biome from functioning correctly and threw unnecessary error messages.</li>
-                        <li>Restored native outline indicators inside Cyberspace while preventing Cyberspace-native outlines from appearing outside the biome.</li>
-                        <li>Collected numerous additional Cyberspace bug fixes to stabilize native pulls and related interactions.</li>
-                    </ul>
-                </section>
-                <section
-                    id="changelog-panel-v1460"
-                    class="changelog-modal__panel"
-                    role="tabpanel"
-                    aria-labelledby="changelog-tab-v1460"
-                    data-changelog-panel="v1460"
-                    hidden
-                    tabindex="-1"
-                >
-                    <header class="changelog-modal__header">
-                        <h2 class="changelog-modal__title" id="versionChangelogTitle">Version V1.460 Update Notes</h2>
-                        <p class="changelog-modal__meta">Updated 2025/11/29</p>
-                    </header>
-                    <p class="changelog-modal__intro">Latest changes:</p>
-                    <ul class="changelog-modal__list">
-                        <li>Declared several auras as native to the Cyberspace biome and ensured they are no longer treated as native while in the Glitch biome.</li>
-                        <li>Clarified Illusionary stays a 10,000,000 rarity roll in Cyberspace that ignores your luck stat entirely.</li>
-                    </ul>
-                </section>
-                <section
-                    id="changelog-panel-v1455"
-                    class="changelog-modal__panel"
-                    role="tabpanel"
-                    aria-labelledby="changelog-tab-v1455"
-                    data-changelog-panel="v1455"
-                    hidden
-                    tabindex="-1"
-                >
-                    <header class="changelog-modal__header">
-                        <h2 class="changelog-modal__title" id="versionChangelogTitle">Version V1.455 Update Notes</h2>
-                        <p class="changelog-modal__meta">Updated 2025/11/28</p>
-                    </header>
-                    <p class="changelog-modal__intro">Latest changes:</p>
-                    <ul class="changelog-modal__list">
-                        <li>Changed Illusionary's rarity to 10,000,000.</li>
                     </ul>
                 </section>
             </div>
