@@ -19,6 +19,7 @@
             k100: document.getElementById('hundredThousandSound'),
             m10: document.getElementById('tenMillionSound'),
             m100: document.getElementById('hundredMillionSound'),
+            explosion: document.getElementById('explosionSoundFx'),
             limbo99m: document.getElementById('limbo99mSoundFx')
         }
     };

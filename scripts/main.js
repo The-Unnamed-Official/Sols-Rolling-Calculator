@@ -280,13 +280,6 @@ function updateUiToggleStatus() {
     }
 }
 
-function updateObtainToggleStatus() {
-    const obtainToggle = document.getElementById('audioObtainToggle');
-    if (obtainToggle) {
-        obtainToggle.checked = appState.audio.obtain;
-    }
-}
-
 function setChannelVolume(channel, normalized) {
     const value = clamp01(normalized);
     if (channel === 'ui') {
@@ -306,7 +299,6 @@ function setChannelVolume(channel, normalized) {
             appState.audio.obtainLastVolume = value;
         }
         appState.audio.obtain = value > 0;
-        updateObtainToggleStatus();
     }
 
     const rollingActive = (appState.audio.obtainVolume ?? 0) > 0
@@ -376,14 +368,6 @@ function initializeAudioSettingsPanel() {
             hideAudioSettingsOverlay();
         }
     });
-
-    const obtainToggle = document.getElementById('audioObtainToggle');
-    if (obtainToggle) {
-        obtainToggle.checked = appState.audio.obtain;
-        obtainToggle.addEventListener('change', () => {
-            toggleObtainAudio();
-        });
-    }
 
     const uiToggle = document.getElementById('audioUiToggle');
     if (uiToggle) {
@@ -1112,13 +1096,6 @@ function toggleRollingAudio() {
         soundToggle.textContent = appState.audio.roll ? 'Audio: On' : 'Audio: Off';
         soundToggle.setAttribute('aria-pressed', appState.audio.roll);
     }
-}
-
-function toggleObtainAudio() {
-    const enableObtain = !appState.audio.obtain;
-    const restoredVolume = appState.audio.obtainLastVolume > 0 ? appState.audio.obtainLastVolume : DEFAULT_AUDIO_LEVEL;
-    setChannelVolume('obtain', enableObtain ? restoredVolume : 0);
-    resumeAudioEngine();
 }
 
 function toggleInterfaceAudio() {
@@ -2350,6 +2327,17 @@ function resolveRarityClass(aura, biome) {
     return 'rarity-tier-basic';
 }
 
+const nativeAuraOutlineOverrides = new Map([
+    ['Lunar : Full Moon', 'sigil-outline-night'],
+    ['Lunar', 'sigil-outline-night'],
+    ['Solar : Solstice', 'sigil-outline-day'],
+    ['Solar', 'sigil-outline-day'],
+    ['Twilight : Withering Grace', 'sigil-outline-night'],
+    ['Twilight : Iridescent Memory', 'sigil-outline-night'],
+    ['Twilight', 'sigil-outline-night'],
+    ['Lullaby', 'sigil-outline-night'],
+]);
+
 const auraOutlineOverrides = new Map([
     ['Illusionary', 'sigil-outline-illusionary'],
     ['Prowler', 'sigil-outline-prowler'],
@@ -2442,6 +2430,14 @@ function resolveAuraStyleClass(aura, biome) {
             isAuraNativeTo(auraData, 'cyberspace')
             || (auraData.breakthroughs && auraData.breakthroughs.has('cyberspace'))
         );
+
+    const isNativeRoll = auraData && biome ? isAuraNativeTo(auraData, biome) : false;
+    if (isNativeRoll) {
+        const nativeOverride = nativeAuraOutlineOverrides.get(shortName);
+        if (nativeOverride) {
+            classes.push(nativeOverride);
+        }
+    }
 
     if (isCyberspaceAligned && !cyberspaceOutlineExclusions.has(shortName)) {
         classes.push('sigil-outline-cyberspace');
@@ -3315,12 +3311,12 @@ function enforceBiomeEventRestrictions() {
     updateBiomeControlConstraints();
 }
 
-function showBiomeConditionOverlay(biomeId) {
-    if (!biomeId || typeof document === 'undefined') {
+function showBiomeConditionOverlay(biomeId, { message: overrideMessage = null, labelOverride = null, titleOverride = null } = {}) {
+    if (typeof document === 'undefined') {
         return;
     }
 
-    const message = EVENT_BIOME_CONDITION_MESSAGES[biomeId];
+    const message = overrideMessage ?? EVENT_BIOME_CONDITION_MESSAGES[biomeId];
     if (!message) {
         return;
     }
@@ -3333,11 +3329,13 @@ function showBiomeConditionOverlay(biomeId) {
         return;
     }
 
-    const label = typeof resolveSelectionLabel === 'function'
-        ? resolveSelectionLabel(BIOME_PRIMARY_SELECT_ID, biomeId, { fallbackLabel: 'Biome' })
-        : 'Biome requirements';
+    const fallbackLabel = labelOverride || 'Biome';
+    const label = labelOverride
+        || (biomeId && typeof resolveSelectionLabel === 'function'
+            ? resolveSelectionLabel(BIOME_PRIMARY_SELECT_ID, biomeId, { fallbackLabel })
+            : fallbackLabel);
 
-    title.textContent = `${label} requirements`;
+    title.textContent = titleOverride || `${label} requirements`;
     body.textContent = message;
     revealOverlay(overlay);
 }
@@ -3903,11 +3901,36 @@ function initializeSingleSelectControl(selectId) {
         button.dataset.value = option.value;
         setElementContent(button, option);
         button.setAttribute('role', 'option');
+        const getConditionMessage = () => {
+            const biomeCondition = isBiomeSelect && option.disabled
+                ? EVENT_BIOME_CONDITION_MESSAGES[option.value]
+                : '';
+            return option.dataset.conditionMessage || biomeCondition || '';
+        };
+
+        const getConditionLabel = () => option.dataset.conditionLabel
+            || (typeof resolveSelectionLabel === 'function'
+                ? resolveSelectionLabel(selectId, option.value, {
+                    fallbackLabel: isBiomeSelect ? 'Biome' : 'Selection',
+                    noneLabel: isBiomeSelect ? 'Biome' : 'Selection'
+                })
+                : option.textContent.trim());
+
+        const showConditionOverlay = () => {
+            const message = getConditionMessage();
+            if (!message && !(isBiomeSelect && EVENT_BIOME_CONDITION_MESSAGES[option.value])) {
+                return;
+            }
+            const label = getConditionLabel();
+            showBiomeConditionOverlay(option.value, {
+                message: message || undefined,
+                labelOverride: label || undefined
+            });
+        };
+
         button.addEventListener('click', () => {
             if (option.disabled) {
-                if (isBiomeSelect) {
-                    showBiomeConditionOverlay(option.value);
-                }
+                showConditionOverlay();
                 return;
             }
             const valueChanged = select.value !== option.value;
@@ -3918,6 +3941,12 @@ function initializeSingleSelectControl(selectId) {
             details.open = false;
             summary.focus();
             updateSummary();
+        });
+
+        button.addEventListener('mouseenter', () => {
+            if (option.disabled) {
+                showConditionOverlay();
+            }
         });
         menu.appendChild(button);
         return { button, option };
@@ -3944,15 +3973,15 @@ function initializeSingleSelectControl(selectId) {
 
         optionButtons.forEach(({ button, option }) => {
             const isActive = option.value === select.value;
-            const hasBiomeConditionHelp = isBiomeSelect
-                && option.disabled
-                && Boolean(EVENT_BIOME_CONDITION_MESSAGES[option.value]);
+            const conditionMessage = option.dataset.conditionMessage
+                || (isBiomeSelect && option.disabled ? EVENT_BIOME_CONDITION_MESSAGES[option.value] : '');
+            const hasConditionHelp = !!conditionMessage;
 
             setElementContent(button, option);
             button.classList.toggle('interface-select__option-button--active', isActive);
             button.classList.toggle('interface-select__option-button--disabled', option.disabled);
-            button.classList.toggle('interface-select__option-button--condition', hasBiomeConditionHelp);
-            button.disabled = !!option.disabled && !hasBiomeConditionHelp;
+            button.classList.toggle('interface-select__option-button--condition', hasConditionHelp);
+            button.disabled = !!option.disabled && !hasConditionHelp;
 
             if (option.disabled) {
                 button.setAttribute('aria-disabled', 'true');
@@ -4232,6 +4261,11 @@ function updateBiomeControlConstraints({ source = null, triggerSync = true } = {
         if (limboSelected && runeOption) {
             disabled = true;
             title = 'Unavailable while Limbo is selected.';
+            option.dataset.conditionMessage = title;
+            option.dataset.conditionLabel = option.textContent?.trim() || 'Rune';
+        } else {
+            option.removeAttribute('data-condition-message');
+            option.removeAttribute('data-condition-label');
         }
         option.disabled = disabled;
         if (title) {
@@ -4664,6 +4698,10 @@ function computeStandardEffectiveChance(aura, context) {
         const inCyberspace = biome === 'cyberspace';
         const cyberspaceActive = inCyberspace || activeBiomeList.includes('cyberspace');
 
+        if (isIllusionaryAura(aura) && !cyberspaceActive) {
+            return Infinity;
+        }
+
         const treatCyberspaceNativeAsNonNative = cyberspaceNative && !cyberspaceActive;
         const resolvedActiveMatch = treatCyberspaceNativeAsNonNative ? true : matchesActiveBiome;
 
@@ -5042,6 +5080,9 @@ function runRollSimulation(options = {}) {
     }
 
     playSoundEffect(audio.roll, 'obtain');
+    if (total >= 10000000) {
+        playSoundEffect(audio.explosion, 'obtain');
+    }
 
     let parsedLuck = getNumericInputValue(luckField, { min: 1 });
     if (!Number.isFinite(parsedLuck)) {
