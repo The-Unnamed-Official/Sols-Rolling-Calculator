@@ -4698,6 +4698,10 @@ function computeStandardEffectiveChance(aura, context) {
         const inCyberspace = biome === 'cyberspace';
         const cyberspaceActive = inCyberspace || activeBiomeList.includes('cyberspace');
 
+        if (isIllusionaryAura(aura) && !cyberspaceActive) {
+            return Infinity;
+        }
+
         const treatCyberspaceNativeAsNonNative = cyberspaceNative && !cyberspaceActive;
         const resolvedActiveMatch = treatCyberspaceNativeAsNonNative ? true : matchesActiveBiome;
 
