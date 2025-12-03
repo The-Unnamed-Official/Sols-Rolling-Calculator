@@ -2340,13 +2340,13 @@ function resolveRarityClass(aura, biome) {
         return 'rarity-tier-challenged';
     }
     const chance = aura.chance;
-    if (chance >= 1000000000) return 'rarity-tier-transcendent';
+    if (chance >= 999999999) return 'rarity-tier-transcendent';
     if (chance >= 99999999) return 'rarity-tier-glorious';
-    if (chance >= 10000000) return 'rarity-tier-exalted';
-    if (chance >= 1000000) return 'rarity-tier-mythic';
+    if (chance >= 9999999) return 'rarity-tier-exalted';
+    if (chance >= 999999) return 'rarity-tier-mythic';
     if (chance >= 99999) return 'rarity-tier-legendary';
-    if (chance >= 10000) return 'rarity-tier-unique';
-    if (chance >= 1000) return 'rarity-tier-epic';
+    if (chance >= 9999) return 'rarity-tier-unique';
+    if (chance >= 999) return 'rarity-tier-epic';
     return 'rarity-tier-basic';
 }
 
