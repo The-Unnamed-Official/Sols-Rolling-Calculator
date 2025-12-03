@@ -5080,6 +5080,9 @@ function runRollSimulation(options = {}) {
     }
 
     playSoundEffect(audio.roll, 'obtain');
+    if (total >= 10000000) {
+        playSoundEffect(audio.explosion, 'obtain');
+    }
 
     let parsedLuck = getNumericInputValue(luckField, { min: 1 });
     if (!Number.isFinite(parsedLuck)) {
