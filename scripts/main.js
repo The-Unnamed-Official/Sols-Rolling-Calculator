@@ -1381,11 +1381,11 @@ function scheduleGlitchWarbleCycle(bgMusic, chain) {
 const GLITCH_BURST_TRIGGER_CHANCE = 0.42;
 
 function computeGlitchRestDelay() {
-    return Math.floor(randomDecimalBetween(12000, 36000));
+    return Math.floor(randomDecimalBetween(8000, 16000));
 }
 
 function computeGlitchBurstDuration() {
-    return Math.floor(randomDecimalBetween(1400, 2400));
+    return Math.floor(randomDecimalBetween(2400, 3400));
 }
 
 function createDistortionCurve(amount = 0) {
@@ -2340,13 +2340,13 @@ function resolveRarityClass(aura, biome) {
         return 'rarity-tier-challenged';
     }
     const chance = aura.chance;
-    if (chance >= 1000000000) return 'rarity-tier-transcendent';
+    if (chance >= 999999999) return 'rarity-tier-transcendent';
     if (chance >= 99999999) return 'rarity-tier-glorious';
-    if (chance >= 10000000) return 'rarity-tier-exalted';
-    if (chance >= 1000000) return 'rarity-tier-mythic';
+    if (chance >= 9999999) return 'rarity-tier-exalted';
+    if (chance >= 999999) return 'rarity-tier-mythic';
     if (chance >= 99999) return 'rarity-tier-legendary';
-    if (chance >= 10000) return 'rarity-tier-unique';
-    if (chance >= 1000) return 'rarity-tier-epic';
+    if (chance >= 9999) return 'rarity-tier-unique';
+    if (chance >= 999) return 'rarity-tier-epic';
     return 'rarity-tier-basic';
 }
 
@@ -4552,6 +4552,7 @@ function resolveXpTierForChance(chance) {
 }
 
 const LIMBO_NATIVE_FILTER = ['limbo', 'limbo-null'];
+const GLITCH_BREAKTHROUGH_EXCLUSION_SET = new Set(['day', 'night']);
 
 function isYgBlessingEnabled() {
     if (typeof document === 'undefined') {
@@ -4677,18 +4678,28 @@ function computeStandardEffectiveChance(aura, context) {
 
     let effectiveChance = aura.chance;
     if (aura.breakthroughs) {
+        let breakthroughAppliedViaGlitch = false;
+
         if (glitchLikeBiome
             && (!isRoe || !ROE_BREAKTHROUGH_BLOCKLIST.has(aura.name))
             && allowCyberspaceNativeRarity) {
-            let minChance = aura.chance;
-            for (const multiplier of aura.breakthroughs.values()) {
-                const scaled = Math.floor(aura.chance / multiplier);
-                if (scaled < minChance) {
-                    minChance = scaled;
+            const eligibleBreakthroughs = Array.from(aura.breakthroughs.entries())
+                .filter(([biomeId]) => !GLITCH_BREAKTHROUGH_EXCLUSION_SET.has(biomeId));
+
+            if (eligibleBreakthroughs.length > 0) {
+                let minChance = aura.chance;
+                for (const [, multiplier] of eligibleBreakthroughs) {
+                    const scaled = Math.floor(aura.chance / multiplier);
+                    if (scaled < minChance) {
+                        minChance = scaled;
+                    }
                 }
+                effectiveChance = minChance;
+                breakthroughAppliedViaGlitch = true;
             }
-            effectiveChance = minChance;
-        } else {
+        }
+
+        if (!breakthroughAppliedViaGlitch) {
             const candidates = Array.isArray(breakthroughBiomes) && breakthroughBiomes.length > 0
                 ? breakthroughBiomes
                 : [exclusivityBiome, biome].filter(Boolean);
@@ -5985,6 +5996,28 @@ const SHARE_IMAGE_OUTLINE_STYLES = Object.freeze({
             { color: 'rgba(35, 90, 175, 0.96)', blur: 0, offsetX: -3, offsetY: 0 },
             { color: 'rgba(35, 90, 175, 0.96)', blur: 0, offsetX: 0, offsetY: 3 },
             { color: 'rgba(35, 70, 135, 0.96)', blur: 0, offsetX: 0, offsetY: -3 }
+        ]
+    },
+    'sigil-outline-day': {
+        fill: '#ffe9ff',
+        shadows: [
+            { color: 'rgba(95, 90, 58, 0.85)', blur: 10 },
+            { color: 'rgba(106, 109, 73, 0.7)', blur: 18 },
+            { color: 'rgba(162, 170, 76, 0.7)', blur: 0, offsetX: 3, offsetY: 0 },
+            { color: 'rgba(53, 54, 38, 0.7)', blur: 0, offsetX: -3, offsetY: 0 },
+            { color: 'rgba(94, 97, 57, 0.7)', blur: 0, offsetX: 0, offsetY: 3 },
+            { color: 'rgba(66, 68, 39, 0.7)', blur: 0, offsetX: 0, offsetY: -3 }
+        ]
+    },
+    'sigil-outline-night': {
+        fill: '#e1edff',
+        shadows: [
+            { color: 'rgba(71, 28, 100, 0.95)', blur: 10 },
+            { color: 'rgba(65, 26, 97, 0.85)', blur: 18 },
+            { color: 'rgba(67, 27, 90, 0.96)', blur: 0, offsetX: 3, offsetY: 0 },
+            { color: 'rgba(39, 2, 48, 0.96)', blur: 0, offsetX: -3, offsetY: 0 },
+            { color: 'rgba(31, 3, 77, 0.96)', blur: 0, offsetX: 0, offsetY: 3 },
+            { color: 'rgba(43, 5, 68, 0.96)', blur: 0, offsetX: 0, offsetY: -3 }
         ]
     }
 });
