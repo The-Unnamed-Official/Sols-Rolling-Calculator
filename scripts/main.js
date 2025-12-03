@@ -1381,11 +1381,11 @@ function scheduleGlitchWarbleCycle(bgMusic, chain) {
 const GLITCH_BURST_TRIGGER_CHANCE = 0.42;
 
 function computeGlitchRestDelay() {
-    return Math.floor(randomDecimalBetween(12000, 36000));
+    return Math.floor(randomDecimalBetween(8000, 16000));
 }
 
 function computeGlitchBurstDuration() {
-    return Math.floor(randomDecimalBetween(1400, 2400));
+    return Math.floor(randomDecimalBetween(2400, 3400));
 }
 
 function createDistortionCurve(amount = 0) {
@@ -5996,6 +5996,28 @@ const SHARE_IMAGE_OUTLINE_STYLES = Object.freeze({
             { color: 'rgba(35, 90, 175, 0.96)', blur: 0, offsetX: -3, offsetY: 0 },
             { color: 'rgba(35, 90, 175, 0.96)', blur: 0, offsetX: 0, offsetY: 3 },
             { color: 'rgba(35, 70, 135, 0.96)', blur: 0, offsetX: 0, offsetY: -3 }
+        ]
+    },
+    'sigil-outline-day': {
+        fill: '#ffe9ff',
+        shadows: [
+            { color: 'rgba(95, 90, 58, 0.85)', blur: 10 },
+            { color: 'rgba(106, 109, 73, 0.7)', blur: 18 },
+            { color: 'rgba(162, 170, 76, 0.7)', blur: 0, offsetX: 3, offsetY: 0 },
+            { color: 'rgba(53, 54, 38, 0.7)', blur: 0, offsetX: -3, offsetY: 0 },
+            { color: 'rgba(94, 97, 57, 0.7)', blur: 0, offsetX: 0, offsetY: 3 },
+            { color: 'rgba(66, 68, 39, 0.7)', blur: 0, offsetX: 0, offsetY: -3 }
+        ]
+    },
+    'sigil-outline-night': {
+        fill: '#e1edff',
+        shadows: [
+            { color: 'rgba(71, 28, 100, 0.95)', blur: 10 },
+            { color: 'rgba(65, 26, 97, 0.85)', blur: 18 },
+            { color: 'rgba(67, 27, 90, 0.96)', blur: 0, offsetX: 3, offsetY: 0 },
+            { color: 'rgba(39, 2, 48, 0.96)', blur: 0, offsetX: -3, offsetY: 0 },
+            { color: 'rgba(31, 3, 77, 0.96)', blur: 0, offsetX: 0, offsetY: 3 },
+            { color: 'rgba(43, 5, 68, 0.96)', blur: 0, offsetX: 0, offsetY: -3 }
         ]
     }
 });
