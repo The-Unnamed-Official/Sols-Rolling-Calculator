@@ -3942,12 +3942,6 @@ function initializeSingleSelectControl(selectId) {
             summary.focus();
             updateSummary();
         });
-
-        button.addEventListener('mouseenter', () => {
-            if (option.disabled) {
-                showConditionOverlay();
-            }
-        });
         menu.appendChild(button);
         return { button, option };
     });
