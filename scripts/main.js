@@ -4552,6 +4552,7 @@ function resolveXpTierForChance(chance) {
 }
 
 const LIMBO_NATIVE_FILTER = ['limbo', 'limbo-null'];
+const GLITCH_BREAKTHROUGH_EXCLUSION_SET = new Set(['day', 'night']);
 
 function isYgBlessingEnabled() {
     if (typeof document === 'undefined') {
@@ -4677,18 +4678,28 @@ function computeStandardEffectiveChance(aura, context) {
 
     let effectiveChance = aura.chance;
     if (aura.breakthroughs) {
+        let breakthroughAppliedViaGlitch = false;
+
         if (glitchLikeBiome
             && (!isRoe || !ROE_BREAKTHROUGH_BLOCKLIST.has(aura.name))
             && allowCyberspaceNativeRarity) {
-            let minChance = aura.chance;
-            for (const multiplier of aura.breakthroughs.values()) {
-                const scaled = Math.floor(aura.chance / multiplier);
-                if (scaled < minChance) {
-                    minChance = scaled;
+            const eligibleBreakthroughs = Array.from(aura.breakthroughs.entries())
+                .filter(([biomeId]) => !GLITCH_BREAKTHROUGH_EXCLUSION_SET.has(biomeId));
+
+            if (eligibleBreakthroughs.length > 0) {
+                let minChance = aura.chance;
+                for (const [, multiplier] of eligibleBreakthroughs) {
+                    const scaled = Math.floor(aura.chance / multiplier);
+                    if (scaled < minChance) {
+                        minChance = scaled;
+                    }
                 }
+                effectiveChance = minChance;
+                breakthroughAppliedViaGlitch = true;
             }
-            effectiveChance = minChance;
-        } else {
+        }
+
+        if (!breakthroughAppliedViaGlitch) {
             const candidates = Array.isArray(breakthroughBiomes) && breakthroughBiomes.length > 0
                 ? breakthroughBiomes
                 : [exclusivityBiome, biome].filter(Boolean);
