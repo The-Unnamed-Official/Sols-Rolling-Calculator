@@ -606,6 +606,10 @@ body.biome--blood-rain .interface-backdrop__veil {
     backdrop-filter: blur(4px) saturate(1.1);
 }
 
+.forte {
+    margin-top: auto;
+}
+
 .scarlet-rain-drop {
     position: absolute;
     top: calc(-18% - var(--start-offset, 0%));
