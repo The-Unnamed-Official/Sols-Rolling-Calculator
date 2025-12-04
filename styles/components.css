@@ -975,8 +975,8 @@ body:not(.reduce-motion) #luck-preset-ten-million.luck-preset-button--mega-pop:f
     color: rgba(237, 241, 255, 0.88);
 }
 
-.preset-signoff__status .sigil-outline-cyberspace {
-    font-size: clamp(12px, 2.4vw, 18px);
+.preset-signoff__status .sigil-effect-pixelation {
+    font-size: clamp(10px, 2.2vw, 12px);
 }
 
 .preset-signoff__name {
