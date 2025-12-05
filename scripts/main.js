@@ -2637,7 +2637,7 @@ const AURA_BLUEPRINT_SOURCE = Object.freeze([
     { name: "Exotic : Void - 299,999,999", chance: 299999999 },
     { name: "Graveborn - 290,000,000", chance: 290000000, nativeBiomes: ["glitch", "graveyard"] },
     { name: "Astral : Zodiac - 267,200,000", chance: 267200000, breakthroughs: { starfall: 5 } },
-    { name: "Archangel - 250,000,000", chance: 250000000 },
+    { name: "Archangel - 350,000,000", chance: 350000000 },
     { name: "Surfer : Shard Surfer - 225,000,000", chance: 225000000, breakthroughs: { snowy: 3 } },
     { name: "HYPER-VOLT : EVER-STORM - 225,000,000", chance: 225000000 },
     { name: "Lumenpool - 220,000,000", chance: 220000000, breakthroughs: { rainy: 4 } },

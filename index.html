@@ -102,13 +102,13 @@
                 <div class="banner__meta">
                     <h1 class="banner__title">Sols Rolling Simulator</h1>
                     <p class="banner__subtitle">
-                        <button type="button" class="banner__version-button" id="versionInfoButton" aria-haspopup="dialog" aria-expanded="false" aria-label="View update notes for version V1.489" data-version-id="v1489">V1.489</button>
+                        <button type="button" class="banner__version-button" id="versionInfoButton" aria-haspopup="dialog" aria-expanded="false" aria-label="View update notes for version V1.490" data-version-id="v1490">V1.490</button>
                         <span class="banner__subtitle-divider" aria-hidden="true">◉</span>
                         <span class="banner__subtitle-author">By <span class="banner__subtitle-author-name">not.unnamed</span></span>
                         <span class="banner__subtitle-divider" aria-hidden="true">◉</span>
-                        <span class="banner__subtitle-updated">Updated <time datetime="2025-12-05">2025/12/3</time></span>
+                        <span class="banner__subtitle-updated">Updated <time datetime="2025-12-06">2025/12/6</time></span>
                         <span class="banner__subtitle-divider" aria-hidden="true">◉</span>
-                        <span class="banner__subtitle-eon">Sol's RNG Eon 1-11</span>
+                        <span class="banner__subtitle-eon">Sol's RNG Eon 1-11.1</span>
                     </p>
                 </div>
             </div>
@@ -737,12 +737,22 @@
                 <button
                     type="button"
                     class="changelog-tab changelog-tab--active"
+                    id="changelog-tab-v1490"
+                    role="tab"
+                    aria-controls="changelog-panel-v1490"
+                    aria-selected="true"
+                    data-changelog-tab="v1490"
+                >V1.490</button>
+                <button
+                    type="button"
+                    class="changelog-tab changelog-tab--active"
                     id="changelog-tab-v1489"
                     role="tab"
                     aria-controls="changelog-panel-v1489"
-                    aria-selected="true"
+                    aria-selected="false"
                     data-changelog-tab="v1489"
-                >V1.488</button>
+                    tabindex="-1"
+                >V1.489</button>
                 <button
                     type="button"
                     class="changelog-tab changelog-tab--active"
@@ -777,12 +787,46 @@
 
             <div class="changelog-modal__panels" data-changelog-panels>
                 <section
+                    id="changelog-panel-v1490"
+                    class="changelog-modal__panel"
+                    role="tabpanel"
+                    aria-labelledby="changelog-tab-v1490"
+                    data-changelog-panel="v1490"
+                    tabindex="0"
+                >
+                    <header class="changelog-modal__header">
+                        <h2 class="changelog-modal__title" id="versionChangelogTitle">Version V1.490 Update Notes</h2>
+                        <p class="changelog-modal__meta">Updated 2025/12/6</p>
+                    </header>
+                    <p class="changelog-modal__intro">Latest changes:</p>
+                    <ul class="changelog-modal__list">
+                        <li>Added The Heaven biome along with some auras following this biome being:</li>
+                        <ul>
+                            <li>Unknown</li>
+                            <li>Unknown</li>
+                            <li>Unknown</li>
+                            <li>Unknown</li>
+                            As well as changed Archangel's rarity from 250,000,000 to 350,000,000
+                            <ul>
+                                <li>Archangel now has a native rarity inside of The Heaven biome along with some other auras being:</li>
+                                <ul>
+                                    <li>Unknown</li>
+                                    <li>Unknown</li>
+                                    <li>Unknown</li>
+                                    <li>Unknown</li>
+                                </ul>
+                            </ul>
+                        </ul>
+                    </ul>
+                </section>
+                <section
                     id="changelog-panel-v1489"
                     class="changelog-modal__panel"
                     role="tabpanel"
                     aria-labelledby="changelog-tab-v1489"
                     data-changelog-panel="v1489"
-                    tabindex="0"
+                    hidden
+                    tabindex="-1"
                 >
                     <header class="changelog-modal__header">
                         <h2 class="changelog-modal__title" id="versionChangelogTitle">Version V1.489 Update Notes</h2>
