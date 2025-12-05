@@ -2649,7 +2649,7 @@ const AURA_BLUEPRINT_SOURCE = Object.freeze([
     { name: "CHILLSEAR - 375,000,000", chance: 375000000, breakthroughs: { snowy: 3 } },
     { name: "Flora : Evergreen - 370,073,730", chance: 370073730 },
     { name: "Atlas - 360,000,000", chance: 360000000, breakthroughs: { sandstorm: 4 } },
-    { name: "Archangel - 350,000,000", chance: 350000000, breakthroughs: { heaven: 3 } },
+    { name: "Archangel - 350,000,000", chance: 350000000, breakthroughs: { heaven: 5 } },
     { name: "Jazz : Orchestra - 336,870,912", chance: 336870912 },
     { name: "Dreammetric - 320,000,000", chance: 320000000, nativeBiomes: ["dreamspace"], cutscene: "dreammetric-cutscene" },
     { name: "LOTUSFALL - 320,000,000", chance: 320000000 },
