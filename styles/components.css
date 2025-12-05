@@ -1266,6 +1266,15 @@ body:not(.reduce-motion) #luck-preset-ten-million.luck-preset-button--mega-pop:f
     backdrop-filter: blur(6px);
 }
 
+.cinematic-overlay--first-person {
+    background: radial-gradient(circle at center, rgba(4, 12, 24, 0.75), rgba(0, 0, 0, 0.9));
+    backdrop-filter: none;
+}
+
+.first-person-cutscene-active {
+    cursor: none;
+}
+
 .skip-cinematic-button {
     position: fixed;
     top: clamp(16px, 4vw, 32px);
