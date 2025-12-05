@@ -165,7 +165,7 @@ const RUNE_CONFIGURATION = Object.freeze({
         themeBiome: 'heaven',
         activeBiomes: Object.freeze(['heaven']),
         breakthroughBiomes: Object.freeze(['heaven']),
-        icon: 'files/theHeavenRuneIcon.png'
+        icon: 'files/heavenRuneIcon.png'
     }),
     corruptionRune: Object.freeze({
         canonicalBiome: 'corruption',
@@ -1263,7 +1263,7 @@ const biomeAssets = {
     sandstorm: { image: 'files/sandstormBiomeImage.jpg', music: 'files/sandstormBiomeMusic.mp3' },
     hell: { image: 'files/hellBiomeImage.jpg', music: 'files/hellBiomeMusic.mp3' },
     starfall: { image: 'files/starfallBiomeImage.jpg', music: 'files/starfallBiomeMusic.mp3' },
-    heaven: { image: 'files/theHeavenBiomeImage.jpg', music: 'files/theHeavenBiomeMusic.mp3' },
+    heaven: { image: 'files/heavenBiomeImage.png', music: 'files/heavenBiomeMusic.mp3' },
     corruption: { image: 'files/corruptionBiomeImage.jpg', music: 'files/corruptionBiomeMusic.mp3' },
     null: { image: 'files/nullBiomeImage.jpg', music: 'files/nullBiomeMusic.mp3' },
     dreamspace: { image: 'files/dreamspaceBiomeImage.jpg', music: 'files/dreamspaceBiomeMusic.mp3' },
