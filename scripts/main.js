@@ -2126,6 +2126,8 @@ function initializeBiomeInterface() {
     updateBiomeControlConstraints();
 }
 
+const FIRST_PERSON_CUTSCENES = new Set(['illusionary-cutscene']);
+
 function playAuraVideo(videoId, options = {}) {
     const manageAmbient = options.manageAmbient !== false;
     return new Promise(resolve => {
@@ -2168,6 +2170,12 @@ function playAuraVideo(videoId, options = {}) {
             bgMusic.pause();
         }
 
+        const isFirstPerson = FIRST_PERSON_CUTSCENES.has(videoId);
+        overlay.classList.toggle('cinematic-overlay--first-person', isFirstPerson);
+        if (document.body) {
+            document.body.classList.toggle('first-person-cutscene-active', isFirstPerson);
+        }
+
         overlay.style.display = 'flex';
         video.style.display = 'block';
         skipButton.style.display = 'block';
@@ -2197,6 +2205,10 @@ function playAuraVideo(videoId, options = {}) {
             video.currentTime = 0;
             video.style.display = 'none';
             overlay.style.display = 'none';
+            overlay.classList.remove('cinematic-overlay--first-person');
+            if (document.body) {
+                document.body.classList.remove('first-person-cutscene-active');
+            }
             skipButton.style.display = 'none';
             if (appState.scrollLock && document.body) {
                 const body = document.body;
