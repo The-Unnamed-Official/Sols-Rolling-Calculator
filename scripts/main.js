@@ -110,8 +110,9 @@ const ROE_NATIVE_BIOMES = Object.freeze([
     'snowy',
     'rainy',
     'sandstorm',
-    'hell',
     'starfall',
+    'hell',
+    'heaven',
     'corruption',
     'null'
 ]);
@@ -145,6 +146,13 @@ const RUNE_CONFIGURATION = Object.freeze({
         breakthroughBiomes: Object.freeze(['sandstorm']),
         icon: 'files/sandstormRuneIcon.png'
     }),
+    starfallRune: Object.freeze({
+        canonicalBiome: 'starfall',
+        themeBiome: 'starfall',
+        activeBiomes: Object.freeze(['starfall']),
+        breakthroughBiomes: Object.freeze(['starfall']),
+        icon: 'files/starfallRuneIcon.png'
+    }),
     hellRune: Object.freeze({
         canonicalBiome: 'hell',
         themeBiome: 'hell',
@@ -152,12 +160,12 @@ const RUNE_CONFIGURATION = Object.freeze({
         breakthroughBiomes: Object.freeze(['hell']),
         icon: 'files/hellRuneIcon.png'
     }),
-    starfallRune: Object.freeze({
-        canonicalBiome: 'starfall',
-        themeBiome: 'starfall',
-        activeBiomes: Object.freeze(['starfall']),
-        breakthroughBiomes: Object.freeze(['starfall']),
-        icon: 'files/starfallRuneIcon.png'
+    heavenRune: Object.freeze({
+        canonicalBiome: 'heaven',
+        themeBiome: 'heaven',
+        activeBiomes: Object.freeze(['heaven']),
+        breakthroughBiomes: Object.freeze(['heaven']),
+        icon: 'files/theHeavenRuneIcon.png'
     }),
     corruptionRune: Object.freeze({
         canonicalBiome: 'corruption',
@@ -1255,6 +1263,7 @@ const biomeAssets = {
     sandstorm: { image: 'files/sandstormBiomeImage.jpg', music: 'files/sandstormBiomeMusic.mp3' },
     hell: { image: 'files/hellBiomeImage.jpg', music: 'files/hellBiomeMusic.mp3' },
     starfall: { image: 'files/starfallBiomeImage.jpg', music: 'files/starfallBiomeMusic.mp3' },
+    heaven: { image: 'files/theHeavenBiomeImage.jpg', music: 'files/theHeavenBiomeMusic.mp3' },
     corruption: { image: 'files/corruptionBiomeImage.jpg', music: 'files/corruptionBiomeMusic.mp3' },
     null: { image: 'files/nullBiomeImage.jpg', music: 'files/nullBiomeMusic.mp3' },
     dreamspace: { image: 'files/dreamspaceBiomeImage.jpg', music: 'files/dreamspaceBiomeMusic.mp3' },
@@ -2627,6 +2636,7 @@ const AURA_BLUEPRINT_SOURCE = Object.freeze([
     { name: "CHILLSEAR - 375,000,000", chance: 375000000, breakthroughs: { snowy: 3 } },
     { name: "Flora : Evergreen - 370,073,730", chance: 370073730 },
     { name: "Atlas - 360,000,000", chance: 360000000, breakthroughs: { sandstorm: 4 } },
+    { name: "Archangel - 350,000,000", chance: 350000000, breakthroughs: { heaven: 3 }, nativeBiomes: ["heaven"] },
     { name: "Jazz : Orchestra - 336,870,912", chance: 336870912 },
     { name: "Dreammetric - 320,000,000", chance: 320000000, nativeBiomes: ["dreamspace"], cutscene: "dreammetric-cutscene" },
     { name: "LOTUSFALL - 320,000,000", chance: 320000000 },
@@ -2637,7 +2647,6 @@ const AURA_BLUEPRINT_SOURCE = Object.freeze([
     { name: "Exotic : Void - 299,999,999", chance: 299999999 },
     { name: "Graveborn - 290,000,000", chance: 290000000, nativeBiomes: ["glitch", "graveyard"] },
     { name: "Astral : Zodiac - 267,200,000", chance: 267200000, breakthroughs: { starfall: 5 } },
-    { name: "Archangel - 350,000,000", chance: 350000000 },
     { name: "Surfer : Shard Surfer - 225,000,000", chance: 225000000, breakthroughs: { snowy: 3 } },
     { name: "HYPER-VOLT : EVER-STORM - 225,000,000", chance: 225000000 },
     { name: "Lumenpool - 220,000,000", chance: 220000000, breakthroughs: { rainy: 4 } },
