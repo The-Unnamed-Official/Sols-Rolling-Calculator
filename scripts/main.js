@@ -2345,6 +2345,7 @@ const nativeAuraOutlineOverrides = new Map([
     ['Twilight : Iridescent Memory', 'sigil-outline-night'],
     ['Twilight', 'sigil-outline-night'],
     ['Lullaby', 'sigil-outline-night'],
+    ['Archangel', 'sigil-outline-heaven'],
 ]);
 
 const auraOutlineOverrides = new Map([
@@ -2636,7 +2637,7 @@ const AURA_BLUEPRINT_SOURCE = Object.freeze([
     { name: "CHILLSEAR - 375,000,000", chance: 375000000, breakthroughs: { snowy: 3 } },
     { name: "Flora : Evergreen - 370,073,730", chance: 370073730 },
     { name: "Atlas - 360,000,000", chance: 360000000, breakthroughs: { sandstorm: 4 } },
-    { name: "Archangel - 350,000,000", chance: 350000000, breakthroughs: { heaven: 3 }, nativeBiomes: ["heaven"] },
+    { name: "Archangel - 350,000,000", chance: 350000000, breakthroughs: { heaven: 3 } },
     { name: "Jazz : Orchestra - 336,870,912", chance: 336870912 },
     { name: "Dreammetric - 320,000,000", chance: 320000000, nativeBiomes: ["dreamspace"], cutscene: "dreammetric-cutscene" },
     { name: "LOTUSFALL - 320,000,000", chance: 320000000 },
@@ -6062,6 +6063,17 @@ const SHARE_IMAGE_OUTLINE_STYLES = Object.freeze({
             { color: 'rgba(39, 2, 48, 0.96)', blur: 0, offsetX: -3, offsetY: 0 },
             { color: 'rgba(31, 3, 77, 0.96)', blur: 0, offsetX: 0, offsetY: 3 },
             { color: 'rgba(43, 5, 68, 0.96)', blur: 0, offsetX: 0, offsetY: -3 }
+        ]
+    },
+    'sigil-outline-heaven': {
+        fill: '#ffffffff',
+        shadows: [
+            { color: 'rgba(190, 180, 102, 0.95)', blur: 10 },
+            { color: 'rgba(216, 184, 22, 0.85)', blur: 18 },
+            { color: 'rgba(173, 144, 29, 0.96)', blur: 0, offsetX: 3, offsetY: 0 },
+            { color: 'rgba(172, 158, 65, 0.96)', blur: 0, offsetX: -3, offsetY: 0 },
+            { color: 'rgba(204, 177, 43, 0.96)', blur: 0, offsetX: 0, offsetY: 3 },
+            { color: 'rgba(167, 181, 38, 0.96)', blur: 0, offsetX: 0, offsetY: -3 }
         ]
     }
 });
