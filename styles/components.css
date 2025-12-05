@@ -1272,7 +1272,7 @@ body:not(.reduce-motion) #luck-preset-ten-million.luck-preset-button--mega-pop:f
 }
 
 .first-person-cutscene-active {
-    cursor: none;
+    cursor: pointer;
 }
 
 .skip-cinematic-button {
