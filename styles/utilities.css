@@ -89,6 +89,16 @@
         -1px -1px 0 rgba(18, 0, 60, 0.95);
 }
 
+.sigil-outline-heaven {
+    text-shadow:
+        0 0 4px rgba(187, 178, 46, 0.85),
+        0 0 8px rgba(197, 197, 68, 0.7),
+        1px 1px 0 rgba(196, 159, 36, 0.95),
+        -1px 1px 0 rgba(153, 163, 51, 0.95),
+        1px -1px 0 rgba(183, 169, 89, 0.95),
+        -1px -1px 0 rgba(186, 171, 75, 0.95);
+}
+
 .sigil-outline-halloween {
     text-shadow:
         0 0 4px rgba(255, 140, 0, 0.85),
