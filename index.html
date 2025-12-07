@@ -102,11 +102,11 @@
                 <div class="banner__meta">
                     <h1 class="banner__title">Sols Rolling Simulator</h1>
                     <p class="banner__subtitle">
-                        <button type="button" class="banner__version-button" id="versionInfoButton" aria-haspopup="dialog" aria-expanded="false" aria-label="View update notes for version V1.490" data-version-id="v1490">V1.490</button>
+                        <button type="button" class="banner__version-button" id="versionInfoButton" aria-haspopup="dialog" aria-expanded="false" aria-label="View update notes for version V1.491" data-version-id="v1491">V1.491</button>
                         <span class="banner__subtitle-divider" aria-hidden="true">◉</span>
                         <span class="banner__subtitle-author">By <span class="banner__subtitle-author-name">not.unnamed</span></span>
                         <span class="banner__subtitle-divider" aria-hidden="true">◉</span>
-                        <span class="banner__subtitle-updated">Updated <time datetime="2025-12-06">2025/12/6</time></span>
+                        <span class="banner__subtitle-updated">Updated <time datetime="2025-12-07">2025/12/7</time></span>
                         <span class="banner__subtitle-divider" aria-hidden="true">◉</span>
                         <span class="banner__subtitle-eon">Sol's RNG Eon 1-11.1</span>
                     </p>
@@ -740,11 +740,21 @@
                 <button
                     type="button"
                     class="changelog-tab changelog-tab--active"
+                    id="changelog-tab-v1491"
+                    role="tab"
+                    aria-controls="changelog-panel-v1491"
+                    aria-selected="true"
+                    data-changelog-tab="v1491"
+                >V1.491</button>
+                <button
+                    type="button"
+                    class="changelog-tab changelog-tab--active"
                     id="changelog-tab-v1490"
                     role="tab"
                     aria-controls="changelog-panel-v1490"
-                    aria-selected="true"
+                    aria-selected="false"
                     data-changelog-tab="v1490"
+                    tabindex="-1"
                 >V1.490</button>
                 <button
                     type="button"
@@ -776,26 +786,35 @@
                     data-changelog-tab="v1485"
                     tabindex="-1"
                 >V1.485</button>
-                <button
-                    type="button"
-                    class="changelog-tab"
-                    id="changelog-tab-v1484"
-                    role="tab"
-                    aria-controls="changelog-panel-v1484"
-                    aria-selected="false"
-                    data-changelog-tab="v1484"
-                    tabindex="-1"
-                >V1.484</button>
             </div>
 
             <div class="changelog-modal__panels" data-changelog-panels>
+                <section
+                    id="changelog-panel-v1491"
+                    class="changelog-modal__panel"
+                    role="tabpanel"
+                    aria-labelledby="changelog-tab-v1491"
+                    data-changelog-panel="v1491"
+                    tabindex="0"
+                >
+                    <header class="changelog-modal__header">
+                        <h2 class="changelog-modal__title" id="versionChangelogTitle">Version V1.491 Update Notes</h2>
+                        <p class="changelog-modal__meta">Updated 2025/12/7</p>
+                    </header>
+                    <p class="changelog-modal__intro">Latest changes:</p>
+                    <ul class="changelog-modal__list">
+                        <li>Fixed <span class="sigil-outline-heaven">[ Heaven Biome ]</span>'s song</li>
+                        <li>Corrected <span class="sigil-outline-heaven">[ Heaven Biome ]</span>'s icon image</li>
+                    </ul>
+                </section>
                 <section
                     id="changelog-panel-v1490"
                     class="changelog-modal__panel"
                     role="tabpanel"
                     aria-labelledby="changelog-tab-v1490"
                     data-changelog-panel="v1490"
-                    tabindex="0"
+                    hidden
+                    tabindex="-1"
                 >
                     <header class="changelog-modal__header">
                         <h2 class="changelog-modal__title" id="versionChangelogTitle">Version V1.490 Update Notes</h2>
@@ -876,41 +895,6 @@
                         <li><span class="sigil-outline-glitch">Glitch</span> no longer amplifies <span class="sigil-outline-day">day</span> or <span class="sigil-outline-night">night</span> breakthroughs, so natives such as <span class="sigil-outline-night">Lunar : Full Moon</span> and <span class="sigil-outline-day">Solar : Solstice</span> follow the time biome instead of glitch bonuses.</li>
                         <li>Extended UI <span class="sigil-outline-glitch">glitch</span> period when in <span class="sigil-outline-glitch">glitch</span> biome.</li>
                         <li>Added outlines for <span class="sigil-outline-day">day</span> and <span class="sigil-outline-night">night</span> natives</li>
-                    </ul>
-                </section>
-                <section
-                    id="changelog-panel-v1484"
-                    class="changelog-modal__panel"
-                    role="tabpanel"
-                    aria-labelledby="changelog-tab-v1484"
-                    data-changelog-panel="v1484"
-                    hidden
-                    tabindex="-1"
-                >
-                    <header class="changelog-modal__header">
-                        <h2 class="changelog-modal__title" id="versionChangelogTitle">Version V1.484 Update Notes</h2>
-                        <p class="changelog-modal__meta">Updated 2025/12/2</p>
-                    </header>
-                    <p class="changelog-modal__intro">Latest changes:</p>
-                    <ul class="changelog-modal__list">
-                        <li>Introduced the Unknown biome from XC's Live Event. Along with the absolute banger of a song included!!</li>
-                        <li>Added a cutscene for Prowler inside Another Realm.</li>
-                        <li>Rune of Everything now restores native rarities when enabled.</li>
-                        <li>Event biome selections now surface their activation requirements.</li>
-                        <li>Requirements for some biomes now pop up when clicking on them for better flow being:</li>
-                            <ul>
-                                <li>Blazing Sun</li>
-                                <li>Pumpkin Moon</li>
-                                <li>Graveyard</li>
-                                <li>Blood Rain</li>
-                                <li>Another Realm</li>
-                                <li>Unknown</li>
-                            </ul>
-                        <li>Made Dev Biomes require a new switch to be activated to select:</li>
-                            <ul>
-                                <li>Another Realm</li>
-                                <li>Unknown</li>
-                            </ul>
                     </ul>
                 </section>
             </div>
