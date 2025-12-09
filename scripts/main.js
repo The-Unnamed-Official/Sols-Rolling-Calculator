@@ -5183,11 +5183,12 @@ function setupRollCancellationControl() {
 }
 
 function shouldScheduleBackgroundWork() {
-    if (!appState || !appState.backgroundRolling) {
-        return false;
-    }
-
-    return typeof document !== 'undefined' && document.hidden === true;
+    // Always prefer timer-based scheduling when background rolling is enabled.
+    // Using requestAnimationFrame will pause entirely once the tab becomes
+    // hidden, which prevents long simulations from continuing in the
+    // background. Timers continue to fire (even if throttled), so they keep
+    // work progressing when the page is inactive.
+    return Boolean(appState && appState.backgroundRolling);
 }
 
 function queueSimulationWork(callback) {
