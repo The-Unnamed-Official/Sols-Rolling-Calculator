@@ -604,7 +604,7 @@ select.form-field__input option {
 }
 
 .toggle--dev-biomes .toggle__input:checked + .toggle__track + .toggle__thumb {
-    --thumb-translate: 38px;
+    --thumb-translate: 30px;
 }
 
 .quick-action-group {
