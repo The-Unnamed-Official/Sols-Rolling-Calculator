@@ -61,8 +61,16 @@
     flex: 1 1 auto;
 }
 
-.banner__emblem {
+.banner__emblem-stack {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
     width: clamp(56px, 6vw, 68px);
+}
+
+.banner__emblem {
+    width: 100%;
     aspect-ratio: 1;
     border-radius: 12px;
     display: inline-flex;
@@ -79,6 +87,13 @@
     height: 72%;
     object-fit: contain;
     display: block;
+}
+
+.banner__emblem-support {
+    width: 82%;
+    opacity: 0.5;
+    border-radius: 10px;
+    box-shadow: 0 8px 16px rgba(0, 10, 24, 0.35);
 }
 
 .banner__emblem--spinning img {
