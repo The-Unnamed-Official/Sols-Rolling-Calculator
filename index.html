@@ -102,11 +102,11 @@
                 <div class="banner__meta">
                     <h1 class="banner__title">Sols Rolling Simulator</h1>
                     <p class="banner__subtitle">
-                        <button type="button" class="banner__version-button" id="versionInfoButton" aria-haspopup="dialog" aria-expanded="false" aria-label="View update notes for version V1.491" data-version-id="v1491">V1.491</button>
+                        <button type="button" class="banner__version-button" id="versionInfoButton" aria-haspopup="dialog" aria-expanded="false" aria-label="View update notes for version V1.492" data-version-id="v1492">V1.492</button>
                         <span class="banner__subtitle-divider" aria-hidden="true">◉</span>
                         <span class="banner__subtitle-author">By <span class="banner__subtitle-author-name">not.unnamed</span></span>
                         <span class="banner__subtitle-divider" aria-hidden="true">◉</span>
-                        <span class="banner__subtitle-updated">Updated <time datetime="2025-12-07">2025/12/7</time></span>
+                        <span class="banner__subtitle-updated">Updated <time datetime="2025-12-07">2025/12/9</time></span>
                         <span class="banner__subtitle-divider" aria-hidden="true">◉</span>
                         <span class="banner__subtitle-eon">Sol's RNG Eon 1-11.1</span>
                     </p>
@@ -740,11 +740,21 @@
                 <button
                     type="button"
                     class="changelog-tab changelog-tab--active"
+                    id="changelog-tab-v1492"
+                    role="tab"
+                    aria-controls="changelog-panel-v1492"
+                    aria-selected="true"
+                    data-changelog-tab="v1492"
+                >V1.492</button>
+                <button
+                    type="button"
+                    class="changelog-tab changelog-tab--active"
                     id="changelog-tab-v1491"
                     role="tab"
                     aria-controls="changelog-panel-v1491"
-                    aria-selected="true"
+                    aria-selected="false"
                     data-changelog-tab="v1491"
+                    tabindex="-1"
                 >V1.491</button>
                 <button
                     type="button"
@@ -790,12 +800,33 @@
 
             <div class="changelog-modal__panels" data-changelog-panels>
                 <section
+                    id="changelog-panel-v1492"
+                    class="changelog-modal__panel"
+                    role="tabpanel"
+                    aria-labelledby="changelog-tab-v1492"
+                    data-changelog-panel="v1492"
+                    tabindex="0"
+                >
+                    <header class="changelog-modal__header">
+                        <h2 class="changelog-modal__title" id="versionChangelogTitle">Version V1.492 Update Notes</h2>
+                        <p class="changelog-modal__meta">Updated 2025/12/9</p>
+                    </header>
+                    <p class="changelog-modal__intro">Latest changes:</p>
+                    <ul class="changelog-modal__list">
+                        <li>Fixed a visual bug with the dev biome switch thumb's animation going past the main switch container.</li>
+                        <li>Fixed a sorting issue with some auras not being positioned where they should be depending on their rarity.</li>
+                        <h3>Thanks to Zeefir for the feedback of these bugs above.</h3>
+                        <li>made some visual changes to other sections.</li>
+                    </ul>
+                </section>
+                <section
                     id="changelog-panel-v1491"
                     class="changelog-modal__panel"
                     role="tabpanel"
                     aria-labelledby="changelog-tab-v1491"
                     data-changelog-panel="v1491"
-                    tabindex="0"
+                    hidden
+                    tabindex="-1"
                 >
                     <header class="changelog-modal__header">
                         <h2 class="changelog-modal__title" id="versionChangelogTitle">Version V1.491 Update Notes</h2>

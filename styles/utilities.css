@@ -1037,8 +1037,8 @@
     display: flex;
     flex-wrap: wrap;
     align-items: flex-end;
-    gap: clamp(12px, 2vw, 18px);
-    row-gap: clamp(18px, 3vh, 24px);
+    gap: clamp(3px, 1vw, 5px);
+    row-gap: clamp(5px, 1vh, 12px);
     z-index: -1;
     pointer-events: none;
 }
@@ -1202,7 +1202,7 @@
 }
 
 .surface--modal.changelog-modal {
-    width: min(760px, 95vw);
+    width: min(920px, 103vw);
     padding-top: calc(clamp(24px, 4vw, 38px) + 68px);
     overflow: visible;
 }
