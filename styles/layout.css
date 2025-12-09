@@ -61,8 +61,16 @@
     flex: 1 1 auto;
 }
 
-.banner__emblem {
+.banner__emblem-stack {
+    display: grid;
+    place-items: center;
     width: clamp(56px, 6vw, 68px);
+    aspect-ratio: 1;
+    position: relative;
+}
+
+.banner__emblem {
+    width: 100%;
     aspect-ratio: 1;
     border-radius: 12px;
     display: inline-flex;
@@ -72,13 +80,26 @@
     border: 1px solid rgba(140, 220, 255, 0.65);
     box-shadow: inset 0 0 14px rgba(110, 210, 255, 0.25), 0 12px 22px rgba(0, 10, 24, 0.55);
     overflow: hidden;
+    position: relative;
+    z-index: 1;
 }
 
 .banner__emblem img {
-    width: 72%;
-    height: 72%;
+    width: 90%;
+    height: 90%;
     object-fit: contain;
     display: block;
+}
+
+.banner__emblem-support {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0.67;
+    border-radius: 10px;
+    box-shadow: 0 8px 16px rgba(0, 10, 24, 0.35);
 }
 
 .banner__emblem--spinning img {

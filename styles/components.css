@@ -599,6 +599,14 @@ select.form-field__input option {
     background: linear-gradient(160deg, rgba(165, 255, 255, 0.95), rgba(127, 227, 255, 0.88));
 }
 
+.toggle--dev-biomes {
+    width: 72px;
+}
+
+.toggle--dev-biomes .toggle__input:checked + .toggle__track + .toggle__thumb {
+    --thumb-translate: 30px;
+}
+
 .quick-action-group {
     display: flex;
     flex-wrap: wrap;

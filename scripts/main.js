@@ -22,6 +22,11 @@ const audioOverlayState = {
 };
 
 const CHANGELOG_VERSION_STORAGE_KEY = 'solsRollingCalculator:lastSeenChangelogVersion';
+const BACKGROUND_ROLLING_STORAGE_KEY = 'solsRollingCalculator:backgroundRollingPreference';
+const backgroundRollingPreference = {
+    allowed: false,
+    suppressPrompt: false
+};
 
 function applyLatestUpdateBadgeToChangelogTabs(tabs) {
     if (!Array.isArray(tabs) || !tabs.length) {
@@ -91,6 +96,86 @@ function maybeShowChangelogOnFirstVisit() {
     } catch (error) {
         // Ignore storage write failures so the overlay logic can continue normally.
     }
+}
+
+function hydrateBackgroundRollingPreference() {
+    if (typeof window === 'undefined') {
+        return;
+    }
+
+    try {
+        const raw = window.localStorage.getItem(BACKGROUND_ROLLING_STORAGE_KEY);
+        if (!raw) {
+            return;
+        }
+        const parsed = JSON.parse(raw);
+        if (parsed && typeof parsed === 'object') {
+            backgroundRollingPreference.allowed = Boolean(parsed.allowed);
+            backgroundRollingPreference.suppressPrompt = Boolean(parsed.suppressPrompt);
+        }
+    } catch (error) {
+        // Ignore malformed storage so the defaults remain intact.
+    }
+}
+
+function persistBackgroundRollingPreference() {
+    if (typeof window === 'undefined') {
+        return;
+    }
+
+    try {
+        window.localStorage.setItem(
+            BACKGROUND_ROLLING_STORAGE_KEY,
+            JSON.stringify(backgroundRollingPreference)
+        );
+    } catch (error) {
+        // Ignore write failures to avoid interrupting UI flow.
+    }
+}
+
+function setBackgroundRollingEnabled(enabled, { persistPreference = true } = {}) {
+    if (typeof appState === 'object') {
+        appState.backgroundRolling = Boolean(enabled);
+    }
+
+    backgroundRollingPreference.allowed = Boolean(enabled);
+
+    const button = document.getElementById('backgroundRollingButton');
+    if (button) {
+        button.textContent = `Allow background rolling: ${enabled ? 'On' : 'Off'}`;
+        button.setAttribute('aria-pressed', enabled ? 'true' : 'false');
+    }
+
+    if (persistPreference) {
+        persistBackgroundRollingPreference();
+    }
+}
+
+function showBackgroundRollingOverlay() {
+    const overlay = document.getElementById('backgroundRollingOverlay');
+    if (!overlay) {
+        return;
+    }
+
+    revealOverlay(overlay);
+
+    const applyButton = document.getElementById('backgroundRollingApply');
+    if (applyButton && typeof applyButton.focus === 'function') {
+        try {
+            applyButton.focus({ preventScroll: true });
+        } catch (error) {
+            applyButton.focus();
+        }
+    }
+}
+
+function hideBackgroundRollingOverlay() {
+    const overlay = document.getElementById('backgroundRollingOverlay');
+    if (!overlay) {
+        return;
+    }
+
+    concealOverlay(overlay);
 }
 
 
@@ -2708,31 +2793,31 @@ const AURA_BLUEPRINT_SOURCE = Object.freeze([
     { name: "Virtual : Worldwide - 87,500,000", chance: 87500000, breakthroughs: nativeBreakthroughs("cyberspace"), nativeBiomes: ["cyberspace"] },
     { name: "Harnessed : Elements - 85,000,000", chance: 85000000 },
     { name: "Accursed - 82,000,000", chance: 82000000, nativeBiomes: ["glitch", "bloodRain"] },
-    { name: "Sailor : Flying Dutchman - 80,000,000", chance: 80000000, breakthroughs: nativeBreakthroughs("rainy") },
     { name: "Carriage - 80,000,000", chance: 80000000 },
-    { name: "Winter Fantasy - 72,000,000", chance: 72000000, breakthroughs: nativeBreakthroughs("snowy") },
+    { name: "Sailor : Flying Dutchman - 80,000,000", chance: 80000000, breakthroughs: nativeBreakthroughs("rainy") },
     { name: "Dullahan - 72,000,000", chance: 72000000, nativeBiomes: ["graveyard"] },
+    { name: "Winter Fantasy - 72,000,000", chance: 72000000, breakthroughs: nativeBreakthroughs("snowy") },
     { name: "Reaper - 66,000,000", chance: 66000000, nativeBiomes: ["glitch", "bloodRain"] },
     { name: "Antivirus - 62,500,000", chance: 62500000, breakthroughs: nativeBreakthroughs("cyberspace"), nativeBiomes: ["cyberspace"] },
-    { name: "Twilight : Iridescent Memory - 60,000,000", chance: 60000000, breakthroughs: nativeBreakthroughs("night") },
     { name: "SENTINEL - 60,000,000", chance: 60000000 },
+    { name: "Twilight : Iridescent Memory - 60,000,000", chance: 60000000, breakthroughs: nativeBreakthroughs("night") },
     { name: "Matrix - 50,000,000", chance: 50000000, breakthroughs: nativeBreakthroughs("cyberspace"), nativeBiomes: ["cyberspace"] },
     { name: "Runic - 50,000,000", chance: 50000000 },
     { name: "Exotic : APEX - 49,999,500", chance: 49999500 },
-    { name: "Overseer - 45,000,000", chance: 45000000 },
     { name: "Santa Frost - 45,000,000", chance: 45000000, breakthroughs: nativeBreakthroughs("snowy") },
+    { name: "Overseer - 45,000,000", chance: 45000000 },
     { name: "{J u x t a p o s i t i o n} - 40,440,400", chance: 40440400, nativeBiomes: ["limbo"] },
     { name: "Virtual : Fatal Error - 40,413,000", chance: 40413000, breakthroughs: nativeBreakthroughs("cyberspace"), nativeBiomes: ["cyberspace"] },
-    { name: "Chromatic : Kromat1k - 40,000,000", chance: 40000000 },
     { name: "Soul Hunter - 40,000,000", chance: 40000000, nativeBiomes: ["graveyard"] },
+    { name: "Chromatic : Kromat1k - 40,000,000", chance: 40000000 },
     { name: "Ethereal - 35,000,000", chance: 35000000 },
     { name: "Headless : Horseman - 32,000,000", chance: 32000000, nativeBiomes: ["glitch", "pumpkinMoon"] },
     { name: "Innovator - 30,000,000", chance: 30000000 },
     { name: "Arcane : Dark - 30,000,000", chance: 30000000 },
+    { name: "Blizzard - 27,315,000", chance: 27315000, breakthroughs: nativeBreakthroughs("snowy") },
     { name: "Aviator - 24,000,000", chance: 24000000 },
     { name: "Cryptfire - 21,000,000", chance: 21000000, nativeBiomes: ["graveyard"] },
     { name: "Chromatic - 20,000,000", chance: 20000000 },
-    { name: "Blizzard - 27,315,000", chance: 27315000, breakthroughs: nativeBreakthroughs("snowy") },
     { name: "Lullaby - 17,000,000", chance: 17000000, breakthroughs: nativeBreakthroughs("night") },
     { name: "Icarus - 15,660,000", chance: 15660000, breakthroughs: nativeBreakthroughs("heaven") },
     { name: "Sinister - 15,000,000", chance: 15000000, nativeBiomes: ["glitch", "pumpkinMoon"] },
@@ -2747,18 +2832,18 @@ const AURA_BLUEPRINT_SOURCE = Object.freeze([
     { name: "Stargazer - 9,200,000", chance: 9200000, breakthroughs: nativeBreakthroughs("starfall") },
     { name: "Helios - 9,000,000", chance: 9000000 },
     { name: "Nihility - 9,000,000", chance: 9000000, breakthroughs: nativeBreakthroughs("null", "limbo"), nativeBiomes: ["limbo-null"] },
-    { name: "Harnessed - 8,500,000", chance: 85000000 },
-    { name: "Origin : Onion - 8,000,000", chance: 80000000 },
+    { name: "Harnessed - 8,500,000", chance: 8500000 },
+    { name: "Origin : Onion - 8,000,000", chance: 8000000 },
     { name: "Divinus : Guardian - 7,777,777", chance: 7777777, breakthroughs: nativeBreakthroughs("heaven") },
     { name: "Nautilus : Lost - 7,700,000", chance: 7700000 },
     { name: "Velocity - 7,630,000", chance: 7630000 },
     { name: "Faith - 7,250,000", chance: 7250000, breakthroughs: nativeBreakthroughs("heaven") },
     { name: "Anubis - 7,200,000", chance: 7200000, breakthroughs: nativeBreakthroughs("sandstorm") },
-    { name: "Hades - 6,666,666", chance: 6666666, breakthroughs: nativeBreakthroughs("hell") },
     { name: "Oni - 6,666,666", chance: 6666666, nativeBiomes: ["glitch", "bloodRain"] },
+    { name: "Hades - 6,666,666", chance: 6666666, breakthroughs: nativeBreakthroughs("hell") },
     { name: "Origin - 6,500,000", chance: 6500000 },
-    { name: "Twilight - 6,000,000", chance: 6000000, breakthroughs: nativeBreakthroughs("night") },
     { name: "Vital - 6,000,000", chance: 6000000, nativeBiomes: ["pumpkinMoon"] },
+    { name: "Twilight - 6,000,000", chance: 6000000, breakthroughs: nativeBreakthroughs("night") },
     { name: "Anima - 5,730,000", chance: 5730000, nativeBiomes: ["limbo"] },
     { name: "Galaxy - 5,000,000", chance: 5000000, breakthroughs: nativeBreakthroughs("starfall") },
     { name: "Lunar : Full Moon - 5,000,000", chance: 5000000, breakthroughs: nativeBreakthroughs("night") },
@@ -2768,15 +2853,15 @@ const AURA_BLUEPRINT_SOURCE = Object.freeze([
     { name: "Poseidon - 4,000,000", chance: 4000000, breakthroughs: nativeBreakthroughs("rainy") },
     { name: "Werewolf - 3,600,000", chance: 3600000, nativeBiomes: ["glitch", "graveyard"] },
     { name: "Shiftlock - 3,325,000", chance: 3325000, breakthroughs: nativeBreakthroughs("null", "limbo"), nativeBiomes: ["limbo-null"] },
-    { name: "Savior - 3,200,000", chance: 3200000 },
     { name: "Headless - 3,200,000", chance: 3200000, nativeBiomes: ["glitch", "graveyard"] },
+    { name: "Savior - 3,200,000", chance: 3200000 },
     { name: "Lunar : Nightfall - 3,000,000", chance: 3000000, nativeBiomes: ["graveyard"] },
     { name: "Parasite - 3,000,000", chance: 3000000, breakthroughs: nativeBreakthroughs("corruption") },
     { name: "Virtual - 2,500,000", chance: 2500000, breakthroughs: nativeBreakthroughs("cyberspace"), nativeBiomes: ["cyberspace"] },
     { name: "Undefined : Defined - 2,222,000", chance: 2222000, breakthroughs: nativeBreakthroughs("null") },
+    { name: "Lunar : Cultist - 2,000,000", chance: 2000000, nativeBiomes: ["glitch", "graveyard"] },
     { name: "Bounded : Unbound - 2,000,000", chance: 2000000 },
     { name: "Gravitational - 2,000,000", chance: 2000000 },
-    { name: "Lunar : Cultist - 2,000,000", chance: 2000000, nativeBiomes: ["glitch", "graveyard"] },
     { name: "Cosmos - 1,520,000", chance: 1520000 },
     { name: "Celestial : Wicked - 1,500,000", chance: 1500000, nativeBiomes: ["glitch", "pumpkinMoon"] },
     { name: "Astral - 1,336,000", chance: 1336000, breakthroughs: nativeBreakthroughs("starfall") },
@@ -2796,8 +2881,8 @@ const AURA_BLUEPRINT_SOURCE = Object.freeze([
     { name: "Celestial - 350,000", chance: 350000 },
     { name: "Watermelon - 320,000", chance: 320000 },
     { name: "Star Rider : Starfish Rider - 250,000", chance: 250000, breakthroughs: nativeBreakthroughs("starfall") },
-    { name: "Bounded - 200,000", chance: 200000 },
     { name: "Pump - 200,000", chance: 200000, nativeBiomes: ["pumpkinMoon"] },
+    { name: "Bounded - 200,000", chance: 200000 },
     { name: "Aether - 180,000", chance: 180000 },
     { name: "Jade - 125,000", chance: 125000 },
     { name: "Divinus : Angel - 120,000", chance: 120000, breakthroughs: nativeBreakthroughs("heaven") },
@@ -2810,10 +2895,10 @@ const AURA_BLUEPRINT_SOURCE = Object.freeze([
     { name: "Nautilus - 70,000", chance: 70000 },
     { name: "Hazard : Rays - 70,000", chance: 70000, breakthroughs: nativeBreakthroughs("corruption") },
     { name: "Flushed : Lobotomy - 69,000", chance: 69000 },
+    { name: "Star Rider - 50,000", chance: 50000, breakthroughs: nativeBreakthroughs("starfall") },
+    { name: "Starlight - 50,000", chance: 50000, breakthroughs: nativeBreakthroughs("starfall") },
     { name: "Solar - 50,000", chance: 50000, breakthroughs: nativeBreakthroughs("day") },
     { name: "Lunar - 50,000", chance: 50000, breakthroughs: nativeBreakthroughs("night") },
-    { name: "Starlight - 50,000", chance: 50000, breakthroughs: nativeBreakthroughs("starfall") },
-    { name: "Star Rider - 50,000", chance: 50000, breakthroughs: nativeBreakthroughs("starfall") },
     { name: "Aquatic - 40,000", chance: 40000 },
     { name: "Watt - 32,768", chance: 32768 },
     { name: "Copper - 29,000", chance: 29000 },
@@ -2833,11 +2918,11 @@ const AURA_BLUEPRINT_SOURCE = Object.freeze([
     { name: MEGAPHONE_AURA_NAME, chance: 5000, requiresYgBlessing: true },
     { name: "Bleeding - 4,444", chance: 4444 },
     { name: "Sidereum - 4,096", chance: 4096 },
-    { name: "Flora - 3,700", chance: 3700 },
     { name: "Cola - 3,999", chance: 3999 },
+    { name: "Flora - 3,700", chance: 3700 },
     { name: "Pukeko - 3,198", chance: 3198 },
-    { name: "Player - 3,000", chance: 3000, breakthroughs: nativeBreakthroughs("cyberspace"), nativeBiomes: ["cyberspace"] },
     { name: "Fault - 3,000", chance: 3000, nativeBiomes: ["glitch"] },
+    { name: "Player - 3,000", chance: 3000, breakthroughs: nativeBreakthroughs("cyberspace"), nativeBiomes: ["cyberspace"] },
     { name: "Glacier - 2,304", chance: 2304, breakthroughs: nativeBreakthroughs("snowy") },
     { name: "Ash - 2,300", chance: 2300 },
     { name: "Magnetic - 2,048", chance: 2048 },
@@ -2846,8 +2931,8 @@ const AURA_BLUEPRINT_SOURCE = Object.freeze([
     { name: "Precious - 1,024", chance: 1024 },
     { name: "Diaboli - 1,004", chance: 1004 },
     { name: "★★ - 1,000", chance: 1000, nativeBiomes: ["dreamspace"] },
-    { name: "Wind - 900", chance: 900, breakthroughs: nativeBreakthroughs("windy") },
     { name: "Aquamarine - 900", chance: 900 },
+    { name: "Wind - 900", chance: 900, breakthroughs: nativeBreakthroughs("windy") },
     { name: "Sapphire - 800", chance: 800 },
     { name: "Jackpot - 777", chance: 777, breakthroughs: nativeBreakthroughs("sandstorm") },
     { name: "Ink - 700", chance: 700 },
@@ -3853,6 +3938,40 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     }
+
+    const backgroundApply = document.getElementById('backgroundRollingApply');
+    if (backgroundApply) {
+        backgroundApply.addEventListener('click', () => {
+            backgroundRollingPreference.suppressPrompt = false;
+            setBackgroundRollingEnabled(true);
+            hideBackgroundRollingOverlay();
+        });
+    }
+
+    const backgroundApplyPersist = document.getElementById('backgroundRollingApplyPersist');
+    if (backgroundApplyPersist) {
+        backgroundApplyPersist.addEventListener('click', () => {
+            backgroundRollingPreference.suppressPrompt = true;
+            setBackgroundRollingEnabled(true);
+            hideBackgroundRollingOverlay();
+        });
+    }
+
+    const backgroundCancel = document.getElementById('backgroundRollingCancel');
+    if (backgroundCancel) {
+        backgroundCancel.addEventListener('click', () => {
+            hideBackgroundRollingOverlay();
+        });
+    }
+
+    const backgroundOverlay = document.getElementById('backgroundRollingOverlay');
+    if (backgroundOverlay) {
+        backgroundOverlay.addEventListener('click', event => {
+            if (event.target === backgroundOverlay) {
+                hideBackgroundRollingOverlay();
+            }
+        });
+    }
 });
 
 const BIOME_ICON_OVERRIDES = {
@@ -4554,6 +4673,26 @@ document.addEventListener('DOMContentLoaded', () => {
 
     applyReducedMotionState(appState.reduceMotion);
 
+    hydrateBackgroundRollingPreference();
+    setBackgroundRollingEnabled(backgroundRollingPreference.allowed, { persistPreference: false });
+
+    const backgroundRollingButton = document.getElementById('backgroundRollingButton');
+    if (backgroundRollingButton) {
+        backgroundRollingButton.addEventListener('click', () => {
+            if (appState.backgroundRolling) {
+                setBackgroundRollingEnabled(false);
+                return;
+            }
+
+            if (backgroundRollingPreference.suppressPrompt) {
+                setBackgroundRollingEnabled(true);
+                return;
+            }
+
+            showBackgroundRollingOverlay();
+        });
+    }
+
     const settingsMenu = document.getElementById('optionsMenu');
     const settingsToggleButton = document.getElementById('optionsMenuToggle');
     const settingsPanel = document.getElementById('optionsMenuPanel');
@@ -5043,6 +5182,35 @@ function setupRollCancellationControl() {
     });
 }
 
+function shouldScheduleBackgroundWork() {
+    // Always prefer timer-based scheduling when background rolling is enabled.
+    // Using requestAnimationFrame will pause entirely once the tab becomes
+    // hidden, which prevents long simulations from continuing in the
+    // background. Timers continue to fire (even if throttled), so they keep
+    // work progressing when the page is inactive.
+    return Boolean(appState && appState.backgroundRolling);
+}
+
+function queueSimulationWork(callback) {
+    if (typeof callback !== 'function') {
+        return;
+    }
+
+    const preferTimers = shouldScheduleBackgroundWork();
+
+    if (preferTimers && typeof window !== 'undefined' && typeof window.setTimeout === 'function') {
+        window.setTimeout(callback, 16);
+        return;
+    }
+
+    if (typeof window !== 'undefined' && typeof window.requestAnimationFrame === 'function') {
+        window.requestAnimationFrame(callback);
+        return;
+    }
+
+    setTimeout(callback, 16);
+}
+
 // Run the roll simulation while keeping the UI responsive
 function runRollSimulation(options = {}) {
     if (simulationActive) return;
@@ -5188,9 +5356,7 @@ function runRollSimulation(options = {}) {
     const oblivionProbability = activeOblivionAura ? 1 / OBLIVION_POTION_ODDS : 0;
     const cutscenesEnabled = appState.cinematic === true;
 
-    const queueAnimationFrame = (typeof window !== 'undefined' && typeof window.requestAnimationFrame === 'function')
-        ? callback => window.requestAnimationFrame(callback)
-        : callback => setTimeout(callback, 0);
+    const queueAnimationFrame = callback => queueSimulationWork(callback);
 
     const PROGRESS_ROUNDING_STEP = 1;
     const updateProgress = showProgress
