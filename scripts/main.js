@@ -22,6 +22,11 @@ const audioOverlayState = {
 };
 
 const CHANGELOG_VERSION_STORAGE_KEY = 'solsRollingCalculator:lastSeenChangelogVersion';
+const BACKGROUND_ROLLING_STORAGE_KEY = 'solsRollingCalculator:backgroundRollingPreference';
+const backgroundRollingPreference = {
+    allowed: false,
+    suppressPrompt: false
+};
 
 function applyLatestUpdateBadgeToChangelogTabs(tabs) {
     if (!Array.isArray(tabs) || !tabs.length) {
@@ -91,6 +96,86 @@ function maybeShowChangelogOnFirstVisit() {
     } catch (error) {
         // Ignore storage write failures so the overlay logic can continue normally.
     }
+}
+
+function hydrateBackgroundRollingPreference() {
+    if (typeof window === 'undefined') {
+        return;
+    }
+
+    try {
+        const raw = window.localStorage.getItem(BACKGROUND_ROLLING_STORAGE_KEY);
+        if (!raw) {
+            return;
+        }
+        const parsed = JSON.parse(raw);
+        if (parsed && typeof parsed === 'object') {
+            backgroundRollingPreference.allowed = Boolean(parsed.allowed);
+            backgroundRollingPreference.suppressPrompt = Boolean(parsed.suppressPrompt);
+        }
+    } catch (error) {
+        // Ignore malformed storage so the defaults remain intact.
+    }
+}
+
+function persistBackgroundRollingPreference() {
+    if (typeof window === 'undefined') {
+        return;
+    }
+
+    try {
+        window.localStorage.setItem(
+            BACKGROUND_ROLLING_STORAGE_KEY,
+            JSON.stringify(backgroundRollingPreference)
+        );
+    } catch (error) {
+        // Ignore write failures to avoid interrupting UI flow.
+    }
+}
+
+function setBackgroundRollingEnabled(enabled, { persistPreference = true } = {}) {
+    if (typeof appState === 'object') {
+        appState.backgroundRolling = Boolean(enabled);
+    }
+
+    backgroundRollingPreference.allowed = Boolean(enabled);
+
+    const button = document.getElementById('backgroundRollingButton');
+    if (button) {
+        button.textContent = `Allow background rolling: ${enabled ? 'On' : 'Off'}`;
+        button.setAttribute('aria-pressed', enabled ? 'true' : 'false');
+    }
+
+    if (persistPreference) {
+        persistBackgroundRollingPreference();
+    }
+}
+
+function showBackgroundRollingOverlay() {
+    const overlay = document.getElementById('backgroundRollingOverlay');
+    if (!overlay) {
+        return;
+    }
+
+    revealOverlay(overlay);
+
+    const applyButton = document.getElementById('backgroundRollingApply');
+    if (applyButton && typeof applyButton.focus === 'function') {
+        try {
+            applyButton.focus({ preventScroll: true });
+        } catch (error) {
+            applyButton.focus();
+        }
+    }
+}
+
+function hideBackgroundRollingOverlay() {
+    const overlay = document.getElementById('backgroundRollingOverlay');
+    if (!overlay) {
+        return;
+    }
+
+    concealOverlay(overlay);
 }
 
 
@@ -3853,6 +3938,40 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     }
+
+    const backgroundApply = document.getElementById('backgroundRollingApply');
+    if (backgroundApply) {
+        backgroundApply.addEventListener('click', () => {
+            backgroundRollingPreference.suppressPrompt = false;
+            setBackgroundRollingEnabled(true);
+            hideBackgroundRollingOverlay();
+        });
+    }
+
+    const backgroundApplyPersist = document.getElementById('backgroundRollingApplyPersist');
+    if (backgroundApplyPersist) {
+        backgroundApplyPersist.addEventListener('click', () => {
+            backgroundRollingPreference.suppressPrompt = true;
+            setBackgroundRollingEnabled(true);
+            hideBackgroundRollingOverlay();
+        });
+    }
+
+    const backgroundCancel = document.getElementById('backgroundRollingCancel');
+    if (backgroundCancel) {
+        backgroundCancel.addEventListener('click', () => {
+            hideBackgroundRollingOverlay();
+        });
+    }
+
+    const backgroundOverlay = document.getElementById('backgroundRollingOverlay');
+    if (backgroundOverlay) {
+        backgroundOverlay.addEventListener('click', event => {
+            if (event.target === backgroundOverlay) {
+                hideBackgroundRollingOverlay();
+            }
+        });
+    }
 });
 
 const BIOME_ICON_OVERRIDES = {
@@ -4554,6 +4673,26 @@ document.addEventListener('DOMContentLoaded', () => {
 
     applyReducedMotionState(appState.reduceMotion);
 
+    hydrateBackgroundRollingPreference();
+    setBackgroundRollingEnabled(backgroundRollingPreference.allowed, { persistPreference: false });
+
+    const backgroundRollingButton = document.getElementById('backgroundRollingButton');
+    if (backgroundRollingButton) {
+        backgroundRollingButton.addEventListener('click', () => {
+            if (appState.backgroundRolling) {
+                setBackgroundRollingEnabled(false);
+                return;
+            }
+
+            if (backgroundRollingPreference.suppressPrompt) {
+                setBackgroundRollingEnabled(true);
+                return;
+            }
+
+            showBackgroundRollingOverlay();
+        });
+    }
+
     const settingsMenu = document.getElementById('optionsMenu');
     const settingsToggleButton = document.getElementById('optionsMenuToggle');
     const settingsPanel = document.getElementById('optionsMenuPanel');
@@ -5043,6 +5182,34 @@ function setupRollCancellationControl() {
     });
 }
 
+function shouldScheduleBackgroundWork() {
+    if (!appState || !appState.backgroundRolling) {
+        return false;
+    }
+
+    return typeof document !== 'undefined' && document.hidden === true;
+}
+
+function queueSimulationWork(callback) {
+    if (typeof callback !== 'function') {
+        return;
+    }
+
+    const preferTimers = shouldScheduleBackgroundWork();
+
+    if (preferTimers && typeof window !== 'undefined' && typeof window.setTimeout === 'function') {
+        window.setTimeout(callback, 16);
+        return;
+    }
+
+    if (typeof window !== 'undefined' && typeof window.requestAnimationFrame === 'function') {
+        window.requestAnimationFrame(callback);
+        return;
+    }
+
+    setTimeout(callback, 16);
+}
+
 // Run the roll simulation while keeping the UI responsive
 function runRollSimulation(options = {}) {
     if (simulationActive) return;
@@ -5188,9 +5355,7 @@ function runRollSimulation(options = {}) {
     const oblivionProbability = activeOblivionAura ? 1 / OBLIVION_POTION_ODDS : 0;
     const cutscenesEnabled = appState.cinematic === true;
 
-    const queueAnimationFrame = (typeof window !== 'undefined' && typeof window.requestAnimationFrame === 'function')
-        ? callback => window.requestAnimationFrame(callback)
-        : callback => setTimeout(callback, 0);
+    const queueAnimationFrame = callback => queueSimulationWork(callback);
 
     const PROGRESS_ROUNDING_STEP = 1;
     const updateProgress = showProgress

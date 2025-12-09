@@ -123,6 +123,7 @@
                         <button class="interface-toggle options-menu__item" id="cinematicToggle" type="button" onclick="toggleCinematicMode()" aria-pressed="false">Cutscenes (Fullscreen recommended): Off</button>
                         <button class="interface-toggle options-menu__item" id="glitchEffectsToggle" type="button" onclick="toggleGlitchEffects()" aria-pressed="true">Glitch Effects: On</button>
                         <button class="interface-toggle options-menu__item" id="reduceMotionToggle" type="button" onclick="toggleReducedMotion()" aria-pressed="false">Reduce Animations: Off</button>
+                        <button class="interface-toggle options-menu__item" id="backgroundRollingButton" type="button" aria-pressed="false">Allow background rolling: Off</button>
                     </div>
                 </div>
             </div>
@@ -654,6 +655,22 @@
             <div class="cutscene-warning__actions">
                 <button type="button" class="interface-button interface-button--minor" id="rollWarningConfirm">Proceed Anyway</button>
                 <button type="button" class="interface-button interface-button--ghost" id="rollWarningCancel">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="backgroundRollingOverlay" class="cutscene-warning-overlay" hidden aria-hidden="true">
+        <div class="cutscene-warning surface surface--modal" role="dialog" aria-modal="true" aria-labelledby="backgroundRollingTitle">
+            <p class="cutscene-warning__message">
+                <span id="backgroundRollingTitle" class="cutscene-warning__note">Allow background rolling</span>: Keep processing simulations when this tab is in the background or not focused.
+            </p>
+            <p class="cutscene-warning__message cutscene-warning__message--subtle">
+                This may increase CPU or battery usage while runs are active. You can disable background rolling anytime from Settings.
+            </p>
+            <div class="cutscene-warning__actions">
+                <button type="button" class="interface-button interface-button--ghost" id="backgroundRollingCancel">Nevermind</button>
+                <button type="button" class="interface-button interface-button--minor" id="backgroundRollingApply">Apply</button>
+                <button type="button" class="interface-button interface-button--minor" id="backgroundRollingApplyPersist">Apply and never ask again</button>
             </div>
         </div>
     </div>

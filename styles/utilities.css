@@ -1227,6 +1227,11 @@
     color: var(--text-secondary);
 }
 
+.cutscene-warning__message--subtle {
+    font-size: clamp(15px, 2.6vw, 18px);
+    color: var(--text-tertiary);
+}
+
 .cutscene-warning__ratio {
     font-weight: 700;
     color: var(--text-primary);
