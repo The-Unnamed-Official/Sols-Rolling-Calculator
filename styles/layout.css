@@ -62,11 +62,11 @@
 }
 
 .banner__emblem-stack {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 8px;
+    display: grid;
+    place-items: center;
     width: clamp(56px, 6vw, 68px);
+    aspect-ratio: 1;
+    position: relative;
 }
 
 .banner__emblem {
@@ -80,6 +80,8 @@
     border: 1px solid rgba(140, 220, 255, 0.65);
     box-shadow: inset 0 0 14px rgba(110, 210, 255, 0.25), 0 12px 22px rgba(0, 10, 24, 0.55);
     overflow: hidden;
+    position: relative;
+    z-index: 1;
 }
 
 .banner__emblem img {
@@ -90,7 +92,11 @@
 }
 
 .banner__emblem-support {
-    width: 82%;
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
     opacity: 0.5;
     border-radius: 10px;
     box-shadow: 0 8px 16px rgba(0, 10, 24, 0.35);
