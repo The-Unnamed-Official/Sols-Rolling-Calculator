@@ -96,9 +96,12 @@
     <div class="interface-shell">
         <header class="surface interface-header" role="banner">
             <div class="masthead__brand">
-                <span class="banner__emblem">
-                    <img src="files/logo.png" alt="Sols Rolling Simulator logo">
-                </span>
+                <div class="banner__emblem-stack">
+                    <span class="banner__emblem">
+                        <img src="files/logo.png" alt="Sols Rolling Simulator logo" class="banner__emblem-logo">
+                    </span>
+                    <img src="files/theUnnamed.jpg" alt="The Unnamed creator portrait" class="banner__emblem-support">
+                </div>
                 <div class="banner__meta">
                     <h1 class="banner__title">Sols Rolling Simulator</h1>
                     <p class="banner__subtitle">
@@ -285,7 +288,7 @@
                     <div class="form-field form-field--toggle">
                         <span class="form-field__label">Dev Biomes</span>
                         <p>Enable to access experimental biomes like Another Realm and Unknown.</p>
-                        <label class="toggle">
+                        <label class="toggle toggle--dev-biomes">
                             <input type="checkbox" id="dev-biomes-toggle" class="toggle__input">
                             <span class="toggle__track"></span>
                             <span class="toggle__thumb"></span>
