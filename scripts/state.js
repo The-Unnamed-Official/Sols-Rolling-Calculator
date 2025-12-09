@@ -44,6 +44,7 @@
         cinematic: false,
         glitch: true,
         reduceMotion: false,
+        backgroundRolling: false,
         videoPlaying: false,
         scrollLock: null
     };
