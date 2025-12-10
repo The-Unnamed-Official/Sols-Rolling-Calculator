@@ -5324,6 +5324,10 @@ function runRollSimulation(options = {}) {
 
     const breakthroughStatsMap = new Map();
 
+    const PROGRESS_DECIMAL_PLACES = 1;
+    const PROGRESS_ROUNDING_STEP = 1 / (10 ** PROGRESS_DECIMAL_PLACES);
+    const formatProgressLabel = value => value.toFixed(PROGRESS_DECIMAL_PLACES);
+
     const progressElementsAvailable = progressPanel && progressBarFill && progressLabel;
     const showProgress = progressElementsAvailable && total >= 100000;
     if (progressPanel) {
@@ -5334,10 +5338,11 @@ function runRollSimulation(options = {}) {
         }
     }
     if (progressElementsAvailable) {
+        const formattedInitialProgress = formatProgressLabel(0);
         progressBarFill.style.width = '0%';
-        progressLabel.textContent = '0%';
+        progressLabel.textContent = `${formattedInitialProgress}%`;
         if (showProgress && progressPanel) {
-            progressPanel.dataset.progress = '0';
+            progressPanel.dataset.progress = formattedInitialProgress;
         }
     }
 
@@ -5357,20 +5362,19 @@ function runRollSimulation(options = {}) {
     const cutscenesEnabled = appState.cinematic === true;
 
     const queueAnimationFrame = callback => queueSimulationWork(callback);
-
-    const PROGRESS_ROUNDING_STEP = 1;
     const updateProgress = showProgress
         ? (() => {
-            let lastProgressValue = -1;
+            let lastProgressValue = null;
             return progress => {
                 const progressValueRounded = Math.floor(progress / PROGRESS_ROUNDING_STEP) * PROGRESS_ROUNDING_STEP;
-                if (progressValueRounded === lastProgressValue && progress < 100) {
+                const formattedProgressValue = formatProgressLabel(progressValueRounded);
+                if (formattedProgressValue === lastProgressValue && progress < 100) {
                     return;
                 }
-                lastProgressValue = progressValueRounded;
+                lastProgressValue = formattedProgressValue;
                 progressBarFill.style.width = `${progress}%`;
-                progressLabel.textContent = `${progressValueRounded}%`;
-                progressPanel.dataset.progress = `${progressValueRounded}`;
+                progressLabel.textContent = `${formattedProgressValue}%`;
+                progressPanel.dataset.progress = `${formattedProgressValue}`;
             };
         })()
         : null;
