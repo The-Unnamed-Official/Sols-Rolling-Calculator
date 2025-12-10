@@ -5324,7 +5324,7 @@ function runRollSimulation(options = {}) {
 
     const breakthroughStatsMap = new Map();
 
-    const PROGRESS_DECIMAL_PLACES = 1;
+    const PROGRESS_DECIMAL_PLACES = 2;
     const PROGRESS_ROUNDING_STEP = 1 / (10 ** PROGRESS_DECIMAL_PLACES);
     const formatProgressLabel = value => value.toFixed(PROGRESS_DECIMAL_PLACES);
 
