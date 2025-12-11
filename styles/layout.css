@@ -793,6 +793,11 @@
     flex-shrink: 0;
 }
 
+.resource-link__image--discord {
+    width: 46px;
+    height: 46px;
+}
+
 .resource-link--discord:hover .resource-link__image--discord,
 .resource-link--discord:focus-visible .resource-link__image--discord {
     animation: floatY 1.8s ease-in-out infinite;
