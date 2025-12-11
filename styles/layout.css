@@ -795,10 +795,11 @@
     --loading-indicator-corner-thickness: var(--corner-thickness);
     position: relative;
     display: grid;
-    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-columns: minmax(0, 1fr);
     align-items: center;
     gap: 16px;
     padding: 16px 20px;
+    padding-right: 112px;
     background:
         linear-gradient(var(--accent), var(--accent)) top left / var(--loading-indicator-corner-size) var(--loading-indicator-corner-thickness) no-repeat,
         linear-gradient(var(--accent), var(--accent)) top left / var(--loading-indicator-corner-thickness) var(--loading-indicator-corner-size) no-repeat,
@@ -913,9 +914,12 @@
 }
 
 .loading-indicator__value {
-    position: relative;
+    position: absolute;
+    right: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    justify-self: auto;
     min-width: 64px;
-    justify-self: end;
     padding: 6px 14px;
     border-radius: 10px;
     font-size: 12px;
