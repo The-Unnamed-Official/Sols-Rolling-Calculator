@@ -2000,7 +2000,7 @@ function applyRollPreset(value) {
         return;
     }
 
-    setNumericInputValue(rollField, value, { format: true, min: 1, max: 100000000 });
+    setNumericInputValue(rollField, value, { format: true, min: 1, max: 10000000000 });
     playSoundEffect(clickSoundEffectElement, 'ui');
 }
 
@@ -2114,7 +2114,7 @@ function resetRollCount() {
     const rollField = document.getElementById('roll-total');
     if (rollField) {
         const shouldFormat = document.activeElement !== rollField;
-        setNumericInputValue(rollField, 1, { format: shouldFormat, min: 1, max: 100000000 });
+        setNumericInputValue(rollField, 1, { format: shouldFormat, min: 1, max: 10000000000 });
     }
     playSoundEffect(clickSoundEffectElement, 'ui');
 }
@@ -4590,9 +4590,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const rollField = document.getElementById('roll-total');
     if (rollField) {
-        bindNumericInputFormatting(rollField, { min: 1, max: 100000000 });
+        bindNumericInputFormatting(rollField, { min: 1, max: 10000000000 });
         if (!rollField.dataset.rawValue) {
-            setNumericInputValue(rollField, 1, { format: true, min: 1, max: 100000000 });
+            setNumericInputValue(rollField, 1, { format: true, min: 1, max: 10000000000 });
         }
     }
 
@@ -5250,7 +5250,7 @@ function runRollSimulation(options = {}) {
         ? Number.parseInt(options.totalOverride, 10)
         : null;
 
-    const rollInputValue = getNumericInputValue(rollCountInput, { min: 1, max: 100000000 });
+    const rollInputValue = getNumericInputValue(rollCountInput, { min: 1, max: 10000000000 });
     let total = Number.isFinite(totalOverride)
         ? totalOverride
         : rollInputValue;
@@ -5277,7 +5277,7 @@ function runRollSimulation(options = {}) {
     }
 
     const shouldFormatRolls = document.activeElement !== rollCountInput;
-    setNumericInputValue(rollCountInput, total, { format: shouldFormatRolls, min: 1, max: 100000000 });
+    setNumericInputValue(rollCountInput, total, { format: shouldFormatRolls, min: 1, max: 10000000000 });
 
     simulationActive = true;
     cancelRollRequested = false;

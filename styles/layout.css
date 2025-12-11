@@ -722,6 +722,12 @@
     box-shadow: inset 0 0 18px rgba(90, 160, 230, 0.15);
 }
 
+.resource-link__top {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
 .resource-link--nolifers {
     position: relative;
     overflow: visible;
@@ -779,6 +785,12 @@
 .resource-link__meta {
     font-size: 11px;
     color: var(--text-secondary);
+}
+
+.resource-link__image {
+    width: 64px;
+    height: 64px;
+    flex-shrink: 0;
 }
 
 @keyframes arrow-pulse {
