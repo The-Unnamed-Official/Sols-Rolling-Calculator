@@ -722,6 +722,12 @@
     box-shadow: inset 0 0 18px rgba(90, 160, 230, 0.15);
 }
 
+.resource-link__top {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
 .resource-link--nolifers {
     position: relative;
     overflow: visible;
@@ -779,6 +785,38 @@
 .resource-link__meta {
     font-size: 11px;
     color: var(--text-secondary);
+}
+
+.resource-link__image {
+    width: 64px;
+    height: 64px;
+    flex-shrink: 0;
+}
+
+.resource-link__image--discord {
+    width: 46px;
+    height: 46px;
+}
+
+.resource-link--discord:hover .resource-link__image--discord,
+.resource-link--discord:focus-visible .resource-link__image--discord {
+    animation: floatY 1.8s ease-in-out infinite;
+}
+
+.resource-link__image--nodeshift.hurt-burst {
+    animation: hurt-burst 0.7s ease;
+}
+
+@keyframes floatY {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-6px); }
+}
+
+@keyframes hurt-burst {
+    0% { transform: translateY(0) rotate(0deg) scale(1); }
+    30% { transform: translateY(-10px) rotate(-8deg) scale(0.96); }
+    60% { transform: translateY(4px) rotate(6deg) scale(0.98); }
+    100% { transform: translateY(0) rotate(0deg) scale(1); }
 }
 
 @keyframes arrow-pulse {

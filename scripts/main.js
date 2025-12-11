@@ -2000,7 +2000,7 @@ function applyRollPreset(value) {
         return;
     }
 
-    setNumericInputValue(rollField, value, { format: true, min: 1, max: 100000000 });
+    setNumericInputValue(rollField, value, { format: true, min: 1, max: 10000000000 });
     playSoundEffect(clickSoundEffectElement, 'ui');
 }
 
@@ -2114,7 +2114,7 @@ function resetRollCount() {
     const rollField = document.getElementById('roll-total');
     if (rollField) {
         const shouldFormat = document.activeElement !== rollField;
-        setNumericInputValue(rollField, 1, { format: shouldFormat, min: 1, max: 100000000 });
+        setNumericInputValue(rollField, 1, { format: shouldFormat, min: 1, max: 10000000000 });
     }
     playSoundEffect(clickSoundEffectElement, 'ui');
 }
@@ -3832,6 +3832,68 @@ function setupVersionChangelogOverlay() {
     });
 }
 
+function setupNodeShiftAnimation() {
+    const nodeShiftLink = document.querySelector('.resource-link--nodeshift');
+    const nodeShiftImage = document.querySelector('.resource-link__image--nodeshift');
+
+    if (!nodeShiftLink || !nodeShiftImage) {
+        return;
+    }
+
+    const triggerAnimation = () => {
+        nodeShiftImage.classList.remove('hurt-burst');
+        void nodeShiftImage.offsetWidth;
+        nodeShiftImage.classList.add('hurt-burst');
+    };
+
+    nodeShiftLink.addEventListener('mouseenter', triggerAnimation);
+    nodeShiftImage.addEventListener('mouseenter', triggerAnimation);
+    nodeShiftLink.addEventListener('focus', triggerAnimation);
+    nodeShiftImage.addEventListener('focus', triggerAnimation);
+}
+
+function relocateResourcesPanelForMobile() {
+    const resourcesPanel = document.querySelector('.surface--side');
+    const footer = document.querySelector('.interface-footer');
+
+    if (!resourcesPanel || !footer) {
+        return;
+    }
+
+    const originalParent = resourcesPanel.parentElement;
+    const originalNextSibling = resourcesPanel.nextElementSibling;
+    const mobileQuery = window.matchMedia('(max-width: 900px)');
+
+    const moveToFooter = () => {
+        footer.parentElement.insertBefore(resourcesPanel, footer);
+    };
+
+    const restoreToLayout = () => {
+        if (originalParent && originalParent.contains(resourcesPanel)) {
+            return;
+        }
+
+        if (originalParent) {
+            if (originalNextSibling && originalNextSibling.parentElement === originalParent) {
+                originalParent.insertBefore(resourcesPanel, originalNextSibling);
+            } else {
+                originalParent.appendChild(resourcesPanel);
+            }
+        }
+    };
+
+    const syncLayout = () => {
+        if (mobileQuery.matches) {
+            moveToFooter();
+        } else {
+            restoreToLayout();
+        }
+    };
+
+    syncLayout();
+    mobileQuery.addEventListener('change', syncLayout);
+}
+
 document.addEventListener('DOMContentLoaded', initializeEventSelector);
 document.addEventListener('DOMContentLoaded', initializeDevBiomeToggle);
 document.addEventListener('DOMContentLoaded', updateOblivionPresetDisplay);
@@ -3844,6 +3906,8 @@ document.addEventListener('DOMContentLoaded', maybeShowChangelogOnFirstVisit);
 document.addEventListener('DOMContentLoaded', initializeIntroOverlay);
 document.addEventListener('DOMContentLoaded', initializeRollTriggerFloating);
 document.addEventListener('DOMContentLoaded', setupRollCancellationControl);
+document.addEventListener('DOMContentLoaded', setupNodeShiftAnimation);
+document.addEventListener('DOMContentLoaded', relocateResourcesPanelForMobile);
 
 document.addEventListener('DOMContentLoaded', () => {
     const confirmButton = document.getElementById('cutsceneWarningConfirm');
@@ -4590,9 +4654,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const rollField = document.getElementById('roll-total');
     if (rollField) {
-        bindNumericInputFormatting(rollField, { min: 1, max: 100000000 });
+        bindNumericInputFormatting(rollField, { min: 1, max: 10000000000 });
         if (!rollField.dataset.rawValue) {
-            setNumericInputValue(rollField, 1, { format: true, min: 1, max: 100000000 });
+            setNumericInputValue(rollField, 1, { format: true, min: 1, max: 10000000000 });
         }
     }
 
@@ -5250,7 +5314,7 @@ function runRollSimulation(options = {}) {
         ? Number.parseInt(options.totalOverride, 10)
         : null;
 
-    const rollInputValue = getNumericInputValue(rollCountInput, { min: 1, max: 100000000 });
+    const rollInputValue = getNumericInputValue(rollCountInput, { min: 1, max: 10000000000 });
     let total = Number.isFinite(totalOverride)
         ? totalOverride
         : rollInputValue;
@@ -5277,7 +5341,7 @@ function runRollSimulation(options = {}) {
     }
 
     const shouldFormatRolls = document.activeElement !== rollCountInput;
-    setNumericInputValue(rollCountInput, total, { format: shouldFormatRolls, min: 1, max: 100000000 });
+    setNumericInputValue(rollCountInput, total, { format: shouldFormatRolls, min: 1, max: 10000000000 });
 
     simulationActive = true;
     cancelRollRequested = false;
