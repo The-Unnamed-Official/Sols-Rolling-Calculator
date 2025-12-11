@@ -3846,8 +3846,10 @@ function setupNodeShiftAnimation() {
         nodeShiftImage.classList.add('hurt-burst');
     };
 
-    nodeShiftLink.addEventListener('click', triggerAnimation);
-    nodeShiftImage.addEventListener('click', triggerAnimation);
+    nodeShiftLink.addEventListener('mouseenter', triggerAnimation);
+    nodeShiftImage.addEventListener('mouseenter', triggerAnimation);
+    nodeShiftLink.addEventListener('focus', triggerAnimation);
+    nodeShiftImage.addEventListener('focus', triggerAnimation);
 }
 
 function relocateResourcesPanelForMobile() {
