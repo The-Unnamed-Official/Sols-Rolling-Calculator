@@ -105,11 +105,11 @@
                 <div class="banner__meta">
                     <h1 class="banner__title">Sols Rolling Simulator</h1>
                     <p class="banner__subtitle">
-                        <button type="button" class="banner__version-button" id="versionInfoButton" aria-haspopup="dialog" aria-expanded="false" aria-label="View update notes for version V1.505" data-version-id="v1505">V1.505</button>
+                        <button type="button" class="banner__version-button" id="versionInfoButton" aria-haspopup="dialog" aria-expanded="false" aria-label="View update notes for version V1.506" data-version-id="v1506">V1.506</button>
                         <span class="banner__subtitle-divider" aria-hidden="true">◉</span>
                         <span class="banner__subtitle-author">By <span class="banner__subtitle-author-name">not.unnamed</span></span>
                         <span class="banner__subtitle-divider" aria-hidden="true">◉</span>
-                        <span class="banner__subtitle-updated">Updated <time datetime="2025-12-07">2025/12/9</time></span>
+                        <span class="banner__subtitle-updated">Updated <time datetime="2025-12-11">2025/12/11</time></span>
                         <span class="banner__subtitle-divider" aria-hidden="true">◉</span>
                         <span class="banner__subtitle-eon">Sol's RNG Eon 1-11.1</span>
                     </p>
@@ -760,11 +760,21 @@
                 <button
                     type="button"
                     class="changelog-tab changelog-tab--active"
+                    id="changelog-tab-v1506"
+                    role="tab"
+                    aria-controls="changelog-panel-v1506"
+                    aria-selected="true"
+                    data-changelog-tab="v1506"
+                >V1.506</button>
+                <button
+                    type="button"
+                    class="changelog-tab changelog-tab--active"
                     id="changelog-tab-v1505"
                     role="tab"
                     aria-controls="changelog-panel-v1505"
-                    aria-selected="true"
+                    aria-selected="false"
                     data-changelog-tab="v1505"
+                    tabindex="-1"
                 >V1.505</button>
                 <button
                     type="button"
@@ -830,12 +840,30 @@
 
             <div class="changelog-modal__panels" data-changelog-panels>
                 <section
+                    id="changelog-panel-v1506"
+                    class="changelog-modal__panel"
+                    role="tabpanel"
+                    aria-labelledby="changelog-tab-v1506"
+                    data-changelog-panel="v1506"
+                    tabindex="0"
+                >
+                    <header class="changelog-modal__header">
+                        <h2 class="changelog-modal__title" id="versionChangelogTitle">Version V1.506 Update Notes</h2>
+                        <p class="changelog-modal__meta">Updated 2025/12/11</p>
+                    </header>
+                    <p class="changelog-modal__intro">Latest changes:</p>
+                    <ul class="changelog-modal__list">
+                        <li>Progress percentage display in the progress section now anchors to the right, preventing the bar from shaking while rolling.</li>
+                    </ul>
+                </section>
+                <section
                     id="changelog-panel-v1505"
                     class="changelog-modal__panel"
                     role="tabpanel"
                     aria-labelledby="changelog-tab-v1505"
                     data-changelog-panel="v1505"
-                    tabindex="0"
+                    hidden
+                    tabindex="-1"
                 >
                     <header class="changelog-modal__header">
                         <h2 class="changelog-modal__title" id="versionChangelogTitle">Version V1.505 Update Notes</h2>
