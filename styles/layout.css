@@ -793,8 +793,18 @@
     flex-shrink: 0;
 }
 
+.resource-link--discord:hover .resource-link__image--discord,
+.resource-link--discord:focus-visible .resource-link__image--discord {
+    animation: floatY 1.8s ease-in-out infinite;
+}
+
 .resource-link__image--nodeshift.hurt-burst {
     animation: hurt-burst 0.7s ease;
+}
+
+@keyframes floatY {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-6px); }
 }
 
 @keyframes hurt-burst {
