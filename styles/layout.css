@@ -937,7 +937,7 @@
 }
 
 .loading-indicator--active .loading-indicator__value {
-    transform: translateY(-1px);
+    transform: translateY(calc(-50% - 1px));
     box-shadow: 0 0 24px rgb(var(--accent-rgb) / 0.45);
 }
 
