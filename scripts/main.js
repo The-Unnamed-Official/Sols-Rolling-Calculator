@@ -3832,6 +3832,66 @@ function setupVersionChangelogOverlay() {
     });
 }
 
+function setupNodeShiftAnimation() {
+    const nodeShiftLink = document.querySelector('.resource-link--nodeshift');
+    const nodeShiftImage = document.querySelector('.resource-link__image--nodeshift');
+
+    if (!nodeShiftLink || !nodeShiftImage) {
+        return;
+    }
+
+    const triggerAnimation = () => {
+        nodeShiftImage.classList.remove('hurt-burst');
+        void nodeShiftImage.offsetWidth;
+        nodeShiftImage.classList.add('hurt-burst');
+    };
+
+    nodeShiftLink.addEventListener('click', triggerAnimation);
+    nodeShiftImage.addEventListener('click', triggerAnimation);
+}
+
+function relocateResourcesPanelForMobile() {
+    const resourcesPanel = document.querySelector('.surface--side');
+    const footer = document.querySelector('.interface-footer');
+
+    if (!resourcesPanel || !footer) {
+        return;
+    }
+
+    const originalParent = resourcesPanel.parentElement;
+    const originalNextSibling = resourcesPanel.nextElementSibling;
+    const mobileQuery = window.matchMedia('(max-width: 900px)');
+
+    const moveToFooter = () => {
+        footer.parentElement.insertBefore(resourcesPanel, footer);
+    };
+
+    const restoreToLayout = () => {
+        if (originalParent && originalParent.contains(resourcesPanel)) {
+            return;
+        }
+
+        if (originalParent) {
+            if (originalNextSibling && originalNextSibling.parentElement === originalParent) {
+                originalParent.insertBefore(resourcesPanel, originalNextSibling);
+            } else {
+                originalParent.appendChild(resourcesPanel);
+            }
+        }
+    };
+
+    const syncLayout = () => {
+        if (mobileQuery.matches) {
+            moveToFooter();
+        } else {
+            restoreToLayout();
+        }
+    };
+
+    syncLayout();
+    mobileQuery.addEventListener('change', syncLayout);
+}
+
 document.addEventListener('DOMContentLoaded', initializeEventSelector);
 document.addEventListener('DOMContentLoaded', initializeDevBiomeToggle);
 document.addEventListener('DOMContentLoaded', updateOblivionPresetDisplay);
@@ -3844,6 +3904,8 @@ document.addEventListener('DOMContentLoaded', maybeShowChangelogOnFirstVisit);
 document.addEventListener('DOMContentLoaded', initializeIntroOverlay);
 document.addEventListener('DOMContentLoaded', initializeRollTriggerFloating);
 document.addEventListener('DOMContentLoaded', setupRollCancellationControl);
+document.addEventListener('DOMContentLoaded', setupNodeShiftAnimation);
+document.addEventListener('DOMContentLoaded', relocateResourcesPanelForMobile);
 
 document.addEventListener('DOMContentLoaded', () => {
     const confirmButton = document.getElementById('cutsceneWarningConfirm');

@@ -793,6 +793,17 @@
     flex-shrink: 0;
 }
 
+.resource-link__image--nodeshift.hurt-burst {
+    animation: hurt-burst 0.7s ease;
+}
+
+@keyframes hurt-burst {
+    0% { transform: translateY(0) rotate(0deg) scale(1); }
+    30% { transform: translateY(-10px) rotate(-8deg) scale(0.96); }
+    60% { transform: translateY(4px) rotate(6deg) scale(0.98); }
+    100% { transform: translateY(0) rotate(0deg) scale(1); }
+}
+
 @keyframes arrow-pulse {
     0%, 100% {
         opacity: 1;
