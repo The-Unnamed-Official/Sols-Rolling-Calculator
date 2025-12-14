@@ -2016,6 +2016,9 @@ function setupLuckPresetSubtractButtons() {
         const wrapper = document.createElement('div');
         wrapper.className = 'preset-button';
         wrapper.style.display = button.style.display;
+        if (button.dataset.limboOnly) {
+            wrapper.dataset.limboOnly = button.dataset.limboOnly;
+        }
         button.style.display = '';
 
         const parent = button.parentNode;
