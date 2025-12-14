@@ -528,6 +528,8 @@ function beginSimulationExperience() {
         startBackgroundMusic(bgMusic);
     }
 
+    startSnowEffect();
+
     if (overlay) {
         overlay.setAttribute('hidden', '');
         overlay.setAttribute('aria-hidden', 'true');
@@ -1317,7 +1319,7 @@ function applyReducedMotionState(enabled) {
     }
 
     syncLuckVisualEffects(currentLuck);
-    refreshBiomeWeatherEffects();
+    syncSnowEffect();
 }
 
 function toggleReducedMotion() {
@@ -1335,6 +1337,91 @@ if (reduceMotionMediaQuery) {
     reduceMotionMediaQuery.addEventListener('change', event => {
         appState.reduceMotion = event.matches;
         applyReducedMotionState(appState.reduceMotion);
+    });
+}
+
+const snowEffectState = {
+    requested: false
+};
+
+function clearSnowField() {
+    const container = document.getElementById('snowField');
+    if (!container) return;
+
+    container.dataset.active = 'false';
+    if (container.childElementCount > 0) {
+        container.replaceChildren();
+    }
+}
+
+function renderSnowField() {
+    const container = document.getElementById('snowField');
+    if (!container || appState.reduceMotion) return;
+
+    let viewportWidth = 1280;
+    let viewportHeight = 720;
+    if (typeof window !== 'undefined') {
+        viewportWidth = window.innerWidth || viewportWidth;
+        viewportHeight = window.innerHeight || viewportHeight;
+    }
+
+    const baseDensity = Math.floor((viewportWidth * viewportHeight) / 22000);
+    const flakeTotal = Math.min(180, Math.max(52, baseDensity));
+
+    container.dataset.active = 'true';
+    container.replaceChildren();
+
+    const fragment = document.createDocumentFragment();
+    for (let i = 0; i < flakeTotal; i++) {
+        const flake = document.createElement('span');
+        flake.className = 'snowflake';
+
+        const size = randomDecimalBetween(0.8, 1.6);
+        const opacity = randomDecimalBetween(0.52, 0.95);
+        const drift = randomDecimalBetween(-42, 42);
+        const duration = randomDecimalBetween(10, 18);
+        const delay = randomDecimalBetween(0, 14);
+        const x = randomDecimalBetween(0, 100);
+        const spinDuration = randomDecimalBetween(12, 24);
+
+        flake.style.setProperty('--size', size.toFixed(2));
+        flake.style.setProperty('--opacity', opacity.toFixed(2));
+        flake.style.setProperty('--drift', `${drift.toFixed(2)}px`);
+        flake.style.setProperty('--fall-duration', `${duration.toFixed(2)}s`);
+        flake.style.setProperty('--fall-delay', `${delay.toFixed(2)}s`);
+        flake.style.setProperty('--x', `${x.toFixed(2)}%`);
+        flake.style.setProperty('--spin-duration', `${spinDuration.toFixed(2)}s`);
+
+        const icon = document.createElement('i');
+        icon.className = 'fa-solid fa-snowflake snowflake__icon';
+        icon.setAttribute('aria-hidden', 'true');
+        flake.appendChild(icon);
+
+        fragment.appendChild(flake);
+    }
+
+    container.appendChild(fragment);
+}
+
+function syncSnowEffect() {
+    if (!snowEffectState.requested || appState.reduceMotion) {
+        clearSnowField();
+        return;
+    }
+
+    renderSnowField();
+}
+
+function startSnowEffect() {
+    snowEffectState.requested = true;
+    syncSnowEffect();
+}
+
+if (typeof window !== 'undefined') {
+    window.addEventListener('resize', () => {
+        if (snowEffectState.requested && !appState.reduceMotion) {
+            renderSnowField();
+        }
     });
 }
 
@@ -1374,66 +1461,6 @@ function resolveBiomeAssetKey(biome, selectionState = null) {
         return biome;
     }
     return 'normal';
-}
-
-function updateSnowWeather(biome) {
-    const container = document.querySelector('.climate--snow');
-    if (!container) return;
-
-    const shouldRenderSnow = biome === 'snowy';
-    const isActive = shouldRenderSnow && !appState.reduceMotion;
-    container.dataset.active = isActive ? 'true' : 'false';
-
-    if (!isActive) {
-        if (container.childElementCount > 0) {
-            container.replaceChildren();
-        }
-        container.dataset.initialized = 'false';
-        return;
-    }
-
-    let flakeTotal = 120;
-    let viewportWidth = 1280;
-    let viewportHeight = 720;
-    if (typeof window !== 'undefined') {
-        viewportWidth = window.innerWidth || viewportWidth;
-        viewportHeight = window.innerHeight || viewportHeight;
-        const density = Math.max(110, Math.floor((viewportWidth * viewportHeight) / 14000));
-        flakeTotal = Math.min(260, density);
-    }
-
-    container.replaceChildren();
-
-    const fragment = document.createDocumentFragment();
-    for (let i = 0; i < flakeTotal; i++) {
-        const flake = document.createElement('span');
-        flake.className = 'snow-flake';
-        const size = randomDecimalBetween(0.6, 1.5);
-        const opacity = randomDecimalBetween(0.42, 0.95);
-        const drift = randomDecimalBetween(-36, 36);
-        const duration = randomDecimalBetween(7.5, 14.5);
-        const delay = randomDecimalBetween(0, 12);
-        const x = randomDecimalBetween(0, 100);
-        const spin = randomDecimalBetween(-18, 18);
-        flake.style.setProperty('--size', size.toFixed(2));
-        flake.style.setProperty('--opacity', opacity.toFixed(2));
-        flake.style.setProperty('--drift', `${drift.toFixed(2)}px`);
-        flake.style.setProperty('--fall-duration', `${duration.toFixed(2)}s`);
-        flake.style.setProperty('--fall-delay', `${delay.toFixed(2)}s`);
-        flake.style.setProperty('--x', `${x.toFixed(2)}%`);
-        flake.style.setProperty('--spin', `${spin.toFixed(2)}deg`);
-        fragment.appendChild(flake);
-    }
-
-    container.appendChild(fragment);
-    container.dataset.initialized = 'true';
-}
-
-function refreshBiomeWeatherEffects(selectionState = null, assetKeyOverride = null) {
-    const selection = selectionState || collectBiomeSelectionState();
-    const biome = selection ? selection.canonicalBiome : 'normal';
-    const assetKey = assetKeyOverride || resolveBiomeAssetKey(biome, selection);
-    updateSnowWeather(assetKey);
 }
 
 function shouldUseGlitchBaseEffect() {
@@ -1740,17 +1767,7 @@ function applyBiomeTheme(biome, selectionState = null) {
     const assets = biomeAssets[assetKey] || biomeAssets.normal;
     const isVideoAsset = assets && typeof assets.image === 'string' && /\.(webm|mp4|ogv|ogg)$/i.test(assets.image);
 
-    const body = document.body;
     const root = document.documentElement;
-    const isSnowy = assetKey === 'snowy';
-    if (body) {
-        body.classList.toggle('biome--snowy', isSnowy);
-    }
-    if (root) {
-        root.classList.toggle('biome--snowy', isSnowy);
-    }
-
-    refreshBiomeWeatherEffects(selection, assetKey);
 
     if (root && assets) {
         root.style.setProperty('--biome-background', isVideoAsset ? 'none' : `url("${assets.image}")`);
