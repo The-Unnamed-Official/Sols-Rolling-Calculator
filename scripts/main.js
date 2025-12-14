@@ -2235,10 +2235,12 @@ function initializeBiomeInterface() {
     }
 
     if (luckPresets) {
-        const isLimbo = biome === 'limbo';
+        const isLimbo = biome === 'limbo'
+            || selectionState.activeBiomes.includes('limbo')
+            || selectionState.breakthroughBiomes.includes('limbo');
         Array.from(luckPresets.children).forEach(element => {
             const requiresLimbo = element.dataset.limboOnly === 'true';
-            const shouldShow = isLimbo ? requiresLimbo : !requiresLimbo;
+            const shouldShow = requiresLimbo ? isLimbo : !isLimbo;
 
             element.style.display = shouldShow ? '' : 'none';
         });
