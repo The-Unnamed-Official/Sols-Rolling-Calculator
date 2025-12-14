@@ -613,6 +613,114 @@ select.form-field__input option {
     gap: 10px;
 }
 
+.christmasClass {
+    background: linear-gradient(135deg, #b30a0a 50%, #11cb00 50%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+
+.plcClass {
+    background: linear-gradient(90deg, #a39bff, #b0fffb, #a39bff);
+    background-size: 300% 300%;
+    animation: class-gradient 10s linear infinite;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+
+.genesisClass {
+    background: linear-gradient(90deg, #a39bff, #d2b0ff);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+
+.pumpBloodClass {
+    background: linear-gradient(90deg, #ff820d, #ffb168, #ff5b1a, #683200);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+
+.oblivionClass {
+    background: linear-gradient(90deg, #641aff, #5d007f, #641aff);
+    background-size: 300% 300%;
+    animation: class-gradient 7.5s linear infinite;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+
+.heavenlyClass {
+    background: linear-gradient(90deg, #e895ff, #ce46ff, #d16cff);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+
+.duneClass {
+    background: linear-gradient(90deg, #d2a345, #ffd47d, #c68c18);
+    background-size: 300% 300%;
+    animation: class-gradient 3.5s linear infinite;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+
+.boundClass {
+    background: linear-gradient(90deg, #5473ff, #2d33dd, #1aa0ff);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+
+.godlikeClass {
+    background: linear-gradient(135deg, #fff700 0%, #fff700 33.33%, #00f2ff 33.33%, #00f2ff 66.66%, #ff0000 66.66%, #ff0000 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+
+.allPotionsClass {
+    background: linear-gradient(90deg, #ff6767, #ffff5e, #58ff66, #58fff1, #4b90ff, #ff4be7);
+    background-size: 300% 300%;
+    animation: class-gradient 5.25s linear infinite;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+
+.tutPotion {
+    background: linear-gradient(90deg, #fff700, #fffd9d);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+
+.candyClass {
+    background: linear-gradient(90deg, #ffe8c4, #ffb04f, #ffd04f);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+
+.popClass {
+    background: linear-gradient(90deg, #ff3030, #ff5f5f);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+
+@keyframes class-gradient {
+    0% {
+        background-position: 0% 50%;
+    }
+    100% {
+        background-position: 300% 50%;
+    }
+}
+
 .roll-warning {
     color: gray;
     font-size: xx-small;
@@ -892,6 +1000,11 @@ body:not(.reduce-motion) #luck-preset-ten-million:focus-visible {
     animation: luckPresetAggressiveShake 0.44s cubic-bezier(0.36, 0.07, 0.19, 0.97) infinite;
 }
 
+body:not(.reduce-motion) #luck-preset-hundred-million:hover,
+body:not(.reduce-motion) #luck-preset-hundred-million:focus-visible {
+    animation: luckPresetMassiveShake 0.44s cubic-bezier(0.36, 0.07, 0.19, 0.97) infinite;
+}
+
 body:not(.reduce-motion) #luck-preset-one-million.luck-preset-button--pop,
 body:not(.reduce-motion) #luck-preset-one-million.luck-preset-button--pop:focus-visible {
     animation: luckPresetPop 0.68s cubic-bezier(0.18, 0.72, 0.27, 1);
@@ -901,6 +1014,12 @@ body:not(.reduce-motion) #luck-preset-one-million.luck-preset-button--pop:focus-
 body:not(.reduce-motion) #luck-preset-ten-million.luck-preset-button--mega-pop,
 body:not(.reduce-motion) #luck-preset-ten-million.luck-preset-button--mega-pop:focus-visible {
     animation: luckPresetMegaPop 0.9s cubic-bezier(0.18, 0.78, 0.24, 1.04);
+    z-index: 4;
+}
+
+body:not(.reduce-motion) #luck-preset-hundred-million.luck-preset-button--master-pop,
+body:not(.reduce-motion) #luck-preset-hundred-million.luck-preset-button--master-pop:focus-visible {
+    animation: luckPresetMasterPop 0.9s cubic-bezier(0.18, 0.78, 0.24, 1.04);
     z-index: 4;
 }
 

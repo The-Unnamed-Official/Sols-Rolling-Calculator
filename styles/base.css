@@ -113,6 +113,40 @@
     }
 }
 
+@keyframes luckPresetMassiveShake {
+    0%,
+    100% {
+        transform: translateY(var(--button-raise)) scale(var(--button-scale)) translateX(0) rotate(0deg);
+    }
+    10% {
+        transform: translateY(var(--button-raise)) scale(var(--button-scale)) translateX(-8px) rotate(-6deg);
+    }
+    20% {
+        transform: translateY(var(--button-raise)) scale(var(--button-scale)) translateX(8px) rotate(6deg);
+    }
+    30% {
+        transform: translateY(var(--button-raise)) scale(var(--button-scale)) translateX(-10px) rotate(-8deg);
+    }
+    40% {
+        transform: translateY(var(--button-raise)) scale(var(--button-scale)) translateX(10px) rotate(8deg);
+    }
+    50% {
+        transform: translateY(var(--button-raise)) scale(var(--button-scale)) translateX(-6px) rotate(-4deg);
+    }
+    60% {
+        transform: translateY(var(--button-raise)) scale(var(--button-scale)) translateX(6px) rotate(4deg);
+    }
+    70% {
+        transform: translateY(var(--button-raise)) scale(var(--button-scale)) translateX(-4px) rotate(-2deg);
+    }
+    80% {
+        transform: translateY(var(--button-raise)) scale(var(--button-scale)) translateX(4px) rotate(2deg);
+    }
+    90% {
+        transform: translateY(var(--button-raise)) scale(var(--button-scale)) translateX(-2px) rotate(-1deg);
+    }
+}
+
 @keyframes luckPresetPop {
     0% {
         --button-pop-scale: 1;
@@ -154,6 +188,31 @@
         --button-pop-scale: 1.18;
         --button-pop-raise: -8px;
         box-shadow: 0 24px 38px rgba(0, 6, 18, 0.36), 0 0 24px rgba(127, 227, 255, 0.28);
+    }
+    100% {
+        --button-pop-scale: 1;
+        --button-pop-raise: 0px;
+        --button-pop-rotation: 0deg;
+        box-shadow: 0 0 0 rgba(0, 0, 0, 0);
+    }
+}
+
+@keyframes luckPresetMasterPop {
+    0% {
+        --button-pop-scale: 1;
+        --button-pop-raise: 0px;
+        --button-pop-rotation: 0deg;
+        box-shadow: 0 0 0 rgba(0, 0, 0, 0);
+    }
+    24% {
+        --button-pop-scale: 1.7;
+        --button-pop-raise: -56px;
+        box-shadow: 0 38px 62px rgba(0, 23, 68, 0.5), 0 0 36px rgba(127, 227, 255, 0.42);
+    }
+    56% {
+        --button-pop-scale: 1.38;
+        --button-pop-raise: -18px;
+        box-shadow: 0 24px 38px rgba(0, 19, 58, 0.36), 0 0 24px rgba(127, 227, 255, 0.28);
     }
     100% {
         --button-pop-scale: 1;
@@ -553,57 +612,117 @@ body.is-glitching .feed__viewport::after {
     z-index: 1;
 }
 
-.climate {
+.snow-field {
     position: absolute;
     inset: 0;
     pointer-events: none;
     overflow: hidden;
-}
-
-.climate--blood-rain {
     display: none;
     z-index: 2;
-    position: relative;
-    isolation: isolate;
 }
 
-.climate--blood-rain::before,
-.climate--blood-rain::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    opacity: 0;
-    transition: opacity 0.4s ease;
-}
-
-.climate--blood-rain::before {
-    background: linear-gradient(180deg, rgba(42, 0, 6, 0.65), rgba(10, 0, 2, 0.92));
-    z-index: -2;
-}
-
-.climate--blood-rain::after {
-    background:
-        radial-gradient(circle at 18% -10%, rgba(142, 16, 26, 0.35), transparent 55%),
-        radial-gradient(circle at 82% -5%, rgba(214, 42, 52, 0.25), transparent 58%);
-    mix-blend-mode: plus-lighter;
-    z-index: -1;
-}
-
-body.biome--blood-rain .climate--blood-rain {
+.snow-field[data-active="true"] {
     display: block;
 }
 
-body.biome--blood-rain .climate--blood-rain::before,
-body.biome--blood-rain .climate--blood-rain::after {
-    opacity: 0.35;
+.snowflake {
+    position: absolute;
+    top: -12%;
+    left: var(--x, 50%);
+    opacity: var(--opacity, 0.8);
+    transform: translate3d(calc(-50% + var(--drift, 0px)), -140%, 0);
+    filter: drop-shadow(0 0 6px rgba(204, 223, 255, 0.65));
+    animation: snow-fall var(--fall-duration, 12s) linear infinite;
+    animation-delay: calc(-1 * var(--fall-delay, 0s));
+    will-change: transform;
 }
 
-body.biome--blood-rain .interface-backdrop__veil {
-    background:
-        radial-gradient(circle at 32% 12%, rgba(168, 8, 26, 0.32), transparent 58%),
-        radial-gradient(circle at 68% 6%, rgba(92, 0, 12, 0.35), transparent 60%),
-        linear-gradient(180deg, rgba(8, 0, 2, 0.82), rgba(4, 0, 0, 0.92));
-    backdrop-filter: blur(4px) saturate(1.1);
+body.biome--glitch .snowflake {
+    animation-name: snow-fall-glitch;
+    animation-duration: calc(var(--fall-duration, 12s) * 0.18);
+    animation-timing-function: steps(3, jump-both);
+}
+
+.snowflake__icon {
+    display: block;
+    color: #ccdfff;
+    font-size: calc(16px * var(--size, 1));
+    animation: snow-spin var(--spin-duration, 14s) linear infinite;
+    transform-origin: center;
+}
+
+body.biome--glitch .snowflake__icon {
+    animation: snow-spin-glitch 0.9s steps(4, end) infinite;
+}
+
+@keyframes snow-fall {
+    0% {
+        transform: translate3d(calc(-50% + var(--drift, 0px)), -140%, 0);
+    }
+    16% {
+        transform: translate3d(calc(-50% + (var(--drift, 0px) * 0.75)), -80%, 0);
+    }
+    100% {
+        transform: translate3d(calc(-50% + var(--drift, 0px)), 120vh, 0);
+    }
+}
+
+@keyframes snow-fall-glitch {
+    0% {
+        transform: translate3d(calc(-50% + var(--drift, 0px)), -140%, 0);
+    }
+    10% {
+        transform: translate3d(calc(-50% + (var(--drift, 0px) * -0.4)), 36vh, 0);
+    }
+    22% {
+        transform: translate3d(calc(-50% + (var(--drift, 0px) * 1.35)), -32vh, 0);
+    }
+    38% {
+        transform: translate3d(calc(-50% + (var(--drift, 0px) * 0.12)), 110vh, 0);
+    }
+    52% {
+        transform: translate3d(calc(-50% + (var(--drift, 0px) * -0.8)), -64vh, 0);
+    }
+    68% {
+        transform: translate3d(calc(-50% + (var(--drift, 0px) * 0.6)), 140vh, 0);
+    }
+    84% {
+        transform: translate3d(calc(-50% + (var(--drift, 0px) * -0.18)), -90vh, 0);
+    }
+    100% {
+        transform: translate3d(calc(-50% + var(--drift, 0px)), 120vh, 0);
+    }
+}
+
+@keyframes snow-spin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@keyframes snow-spin-glitch {
+    0% {
+        transform: rotate(-25deg) scale(1.05);
+    }
+    30% {
+        transform: rotate(180deg) scale(0.85);
+    }
+    55% {
+        transform: rotate(-120deg) scale(1.1);
+    }
+    80% {
+        transform: rotate(320deg) scale(0.88);
+    }
+    100% {
+        transform: rotate(-40deg) scale(1.02);
+    }
+}
+
+body.reduce-motion .snow-field {
+    display: none;
 }
 
 .forte {
