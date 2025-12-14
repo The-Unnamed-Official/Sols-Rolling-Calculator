@@ -1317,6 +1317,7 @@ function applyReducedMotionState(enabled) {
     }
 
     syncLuckVisualEffects(currentLuck);
+    refreshBiomeWeatherEffects();
 }
 
 function toggleReducedMotion() {
@@ -1362,6 +1363,78 @@ const biomeAssets = {
     limbo: { image: 'files/limboImage.jpg', music: 'files/limboMusic.mp3' },
     blazing: { image: 'files/blazingBiomeImage.jpg', music: 'files/blazingBiomeMusic.mp3' }
 };
+
+function resolveBiomeAssetKey(biome, selectionState = null) {
+    const selection = selectionState || collectBiomeSelectionState();
+    const themeCandidate = selection && selection.themeBiome ? selection.themeBiome : biome;
+    if (Object.prototype.hasOwnProperty.call(biomeAssets, themeCandidate)) {
+        return themeCandidate;
+    }
+    if (Object.prototype.hasOwnProperty.call(biomeAssets, biome)) {
+        return biome;
+    }
+    return 'normal';
+}
+
+function updateSnowWeather(biome) {
+    const container = document.querySelector('.climate--snow');
+    if (!container) return;
+
+    const isActive = biome === 'snowy' && !appState.reduceMotion;
+    container.dataset.active = isActive ? 'true' : 'false';
+
+    if (!isActive) {
+        if (container.childElementCount > 0) {
+            container.replaceChildren();
+        }
+        container.dataset.initialized = 'false';
+        return;
+    }
+
+    let flakeTotal = 120;
+    let viewportWidth = 1280;
+    let viewportHeight = 720;
+    if (typeof window !== 'undefined') {
+        viewportWidth = window.innerWidth || viewportWidth;
+        viewportHeight = window.innerHeight || viewportHeight;
+        const density = Math.max(110, Math.floor((viewportWidth * viewportHeight) / 14000));
+        flakeTotal = Math.min(260, density);
+    }
+
+    container.replaceChildren();
+
+    const fragment = document.createDocumentFragment();
+    for (let i = 0; i < flakeTotal; i++) {
+        const flake = document.createElement('span');
+        flake.className = 'snow-flake';
+        const size = randomDecimalBetween(0.6, 1.5);
+        const opacity = randomDecimalBetween(0.42, 0.95);
+        const drift = randomDecimalBetween(-36, 36);
+        const duration = randomDecimalBetween(7.5, 14.5);
+        const delay = randomDecimalBetween(0, 12);
+        const x = randomDecimalBetween(0, 100);
+        const spin = randomDecimalBetween(-18, 18);
+        flake.style.setProperty('--size', size.toFixed(2));
+        flake.style.setProperty('--opacity', opacity.toFixed(2));
+        flake.style.setProperty('--drift', `${drift.toFixed(2)}px`);
+        flake.style.setProperty('--fall-duration', `${duration.toFixed(2)}s`);
+        flake.style.setProperty('--fall-delay', `${delay.toFixed(2)}s`);
+        flake.style.setProperty('--x', `${x.toFixed(2)}%`);
+        flake.style.setProperty('--spin', `${spin.toFixed(2)}deg`);
+        fragment.appendChild(flake);
+    }
+
+    container.appendChild(fragment);
+    container.dataset.initialized = 'true';
+}
+
+function refreshBiomeWeatherEffects(selectionState = null, assetKeyOverride = null) {
+    const selection = selectionState || collectBiomeSelectionState();
+    const biome = selection ? selection.canonicalBiome : 'normal';
+    const assetKey = assetKeyOverride || resolveBiomeAssetKey(biome, selection);
+    updateBloodRainWeather(assetKey);
+    updateSnowWeather(assetKey);
+}
 
 function shouldUseGlitchBaseEffect() {
     return glitchPresentationEnabled && glitchUiState.isUiGlitching;
@@ -1663,15 +1736,21 @@ function applyGlitchVisuals(enabled, options = {}) {
 
 function applyBiomeTheme(biome, selectionState = null) {
     const selection = selectionState || collectBiomeSelectionState();
-    const themeCandidate = selection.themeBiome || biome;
-    const assetKey = Object.prototype.hasOwnProperty.call(biomeAssets, themeCandidate)
-        ? themeCandidate
-        : (Object.prototype.hasOwnProperty.call(biomeAssets, biome) ? biome : 'normal');
+    const assetKey = resolveBiomeAssetKey(biome, selection);
     const assets = biomeAssets[assetKey] || biomeAssets.normal;
     const isVideoAsset = assets && typeof assets.image === 'string' && /\.(webm|mp4|ogv|ogg)$/i.test(assets.image);
 
     const body = document.body;
     const root = document.documentElement;
+    const isSnowy = assetKey === 'snowy';
+    if (body) {
+        body.classList.toggle('biome--snowy', isSnowy);
+    }
+    if (root) {
+        root.classList.toggle('biome--snowy', isSnowy);
+    }
+
+    refreshBiomeWeatherEffects(selection, assetKey);
 
     if (root && assets) {
         root.style.setProperty('--biome-background', isVideoAsset ? 'none' : `url("${assets.image}")`);
@@ -1818,9 +1897,9 @@ function applyLuckValue(value, options = {}) {
 
     const stackPresets = isLuckPresetStackingEnabled();
     const luckInput = document.getElementById('luck-total');
-    const existingLuck = luckInput ? getNumericInputValue(luckInput, { min: 1 }) : baseLuck;
+    const existingLuck = luckInput ? getNumericInputValue(luckInput, { min: 0 }) : baseLuck;
     const startingLuck = Number.isFinite(existingLuck) ? existingLuck : baseLuck;
-    const targetLuck = Math.max(1, stackPresets ? startingLuck + value : value);
+    const targetLuck = Math.max(0, stackPresets ? startingLuck + value : value);
 
     baseLuck = targetLuck;
 
@@ -1844,7 +1923,7 @@ function applyLuckValue(value, options = {}) {
     }
 
     if (luckInput) {
-        setNumericInputValue(luckInput, targetLuck, { format: true, min: 1 });
+        setNumericInputValue(luckInput, targetLuck, { format: true, min: 0 });
     }
 
     syncLuckVisualEffects(targetLuck);
@@ -1990,7 +2069,7 @@ function recomputeLuckValue() {
     const rawLuckValue = luckField ? (luckField.dataset.rawValue ?? '') : '';
     const enteredLuck = rawLuckValue ? Number.parseFloat(rawLuckValue) : NaN;
     if (luckField && rawLuckValue && Number.isFinite(enteredLuck) && enteredLuck !== currentLuck) {
-        const normalizedLuck = Math.max(1, enteredLuck);
+        const normalizedLuck = Math.max(0, enteredLuck);
         baseLuck = normalizedLuck;
         currentLuck = normalizedLuck;
         setLuckSelectionSource(LUCK_SELECTION_SOURCE.MANUAL);
@@ -2017,13 +2096,13 @@ function recomputeLuckValue() {
             refreshCustomSelect('dave-luck-dropdown');
         }
         const shouldFormat = document.activeElement !== luckField;
-        setNumericInputValue(luckField, baseLuck, { format: shouldFormat, min: 1 });
+        setNumericInputValue(luckField, baseLuck, { format: shouldFormat, min: 0 });
         syncLuckVisualEffects(baseLuck);
         if (typeof applyOblivionPresetOptions === 'function') {
-            applyOblivionPresetOptions({});
+            applyOblivionPresetOptions({ activateOblivionPreset: false });
         }
         if (typeof applyDunePresetOptions === 'function') {
-            applyDunePresetOptions({});
+            applyDunePresetOptions({ activateDunePreset: false });
         }
         return;
     }
@@ -2036,7 +2115,7 @@ function recomputeLuckValue() {
     lastDorcelessnessMultiplier = multipliers.dorcelessness;
     if (luckField) {
         const shouldFormat = document.activeElement !== luckField;
-        setNumericInputValue(luckField, currentLuck, { format: shouldFormat, min: 1 });
+        setNumericInputValue(luckField, currentLuck, { format: shouldFormat, min: 0 });
     }
 
     syncLuckVisualEffects(currentLuck);
@@ -2046,15 +2125,15 @@ function resetLuckFields() {
     const luckInput = document.getElementById('luck-total');
     if (luckInput) {
         const shouldFormat = document.activeElement !== luckInput;
-        setNumericInputValue(luckInput, 1, { format: shouldFormat, min: 1 });
+        setNumericInputValue(luckInput, 1, { format: shouldFormat, min: 0 });
     }
     playSoundEffect(clickSoundEffectElement, 'ui');
     recomputeLuckValue();
     if (typeof applyOblivionPresetOptions === 'function') {
-        applyOblivionPresetOptions({});
+        applyOblivionPresetOptions({ activateOblivionPreset: false });
     }
     if (typeof applyDunePresetOptions === 'function') {
-        applyDunePresetOptions({});
+        applyDunePresetOptions({ activateDunePreset: false });
     }
 }
 
@@ -2124,7 +2203,6 @@ function initializeBiomeInterface() {
     const dorcelessnessLuckContainer = document.getElementById('dorcelessness-luck-wrapper');
     const ygBlessingContainer = document.getElementById('yg-blessing-wrapper');
     const luckPresets = document.getElementById('luck-preset-panel');
-    const voidHeartBtn = document.getElementById('void-heart-trigger');
     if (biome === 'limbo') {
         if (daveLuckContainer) daveLuckContainer.style.display = '';
         if (xyzLuckContainer) xyzLuckContainer.style.display = '';
@@ -2142,14 +2220,10 @@ function initializeBiomeInterface() {
     if (luckPresets) {
         const isLimbo = biome === 'limbo';
         Array.from(luckPresets.children).forEach(element => {
-            const containsVoidHeart = Boolean(voidHeartBtn && (element === voidHeartBtn || element.contains(voidHeartBtn)));
-            const shouldShow = isLimbo ? containsVoidHeart : !containsVoidHeart;
+            const requiresLimbo = element.dataset.limboOnly === 'true';
+            const shouldShow = isLimbo ? requiresLimbo : !requiresLimbo;
 
             element.style.display = shouldShow ? '' : 'none';
-
-            if (containsVoidHeart && voidHeartBtn) {
-                voidHeartBtn.style.display = shouldShow ? '' : 'none';
-            }
         });
     }
     applyBiomeTheme(biome, selectionState);
@@ -2519,96 +2593,44 @@ const DUNE_AURA_LABEL = 'Neferkhaf';
 const DUNE_POTION_ODDS = 1000;
 
 let oblivionPresetEnabled = false;
-let currentOblivionPresetLabel = 'Select preset';
 let oblivionAuraData = null;
 let memoryAuraData = null;
 
 let dunePresetEnabled = false;
-let currentDunePresetLabel = 'Select preset';
 let duneAuraData = null;
 
 function handleOblivionPresetSelection(presetKey) {
-    const options = {};
-    if (presetKey === OBLIVION_PRESET_IDENTIFIER) {
-        options.activateOblivionPreset = true;
-        options.presetLabel = 'Oblivion Potion Preset';
-    } else {
-        options.activateOblivionPreset = false;
+    if (presetKey !== OBLIVION_PRESET_IDENTIFIER) {
+        return;
     }
 
-    options.luckSource = LUCK_SELECTION_SOURCE.STANDARD_PRESET;
-    applyLuckValue(OBLIVION_LUCK_TARGET, options);
-
-    const dropdown = document.getElementById('oblivion-preset-menu');
-    if (dropdown) {
-        dropdown.open = false;
-        const summary = dropdown.querySelector('.preset-toggle__summary');
-        if (summary) {
-            summary.focus();
-        }
-    }
+    applyLuckValue(OBLIVION_LUCK_TARGET, {
+        luckSource: LUCK_SELECTION_SOURCE.STANDARD_PRESET,
+        activateOblivionPreset: true
+    });
 }
 
 function handleDunePresetSelection(presetKey) {
-    const options = {};
-    if (presetKey === DUNE_PRESET_IDENTIFIER) {
-        options.activateDunePreset = true;
-        options.dunePresetLabel = 'Potion of Dune Preset';
-    } else {
-        options.activateDunePreset = false;
+    if (presetKey !== DUNE_PRESET_IDENTIFIER) {
+        return;
     }
 
-    options.luckSource = LUCK_SELECTION_SOURCE.STANDARD_PRESET;
-    applyLuckValue(DUNE_LUCK_TARGET, options);
-
-    const dropdown = document.getElementById('dune-preset-menu');
-    if (dropdown) {
-        dropdown.open = false;
-        const summary = dropdown.querySelector('.preset-toggle__summary');
-        if (summary) {
-            summary.focus();
-        }
-    }
-}
-
-function updateOblivionPresetDisplay() {
-    const selection = document.getElementById('oblivion-preset-label');
-    if (selection) {
-        selection.textContent = currentOblivionPresetLabel;
-        selection.classList.toggle('preset-toggle__selection--placeholder', currentOblivionPresetLabel === 'Select preset');
-    }
-}
-
-function updateDunePresetDisplay() {
-    const selection = document.getElementById('dune-preset-label');
-    if (selection) {
-        selection.textContent = currentDunePresetLabel;
-        selection.classList.toggle('preset-toggle__selection--placeholder', currentDunePresetLabel === 'Select preset');
-    }
+    applyLuckValue(DUNE_LUCK_TARGET, {
+        luckSource: LUCK_SELECTION_SOURCE.STANDARD_PRESET,
+        activateDunePreset: true
+    });
 }
 
 function applyOblivionPresetOptions(options = {}) {
-    oblivionPresetEnabled = options.activateOblivionPreset === true;
-
-    if (typeof options.presetLabel === 'string') {
-        currentOblivionPresetLabel = options.presetLabel;
-    } else {
-        currentOblivionPresetLabel = 'Select preset';
+    if ('activateOblivionPreset' in options) {
+        oblivionPresetEnabled = options.activateOblivionPreset === true;
     }
-
-    updateOblivionPresetDisplay();
 }
 
 function applyDunePresetOptions(options = {}) {
-    dunePresetEnabled = options.activateDunePreset === true;
-
-    if (typeof options.dunePresetLabel === 'string') {
-        currentDunePresetLabel = options.dunePresetLabel;
-    } else {
-        currentDunePresetLabel = 'Select preset';
+    if ('activateDunePreset' in options) {
+        dunePresetEnabled = options.activateDunePreset === true;
     }
-
-    updateDunePresetDisplay();
 }
 
 function formatAuraNameMarkup(aura, overrideName) {
@@ -3844,8 +3866,6 @@ function relocateResourcesPanelForMobile() {
 
 document.addEventListener('DOMContentLoaded', initializeEventSelector);
 document.addEventListener('DOMContentLoaded', initializeDevBiomeToggle);
-document.addEventListener('DOMContentLoaded', updateOblivionPresetDisplay);
-document.addEventListener('DOMContentLoaded', updateDunePresetDisplay);
 document.addEventListener('DOMContentLoaded', setupLuckPresetSubtractButtons);
 document.addEventListener('DOMContentLoaded', setupLuckPresetAnimations);
 document.addEventListener('DOMContentLoaded', setupChangelogTabs);
@@ -4594,9 +4614,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const luckField = document.getElementById('luck-total');
     if (luckField) {
-        bindNumericInputFormatting(luckField, { min: 1 });
+        bindNumericInputFormatting(luckField, { min: 0 });
         if (!luckField.dataset.rawValue) {
-            setNumericInputValue(luckField, baseLuck, { format: true, min: 1 });
+            setNumericInputValue(luckField, baseLuck, { format: true, min: 0 });
         }
     }
 
@@ -4630,7 +4650,7 @@ document.addEventListener('DOMContentLoaded', () => {
         luckField.addEventListener('input', () => {
             const raw = luckField.dataset.rawValue ?? '';
             const parsed = raw ? Number.parseFloat(raw) : NaN;
-            const normalized = Number.isFinite(parsed) && parsed > 0 ? Math.max(1, parsed) : 1;
+            const normalized = Number.isFinite(parsed) && parsed > 0 ? Math.max(0, parsed) : 0;
             baseLuck = normalized;
             currentLuck = normalized;
             setLuckSelectionSource(LUCK_SELECTION_SOURCE.MANUAL);
@@ -5309,11 +5329,11 @@ function runRollSimulation(options = {}) {
         playSoundEffect(audio.explosion, 'obtain');
     }
 
-    let parsedLuck = getNumericInputValue(luckField, { min: 1 });
+    let parsedLuck = getNumericInputValue(luckField, { min: 0 });
     if (!Number.isFinite(parsedLuck)) {
         parsedLuck = 1;
         const shouldFormatLuck = document.activeElement !== luckField;
-        setNumericInputValue(luckField, parsedLuck, { format: shouldFormatLuck, min: 1 });
+        setNumericInputValue(luckField, parsedLuck, { format: shouldFormatLuck, min: 0 });
     }
     const luckValue = Math.max(0, parsedLuck);
     const selectionState = collectBiomeSelectionState();
