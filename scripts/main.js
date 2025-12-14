@@ -1376,49 +1376,6 @@ function resolveBiomeAssetKey(biome, selectionState = null) {
     return 'normal';
 }
 
-function updateBloodRainWeather(biome) {
-    const container = document.querySelector('.climate--blood-rain');
-    if (!container) return;
-
-    const isActive = biome === 'bloodRain';
-    container.dataset.active = isActive ? 'true' : 'false';
-    if (!isActive) {
-        if (container.childElementCount > 0) {
-            container.replaceChildren();
-        }
-        container.dataset.initialized = 'false';
-        return;
-    }
-
-    let dropTotal = 80;
-    let viewportWidth = 1280;
-    let viewportHeight = 720;
-    if (typeof window !== 'undefined') {
-        viewportWidth = window.innerWidth || viewportWidth;
-        viewportHeight = window.innerHeight || viewportHeight;
-        const density = Math.max(72, Math.floor((viewportWidth * viewportHeight) / 22000));
-        dropTotal = Math.min(220, density);
-    }
-
-    container.replaceChildren();
-
-    const fragment = document.createDocumentFragment();
-    for (let i = 0; i < dropTotal; i++) {
-        const drop = document.createElement('span');
-        drop.className = 'blood-rain-drop';
-        const offsetX = randomDecimalBetween(0, 100);
-        const delay = randomDecimalBetween(0, 2.2);
-        const duration = randomDecimalBetween(1.2, 2.8);
-        drop.style.setProperty('--start-offset', `${offsetX}%`);
-        drop.style.setProperty('--travel-duration', `${duration}s`);
-        drop.style.setProperty('--start-delay', `${delay}s`);
-        fragment.appendChild(drop);
-    }
-
-    container.appendChild(fragment);
-    container.dataset.initialized = 'true';
-}
-
 function updateSnowWeather(biome) {
     const container = document.querySelector('.climate--snow');
     if (!container) return;
@@ -1785,14 +1742,11 @@ function applyBiomeTheme(biome, selectionState = null) {
 
     const body = document.body;
     const root = document.documentElement;
-    const isBloodRain = assetKey === 'bloodRain';
     const isSnowy = assetKey === 'snowy';
     if (body) {
-        body.classList.toggle('biome--blood-rain', isBloodRain);
         body.classList.toggle('biome--snowy', isSnowy);
     }
     if (root) {
-        root.classList.toggle('biome--blood-rain', isBloodRain);
         root.classList.toggle('biome--snowy', isSnowy);
     }
 
