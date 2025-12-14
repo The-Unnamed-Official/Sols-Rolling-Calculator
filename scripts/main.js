@@ -1380,7 +1380,8 @@ function updateSnowWeather(biome) {
     const container = document.querySelector('.climate--snow');
     if (!container) return;
 
-    const isActive = !appState.reduceMotion;
+    const shouldRenderSnow = biome === 'snowy';
+    const isActive = shouldRenderSnow && !appState.reduceMotion;
     container.dataset.active = isActive ? 'true' : 'false';
 
     if (!isActive) {
