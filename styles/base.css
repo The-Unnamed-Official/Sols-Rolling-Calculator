@@ -619,52 +619,6 @@ body.is-glitching .feed__viewport::after {
     overflow: hidden;
 }
 
-.climate--blood-rain {
-    display: none;
-    z-index: 2;
-    position: relative;
-    isolation: isolate;
-}
-
-.climate--blood-rain::before,
-.climate--blood-rain::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    opacity: 0;
-    transition: opacity 0.4s ease;
-}
-
-.climate--blood-rain::before {
-    background: linear-gradient(180deg, rgba(42, 0, 6, 0.65), rgba(10, 0, 2, 0.92));
-    z-index: -2;
-}
-
-.climate--blood-rain::after {
-    background:
-        radial-gradient(circle at 18% -10%, rgba(142, 16, 26, 0.35), transparent 55%),
-        radial-gradient(circle at 82% -5%, rgba(214, 42, 52, 0.25), transparent 58%);
-    mix-blend-mode: plus-lighter;
-    z-index: -1;
-}
-
-body.biome--blood-rain .climate--blood-rain {
-    display: block;
-}
-
-body.biome--blood-rain .climate--blood-rain::before,
-body.biome--blood-rain .climate--blood-rain::after {
-    opacity: 0.35;
-}
-
-body.biome--blood-rain .interface-backdrop__veil {
-    background:
-        radial-gradient(circle at 32% 12%, rgba(168, 8, 26, 0.32), transparent 58%),
-        radial-gradient(circle at 68% 6%, rgba(92, 0, 12, 0.35), transparent 60%),
-        linear-gradient(180deg, rgba(8, 0, 2, 0.82), rgba(4, 0, 0, 0.92));
-    backdrop-filter: blur(4px) saturate(1.1);
-}
-
 .forte {
     margin-top: auto;
 }
