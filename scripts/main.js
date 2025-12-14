@@ -1432,7 +1432,6 @@ function refreshBiomeWeatherEffects(selectionState = null, assetKeyOverride = nu
     const selection = selectionState || collectBiomeSelectionState();
     const biome = selection ? selection.canonicalBiome : 'normal';
     const assetKey = assetKeyOverride || resolveBiomeAssetKey(biome, selection);
-    updateBloodRainWeather(assetKey);
     updateSnowWeather(assetKey);
 }
 
