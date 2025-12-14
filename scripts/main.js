@@ -1506,10 +1506,10 @@ function scheduleGlitchWarbleCycle(bgMusic, chain) {
     }, Math.floor(randomDecimalBetween(650, 1080)));
 }
 
-const GLITCH_BURST_TRIGGER_CHANCE = 0.42;
+const GLITCH_BURST_TRIGGER_CHANCE = 0.99;
 
 function computeGlitchRestDelay() {
-    return Math.floor(randomDecimalBetween(8000, 16000));
+    return Math.floor(randomDecimalBetween(5000, 11000));
 }
 
 function computeGlitchBurstDuration() {
