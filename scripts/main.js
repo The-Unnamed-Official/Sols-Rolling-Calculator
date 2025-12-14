@@ -2586,7 +2586,6 @@ function handleOblivionPresetSelection(presetKey) {
         options.presetLabel = 'Oblivion Potion Preset';
     } else {
         options.activateOblivionPreset = false;
-        options.presetLabel = 'Godlike + Heavenly + Bound';
     }
 
     options.luckSource = LUCK_SELECTION_SOURCE.STANDARD_PRESET;
@@ -2609,7 +2608,6 @@ function handleDunePresetSelection(presetKey) {
         options.dunePresetLabel = 'Potion of Dune Preset';
     } else {
         options.activateDunePreset = false;
-        options.dunePresetLabel = 'Popping Potion Preset';
     }
 
     options.luckSource = LUCK_SELECTION_SOURCE.STANDARD_PRESET;
@@ -3063,7 +3061,7 @@ const EVENT_LIST = [
     { id: "valentine24", label: "Valentine 2024" },
     { id: "aprilFools24", label: "April Fools 2024" },
     { id: "summer24", label: "Summer 2024" },
-    { id: "ria24", label: "RIA Event 2024" },
+    { id: "ria24", label: "RIA 2024" },
     { id: "halloween24", label: "Halloween 2024" },
     { id: "winter24", label: "Winter 2024" },
     { id: "aprilFools25", label: "April Fools 2025" },
@@ -3573,9 +3571,11 @@ function setupLuckPresetAnimations() {
 
     const oneMillionButton = document.getElementById('luck-preset-one-million');
     const tenMillionButton = document.getElementById('luck-preset-ten-million');
+    const hundredMillionButton = document.getElementById('luck-preset-hundred-million');
 
     bindLuckPresetButtonAnimation(oneMillionButton, 'luck-preset-button--pop', ['luckPresetPop']);
     bindLuckPresetButtonAnimation(tenMillionButton, 'luck-preset-button--mega-pop', ['luckPresetMegaPop']);
+    bindLuckPresetButtonAnimation(hundredMillionButton, 'luck-preset-button--master-pop', ['luckPresetMasterPop']);
 }
 
 function setVersionButtonExpanded(state) {

@@ -105,11 +105,11 @@
                 <div class="banner__meta">
                     <h1 class="banner__title">Sols Rolling Simulator</h1>
                     <p class="banner__subtitle">
-                        <button type="button" class="banner__version-button" id="versionInfoButton" aria-haspopup="dialog" aria-expanded="false" aria-label="View update notes for version V1.509" data-version-id="v1509">V1.509</button>
+                        <button type="button" class="banner__version-button" id="versionInfoButton" aria-haspopup="dialog" aria-expanded="false" aria-label="View update notes for version V1.515" data-version-id="v1515">V1.515</button>
                         <span class="banner__subtitle-divider" aria-hidden="true">◉</span>
                         <span class="banner__subtitle-author">By <span class="banner__subtitle-author-name">not.unnamed</span></span>
                         <span class="banner__subtitle-divider" aria-hidden="true">◉</span>
-                        <span class="banner__subtitle-updated">Updated <time datetime="2025-12-11">2025/12/11</time></span>
+                        <span class="banner__subtitle-updated">Updated <time datetime="2025-12-11">2025/12/14</time></span>
                         <span class="banner__subtitle-divider" aria-hidden="true">◉</span>
                         <span class="banner__subtitle-eon">Sol's RNG Eon 1-11.1</span>
                     </p>
@@ -336,9 +336,9 @@
                                     <option value="heaven">Heaven</option>
                                     <option value="corruption">Corruption</option>
                                     <option value="null">Null</option>
-                                    <option value="cyberspace">Cyberspace</option>
-                                    <option value="dreamspace">Dreamspace</option>
-                                    <option value="glitch">Glitch</option>
+                                    <option value="cyberspace"><span class="sigil-outline-cyberspace">Cyberspace</span></option>
+                                    <option value="dreamspace"><span class="sigil-outline-dreamspace">Dreamspace</span></option>
+                                    <option value="glitch"><span class="sigil-outline-glitch">Glitch</span></option>
                                     <option value="limbo">Limbo</option>
                                     <option value="blazing">Blazing Sun</option>
                                     <option value="pumpkinMoon">Pumpkin Moon</option>
@@ -401,9 +401,9 @@
                             <option value="heaven">Heaven</option>
                             <option value="corruption">Corruption</option>
                             <option value="null">Null</option>
-                            <option value="cyberspace">Cyberspace</option>
-                            <option value="dreamspace">Dreamspace</option>
-                            <option value="glitch">Glitch</option>
+                            <option value="cyberspace"><span class="sigil-outline-cyberspace">Cyberspace</span></option>
+                            <option value="dreamspace"><span class="sigil-outline-dreamspace">Dreamspace</span></option>
+                            <option value="glitch"><span class="sigil-outline-glitch">Glitch</span></option>
                             <option value="pumpkinMoon">Pumpkin Moon</option>
                             <option value="graveyard">Graveyard</option>
                             <option value="bloodRain">Blood Rain</option>
@@ -423,35 +423,35 @@
                                 <div class="interface-select__menu" id="event-option-list" role="listbox" aria-multiselectable="true">
                                     <label class="interface-select__option interface-select__option--checkbox">
                                         <input type="checkbox" value="valentine24" data-event-id="valentine24">
-                                        <span class="interface-select__option-label">Valentine 2024</span>
+                                        <span class="interface-select__option-label"><span class="sigil-outline-valentine">Valentine</span> 2024</span>
                                     </label>
                                     <label class="interface-select__option interface-select__option--checkbox">
                                         <input type="checkbox" value="aprilFools24" data-event-id="aprilFools24">
-                                        <span class="interface-select__option-label">April Fools 2024</span>
+                                        <span class="interface-select__option-label"><span class="sigil-outline-april">April Fools</span> 2024</span>
                                     </label>
                                     <label class="interface-select__option interface-select__option--checkbox">
                                         <input type="checkbox" value="summer24" data-event-id="summer24">
-                                        <span class="interface-select__option-label">Summer 2024</span>
+                                        <span class="interface-select__option-label"><span class="sigil-outline-summer">Summer</span> 2024</span>
                                     </label>
                                     <label class="interface-select__option interface-select__option--checkbox">
                                         <input type="checkbox" value="ria24" data-event-id="ria24">
-                                        <span class="interface-select__option-label">RIA Event 2024</span>
+                                        <span class="interface-select__option-label"><span class="sigil-outline-innovator">RIA</span> 2024</span>
                                     </label>
                                     <label class="interface-select__option interface-select__option--checkbox">
                                         <input type="checkbox" value="halloween24" data-event-id="halloween24">
-                                        <span class="interface-select__option-label">Halloween 2024</span>
+                                        <span class="interface-select__option-label"><span class="sigil-outline-halloween">Halloween</span> 2024</span>
                                     </label>
                                     <label class="interface-select__option interface-select__option--checkbox">
                                         <input type="checkbox" value="winter24" data-event-id="winter24">
-                                        <span class="interface-select__option-label">Winter 2024</span>
+                                        <span class="interface-select__option-label"><span class="sigil-outline-winter">Winter</span> 2024</span>
                                     </label>
                                     <label class="interface-select__option interface-select__option--checkbox">
                                         <input type="checkbox" value="aprilFools25" data-event-id="aprilFools25">
-                                        <span class="interface-select__option-label">April Fools 2025</span>
+                                        <span class="interface-select__option-label"><span class="sigil-outline-april">April Fools</span> 2025</span>
                                     </label>
                                     <label class="interface-select__option interface-select__option--checkbox">
                                         <input type="checkbox" value="summer25" data-event-id="summer25">
-                                        <span class="interface-select__option-label">Summer 2025</span>
+                                        <span class="interface-select__option-label"><span class="sigil-outline-summer">Summer</span> 2025</span>
                                     </label>
                                     <label class="interface-select__option interface-select__option--checkbox">
                                         <input type="checkbox" value="halloween25" data-event-id="halloween25">
@@ -462,10 +462,10 @@
                         </div>
                     </div>
                     <div class="quick-action-group">
-                        <button class="interface-button interface-button--ghost" type="button" onclick="setGlitchPreset()">Set Glitch</button>
-                        <button class="interface-button interface-button--ghost" type="button" onclick="setCyberspacePreset()">Set Cyberspace</button>
-                        <button class="interface-button interface-button--ghost" type="button" onclick="setDreamspacePreset()">Set Dreamspace</button>
-                        <button class="interface-button interface-button--ghost" type="button" onclick="setLimboPreset()">Set Limbo</button>
+                        <button class="interface-button interface-button--ghost" type="button" onclick="setGlitchPreset()">Set <span class="sigil-outline-glitch">Glitch</span></button>
+                        <button class="interface-button interface-button--ghost" type="button" onclick="setCyberspacePreset()">Set <span class="sigil-outline-cyberspace">Cyberspace</span></button>
+                        <button class="interface-button interface-button--ghost" type="button" onclick="setDreamspacePreset()">Set <span class="sigil-outline-dreamspace">Dreamspace</span></button>
+                        <button class="interface-button interface-button--ghost" type="button" onclick="setLimboPreset()">Set <span class="sigil-outline-limbo">Limbo</span></button>
                         <button class="interface-button interface-button--ghost" type="button" onclick="setRoePreset()">Use RoE</button>
                         <button class="interface-button interface-button--ghost" type="button" onclick="resetBiomeChoice()">Reset Biome</button>
                     </div>
@@ -502,37 +502,22 @@
                             <span class="preset-collection__title-divider preset-collection__title-divider--end" aria-hidden="true"></span>
                         </h3>
                         <div class="preset-matrix" id="luck-preset-panel">
-                            <button type="button" id="luck-preset-ten-million" data-luck-value="10000000" onclick="applyLuckValue(10000000, { luckSource: 'standard-preset' })">10 Million Preset 10,000,000×</button>
-                            <button type="button" id="luck-preset-one-million" data-luck-value="1000000" onclick="applyLuckValue(1000000, { luckSource: 'standard-preset' })">1 Million Preset 1,000,000×</button>
-                            <button type="button" data-luck-value="700000" onclick="applyLuckValue(700000, { luckSource: 'standard-preset' })">Pump King's Blood 700,000×</button>
-                            <button type="button" data-luck-value="690000" onclick="applyLuckValue(690000, { luckSource: 'standard-preset' })">Godlike + Heavenly + Candy Corn + Bound + Popping + Tutorial Potion 690,000×</button>
-                            <details id="oblivion-preset-menu" class="preset-toggle">
-                                <summary class="preset-toggle__summary">
-                                    <span class="preset-toggle__title">Oblivion / Godlike + Bound + Heavenly 600,000×</span>
-                                    <span id="oblivion-preset-label" class="preset-toggle__selection preset-toggle__selection--placeholder">Select preset</span>
-                                </summary>
-                                <div class="preset-toggle__options">
-                                    <button type="button" data-luck-value="600000" onclick="handleOblivionPresetSelection('oblivion')">Oblivion Potion Preset 600,000×</button>
-                                    <button type="button" data-luck-value="600000" onclick="handleOblivionPresetSelection('classic')">Godlike + Heavenly + Bound 600,000×</button>
-                                </div>
-                            </details>
-                            <button type="button" data-luck-value="400000" onclick="applyLuckValue(400000, { luckSource: 'standard-preset' })">Godlike Potion 400,000×</button>
-                            <button type="button" id="void-heart-trigger" data-luck-value="300000" style="display:none;" onclick="applyLuckValue(300000, { luckSource: 'standard-preset' })">Void Heart 300,000×</button>
-                            <button type="button" data-luck-value="200000" onclick="applyLuckValue(200000, { luckSource: 'standard-preset' })">Heavenly + Bound 200,000×</button>
-                            <button type="button" data-luck-value="150000" onclick="applyLuckValue(150000, { luckSource: 'standard-preset' })">Heavenly Potion 150,000×</button>
-                            <button type="button" data-luck-value="75000" onclick="applyLuckValue(75000, { luckSource: 'standard-preset' })">Candy Corn 75,000×</button>
-                            <button type="button" data-luck-value="50000" onclick="applyLuckValue(50000, { luckSource: 'standard-preset' })">Bound Potion 50,000×</button>
-                            <details id="dune-preset-menu" class="preset-toggle">
-                                <summary class="preset-toggle__summary">
-                                    <span class="preset-toggle__title">Popping Potion / Potion of Dune 10,000×</span>
-                                    <span id="dune-preset-label" class="preset-toggle__selection preset-toggle__selection--placeholder">Select preset</span>
-                                </summary>
-                                <div class="preset-toggle__options">
-                                    <button type="button" data-luck-value="10000" onclick="handleDunePresetSelection('dune')">Potion of Dune Preset 10,000×</button>
-                                    <button type="button" data-luck-value="10000" onclick="handleDunePresetSelection('popping')">Popping Potion Preset 10,000×</button>
-                                </div>
-                            </details>
-                            <button type="button" data-luck-value="5000" onclick="applyLuckValue(5000, { luckSource: 'standard-preset' })">Tutorial Potion 5,000×</button>
+                            <button type="button" id="luck-preset-hundred-million" data-luck-value="100000000" onclick="applyLuckValue(100000000, { luckSource: 'standard-preset' })">100 Million Preset +100,000,000</button>
+                            <button type="button" id="luck-preset-ten-million" data-luck-value="10000000" onclick="applyLuckValue(10000000, { luckSource: 'standard-preset' })">10 Million Preset +10,000,000</button>
+                            <button type="button" id="luck-preset-one-million" data-luck-value="1000000" onclick="applyLuckValue(1000000, { luckSource: 'standard-preset' })">1 Million Preset +1,000,000</button>
+                            <button type="button" data-luck-value="700000" onclick="applyLuckValue(700000, { luckSource: 'standard-preset' })"><span class="pumpBloodClass">Pump King's Blood</span> +700,000</button>
+                            <button type="button" data-luck-value="690000" onclick="applyLuckValue(690000, { luckSource: 'standard-preset' })"><span class="allPotionsClass">All Potions</span> +690,000</button>
+                            <button type="button" data-luck-value="600000" onclick="handleOblivionPresetSelection('oblivion')"><span class="oblivionClass">Oblivion Potion</span> +600,000</button>
+                            <button type="button" data-luck-value="600000" onclick="applyLuckValue(600000, { luckSource: 'standard-preset' })"><span class="godlikeClass">Godlike</span> + <span class="heavenlyClass">Heavenly</span> + <span class="boundClass">Bound</span> +600,000</button>
+                            <button type="button" data-luck-value="400000" onclick="applyLuckValue(400000, { luckSource: 'standard-preset' })"><span class="godlikeClass">Godlike</span> +400,000</button>
+                            <button type="button" id="void-heart-trigger" data-luck-value="300000" style="display:none;" onclick="applyLuckValue(300000, { luckSource: 'standard-preset' })">Void Heart +300,000</button>
+                            <button type="button" data-luck-value="200000" onclick="applyLuckValue(200000, { luckSource: 'standard-preset' })"><span class="heavenlyClass">Heavenly</span> + <span class="boundClass">Bound</span> +200,000</button>
+                            <button type="button" data-luck-value="150000" onclick="applyLuckValue(150000, { luckSource: 'standard-preset' })"><span class="heavenlyClass">Heavenly</span> +150,000</button>
+                            <button type="button" data-luck-value="75000" onclick="applyLuckValue(75000, { luckSource: 'standard-preset' })"><span class="candyClass">Candy Corn</span> +75,000</button>
+                            <button type="button" data-luck-value="50000" onclick="applyLuckValue(50000, { luckSource: 'standard-preset' })"><span class="boundClass">Bound</span> +50,000</button>
+                            <button type="button" data-luck-value="10000" onclick="handleDunePresetSelection('dune')"><span class="duneClass">Potion of the Dune</span> +10,000</button>
+                            <button type="button" data-luck-value="10000" onclick="applyLuckValue(10000, { luckSource: 'standard-preset' })"><span class="popClass">Popping Potion</span> +10,000</button>
+                            <button type="button" data-luck-value="5000" onclick="applyLuckValue(5000, { luckSource: 'standard-preset' })"><span class="tutPotion">Tutorial Potion</span> +5,000</button>
                         </div>
                     </div>
                     <div class="preset-collection preset-collection--compact">
@@ -542,12 +527,12 @@
                             <span class="preset-collection__title-divider preset-collection__title-divider--end" aria-hidden="true"></span>
                         </h3>
                         <div class="preset-matrix preset-matrix--compact" id="device-buff-preset-panel">
-                            <button type="button" onclick="applyDeviceBuffPreset(29.11)">Genesis Drive + Max Luck x29.11</button>
-                            <button type="button" onclick="applyDeviceBuffPreset(34.11)">Genesis Drive + Pole Light Core + Max Luck x34.11</button>
-                            <button type="button" onclick="applyDeviceBuffPreset(68.22)">Genesis Drive + Pole Light Core + Max Luck + Bonus Roll x68.22</button>
-                            <button type="button" onclick="applyDeviceBuffPreset(33.61)">Genesis Drive + Max Luck + Event buffs x33.61</button>
-                            <button type="button" onclick="applyDeviceBuffPreset(38.61)">Genesis Drive + Pole Light Core + Max Luck + Event buffs x38.61</button>
-                            <button type="button" onclick="applyDeviceBuffPreset(77.22)">Genesis Drive + Pole Light Core + Max Luck + Event buffs + Bonus Roll x77.22</button>
+                            <button type="button" onclick="applyDeviceBuffPreset(22.39)"><span class="genesisClass">Genesis Drive</span> + Max Luck x22.39</button>
+                            <button type="button" onclick="applyDeviceBuffPreset(26.24)"><span class="genesisClass">Genesis Drive</span> + <span class="plcClass">Pole Light Core</span> + Max Luck x26.24</button>
+                            <button type="button" onclick="applyDeviceBuffPreset(52.47)"><span class="genesisClass">Genesis Drive</span> + <span class="plcClass">Pole Light Core</span> + Max Luck + Bonus Roll x52.47</button>
+                            <button type="button" onclick="applyDeviceBuffPreset(25.85)"><span class="genesisClass">Genesis Drive</span> + Max Luck + Event buffs x25.85</button>
+                            <button type="button" onclick="applyDeviceBuffPreset(29.7)"><span class="genesisClass">Genesis Drive</span> + <span class="plcClass">Pole Light Core</span> + Max Luck + Event buffs x29.70</button>
+                            <button type="button" onclick="applyDeviceBuffPreset(59.4)"><span class="genesisClass">Genesis Drive</span> + <span class="plcClass">Pole Light Core</span> + Max Luck + Event buffs + Bonus Roll x59.40</button>
                         </div>
                     </div>
                     <div class="preset-collection">
@@ -776,14 +761,33 @@
                 Close
             </button>
             <div class="changelog-modal__tabbar" role="tablist" aria-label="Changelog versions" data-changelog-tablist>
+                <!-- <button
+                    type="button"
+                    class="changelog-tab changelog-tab--active"
+                    id="changelog-tab-v1521"
+                    role="tab"
+                    aria-controls="changelog-panel-v1521"
+                    aria-selected="true"
+                    data-changelog-tab="v1521"
+                >V1.521</button> -->
+                <button
+                    type="button"
+                    class="changelog-tab changelog-tab--active"
+                    id="changelog-tab-v1515"
+                    role="tab"
+                    aria-controls="changelog-panel-v1515"
+                    aria-selected="true"
+                    data-changelog-tab="v1515"
+                >V1.515</button>
                 <button
                     type="button"
                     class="changelog-tab changelog-tab--active"
                     id="changelog-tab-v1509"
                     role="tab"
                     aria-controls="changelog-panel-v1509"
-                    aria-selected="true"
+                    aria-selected="false"
                     data-changelog-tab="v1509"
+                    tabindex="-1"
                 >V1.509</button>
                 <button
                     type="button"
@@ -868,13 +872,85 @@
             </div>
 
             <div class="changelog-modal__panels" data-changelog-panels>
+                <!-- <section
+                    id="changelog-panel-v1521"
+                    class="changelog-modal__panel"
+                    role="tabpanel"
+                    aria-labelledby="changelog-tab-v1521"
+                    data-changelog-panel="v1521"
+                    tabindex="0"
+                >
+                    <header class="changelog-modal__header">
+                        <h2 class="changelog-modal__title" id="versionChangelogTitle">Version V1.521 Update Notes</h2>
+                        <p class="changelog-modal__meta">Updated 2025/12/20</p>
+                    </header>
+                    <p class="changelog-modal__intro">Latest changes:</p>
+                    <ul class="changelog-modal__list">
+                        <li><span class="sigil-outline-winter">Winter Event 2025</span>!</li>
+                        Now that the <span class="sigil-outline-winter">Winter Event</span> of 2025 has begun, everything within the update has been included in this update too :D
+                        <ul>
+                            <li>Added x auras:</li>
+                            <ul>
+                                <li><span class="sigil-outline-winter">Aura1</span></li>
+                                1 in xxx
+                                <li><span class="sigil-outline-winter">Aura2</span></li>
+                                1 in xxx
+                                <li><span class="sigil-outline-winter">Aura3</span></li>
+                                1 in xxx
+                                <li><span class="sigil-outline-winter">Aura4</span></li>
+                                1 in xxx
+                                <li><span class="sigil-outline-winter">Aura5</span></li>
+                                1 in xxx
+                                <li><span class="sigil-outline-winter">Aura6</span></li>
+                                1 in xxx
+                                <li><span class="sigil-outline-winter">Aura7</span></li>
+                                1 in xxx
+                                <li><span class="sigil-outline-winter">Aura8</span></li>
+                                1 in xxx
+                                <li><span class="sigil-outline-winter">Aura9</span></li>
+                                1 in xxx
+                                <li><span class="sigil-outline-winter">Aura10</span></li>
+                                1 in xxx
+                                <li><span class="sigil-outline-winter">Aura11</span></li>
+                                1 in xxx
+                                <li><span class="sigil-outline-winter">Aura12</span></li>
+                                1 in xxx
+                            </ul>
+                            <li>Snowy biome is now the default for normal biome</li>
+                        </ul>
+                    </ul>
+                </section> -->
+                <section
+                    id="changelog-panel-v1521"
+                    class="changelog-modal__panel"
+                    role="tabpanel"
+                    aria-labelledby="changelog-tab-v1521"
+                    data-changelog-panel="v1521"
+                    tabindex="0"
+                >
+                    <header class="changelog-modal__header">
+                        <h2 class="changelog-modal__title" id="versionChangelogTitle">Version V1.521 Update Notes</h2>
+                        <p class="changelog-modal__meta">Updated 2025/12/20</p>
+                    </header>
+                    <p class="changelog-modal__intro">Latest changes:</p>
+                    <ul class="changelog-modal__list">
+                        <li>Happy <span class="sigil-outline-winter">Holidays</span> & <span class="christmasClass">Merry Christmas</span>!</li>
+                        <ul>
+                            Have fun with some extra snow on the forecast in the next <span class="sigil-outline-winter">2 months</span>!
+                        </ul>
+                        
+                        <li>Improved <span class="allPotionsClass">color</span> and display for <span class="oblivionClass">pr</span><span class="godlikeClass">ese</span><span class="duneClass">ts</span>, <span class="popClass"></span>, <span class="sigil-outline-glitch">bi</span><span class="sigil-outline-dreamspace">om</span><span class="sigil-outline-cyberspace">es</span> and <span class="moreClass">more</span> to give it all a more <span class="plcClass">pleseant</span> look :D</li>
+                        <p>If there's colors or any form of display that seems difficult to read or understand, please contact me about it so I can fix it ASAP. <a href="https://github.com/The-Unnamed-Official/Sols-Rolling-Calculator/issues/new" target="_blank">Click here</a> and give a slight or extremely detailed explenation of your issue</p>
+                    </ul>
+                </section>
                 <section
                     id="changelog-panel-v1509"
                     class="changelog-modal__panel"
                     role="tabpanel"
                     aria-labelledby="changelog-tab-v1509"
                     data-changelog-panel="v1509"
-                    tabindex="0"
+                    hidden
+                    tabindex="-1"
                 >
                     <header class="changelog-modal__header">
                         <h2 class="changelog-modal__title" id="versionChangelogTitle">Version V1.509 Update Notes</h2>

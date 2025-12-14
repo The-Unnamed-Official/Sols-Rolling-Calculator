@@ -113,6 +113,40 @@
     }
 }
 
+@keyframes luckPresetMassiveShake {
+    0%,
+    100% {
+        transform: translateY(var(--button-raise)) scale(var(--button-scale)) translateX(0) rotate(0deg);
+    }
+    10% {
+        transform: translateY(var(--button-raise)) scale(var(--button-scale)) translateX(-8px) rotate(-6deg);
+    }
+    20% {
+        transform: translateY(var(--button-raise)) scale(var(--button-scale)) translateX(8px) rotate(6deg);
+    }
+    30% {
+        transform: translateY(var(--button-raise)) scale(var(--button-scale)) translateX(-10px) rotate(-8deg);
+    }
+    40% {
+        transform: translateY(var(--button-raise)) scale(var(--button-scale)) translateX(10px) rotate(8deg);
+    }
+    50% {
+        transform: translateY(var(--button-raise)) scale(var(--button-scale)) translateX(-6px) rotate(-4deg);
+    }
+    60% {
+        transform: translateY(var(--button-raise)) scale(var(--button-scale)) translateX(6px) rotate(4deg);
+    }
+    70% {
+        transform: translateY(var(--button-raise)) scale(var(--button-scale)) translateX(-4px) rotate(-2deg);
+    }
+    80% {
+        transform: translateY(var(--button-raise)) scale(var(--button-scale)) translateX(4px) rotate(2deg);
+    }
+    90% {
+        transform: translateY(var(--button-raise)) scale(var(--button-scale)) translateX(-2px) rotate(-1deg);
+    }
+}
+
 @keyframes luckPresetPop {
     0% {
         --button-pop-scale: 1;
@@ -154,6 +188,31 @@
         --button-pop-scale: 1.18;
         --button-pop-raise: -8px;
         box-shadow: 0 24px 38px rgba(0, 6, 18, 0.36), 0 0 24px rgba(127, 227, 255, 0.28);
+    }
+    100% {
+        --button-pop-scale: 1;
+        --button-pop-raise: 0px;
+        --button-pop-rotation: 0deg;
+        box-shadow: 0 0 0 rgba(0, 0, 0, 0);
+    }
+}
+
+@keyframes luckPresetMasterPop {
+    0% {
+        --button-pop-scale: 1;
+        --button-pop-raise: 0px;
+        --button-pop-rotation: 0deg;
+        box-shadow: 0 0 0 rgba(0, 0, 0, 0);
+    }
+    24% {
+        --button-pop-scale: 1.7;
+        --button-pop-raise: -56px;
+        box-shadow: 0 38px 62px rgba(0, 23, 68, 0.5), 0 0 36px rgba(127, 227, 255, 0.42);
+    }
+    56% {
+        --button-pop-scale: 1.38;
+        --button-pop-raise: -18px;
+        box-shadow: 0 24px 38px rgba(0, 19, 58, 0.36), 0 0 24px rgba(127, 227, 255, 0.28);
     }
     100% {
         --button-pop-scale: 1;
