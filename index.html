@@ -26,6 +26,7 @@
     <div class="interface-backdrop" aria-hidden="true">
         <video class="interface-backdrop__video" autoplay loop muted playsinline preload="auto" aria-hidden="true"></video>
         <div class="climate climate--blood-rain" aria-hidden="true"></div>
+        <div class="climate climate--snow" aria-hidden="true"></div>
         <div class="interface-backdrop__veil"></div>
     </div>
 
@@ -510,7 +511,10 @@
                             <button type="button" data-luck-value="600000" onclick="handleOblivionPresetSelection('oblivion')"><span class="oblivionClass">Oblivion Potion</span> +600,000</button>
                             <button type="button" data-luck-value="600000" onclick="applyLuckValue(600000, { luckSource: 'standard-preset' })"><span class="godlikeClass">Godlike</span> + <span class="heavenlyClass">Heavenly</span> + <span class="boundClass">Bound</span> +600,000</button>
                             <button type="button" data-luck-value="400000" onclick="applyLuckValue(400000, { luckSource: 'standard-preset' })"><span class="godlikeClass">Godlike</span> +400,000</button>
-                            <button type="button" id="void-heart-trigger" data-luck-value="300000" style="display:none;" onclick="applyLuckValue(300000, { luckSource: 'standard-preset' })">Void Heart +300,000</button>
+                            <button type="button" id="void-heart-trigger" data-luck-value="300000" data-limbo-only="true" style="display:none;" onclick="applyLuckValue(300000, { luckSource: 'standard-preset' })">Void Heart +300,000</button>
+                            <button type="button" data-luck-value="0.7" data-limbo-only="true" style="display:none;" onclick="applyLuckValue(0.7, { luckSource: 'standard-preset' })">Forbidden I +70%</button>
+                            <button type="button" data-luck-value="3.25" data-limbo-only="true" style="display:none;" onclick="applyLuckValue(3.25, { luckSource: 'standard-preset' })">Forbidden II +325%</button>
+                            <button type="button" data-luck-value="13.5" data-limbo-only="true" style="display:none;" onclick="applyLuckValue(13.5, { luckSource: 'standard-preset' })">Forbidden III +1,350%</button>
                             <button type="button" data-luck-value="200000" onclick="applyLuckValue(200000, { luckSource: 'standard-preset' })"><span class="heavenlyClass">Heavenly</span> + <span class="boundClass">Bound</span> +200,000</button>
                             <button type="button" data-luck-value="150000" onclick="applyLuckValue(150000, { luckSource: 'standard-preset' })"><span class="heavenlyClass">Heavenly</span> +150,000</button>
                             <button type="button" data-luck-value="75000" onclick="applyLuckValue(75000, { luckSource: 'standard-preset' })"><span class="candyClass">Candy Corn</span> +75,000</button>
