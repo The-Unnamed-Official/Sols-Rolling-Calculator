@@ -637,12 +637,22 @@ body.is-glitching .feed__viewport::after {
     will-change: transform;
 }
 
+body.biome--glitch .snowflake {
+    animation-name: snow-fall-glitch;
+    animation-duration: calc(var(--fall-duration, 12s) * 0.18);
+    animation-timing-function: steps(3, jump-both);
+}
+
 .snowflake__icon {
     display: block;
     color: #ccdfff;
     font-size: calc(16px * var(--size, 1));
     animation: snow-spin var(--spin-duration, 14s) linear infinite;
     transform-origin: center;
+}
+
+body.biome--glitch .snowflake__icon {
+    animation: snow-spin-glitch 0.9s steps(4, end) infinite;
 }
 
 @keyframes snow-fall {
@@ -657,12 +667,57 @@ body.is-glitching .feed__viewport::after {
     }
 }
 
+@keyframes snow-fall-glitch {
+    0% {
+        transform: translate3d(calc(-50% + var(--drift, 0px)), -140%, 0);
+    }
+    10% {
+        transform: translate3d(calc(-50% + (var(--drift, 0px) * -0.4)), 36vh, 0);
+    }
+    22% {
+        transform: translate3d(calc(-50% + (var(--drift, 0px) * 1.35)), -32vh, 0);
+    }
+    38% {
+        transform: translate3d(calc(-50% + (var(--drift, 0px) * 0.12)), 110vh, 0);
+    }
+    52% {
+        transform: translate3d(calc(-50% + (var(--drift, 0px) * -0.8)), -64vh, 0);
+    }
+    68% {
+        transform: translate3d(calc(-50% + (var(--drift, 0px) * 0.6)), 140vh, 0);
+    }
+    84% {
+        transform: translate3d(calc(-50% + (var(--drift, 0px) * -0.18)), -90vh, 0);
+    }
+    100% {
+        transform: translate3d(calc(-50% + var(--drift, 0px)), 120vh, 0);
+    }
+}
+
 @keyframes snow-spin {
     from {
         transform: rotate(0deg);
     }
     to {
         transform: rotate(360deg);
+    }
+}
+
+@keyframes snow-spin-glitch {
+    0% {
+        transform: rotate(-25deg) scale(1.05);
+    }
+    30% {
+        transform: rotate(180deg) scale(0.85);
+    }
+    55% {
+        transform: rotate(-120deg) scale(1.1);
+    }
+    80% {
+        transform: rotate(320deg) scale(0.88);
+    }
+    100% {
+        transform: rotate(-40deg) scale(1.02);
     }
 }
 
