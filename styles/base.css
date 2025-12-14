@@ -612,64 +612,61 @@ body.is-glitching .feed__viewport::after {
     z-index: 1;
 }
 
-.climate {
+.snow-field {
     position: absolute;
     inset: 0;
     pointer-events: none;
     overflow: hidden;
-}
-
-.climate--snow {
     display: none;
     z-index: 2;
-    position: relative;
-    isolation: isolate;
 }
 
-.snow-flake {
+.snow-field[data-active="true"] {
+    display: block;
+}
+
+.snowflake {
     position: absolute;
     top: -12%;
     left: var(--x, 50%);
-    width: calc(6px * var(--size, 1));
-    height: calc(6px * var(--size, 1));
-    background: radial-gradient(circle, rgba(255, 255, 255, 0.95), rgba(220, 235, 255, 0.9) 42%, rgba(255, 255, 255, 0.6));
-    border-radius: 999px;
     opacity: var(--opacity, 0.8);
-    filter: drop-shadow(0 0 4px rgba(255, 255, 255, 0.55));
-    animation: snow-fall var(--fall-duration, 8s) linear infinite;
+    transform: translate3d(calc(-50% + var(--drift, 0px)), -140%, 0);
+    filter: drop-shadow(0 0 6px rgba(204, 223, 255, 0.65));
+    animation: snow-fall var(--fall-duration, 12s) linear infinite;
     animation-delay: calc(-1 * var(--fall-delay, 0s));
-    transform: translate3d(calc(-50% + var(--drift, 0px)), -140%, 0) rotateZ(var(--spin, 0deg));
-    will-change: transform, opacity;
+    will-change: transform;
 }
 
-.snow-flake::after {
-    content: '';
-    position: absolute;
-    inset: -40%;
-    background: radial-gradient(circle, rgba(255, 255, 255, 0.24), transparent 65%);
-    opacity: 0.8;
-    border-radius: inherit;
+.snowflake__icon {
+    display: block;
+    color: #ccdfff;
+    font-size: calc(16px * var(--size, 1));
+    animation: snow-spin var(--spin-duration, 14s) linear infinite;
+    transform-origin: center;
 }
 
 @keyframes snow-fall {
     0% {
-        transform: translate3d(calc(-50% + var(--drift, 0px)), -140%, 0) rotateZ(var(--spin, 0deg));
-        opacity: 0;
+        transform: translate3d(calc(-50% + var(--drift, 0px)), -140%, 0);
     }
-    14% {
-        opacity: var(--opacity, 0.85);
+    16% {
+        transform: translate3d(calc(-50% + (var(--drift, 0px) * 0.75)), -80%, 0);
     }
     100% {
-        transform: translate3d(calc(-50% + var(--drift, 0px)), 120vh, 0) rotateZ(calc(var(--spin, 0deg) + 90deg));
-        opacity: 0;
+        transform: translate3d(calc(-50% + var(--drift, 0px)), 120vh, 0);
     }
 }
 
-body.biome--snowy .climate--snow {
-    display: block;
+@keyframes snow-spin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
 }
 
-body.reduce-motion .climate--snow {
+body.reduce-motion .snow-field {
     display: none;
 }
 
