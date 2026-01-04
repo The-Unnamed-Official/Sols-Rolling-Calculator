@@ -35,6 +35,7 @@
             uiVolume: DEFAULT_AUDIO_LEVEL,
             uiLastVolume: DEFAULT_AUDIO_LEVEL,
             cutsceneVolume: DEFAULT_AUDIO_LEVEL,
+            masterMuted: false,
             context: null,
             bufferCache: new Map(),
             bufferPromises: new Map(),
