@@ -3055,11 +3055,11 @@ const EVENT_LIST = [
     { id: "summer24", label: "Summer 2024" },
     { id: "ria24", label: "RIA 2024" },
     { id: "halloween24", label: "Halloween 2024" },
-    { id: "winter24", label: "Winter 2024" },
+    { id: "winter25", label: "Winter 2025" },
     { id: "aprilFools25", label: "April Fools 2025" },
     { id: "summer25", label: "Summer 2025" },
     { id: "halloween25", label: "Halloween 2025" },
-    { id: "winter25", label: "Winter 2025" },
+    { id: "winter26", label: "Winter 2026" },
 ];
 
 const EVENT_LABEL_MAP = new Map(EVENT_LIST.map(({ id, label }) => [id, label]));
@@ -3098,7 +3098,7 @@ const EVENT_AURA_LOOKUP = {
         "Lunar : Nightfall - 3,000,000",
         "Pump - 200,000",
     ],
-    winter24: [
+    winter25: [
         "Atlas : Yuletide - 510,000,000",
         "Abominable - 120,000,000",
         "Express - 90,000,000",
@@ -3143,7 +3143,7 @@ const EVENT_AURA_LOOKUP = {
         "Lunar : Cultist - 2,000,000",
         "Afterparty - 440,000,000"
     ],
-    winter25: [
+    winter26: [
         '',
     ],
 };
