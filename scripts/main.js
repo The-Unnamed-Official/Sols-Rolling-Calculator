@@ -2568,6 +2568,7 @@ const auraOutlineOverrides = new Map([
     ['Lunar : Cultist', 'sigil-outline-blood'],
     ['Werefolf', 'sigil-outline-blood'],
     ['Bloodgarden', 'sigil-outline-blood'],
+    ['Cryogenic', 'sigil-outline-cryogenic'],
 ]);
 
 const glitchOutlineNames = new Set(['Fault', 'Glitch', 'Oppression']);
@@ -6344,6 +6345,17 @@ const SHARE_IMAGE_OUTLINE_STYLES = Object.freeze({
             { color: 'rgba(40, 120, 170, 0.92)', blur: 0, offsetX: -1, offsetY: 1 },
             { color: 'rgba(40, 120, 170, 0.92)', blur: 0, offsetX: 1, offsetY: -1 },
             { color: 'rgba(40, 120, 170, 0.92)', blur: 0, offsetX: -1, offsetY: -1 }
+        ]
+    },
+    'sigil-outline-cryogenic': {
+        fill: '#e9f8ff',
+        shadows: [
+            { color: 'rgba(150, 230, 255, 0.95)', blur: 6 },
+            { color: 'rgba(90, 190, 255, 0.9)', blur: 14 },
+            { color: 'rgba(20, 110, 160, 0.95)', blur: 0, offsetX: 2, offsetY: 2 },
+            { color: 'rgba(20, 110, 160, 0.95)', blur: 0, offsetX: -2, offsetY: 2 },
+            { color: 'rgba(20, 110, 160, 0.95)', blur: 0, offsetX: 2, offsetY: -2 },
+            { color: 'rgba(20, 110, 160, 0.95)', blur: 0, offsetX: -2, offsetY: -2 }
         ]
     },
     'sigil-outline-blood': {
