@@ -906,6 +906,7 @@ function canUseMediaElementSource(element) {
 }
 
 function getChannelVolumeMultiplier(category = 'obtain') {
+    if (appState.audio.masterMuted) return 0;
     if (category === 'ui') return clamp01(appState.audio.uiVolume ?? 1);
     if (category === 'cutscene') return clamp01(appState.audio.cutsceneVolume ?? 1);
     if (category === 'music') return clamp01(appState.audio.musicVolume ?? 1);
@@ -965,6 +966,7 @@ function applyMediaGain(element, { category = 'obtain', fallbackGain } = {}) {
 }
 
 function isSoundChannelActive(category) {
+    if (appState.audio.masterMuted) return false;
     const channelVolume = getChannelVolumeMultiplier(category);
     if (channelVolume <= 0) return false;
     if (category === 'ui') return appState.audio.ui;
@@ -1156,6 +1158,33 @@ function startBackgroundMusic(bgMusic) {
         });
         return;
     }
+}
+
+function updateMasterMuteToggleButton() {
+    const masterMuteToggle = document.getElementById('masterMuteToggle');
+    if (!masterMuteToggle) return;
+    masterMuteToggle.textContent = appState.audio.masterMuted ? 'Unmute' : 'Mute';
+    masterMuteToggle.setAttribute('aria-pressed', appState.audio.masterMuted ? 'true' : 'false');
+}
+
+function setMasterMuteState(isMuted) {
+    if (appState.audio.masterMuted === isMuted) {
+        updateMasterMuteToggleButton();
+        return;
+    }
+
+    appState.audio.masterMuted = isMuted;
+    updateMasterMuteToggleButton();
+
+    ['music', 'obtain', 'cutscene', 'ui'].forEach(channel => applyChannelVolumeToElements(channel));
+
+    if (!isMuted) {
+        resumeAudioEngine();
+    }
+}
+
+function toggleMasterMute() {
+    setMasterMuteState(!appState.audio.masterMuted);
 }
 
 function toggleRollingAudio() {
@@ -2562,6 +2591,11 @@ function resolveAuraStyleClass(aura, biome) {
     if (name.startsWith('Nyctophobia')) classes.push('sigil-effect-nyctophobia');
 
     const auraData = typeof aura === 'string' ? null : aura;
+    const auraEventId = auraData ? getAuraEventId(auraData) : null;
+
+    if (auraEventId === 'winter26') {
+        classes.push('sigil-outline-winter-2026');
+    }
 
     if (auraMatchesAnyBiome(auraData, ['pumpkinMoon', 'graveyard'])) {
         classes.push('sigil-outline-halloween');
@@ -4745,6 +4779,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     setupShareInterface();
     initializeAudioSettingsPanel();
+    const masterMuteToggle = document.getElementById('masterMuteToggle');
+    if (masterMuteToggle) {
+        masterMuteToggle.addEventListener('click', toggleMasterMute);
+        updateMasterMuteToggleButton();
+    }
 
     const biomeConditionOverlay = document.getElementById('biomeConditionOverlay');
     const biomeConditionClose = document.getElementById('biomeConditionClose');
@@ -6294,6 +6333,17 @@ const SHARE_IMAGE_OUTLINE_STYLES = Object.freeze({
             { color: 'rgba(40, 90, 140, 0.85)', blur: 0, offsetX: -1, offsetY: 1 },
             { color: 'rgba(40, 90, 140, 0.85)', blur: 0, offsetX: 1, offsetY: -1 },
             { color: 'rgba(40, 90, 140, 0.85)', blur: 0, offsetX: -1, offsetY: -1 }
+        ]
+    },
+    'sigil-outline-winter-2026': {
+        fill: '#eafcff',
+        shadows: [
+            { color: 'rgba(210, 246, 255, 0.95)', blur: 5 },
+            { color: 'rgba(125, 208, 255, 0.85)', blur: 12 },
+            { color: 'rgba(40, 120, 170, 0.92)', blur: 0, offsetX: 1, offsetY: 1 },
+            { color: 'rgba(40, 120, 170, 0.92)', blur: 0, offsetX: -1, offsetY: 1 },
+            { color: 'rgba(40, 120, 170, 0.92)', blur: 0, offsetX: 1, offsetY: -1 },
+            { color: 'rgba(40, 120, 170, 0.92)', blur: 0, offsetX: -1, offsetY: -1 }
         ]
     },
     'sigil-outline-blood': {
