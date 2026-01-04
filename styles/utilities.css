@@ -170,6 +170,28 @@
         -1px -1px 0 rgba(40, 90, 140, 0.85);
 }
 
+.sigil-outline-winter-2026 {
+    color: #eafcff;
+    text-shadow:
+        0 0 5px rgba(210, 246, 255, 0.95),
+        0 0 12px rgba(125, 208, 255, 0.85),
+        1px 1px 0 rgba(40, 120, 170, 0.92),
+        -1px 1px 0 rgba(40, 120, 170, 0.92),
+        1px -1px 0 rgba(40, 120, 170, 0.92),
+        -1px -1px 0 rgba(40, 120, 170, 0.92);
+}
+
+.sigil-outline-cryogenic {
+    color: #e9f8ff;
+    text-shadow:
+        0 0 6px rgba(150, 230, 255, 0.95),
+        0 0 14px rgba(90, 190, 255, 0.9),
+        2px 2px 0 rgba(20, 110, 160, 0.95),
+        -2px 2px 0 rgba(20, 110, 160, 0.95),
+        2px -2px 0 rgba(20, 110, 160, 0.95),
+        -2px -2px 0 rgba(20, 110, 160, 0.95);
+}
+
 .sigil-outline-blood {
     text-shadow:
         0 0 4px rgba(200, 20, 20, 0.9),

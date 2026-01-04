@@ -47,6 +47,9 @@
     <video id="memory-cutscene" class="cutscene-video" preload="auto" data-audio-channel="cutscene">
         <source src="files/memoryCutscene.webm" type="video/webm">
     </video>
+    <video id="frostveil-cutscene" class="cutscene-video" preload="auto" data-audio-channel="cutscene">
+        <source src="files/frostveilCutscene.webm" type="video/webm">
+    </video>
     <video id="neferkhaf-cutscene" class="cutscene-video" preload="auto" data-audio-channel="cutscene">
         <source src="files/neferkhafCutscene.webm" type="video/webm">
     </video>
@@ -105,17 +108,18 @@
                 <div class="banner__meta">
                     <h1 class="banner__title">Sols Rolling Simulator</h1>
                     <p class="banner__subtitle">
-                        <button type="button" class="banner__version-button" id="versionInfoButton" aria-haspopup="dialog" aria-expanded="false" aria-label="View update notes for version V1.515" data-version-id="v1515">V1.515</button>
+                        <button type="button" class="banner__version-button" id="versionInfoButton" aria-haspopup="dialog" aria-expanded="false" aria-label="View update notes for version V1.555" data-version-id="v1555">V1.555</button>
                         <span class="banner__subtitle-divider" aria-hidden="true">◉</span>
                         <span class="banner__subtitle-author">By <span class="banner__subtitle-author-name">not.unnamed</span></span>
                         <span class="banner__subtitle-divider" aria-hidden="true">◉</span>
-                        <span class="banner__subtitle-updated">Updated <time datetime="2025-12-11">2025/12/14</time></span>
+                        <span class="banner__subtitle-updated">Updated <time datetime="2026-01-04">2026/01/04</time></span>
                         <span class="banner__subtitle-divider" aria-hidden="true">◉</span>
-                        <span class="banner__subtitle-eon">Sol's RNG Eon 1-11.1</span>
+                        <span class="banner__subtitle-eon">Sol's RNG Eon 1-12</span>
                     </p>
                 </div>
             </div>
             <div class="masthead__controls">
+                <button class="interface-toggle masthead__mute" id="masterMuteToggle" type="button" aria-pressed="false">Mute</button>
                 <div class="options-menu" id="optionsMenu">
                     <button class="interface-toggle options-menu__trigger" id="optionsMenuToggle" type="button" aria-haspopup="menu" aria-expanded="false" aria-controls="optionsMenuPanel">Settings</button>
                     <div class="options-menu__surface" id="optionsMenuPanel" aria-labelledby="optionsMenuToggle">
@@ -340,10 +344,11 @@
                                     <option value="dreamspace"><span class="sigil-outline-dreamspace">Dreamspace</span></option>
                                     <option value="glitch"><span class="sigil-outline-glitch">Glitch</span></option>
                                     <option value="limbo">Limbo</option>
-                                    <option value="blazing">Blazing Sun</option>
                                     <option value="pumpkinMoon">Pumpkin Moon</option>
                                     <option value="graveyard">Graveyard</option>
                                     <option value="bloodRain">Blood Rain</option>
+                                    <option value="blazing">Blazing Sun</option>
+                                    <option value="aurora">Aurora</option>
                                     <option value="anotherRealm">Another Realm</option>
                                     <option value="unknown">Unknown</option>
                                 </select>
@@ -410,6 +415,7 @@
                             <option value="anotherRealm">Another Realm</option>
                             <option value="unknown">Unknown</option>
                             <option value="blazing">Blazing Sun</option>
+                            <option value="aurora">Aurora</option>
                             <option value="limbo">Limbo</option>
                             <option value="roe">Rune of Everything</option>
                             <option value="day">Day</option>
@@ -442,8 +448,8 @@
                                         <span class="interface-select__option-label"><span class="sigil-outline-halloween">Halloween</span> 2024</span>
                                     </label>
                                     <label class="interface-select__option interface-select__option--checkbox">
-                                        <input type="checkbox" value="winter24" data-event-id="winter24">
-                                        <span class="interface-select__option-label"><span class="sigil-outline-winter">Winter</span> 2024</span>
+                                        <input type="checkbox" value="winter25" data-event-id="winter25">
+                                        <span class="interface-select__option-label"><span class="sigil-outline-winter">Winter</span> 2025</span>
                                     </label>
                                     <label class="interface-select__option interface-select__option--checkbox">
                                         <input type="checkbox" value="aprilFools25" data-event-id="aprilFools25">
@@ -455,7 +461,11 @@
                                     </label>
                                     <label class="interface-select__option interface-select__option--checkbox">
                                         <input type="checkbox" value="halloween25" data-event-id="halloween25">
-                                        <span class="interface-select__option-label">Halloween 2025</span>
+                                        <span class="interface-select__option-label"><span class="sigil-outline-halloween">Halloween</span> 2025</span>
+                                    </label>
+                                    <label class="interface-select__option interface-select__option--checkbox">
+                                        <input type="checkbox" value="winter26" data-event-id="winter26">
+                                        <span class="interface-select__option-label"><span class="sigil-outline-winter-2026">Winter</span> 2026</span>
                                     </label>
                                 </div>
                             </details>
@@ -764,23 +774,24 @@
                 Close
             </button>
             <div class="changelog-modal__tabbar" role="tablist" aria-label="Changelog versions" data-changelog-tablist>
-                <!-- <button
+                <button
                     type="button"
                     class="changelog-tab changelog-tab--active"
-                    id="changelog-tab-v1521"
+                    id="changelog-tab-v1555"
                     role="tab"
-                    aria-controls="changelog-panel-v1521"
+                    aria-controls="changelog-panel-v1555"
                     aria-selected="true"
-                    data-changelog-tab="v1521"
-                >V1.521</button> -->
+                    data-changelog-tab="v1555"
+                >V1.555</button>
                 <button
                     type="button"
                     class="changelog-tab changelog-tab--active"
                     id="changelog-tab-v1515"
                     role="tab"
                     aria-controls="changelog-panel-v1515"
-                    aria-selected="true"
+                    aria-selected="false"
                     data-changelog-tab="v1515"
+                    tabindex="-1"
                 >V1.515</button>
                 <button
                     type="button"
@@ -835,61 +846,76 @@
             </div>
 
             <div class="changelog-modal__panels" data-changelog-panels>
-                <!-- <section
-                    id="changelog-panel-v1521"
+                <section
+                    id="changelog-panel-v1555"
                     class="changelog-modal__panel"
                     role="tabpanel"
-                    aria-labelledby="changelog-tab-v1521"
-                    data-changelog-panel="v1521"
+                    aria-labelledby="changelog-tab-v1555"
+                    data-changelog-panel="v1555"
                     tabindex="0"
                 >
                     <header class="changelog-modal__header">
-                        <h2 class="changelog-modal__title" id="versionChangelogTitle">Version V1.521 Update Notes</h2>
-                        <p class="changelog-modal__meta">Updated 2025/12/20</p>
+                        <h2 class="changelog-modal__title" id="versionChangelogTitle">Version V1.555 Update Notes</h2>
+                        <p class="changelog-modal__meta">Updated 2026/01/04</p>
                     </header>
                     <p class="changelog-modal__intro">Latest changes:</p>
                     <ul class="changelog-modal__list">
-                        <li><span class="sigil-outline-winter">Winter Event 2025</span>!</li>
-                        Now that the <span class="sigil-outline-winter">Winter Event</span> of 2025 has begun, everything within the update has been included in this update too :D
+                        <li><span class="sigil-outline-winter-2026">Winter Event 2026</span>!</li>
+                        <h2>So sorry for the late update!</h2>
+                        <p>Now that the <span class="sigil-outline-winter-2026">Winter Event</span> of 2026 has begun, everything within the update has been included in this update too :D</p>
                         <ul>
-                            <li>Added x auras:</li>
+                            <li>Added 19 auras:</li>
                             <ul>
-                                <li><span class="sigil-outline-winter">Aura1</span></li>
-                                1 in xxx
-                                <li><span class="sigil-outline-winter">Aura2</span></li>
-                                1 in xxx
-                                <li><span class="sigil-outline-winter">Aura3</span></li>
-                                1 in xxx
-                                <li><span class="sigil-outline-winter">Aura4</span></li>
-                                1 in xxx
-                                <li><span class="sigil-outline-winter">Aura5</span></li>
-                                1 in xxx
-                                <li><span class="sigil-outline-winter">Aura6</span></li>
-                                1 in xxx
-                                <li><span class="sigil-outline-winter">Aura7</span></li>
-                                1 in xxx
-                                <li><span class="sigil-outline-winter">Aura8</span></li>
-                                1 in xxx
-                                <li><span class="sigil-outline-winter">Aura9</span></li>
-                                1 in xxx
-                                <li><span class="sigil-outline-winter">Aura10</span></li>
-                                1 in xxx
-                                <li><span class="sigil-outline-winter">Aura11</span></li>
-                                1 in xxx
-                                <li><span class="sigil-outline-winter">Aura12</span></li>
-                                1 in xxx
+                                <li><span class="sigil-outline-winter-2026">Snowball</span></li>
+                                1 in 10k (5k in aurora)
+                                <li><span class="sigil-outline-winter-2026">Star Rider: Snowflake</span></li>
+                                1 in 240,000 (1/120,000 from Aurora)
+                                <li><span class="sigil-outline-winter-2026">Gingerbread</span></li>
+                                1 in 3,750,000 (1/1,875,000 from Aurora)
+                                <li><span class="sigil-outline-winter-2026">Jack Frost</span></li>
+                                1 in 4,700,000 (1/2,350,000 from Aurora)
+                                <li><span class="sigil-outline-winter-2026">Lost Soul: Wanderer</span></li>
+                                1 in 9,400,000 (1/4,700,000 in Aurora)
+                                <li><span class="sigil-outline-winter-2026">Frostwood</span></li>
+                                1 in 24,500,000 (1/12,250,000 from Aurora)
+                                <li><span class="sigil-outline-winter-2026">North Pole</span></li>
+                                1 in 45,000,000 (1 in 22,500,000) from Aurora
+                                <li><span class="sigil-outline-winter-2026">Skyburst</span></li>
+                                1 in 60,000,000 (1/30,000,000 from Aurora)
+                                <li><span class="sigil-outline-winter-2026">Encase</span></li>
+                                1 in 230,000,000 (1/115,000,000 from Aurora)
+                                <li><span class="sigil-outline-winter-2026">Cryofang</span></li>
+                                1 in 380,000,000 (1/190,000,000 in Aurora)
+                                <li><span class="sigil-outline-winter-2026">Northern</span></li>
+                                1 in 405,000,000 (1/202,500,000 in Aurora)
+                                <li><span class="sigil-outline-winter-2026">EveNight</span></li>
+                                1 in 424m (212m in aurora)
+                                <li><span class="sigil-outline-winter-2026">Workshop</span></li>
+                                1 in 700m (350m in aurora)
+                                <li><span class="sigil-outline-winter-2026">Parol</span></li>
+                                1 in 760m (380m in aurora)
+                                <li><span class="sigil-outline-winter-2026">Sovereign: Frostveil</span></li>
+                                1 in 1,000,000,000 (1/500,000,000 from Aurora)
+                                <li><span class="sigil-outline-winter-2026">Winter Garden</span></li>
+                                1 in 1.45b (725m in aurora)
+                                <li><span class="sigil-outline-winter-2026">Dream Traveler</span></li>
+                                1 in 2b (1b in aurora)
+                                <li><span class="sigil-outline-cryogenic">Cryogenic</span></li>
+                                1 in 250k in aurora (unaffected by luck, similar to illusionary)
                             </ul>
-                            <li>Snowy biome is now the default for normal biome</li>
+                            <li>Aurora biome has been added</li>
                         </ul>
+                        <li>A mute button directly on teh left of the settings dropdown button has been added for a quicker and easier method to silencing the sounds for a ZEN experience</li>
                     </ul>
-                </section> -->
+                </section>
                 <section
                     id="changelog-panel-v1515"
                     class="changelog-modal__panel"
                     role="tabpanel"
                     aria-labelledby="changelog-tab-v1515"
                     data-changelog-panel="v1515"
-                    tabindex="0"
+                    hidden
+                    tabindex="-1"
                 >
                     <header class="changelog-modal__header">
                         <h2 class="changelog-modal__title" id="versionChangelogTitle">Version V1.515 Update Notes</h2>

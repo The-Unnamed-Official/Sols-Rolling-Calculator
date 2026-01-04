@@ -906,6 +906,7 @@ function canUseMediaElementSource(element) {
 }
 
 function getChannelVolumeMultiplier(category = 'obtain') {
+    if (appState.audio.masterMuted) return 0;
     if (category === 'ui') return clamp01(appState.audio.uiVolume ?? 1);
     if (category === 'cutscene') return clamp01(appState.audio.cutsceneVolume ?? 1);
     if (category === 'music') return clamp01(appState.audio.musicVolume ?? 1);
@@ -965,6 +966,7 @@ function applyMediaGain(element, { category = 'obtain', fallbackGain } = {}) {
 }
 
 function isSoundChannelActive(category) {
+    if (appState.audio.masterMuted) return false;
     const channelVolume = getChannelVolumeMultiplier(category);
     if (channelVolume <= 0) return false;
     if (category === 'ui') return appState.audio.ui;
@@ -1156,6 +1158,33 @@ function startBackgroundMusic(bgMusic) {
         });
         return;
     }
+}
+
+function updateMasterMuteToggleButton() {
+    const masterMuteToggle = document.getElementById('masterMuteToggle');
+    if (!masterMuteToggle) return;
+    masterMuteToggle.textContent = appState.audio.masterMuted ? 'Unmute' : 'Mute';
+    masterMuteToggle.setAttribute('aria-pressed', appState.audio.masterMuted ? 'true' : 'false');
+}
+
+function setMasterMuteState(isMuted) {
+    if (appState.audio.masterMuted === isMuted) {
+        updateMasterMuteToggleButton();
+        return;
+    }
+
+    appState.audio.masterMuted = isMuted;
+    updateMasterMuteToggleButton();
+
+    ['music', 'obtain', 'cutscene', 'ui'].forEach(channel => applyChannelVolumeToElements(channel));
+
+    if (!isMuted) {
+        resumeAudioEngine();
+    }
+}
+
+function toggleMasterMute() {
+    setMasterMuteState(!appState.audio.masterMuted);
 }
 
 function toggleRollingAudio() {
@@ -1433,6 +1462,7 @@ const biomeAssets = {
     rainy: { image: 'files/rainyBiomeImage.jpg', music: 'files/rainyBiomeMusic.mp3' },
     windy: { image: 'files/windyBiomeImage.jpg', music: 'files/windyBiomeMusic.mp3' },
     snowy: { image: 'files/snowyBiomeImage.jpg', music: 'files/winterBiomeMusic.mp3' },
+    aurora: { image: 'files/auroraBiomeImage.jpg', music: 'files/auroraBiomeMusic.mp3' },
     sandstorm: { image: 'files/sandstormBiomeImage.jpg', music: 'files/sandstormBiomeMusic.mp3' },
     hell: { image: 'files/hellBiomeImage.jpg', music: 'files/hellBiomeMusic.mp3' },
     starfall: { image: 'files/starfallBiomeImage.jpg', music: 'files/starfallBiomeMusic.mp3' },
@@ -2538,6 +2568,7 @@ const auraOutlineOverrides = new Map([
     ['Lunar : Cultist', 'sigil-outline-blood'],
     ['Werefolf', 'sigil-outline-blood'],
     ['Bloodgarden', 'sigil-outline-blood'],
+    ['Cryogenic', 'sigil-outline-cryogenic'],
 ]);
 
 const glitchOutlineNames = new Set(['Fault', 'Glitch', 'Oppression']);
@@ -2561,6 +2592,11 @@ function resolveAuraStyleClass(aura, biome) {
     if (name.startsWith('Nyctophobia')) classes.push('sigil-effect-nyctophobia');
 
     const auraData = typeof aura === 'string' ? null : aura;
+    const auraEventId = auraData ? getAuraEventId(auraData) : null;
+
+    if (auraEventId === 'winter26') {
+        classes.push('sigil-outline-winter-2026');
+    }
 
     if (auraMatchesAnyBiome(auraData, ['pumpkinMoon', 'graveyard'])) {
         classes.push('sigil-outline-halloween');
@@ -2686,6 +2722,7 @@ const MEGAPHONE_AURA_NAME = 'Megaphone - 5,000';
 const NATIVE_BREAKTHROUGH_MULTIPLIERS = Object.freeze({
     cyberspace: 2,
     blazing: 2,
+    aurora: 2,
     windy: 3,
     snowy: 3,
     rainy: 4,
@@ -2715,11 +2752,14 @@ const AURA_BLUEPRINT_SOURCE = Object.freeze([
     { name: "Neferkhaf", chance: 1000, requiresDunePreset: true, ignoreLuck: true, fixedRollThreshold: 1, subtitle: "The Crawler", cutscene: "neferkhaf-cutscene", disableRarityClass: true },
     { name: "Illusionary - 10,000,000", chance: 10000000, nativeBiomes: ["cyberspace"], ignoreLuck: true, fixedRollThreshold: 1, cutscene: "illusionary-cutscene" },
     { name: "Equinox - 2,500,000,000", chance: 2500000000, cutscene: "equinox-cutscene" },
+    { name: "Dream Traveler - 2,025,012,025", chance: 2025012025, breakthroughs: nativeBreakthroughs("aurora") },
+    { name: "Winter Garden - 1,450,012,025", chance: 1450012025, breakthroughs: nativeBreakthroughs("aurora") },
     { name: "Luminosity - 1,200,000,000", chance: 1200000000, cutscene: "luminosity-cutscene" },
     { name: "Erebus - 1,200,000,000", chance: 1200000000, nativeBiomes: ["glitch", "bloodRain"], cutscene: "erebus-cutscene" },
     { name: "Pixelation - 1,073,741,824", chance: 1073741824, breakthroughs: nativeBreakthroughs("cyberspace"), nativeBiomes: ["cyberspace"], cutscene: "pixelation-cutscene" },
     { name: "Nyctophobia - 1,011,111,010", chance: 1011111010, nativeBiomes: ["limbo"], cutscene: "nyctophobia-cutscene" },
     { name: "Lamenthyr - 1,000,000,000", chance: 1000000000, nativeBiomes: ["glitch", "bloodRain"], cutscene: "lamenthyr-cutscene" },
+    { name: "Sovereign : Frostveil - 1,000,000,000", chance: 1000000000, breakthroughs: nativeBreakthroughs("aurora"), cutscene: "frostveil-cutscene" },
     { name: "Arachnophobia - 940,000,000", chance: 940000000, nativeBiomes: ["glitch", "pumpkinMoon"] },
     { name: "Ravage - 930,000,000", chance: 930000000, nativeBiomes: ["glitch", "graveyard"] },
     { name: "Dreamscape - 850,000,000", chance: 850000000, nativeBiomes: ["limbo"] },
@@ -2727,9 +2767,11 @@ const AURA_BLUEPRINT_SOURCE = Object.freeze([
     { name: "Aegis : Watergun - 825,000,000", chance: 825000000, breakthroughs: nativeBreakthroughs("blazing") },
     { name: "Apostolos : Veil - 800,000,000", chance: 800000000, nativeBiomes: ["graveyard", "pumpkinMoon"] },
     { name: "Ruins : Withered - 800,000,000", chance: 800000000 },
+    { name: "Parol - 760,000,000", chance: 760000000, breakthroughs: nativeBreakthroughs("aurora") },
     { name: "Sovereign - 750,000,000", chance: 750000000 },
     { name: "Malediction - 730,000,000", chance: 730000000, nativeBiomes: ["glitch", "bloodRain"] },
     { name: "Banshee - 730,000,000", chance: 730000000, nativeBiomes: ["glitch", "graveyard"] },
+    { name: "Workshop - 700,000,000", chance: 700000000, breakthroughs: nativeBreakthroughs("aurora") },
     { name: "Wraithlight - 695,000,000", chance: 695000000, nativeBiomes: ["glitch", "bloodRain"] },
     { name: "PROLOGUE - 666,616,111", chance: 666616111, nativeBiomes: ["limbo"] },
     { name: "Harvester - 666,000,000", chance: 666000000, nativeBiomes: ["graveyard"] },
@@ -2746,8 +2788,11 @@ const AURA_BLUEPRINT_SOURCE = Object.freeze([
     { name: "Apostolos - 444,000,000", chance: 444000000 },
     { name: "Afterparty - 440,000,000", chance: 440000000, nativeBiomes: ["glitch", "graveyard"] },
     { name: "Gargantua - 430,000,000", chance: 430000000, breakthroughs: nativeBreakthroughs("starfall") },
+    { name: "EveNight - 424,000,000", chance: 424000000, breakthroughs: nativeBreakthroughs("aurora") },
+    { name: "Northern - 405,000,000", chance: 405000000, breakthroughs: nativeBreakthroughs("aurora") },
     { name: "Abyssal Hunter - 400,000,000", chance: 400000000, breakthroughs: nativeBreakthroughs("rainy") },
     { name: "Impeached : I'm Peach - 400,000,000", chance: 400000000 },
+    { name: "Cryofang - 380,000,000", chance: 380000000, breakthroughs: nativeBreakthroughs("aurora") },
     { name: "CHILLSEAR - 375,000,000", chance: 375000000, breakthroughs: nativeBreakthroughs("snowy") },
     { name: "Flora : Evergreen - 370,073,730", chance: 370073730 },
     { name: "Atlas - 360,000,000", chance: 360000000, breakthroughs: nativeBreakthroughs("sandstorm") },
@@ -2762,6 +2807,7 @@ const AURA_BLUEPRINT_SOURCE = Object.freeze([
     { name: "Exotic : Void - 299,999,999", chance: 299999999 },
     { name: "Graveborn - 290,000,000", chance: 290000000, nativeBiomes: ["glitch", "graveyard"] },
     { name: "Astral : Zodiac - 267,200,000", chance: 267200000, breakthroughs: nativeBreakthroughs("starfall") },
+    { name: "Encase - 230,000,000", chance: 230000000, breakthroughs: nativeBreakthroughs("aurora") },
     { name: "Surfer : Shard Surfer - 225,000,000", chance: 225000000, breakthroughs: nativeBreakthroughs("snowy") },
     { name: "HYPER-VOLT : EVER-STORM - 225,000,000", chance: 225000000 },
     { name: "Lumenpool - 220,000,000", chance: 220000000, breakthroughs: nativeBreakthroughs("rainy") },
@@ -2789,12 +2835,14 @@ const AURA_BLUEPRINT_SOURCE = Object.freeze([
     { name: "Winter Fantasy - 72,000,000", chance: 72000000, breakthroughs: nativeBreakthroughs("snowy") },
     { name: "Reaper - 66,000,000", chance: 66000000, nativeBiomes: ["glitch", "bloodRain"] },
     { name: "Antivirus - 62,500,000", chance: 62500000, breakthroughs: nativeBreakthroughs("cyberspace"), nativeBiomes: ["cyberspace"] },
+    { name: "Skyburst - 60,000,000", chance: 60000000, breakthroughs: nativeBreakthroughs("aurora") },
     { name: "SENTINEL - 60,000,000", chance: 60000000 },
     { name: "Twilight : Iridescent Memory - 60,000,000", chance: 60000000, breakthroughs: nativeBreakthroughs("night") },
     { name: "Matrix - 50,000,000", chance: 50000000, breakthroughs: nativeBreakthroughs("cyberspace"), nativeBiomes: ["cyberspace"] },
     { name: "Runic - 50,000,000", chance: 50000000 },
     { name: "Exotic : APEX - 49,999,500", chance: 49999500 },
     { name: "Santa Frost - 45,000,000", chance: 45000000, breakthroughs: nativeBreakthroughs("snowy") },
+    { name: "North Pole - 45,000,000", chance: 45000000, breakthroughs: nativeBreakthroughs("aurora") },
     { name: "Overseer - 45,000,000", chance: 45000000 },
     { name: "{J u x t a p o s i t i o n} - 40,440,400", chance: 40440400, nativeBiomes: ["limbo"] },
     { name: "Virtual : Fatal Error - 40,413,000", chance: 40413000, breakthroughs: nativeBreakthroughs("cyberspace"), nativeBiomes: ["cyberspace"] },
@@ -2805,6 +2853,7 @@ const AURA_BLUEPRINT_SOURCE = Object.freeze([
     { name: "Innovator - 30,000,000", chance: 30000000 },
     { name: "Arcane : Dark - 30,000,000", chance: 30000000 },
     { name: "Blizzard - 27,315,000", chance: 27315000, breakthroughs: nativeBreakthroughs("snowy") },
+    { name: "Frostwood - 24,500,000", chance: 24500000, breakthroughs: nativeBreakthroughs("aurora") },
     { name: "Aviator - 24,000,000", chance: 24000000 },
     { name: "Cryptfire - 21,000,000", chance: 21000000, nativeBiomes: ["graveyard"] },
     { name: "Chromatic - 20,000,000", chance: 20000000 },
@@ -2819,6 +2868,7 @@ const AURA_BLUEPRINT_SOURCE = Object.freeze([
     { name: "Sailor - 12,000,000", chance: 12000000, breakthroughs: nativeBreakthroughs("rainy") },
     { name: "Moonflower - 10,000,000", chance: 10000000, nativeBiomes: ["pumpkinMoon"] },
     { name: "Starscourge - 10,000,000", chance: 10000000, breakthroughs: nativeBreakthroughs("starfall") },
+    { name: "Lost Soul : Wanderer - 9,400,000", chance: 9400000, breakthroughs: nativeBreakthroughs("aurora") },
     { name: "Stargazer - 9,200,000", chance: 9200000, breakthroughs: nativeBreakthroughs("starfall") },
     { name: "Helios - 9,000,000", chance: 9000000 },
     { name: "Nihility - 9,000,000", chance: 9000000, breakthroughs: nativeBreakthroughs("null", "limbo"), nativeBiomes: ["limbo-null"] },
@@ -2838,9 +2888,11 @@ const AURA_BLUEPRINT_SOURCE = Object.freeze([
     { name: "Galaxy - 5,000,000", chance: 5000000, breakthroughs: nativeBreakthroughs("starfall") },
     { name: "Lunar : Full Moon - 5,000,000", chance: 5000000, breakthroughs: nativeBreakthroughs("night") },
     { name: "Solar : Solstice - 5,000,000", chance: 5000000, breakthroughs: nativeBreakthroughs("day") },
+    { name: "Jack Frost - 4,700,000", chance: 4700000, breakthroughs: nativeBreakthroughs("aurora") },
     { name: "Shucks - 4,460,000", chance: 4460000, nativeBiomes: ["glitch", "bloodRain"] },
     { name: "Aquatic : Flame - 4,000,000", chance: 4000000 },
     { name: "Poseidon - 4,000,000", chance: 4000000, breakthroughs: nativeBreakthroughs("rainy") },
+    { name: "Gingerbread - 3,750,000", chance: 3750000, breakthroughs: nativeBreakthroughs("aurora") },
     { name: "Werewolf - 3,600,000", chance: 3600000, nativeBiomes: ["glitch", "graveyard"] },
     { name: "Shiftlock - 3,325,000", chance: 3325000, breakthroughs: nativeBreakthroughs("null", "limbo"), nativeBiomes: ["limbo-null"] },
     { name: "Headless - 3,200,000", chance: 3200000, nativeBiomes: ["glitch", "graveyard"] },
@@ -2871,6 +2923,8 @@ const AURA_BLUEPRINT_SOURCE = Object.freeze([
     { name: "Celestial - 350,000", chance: 350000 },
     { name: "Watermelon - 320,000", chance: 320000 },
     { name: "Star Rider : Starfish Rider - 250,000", chance: 250000, breakthroughs: nativeBreakthroughs("starfall") },
+    { name: "Cryogenic - 250,000", chance: 250000, nativeBiomes: ["aurora"], ignoreLuck: true, fixedRollThreshold: 1 },
+    { name: "Star Rider : Snowflake - 240,000", chance: 240000, breakthroughs: nativeBreakthroughs("aurora") },
     { name: "Pump - 200,000", chance: 200000, nativeBiomes: ["pumpkinMoon"] },
     { name: "Bounded - 200,000", chance: 200000 },
     { name: "Aether - 180,000", chance: 180000 },
@@ -2897,6 +2951,7 @@ const AURA_BLUEPRINT_SOURCE = Object.freeze([
     { name: "Rage : Heated - 12,800", chance: 12800 },
     { name: "Corrosive - 12,000", chance: 12000, breakthroughs: nativeBreakthroughs("corruption") },
     { name: "Undead - 12,000", chance: 12000, breakthroughs: nativeBreakthroughs("hell") },
+    { name: "Snowball - 10,000", chance: 10000, breakthroughs: nativeBreakthroughs("aurora") },
     { name: "★★★ - 10,000", chance: 10000, nativeBiomes: ["dreamspace"] },
     { name: "Atomic : Riboneucleic - 9876", chance: 9876 },
     { name: "Lost Soul - 9,200", chance: 9200 },
@@ -3055,10 +3110,11 @@ const EVENT_LIST = [
     { id: "summer24", label: "Summer 2024" },
     { id: "ria24", label: "RIA 2024" },
     { id: "halloween24", label: "Halloween 2024" },
-    { id: "winter24", label: "Winter 2024" },
+    { id: "winter25", label: "Winter 2025" },
     { id: "aprilFools25", label: "April Fools 2025" },
     { id: "summer25", label: "Summer 2025" },
     { id: "halloween25", label: "Halloween 2025" },
+    { id: "winter26", label: "Winter 2026" },
 ];
 
 const EVENT_LABEL_MAP = new Map(EVENT_LIST.map(({ id, label }) => [id, label]));
@@ -3097,7 +3153,7 @@ const EVENT_AURA_LOOKUP = {
         "Lunar : Nightfall - 3,000,000",
         "Pump - 200,000",
     ],
-    winter24: [
+    winter25: [
         "Atlas : Yuletide - 510,000,000",
         "Abominable - 120,000,000",
         "Express - 90,000,000",
@@ -3142,6 +3198,26 @@ const EVENT_AURA_LOOKUP = {
         "Lunar : Cultist - 2,000,000",
         "Afterparty - 440,000,000"
     ],
+    winter26: [
+        "Snowball - 10,000",
+        "Star Rider : Snowflake - 240,000",
+        "Gingerbread - 3,750,000",
+        "Jack Frost - 4,700,000",
+        "Lost Soul : Wanderer - 9,400,000",
+        "Frostwood - 24,500,000",
+        "North Pole - 45,000,000",
+        "Skyburst - 60,000,000",
+        "Encase - 230,000,000",
+        "Cryofang - 380,000,000",
+        "Northern - 405,000,000",
+        "EveNight - 424,000,000",
+        "Workshop - 700,000,000",
+        "Parol - 760,000,000",
+        "Sovereign : Frostveil - 1,000,000,000",
+        "Winter Garden - 1,450,000,000",
+        "Dream Traveler - 2,000,000,000",
+        "Cryogenic - 250,000"
+    ],
 };
 
 const BIOME_EVENT_CONSTRAINTS = {
@@ -3149,6 +3225,7 @@ const BIOME_EVENT_CONSTRAINTS = {
     pumpkinMoon: ["halloween24", "halloween25"],
     bloodRain: ["halloween25"],
     blazing: ["summer25"],
+    aurora: ["winter26"],
 };
 
 const EVENT_BIOME_CONDITION_MESSAGES = Object.freeze({
@@ -3157,10 +3234,11 @@ const EVENT_BIOME_CONDITION_MESSAGES = Object.freeze({
     pumpkinMoon: 'Requires Night time with Halloween 2024 or Halloween 2025 enabled.',
     bloodRain: 'Requires Halloween 2025 enabled.',
     blazing: 'Requires Summer 2025 enabled.',
+    aurora: 'Requires Winter 2026 enabled.',
     unknown: 'Requires Dev Biomes to be enabled under run parameters.',
 });
 
-const enabledEvents = new Set([""]);
+const enabledEvents = new Set(["winter26"]);
 const auraEventIndex = new Map();
 
 function biomeEventRequirementsMet(biomeId) {
@@ -3197,7 +3275,7 @@ function getAuraEventId(aura) {
     return auraEventIndex.get(aura.name) || null;
 }
 
-const CUTSCENE_PRIORITY_SEQUENCE = ["oblivion-cutscene", "memory-cutscene", "neferkhaf-cutscene", "illusionary-cutscene", "equinox-cutscene", "erebus-cutscene", "luminosity-cutscene", "pixelation-cutscene", "nyctophobia-cutscene", "lamenthyr-cutscene", "dreammetric-cutscene", "oppression-cutscene", "prowler-cutscene"];
+const CUTSCENE_PRIORITY_SEQUENCE = ["oblivion-cutscene", "memory-cutscene", "neferkhaf-cutscene", "illusionary-cutscene", "equinox-cutscene", "erebus-cutscene", "luminosity-cutscene", "pixelation-cutscene", "nyctophobia-cutscene", "frostveil-cutscene", "lamenthyr-cutscene", "dreammetric-cutscene", "oppression-cutscene", "prowler-cutscene"];
 
 oblivionAuraData = AURA_REGISTRY.find(aura => aura.name === OBLIVION_AURA_LABEL) || null;
 memoryAuraData = AURA_REGISTRY.find(aura => aura.name === MEMORY_AURA_LABEL) || null;
@@ -4032,7 +4110,8 @@ const BIOME_ICON_OVERRIDES = {
     none: 'files/otherBiomeIcon.png',
     normal: 'files/otherBiomeIcon.png',
     day: 'files/otherBiomeIcon.png',
-    night: 'files/otherBiomeIcon.png'
+    night: 'files/otherBiomeIcon.png',
+    aurora: 'files/auroraBiomeIcon.png'
 };
 
 function getBiomeIconSource(value) {
@@ -4701,6 +4780,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     setupShareInterface();
     initializeAudioSettingsPanel();
+    const masterMuteToggle = document.getElementById('masterMuteToggle');
+    if (masterMuteToggle) {
+        masterMuteToggle.addEventListener('click', toggleMasterMute);
+        updateMasterMuteToggleButton();
+    }
 
     const biomeConditionOverlay = document.getElementById('biomeConditionOverlay');
     const biomeConditionClose = document.getElementById('biomeConditionClose');
@@ -6250,6 +6334,28 @@ const SHARE_IMAGE_OUTLINE_STYLES = Object.freeze({
             { color: 'rgba(40, 90, 140, 0.85)', blur: 0, offsetX: -1, offsetY: 1 },
             { color: 'rgba(40, 90, 140, 0.85)', blur: 0, offsetX: 1, offsetY: -1 },
             { color: 'rgba(40, 90, 140, 0.85)', blur: 0, offsetX: -1, offsetY: -1 }
+        ]
+    },
+    'sigil-outline-winter-2026': {
+        fill: '#eafcff',
+        shadows: [
+            { color: 'rgba(210, 246, 255, 0.95)', blur: 5 },
+            { color: 'rgba(125, 208, 255, 0.85)', blur: 12 },
+            { color: 'rgba(40, 120, 170, 0.92)', blur: 0, offsetX: 1, offsetY: 1 },
+            { color: 'rgba(40, 120, 170, 0.92)', blur: 0, offsetX: -1, offsetY: 1 },
+            { color: 'rgba(40, 120, 170, 0.92)', blur: 0, offsetX: 1, offsetY: -1 },
+            { color: 'rgba(40, 120, 170, 0.92)', blur: 0, offsetX: -1, offsetY: -1 }
+        ]
+    },
+    'sigil-outline-cryogenic': {
+        fill: '#e9f8ff',
+        shadows: [
+            { color: 'rgba(150, 230, 255, 0.95)', blur: 6 },
+            { color: 'rgba(90, 190, 255, 0.9)', blur: 14 },
+            { color: 'rgba(20, 110, 160, 0.95)', blur: 0, offsetX: 2, offsetY: 2 },
+            { color: 'rgba(20, 110, 160, 0.95)', blur: 0, offsetX: -2, offsetY: 2 },
+            { color: 'rgba(20, 110, 160, 0.95)', blur: 0, offsetX: 2, offsetY: -2 },
+            { color: 'rgba(20, 110, 160, 0.95)', blur: 0, offsetX: -2, offsetY: -2 }
         ]
     },
     'sigil-outline-blood': {
