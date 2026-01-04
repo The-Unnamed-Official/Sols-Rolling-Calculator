@@ -1462,7 +1462,7 @@ const biomeAssets = {
     rainy: { image: 'files/rainyBiomeImage.jpg', music: 'files/rainyBiomeMusic.mp3' },
     windy: { image: 'files/windyBiomeImage.jpg', music: 'files/windyBiomeMusic.mp3' },
     snowy: { image: 'files/snowyBiomeImage.jpg', music: 'files/winterBiomeMusic.mp3' },
-    aurora: { image: 'files/snowyBiomeImage.jpg', music: 'files/winterBiomeMusic.mp3' },
+    aurora: { image: 'files/auroraBiomeImage.jpg', music: 'files/auroraBiomeMusic.mp3' },
     sandstorm: { image: 'files/sandstormBiomeImage.jpg', music: 'files/sandstormBiomeMusic.mp3' },
     hell: { image: 'files/hellBiomeImage.jpg', music: 'files/hellBiomeMusic.mp3' },
     starfall: { image: 'files/starfallBiomeImage.jpg', music: 'files/starfallBiomeMusic.mp3' },
@@ -4111,7 +4111,7 @@ const BIOME_ICON_OVERRIDES = {
     normal: 'files/otherBiomeIcon.png',
     day: 'files/otherBiomeIcon.png',
     night: 'files/otherBiomeIcon.png',
-    aurora: 'files/snowyBiomeIcon.png'
+    aurora: 'files/auroraBiomeIcon.png'
 };
 
 function getBiomeIconSource(value) {
