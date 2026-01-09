@@ -1124,9 +1124,9 @@
 }
 
 .changelog-tab__subtitle {
-    font-size: 0.72em;
+    font-size: 1.32em;
     letter-spacing: 0.12em;
-    color: var(--text-tertiary);
+    color: var(--accent-strong);
     text-transform: none;
     margin-top: -6px;
 }
