@@ -1378,6 +1378,7 @@ body:not(.reduce-motion) #luck-preset-hundred-million.luck-preset-button--master
 }
 
 .footer-credits__item-inspired {
+    list-style: none;
     color: #c1d7ff;
     font-size: 19px;
 }
