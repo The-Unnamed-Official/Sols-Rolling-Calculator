@@ -56,6 +56,12 @@
     <video id="equinox-cutscene" class="cutscene-video" preload="auto" data-audio-channel="cutscene">
         <source src="files/equinoxCutscene.webm" type="video/webm">
     </video>
+    <video id="winter-garden-cutscene" class="cutscene-video" preload="auto" data-audio-channel="cutscene">
+        <source src="files/winterGardenCutscene.webm" type="video/webm">
+    </video>
+    <video id="dream-traveler-cutscene" class="cutscene-video" preload="auto" data-audio-channel="cutscene">
+        <source src="files/dreamTravelerCutscene.webm" type="video/webm">
+    </video>
     <video id="luminosity-cutscene" class="cutscene-video" preload="auto" data-audio-channel="cutscene">
         <source src="files/luminosityCutscene.webm" type="video/webm">
     </video>
@@ -108,11 +114,11 @@
                 <div class="banner__meta">
                     <h1 class="banner__title">Sols Rolling Simulator</h1>
                     <p class="banner__subtitle">
-                        <button type="button" class="banner__version-button" id="versionInfoButton" aria-haspopup="dialog" aria-expanded="false" aria-label="View update notes for version V1.555" data-version-id="v1555">V1.555</button>
+                        <button type="button" class="banner__version-button" id="versionInfoButton" aria-haspopup="dialog" aria-expanded="false" data-version-id="v1561">V1.561</button>
                         <span class="banner__subtitle-divider" aria-hidden="true">◉</span>
                         <span class="banner__subtitle-author">By <span class="banner__subtitle-author-name">not.unnamed</span></span>
                         <span class="banner__subtitle-divider" aria-hidden="true">◉</span>
-                        <span class="banner__subtitle-updated">Updated <time datetime="2026-01-04">2026/01/04</time></span>
+                        <span class="banner__subtitle-updated">Updated <time datetime="2025-01-09">2025/01/09</time></span>
                         <span class="banner__subtitle-divider" aria-hidden="true">◉</span>
                         <span class="banner__subtitle-eon">Sol's RNG Eon 1-12</span>
                     </p>
@@ -593,8 +599,8 @@
         <p class="site-footer__text">&copy; <span id="build-year"></span> The Unnamed. All rights reserved.</p>
         <details class="footer-credits">
             <summary class="site-footer__text footer-credits__summary">Credits</summary>
+            <li class="footer-credits__item-inspired">Idea inspired by <a href="https://catwhole.github.io/rollingsim/" target="_blank" rel="noopener">Catwhole</a>.</li>
             <ul class="footer-credits__list">
-                <li class="footer-credits__item footer-credits__item-inspired">Idea inspired by <a href="https://catwhole.github.io/rollingsim/" target="_blank" rel="noopener">Catwhole</a>.</li>
                 <li class="footer-credits__item">Glitch biome backdrop courtesy of <a href="https://www.youtube.com/watch?v=Efxaiefo3QY" target="_blank" rel="noopener">ComedicChicken</a>.</li>
                 <li class="footer-credits__item">Erebus cutscene courtesy of <a href="https://www.youtube.com/watch?v=ift10zMOVRk" target="_blank" rel="noopener">4zell</a>.</li>
                 <li class="footer-credits__item">Lamenthyr cutscene courtesy of <a href="https://www.youtube.com/watch?v=DwEzY_nA054" target="_blank" rel="noopener">Ray</a>.</li>
@@ -604,7 +610,9 @@
                 <li class="footer-credits__item">Oblivion cutscene courtesy of <a href="https://www.youtube.com/watch?v=clQxiIRH8Ps" target="_blank" rel="noopener">Mr-yani</a>.</li>
                 <li class="footer-credits__item">Neferkhaf cutscene courtesy of <a href="https://www.reddit.com/r/SolsRNG/comments/1n3wot3/new_neferkhaf_cutscene/" target="_blank" rel="noopener">Sirothereal</a>.</li>
                 <li class="footer-credits__item">Nyctophobia cutscene courtesy of <a href="https://www.youtube.com/watch?v=KIK2iTCnfkw" target="_blank" rel="noopener">lmpixel & kito</a>.</li>
-                <li class="footer-credits__item">Illusionary cutscene courtesy of <a href="https://www.reddit.com/r/SolsRNG/comments/1pall7r/illusionary_cutscene" target="_blank" rel="noopener">Chromm & segyun(person who obtained Illusionary)</a></li>
+                <li class="footer-credits__item">Illusionary cutscene courtesy of <a href="https://www.reddit.com/r/SolsRNG/comments/1pall7r/illusionary_cutscene" target="_blank" rel="noopener">Chromm & segyun(person who obtained Illusionary)</a>.</li>
+                <li class="footer-credits__item">Winter Garden cutscene courtesy of ??? (Finding out<span class="footer-credits__ellipsis"></span>).</li>
+                <li class="footer-credits__item">Dream Traveler cutscene courtesy of <a href="https://www.youtube.com/watch?v=UOoP3JrsqKg" target="_blank" rel="noopener">floob</a>.</li>
                 <li class="footer-credits__item">Cyberspace song courtesy of <a href="https://open.spotify.com/track/1ZyGEzIDZgwWZucfoCPq9h" target="_blank" rel="noopener">Veens</a>.</li>
                 <li class="footer-credits__item">Dreamspace song courtesy of <a href="https://www.youtube.com/watch?v=nVvKPZ2soyU" target="_blank" rel="noopener">53_Axis</a>.</li>
                 <li class="footer-credits__item">Unkown biome song courtesy of <a href="https://www.youtube.com/watch?v=LLng8n_1eOY" target="_blank" rel="noopener">Derpcat</a>.</li>
@@ -777,22 +785,38 @@
                 <button
                     type="button"
                     class="changelog-tab changelog-tab--active"
+                    id="changelog-tab-v1561"
+                    role="tab"
+                    aria-controls="changelog-panel-v1561"
+                    aria-selected="true"
+                    data-changelog-tab="v1561"
+                >
+                    <span class="changelog-tab__title">V1.561</span>
+                </button>
+                <button
+                    type="button"
+                    class="changelog-tab"
                     id="changelog-tab-v1555"
                     role="tab"
                     aria-controls="changelog-panel-v1555"
-                    aria-selected="true"
+                    aria-selected="false"
                     data-changelog-tab="v1555"
-                >V1.555</button>
+                    tabindex="-1"
+                >
+                    <span class="changelog-tab__title">V1.555</span>
+                </button>
                 <button
                     type="button"
-                    class="changelog-tab changelog-tab--active"
+                    class="changelog-tab"
                     id="changelog-tab-v1515"
                     role="tab"
                     aria-controls="changelog-panel-v1515"
                     aria-selected="false"
                     data-changelog-tab="v1515"
                     tabindex="-1"
-                >V1.515</button>
+                >
+                    <span class="changelog-tab__title">V1.515</span>
+                </button>
                 <button
                     type="button"
                     class="changelog-tab"
@@ -802,7 +826,9 @@
                     aria-selected="false"
                     data-changelog-tab="v1509"
                     tabindex="-1"
-                >V1.509</button>
+                >
+                    <span class="changelog-tab__title">V1.509</span>
+                </button>
                 <button
                     type="button"
                     class="changelog-tab"
@@ -812,7 +838,9 @@
                     aria-selected="false"
                     data-changelog-tab="v1506"
                     tabindex="-1"
-                >V1.506</button>
+                >
+                    <span class="changelog-tab__title">V1.506</span>
+                </button>
                 <button
                     type="button"
                     class="changelog-tab"
@@ -822,40 +850,45 @@
                     aria-selected="false"
                     data-changelog-tab="v1505"
                     tabindex="-1"
-                >V1.505</button>
-                <button
-                    type="button"
-                    class="changelog-tab"
-                    id="changelog-tab-v1500"
-                    role="tab"
-                    aria-controls="changelog-panel-v1500"
-                    aria-selected="false"
-                    data-changelog-tab="v1500"
-                    tabindex="-1"
-                >V1.500</button>
-                <button
-                    type="button"
-                    class="changelog-tab"
-                    id="changelog-tab-v1491"
-                    role="tab"
-                    aria-controls="changelog-panel-v1491"
-                    aria-selected="false"
-                    data-changelog-tab="v1491"
-                    tabindex="-1"
-                >V1.491</button>
+                >
+                    <span class="changelog-tab__title">V1.505</span>
+                </button>
             </div>
 
             <div class="changelog-modal__panels" data-changelog-panels>
+                <section
+                    id="changelog-panel-v1561"
+                    class="changelog-modal__panel"
+                    role="tabpanel"
+                    aria-labelledby="changelog-tab-v1561"
+                    data-changelog-panel="v1561"
+                    tabindex="0"
+                >
+                    <header class="changelog-modal__header">
+                        <h2 class="changelog-modal__title" id="versionChangelogTitle">Version V1.561 Update Notes</h2>
+                        <span class="changelog-tab__subtitle subTitlesClass">Cutscenes &amp; Credits</span>
+                        <p class="changelog-modal__meta">Updated 2025/01/09</p>
+                    </header>
+                    <p class="changelog-modal__intro">Latest changes:</p>
+                    <ul class="changelog-modal__list">
+                        <li>Added the cutscenes for <span class="sigil-outline-winter-2026">Winter Garden</span> and <span class="sigil-outline-winter-2026">Dream Traveler</span>.</li>
+                        <li>Updated the credits layout to a three-column list to keep the section compact.</li>
+                        <li><span class="sigil-outline-winter-2026">Winter Garden</span> cutscene credit is still being researched, so a placeholder remains for now<span class="footer-credits__ellipsis"></span></li>
+                        <li>Added some nice <span class="subTitlesClass">sub-titles</span> to each changelog update to easily know the content of an update.</li>
+                    </ul>
+                </section>
                 <section
                     id="changelog-panel-v1555"
                     class="changelog-modal__panel"
                     role="tabpanel"
                     aria-labelledby="changelog-tab-v1555"
                     data-changelog-panel="v1555"
-                    tabindex="0"
+                    hidden
+                    tabindex="-1"
                 >
                     <header class="changelog-modal__header">
                         <h2 class="changelog-modal__title" id="versionChangelogTitle">Version V1.555 Update Notes</h2>
+                        <span class="changelog-tab__subtitle">Winter Event 2026</span>
                         <p class="changelog-modal__meta">Updated 2026/01/04</p>
                     </header>
                     <p class="changelog-modal__intro">Latest changes:</p>
@@ -895,7 +928,7 @@
                                 <li><span class="sigil-outline-winter-2026">Parol</span></li>
                                 1 in 760m (380m in aurora)
                                 <li><span class="sigil-outline-winter-2026">Sovereign: Frostveil</span></li>
-                                1 in 1,000,000,000 (1/500,000,000 from Aurora)
+                                1 in 1b (1/500m from Aurora)
                                 <li><span class="sigil-outline-winter-2026">Winter Garden</span></li>
                                 1 in 1.45b (725m in aurora)
                                 <li><span class="sigil-outline-winter-2026">Dream Traveler</span></li>
@@ -905,7 +938,7 @@
                             </ul>
                             <li>Aurora biome has been added</li>
                         </ul>
-                        <li>A mute button directly on teh left of the settings dropdown button has been added for a quicker and easier method to silencing the sounds for a ZEN experience</li>
+                        <li>A mute button directly on the left of the settings dropdown button has been added for a quicker and easier method to silencing the sounds for a ZEN experience</li>
                     </ul>
                 </section>
                 <section
@@ -919,6 +952,7 @@
                 >
                     <header class="changelog-modal__header">
                         <h2 class="changelog-modal__title" id="versionChangelogTitle">Version V1.515 Update Notes</h2>
+                        <span class="changelog-tab__subtitle">Holiday Enhancements</span>
                         <p class="changelog-modal__meta">Updated 2025/12/14</p>
                     </header>
                     <p class="changelog-modal__intro">Latest changes:</p>
@@ -932,11 +966,11 @@
 
                         <li>Added a 100,000,000 (100M) Luck preset.</li>
                         <li>Made Forbidden I, II and III appear when in limbo for more accurate poppings.</li>
-                        <li>Device presets now have a fixed luck without including vip & vip+ considering it did have them included before...</li>
+                        <li>Device presets now have a fixed luck without including vip & vip+ considering it did have them included before<span class="footer-credits__ellipsis"></span></li>
 
-                        <li>Also buffed the glitch effect like crazy..</li>
+                        <li>Also buffed the glitch effect like crazy<span class="footer-credits__ellipsis"></span></li>
                         
-                        <li>Improved <span class="allPotionsClass">color</span> and display for <span class="oblivionClass">pr</span><span class="godlikeClass">ese</span><span class="duneClass">ts</span>, <span class="popClass"></span>, <span class="sigil-outline-glitch">bi</span><span class="sigil-outline-dreamspace">om</span><span class="sigil-outline-cyberspace">es</span> and <span class="moreClass">more</span> to give it all a more <span class="plcClass">pleseant</span> look :D</li>
+                        <li>Improved <span class="allPotionsClass">color</span> and display for <span class="oblivionClass">pr</span><span class="godlikeClass">ese</span><span class="duneClass">ts</span>, <span class="sigil-outline-glitch">bi</span><span class="sigil-outline-dreamspace">om</span><span class="sigil-outline-cyberspace">es</span>, <span class="popClass">extras</span> and <span class="moreClass">more</span> to give it all a more <span class="plcClass">pleseant</span> look :D</li>
                         <p>If there's colors or any form of display that seems difficult to read or understand, please contact me about it so I can fix it ASAP. <a href="https://github.com/The-Unnamed-Official/Sols-Rolling-Calculator/issues/new" target="_blank">Click here</a> and give a slight or extremely detailed explenation of your issue</p>
                     </ul>
                 </section>
@@ -951,6 +985,7 @@
                 >
                     <header class="changelog-modal__header">
                         <h2 class="changelog-modal__title" id="versionChangelogTitle">Version V1.509 Update Notes</h2>
+                        <span class="changelog-tab__subtitle">Roll Count Boost</span>
                         <p class="changelog-modal__meta">Updated 2025/12/11</p>
                     </header>
                     <p class="changelog-modal__intro">Latest changes:</p>
@@ -989,6 +1024,7 @@
                 >
                     <header class="changelog-modal__header">
                         <h2 class="changelog-modal__title" id="versionChangelogTitle">Version V1.506 Update Notes</h2>
+                        <span class="changelog-tab__subtitle">Progress Anchor</span>
                         <p class="changelog-modal__meta">Updated 2025/12/11</p>
                     </header>
                     <p class="changelog-modal__intro">Latest changes:</p>
@@ -1007,52 +1043,12 @@
                 >
                     <header class="changelog-modal__header">
                         <h2 class="changelog-modal__title" id="versionChangelogTitle">Version V1.505 Update Notes</h2>
+                        <span class="changelog-tab__subtitle">Progress Precision</span>
                         <p class="changelog-modal__meta">Updated 2025/12/10</p>
                     </header>
                     <p class="changelog-modal__intro">Latest changes:</p>
                     <ul class="changelog-modal__list">
                         <li>Progress indicator now shows decimal precision while rolling to better reflect live progress.</li>
-                    </ul>
-                </section>
-                <section
-                    id="changelog-panel-v1500"
-                    class="changelog-modal__panel"
-                    role="tabpanel"
-                    aria-labelledby="changelog-tab-v1500"
-                    data-changelog-panel="v1500"
-                    hidden
-                    tabindex="-1"
-                >
-                    <header class="changelog-modal__header">
-                        <h2 class="changelog-modal__title" id="versionChangelogTitle">Version V1.500 Update Notes</h2>
-                        <p class="changelog-modal__meta">Updated 2025/12/9</p>
-                    </header>
-                    <p class="changelog-modal__intro">Latest changes:</p>
-                    <ul class="changelog-modal__list">
-                        <li>Fixed a visual bug with the dev biome switch thumb's animation going past the main switch container.</li>
-                        <li>Fixed a sorting issue with some auras not being positioned where they should be depending on their rarity.</li>
-                        <h3>Thanks to Zeefir for the feedback of these bugs above.</h3>
-                        <li>Made a new settings option to enable background accessable simulations for allowing the website to process simulations in the background (requires a decent computer).</li>
-                        <li>Made some visual changes to other sections.</li>
-                    </ul>
-                </section>
-                <section
-                    id="changelog-panel-v1491"
-                    class="changelog-modal__panel"
-                    role="tabpanel"
-                    aria-labelledby="changelog-tab-v1491"
-                    data-changelog-panel="v1491"
-                    hidden
-                    tabindex="-1"
-                >
-                    <header class="changelog-modal__header">
-                        <h2 class="changelog-modal__title" id="versionChangelogTitle">Version V1.491 Update Notes</h2>
-                        <p class="changelog-modal__meta">Updated 2025/12/7</p>
-                    </header>
-                    <p class="changelog-modal__intro">Latest changes:</p>
-                    <ul class="changelog-modal__list">
-                        <li>Fixed <span class="sigil-outline-heaven">[ Heaven Biome ]</span>'s song</li>
-                        <li>Corrected <span class="sigil-outline-heaven">[ Heaven Biome ]</span>'s icon image</li>
                     </ul>
                 </section>
             </div>
