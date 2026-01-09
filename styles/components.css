@@ -712,6 +712,15 @@ select.form-field__input option {
     color: transparent;
 }
 
+.subTitlesClass {
+    background: linear-gradient(135deg, #ffffff, #e3eeff, #aab1ff, #7e96ff, #aab1ff, #e3eeff, #ffffff);
+    background-size: 300% 300%;
+    animation: class-gradient 5.25s linear infinite;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+
 @keyframes class-gradient {
     0% {
         background-position: 0% 50%;
