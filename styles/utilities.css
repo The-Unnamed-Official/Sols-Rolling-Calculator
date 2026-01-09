@@ -1130,6 +1130,14 @@
     margin-top: -6px;
 }
 
+.changelog-tab__subtitle::before {
+    content: "- ";
+}
+
+.changelog-tab__subtitle::after {
+    content: " -";
+}
+
 .subTitlesClass {
     background: linear-gradient(135deg, #ffffff, #e3eeff, #aab1ff, #7e96ff, #aab1ff, #e3eeff, #ffffff);
     background-size: 300% 300%;
