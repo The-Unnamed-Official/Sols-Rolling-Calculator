@@ -1124,19 +1124,16 @@
 }
 
 .changelog-tab__subtitle {
-    font-size: 1.32em;
-    letter-spacing: 0.12em;
-    text-transform: none;
-    margin-top: -6px;
-}
-
-.subTitlesClass {
     background: linear-gradient(135deg, #ffffff, #e3eeff, #aab1ff, #7e96ff, #aab1ff, #e3eeff, #ffffff);
     background-size: 300% 300%;
     animation: class-gradient 5.25s linear infinite;
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
+    font-size: 1.32em;
+    letter-spacing: 0.12em;
+    text-transform: none;
+    margin-top: -6px;
 }
 
 .changelog-tab:not(.changelog-tab--active) {
