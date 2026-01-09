@@ -56,6 +56,12 @@
     <video id="equinox-cutscene" class="cutscene-video" preload="auto" data-audio-channel="cutscene">
         <source src="files/equinoxCutscene.webm" type="video/webm">
     </video>
+    <video id="winter-garden-cutscene" class="cutscene-video" preload="auto" data-audio-channel="cutscene">
+        <source src="files/winterGardenCutscene.webm" type="video/webm">
+    </video>
+    <video id="dream-traveler-cutscene" class="cutscene-video" preload="auto" data-audio-channel="cutscene">
+        <source src="files/dreamTravelerCutscene.webm" type="video/webm">
+    </video>
     <video id="luminosity-cutscene" class="cutscene-video" preload="auto" data-audio-channel="cutscene">
         <source src="files/luminosityCutscene.webm" type="video/webm">
     </video>
@@ -108,11 +114,11 @@
                 <div class="banner__meta">
                     <h1 class="banner__title">Sols Rolling Simulator</h1>
                     <p class="banner__subtitle">
-                        <button type="button" class="banner__version-button" id="versionInfoButton" aria-haspopup="dialog" aria-expanded="false" aria-label="View update notes for version V1.555" data-version-id="v1555">V1.555</button>
+                        <button type="button" class="banner__version-button" id="versionInfoButton" aria-haspopup="dialog" aria-expanded="false" aria-label="View update notes for version V1.560" data-version-id="v1560">V1.560</button>
                         <span class="banner__subtitle-divider" aria-hidden="true">◉</span>
                         <span class="banner__subtitle-author">By <span class="banner__subtitle-author-name">not.unnamed</span></span>
                         <span class="banner__subtitle-divider" aria-hidden="true">◉</span>
-                        <span class="banner__subtitle-updated">Updated <time datetime="2026-01-04">2026/01/04</time></span>
+                        <span class="banner__subtitle-updated">Updated <time datetime="2025-01-09">2025/01/09</time></span>
                         <span class="banner__subtitle-divider" aria-hidden="true">◉</span>
                         <span class="banner__subtitle-eon">Sol's RNG Eon 1-12</span>
                     </p>
@@ -605,7 +611,7 @@
                 <li class="footer-credits__item">Neferkhaf cutscene courtesy of <a href="https://www.reddit.com/r/SolsRNG/comments/1n3wot3/new_neferkhaf_cutscene/" target="_blank" rel="noopener">Sirothereal</a>.</li>
                 <li class="footer-credits__item">Nyctophobia cutscene courtesy of <a href="https://www.youtube.com/watch?v=KIK2iTCnfkw" target="_blank" rel="noopener">lmpixel & kito</a>.</li>
                 <li class="footer-credits__item">Illusionary cutscene courtesy of <a href="https://www.reddit.com/r/SolsRNG/comments/1pall7r/illusionary_cutscene" target="_blank" rel="noopener">Chromm & segyun(person who obtained Illusionary)</a></li>
-                <li class="footer-credits__item">Winter Garden cutscene courtesy of ??? (Finding out...).</li>
+                <li class="footer-credits__item">Winter Garden cutscene courtesy of ??? (Finding out<span class="footer-credits__ellipsis">...</span>).</li>
                 <li class="footer-credits__item">Dream Traveler cutscene courtesy of <a href="https://www.youtube.com/watch?v=UOoP3JrsqKg" target="_blank" rel="noopener">floob</a>.</li>
                 <li class="footer-credits__item">Cyberspace song courtesy of <a href="https://open.spotify.com/track/1ZyGEzIDZgwWZucfoCPq9h" target="_blank" rel="noopener">Veens</a>.</li>
                 <li class="footer-credits__item">Dreamspace song courtesy of <a href="https://www.youtube.com/watch?v=nVvKPZ2soyU" target="_blank" rel="noopener">53_Axis</a>.</li>
@@ -779,15 +785,25 @@
                 <button
                     type="button"
                     class="changelog-tab changelog-tab--active"
+                    id="changelog-tab-v1560"
+                    role="tab"
+                    aria-controls="changelog-panel-v1560"
+                    aria-selected="true"
+                    data-changelog-tab="v1560"
+                >V1.560</button>
+                <button
+                    type="button"
+                    class="changelog-tab"
                     id="changelog-tab-v1555"
                     role="tab"
                     aria-controls="changelog-panel-v1555"
-                    aria-selected="true"
+                    aria-selected="false"
                     data-changelog-tab="v1555"
+                    tabindex="-1"
                 >V1.555</button>
                 <button
                     type="button"
-                    class="changelog-tab changelog-tab--active"
+                    class="changelog-tab"
                     id="changelog-tab-v1515"
                     role="tab"
                     aria-controls="changelog-panel-v1515"
@@ -849,12 +865,33 @@
 
             <div class="changelog-modal__panels" data-changelog-panels>
                 <section
+                    id="changelog-panel-v1560"
+                    class="changelog-modal__panel"
+                    role="tabpanel"
+                    aria-labelledby="changelog-tab-v1560"
+                    data-changelog-panel="v1560"
+                    tabindex="0"
+                >
+                    <header class="changelog-modal__header">
+                        <h2 class="changelog-modal__title" id="versionChangelogTitle">Version V1.560 Update Notes</h2>
+                        <p class="changelog-modal__meta">Updated 2025/01/09</p>
+                    </header>
+                    <p class="changelog-modal__intro">Latest changes:</p>
+                    <ul class="changelog-modal__list">
+                        <li>Added new cutscenes for Dream Traveler and Winter Garden.</li>
+                        <li>Updated the credits layout to a three-column list to keep the section compact.</li>
+                        <li>Added a loading animation to the Winter Garden credit while the original creator is still being tracked down.</li>
+                        <li>Winter Garden cutscene credit is still being researched, so the placeholder remains for now.</li>
+                    </ul>
+                </section>
+                <section
                     id="changelog-panel-v1555"
                     class="changelog-modal__panel"
                     role="tabpanel"
                     aria-labelledby="changelog-tab-v1555"
                     data-changelog-panel="v1555"
-                    tabindex="0"
+                    hidden
+                    tabindex="-1"
                 >
                     <header class="changelog-modal__header">
                         <h2 class="changelog-modal__title" id="versionChangelogTitle">Version V1.555 Update Notes</h2>
