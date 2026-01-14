@@ -523,7 +523,7 @@
                             <button type="button" id="luck-preset-one-million" data-luck-value="1000000" onclick="applyLuckValue(1000000, { luckSource: 'standard-preset' })">1 Million Preset +1,000,000</button>
                             <button type="button" data-luck-value="700000" onclick="applyLuckValue(700000, { luckSource: 'standard-preset' })"><span class="pumpBloodClass">Pump King's Blood</span> +700,000</button>
                             <button type="button" data-luck-value="690000" onclick="applyLuckValue(690000, { luckSource: 'standard-preset' })"><span class="allPotionsClass">All Potions</span> +690,000</button>
-                            <button type="button" data-luck-value="600000" onclick="handleOblivionPresetSelection('oblivion')"><span class="oblivionClass">Oblivion Potion</span> +600,000</button>
+                            <button type="button" id="luck-preset-oblivion" data-luck-value="600000" aria-pressed="false" onclick="handleOblivionPresetSelection('oblivion')"><span class="oblivionClass">Oblivion Potion</span> +600,000 <span class="preset-active-label" aria-hidden="true">Active</span></button>
                             <button type="button" data-luck-value="600000" onclick="applyLuckValue(600000, { luckSource: 'standard-preset' })"><span class="godlikeClass">Godlike</span> + <span class="heavenlyClass">Heavenly</span> + <span class="boundClass">Bound</span> +600,000</button>
                             <button type="button" data-luck-value="400000" onclick="applyLuckValue(400000, { luckSource: 'standard-preset' })"><span class="godlikeClass">Godlike</span> +400,000</button>
                             <button type="button" id="void-heart-trigger" data-luck-value="300000" data-limbo-only="true" style="display:none;" onclick="applyLuckValue(300000, { luckSource: 'standard-preset' })">Void Heart +300,000</button>
@@ -534,7 +534,7 @@
                             <button type="button" data-luck-value="150000" onclick="applyLuckValue(150000, { luckSource: 'standard-preset' })"><span class="heavenlyClass">Heavenly</span> +150,000</button>
                             <button type="button" data-luck-value="75000" onclick="applyLuckValue(75000, { luckSource: 'standard-preset' })"><span class="candyClass">Candy Corn</span> +75,000</button>
                             <button type="button" data-luck-value="50000" onclick="applyLuckValue(50000, { luckSource: 'standard-preset' })"><span class="boundClass">Bound</span> +50,000</button>
-                            <button type="button" data-luck-value="10000" onclick="handleDunePresetSelection('dune')"><span class="duneClass">Potion of the Dune</span> +10,000</button>
+                            <button type="button" id="luck-preset-dune" data-luck-value="10000" aria-pressed="false" onclick="handleDunePresetSelection('dune')"><span class="duneClass">Potion of the Dune</span> +10,000 <span class="preset-active-label" aria-hidden="true">Active</span></button>
                             <button type="button" data-luck-value="10000" onclick="applyLuckValue(10000, { luckSource: 'standard-preset' })"><span class="popClass">Popping Potion</span> +10,000</button>
                             <button type="button" data-luck-value="5000" onclick="applyLuckValue(5000, { luckSource: 'standard-preset' })"><span class="tutPotion">Tutorial Potion</span> +5,000</button>
                         </div>
