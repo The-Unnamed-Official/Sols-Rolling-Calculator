@@ -23,6 +23,7 @@ const audioOverlayState = {
 
 const CHANGELOG_VERSION_STORAGE_KEY = 'solsRollingCalculator:lastSeenChangelogVersion';
 const BACKGROUND_ROLLING_STORAGE_KEY = 'solsRollingCalculator:backgroundRollingPreference';
+const AUDIO_SETTINGS_STORAGE_KEY = 'solsRollingCalculator:audioSettings';
 const backgroundRollingPreference = {
     allowed: false,
     suppressPrompt: false
@@ -130,6 +131,76 @@ function persistBackgroundRollingPreference() {
         );
     } catch (error) {
         // Ignore write failures to avoid interrupting UI flow.
+    }
+}
+
+function hydrateAudioSettings() {
+    if (typeof window === 'undefined') {
+        return;
+    }
+
+    try {
+        const raw = window.localStorage.getItem(AUDIO_SETTINGS_STORAGE_KEY);
+        if (!raw) {
+            return;
+        }
+        const parsed = JSON.parse(raw);
+        if (!parsed || typeof parsed !== 'object') {
+            return;
+        }
+
+        if (Number.isFinite(parsed.musicVolume)) {
+            appState.audio.musicVolume = clamp01(parsed.musicVolume);
+        }
+        if (Number.isFinite(parsed.cutsceneVolume)) {
+            appState.audio.cutsceneVolume = clamp01(parsed.cutsceneVolume);
+        }
+        if (Number.isFinite(parsed.obtainVolume)) {
+            appState.audio.obtainVolume = clamp01(parsed.obtainVolume);
+        }
+        if (Number.isFinite(parsed.uiVolume)) {
+            appState.audio.uiVolume = clamp01(parsed.uiVolume);
+        }
+        if (Number.isFinite(parsed.uiLastVolume)) {
+            appState.audio.uiLastVolume = clamp01(parsed.uiLastVolume);
+        }
+        if (Number.isFinite(parsed.obtainLastVolume)) {
+            appState.audio.obtainLastVolume = clamp01(parsed.obtainLastVolume);
+        }
+        if (typeof parsed.masterMuted === 'boolean') {
+            appState.audio.masterMuted = parsed.masterMuted;
+        }
+
+        appState.audio.ui = (appState.audio.uiVolume ?? 0) > 0;
+        appState.audio.obtain = (appState.audio.obtainVolume ?? 0) > 0;
+        appState.audio.roll = (appState.audio.obtainVolume ?? 0) > 0
+            || (appState.audio.musicVolume ?? 0) > 0
+            || (appState.audio.cutsceneVolume ?? 0) > 0;
+    } catch (error) {
+        // Ignore storage errors so the app can continue with defaults.
+    }
+}
+
+function persistAudioSettings() {
+    if (typeof window === 'undefined') {
+        return;
+    }
+
+    try {
+        window.localStorage.setItem(
+            AUDIO_SETTINGS_STORAGE_KEY,
+            JSON.stringify({
+                musicVolume: appState.audio.musicVolume,
+                cutsceneVolume: appState.audio.cutsceneVolume,
+                obtainVolume: appState.audio.obtainVolume,
+                uiVolume: appState.audio.uiVolume,
+                uiLastVolume: appState.audio.uiLastVolume,
+                obtainLastVolume: appState.audio.obtainLastVolume,
+                masterMuted: appState.audio.masterMuted
+            })
+        );
+    } catch (error) {
+        // Ignore write failures to avoid interrupting audio controls.
     }
 }
 
@@ -373,7 +444,7 @@ function updateUiToggleStatus() {
     }
 }
 
-function setChannelVolume(channel, normalized) {
+function setChannelVolume(channel, normalized, { persist = true } = {}) {
     const value = clamp01(normalized);
     if (channel === 'ui') {
         appState.audio.uiVolume = value;
@@ -421,6 +492,10 @@ function setChannelVolume(channel, normalized) {
                 element.removeAttribute('muted');
             }
         });
+    }
+
+    if (persist) {
+        persistAudioSettings();
     }
 }
 
@@ -1167,8 +1242,8 @@ function updateMasterMuteToggleButton() {
     masterMuteToggle.setAttribute('aria-pressed', appState.audio.masterMuted ? 'true' : 'false');
 }
 
-function setMasterMuteState(isMuted) {
-    if (appState.audio.masterMuted === isMuted) {
+function setMasterMuteState(isMuted, { force = false, persist = true } = {}) {
+    if (appState.audio.masterMuted === isMuted && !force) {
         updateMasterMuteToggleButton();
         return;
     }
@@ -1180,6 +1255,10 @@ function setMasterMuteState(isMuted) {
 
     if (!isMuted) {
         resumeAudioEngine();
+    }
+
+    if (persist) {
+        persistAudioSettings();
     }
 }
 
@@ -4785,6 +4864,7 @@ document.addEventListener('DOMContentLoaded', () => {
 document.addEventListener('DOMContentLoaded', setupBiomeControlDependencies);
 
 document.addEventListener('DOMContentLoaded', () => {
+    hydrateAudioSettings();
     const buttons = document.querySelectorAll('button');
     const inputs = document.querySelectorAll('input');
     const selects = document.querySelectorAll('select');
@@ -4876,8 +4956,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const masterMuteToggle = document.getElementById('masterMuteToggle');
     if (masterMuteToggle) {
         masterMuteToggle.addEventListener('click', toggleMasterMute);
-        updateMasterMuteToggleButton();
     }
+    setMasterMuteState(appState.audio.masterMuted, { force: true, persist: false });
 
     const biomeConditionOverlay = document.getElementById('biomeConditionOverlay');
     const biomeConditionClose = document.getElementById('biomeConditionClose');
