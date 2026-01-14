@@ -4908,7 +4908,7 @@ function resolveXpTierForChance(chance) {
 }
 
 const LIMBO_NATIVE_FILTER = ['limbo', 'limbo-null'];
-const GLITCH_BREAKTHROUGH_EXCLUSION_SET = new Set(['day', 'night']);
+const GLITCH_BREAKTHROUGH_EXCLUSION_SET = new Set(['day', 'night', 'aurora']);
 
 function isYgBlessingEnabled() {
     if (typeof document === 'undefined') {
