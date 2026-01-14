@@ -5201,7 +5201,7 @@ function computeStandardEffectiveChance(aura, context) {
         const resolvedActiveMatch = treatCyberspaceNativeAsNonNative ? true : matchesActiveBiome;
 
         allowCyberspaceNativeRarity = cyberspaceNative
-            ? (inCyberspace || isRoe)
+            ? inCyberspace
             : true;
 
         if (!isAuraNativeTo(aura, 'limbo-null') && !resolvedActiveMatch && !allowEventGlitchAccess) {
