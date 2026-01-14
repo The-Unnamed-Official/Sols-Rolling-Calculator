@@ -947,6 +947,11 @@ select.form-field__input option {
     --button-background: rgba(34, 28, 14, 0.9);
 }
 
+.preset-matrix #luck-preset-oblivion.luck-preset-button--active {
+    border-color: rgba(100, 26, 255, 0.85);
+    box-shadow: inset 0 0 20px rgba(100, 26, 255, 0.35), 0 0 12px rgba(93, 0, 127, 0.45);
+}
+
 .preset-matrix button.luck-preset-button--active .preset-active-label {
     display: inline-flex;
     align-items: center;
