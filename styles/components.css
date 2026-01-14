@@ -668,6 +668,19 @@ select.form-field__input option {
     color: transparent;
 }
 
+.preset-active-label {
+    display: none;
+    margin-left: 8px;
+    padding: 2px 6px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.2);
+    color: #fff;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+}
+
 .boundClass {
     background: linear-gradient(90deg, #5473ff, #2d33dd, #1aa0ff);
     -webkit-background-clip: text;
@@ -928,6 +941,23 @@ select.form-field__input option {
     z-index: 1;
 }
 
+.preset-matrix button.luck-preset-button--active {
+    border-color: rgba(255, 226, 141, 0.85);
+    box-shadow: inset 0 0 20px rgba(255, 214, 116, 0.35), 0 0 12px rgba(255, 220, 120, 0.4);
+    --button-background: rgba(34, 28, 14, 0.9);
+}
+
+.preset-matrix #luck-preset-oblivion.luck-preset-button--active {
+    border-color: rgba(100, 26, 255, 0.85);
+    box-shadow: inset 0 0 20px rgba(100, 26, 255, 0.35), 0 0 12px rgba(93, 0, 127, 0.45);
+}
+
+.preset-matrix button.luck-preset-button--active .preset-active-label {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
 .preset-button {
     position: relative;
     display: flex;
@@ -940,21 +970,37 @@ select.form-field__input option {
     width: 100%;
 }
 
-body.luck-preset--stackable .preset-button > button {
-    padding-right: 12px;
+.preset-button__actions {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transform: translateY(0);
+    transition: opacity 0.2s ease, visibility 0s linear 0.2s;
 }
 
-.preset-button .preset-button__subtract {
-    min-width: 108px;
-    width: 50%;
+.preset-button:hover .preset-button__actions,
+.preset-button:focus-within .preset-button__actions {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    animation: presetAdjustmentsSlideIn 0.2s ease;
+    transition: opacity 0.2s ease, visibility 0s;
+}
+
+.preset-button__action {
+    min-width: 44px;
     height: 32px;
     padding: 0 12px;
-    font-size: 11px;
+    font-size: 16px;
     font-weight: 700;
-    letter-spacing: 0.14em;
+    letter-spacing: 0.08em;
     text-transform: uppercase;
     border-radius: 6px;
-    display: none;
+    display: inline-flex;
     align-items: center;
     justify-content: center;
     line-height: 1;
@@ -963,16 +1009,32 @@ body.luck-preset--stackable .preset-button > button {
     --button-border-color: rgba(95, 160, 230, 0.7);
 }
 
-.preset-button__subtract {
-    min-width: 108px;
-    width: 50%;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
+.preset-button__action--add {
+    --button-background: rgba(66, 213, 255, 0.12);
 }
 
-body.luck-preset--stackable .preset-button__subtract {
-    display: inline-flex;
+.preset-button__action--subtract {
+    --button-background: rgba(255, 120, 120, 0.12);
+}
+
+@keyframes presetAdjustmentsSlideIn {
+    0% {
+        opacity: 0;
+        transform: translateY(-8px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+body.reduce-motion .preset-button__actions {
+    transition: opacity 0.2s ease;
+}
+
+body.reduce-motion .preset-button:hover .preset-button__actions,
+body.reduce-motion .preset-button:focus-within .preset-button__actions {
+    animation: none;
 }
 
 .preset-matrix button:hover,

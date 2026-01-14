@@ -23,6 +23,7 @@ const audioOverlayState = {
 
 const CHANGELOG_VERSION_STORAGE_KEY = 'solsRollingCalculator:lastSeenChangelogVersion';
 const BACKGROUND_ROLLING_STORAGE_KEY = 'solsRollingCalculator:backgroundRollingPreference';
+const AUDIO_SETTINGS_STORAGE_KEY = 'solsRollingCalculator:audioSettings';
 const backgroundRollingPreference = {
     allowed: false,
     suppressPrompt: false
@@ -130,6 +131,76 @@ function persistBackgroundRollingPreference() {
         );
     } catch (error) {
         // Ignore write failures to avoid interrupting UI flow.
+    }
+}
+
+function hydrateAudioSettings() {
+    if (typeof window === 'undefined') {
+        return;
+    }
+
+    try {
+        const raw = window.localStorage.getItem(AUDIO_SETTINGS_STORAGE_KEY);
+        if (!raw) {
+            return;
+        }
+        const parsed = JSON.parse(raw);
+        if (!parsed || typeof parsed !== 'object') {
+            return;
+        }
+
+        if (Number.isFinite(parsed.musicVolume)) {
+            appState.audio.musicVolume = clamp01(parsed.musicVolume);
+        }
+        if (Number.isFinite(parsed.cutsceneVolume)) {
+            appState.audio.cutsceneVolume = clamp01(parsed.cutsceneVolume);
+        }
+        if (Number.isFinite(parsed.obtainVolume)) {
+            appState.audio.obtainVolume = clamp01(parsed.obtainVolume);
+        }
+        if (Number.isFinite(parsed.uiVolume)) {
+            appState.audio.uiVolume = clamp01(parsed.uiVolume);
+        }
+        if (Number.isFinite(parsed.uiLastVolume)) {
+            appState.audio.uiLastVolume = clamp01(parsed.uiLastVolume);
+        }
+        if (Number.isFinite(parsed.obtainLastVolume)) {
+            appState.audio.obtainLastVolume = clamp01(parsed.obtainLastVolume);
+        }
+        if (typeof parsed.masterMuted === 'boolean') {
+            appState.audio.masterMuted = parsed.masterMuted;
+        }
+
+        appState.audio.ui = (appState.audio.uiVolume ?? 0) > 0;
+        appState.audio.obtain = (appState.audio.obtainVolume ?? 0) > 0;
+        appState.audio.roll = (appState.audio.obtainVolume ?? 0) > 0
+            || (appState.audio.musicVolume ?? 0) > 0
+            || (appState.audio.cutsceneVolume ?? 0) > 0;
+    } catch (error) {
+        // Ignore storage errors so the app can continue with defaults.
+    }
+}
+
+function persistAudioSettings() {
+    if (typeof window === 'undefined') {
+        return;
+    }
+
+    try {
+        window.localStorage.setItem(
+            AUDIO_SETTINGS_STORAGE_KEY,
+            JSON.stringify({
+                musicVolume: appState.audio.musicVolume,
+                cutsceneVolume: appState.audio.cutsceneVolume,
+                obtainVolume: appState.audio.obtainVolume,
+                uiVolume: appState.audio.uiVolume,
+                uiLastVolume: appState.audio.uiLastVolume,
+                obtainLastVolume: appState.audio.obtainLastVolume,
+                masterMuted: appState.audio.masterMuted
+            })
+        );
+    } catch (error) {
+        // Ignore write failures to avoid interrupting audio controls.
     }
 }
 
@@ -373,7 +444,7 @@ function updateUiToggleStatus() {
     }
 }
 
-function setChannelVolume(channel, normalized) {
+function setChannelVolume(channel, normalized, { persist = true } = {}) {
     const value = clamp01(normalized);
     if (channel === 'ui') {
         appState.audio.uiVolume = value;
@@ -421,6 +492,10 @@ function setChannelVolume(channel, normalized) {
                 element.removeAttribute('muted');
             }
         });
+    }
+
+    if (persist) {
+        persistAudioSettings();
     }
 }
 
@@ -1167,8 +1242,8 @@ function updateMasterMuteToggleButton() {
     masterMuteToggle.setAttribute('aria-pressed', appState.audio.masterMuted ? 'true' : 'false');
 }
 
-function setMasterMuteState(isMuted) {
-    if (appState.audio.masterMuted === isMuted) {
+function setMasterMuteState(isMuted, { force = false, persist = true } = {}) {
+    if (appState.audio.masterMuted === isMuted && !force) {
         updateMasterMuteToggleButton();
         return;
     }
@@ -1180,6 +1255,10 @@ function setMasterMuteState(isMuted) {
 
     if (!isMuted) {
         resumeAudioEngine();
+    }
+
+    if (persist) {
+        persistAudioSettings();
     }
 }
 
@@ -1902,15 +1981,6 @@ function getLuckSelectionSource() {
     return currentLuckSelectionSource || LUCK_SELECTION_SOURCE.CUSTOM;
 }
 
-function isLuckPresetStackingEnabled() {
-    if (typeof document === 'undefined') {
-        return false;
-    }
-
-    const toggle = document.getElementById('luck-preset-add-toggle');
-    return Boolean(toggle && toggle.checked);
-}
-
 function syncLuckVisualEffects(luckValue) {
     if (!pageBody) {
         return;
@@ -1938,35 +2008,46 @@ function resetLuckPresetAnimations() {
 }
 
 function applyLuckValue(value, options = {}) {
-    if (options.luckSource) {
-        setLuckSelectionSource(options.luckSource);
+    const normalizedOptions = { ...options };
+
+    if (normalizedOptions.luckSource) {
+        setLuckSelectionSource(normalizedOptions.luckSource);
     }
 
-    const stackPresets = isLuckPresetStackingEnabled();
+    if (normalizedOptions.luckSource === LUCK_SELECTION_SOURCE.STANDARD_PRESET) {
+        if (!('activateOblivionPreset' in normalizedOptions)) {
+            normalizedOptions.activateOblivionPreset = false;
+        }
+        if (!('activateDunePreset' in normalizedOptions)) {
+            normalizedOptions.activateDunePreset = false;
+        }
+    }
+
+    if (normalizedOptions.activateOblivionPreset === true) {
+        normalizedOptions.activateDunePreset = false;
+    }
+    if (normalizedOptions.activateDunePreset === true) {
+        normalizedOptions.activateOblivionPreset = false;
+    }
     const luckInput = document.getElementById('luck-total');
-    const existingLuck = luckInput ? getNumericInputValue(luckInput, { min: 0 }) : baseLuck;
-    const startingLuck = Number.isFinite(existingLuck) ? existingLuck : baseLuck;
-    const targetLuck = Math.max(0, stackPresets ? startingLuck + value : value);
+    const targetLuck = Math.max(0, value);
 
     baseLuck = targetLuck;
-
-    if (!stackPresets) {
-        currentLuck = targetLuck;
-        lastVipMultiplier = 1;
-        lastXyzMultiplier = 1;
-        lastXcMultiplier = 1;
-        lastDaveMultiplier = 1;
-        lastDorcelessnessMultiplier = 1;
-        document.getElementById('vip-dropdown').value = '1';
-        document.getElementById('xyz-luck-toggle').checked = false;
-        document.getElementById('xc-luck-toggle').checked = false;
-        document.getElementById('dorcelessness-luck-toggle').checked = false;
-        document.getElementById('yg-blessing-toggle').checked = false;
-        refreshCustomSelect('vip-dropdown');
-        if (document.getElementById('dave-luck-dropdown')) {
-            document.getElementById('dave-luck-dropdown').value = '1';
-            refreshCustomSelect('dave-luck-dropdown');
-        }
+    currentLuck = targetLuck;
+    lastVipMultiplier = 1;
+    lastXyzMultiplier = 1;
+    lastXcMultiplier = 1;
+    lastDaveMultiplier = 1;
+    lastDorcelessnessMultiplier = 1;
+    document.getElementById('vip-dropdown').value = '1';
+    document.getElementById('xyz-luck-toggle').checked = false;
+    document.getElementById('xc-luck-toggle').checked = false;
+    document.getElementById('dorcelessness-luck-toggle').checked = false;
+    document.getElementById('yg-blessing-toggle').checked = false;
+    refreshCustomSelect('vip-dropdown');
+    if (document.getElementById('dave-luck-dropdown')) {
+        document.getElementById('dave-luck-dropdown').value = '1';
+        refreshCustomSelect('dave-luck-dropdown');
     }
 
     if (luckInput) {
@@ -1975,100 +2056,173 @@ function applyLuckValue(value, options = {}) {
 
     syncLuckVisualEffects(targetLuck);
 
-    if (stackPresets) {
-        recomputeLuckValue();
-    }
-
     if (typeof applyOblivionPresetOptions === 'function') {
-        applyOblivionPresetOptions(options);
+        applyOblivionPresetOptions(normalizedOptions);
     }
     if (typeof applyDunePresetOptions === 'function') {
-        applyDunePresetOptions(options);
+        applyDunePresetOptions(normalizedOptions);
     }
 }
 
-function applyLuckPresetDelta(presetValue) {
-    const numericPresetValue = Number(presetValue);
-    const stackPresets = isLuckPresetStackingEnabled();
+function getActiveLuckMultipliers() {
+    const controls = {
+        biome: document.getElementById('biome-dropdown'),
+        vip: document.getElementById('vip-dropdown'),
+        xyz: document.getElementById('xyz-luck-toggle'),
+        xc: document.getElementById('xc-luck-toggle'),
+        dorcelessness: document.getElementById('dorcelessness-luck-toggle'),
+        dave: document.getElementById('dave-luck-dropdown')
+    };
 
-    if (!stackPresets || !Number.isFinite(numericPresetValue) || numericPresetValue <= 0) {
+    const biomeValue = controls.biome ? controls.biome.value : 'normal';
+    const isLimboBiome = biomeValue === 'limbo';
+
+    return {
+        vip: parseFloat(controls.vip ? controls.vip.value : '1') || 1,
+        xyz: controls.xyz && controls.xyz.checked ? 2 : 1,
+        xc: controls.xc && controls.xc.checked ? 2 : 1,
+        dorcelessness: controls.dorcelessness && controls.dorcelessness.checked ? 2 : 1,
+        dave: isLimboBiome && controls.dave ? parseFloat(controls.dave.value) || 1 : 1
+    };
+}
+
+function applyLuckDelta(presetValue, options = {}) {
+    const numericPresetValue = Number(presetValue);
+    if (!Number.isFinite(numericPresetValue) || numericPresetValue === 0) {
         return;
     }
 
-    applyLuckValue(-numericPresetValue);
-}
-
-function syncLuckPresetSubtractButtons() {
-    const stackable = isLuckPresetStackingEnabled();
-
-    if (document.body) {
-        document.body.classList.toggle('luck-preset--stackable', stackable);
+    const normalizedOptions = { ...options };
+    if (normalizedOptions.luckSource) {
+        setLuckSelectionSource(normalizedOptions.luckSource);
     }
 
-    const subtractButtons = document.querySelectorAll('.preset-button__subtract');
-    subtractButtons.forEach(button => {
-        button.tabIndex = stackable ? 0 : -1;
-        button.setAttribute('aria-hidden', stackable ? 'false' : 'true');
-    });
+    const luckInput = document.getElementById('luck-total');
+    const existingLuck = luckInput ? getNumericInputValue(luckInput, { min: 0 }) : currentLuck;
+    const startingLuck = Number.isFinite(existingLuck) ? existingLuck : currentLuck;
+    const targetLuck = Math.max(0, startingLuck + numericPresetValue);
+
+    const multipliers = getActiveLuckMultipliers();
+    const multiplierTotal = multipliers.vip * multipliers.xyz * multipliers.xc * multipliers.dorcelessness * multipliers.dave;
+    baseLuck = multiplierTotal > 0 ? targetLuck / multiplierTotal : targetLuck;
+    currentLuck = targetLuck;
+    lastVipMultiplier = multipliers.vip;
+    lastXyzMultiplier = multipliers.xyz;
+    lastXcMultiplier = multipliers.xc;
+    lastDaveMultiplier = multipliers.dave;
+    lastDorcelessnessMultiplier = multipliers.dorcelessness;
+
+    if (luckInput) {
+        setNumericInputValue(luckInput, targetLuck, { format: true, min: 0 });
+    }
+
+    syncLuckVisualEffects(targetLuck);
+
+    if (typeof applyOblivionPresetOptions === 'function') {
+        applyOblivionPresetOptions(normalizedOptions);
+    }
+    if (typeof applyDunePresetOptions === 'function') {
+        applyDunePresetOptions(normalizedOptions);
+    }
 }
 
-function createLuckPresetSubtractButton(button, presetValue) {
-    const subtractButton = document.createElement('button');
+function buildLuckAdjustmentOptions(button, action, fallbackSource) {
+    const options = {};
+    if (fallbackSource) {
+        options.luckSource = fallbackSource;
+    }
+
+    if (button && button.id === 'luck-preset-oblivion') {
+        if (action === 'add') {
+            options.activateOblivionPreset = true;
+            options.activateDunePreset = false;
+        } else if (action === 'subtract') {
+            options.activateOblivionPreset = false;
+        }
+    }
+
+    if (button && button.id === 'luck-preset-dune') {
+        if (action === 'add') {
+            options.activateDunePreset = true;
+            options.activateOblivionPreset = false;
+        } else if (action === 'subtract') {
+            options.activateDunePreset = false;
+        }
+    }
+
+    return options;
+}
+
+function createLuckPresetAdjustmentButtons(button, presetValue, fallbackSource) {
+    const wrapper = document.createElement('div');
+    wrapper.className = 'preset-button__actions';
     const formattedValue = Number(presetValue).toLocaleString('en-US');
 
+    const addButton = document.createElement('button');
+    addButton.type = 'button';
+    addButton.className = 'preset-button__action preset-button__action--add';
+    addButton.textContent = '+';
+    addButton.setAttribute('aria-label', `Add ${formattedValue} luck`);
+    addButton.addEventListener('click', event => {
+        event.stopPropagation();
+        applyLuckDelta(presetValue, buildLuckAdjustmentOptions(button, 'add', fallbackSource));
+    });
+
+    const subtractButton = document.createElement('button');
     subtractButton.type = 'button';
-    subtractButton.className = 'preset-button__subtract';
-    subtractButton.textContent = 'Decrease';
-    subtractButton.dataset.luckValue = String(presetValue);
+    subtractButton.className = 'preset-button__action preset-button__action--subtract';
+    subtractButton.textContent = '-';
     subtractButton.setAttribute('aria-label', `Remove ${formattedValue} luck`);
     subtractButton.addEventListener('click', event => {
         event.stopPropagation();
-        applyLuckPresetDelta(presetValue);
+        applyLuckDelta(-presetValue, buildLuckAdjustmentOptions(button, 'subtract', fallbackSource));
     });
 
-    return subtractButton;
+    wrapper.appendChild(addButton);
+    wrapper.appendChild(subtractButton);
+
+    return wrapper;
 }
 
-function setupLuckPresetSubtractButtons() {
-    const panel = document.getElementById('luck-preset-panel');
+function setupLuckPresetAdjustmentButtons() {
+    const panels = [
+        { id: 'luck-preset-panel', source: LUCK_SELECTION_SOURCE.STANDARD_PRESET },
+        { id: 'device-buff-preset-panel', source: LUCK_SELECTION_SOURCE.DEVICE_PRESET }
+    ];
 
-    if (!panel) {
-        return;
-    }
-
-    const presetButtons = panel.querySelectorAll('button[data-luck-value]');
-    presetButtons.forEach(button => {
-        const presetValue = Number(button.dataset.luckValue);
-        if (!Number.isFinite(presetValue) || button.closest('.preset-button')) {
+    panels.forEach(({ id, source }) => {
+        const panel = document.getElementById(id);
+        if (!panel) {
             return;
         }
 
-        const wrapper = document.createElement('div');
-        wrapper.className = 'preset-button';
-        wrapper.style.display = button.style.display;
-        if (button.dataset.limboOnly) {
-            wrapper.dataset.limboOnly = button.dataset.limboOnly;
-        }
-        button.style.display = '';
+        const presetButtons = panel.querySelectorAll('button[data-luck-value]');
+        presetButtons.forEach(button => {
+            const presetValue = Number(button.dataset.luckValue);
+            if (!Number.isFinite(presetValue) || button.closest('.preset-button')) {
+                return;
+            }
 
-        const parent = button.parentNode;
-        if (!parent) {
-            return;
-        }
+            const wrapper = document.createElement('div');
+            wrapper.className = 'preset-button';
+            wrapper.style.display = button.style.display;
+            if (button.dataset.limboOnly) {
+                wrapper.dataset.limboOnly = button.dataset.limboOnly;
+            }
+            button.style.display = '';
 
-        parent.insertBefore(wrapper, button);
-        wrapper.appendChild(button);
+            const parent = button.parentNode;
+            if (!parent) {
+                return;
+            }
 
-        const subtractButton = createLuckPresetSubtractButton(button, presetValue);
-        wrapper.appendChild(subtractButton);
+            parent.insertBefore(wrapper, button);
+            wrapper.appendChild(button);
+
+            const adjustments = createLuckPresetAdjustmentButtons(button, presetValue, source);
+            wrapper.appendChild(adjustments);
+        });
     });
-
-    const toggle = document.getElementById('luck-preset-add-toggle');
-    if (toggle) {
-        toggle.addEventListener('change', syncLuckPresetSubtractButtons);
-    }
-
-    syncLuckPresetSubtractButtons();
 }
 
 function applyRollPreset(value) {
@@ -2664,7 +2818,8 @@ function handleOblivionPresetSelection(presetKey) {
 
     applyLuckValue(OBLIVION_LUCK_TARGET, {
         luckSource: LUCK_SELECTION_SOURCE.STANDARD_PRESET,
-        activateOblivionPreset: true
+        activateOblivionPreset: true,
+        activateDunePreset: false
     });
 }
 
@@ -2675,19 +2830,36 @@ function handleDunePresetSelection(presetKey) {
 
     applyLuckValue(DUNE_LUCK_TARGET, {
         luckSource: LUCK_SELECTION_SOURCE.STANDARD_PRESET,
-        activateDunePreset: true
+        activateDunePreset: true,
+        activateOblivionPreset: false
     });
+}
+
+function syncLuckPotionButtonState(buttonId, isActive) {
+    if (typeof document === 'undefined') {
+        return;
+    }
+
+    const button = document.getElementById(buttonId);
+    if (!button) {
+        return;
+    }
+
+    button.classList.toggle('luck-preset-button--active', Boolean(isActive));
+    button.setAttribute('aria-pressed', isActive ? 'true' : 'false');
 }
 
 function applyOblivionPresetOptions(options = {}) {
     if ('activateOblivionPreset' in options) {
         oblivionPresetEnabled = options.activateOblivionPreset === true;
+        syncLuckPotionButtonState('luck-preset-oblivion', oblivionPresetEnabled);
     }
 }
 
 function applyDunePresetOptions(options = {}) {
     if ('activateDunePreset' in options) {
         dunePresetEnabled = options.activateDunePreset === true;
+        syncLuckPotionButtonState('luck-preset-dune', dunePresetEnabled);
     }
 }
 
@@ -3214,8 +3386,8 @@ const EVENT_AURA_LOOKUP = {
         "Workshop - 700,000,000",
         "Parol - 760,000,000",
         "Sovereign : Frostveil - 1,000,000,000",
-        "Winter Garden - 1,450,000,000",
-        "Dream Traveler - 2,000,000,000",
+        "Winter Garden - 1,450,012,025",
+        "Dream Traveler - 2,025,012,025",
         "Cryogenic - 250,000"
     ],
 };
@@ -3966,7 +4138,7 @@ function relocateResourcesPanelForMobile() {
 
 document.addEventListener('DOMContentLoaded', initializeEventSelector);
 document.addEventListener('DOMContentLoaded', initializeDevBiomeToggle);
-document.addEventListener('DOMContentLoaded', setupLuckPresetSubtractButtons);
+document.addEventListener('DOMContentLoaded', setupLuckPresetAdjustmentButtons);
 document.addEventListener('DOMContentLoaded', setupLuckPresetAnimations);
 document.addEventListener('DOMContentLoaded', setupChangelogTabs);
 document.addEventListener('DOMContentLoaded', setupVersionChangelogOverlay);
@@ -4692,6 +4864,7 @@ document.addEventListener('DOMContentLoaded', () => {
 document.addEventListener('DOMContentLoaded', setupBiomeControlDependencies);
 
 document.addEventListener('DOMContentLoaded', () => {
+    hydrateAudioSettings();
     const buttons = document.querySelectorAll('button');
     const inputs = document.querySelectorAll('input');
     const selects = document.querySelectorAll('select');
@@ -4783,8 +4956,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const masterMuteToggle = document.getElementById('masterMuteToggle');
     if (masterMuteToggle) {
         masterMuteToggle.addEventListener('click', toggleMasterMute);
-        updateMasterMuteToggleButton();
     }
+    setMasterMuteState(appState.audio.masterMuted, { force: true, persist: false });
 
     const biomeConditionOverlay = document.getElementById('biomeConditionOverlay');
     const biomeConditionClose = document.getElementById('biomeConditionClose');

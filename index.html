@@ -500,14 +500,6 @@
                 <header class="surface__header">
                     <h2 class="surface__title" id="presets-heading">Quick Presets</h2>
                     <p class="surface__subtitle">Instantly configure popular luck and event-ready presets.</p>
-                    <div class="preset-mode-toggle">
-                        <span class="preset-mode-toggle__label" id="luck-preset-add-label">Stackable luck presets</span>
-                        <label class="toggle toggle-preset">
-                            <input type="checkbox" id="luck-preset-add-toggle" class="toggle__input" aria-labelledby="luck-preset-add-label">
-                            <span class="toggle__track"></span>
-                            <span class="toggle__thumb"></span>
-                        </label>
-                    </div>
                     <span class="preset-signoff__name">Aaden</span>
                 </header>
                 <div class="control-section control-section--presets">
@@ -523,7 +515,7 @@
                             <button type="button" id="luck-preset-one-million" data-luck-value="1000000" onclick="applyLuckValue(1000000, { luckSource: 'standard-preset' })">1 Million Preset +1,000,000</button>
                             <button type="button" data-luck-value="700000" onclick="applyLuckValue(700000, { luckSource: 'standard-preset' })"><span class="pumpBloodClass">Pump King's Blood</span> +700,000</button>
                             <button type="button" data-luck-value="690000" onclick="applyLuckValue(690000, { luckSource: 'standard-preset' })"><span class="allPotionsClass">All Potions</span> +690,000</button>
-                            <button type="button" data-luck-value="600000" onclick="handleOblivionPresetSelection('oblivion')"><span class="oblivionClass">Oblivion Potion</span> +600,000</button>
+                            <button type="button" id="luck-preset-oblivion" data-luck-value="600000" aria-pressed="false" onclick="handleOblivionPresetSelection('oblivion')"><span class="oblivionClass">Oblivion Potion</span> +600,000 <span class="preset-active-label" aria-hidden="true">Active</span></button>
                             <button type="button" data-luck-value="600000" onclick="applyLuckValue(600000, { luckSource: 'standard-preset' })"><span class="godlikeClass">Godlike</span> + <span class="heavenlyClass">Heavenly</span> + <span class="boundClass">Bound</span> +600,000</button>
                             <button type="button" data-luck-value="400000" onclick="applyLuckValue(400000, { luckSource: 'standard-preset' })"><span class="godlikeClass">Godlike</span> +400,000</button>
                             <button type="button" id="void-heart-trigger" data-luck-value="300000" data-limbo-only="true" style="display:none;" onclick="applyLuckValue(300000, { luckSource: 'standard-preset' })">Void Heart +300,000</button>
@@ -534,7 +526,7 @@
                             <button type="button" data-luck-value="150000" onclick="applyLuckValue(150000, { luckSource: 'standard-preset' })"><span class="heavenlyClass">Heavenly</span> +150,000</button>
                             <button type="button" data-luck-value="75000" onclick="applyLuckValue(75000, { luckSource: 'standard-preset' })"><span class="candyClass">Candy Corn</span> +75,000</button>
                             <button type="button" data-luck-value="50000" onclick="applyLuckValue(50000, { luckSource: 'standard-preset' })"><span class="boundClass">Bound</span> +50,000</button>
-                            <button type="button" data-luck-value="10000" onclick="handleDunePresetSelection('dune')"><span class="duneClass">Potion of the Dune</span> +10,000</button>
+                            <button type="button" id="luck-preset-dune" data-luck-value="10000" aria-pressed="false" onclick="handleDunePresetSelection('dune')"><span class="duneClass">Potion of the Dune</span> +10,000 <span class="preset-active-label" aria-hidden="true">Active</span></button>
                             <button type="button" data-luck-value="10000" onclick="applyLuckValue(10000, { luckSource: 'standard-preset' })"><span class="popClass">Popping Potion</span> +10,000</button>
                             <button type="button" data-luck-value="5000" onclick="applyLuckValue(5000, { luckSource: 'standard-preset' })"><span class="tutPotion">Tutorial Potion</span> +5,000</button>
                         </div>
@@ -546,12 +538,12 @@
                             <span class="preset-collection__title-divider preset-collection__title-divider--end" aria-hidden="true"></span>
                         </h3>
                         <div class="preset-matrix preset-matrix--compact" id="device-buff-preset-panel">
-                            <button type="button" onclick="applyDeviceBuffPreset(22.39)"><span class="genesisClass">Genesis Drive</span> + Max Luck x22.39</button>
-                            <button type="button" onclick="applyDeviceBuffPreset(26.24)"><span class="genesisClass">Genesis Drive</span> + <span class="plcClass">Pole Light Core</span> + Max Luck x26.24</button>
-                            <button type="button" onclick="applyDeviceBuffPreset(52.47)"><span class="genesisClass">Genesis Drive</span> + <span class="plcClass">Pole Light Core</span> + Max Luck + Bonus Roll x52.47</button>
-                            <button type="button" onclick="applyDeviceBuffPreset(25.85)"><span class="genesisClass">Genesis Drive</span> + Max Luck + Event buffs x25.85</button>
-                            <button type="button" onclick="applyDeviceBuffPreset(29.7)"><span class="genesisClass">Genesis Drive</span> + <span class="plcClass">Pole Light Core</span> + Max Luck + Event buffs x29.70</button>
-                            <button type="button" onclick="applyDeviceBuffPreset(59.4)"><span class="genesisClass">Genesis Drive</span> + <span class="plcClass">Pole Light Core</span> + Max Luck + Event buffs + Bonus Roll x59.40</button>
+                            <button type="button" data-luck-value="22.39" onclick="applyDeviceBuffPreset(22.39)"><span class="genesisClass">Genesis Drive</span> + Max Luck x22.39</button>
+                            <button type="button" data-luck-value="26.24" onclick="applyDeviceBuffPreset(26.24)"><span class="genesisClass">Genesis Drive</span> + <span class="plcClass">Pole Light Core</span> + Max Luck x26.24</button>
+                            <button type="button" data-luck-value="52.47" onclick="applyDeviceBuffPreset(52.47)"><span class="genesisClass">Genesis Drive</span> + <span class="plcClass">Pole Light Core</span> + Max Luck + Bonus Roll x52.47</button>
+                            <button type="button" data-luck-value="25.85" onclick="applyDeviceBuffPreset(25.85)"><span class="genesisClass">Genesis Drive</span> + Max Luck + Event buffs x25.85</button>
+                            <button type="button" data-luck-value="29.7" onclick="applyDeviceBuffPreset(29.7)"><span class="genesisClass">Genesis Drive</span> + <span class="plcClass">Pole Light Core</span> + Max Luck + Event buffs x29.70</button>
+                            <button type="button" data-luck-value="59.4" onclick="applyDeviceBuffPreset(59.4)"><span class="genesisClass">Genesis Drive</span> + <span class="plcClass">Pole Light Core</span> + Max Luck + Event buffs + Bonus Roll x59.40</button>
                         </div>
                     </div>
                     <div class="preset-collection">
@@ -886,6 +878,10 @@
                         <li>Fixed a bug where Aurora biome auras would become native inside Glitch.</li>
                         <p>Thanks to <span class="genesisClass">prettyblindinglight</span> for pointing this out to me :)</p>
                         <li>Updated <span class="sigil-outline-glitch">Glitch</span>, <span class="sigil-outline-dreamspace">Dreamspace</span> and <span class="sigil-outline-cyberspace">Cyberspace</span> biome icons to the same layout as the others.</li>
+                        <li>Removed the <span class="subTitlesClass">Stackable Luck Preset Switch</span> in favor of a more simple <span class="class-outline__low">+/-</span> button method.</li>
+                        <li>Fixed <span class="duneClass">Potion of the Dune</span> interactions with other luck presets.</li>
+                        <li>Prevented <span class="sigil-outline-winter-2026">Dream Traveler</span> and <span class="sigil-outline-winter-2026">Winter Garden</span> from appearing outside the <span class="sigil-outline-winter-2026">Winter Event 2026</span>.</li>
+                        <li><span class="subTitlesClass">Audio settings</span> now save to local storage, including the <span class="class-outline__low">mute</span> state.</li>
                     </ul>
                 </section>
                 <section
