@@ -1902,15 +1902,6 @@ function getLuckSelectionSource() {
     return currentLuckSelectionSource || LUCK_SELECTION_SOURCE.CUSTOM;
 }
 
-function isLuckPresetStackingEnabled() {
-    if (typeof document === 'undefined') {
-        return false;
-    }
-
-    const toggle = document.getElementById('luck-preset-add-toggle');
-    return Boolean(toggle && toggle.checked);
-}
-
 function syncLuckVisualEffects(luckValue) {
     if (!pageBody) {
         return;
@@ -1938,14 +1929,13 @@ function resetLuckPresetAnimations() {
 }
 
 function applyLuckValue(value, options = {}) {
-    const stackPresets = isLuckPresetStackingEnabled();
     const normalizedOptions = { ...options };
 
     if (normalizedOptions.luckSource) {
         setLuckSelectionSource(normalizedOptions.luckSource);
     }
 
-    if (!stackPresets && normalizedOptions.luckSource === LUCK_SELECTION_SOURCE.STANDARD_PRESET) {
+    if (normalizedOptions.luckSource === LUCK_SELECTION_SOURCE.STANDARD_PRESET) {
         if (!('activateOblivionPreset' in normalizedOptions)) {
             normalizedOptions.activateOblivionPreset = false;
         }
@@ -1954,36 +1944,31 @@ function applyLuckValue(value, options = {}) {
         }
     }
 
-    if (!stackPresets && normalizedOptions.activateOblivionPreset === true) {
+    if (normalizedOptions.activateOblivionPreset === true) {
         normalizedOptions.activateDunePreset = false;
     }
-    if (!stackPresets && normalizedOptions.activateDunePreset === true) {
+    if (normalizedOptions.activateDunePreset === true) {
         normalizedOptions.activateOblivionPreset = false;
     }
     const luckInput = document.getElementById('luck-total');
-    const existingLuck = luckInput ? getNumericInputValue(luckInput, { min: 0 }) : baseLuck;
-    const startingLuck = Number.isFinite(existingLuck) ? existingLuck : baseLuck;
-    const targetLuck = Math.max(0, stackPresets ? startingLuck + value : value);
+    const targetLuck = Math.max(0, value);
 
     baseLuck = targetLuck;
-
-    if (!stackPresets) {
-        currentLuck = targetLuck;
-        lastVipMultiplier = 1;
-        lastXyzMultiplier = 1;
-        lastXcMultiplier = 1;
-        lastDaveMultiplier = 1;
-        lastDorcelessnessMultiplier = 1;
-        document.getElementById('vip-dropdown').value = '1';
-        document.getElementById('xyz-luck-toggle').checked = false;
-        document.getElementById('xc-luck-toggle').checked = false;
-        document.getElementById('dorcelessness-luck-toggle').checked = false;
-        document.getElementById('yg-blessing-toggle').checked = false;
-        refreshCustomSelect('vip-dropdown');
-        if (document.getElementById('dave-luck-dropdown')) {
-            document.getElementById('dave-luck-dropdown').value = '1';
-            refreshCustomSelect('dave-luck-dropdown');
-        }
+    currentLuck = targetLuck;
+    lastVipMultiplier = 1;
+    lastXyzMultiplier = 1;
+    lastXcMultiplier = 1;
+    lastDaveMultiplier = 1;
+    lastDorcelessnessMultiplier = 1;
+    document.getElementById('vip-dropdown').value = '1';
+    document.getElementById('xyz-luck-toggle').checked = false;
+    document.getElementById('xc-luck-toggle').checked = false;
+    document.getElementById('dorcelessness-luck-toggle').checked = false;
+    document.getElementById('yg-blessing-toggle').checked = false;
+    refreshCustomSelect('vip-dropdown');
+    if (document.getElementById('dave-luck-dropdown')) {
+        document.getElementById('dave-luck-dropdown').value = '1';
+        refreshCustomSelect('dave-luck-dropdown');
     }
 
     if (luckInput) {
@@ -1991,10 +1976,6 @@ function applyLuckValue(value, options = {}) {
     }
 
     syncLuckVisualEffects(targetLuck);
-
-    if (stackPresets) {
-        recomputeLuckValue();
-    }
 
     if (typeof applyOblivionPresetOptions === 'function') {
         applyOblivionPresetOptions(normalizedOptions);
@@ -2004,97 +1985,165 @@ function applyLuckValue(value, options = {}) {
     }
 }
 
-function applyLuckPresetDelta(presetValue, options = {}) {
-    const numericPresetValue = Number(presetValue);
-    const stackPresets = isLuckPresetStackingEnabled();
+function getActiveLuckMultipliers() {
+    const controls = {
+        biome: document.getElementById('biome-dropdown'),
+        vip: document.getElementById('vip-dropdown'),
+        xyz: document.getElementById('xyz-luck-toggle'),
+        xc: document.getElementById('xc-luck-toggle'),
+        dorcelessness: document.getElementById('dorcelessness-luck-toggle'),
+        dave: document.getElementById('dave-luck-dropdown')
+    };
 
-    if (!stackPresets || !Number.isFinite(numericPresetValue) || numericPresetValue <= 0) {
+    const biomeValue = controls.biome ? controls.biome.value : 'normal';
+    const isLimboBiome = biomeValue === 'limbo';
+
+    return {
+        vip: parseFloat(controls.vip ? controls.vip.value : '1') || 1,
+        xyz: controls.xyz && controls.xyz.checked ? 2 : 1,
+        xc: controls.xc && controls.xc.checked ? 2 : 1,
+        dorcelessness: controls.dorcelessness && controls.dorcelessness.checked ? 2 : 1,
+        dave: isLimboBiome && controls.dave ? parseFloat(controls.dave.value) || 1 : 1
+    };
+}
+
+function applyLuckDelta(presetValue, options = {}) {
+    const numericPresetValue = Number(presetValue);
+    if (!Number.isFinite(numericPresetValue) || numericPresetValue === 0) {
         return;
     }
 
-    applyLuckValue(-numericPresetValue, options);
-}
-
-function syncLuckPresetSubtractButtons() {
-    const stackable = isLuckPresetStackingEnabled();
-
-    if (document.body) {
-        document.body.classList.toggle('luck-preset--stackable', stackable);
+    const normalizedOptions = { ...options };
+    if (normalizedOptions.luckSource) {
+        setLuckSelectionSource(normalizedOptions.luckSource);
     }
 
-    const subtractButtons = document.querySelectorAll('.preset-button__subtract');
-    subtractButtons.forEach(button => {
-        button.tabIndex = stackable ? 0 : -1;
-        button.setAttribute('aria-hidden', stackable ? 'false' : 'true');
-    });
+    const luckInput = document.getElementById('luck-total');
+    const existingLuck = luckInput ? getNumericInputValue(luckInput, { min: 0 }) : currentLuck;
+    const startingLuck = Number.isFinite(existingLuck) ? existingLuck : currentLuck;
+    const targetLuck = Math.max(0, startingLuck + numericPresetValue);
+
+    const multipliers = getActiveLuckMultipliers();
+    const multiplierTotal = multipliers.vip * multipliers.xyz * multipliers.xc * multipliers.dorcelessness * multipliers.dave;
+    baseLuck = multiplierTotal > 0 ? targetLuck / multiplierTotal : targetLuck;
+    currentLuck = targetLuck;
+    lastVipMultiplier = multipliers.vip;
+    lastXyzMultiplier = multipliers.xyz;
+    lastXcMultiplier = multipliers.xc;
+    lastDaveMultiplier = multipliers.dave;
+    lastDorcelessnessMultiplier = multipliers.dorcelessness;
+
+    if (luckInput) {
+        setNumericInputValue(luckInput, targetLuck, { format: true, min: 0 });
+    }
+
+    syncLuckVisualEffects(targetLuck);
+
+    if (typeof applyOblivionPresetOptions === 'function') {
+        applyOblivionPresetOptions(normalizedOptions);
+    }
+    if (typeof applyDunePresetOptions === 'function') {
+        applyDunePresetOptions(normalizedOptions);
+    }
 }
 
-function createLuckPresetSubtractButton(button, presetValue) {
-    const subtractButton = document.createElement('button');
-    const formattedValue = Number(presetValue).toLocaleString('en-US');
-    const isOblivionButton = button && button.id === 'luck-preset-oblivion';
-    const isDuneButton = button && button.id === 'luck-preset-dune';
+function buildLuckAdjustmentOptions(button, action, fallbackSource) {
+    const options = {};
+    if (fallbackSource) {
+        options.luckSource = fallbackSource;
+    }
 
+    if (button && button.id === 'luck-preset-oblivion') {
+        if (action === 'add') {
+            options.activateOblivionPreset = true;
+            options.activateDunePreset = false;
+        } else if (action === 'subtract') {
+            options.activateOblivionPreset = false;
+        }
+    }
+
+    if (button && button.id === 'luck-preset-dune') {
+        if (action === 'add') {
+            options.activateDunePreset = true;
+            options.activateOblivionPreset = false;
+        } else if (action === 'subtract') {
+            options.activateDunePreset = false;
+        }
+    }
+
+    return options;
+}
+
+function createLuckPresetAdjustmentButtons(button, presetValue, fallbackSource) {
+    const wrapper = document.createElement('div');
+    wrapper.className = 'preset-button__actions';
+    const formattedValue = Number(presetValue).toLocaleString('en-US');
+
+    const addButton = document.createElement('button');
+    addButton.type = 'button';
+    addButton.className = 'preset-button__action preset-button__action--add';
+    addButton.textContent = '+';
+    addButton.setAttribute('aria-label', `Add ${formattedValue} luck`);
+    addButton.addEventListener('click', event => {
+        event.stopPropagation();
+        applyLuckDelta(presetValue, buildLuckAdjustmentOptions(button, 'add', fallbackSource));
+    });
+
+    const subtractButton = document.createElement('button');
     subtractButton.type = 'button';
-    subtractButton.className = 'preset-button__subtract';
-    subtractButton.textContent = 'Decrease';
-    subtractButton.dataset.luckValue = String(presetValue);
+    subtractButton.className = 'preset-button__action preset-button__action--subtract';
+    subtractButton.textContent = '-';
     subtractButton.setAttribute('aria-label', `Remove ${formattedValue} luck`);
     subtractButton.addEventListener('click', event => {
         event.stopPropagation();
-        const presetOptions = {};
-        if (isOblivionButton) {
-            presetOptions.activateOblivionPreset = false;
-        }
-        if (isDuneButton) {
-            presetOptions.activateDunePreset = false;
-        }
-        applyLuckPresetDelta(presetValue, presetOptions);
+        applyLuckDelta(-presetValue, buildLuckAdjustmentOptions(button, 'subtract', fallbackSource));
     });
 
-    return subtractButton;
+    wrapper.appendChild(addButton);
+    wrapper.appendChild(subtractButton);
+
+    return wrapper;
 }
 
-function setupLuckPresetSubtractButtons() {
-    const panel = document.getElementById('luck-preset-panel');
+function setupLuckPresetAdjustmentButtons() {
+    const panels = [
+        { id: 'luck-preset-panel', source: LUCK_SELECTION_SOURCE.STANDARD_PRESET },
+        { id: 'device-buff-preset-panel', source: LUCK_SELECTION_SOURCE.DEVICE_PRESET }
+    ];
 
-    if (!panel) {
-        return;
-    }
-
-    const presetButtons = panel.querySelectorAll('button[data-luck-value]');
-    presetButtons.forEach(button => {
-        const presetValue = Number(button.dataset.luckValue);
-        if (!Number.isFinite(presetValue) || button.closest('.preset-button')) {
+    panels.forEach(({ id, source }) => {
+        const panel = document.getElementById(id);
+        if (!panel) {
             return;
         }
 
-        const wrapper = document.createElement('div');
-        wrapper.className = 'preset-button';
-        wrapper.style.display = button.style.display;
-        if (button.dataset.limboOnly) {
-            wrapper.dataset.limboOnly = button.dataset.limboOnly;
-        }
-        button.style.display = '';
+        const presetButtons = panel.querySelectorAll('button[data-luck-value]');
+        presetButtons.forEach(button => {
+            const presetValue = Number(button.dataset.luckValue);
+            if (!Number.isFinite(presetValue) || button.closest('.preset-button')) {
+                return;
+            }
 
-        const parent = button.parentNode;
-        if (!parent) {
-            return;
-        }
+            const wrapper = document.createElement('div');
+            wrapper.className = 'preset-button';
+            wrapper.style.display = button.style.display;
+            if (button.dataset.limboOnly) {
+                wrapper.dataset.limboOnly = button.dataset.limboOnly;
+            }
+            button.style.display = '';
 
-        parent.insertBefore(wrapper, button);
-        wrapper.appendChild(button);
+            const parent = button.parentNode;
+            if (!parent) {
+                return;
+            }
 
-        const subtractButton = createLuckPresetSubtractButton(button, presetValue);
-        wrapper.appendChild(subtractButton);
+            parent.insertBefore(wrapper, button);
+            wrapper.appendChild(button);
+
+            const adjustments = createLuckPresetAdjustmentButtons(button, presetValue, source);
+            wrapper.appendChild(adjustments);
+        });
     });
-
-    const toggle = document.getElementById('luck-preset-add-toggle');
-    if (toggle) {
-        toggle.addEventListener('change', syncLuckPresetSubtractButtons);
-    }
-
-    syncLuckPresetSubtractButtons();
 }
 
 function applyRollPreset(value) {
@@ -2688,11 +2737,10 @@ function handleOblivionPresetSelection(presetKey) {
         return;
     }
 
-    const stackPresets = isLuckPresetStackingEnabled();
     applyLuckValue(OBLIVION_LUCK_TARGET, {
         luckSource: LUCK_SELECTION_SOURCE.STANDARD_PRESET,
         activateOblivionPreset: true,
-        ...(stackPresets ? {} : { activateDunePreset: false })
+        activateDunePreset: false
     });
 }
 
@@ -2701,11 +2749,10 @@ function handleDunePresetSelection(presetKey) {
         return;
     }
 
-    const stackPresets = isLuckPresetStackingEnabled();
     applyLuckValue(DUNE_LUCK_TARGET, {
         luckSource: LUCK_SELECTION_SOURCE.STANDARD_PRESET,
         activateDunePreset: true,
-        ...(stackPresets ? {} : { activateOblivionPreset: false })
+        activateOblivionPreset: false
     });
 }
 
@@ -4012,7 +4059,7 @@ function relocateResourcesPanelForMobile() {
 
 document.addEventListener('DOMContentLoaded', initializeEventSelector);
 document.addEventListener('DOMContentLoaded', initializeDevBiomeToggle);
-document.addEventListener('DOMContentLoaded', setupLuckPresetSubtractButtons);
+document.addEventListener('DOMContentLoaded', setupLuckPresetAdjustmentButtons);
 document.addEventListener('DOMContentLoaded', setupLuckPresetAnimations);
 document.addEventListener('DOMContentLoaded', setupChangelogTabs);
 document.addEventListener('DOMContentLoaded', setupVersionChangelogOverlay);

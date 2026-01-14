@@ -970,21 +970,37 @@ select.form-field__input option {
     width: 100%;
 }
 
-body.luck-preset--stackable .preset-button > button {
-    padding-right: 12px;
+.preset-button__actions {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transform: translateY(0);
+    transition: opacity 0.2s ease, visibility 0s linear 0.2s;
 }
 
-.preset-button .preset-button__subtract {
-    min-width: 108px;
-    width: 50%;
+.preset-button:hover .preset-button__actions,
+.preset-button:focus-within .preset-button__actions {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    animation: presetAdjustmentsSlideIn 0.2s ease;
+    transition: opacity 0.2s ease, visibility 0s;
+}
+
+.preset-button__action {
+    min-width: 44px;
     height: 32px;
     padding: 0 12px;
-    font-size: 11px;
+    font-size: 16px;
     font-weight: 700;
-    letter-spacing: 0.14em;
+    letter-spacing: 0.08em;
     text-transform: uppercase;
     border-radius: 6px;
-    display: none;
+    display: inline-flex;
     align-items: center;
     justify-content: center;
     line-height: 1;
@@ -993,16 +1009,32 @@ body.luck-preset--stackable .preset-button > button {
     --button-border-color: rgba(95, 160, 230, 0.7);
 }
 
-.preset-button__subtract {
-    min-width: 108px;
-    width: 50%;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
+.preset-button__action--add {
+    --button-background: rgba(66, 213, 255, 0.12);
 }
 
-body.luck-preset--stackable .preset-button__subtract {
-    display: inline-flex;
+.preset-button__action--subtract {
+    --button-background: rgba(255, 120, 120, 0.12);
+}
+
+@keyframes presetAdjustmentsSlideIn {
+    0% {
+        opacity: 0;
+        transform: translateY(-8px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+body.reduce-motion .preset-button__actions {
+    transition: opacity 0.2s ease;
+}
+
+body.reduce-motion .preset-button:hover .preset-button__actions,
+body.reduce-motion .preset-button:focus-within .preset-button__actions {
+    animation: none;
 }
 
 .preset-matrix button:hover,
