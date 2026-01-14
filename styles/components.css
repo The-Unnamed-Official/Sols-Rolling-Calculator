@@ -668,6 +668,19 @@ select.form-field__input option {
     color: transparent;
 }
 
+.preset-active-label {
+    display: none;
+    margin-left: 8px;
+    padding: 2px 6px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.2);
+    color: #fff;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+}
+
 .boundClass {
     background: linear-gradient(90deg, #5473ff, #2d33dd, #1aa0ff);
     -webkit-background-clip: text;
@@ -926,6 +939,18 @@ select.form-field__input option {
     position: relative;
     overflow: visible;
     z-index: 1;
+}
+
+.preset-matrix button.luck-preset-button--active {
+    border-color: rgba(255, 226, 141, 0.85);
+    box-shadow: inset 0 0 20px rgba(255, 214, 116, 0.35), 0 0 12px rgba(255, 220, 120, 0.4);
+    --button-background: rgba(34, 28, 14, 0.9);
+}
+
+.preset-matrix button.luck-preset-button--active .preset-active-label {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .preset-button {

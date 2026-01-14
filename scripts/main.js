@@ -1938,11 +1938,28 @@ function resetLuckPresetAnimations() {
 }
 
 function applyLuckValue(value, options = {}) {
-    if (options.luckSource) {
-        setLuckSelectionSource(options.luckSource);
+    const stackPresets = isLuckPresetStackingEnabled();
+    const normalizedOptions = { ...options };
+
+    if (normalizedOptions.luckSource) {
+        setLuckSelectionSource(normalizedOptions.luckSource);
     }
 
-    const stackPresets = isLuckPresetStackingEnabled();
+    if (!stackPresets && normalizedOptions.luckSource === LUCK_SELECTION_SOURCE.STANDARD_PRESET) {
+        if (!('activateOblivionPreset' in normalizedOptions)) {
+            normalizedOptions.activateOblivionPreset = false;
+        }
+        if (!('activateDunePreset' in normalizedOptions)) {
+            normalizedOptions.activateDunePreset = false;
+        }
+    }
+
+    if (!stackPresets && normalizedOptions.activateOblivionPreset === true) {
+        normalizedOptions.activateDunePreset = false;
+    }
+    if (!stackPresets && normalizedOptions.activateDunePreset === true) {
+        normalizedOptions.activateOblivionPreset = false;
+    }
     const luckInput = document.getElementById('luck-total');
     const existingLuck = luckInput ? getNumericInputValue(luckInput, { min: 0 }) : baseLuck;
     const startingLuck = Number.isFinite(existingLuck) ? existingLuck : baseLuck;
@@ -1980,14 +1997,14 @@ function applyLuckValue(value, options = {}) {
     }
 
     if (typeof applyOblivionPresetOptions === 'function') {
-        applyOblivionPresetOptions(options);
+        applyOblivionPresetOptions(normalizedOptions);
     }
     if (typeof applyDunePresetOptions === 'function') {
-        applyDunePresetOptions(options);
+        applyDunePresetOptions(normalizedOptions);
     }
 }
 
-function applyLuckPresetDelta(presetValue) {
+function applyLuckPresetDelta(presetValue, options = {}) {
     const numericPresetValue = Number(presetValue);
     const stackPresets = isLuckPresetStackingEnabled();
 
@@ -1995,7 +2012,7 @@ function applyLuckPresetDelta(presetValue) {
         return;
     }
 
-    applyLuckValue(-numericPresetValue);
+    applyLuckValue(-numericPresetValue, options);
 }
 
 function syncLuckPresetSubtractButtons() {
@@ -2015,6 +2032,8 @@ function syncLuckPresetSubtractButtons() {
 function createLuckPresetSubtractButton(button, presetValue) {
     const subtractButton = document.createElement('button');
     const formattedValue = Number(presetValue).toLocaleString('en-US');
+    const isOblivionButton = button && button.id === 'luck-preset-oblivion';
+    const isDuneButton = button && button.id === 'luck-preset-dune';
 
     subtractButton.type = 'button';
     subtractButton.className = 'preset-button__subtract';
@@ -2023,7 +2042,14 @@ function createLuckPresetSubtractButton(button, presetValue) {
     subtractButton.setAttribute('aria-label', `Remove ${formattedValue} luck`);
     subtractButton.addEventListener('click', event => {
         event.stopPropagation();
-        applyLuckPresetDelta(presetValue);
+        const presetOptions = {};
+        if (isOblivionButton) {
+            presetOptions.activateOblivionPreset = false;
+        }
+        if (isDuneButton) {
+            presetOptions.activateDunePreset = false;
+        }
+        applyLuckPresetDelta(presetValue, presetOptions);
     });
 
     return subtractButton;
@@ -2662,9 +2688,11 @@ function handleOblivionPresetSelection(presetKey) {
         return;
     }
 
+    const stackPresets = isLuckPresetStackingEnabled();
     applyLuckValue(OBLIVION_LUCK_TARGET, {
         luckSource: LUCK_SELECTION_SOURCE.STANDARD_PRESET,
-        activateOblivionPreset: true
+        activateOblivionPreset: true,
+        ...(stackPresets ? {} : { activateDunePreset: false })
     });
 }
 
@@ -2673,21 +2701,39 @@ function handleDunePresetSelection(presetKey) {
         return;
     }
 
+    const stackPresets = isLuckPresetStackingEnabled();
     applyLuckValue(DUNE_LUCK_TARGET, {
         luckSource: LUCK_SELECTION_SOURCE.STANDARD_PRESET,
-        activateDunePreset: true
+        activateDunePreset: true,
+        ...(stackPresets ? {} : { activateOblivionPreset: false })
     });
+}
+
+function syncLuckPotionButtonState(buttonId, isActive) {
+    if (typeof document === 'undefined') {
+        return;
+    }
+
+    const button = document.getElementById(buttonId);
+    if (!button) {
+        return;
+    }
+
+    button.classList.toggle('luck-preset-button--active', Boolean(isActive));
+    button.setAttribute('aria-pressed', isActive ? 'true' : 'false');
 }
 
 function applyOblivionPresetOptions(options = {}) {
     if ('activateOblivionPreset' in options) {
         oblivionPresetEnabled = options.activateOblivionPreset === true;
+        syncLuckPotionButtonState('luck-preset-oblivion', oblivionPresetEnabled);
     }
 }
 
 function applyDunePresetOptions(options = {}) {
     if ('activateDunePreset' in options) {
         dunePresetEnabled = options.activateDunePreset === true;
+        syncLuckPotionButtonState('luck-preset-dune', dunePresetEnabled);
     }
 }
 
@@ -3214,8 +3260,8 @@ const EVENT_AURA_LOOKUP = {
         "Workshop - 700,000,000",
         "Parol - 760,000,000",
         "Sovereign : Frostveil - 1,000,000,000",
-        "Winter Garden - 1,450,000,000",
-        "Dream Traveler - 2,000,000,000",
+        "Winter Garden - 1,450,012,025",
+        "Dream Traveler - 2,025,012,025",
         "Cryogenic - 250,000"
     ],
 };
