@@ -1280,6 +1280,16 @@
     line-height: 1.5;
 }
 
+.tinyClass {
+    color: gray;
+    font-size: small;
+    padding-left: 1.2em;
+}
+
+.listSpace {
+    margin-top: 10px;
+}
+
 @media (prefers-reduced-motion: reduce) {
     .cutscene-warning-overlay,
     .modal-overlay {
