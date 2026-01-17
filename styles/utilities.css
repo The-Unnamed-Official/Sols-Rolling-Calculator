@@ -311,6 +311,38 @@
         -1px -1px 0 rgba(55, 55, 55, 0.94);
 }
 
+.sigil-outline-leviathan {
+    color: black;
+    text-shadow:
+        0 0 10px rgba(0, 117, 87, 0.95),
+        0 0 18px rgba(0, 155, 57, 0.88),
+        0 0 32px rgba(0, 166, 122, 0.8),
+        1px 0 0 rgba(0, 186, 149, 0.96),
+        -1px 0 0 rgba(0, 101, 98, 0.96),
+        0 1px 0 rgba(95, 255, 204, 0.96),
+        -1px -1px 0 rgba(0, 172, 154, 0.94);
+}
+
+.sigil-effect-breakthrough {
+    background: linear-gradient(178deg, #000000 0%, #000000 10%, #ffffff 10%, #ffffff 20%, #000000 20%, #000000 30%, #ffffff 30%, #ffffff 40%,
+                                       #000000 40%, #000000 50%, #ffffff 50%, #ffffff 60%, #000000 60%, #000000 70%, #ffffff 70%, #ffffff 80%,
+                                       #000000 80%, #000000 90%, #ffffff 90%, #ffffff 100%);
+    background-size: 300% 300%;
+    animation: class-gradient-vert 1s linear infinite;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+
+@keyframes class-gradient-vert {
+    0% {
+        background-position: 0% 50%;
+    }
+    100% {
+        background-position: 0% 350%;
+    }
+}
+
 .sigil-effect-oblivion,
 .sigil-effect-memory,
 .sigil-effect-neferkhaf,
@@ -1246,6 +1278,16 @@
 
 .changelog-modal__list li {
     line-height: 1.5;
+}
+
+.tinyClass {
+    color: gray;
+    font-size: small;
+    padding-left: 1.2em;
+}
+
+.listSpace {
+    margin-top: 10px;
 }
 
 @media (prefers-reduced-motion: reduce) {

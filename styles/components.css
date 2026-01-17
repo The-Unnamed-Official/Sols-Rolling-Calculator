@@ -629,8 +629,10 @@ select.form-field__input option {
     color: transparent;
 }
 
-.genesisClass {
-    background: linear-gradient(90deg, #a39bff, #d2b0ff);
+.archangelClass {
+    background: linear-gradient(90deg, #ffb134, #fff98a, #ffb134);
+    background-size: 300% 300%;
+    animation: class-gradient 5s linear infinite;
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
@@ -720,6 +722,16 @@ select.form-field__input option {
 
 .popClass {
     background: linear-gradient(90deg, #ff3030, #ff5f5f);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+
+.insaneLuckPresetClass {
+    background: linear-gradient(145deg, #ff0000, #ff0000, #ffff00, #ffff00, #1aff00, #1aff00, #00eaff, #00eaff,
+                                        #006aff, #006aff, #aa00ff, #aa00ff, #ff00e1, #ff00e1, #ff0000, #ff0000);
+    background-size: 300% 300%;
+    animation: class-gradient 1s linear infinite;
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;

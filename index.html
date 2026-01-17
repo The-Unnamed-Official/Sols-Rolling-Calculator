@@ -65,6 +65,15 @@
     <video id="luminosity-cutscene" class="cutscene-video" preload="auto" data-audio-channel="cutscene">
         <source src="files/luminosityCutscene.webm" type="video/webm">
     </video>
+    <video id="leviathan-cutscene" class="cutscene-video" preload="auto" data-audio-channel="cutscene">
+        <source src="files/leviathanCutscene.webm" type="video/webm">
+    </video>
+    <video id="ascendant-cutscene" class="cutscene-video" preload="auto" data-audio-channel="cutscene">
+        <source src="files/ascendantCutscene.webm" type="video/webm">
+    </video>
+    <video id="breakthrough-cutscene" class="cutscene-video" preload="auto" data-audio-channel="cutscene">
+        <source src="files/breakthroughCutscene.webm" type="video/webm">
+    </video>
     <video id="pixelation-cutscene" class="cutscene-video" preload="auto" data-audio-channel="cutscene">
         <source src="files/pixelationCutscene.webm" type="video/webm">
     </video>
@@ -114,13 +123,13 @@
                 <div class="banner__meta">
                     <h1 class="banner__title">Sol's Rolling Simulator</h1>
                     <p class="banner__subtitle">
-                        <button type="button" class="banner__version-button" id="versionInfoButton" aria-haspopup="dialog" aria-expanded="false" data-version-id="v1566">V1.566</button>
+                        <button type="button" class="banner__version-button" id="versionInfoButton" aria-haspopup="dialog" aria-expanded="false" data-version-id="v1600">V1.600</button>
                         <span class="banner__subtitle-divider" aria-hidden="true">◉</span>
                         <span class="banner__subtitle-author">By <span class="banner__subtitle-author-name">not.unnamed</span></span>
                         <span class="banner__subtitle-divider" aria-hidden="true">◉</span>
-                        <span class="banner__subtitle-updated">Updated <time datetime="2025-01-09">2025/01/15</time></span>
+                        <span class="banner__subtitle-updated">Updated <time datetime="2025-01-09">2025/01/17</time></span>
                         <span class="banner__subtitle-divider" aria-hidden="true">◉</span>
-                        <span class="banner__subtitle-eon">Sol's RNG Eon 1-12</span>
+                        <span class="banner__subtitle-eon">Sol's RNG Eon 1-14</span>
                     </p>
                 </div>
             </div>
@@ -510,9 +519,9 @@
                             <span class="preset-collection__title-divider preset-collection__title-divider--end" aria-hidden="true"></span>
                         </h3>
                         <div class="preset-matrix" id="luck-preset-panel">
-                            <button type="button" id="luck-preset-hundred-million" data-luck-value="100000000" onclick="applyLuckValue(100000000, { luckSource: 'standard-preset' })">100 Million Preset +100,000,000</button>
-                            <button type="button" id="luck-preset-ten-million" data-luck-value="10000000" onclick="applyLuckValue(10000000, { luckSource: 'standard-preset' })">10 Million Preset +10,000,000</button>
-                            <button type="button" id="luck-preset-one-million" data-luck-value="1000000" onclick="applyLuckValue(1000000, { luckSource: 'standard-preset' })">1 Million Preset +1,000,000</button>
+                            <button type="button" id="luck-preset-hundred-million" data-luck-value="100000000" onclick="applyLuckValue(100000000, { luckSource: 'standard-preset' })"><span class="insaneLuckPresetClass">100 Million Preset +100,000,000</span></button>
+                            <button type="button" id="luck-preset-ten-million" data-luck-value="10000000" onclick="applyLuckValue(10000000, { luckSource: 'standard-preset' })"><span class="insaneLuckPresetClass">10 Million Preset +10,000,000</span></button>
+                            <button type="button" id="luck-preset-one-million" data-luck-value="1000000" onclick="applyLuckValue(1000000, { luckSource: 'standard-preset' })"><span class="insaneLuckPresetClass">1 Million Preset +1,000,000</span></button>
                             <button type="button" data-luck-value="700000" onclick="applyLuckValue(700000, { luckSource: 'standard-preset' })"><span class="pumpBloodClass">Pump King's Blood</span> +700,000</button>
                             <button type="button" data-luck-value="690000" onclick="applyLuckValue(690000, { luckSource: 'standard-preset' })"><span class="allPotionsClass">All Potions</span> +690,000</button>
                             <button type="button" id="luck-preset-oblivion" data-luck-value="600000" aria-pressed="false" onclick="handleOblivionPresetSelection('oblivion')"><span class="oblivionClass">Oblivion Potion</span> +600,000 <span class="preset-active-label" aria-hidden="true">Active</span></button>
@@ -538,12 +547,12 @@
                             <span class="preset-collection__title-divider preset-collection__title-divider--end" aria-hidden="true"></span>
                         </h3>
                         <div class="preset-matrix preset-matrix--compact" id="device-buff-preset-panel">
-                            <button type="button" data-luck-value="22.39" onclick="applyDeviceBuffPreset(22.39)"><span class="genesisClass">Genesis Drive</span> + Max Luck x22.39</button>
-                            <button type="button" data-luck-value="26.24" onclick="applyDeviceBuffPreset(26.24)"><span class="genesisClass">Genesis Drive</span> + <span class="plcClass">Pole Light Core</span> + Max Luck x26.24</button>
-                            <button type="button" data-luck-value="52.47" onclick="applyDeviceBuffPreset(52.47)"><span class="genesisClass">Genesis Drive</span> + <span class="plcClass">Pole Light Core</span> + Max Luck + Bonus Roll x52.47</button>
-                            <button type="button" data-luck-value="25.85" onclick="applyDeviceBuffPreset(25.85)"><span class="genesisClass">Genesis Drive</span> + Max Luck + Event buffs x25.85</button>
-                            <button type="button" data-luck-value="29.7" onclick="applyDeviceBuffPreset(29.7)"><span class="genesisClass">Genesis Drive</span> + <span class="plcClass">Pole Light Core</span> + Max Luck + Event buffs x29.70</button>
-                            <button type="button" data-luck-value="59.4" onclick="applyDeviceBuffPreset(59.4)"><span class="genesisClass">Genesis Drive</span> + <span class="plcClass">Pole Light Core</span> + Max Luck + Event buffs + Bonus Roll x59.40</button>
+                            <button type="button" data-luck-value="22.39" onclick="applyDeviceBuffPreset(22.39)"><span class="archangelClass">Archangel Device</span> + Max Luck x25.39</button>
+                            <button type="button" data-luck-value="26.24" onclick="applyDeviceBuffPreset(26.24)"><span class="archangelClass">Archangel Device</span> + <span class="plcClass">Pole Light Core</span> + Max Luck x31.24</button>
+                            <button type="button" data-luck-value="52.47" onclick="applyDeviceBuffPreset(52.47)"><span class="archangelClass">Archangel Device</span> + <span class="plcClass">Pole Light Core</span> + Max Luck + Bonus Roll x55.47</button>
+                            <button type="button" data-luck-value="25.85" onclick="applyDeviceBuffPreset(25.85)"><span class="archangelClass">Archangel Device</span> + Max Luck + Event buffs x25.85</button>
+                            <button type="button" data-luck-value="29.7" onclick="applyDeviceBuffPreset(29.7)"><span class="archangelClass">Archangel Device</span> + <span class="plcClass">Pole Light Core</span> + Max Luck + Event buffs x234.70</button>
+                            <button type="button" data-luck-value="59.4" onclick="applyDeviceBuffPreset(59.4)"><span class="archangelClass">Archangel Device</span> + <span class="plcClass">Pole Light Core</span> + Max Luck + Event buffs + Bonus Roll x64.40</button>
                         </div>
                     </div>
                     <div class="preset-collection">
@@ -608,6 +617,9 @@
                 <li class="footer-credits__item">Cyberspace song courtesy of <a href="https://open.spotify.com/track/1ZyGEzIDZgwWZucfoCPq9h" target="_blank" rel="noopener">Veens</a>.</li>
                 <li class="footer-credits__item">Dreamspace song courtesy of <a href="https://www.youtube.com/watch?v=nVvKPZ2soyU" target="_blank" rel="noopener">53_Axis</a>.</li>
                 <li class="footer-credits__item">Unkown biome song courtesy of <a href="https://www.youtube.com/watch?v=LLng8n_1eOY" target="_blank" rel="noopener">Derpcat</a>.</li>
+                <li class="footer-credits__item">Leviathan cutscene courtesy of <a href="https://discord.com/users/755614816793788468" target="_blank" rel="noopener">reeseyhi</a>.</li>
+                <li class="footer-credits__item">Breakthrough cutscene courtesy of <a href="https://discord.com/users/979478452786823259" target="_blank" rel="noopener">INCONCEIVABLE</a>.</li>
+                <li class="footer-credits__item">Ascendant cutscene courtesy of <a href="https://discord.com/users/823317679708176434" target="_blank" rel="noopener">Exeael</a>.</li>
             </ul>
         </details>
     </footer>
@@ -777,11 +789,23 @@
                 <button
                     type="button"
                     class="changelog-tab changelog-tab--active"
+                    id="changelog-tab-v1600"
+                    role="tab"
+                    aria-controls="changelog-panel-v1600"
+                    aria-selected="true"
+                    data-changelog-tab="v1600"
+                >
+                    <span class="changelog-tab__title">V1.600</span>
+                </button>
+                <button
+                    type="button"
+                    class="changelog-tab changelog-tab--active"
                     id="changelog-tab-v1566"
                     role="tab"
                     aria-controls="changelog-panel-v1566"
-                    aria-selected="true"
+                    aria-selected="false"
                     data-changelog-tab="v1566"
+                    tabindex="-1
                 >
                     <span class="changelog-tab__title">V1.566</span>
                 </button>
@@ -873,12 +897,51 @@
 
             <div class="changelog-modal__panels" data-changelog-panels>
                 <section
+                    id="changelog-panel-v1600"
+                    class="changelog-modal__panel"
+                    role="tabpanel"
+                    aria-labelledby="changelog-tab-v1600"
+                    data-changelog-panel="v1600"
+                    tabindex="0"
+                >
+                    <header class="changelog-modal__header">
+                        <h2 class="changelog-modal__title" id="versionChangelogTitle">Version V1.600 Update Notes</h2>
+                        <span class="changelog-tab__subtitle">Eon2 Preperation</span>
+                        <p class="changelog-modal__meta">Updated 2025/01/17</p>
+                    </header>
+                    <p class="changelog-modal__intro">Latest changes:</p>
+                    <ul class="changelog-modal__list">
+                        <ul>
+                            <li>Added 14 auras:</li>
+                            <ul>
+                                <li class="listSpace">Flutter<span class="tinyClass">1 in 5k</span></li>
+                                <li class="listSpace">Lantern<span class="tinyClass">1 in 333,333</span></li>
+                                <li class="listSpace">Player : Respawn<span class="tinyClass">1 in 1,999,999</span></li>
+                                <li class="listSpace">Flowed<span class="tinyClass">1 in 2,121,121 (1/2,121 from Null)</span></li>
+                                <li class="listSpace">Sharkyn<span class="tinyClass">1 in 10,000,000 (1/2,500,000 from Rainy)</span></li>
+                                <li class="listSpace">Melodic<span class="tinyClass">1 in 11,300,000</span></li>
+                                <li class="listSpace">Apotheosis<span class="tinyClass">1 in 24,649,430</span></li>
+                                <li class="listSpace">Flora : Florest<span class="tinyClass">1 in 32,800,000</span></li>
+                                <li class="listSpace">Prophecy<span class="tinyClass">1 in 275,649,430 (1/55,129,886 from Heaven)</span></li>
+                                <li class="listSpace">Pythos<span class="tinyClass">1 in 666,666,666 (1/111,111,111 from Hell)</span></li>
+                                <li class="listSpace">Ascendant<span class="tinyClass">1 in 935,000,000 (1/187,000,000 from Heaven)</span></li>
+                                <li class="listSpace"><span class="sigil-effect-breakthrough">Breakthrough</span><span class="tinyClass">1 in 1,999,999,999 (Unobtainable in Null)</span></li>
+                                <li class="listSpace"><span class="sigil-outline-leviathan">Leviathan</span><span class="tinyClass">1 in 1,700,000,000 (From Rainy/Glitch)</span></li>
+                                <li class="listSpace"><span class="sigil-outline-dreamspace">Borealis</span><span class="tinyClass">1 in 13,333,333 (From Dreamspace)</span></li>
+                                
+                            </ul>
+                        </ul>
+                        <li>Updated the Quick Device presets to use Archangel Device</li>
+                    </ul>
+                </section>
+                <section
                     id="changelog-panel-v1566"
                     class="changelog-modal__panel"
                     role="tabpanel"
                     aria-labelledby="changelog-tab-v1566"
                     data-changelog-panel="v1566"
-                    tabindex="0"
+                    hidden
+                    tabindex="-1"
                 >
                     <header class="changelog-modal__header">
                         <h2 class="changelog-modal__title" id="versionChangelogTitle">Version V1.566 Update Notes</h2>
