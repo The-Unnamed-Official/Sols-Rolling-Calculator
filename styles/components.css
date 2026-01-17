@@ -727,6 +727,16 @@ select.form-field__input option {
     color: transparent;
 }
 
+.insaneLuckPresetClass {
+    background: linear-gradient(145deg, #ff0000, #ff0000, #ffff00, #ffff00, #1aff00, #1aff00, #00eaff, #00eaff,
+                                        #006aff, #006aff, #aa00ff, #aa00ff, #ff00e1, #ff00e1, #ff0000, #ff0000);
+    background-size: 300% 300%;
+    animation: class-gradient 1s linear infinite;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+
 .subTitlesClass {
     background: linear-gradient(135deg, #ffffff, #e3eeff, #aab1ff, #7e96ff, #aab1ff, #e3eeff, #ffffff);
     background-size: 300% 300%;
