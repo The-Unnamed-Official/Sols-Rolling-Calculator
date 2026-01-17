@@ -2890,6 +2890,8 @@ function determineResultPriority(aura, baseChance) {
 }
 
 const MEGAPHONE_AURA_NAME = 'Megaphone - 5,000';
+const BREAKTHROUGH_AURA_NAME = 'Breakthrough - 1,999,999,999';
+const LEVIATHAN_AURA_NAME = 'Leviathan - 1,730,400,000';
 
 const NATIVE_BREAKTHROUGH_MULTIPLIERS = Object.freeze({
     cyberspace: 2,
@@ -2925,8 +2927,8 @@ const AURA_BLUEPRINT_SOURCE = Object.freeze([
     { name: "Illusionary - 10,000,000", chance: 10000000, nativeBiomes: ["cyberspace"], ignoreLuck: true, fixedRollThreshold: 1, cutscene: "illusionary-cutscene" },
     { name: "Equinox - 2,500,000,000", chance: 2500000000, cutscene: "equinox-cutscene" },
     { name: "Dream Traveler - 2,025,012,025", chance: 2025012025, breakthroughs: nativeBreakthroughs("aurora"), cutscene: "dream-traveler-cutscene" },
-    { name: "Breakthrough - 1,999,999,999" },
-    { name: "Leviathan - 1,730,400,000" },
+    { name: BREAKTHROUGH_AURA_NAME },
+    { name: LEVIATHAN_AURA_NAME, nativeBiomes: ["rainy", "glitch"] },
     { name: "Winter Garden - 1,450,012,025", chance: 1450012025, breakthroughs: nativeBreakthroughs("aurora"), cutscene: "winter-garden-cutscene" },
     { name: "Luminosity - 1,200,000,000", chance: 1200000000, cutscene: "luminosity-cutscene" },
     { name: "Erebus - 1,200,000,000", chance: 1200000000, nativeBiomes: ["glitch", "bloodRain"], cutscene: "erebus-cutscene" },
@@ -5096,6 +5098,8 @@ function resolveXpTierForChance(chance) {
 
 const LIMBO_NATIVE_FILTER = ['limbo', 'limbo-null'];
 const GLITCH_BREAKTHROUGH_EXCLUSION_SET = new Set(['day', 'night', 'aurora']);
+const NULL_BIOME_FILTER = new Set(['null', 'limbo-null']);
+const LEVIATHAN_ALLOWED_BIOMES = new Set(['rainy', 'glitch']);
 
 function isYgBlessingEnabled() {
     if (typeof document === 'undefined') {
@@ -5276,6 +5280,21 @@ function computeStandardEffectiveChance(aura, context) {
 }
 
 function determineAuraEffectiveChance(aura, context) {
+    if (aura?.name === BREAKTHROUGH_AURA_NAME) {
+        const canonicalBiome = context?.biome || 'normal';
+        if (NULL_BIOME_FILTER.has(canonicalBiome)) {
+            return Infinity;
+        }
+    }
+    if (aura?.name === LEVIATHAN_AURA_NAME) {
+        const canonicalBiome = context?.biome || 'normal';
+        const activeBiomes = Array.isArray(context?.activeBiomes) ? context.activeBiomes : [];
+        const inAllowedBiome = LEVIATHAN_ALLOWED_BIOMES.has(canonicalBiome)
+            || activeBiomes.some(biome => LEVIATHAN_ALLOWED_BIOMES.has(biome));
+        if (!inAllowedBiome) {
+            return Infinity;
+        }
+    }
     if (aura?.requiresYgBlessing) {
         const blessingActive = context?.ygBlessingActive === true;
         const canonicalBiome = context?.biome || 'normal';
