@@ -629,8 +629,10 @@ select.form-field__input option {
     color: transparent;
 }
 
-.genesisClass {
-    background: linear-gradient(90deg, #a39bff, #d2b0ff);
+.archangelClass {
+    background: linear-gradient(90deg, #ffb134, #fff98a, #ffb134);
+    background-size: 300% 300%;
+    animation: class-gradient 5s linear infinite;
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
