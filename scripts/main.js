@@ -5376,6 +5376,15 @@ function buildResultEntries(registry, biome, breakthroughStatsMap) {
         const formattedName = formatAuraNameMarkup(aura);
         const formattedTextName = formatAuraNameText(aura);
         const breakthroughStats = breakthroughStatsMap.get(aura.name);
+        const isBreakthrough = aura.name.startsWith('Breakthrough');
+
+        const formatBreakthroughMarkupWithCount = (nameValue, countValue) => {
+            const [namePart, ...restParts] = nameValue.split(' - ');
+            const suffixText = restParts.length > 0 ? ` - ${restParts.join(' - ')}` : '';
+            const detailText = `${suffixText} | Times Rolled: ${formatWithCommas(countValue)}`;
+            return `<span class="sigil-effect-breakthrough__title">${namePart.toUpperCase()}</span>` +
+                `<span class="sigil-effect-breakthrough__detail">${detailText}</span>`;
+        };
 
         const specialClassTokens = specialClass
             ? specialClass.split(/\s+/).filter(Boolean)
@@ -5402,10 +5411,14 @@ function buildResultEntries(registry, biome, breakthroughStatsMap) {
 
         if (breakthroughStats && breakthroughStats.count > 0) {
             const btName = aura.name.replace(/-\s*[\d,]+/, `- ${formatWithCommas(breakthroughStats.btChance)}`);
-            const nativeLabel = formatAuraNameMarkup(aura, btName);
+            const nativeLabel = isBreakthrough
+                ? formatBreakthroughMarkupWithCount(btName, breakthroughStats.count)
+                : formatAuraNameMarkup(aura, btName);
             const nativeShareName = formatAuraNameText(aura, btName);
             pushVisualEntry(
-                `<span class="${classAttr}">[Native] ${nativeLabel} | Times Rolled: ${formatWithCommas(breakthroughStats.count)}</span>`,
+                isBreakthrough
+                    ? `<span class="${classAttr}">[Native] ${nativeLabel}</span>`
+                    : `<span class="${classAttr}">[Native] ${nativeLabel} | Times Rolled: ${formatWithCommas(breakthroughStats.count)}</span>`,
                 `[Native] ${nativeShareName} | Times Rolled: ${formatWithCommas(breakthroughStats.count)}`,
                 determineResultPriority(aura, breakthroughStats.btChance),
                 createShareVisualRecord(btName, breakthroughStats.count, { prefix: '[Native]', variant: 'native' })

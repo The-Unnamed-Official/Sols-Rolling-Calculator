@@ -789,11 +789,23 @@
                 <button
                     type="button"
                     class="changelog-tab changelog-tab--active"
+                    id="changelog-tab-v1601"
+                    role="tab"
+                    aria-controls="changelog-panel-v1601"
+                    aria-selected="true"
+                    data-changelog-tab="v1601"
+                >
+                    <span class="changelog-tab__title">V1.601</span>
+                </button>
+                <button
+                    type="button"
+                    class="changelog-tab changelog-tab--active"
                     id="changelog-tab-v1600"
                     role="tab"
                     aria-controls="changelog-panel-v1600"
-                    aria-selected="true"
+                    aria-selected="false"
                     data-changelog-tab="v1600"
+                    tabindex="-1"
                 >
                     <span class="changelog-tab__title">V1.600</span>
                 </button>
@@ -805,7 +817,7 @@
                     aria-controls="changelog-panel-v1566"
                     aria-selected="false"
                     data-changelog-tab="v1566"
-                    tabindex="-1
+                    tabindex="-1"
                 >
                     <span class="changelog-tab__title">V1.566</span>
                 </button>
@@ -897,12 +909,32 @@
 
             <div class="changelog-modal__panels" data-changelog-panels>
                 <section
+                    id="changelog-panel-v1601"
+                    class="changelog-modal__panel"
+                    role="tabpanel"
+                    aria-labelledby="changelog-tab-v1601"
+                    data-changelog-panel="v1601"
+                    tabindex="0"
+                >
+                    <header class="changelog-modal__header">
+                        <h2 class="changelog-modal__title" id="versionChangelogTitle">Version V1.601 Update Notes</h2>
+                        <span class="changelog-tab__subtitle">Eon2 Preperation | Bugfixes</span>
+                        <p class="changelog-modal__meta">Updated 2025/01/18</p>
+                    </header>
+                    <p class="changelog-modal__intro">Latest changes:</p>
+                    <ul class="changelog-modal__list">
+                        <li>Updated <span class="sigil-border-breakthrough"><span class="sigil-effect-breakthrough__title">Breakthrough</span></span> to a more accurate style.</li>
+                        <li>Fixed <span class="sigil-outline-leviathan">Leviathan</span> being obtainable using a Rune of Rainstorm/Everything.</li>
+                    </ul>
+                </section>
+                <section
                     id="changelog-panel-v1600"
                     class="changelog-modal__panel"
                     role="tabpanel"
                     aria-labelledby="changelog-tab-v1600"
                     data-changelog-panel="v1600"
-                    tabindex="0"
+                    hidden
+                    tabindex="-1"
                 >
                     <header class="changelog-modal__header">
                         <h2 class="changelog-modal__title" id="versionChangelogTitle">Version V1.600 Update Notes</h2>
