@@ -2869,6 +2869,16 @@ function applyDunePresetOptions(options = {}) {
 function formatAuraNameMarkup(aura, overrideName) {
     if (!aura) return overrideName || '';
     const baseName = typeof overrideName === 'string' && overrideName.length > 0 ? overrideName : aura.name;
+    if (baseName.startsWith('Breakthrough')) {
+        const [namePart, ...restParts] = baseName.split(' - ');
+        const suffix = restParts.length > 0 ? ` - ${restParts.join(' - ')}` : '';
+        const breakthroughMarkup = `<span class="sigil-effect-breakthrough__title">${namePart.toUpperCase()}</span>` +
+            (suffix ? `<span class="sigil-effect-breakthrough__suffix">${suffix}</span>` : '');
+        if (aura.subtitle) {
+            return `${breakthroughMarkup} <span class="sigil-subtitle">${aura.subtitle}</span>`;
+        }
+        return breakthroughMarkup;
+    }
     if (aura.subtitle) {
         return `${baseName} <span class="sigil-subtitle">${aura.subtitle}</span>`;
     }
