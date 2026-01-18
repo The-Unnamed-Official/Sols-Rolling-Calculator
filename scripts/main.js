@@ -5718,7 +5718,7 @@ function runRollSimulation(options = {}) {
     const formatProgressLabel = value => value.toFixed(PROGRESS_DECIMAL_PLACES);
 
     const progressElementsAvailable = progressPanel && progressBarFill && progressLabel;
-    const showProgress = progressElementsAvailable && total >= 100000;
+    const showProgress = progressElementsAvailable;
     if (progressPanel) {
         progressPanel.style.display = showProgress ? 'grid' : 'none';
         progressPanel.classList.toggle('loading-indicator--active', showProgress);
