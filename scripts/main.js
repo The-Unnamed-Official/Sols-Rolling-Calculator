@@ -5147,6 +5147,7 @@ function createAuraEvaluationContext(selection, { eventChecker, luckValue } = {}
         eventChecker,
         activeBiomes,
         breakthroughBiomes,
+        runeValue,
         primaryBiome: selectionState?.primaryBiome || null,
         ygBlessingActive: isYgBlessingEnabled(),
         luckSource: getLuckSelectionSource(),
@@ -5293,6 +5294,10 @@ function determineAuraEffectiveChance(aura, context) {
     if (aura?.name === LEVIATHAN_AURA_NAME) {
         const canonicalBiome = context?.biome || 'normal';
         const activeBiomes = Array.isArray(context?.activeBiomes) ? context.activeBiomes : [];
+        const runeValue = context?.runeValue || null;
+        if (runeValue === 'rainyRune' || runeValue === 'roe') {
+            return Infinity;
+        }
         const inAllowedBiome = LEVIATHAN_ALLOWED_BIOMES.has(canonicalBiome)
             || activeBiomes.some(biome => LEVIATHAN_ALLOWED_BIOMES.has(biome));
         if (!inAllowedBiome) {
