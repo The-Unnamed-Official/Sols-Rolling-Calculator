@@ -323,15 +323,22 @@
         -1px -1px 0 rgba(0, 172, 154, 0.94);
 }
 
+.sigil-border-breakthrough {
+    background: linear-gradient(150deg, transparent 15%, #00000d 25%);
+    background-clip: padding-box;
+    border: 2px solid transparent;
+    border-image: linear-gradient(290deg, #666680 5%, #636c88 10%, transparent 20%, transparent 90%, rgb(132 135 157 / 70%) 95%) 1;
+    padding: .1em;
+}
+
 .sigil-effect-breakthrough {
-    background: linear-gradient(178deg, #000000 0%, #000000 10%, #ffffff 10%, #ffffff 20%, #000000 20%, #000000 30%, #ffffff 30%, #ffffff 40%,
-                                       #000000 40%, #000000 50%, #ffffff 50%, #ffffff 60%, #000000 60%, #000000 70%, #ffffff 70%, #ffffff 80%,
-                                       #000000 80%, #000000 90%, #ffffff 90%, #ffffff 100%);
-    background-size: 300% 300%;
-    animation: class-gradient-vert 1s linear infinite;
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
+    content: 'BREAKTHROUGH';
+    white-space: nowrap;
+    transform-origin: center;
+    -webkit-background-clip: text !important;
+    -webkit-text-fill-color: transparent;
+    background: linear-gradient(175deg, #f2fdfe 10%, #cfd5e3 19%, #0d0f1c 20%, #37344b 35%, #8c8ea0 35%, #68697c 40%, #7e84a3 45%, #5c606f 50%, #9498ab 55%, #484a5e 70%, #eef4fa 71%, #e0e6ef 75%, #e9ebfc 80%);
+    letter-spacing: .1em;
 }
 
 @keyframes class-gradient-vert {

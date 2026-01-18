@@ -2745,7 +2745,7 @@ function resolveAuraStyleClass(aura, biome) {
     if (name.startsWith('Equinox')) classes.push('sigil-effect-equinox');
     if (name.startsWith('Megaphone')) classes.push('sigil-effect-megaphone');
     if (name.startsWith('Nyctophobia')) classes.push('sigil-effect-nyctophobia');
-    if (name.startsWith('Breakthrough')) classes.push('sigil-effect-breakthrough');
+    if (name.startsWith('Breakthrough')) classes.push('sigil-effect-breakthrough', 'sigil-border-breakthrough');
     if (name.startsWith('Glitch')) classes.push('sigil-effect-glitch');
 
     const auraData = typeof aura === 'string' ? null : aura;
