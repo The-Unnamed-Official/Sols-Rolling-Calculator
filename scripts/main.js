@@ -2856,6 +2856,9 @@ function applyOblivionPresetOptions(options = {}) {
     if ('activateOblivionPreset' in options) {
         oblivionPresetEnabled = options.activateOblivionPreset === true;
         syncLuckPotionButtonState('luck-preset-oblivion', oblivionPresetEnabled);
+        if (typeof updateBiomeControlConstraints === 'function') {
+            updateBiomeControlConstraints({ triggerSync: true });
+        }
     }
 }
 
@@ -4674,7 +4677,7 @@ function updateBiomeControlConstraints({ source = null, triggerSync = true } = {
     let timeChanged = false;
 
     const selectedRuneConfig = resolveRuneConfiguration(otherSelect.value);
-    const runeActive = selectedRuneConfig !== null;
+    const runeActive = selectedRuneConfig !== null && !oblivionPresetEnabled;
 
     if (timeSelect.value === 'day' && DAY_RESTRICTED_BIOMES.has(primarySelect.value)) {
         if (source === BIOME_TIME_SELECT_ID) {
@@ -4752,12 +4755,22 @@ function updateBiomeControlConstraints({ source = null, triggerSync = true } = {
         }
     }
 
+    if (oblivionPresetEnabled && selectedRuneConfig !== null) {
+        otherSelect.value = 'none';
+        otherChanged = true;
+    }
+
     const limboSelected = primarySelect.value === 'limbo';
     Array.from(otherSelect.options).forEach(option => {
         const runeOption = resolveRuneConfiguration(option.value);
         let disabled = false;
         let title = '';
-        if (limboSelected && runeOption) {
+        if (oblivionPresetEnabled && runeOption) {
+            disabled = true;
+            title = 'Unavailable while Oblivion preset is active.';
+            option.dataset.conditionMessage = title;
+            option.dataset.conditionLabel = option.textContent?.trim() || 'Rune';
+        } else if (limboSelected && runeOption) {
             disabled = true;
             title = 'Unavailable while Limbo is selected.';
             option.dataset.conditionMessage = title;
@@ -5383,7 +5396,7 @@ function buildResultEntries(registry, biome, breakthroughStatsMap) {
             const suffixText = restParts.length > 0 ? ` - ${restParts.join(' - ')}` : '';
             const detailText = `${suffixText} | Times Rolled: ${formatWithCommas(countValue)}`;
             return `<span class="sigil-effect-breakthrough__title">${namePart.toUpperCase()}</span>` +
-                `<span class="sigil-effect-breakthrough__detail">${detailText}</span>`;
+                `<span class="sigil-effect-breakthrough__suffix">${detailText}</span>`;
         };
 
         const specialClassTokens = specialClass
@@ -5710,7 +5723,7 @@ function runRollSimulation(options = {}) {
         progressPanel.style.display = showProgress ? 'grid' : 'none';
         progressPanel.classList.toggle('loading-indicator--active', showProgress);
         if (!showProgress) {
-            delete progressPanel.dataset.progress;
+            delete progressPanel.dataset.loadingIndicator;
         }
     }
     if (progressElementsAvailable) {
@@ -5718,7 +5731,7 @@ function runRollSimulation(options = {}) {
         progressBarFill.style.width = '0%';
         progressLabel.textContent = `${formattedInitialProgress}%`;
         if (showProgress && progressPanel) {
-            progressPanel.dataset.progress = formattedInitialProgress;
+            progressPanel.dataset.loadingIndicator = formattedInitialProgress;
         }
     }
 
@@ -5750,7 +5763,7 @@ function runRollSimulation(options = {}) {
                 lastProgressValue = formattedProgressValue;
                 progressBarFill.style.width = `${progress}%`;
                 progressLabel.textContent = `${formattedProgressValue}%`;
-                progressPanel.dataset.progress = `${formattedProgressValue}`;
+                progressPanel.dataset.loadingIndicator = `${formattedProgressValue}`;
             };
         })()
         : null;
@@ -5766,7 +5779,7 @@ function runRollSimulation(options = {}) {
         if (progressPanel) {
             progressPanel.style.display = 'none';
             progressPanel.classList.remove('loading-indicator--active');
-            delete progressPanel.dataset.progress;
+            delete progressPanel.dataset.loadingIndicator;
         }
         rollTriggerButton.disabled = false;
         rollTriggerButton.style.opacity = '1';
