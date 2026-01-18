@@ -323,15 +323,39 @@
         -1px -1px 0 rgba(0, 172, 154, 0.94);
 }
 
+.sigil-border-breakthrough {
+    background: linear-gradient(150deg, transparent 15%, #00000d 25%);
+    background-clip: padding-box;
+    border: 1px solid transparent;
+    border-image: linear-gradient(290deg, #666680 5%, #636c88 10%, transparent 20%, transparent 90%, rgb(132 135 157 / 70%) 95%) 1;
+    padding: .1em;
+}
+
 .sigil-effect-breakthrough {
-    background: linear-gradient(178deg, #000000 0%, #000000 10%, #ffffff 10%, #ffffff 20%, #000000 20%, #000000 30%, #ffffff 30%, #ffffff 40%,
-                                       #000000 40%, #000000 50%, #ffffff 50%, #ffffff 60%, #000000 60%, #000000 70%, #ffffff 70%, #ffffff 80%,
-                                       #000000 80%, #000000 90%, #ffffff 90%, #ffffff 100%);
-    background-size: 300% 300%;
-    animation: class-gradient-vert 1s linear infinite;
-    -webkit-background-clip: text;
+    display: inline-flex;
+    align-items: baseline;
+    white-space: nowrap;
+    transform-origin: center;
+}
+
+.sigil-effect-breakthrough__title,
+.sigil-effect-breakthrough__suffix,
+.sigil-effect-breakthrough__detail {
+    -webkit-background-clip: text !important;
+    -webkit-text-fill-color: transparent;
     background-clip: text;
-    color: transparent;
+}
+
+.sigil-effect-breakthrough__title,
+.sigil-effect-breakthrough__suffix,
+.sigil-effect-breakthrough__detail {
+    background: linear-gradient(175deg, #f2fdfe 10%, #cfd5e3 19%, #252a48 20%, #312d40 35%, #cdd0e9 35%, #c4c6e9 40%, #bac3f1 45%, #272930 50%, #d0d5f1 55%, #30303e 70%, #eef4fa 71%, #e0e6ef 75%, #e9ebfc 80%);
+}
+
+.sigil-effect-breakthrough__title {
+    letter-spacing: .1em;
+    font-family: Arial, sans-serif;
+    text-transform: uppercase;
 }
 
 @keyframes class-gradient-vert {
@@ -1174,6 +1198,16 @@
 
 .changelog-tab__subtitle::after {
     content: " -|";
+}
+
+.subtitleClass {
+    text-transform: none;
+    background: linear-gradient(135deg, #ffffff, #e3eeff, #aab1ff, #7e96ff, #aab1ff, #e3eeff, #ffffff);
+    background-size: 300% 300%;
+    animation: class-gradient 5.25s linear infinite;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
 }
 
 .changelog-tab:not(.changelog-tab--active) {

@@ -123,11 +123,11 @@
                 <div class="banner__meta">
                     <h1 class="banner__title">Sol's Rolling Simulator</h1>
                     <p class="banner__subtitle">
-                        <button type="button" class="banner__version-button" id="versionInfoButton" aria-haspopup="dialog" aria-expanded="false" data-version-id="v1600">V1.600</button>
+                        <button type="button" class="banner__version-button" id="versionInfoButton" aria-haspopup="dialog" aria-expanded="false" data-version-id="v1601">V1.601</button>
                         <span class="banner__subtitle-divider" aria-hidden="true">◉</span>
                         <span class="banner__subtitle-author">By <span class="banner__subtitle-author-name">not.unnamed</span></span>
                         <span class="banner__subtitle-divider" aria-hidden="true">◉</span>
-                        <span class="banner__subtitle-updated">Updated <time datetime="2025-01-09">2025/01/17</time></span>
+                        <span class="banner__subtitle-updated">Updated <time datetime="2026-01-18">2026/01/18</time></span>
                         <span class="banner__subtitle-divider" aria-hidden="true">◉</span>
                         <span class="banner__subtitle-eon">Sol's RNG Eon 1-14</span>
                     </p>
@@ -617,9 +617,9 @@
                 <li class="footer-credits__item">Cyberspace song courtesy of <a href="https://open.spotify.com/track/1ZyGEzIDZgwWZucfoCPq9h" target="_blank" rel="noopener">Veens</a>.</li>
                 <li class="footer-credits__item">Dreamspace song courtesy of <a href="https://www.youtube.com/watch?v=nVvKPZ2soyU" target="_blank" rel="noopener">53_Axis</a>.</li>
                 <li class="footer-credits__item">Unkown biome song courtesy of <a href="https://www.youtube.com/watch?v=LLng8n_1eOY" target="_blank" rel="noopener">Derpcat</a>.</li>
-                <li class="footer-credits__item">Leviathan cutscene courtesy of <a href="https://discord.com/users/755614816793788468" target="_blank" rel="noopener">reeseyhi</a>.</li>
-                <li class="footer-credits__item">Breakthrough cutscene courtesy of <a href="https://discord.com/users/979478452786823259" target="_blank" rel="noopener">INCONCEIVABLE</a>.</li>
-                <li class="footer-credits__item">Ascendant cutscene courtesy of <a href="https://discord.com/users/823317679708176434" target="_blank" rel="noopener">Exeael</a>.</li>
+                <li class="footer-credits__item">Leviathan cutscene courtesy of <a href="https://discord.com/users/755614816793788468" target="_blank" rel="noopener">@reeseyhi</a>.</li>
+                <li class="footer-credits__item">Breakthrough cutscene courtesy of <a href="https://discord.com/users/979478452786823259" target="_blank" rel="noopener">@INCONCEIVABLE</a>.</li>
+                <li class="footer-credits__item">Ascendant cutscene courtesy of <a href="https://discord.com/users/823317679708176434" target="_blank" rel="noopener">@Exeael</a>.</li>
             </ul>
         </details>
     </footer>
@@ -789,11 +789,23 @@
                 <button
                     type="button"
                     class="changelog-tab changelog-tab--active"
+                    id="changelog-tab-v1601"
+                    role="tab"
+                    aria-controls="changelog-panel-v1601"
+                    aria-selected="true"
+                    data-changelog-tab="v1601"
+                >
+                    <span class="changelog-tab__title">V1.601</span>
+                </button>
+                <button
+                    type="button"
+                    class="changelog-tab changelog-tab--active"
                     id="changelog-tab-v1600"
                     role="tab"
                     aria-controls="changelog-panel-v1600"
-                    aria-selected="true"
+                    aria-selected="false"
                     data-changelog-tab="v1600"
+                    tabindex="-1"
                 >
                     <span class="changelog-tab__title">V1.600</span>
                 </button>
@@ -805,7 +817,7 @@
                     aria-controls="changelog-panel-v1566"
                     aria-selected="false"
                     data-changelog-tab="v1566"
-                    tabindex="-1
+                    tabindex="-1"
                 >
                     <span class="changelog-tab__title">V1.566</span>
                 </button>
@@ -897,17 +909,40 @@
 
             <div class="changelog-modal__panels" data-changelog-panels>
                 <section
+                    id="changelog-panel-v1601"
+                    class="changelog-modal__panel"
+                    role="tabpanel"
+                    aria-labelledby="changelog-tab-v1601"
+                    data-changelog-panel="v1601"
+                    tabindex="0"
+                >
+                    <header class="changelog-modal__header">
+                        <h2 class="changelog-modal__title" id="versionChangelogTitle">Version V1.601 Update Notes</h2>
+                        <span class="changelog-tab__subtitle">Eon2 Preperation -|- Bugfixes</span>
+                        <p class="changelog-modal__meta">Updated 2026/01/18</p>
+                    </header>
+                    <p class="changelog-modal__intro">Latest changes:</p>
+                    <ul class="changelog-modal__list">
+                        <li>Fixed <span class="sigil-outline-leviathan">Leviathan</span> being obtainable using a Rune of Rainstorm/Everything.</li>
+                        <p>Thanks to <a href="https://discord.com/users/1234359746153418826" class="subtitleClass" target="_blank" rel="noopener">@aksiz.dos_33995</a> for pointing this out to me :)</p>
+                        <li>Fixed runes being usable while <span class="oblivionClass">Oblivion Potion</span> preset was active.</li>
+                        <p>Thanks to <a href="https://discord.com/users/1215968633054826507" class="subtitleClass" target="_blank" rel="noopener">@cutie_suzy</a> for pointing this out to me :)</p>
+                        <li>Updated <span class="sigil-border-breakthrough"><span class="sigil-effect-breakthrough__title">Breakthrough</span></span> to a more accurate style.</li>
+                    </ul>
+                </section>
+                <section
                     id="changelog-panel-v1600"
                     class="changelog-modal__panel"
                     role="tabpanel"
                     aria-labelledby="changelog-tab-v1600"
                     data-changelog-panel="v1600"
-                    tabindex="0"
+                    hidden
+                    tabindex="-1"
                 >
                     <header class="changelog-modal__header">
                         <h2 class="changelog-modal__title" id="versionChangelogTitle">Version V1.600 Update Notes</h2>
                         <span class="changelog-tab__subtitle">Eon2 Preperation</span>
-                        <p class="changelog-modal__meta">Updated 2025/01/17</p>
+                        <p class="changelog-modal__meta">Updated 2026/01/17</p>
                     </header>
                     <p class="changelog-modal__intro">Latest changes:</p>
                     <ul class="changelog-modal__list">
@@ -925,7 +960,7 @@
                                 <li class="listSpace">Prophecy<span class="tinyClass">1 in 275,649,430 (1/55,129,886 from Heaven)</span></li>
                                 <li class="listSpace">Pythos<span class="tinyClass">1 in 666,666,666 (1/111,111,111 from Hell)</span></li>
                                 <li class="listSpace">Ascendant<span class="tinyClass">1 in 935,000,000 (1/187,000,000 from Heaven)</span></li>
-                                <li class="listSpace"><span class="sigil-effect-breakthrough">Breakthrough</span><span class="tinyClass">1 in 1,999,999,999 (Unobtainable in Null)</span></li>
+                                <li class="listSpace"><span class="sigil-border-breakthrough"><span class="sigil-effect-breakthrough__title">Breakthrough</span></span><span class="tinyClass">1 in 1,999,999,999 (Unobtainable in Null)</span></li>
                                 <li class="listSpace"><span class="sigil-outline-leviathan">Leviathan</span><span class="tinyClass">1 in 1,700,000,000 (From Rainy/Glitch)</span></li>
                                 <li class="listSpace"><span class="sigil-outline-dreamspace">Borealis</span><span class="tinyClass">1 in 13,333,333 (From Dreamspace)</span></li>
                                 
@@ -946,7 +981,7 @@
                     <header class="changelog-modal__header">
                         <h2 class="changelog-modal__title" id="versionChangelogTitle">Version V1.566 Update Notes</h2>
                         <span class="changelog-tab__subtitle">Aura typo</span>
-                        <p class="changelog-modal__meta">Updated 2025/01/15</p>
+                        <p class="changelog-modal__meta">Updated 2026/01/15</p>
                     </header>
                     <p class="changelog-modal__intro">Latest changes:</p>
                     <ul class="changelog-modal__list">
@@ -965,12 +1000,12 @@
                     <header class="changelog-modal__header">
                         <h2 class="changelog-modal__title" id="versionChangelogTitle">Version V1.565 Update Notes</h2>
                         <span class="changelog-tab__subtitle"><span class="plcClass">Aurora auras native in Glitch</span> bugfix</span>
-                        <p class="changelog-modal__meta">Updated 2025/01/14</p>
+                        <p class="changelog-modal__meta">Updated 2026/01/14</p>
                     </header>
                     <p class="changelog-modal__intro">Latest changes:</p>
                     <ul class="changelog-modal__list">
                         <li>Fixed a bug where Aurora biome auras would become native inside Glitch.</li>
-                        <p>Thanks to <span class="genesisClass">prettyblindinglight</span> for pointing this out to me :)</p>
+                        <p>Thanks to <a href="https://discord.com/users/855777460163444817" class="subtitleClass" target="_blank" rel="noopener">@prettyblindinglight</a> for pointing this out to me :)</p>
                         <li>Updated <span class="sigil-outline-glitch">Glitch</span>, <span class="sigil-outline-dreamspace">Dreamspace</span> and <span class="sigil-outline-cyberspace">Cyberspace</span> biome icons to the same layout as the others.</li>
                         <li>Removed the <span class="subTitlesClass">Stackable Luck Preset Switch</span> in favor of a more simple <span class="class-outline__low">+/-</span> button method.</li>
                         <li>Fixed <span class="duneClass">Potion of the Dune</span> interactions with other luck presets.</li>
@@ -991,7 +1026,7 @@
                     <header class="changelog-modal__header">
                         <h2 class="changelog-modal__title" id="versionChangelogTitle">Version V1.563 Update Notes</h2>
                         <span class="changelog-tab__subtitle">Cutscenes &amp; Credits</span>
-                        <p class="changelog-modal__meta">Updated 2025/01/09</p>
+                        <p class="changelog-modal__meta">Updated 2026/01/09</p>
                     </header>
                     <p class="changelog-modal__intro">Latest changes:</p>
                     <ul class="changelog-modal__list">

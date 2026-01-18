@@ -2745,7 +2745,7 @@ function resolveAuraStyleClass(aura, biome) {
     if (name.startsWith('Equinox')) classes.push('sigil-effect-equinox');
     if (name.startsWith('Megaphone')) classes.push('sigil-effect-megaphone');
     if (name.startsWith('Nyctophobia')) classes.push('sigil-effect-nyctophobia');
-    if (name.startsWith('Breakthrough')) classes.push('sigil-effect-breakthrough');
+    if (name.startsWith('Breakthrough')) classes.push('sigil-effect-breakthrough', 'sigil-border-breakthrough');
     if (name.startsWith('Glitch')) classes.push('sigil-effect-glitch');
 
     const auraData = typeof aura === 'string' ? null : aura;
@@ -2856,6 +2856,9 @@ function applyOblivionPresetOptions(options = {}) {
     if ('activateOblivionPreset' in options) {
         oblivionPresetEnabled = options.activateOblivionPreset === true;
         syncLuckPotionButtonState('luck-preset-oblivion', oblivionPresetEnabled);
+        if (typeof updateBiomeControlConstraints === 'function') {
+            updateBiomeControlConstraints({ triggerSync: true });
+        }
     }
 }
 
@@ -2869,6 +2872,16 @@ function applyDunePresetOptions(options = {}) {
 function formatAuraNameMarkup(aura, overrideName) {
     if (!aura) return overrideName || '';
     const baseName = typeof overrideName === 'string' && overrideName.length > 0 ? overrideName : aura.name;
+    if (baseName.startsWith('Breakthrough')) {
+        const [namePart, ...restParts] = baseName.split(' - ');
+        const suffix = restParts.length > 0 ? ` - ${restParts.join(' - ')}` : '';
+        const breakthroughMarkup = `<span class="sigil-effect-breakthrough__title">${namePart.toUpperCase()}</span>` +
+            (suffix ? `<span class="sigil-effect-breakthrough__suffix">${suffix}</span>` : '');
+        if (aura.subtitle) {
+            return `${breakthroughMarkup} <span class="sigil-subtitle">${aura.subtitle}</span>`;
+        }
+        return breakthroughMarkup;
+    }
     if (aura.subtitle) {
         return `${baseName} <span class="sigil-subtitle">${aura.subtitle}</span>`;
     }
@@ -3466,7 +3479,7 @@ function getAuraEventId(aura) {
     return auraEventIndex.get(aura.name) || null;
 }
 
-const CUTSCENE_PRIORITY_SEQUENCE = ["oblivion-cutscene", "memory-cutscene", "neferkhaf-cutscene", "illusionary-cutscene", "equinox-cutscene", "winter-garden-cutscene", "dream-traveler-cutscene", "breakthrough-cutscene", "leviathan-cutscene", "erebus-cutscene", "luminosity-cutscene", "pixelation-cutscene", "nyctophobia-cutscene", "frostveil-cutscene", "lamenthyr-cutscene", "ascendant-cutscene", "dreammetric-cutscene", "oppression-cutscene", "prowler-cutscene"];
+const CUTSCENE_PRIORITY_SEQUENCE = ["oblivion-cutscene", "memory-cutscene", "neferkhaf-cutscene", "illusionary-cutscene", "equinox-cutscene", "dream-traveler-cutscene", "breakthrough-cutscene", "leviathan-cutscene", "winter-garden-cutscene", "erebus-cutscene", "luminosity-cutscene", "pixelation-cutscene", "nyctophobia-cutscene", "frostveil-cutscene", "lamenthyr-cutscene", "ascendant-cutscene", "dreammetric-cutscene", "oppression-cutscene", "prowler-cutscene"];
 
 oblivionAuraData = AURA_REGISTRY.find(aura => aura.name === OBLIVION_AURA_LABEL) || null;
 memoryAuraData = AURA_REGISTRY.find(aura => aura.name === MEMORY_AURA_LABEL) || null;
@@ -4664,7 +4677,7 @@ function updateBiomeControlConstraints({ source = null, triggerSync = true } = {
     let timeChanged = false;
 
     const selectedRuneConfig = resolveRuneConfiguration(otherSelect.value);
-    const runeActive = selectedRuneConfig !== null;
+    const runeActive = selectedRuneConfig !== null && !oblivionPresetEnabled;
 
     if (timeSelect.value === 'day' && DAY_RESTRICTED_BIOMES.has(primarySelect.value)) {
         if (source === BIOME_TIME_SELECT_ID) {
@@ -4742,12 +4755,22 @@ function updateBiomeControlConstraints({ source = null, triggerSync = true } = {
         }
     }
 
+    if (oblivionPresetEnabled && selectedRuneConfig !== null) {
+        otherSelect.value = 'none';
+        otherChanged = true;
+    }
+
     const limboSelected = primarySelect.value === 'limbo';
     Array.from(otherSelect.options).forEach(option => {
         const runeOption = resolveRuneConfiguration(option.value);
         let disabled = false;
         let title = '';
-        if (limboSelected && runeOption) {
+        if (oblivionPresetEnabled && runeOption) {
+            disabled = true;
+            title = 'Unavailable while Oblivion preset is active.';
+            option.dataset.conditionMessage = title;
+            option.dataset.conditionLabel = option.textContent?.trim() || 'Rune';
+        } else if (limboSelected && runeOption) {
             disabled = true;
             title = 'Unavailable while Limbo is selected.';
             option.dataset.conditionMessage = title;
@@ -5147,6 +5170,7 @@ function createAuraEvaluationContext(selection, { eventChecker, luckValue } = {}
         eventChecker,
         activeBiomes,
         breakthroughBiomes,
+        runeValue,
         primaryBiome: selectionState?.primaryBiome || null,
         ygBlessingActive: isYgBlessingEnabled(),
         luckSource: getLuckSelectionSource(),
@@ -5293,6 +5317,10 @@ function determineAuraEffectiveChance(aura, context) {
     if (aura?.name === LEVIATHAN_AURA_NAME) {
         const canonicalBiome = context?.biome || 'normal';
         const activeBiomes = Array.isArray(context?.activeBiomes) ? context.activeBiomes : [];
+        const runeValue = context?.runeValue || null;
+        if (runeValue === 'rainyRune' || runeValue === 'roe') {
+            return Infinity;
+        }
         const inAllowedBiome = LEVIATHAN_ALLOWED_BIOMES.has(canonicalBiome)
             || activeBiomes.some(biome => LEVIATHAN_ALLOWED_BIOMES.has(biome));
         if (!inAllowedBiome) {
@@ -5361,6 +5389,15 @@ function buildResultEntries(registry, biome, breakthroughStatsMap) {
         const formattedName = formatAuraNameMarkup(aura);
         const formattedTextName = formatAuraNameText(aura);
         const breakthroughStats = breakthroughStatsMap.get(aura.name);
+        const isBreakthrough = aura.name.startsWith('Breakthrough');
+
+        const formatBreakthroughMarkupWithCount = (nameValue, countValue) => {
+            const [namePart, ...restParts] = nameValue.split(' - ');
+            const suffixText = restParts.length > 0 ? ` - ${restParts.join(' - ')}` : '';
+            const detailText = `${suffixText} | Times Rolled: ${formatWithCommas(countValue)}`;
+            return `<span class="sigil-effect-breakthrough__title">${namePart.toUpperCase()}</span>` +
+                `<span class="sigil-effect-breakthrough__suffix">${detailText}</span>`;
+        };
 
         const specialClassTokens = specialClass
             ? specialClass.split(/\s+/).filter(Boolean)
@@ -5387,10 +5424,14 @@ function buildResultEntries(registry, biome, breakthroughStatsMap) {
 
         if (breakthroughStats && breakthroughStats.count > 0) {
             const btName = aura.name.replace(/-\s*[\d,]+/, `- ${formatWithCommas(breakthroughStats.btChance)}`);
-            const nativeLabel = formatAuraNameMarkup(aura, btName);
+            const nativeLabel = isBreakthrough
+                ? formatBreakthroughMarkupWithCount(btName, breakthroughStats.count)
+                : formatAuraNameMarkup(aura, btName);
             const nativeShareName = formatAuraNameText(aura, btName);
             pushVisualEntry(
-                `<span class="${classAttr}">[Native] ${nativeLabel} | Times Rolled: ${formatWithCommas(breakthroughStats.count)}</span>`,
+                isBreakthrough
+                    ? `<span class="${classAttr}">[Native] ${nativeLabel}</span>`
+                    : `<span class="${classAttr}">[Native] ${nativeLabel} | Times Rolled: ${formatWithCommas(breakthroughStats.count)}</span>`,
                 `[Native] ${nativeShareName} | Times Rolled: ${formatWithCommas(breakthroughStats.count)}`,
                 determineResultPriority(aura, breakthroughStats.btChance),
                 createShareVisualRecord(btName, breakthroughStats.count, { prefix: '[Native]', variant: 'native' })
@@ -5398,16 +5439,26 @@ function buildResultEntries(registry, biome, breakthroughStatsMap) {
 
             if (winCount > breakthroughStats.count) {
                 const remainingCount = winCount - breakthroughStats.count;
+                const breakthroughRemainingLabel = isBreakthrough
+                    ? formatBreakthroughMarkupWithCount(aura.name, remainingCount)
+                    : formattedName;
                 pushVisualEntry(
-                    `<span class="${classAttr}">${formattedName} | Times Rolled: ${formatWithCommas(remainingCount)}</span>`,
+                    isBreakthrough
+                        ? `<span class="${classAttr}">${breakthroughRemainingLabel}</span>`
+                        : `<span class="${classAttr}">${formattedName} | Times Rolled: ${formatWithCommas(remainingCount)}</span>`,
                     `${formattedTextName} | Times Rolled: ${formatWithCommas(remainingCount)}`,
                     determineResultPriority(aura, aura.chance),
                     createShareVisualRecord(aura.name, remainingCount, { variant: 'standard' })
                 );
             }
         } else {
+            const breakthroughLabel = isBreakthrough
+                ? formatBreakthroughMarkupWithCount(aura.name, winCount)
+                : formattedName;
             pushVisualEntry(
-                `<span class="${classAttr}">${formattedName} | Times Rolled: ${formatWithCommas(winCount)}</span>`,
+                isBreakthrough
+                    ? `<span class="${classAttr}">${breakthroughLabel}</span>`
+                    : `<span class="${classAttr}">${formattedName} | Times Rolled: ${formatWithCommas(winCount)}</span>`,
                 `${formattedTextName} | Times Rolled: ${formatWithCommas(winCount)}`,
                 determineResultPriority(aura, aura.chance),
                 createShareVisualRecord(aura.name, winCount, { variant: 'standard' })
@@ -5677,12 +5728,12 @@ function runRollSimulation(options = {}) {
     const formatProgressLabel = value => value.toFixed(PROGRESS_DECIMAL_PLACES);
 
     const progressElementsAvailable = progressPanel && progressBarFill && progressLabel;
-    const showProgress = progressElementsAvailable && total >= 100000;
+    const showProgress = progressElementsAvailable;
     if (progressPanel) {
         progressPanel.style.display = showProgress ? 'grid' : 'none';
         progressPanel.classList.toggle('loading-indicator--active', showProgress);
         if (!showProgress) {
-            delete progressPanel.dataset.progress;
+            delete progressPanel.dataset.loadingIndicator;
         }
     }
     if (progressElementsAvailable) {
@@ -5690,7 +5741,7 @@ function runRollSimulation(options = {}) {
         progressBarFill.style.width = '0%';
         progressLabel.textContent = `${formattedInitialProgress}%`;
         if (showProgress && progressPanel) {
-            progressPanel.dataset.progress = formattedInitialProgress;
+            progressPanel.dataset.loadingIndicator = formattedInitialProgress;
         }
     }
 
@@ -5722,7 +5773,7 @@ function runRollSimulation(options = {}) {
                 lastProgressValue = formattedProgressValue;
                 progressBarFill.style.width = `${progress}%`;
                 progressLabel.textContent = `${formattedProgressValue}%`;
-                progressPanel.dataset.progress = `${formattedProgressValue}`;
+                progressPanel.dataset.loadingIndicator = `${formattedProgressValue}`;
             };
         })()
         : null;
@@ -5738,7 +5789,7 @@ function runRollSimulation(options = {}) {
         if (progressPanel) {
             progressPanel.style.display = 'none';
             progressPanel.classList.remove('loading-indicator--active');
-            delete progressPanel.dataset.progress;
+            delete progressPanel.dataset.loadingIndicator;
         }
         rollTriggerButton.disabled = false;
         rollTriggerButton.style.opacity = '1';
