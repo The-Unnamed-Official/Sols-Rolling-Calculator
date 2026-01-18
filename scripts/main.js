@@ -5439,16 +5439,26 @@ function buildResultEntries(registry, biome, breakthroughStatsMap) {
 
             if (winCount > breakthroughStats.count) {
                 const remainingCount = winCount - breakthroughStats.count;
+                const breakthroughRemainingLabel = isBreakthrough
+                    ? formatBreakthroughMarkupWithCount(aura.name, remainingCount)
+                    : formattedName;
                 pushVisualEntry(
-                    `<span class="${classAttr}">${formattedName} | Times Rolled: ${formatWithCommas(remainingCount)}</span>`,
+                    isBreakthrough
+                        ? `<span class="${classAttr}">${breakthroughRemainingLabel}</span>`
+                        : `<span class="${classAttr}">${formattedName} | Times Rolled: ${formatWithCommas(remainingCount)}</span>`,
                     `${formattedTextName} | Times Rolled: ${formatWithCommas(remainingCount)}`,
                     determineResultPriority(aura, aura.chance),
                     createShareVisualRecord(aura.name, remainingCount, { variant: 'standard' })
                 );
             }
         } else {
+            const breakthroughLabel = isBreakthrough
+                ? formatBreakthroughMarkupWithCount(aura.name, winCount)
+                : formattedName;
             pushVisualEntry(
-                `<span class="${classAttr}">${formattedName} | Times Rolled: ${formatWithCommas(winCount)}</span>`,
+                isBreakthrough
+                    ? `<span class="${classAttr}">${breakthroughLabel}</span>`
+                    : `<span class="${classAttr}">${formattedName} | Times Rolled: ${formatWithCommas(winCount)}</span>`,
                 `${formattedTextName} | Times Rolled: ${formatWithCommas(winCount)}`,
                 determineResultPriority(aura, aura.chance),
                 createShareVisualRecord(aura.name, winCount, { variant: 'standard' })
