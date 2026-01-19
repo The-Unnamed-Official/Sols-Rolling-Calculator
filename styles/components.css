@@ -902,6 +902,11 @@ select.form-field__input option {
     background: linear-gradient(90deg, rgba(127, 227, 255, 0.55), rgba(127, 227, 255, 0));
 }
 
+.preset-collection__title-text--sub {
+    color: #8aa6dd;
+    font-size: clamp(7px, 1vw, 9px);
+}
+
 .preset-matrix {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));

@@ -1204,7 +1204,7 @@
     text-transform: none;
     background: linear-gradient(135deg, #ffffff, #e3eeff, #aab1ff, #7e96ff, #aab1ff, #e3eeff, #ffffff);
     background-size: 300% 300%;
-    animation: class-gradient 5.25s linear infinite;
+    animation: class-gradient 10s linear infinite;
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
@@ -1318,6 +1318,10 @@
     color: gray;
     font-size: small;
     padding-left: 1.2em;
+}
+
+.tinyClass-colorless {
+    font-size: smaller;
 }
 
 .listSpace {
