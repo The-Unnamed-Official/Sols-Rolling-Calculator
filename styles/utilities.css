@@ -314,7 +314,7 @@
 .sigil-outline-leviathan {
     font-family: "Playfair Display", serif;
     text-transform: uppercase;
-    -webkit-background-clip: text !important;
+    background-clip: text !important;
     -webkit-text-fill-color: rgb(0 0 0 / 50%);
     background: linear-gradient(178deg, #4dd0cc 30%, #153a3e 38%, #9dfdfd 40%, #9af8fb 48%, #124245 50%, #2ed4d2 52%, #23454e 65%, #62cac6 67%, #518488 80%);
     -webkit-text-stroke: .1em transparent;
@@ -364,7 +364,7 @@
     display: inline-block;
     font-size: 125%;
     white-space: nowrap;
-    -webkit-background-clip: text !important;
+    background-clip: text !important;
     -webkit-text-fill-color: transparent !important;
     background: linear-gradient(to bottom, #7ef1ff 22%, #8980ff 35%, #7c68cf 50%, #e0d8fa 75%);
     -webkit-text-stroke: .05em transparent;
@@ -376,7 +376,7 @@
     font-weight: bold;
     font-style: italic;
     display: inline-block;
-    animation: dream-traveler-gradient 5s linear infinite;
+    animation: dream-traveler-gradient 5s ease-in-out infinite;
 }
 
 @keyframes dream-traveler-gradient {
@@ -385,42 +385,31 @@
         -webkit-text-fill-color: transparent;
         background-clip: text;
         background-image: linear-gradient(170deg, #2e1885 27%, #c5aefe 33%, #41307a 42%, #fdeef4 46%, #f3daf3 52%, #6f1930 70%, #c26181 75%, #f1a9cb 90%);
-        background-size: 50%;
-    }
-    25% {
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
-        background-image: linear-gradient(170deg, #a7a7f6 23%, #bdbcfc 25%, #706fbc 34%, #e0e1ff 50%, #a3abf2 65%, #f0f6ff 75%);
-        background-size: 50%;
+        background-size: 200% 200%;
+        background-position: 0% 50%;
     }
     50% {
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
         background-clip: text;
         background-image: linear-gradient(170deg, #2e1885 27%, #c5aefe 33%, #41307a 42%, #fdeef4 46%, #f3daf3 52%, #6f1930 70%, #c26181 75%, #f1a9cb 90%);
-        background-size: 50%;
-    }
-    75% {
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
-        background-image: linear-gradient(170deg, #a7a7f6 23%, #bdbcfc 25%, #706fbc 34%, #e0e1ff 50%, #a3abf2 65%, #f0f6ff 75%);
-        background-size: 50%;
+        background-size: 200% 200%;
+        background-position: 100% 50%;
     }
     100% {
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
         background-clip: text;
         background-image: linear-gradient(170deg, #2e1885 27%, #c5aefe 33%, #41307a 42%, #fdeef4 46%, #f3daf3 52%, #6f1930 70%, #c26181 75%, #f1a9cb 90%);
-        background-size: 50%;
+        background-size: 200% 200%;
+        background-position: 0% 50%;
     }
 }
 
 .sigil-outline-frostveil {
     font-family: Kings;
     font-size: 120%;
-    -webkit-background-clip: text !important;
+    background-clip: text !important;
     -webkit-text-fill-color: #02316d;
     background: linear-gradient(to bottom, #a9afff 35%, #7594f9 50%, #a2dbff 70%);
     -webkit-text-stroke: 2.5px transparent;
