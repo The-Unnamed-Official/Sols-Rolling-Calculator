@@ -9,6 +9,10 @@
     <link href="https://fonts.googleapis.com/css2?family=Sarpanch:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@500;600;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Jura:wght@300..700&family=Kings&family=Parisienne&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Parisienne&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Jura:wght@300..700&family=Parisienne&display=swap" rel="stylesheet">
     <link rel="icon" type="image/png" sizes="16x16" href="files/favicon-16.png">
     <link rel="icon" type="image/png" sizes="32x32" href="files/favicon-32.png">
     <link rel="icon" type="image/png" sizes="48x48" href="files/favicon-48.png">
@@ -123,7 +127,7 @@
                 <div class="banner__meta">
                     <h1 class="banner__title">Sol's Rolling Simulator</h1>
                     <p class="banner__subtitle">
-                        <button type="button" class="banner__version-button" id="versionInfoButton" aria-haspopup="dialog" aria-expanded="false" data-version-id="v1602">V1.602</button>
+                        <button type="button" class="banner__version-button" id="versionInfoButton" aria-haspopup="dialog" aria-expanded="false" data-version-id="v1611">V1.611</button>
                         <span class="banner__subtitle-divider" aria-hidden="true">◉</span>
                         <span class="banner__subtitle-author">By <span class="banner__subtitle-author-name">not.unnamed</span></span>
                         <span class="banner__subtitle-divider" aria-hidden="true">◉</span>
@@ -548,12 +552,12 @@
                             <span class="preset-collection__title-divider preset-collection__title-divider--end" aria-hidden="true"></span>
                         </h3>
                         <div class="preset-matrix preset-matrix--compact" id="device-buff-preset-panel">
-                            <button type="button" data-luck-value="22.39" onclick="applyDeviceBuffPreset(25.39)"><span class="archangelClass">Archangel Device</span> + Max Luck x25.39</button>
-                            <button type="button" data-luck-value="26.24" onclick="applyDeviceBuffPreset(29.24)"><span class="archangelClass">Archangel Device</span> + <span class="plcClass">Pole Light Core</span> + Max Luck x29.24</button>
-                            <button type="button" data-luck-value="52.47" onclick="applyDeviceBuffPreset(55.47)"><span class="archangelClass">Archangel Device</span> + <span class="plcClass">Pole Light Core</span> + Max Luck + Bonus Roll x55.47</button>
-                            <button type="button" data-luck-value="25.85" onclick="applyDeviceBuffPreset(28.85)"><span class="archangelClass">Archangel Device</span> + Max Luck + Event buffs x28.85</button>
-                            <button type="button" data-luck-value="29.7" onclick="applyDeviceBuffPreset(32.7)"><span class="archangelClass">Archangel Device</span> + <span class="plcClass">Pole Light Core</span> + Max Luck + Event buffs x32.70</button>
-                            <button type="button" data-luck-value="59.4" onclick="applyDeviceBuffPreset(62.4)"><span class="archangelClass">Archangel Device</span> + <span class="plcClass">Pole Light Core</span> + Max Luck + Event buffs + Bonus Roll x62.40</button>
+                            <button type="button" data-luck-value="25.39" onclick="applyDeviceBuffPreset(25.39)"><span class="archangelClass">Archangel Device</span> + Max Luck x25.39</button>
+                            <button type="button" data-luck-value="29.24" onclick="applyDeviceBuffPreset(29.24)"><span class="archangelClass">Archangel Device</span> + <span class="plcClass">Pole Light Core</span> + Max Luck x29.24</button>
+                            <button type="button" data-luck-value="55.47" onclick="applyDeviceBuffPreset(55.47)"><span class="archangelClass">Archangel Device</span> + <span class="plcClass">Pole Light Core</span> + Max Luck + Bonus Roll x55.47</button>
+                            <button type="button" data-luck-value="28.85" onclick="applyDeviceBuffPreset(28.85)"><span class="archangelClass">Archangel Device</span> + Max Luck + Event buffs x28.85</button>
+                            <button type="button" data-luck-value="32.7" onclick="applyDeviceBuffPreset(32.7)"><span class="archangelClass">Archangel Device</span> + <span class="plcClass">Pole Light Core</span> + Max Luck + Event buffs x32.70</button>
+                            <button type="button" data-luck-value="62.4" onclick="applyDeviceBuffPreset(62.4)"><span class="archangelClass">Archangel Device</span> + <span class="plcClass">Pole Light Core</span> + Max Luck + Event buffs + Bonus Roll x62.40</button>
                         </div>
                     </div>
                     <div class="preset-collection">
@@ -790,11 +794,23 @@
                 <button
                     type="button"
                     class="changelog-tab changelog-tab--active"
+                    id="changelog-tab-v1611"
+                    role="tab"
+                    aria-controls="changelog-panel-v1611"
+                    aria-selected="true"
+                    data-changelog-tab="v1611"
+                >
+                    <span class="changelog-tab__title">V1.611</span>
+                </button>
+                <button
+                    type="button"
+                    class="changelog-tab changelog-tab--active"
                     id="changelog-tab-v1602"
                     role="tab"
                     aria-controls="changelog-panel-v1602"
-                    aria-selected="true"
+                    aria-selected="false"
                     data-changelog-tab="v1602"
+                    tabindex="-1"
                 >
                     <span class="changelog-tab__title">V1.602</span>
                 </button>
@@ -922,12 +938,41 @@
 
             <div class="changelog-modal__panels" data-changelog-panels>
                 <section
+                    id="changelog-panel-v1611"
+                    class="changelog-modal__panel"
+                    role="tabpanel"
+                    aria-labelledby="changelog-tab-v1611"
+                    data-changelog-panel="v1611"
+                    tabindex="0"
+                >
+                    <header class="changelog-modal__header">
+                        <h2 class="changelog-modal__title" id="versionChangelogTitle">Version V1.611 Update Notes</h2>
+                        <span class="changelog-tab__subtitle">Image Sharing Style Update</span>
+                        <p class="changelog-modal__meta">Updated 2026/01/19</p>
+                    </header>
+                    <p class="changelog-modal__intro">Latest changes:</p>
+                    <ul class="changelog-modal__list">
+                        <li>Fixed a bug where the +/- for Quick Device Presets would continue to give out the value of the previous presets.</li>
+                        <p>Thanks to <a href="https://discord.com/users/1234359746153418826" class="subtitleClass" target="_blank" rel="noopener">@aksiz.dos_33995</a> <span style="text-decoration: underline;">once again</span>... for pointing this out to me :)</p>
+                        <li>Updated visual styles for <span class="sigil-outline-dream-traveler">Dream Traveler</span>, <span class="sigil-outline-winter-garden">Winter Garden</span>, <span class="sigil-outline-leviathan">Leviathan</span> and <span class="sigil-outline-frostveil">Sovereign : Frostveil</span>.</li>
+                        <li>Updated image sharing visual styles to include <span class="sigil-outline-winter-2026">Winter Event 2026</span> aura styles and all the other unique auras bellow:</li>
+                        <ul>
+                            <li><span class="sigil-border-breakthrough"><span class="sigil-effect-breakthrough__title">Breakthrough</span> <span class="sigil-effect-breakthrough__title">- 1,999,999,999 | Times Rolled: X</span></span></li>
+                            <li><span class="sigil-outline-leviathan">Leviathan - 1,730,400,000 | Times Rolled: X</span></li>
+                            <li><span class="sigil-outline-dream-traveler">Dream Traveler - 2,025,012,025 | Times Rolled: X</span></li>
+                            <li><span class="sigil-outline-winter-garden">Winter Garden - 1,450,012,025 | Times Rolled: X</span></li>
+                            <li><span class="sigil-outline-frostveil">Sovereign : Frostveil - 1,000,000,000 | Times Rolled: X</span></li>
+                        </ul>
+                    </ul>
+                </section>
+                <section
                     id="changelog-panel-v1602"
                     class="changelog-modal__panel"
                     role="tabpanel"
                     aria-labelledby="changelog-tab-v1602"
                     data-changelog-panel="v1602"
-                    tabindex="0"
+                    hidden
+                    tabindex="-1"
                 >
                     <header class="changelog-modal__header">
                         <h2 class="changelog-modal__title" id="versionChangelogTitle">Version V1.602 Update Notes</h2>

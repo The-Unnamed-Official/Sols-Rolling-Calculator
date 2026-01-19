@@ -2724,6 +2724,9 @@ const auraOutlineOverrides = new Map([
     ['Bloodgarden', 'sigil-outline-blood'],
     ['Cryogenic', 'sigil-outline-cryogenic'],
     ['Leviathan', 'sigil-outline-leviathan'],
+    ['Winter Garden', 'sigil-outline-winter-garden'],
+    ['Dream Traveler', 'sigil-outline-dream-traveler'],
+    ['Sovereign : Frostveil', 'sigil-outline-frostveil'],
 ]);
 
 const glitchOutlineNames = new Set(['Fault', 'Glitch', 'Oppression']);
@@ -2752,7 +2755,10 @@ function resolveAuraStyleClass(aura, biome) {
     const auraEventId = auraData ? getAuraEventId(auraData) : null;
 
     if (auraEventId === 'winter26') {
-        classes.push('sigil-outline-winter-2026');
+        const shortNameCheck = name.includes(' - ') ? name.split(' - ')[0].trim() : name.trim();
+        if (shortNameCheck !== 'Winter Garden' && shortNameCheck !== 'Dream Traveler' && shortNameCheck !== 'Sovereign : Frostveil') {
+            classes.push('sigil-outline-winter-2026');
+        }
     }
 
     if (auraMatchesAnyBiome(auraData, ['pumpkinMoon', 'graveyard'])) {
@@ -5399,22 +5405,30 @@ function buildResultEntries(registry, biome, breakthroughStatsMap) {
                 `<span class="sigil-effect-breakthrough__suffix">${detailText}</span>`;
         };
 
+        const eventId = getAuraEventId(aura);
         const specialClassTokens = specialClass
             ? specialClass.split(/\s+/).filter(Boolean)
             : [];
+        const shareSpecialTokens = specialClassTokens.slice();
+        if (eventId === 'winter26' && !shareSpecialTokens.includes('sigil-outline-winter')) {
+            shareSpecialTokens.push('sigil-outline-winter');
+        }
+        const isBreakthroughAura = aura.name.startsWith('Breakthrough');
 
         const createShareVisualRecord = (baseName, countValue, options = {}) => ({
             aura,
-            displayName: baseName,
+            displayName: isBreakthroughAura
+                ? `${baseName} | Times Rolled: ${formatWithCommas(countValue)}`
+                : baseName,
             subtitle: aura.subtitle || null,
             prefix: typeof options.prefix === 'string' && options.prefix.length > 0 ? options.prefix : null,
             variant: options.variant || 'standard',
             count: countValue,
-            countLabel: `Times Rolled: ${formatWithCommas(countValue)}`,
+            countLabel: isBreakthroughAura ? null : `Times Rolled: ${formatWithCommas(countValue)}`,
             classes: {
                 rarity: rarityClass || null,
-                special: specialClassTokens,
-                event: Boolean(eventClass)
+                special: shareSpecialTokens,
+                event: Boolean(eventId)
             }
         });
 
@@ -6608,6 +6622,52 @@ const SHARE_IMAGE_OUTLINE_STYLES = Object.freeze({
             { color: 'rgba(40, 120, 170, 0.92)', blur: 0, offsetX: -1, offsetY: -1 }
         ]
     },
+    'sigil-outline-winter-garden': {
+        font: '600 35px "Parisienne", "Sarpanch", cursive',
+        letterSpacing: 0.25,
+        lineHeightMultiplier: 1.3,
+        shadowLayers: [],
+        replaceShadows: true,
+        fill: (ctx, x, y, width, height) => {
+            const gradient = ctx.createLinearGradient(x, y, x, y + height);
+            gradient.addColorStop(0.22, '#7ef1ff');
+            gradient.addColorStop(0.35, '#8980ff');
+            gradient.addColorStop(0.5, '#7c68cf');
+            gradient.addColorStop(0.75, '#e0d8fa');
+            return gradient;
+        }
+    },
+    'sigil-outline-dream-traveler': {
+        font: '700 italic 35px "Jura", "Sarpanch", sans-serif',
+        lineHeightMultiplier: 1.3,
+        shadowLayers: [],
+        replaceShadows: true,
+        fill: (ctx, x, y, width, height) => {
+            const gradient = createAngleGradient(ctx, x, y, width, height, 170);
+            gradient.addColorStop(0.27, '#2e1885');
+            gradient.addColorStop(0.33, '#c5aefe');
+            gradient.addColorStop(0.42, '#41307a');
+            gradient.addColorStop(0.46, '#fdeef4');
+            gradient.addColorStop(0.52, '#f3daf3');
+            gradient.addColorStop(0.7, '#6f1930');
+            gradient.addColorStop(0.75, '#c26181');
+            gradient.addColorStop(0.9, '#f1a9cb');
+            return gradient;
+        }
+    },
+    'sigil-outline-frostveil': {
+        font: '600 34px "Kings", "Sarpanch", serif',
+        lineHeightMultiplier: 1.3,
+        shadowLayers: [],
+        replaceShadows: true,
+        fill: (ctx, x, y, width, height) => {
+            const gradient = ctx.createLinearGradient(x, y, x, y + height);
+            gradient.addColorStop(0.35, '#a9afff');
+            gradient.addColorStop(0.5, '#7594f9');
+            gradient.addColorStop(0.7, '#a2dbff');
+            return gradient;
+        }
+    },
     'sigil-outline-cryogenic': {
         fill: '#e9f8ff',
         shadows: [
@@ -6707,6 +6767,30 @@ const SHARE_IMAGE_OUTLINE_STYLES = Object.freeze({
             { color: 'rgba(204, 177, 43, 0.96)', blur: 0, offsetX: 0, offsetY: 3 },
             { color: 'rgba(167, 181, 38, 0.96)', blur: 0, offsetX: 0, offsetY: -3 }
         ]
+    },
+    'sigil-outline-limbo': {
+        fill: '#000000',
+        shadows: [
+            { color: 'rgba(172, 172, 172, 0.95)', blur: 10 },
+            { color: 'rgba(175, 175, 175, 0.88)', blur: 18 },
+            { color: 'rgba(176, 176, 176, 0.8)', blur: 32 },
+            { color: 'rgba(136, 136, 136, 0.96)', blur: 0, offsetX: 1, offsetY: 0 },
+            { color: 'rgba(83, 83, 83, 0.96)', blur: 0, offsetX: -1, offsetY: 0 },
+            { color: 'rgba(64, 64, 64, 0.96)', blur: 0, offsetX: 0, offsetY: 1 },
+            { color: 'rgba(55, 55, 55, 0.94)', blur: 0, offsetX: -1, offsetY: -1 }
+        ]
+    },
+    'sigil-outline-leviathan': {
+        fill: '#000000',
+        shadows: [
+            { color: 'rgba(0, 117, 87, 0.95)', blur: 10 },
+            { color: 'rgba(0, 155, 57, 0.88)', blur: 18 },
+            { color: 'rgba(0, 166, 122, 0.8)', blur: 32 },
+            { color: 'rgba(0, 186, 149, 0.96)', blur: 0, offsetX: 1, offsetY: 0 },
+            { color: 'rgba(0, 101, 98, 0.96)', blur: 0, offsetX: -1, offsetY: 0 },
+            { color: 'rgba(95, 255, 204, 0.96)', blur: 0, offsetX: 0, offsetY: 1 },
+            { color: 'rgba(0, 172, 154, 0.94)', blur: 0, offsetX: -1, offsetY: -1 }
+        ]
     }
 });
 
@@ -6756,11 +6840,30 @@ function applyRarityStyle(style, className) {
 function applyOutlineStyle(style, className) {
     const config = SHARE_IMAGE_OUTLINE_STYLES[className];
     if (!config) return;
+    if (config.font) {
+        style.font = config.font;
+    }
+    if (Number.isFinite(config.letterSpacing)) {
+        style.letterSpacing = config.letterSpacing;
+    }
+    if (typeof config.lineHeightMultiplier === 'number') {
+        style.lineHeightMultiplier = config.lineHeightMultiplier;
+    }
+    if (typeof config.transform === 'function') {
+        style.transform = config.transform;
+    }
     if (config.fill) {
         style.fill = config.fill;
     }
     if (Array.isArray(config.shadows)) {
         style.shadowLayers.push(...config.shadows.map(cloneShareShadowLayer));
+    }
+    if (Array.isArray(config.shadowLayers)) {
+        if (config.replaceShadows) {
+            style.shadowLayers = config.shadowLayers.map(cloneShareShadowLayer);
+        } else {
+            style.shadowLayers.push(...config.shadowLayers.map(cloneShareShadowLayer));
+        }
     }
 }
 
@@ -6896,6 +6999,31 @@ const SHARE_IMAGE_EFFECT_HANDLERS = Object.freeze({
         if (styleSet.subtitle) {
             styleSet.subtitle.fill = 'rgba(255, 255, 255, 0.82)';
         }
+    },
+    'sigil-effect-breakthrough': styleSet => {
+        const font = '700 24px "Arial", "Sarpanch", sans-serif';
+        styleSet.name.font = font;
+        styleSet.name.letterSpacing = Number.parseFloat((0.1 * parseFontSize(font)).toFixed(2));
+        styleSet.name.lineHeightMultiplier = 1.35;
+        styleSet.name.shadowLayers = [];
+        styleSet.name.transform = text => text.toUpperCase();
+        styleSet.name.fill = (ctx, x, y, width) => {
+            const gradient = ctx.createLinearGradient(x, y, x + width, y + width * 0.6);
+            gradient.addColorStop(0.1, '#f2fdfe');
+            gradient.addColorStop(0.19, '#cfd5e3');
+            gradient.addColorStop(0.2, '#252a48');
+            gradient.addColorStop(0.35, '#312d40');
+            gradient.addColorStop(0.35, '#cdd0e9');
+            gradient.addColorStop(0.4, '#c4c6e9');
+            gradient.addColorStop(0.45, '#bac3f1');
+            gradient.addColorStop(0.5, '#272930');
+            gradient.addColorStop(0.55, '#d0d5f1');
+            gradient.addColorStop(0.7, '#30303e');
+            gradient.addColorStop(0.71, '#eef4fa');
+            gradient.addColorStop(0.75, '#e0e6ef');
+            gradient.addColorStop(0.8, '#e9ebfc');
+            return gradient;
+        };
     }
 });
 
@@ -6952,9 +7080,16 @@ function computeAuraCanvasStyles(record) {
                 .forEach(token => applyEffectStyle(baseStyles, token));
         }
 
-        if (record.classes.event) {
+        if (record.classes.event && (!Array.isArray(record.classes.special) || record.classes.special.length === 0)) {
             applyEventStyle(baseStyles);
         }
+    }
+
+    if (Array.isArray(record?.classes?.special) && record.classes.special.includes('sigil-outline-leviathan')) {
+        const font = '600 28px "Playfair Display", "Sarpanch", serif';
+        baseStyles.name.font = font;
+        baseStyles.name.letterSpacing = Number.parseFloat((0.15 * parseFontSize(font)).toFixed(2));
+        baseStyles.name.transform = text => text.toUpperCase();
     }
 
     if (record && record.prefix) {
@@ -7122,16 +7257,48 @@ function renderStyledText(context, text, x, y, style) {
     return cursorX - x;
 }
 
+function createAngleGradient(context, x, y, width, height, angleDeg) {
+    const radians = (angleDeg * Math.PI) / 180;
+    const centerX = x + width / 2;
+    const centerY = y + height / 2;
+    const halfDiagonal = Math.sqrt(width * width + height * height) / 2;
+    const dx = Math.cos(radians) * halfDiagonal;
+    const dy = Math.sin(radians) * halfDiagonal;
+    return context.createLinearGradient(centerX - dx, centerY - dy, centerX + dx, centerY + dy);
+}
+
 function createAuraBlock(context, record) {
     const styles = computeAuraCanvasStyles(record);
     const prefixText = record && record.prefix ? `${record.prefix}` : '';
     const nameText = record && record.displayName ? record.displayName : '';
     const subtitleText = record && record.subtitle ? record.subtitle : '';
     const countText = record && record.countLabel ? record.countLabel : '';
+    const hasBreakthroughBorder = Boolean(record?.classes?.special?.includes('sigil-border-breakthrough'));
+    const hasBreakthroughEffect = Boolean(record?.classes?.special?.includes('sigil-effect-breakthrough'));
+    const [breakthroughTitle, ...breakthroughSuffixParts] = hasBreakthroughEffect ? nameText.split(' - ') : [nameText];
+    const breakthroughSuffix = hasBreakthroughEffect && breakthroughSuffixParts.length > 0
+        ? ` - ${breakthroughSuffixParts.join(' - ')}`
+        : '';
+    const breakthroughSuffixStyle = hasBreakthroughEffect
+        ? {
+            ...styles.name,
+            letterSpacing: 0,
+            transform: null
+        }
+        : null;
 
     const prefixWidth = prefixText ? measureStyledTextWidth(context, prefixText, styles.prefix) : 0;
     const prefixGap = prefixText ? 12 : 0;
-    const nameWidth = measureStyledTextWidth(context, nameText, styles.name);
+    const breakthroughTitleWidth = hasBreakthroughEffect
+        ? measureStyledTextWidth(context, breakthroughTitle, styles.name)
+        : 0;
+    const breakthroughSuffixWidth = hasBreakthroughEffect && breakthroughSuffixStyle
+        ? measureStyledTextWidth(context, breakthroughSuffix, breakthroughSuffixStyle)
+        : 0;
+    const nameWidth = hasBreakthroughEffect
+        ? breakthroughTitleWidth + breakthroughSuffixWidth
+        : measureStyledTextWidth(context, nameText, styles.name);
+    const combinedNameWidth = prefixWidth + prefixGap + nameWidth;
     const nameLineHeight = styles.name.lineHeight;
     const countLineHeight = countText ? styles.count.lineHeight : 0;
     const countGap = countText ? 28 : 0;
@@ -7146,10 +7313,55 @@ function createAuraBlock(context, record) {
         draw(ctx, x, y) {
             let currentY = y;
             const nameX = prefixText ? x + prefixWidth + prefixGap : x;
+            if (hasBreakthroughBorder) {
+                ctx.save();
+                ctx.font = styles.name.font;
+                const metricsText = nameText || prefixText || '';
+                const metrics = metricsText ? ctx.measureText(metricsText) : { actualBoundingBoxAscent: 0, actualBoundingBoxDescent: 0 };
+                const fontSize = parseFontSize(styles.name.font);
+                const padding = Math.ceil(fontSize * 0.1);
+                const ascent = metrics.actualBoundingBoxAscent || Math.ceil(fontSize * 0.8);
+                const descent = metrics.actualBoundingBoxDescent || Math.ceil(fontSize * 0.2);
+                const borderWidth = 1;
+                const boxX = x - padding;
+                const boxY = currentY - ascent - padding;
+                const boxWidth = combinedNameWidth + padding * 2;
+                const boxHeight = ascent + descent + padding * 2;
+                const innerX = boxX + borderWidth;
+                const innerY = boxY + borderWidth;
+                const innerWidth = boxWidth - borderWidth * 2;
+                const innerHeight = boxHeight - borderWidth * 2;
+                const bgGradient = createAngleGradient(ctx, innerX, innerY, innerWidth, innerHeight, 150);
+                bgGradient.addColorStop(0, 'rgba(0, 0, 0, 0)');
+                bgGradient.addColorStop(0.15, 'rgba(0, 0, 0, 0)');
+                bgGradient.addColorStop(0.25, '#00000d');
+                bgGradient.addColorStop(1, '#00000d');
+                ctx.fillStyle = bgGradient;
+                ctx.fillRect(innerX, innerY, innerWidth, innerHeight);
+
+                const borderGradient = createAngleGradient(ctx, boxX, boxY, boxWidth, boxHeight, 290);
+                borderGradient.addColorStop(0.05, '#666680');
+                borderGradient.addColorStop(0.1, '#636c88');
+                borderGradient.addColorStop(0.2, 'rgba(0, 0, 0, 0)');
+                borderGradient.addColorStop(0.9, 'rgba(0, 0, 0, 0)');
+                borderGradient.addColorStop(0.95, 'rgba(132, 135, 157, 0.7)');
+                borderGradient.addColorStop(1, 'rgba(132, 135, 157, 0.7)');
+                ctx.strokeStyle = borderGradient;
+                ctx.lineWidth = borderWidth;
+                ctx.strokeRect(boxX + 0.5, boxY + 0.5, boxWidth - 1, boxHeight - 1);
+                ctx.restore();
+            }
             if (prefixText) {
                 renderStyledText(ctx, prefixText, x, currentY, styles.prefix);
             }
-            renderStyledText(ctx, nameText, nameX, currentY, styles.name);
+            if (hasBreakthroughEffect) {
+                renderStyledText(ctx, breakthroughTitle, nameX, currentY, styles.name);
+                if (breakthroughSuffix && breakthroughSuffixStyle) {
+                    renderStyledText(ctx, breakthroughSuffix, nameX + breakthroughTitleWidth, currentY, breakthroughSuffixStyle);
+                }
+            } else {
+                renderStyledText(ctx, nameText, nameX, currentY, styles.name);
+            }
             if (countText) {
                 const countX = nameX + nameWidth + countGap;
                 renderStyledText(ctx, countText, countX, currentY, styles.count);
@@ -7172,8 +7384,12 @@ async function ensureShareFontsLoaded() {
         document.fonts.load('600 28px "Sarpanch"'),
         document.fonts.load('500 22px "Sarpanch"'),
         document.fonts.load('italic 500 20px "Sarpanch"'),
+        document.fonts.load('600 28px "Playfair Display"'),
         document.fonts.load('700 26px "Noto Serif TC"'),
-        document.fonts.load('700 22px "Press Start 2P"')
+        document.fonts.load('700 22px "Press Start 2P"'),
+        document.fonts.load('600 35px "Parisienne"'),
+        document.fonts.load('700 italic 35px "Jura"'),
+        document.fonts.load('600 34px "Kings"')
     ];
     try {
         await Promise.allSettled(requests);

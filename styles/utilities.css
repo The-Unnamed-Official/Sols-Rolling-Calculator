@@ -312,15 +312,13 @@
 }
 
 .sigil-outline-leviathan {
-    color: black;
-    text-shadow:
-        0 0 10px rgba(0, 117, 87, 0.95),
-        0 0 18px rgba(0, 155, 57, 0.88),
-        0 0 32px rgba(0, 166, 122, 0.8),
-        1px 0 0 rgba(0, 186, 149, 0.96),
-        -1px 0 0 rgba(0, 101, 98, 0.96),
-        0 1px 0 rgba(95, 255, 204, 0.96),
-        -1px -1px 0 rgba(0, 172, 154, 0.94);
+    font-family: "Playfair Display", serif;
+    text-transform: uppercase;
+    background-clip: text !important;
+    -webkit-text-fill-color: rgb(0 0 0 / 50%);
+    background: linear-gradient(178deg, #4dd0cc 30%, #153a3e 38%, #9dfdfd 40%, #9af8fb 48%, #124245 50%, #2ed4d2 52%, #23454e 65%, #62cac6 67%, #518488 80%);
+    -webkit-text-stroke: .1em transparent;
+    letter-spacing: .15em;
 }
 
 .sigil-border-breakthrough {
@@ -357,6 +355,66 @@
     font-family: Arial, sans-serif;
     text-transform: uppercase;
 }
+
+.sigil-outline-winter-garden,
+.sigil-effect-winter-garden {
+    letter-spacing: .25px;
+    overflow-wrap: break-word;
+    font-family: Parisienne;
+    display: inline-block;
+    font-size: 125%;
+    white-space: nowrap;
+    background-clip: text !important;
+    -webkit-text-fill-color: transparent !important;
+    background: linear-gradient(to bottom, #7ef1ff 22%, #8980ff 35%, #7c68cf 50%, #e0d8fa 75%);
+    -webkit-text-stroke: .05em transparent;
+}
+
+.sigil-outline-dream-traveler {
+    font-family: Jura;
+    font-size: 125%;
+    font-weight: bold;
+    font-style: italic;
+    display: inline-block;
+    animation: dream-traveler-gradient 5s ease-in-out infinite;
+}
+
+@keyframes dream-traveler-gradient {
+    0% {
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        background-image: linear-gradient(170deg, #2e1885 27%, #c5aefe 33%, #41307a 42%, #fdeef4 46%, #f3daf3 52%, #6f1930 70%, #c26181 75%, #f1a9cb 90%);
+        background-size: 200% 200%;
+        background-position: 0% 50%;
+    }
+    50% {
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        background-image: linear-gradient(170deg, #2e1885 27%, #c5aefe 33%, #41307a 42%, #fdeef4 46%, #f3daf3 52%, #6f1930 70%, #c26181 75%, #f1a9cb 90%);
+        background-size: 200% 200%;
+        background-position: 100% 50%;
+    }
+    100% {
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        background-image: linear-gradient(170deg, #2e1885 27%, #c5aefe 33%, #41307a 42%, #fdeef4 46%, #f3daf3 52%, #6f1930 70%, #c26181 75%, #f1a9cb 90%);
+        background-size: 200% 200%;
+        background-position: 0% 50%;
+    }
+}
+
+.sigil-outline-frostveil {
+    font-family: Kings;
+    font-size: 120%;
+    background-clip: text !important;
+    -webkit-text-fill-color: #02316d;
+    background: linear-gradient(to bottom, #a9afff 35%, #7594f9 50%, #a2dbff 70%);
+    -webkit-text-stroke: 2.5px transparent;
+}
+
 
 @keyframes class-gradient-vert {
     0% {
