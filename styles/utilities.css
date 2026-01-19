@@ -356,7 +356,8 @@
     text-transform: uppercase;
 }
 
-.sigil-outline-winter-garden {
+.sigil-outline-winter-garden,
+.sigil-effect-winter-garden {
     letter-spacing: .25px;
     overflow-wrap: break-word;
     font-family: Parisienne;
