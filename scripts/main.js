@@ -6707,6 +6707,30 @@ const SHARE_IMAGE_OUTLINE_STYLES = Object.freeze({
             { color: 'rgba(204, 177, 43, 0.96)', blur: 0, offsetX: 0, offsetY: 3 },
             { color: 'rgba(167, 181, 38, 0.96)', blur: 0, offsetX: 0, offsetY: -3 }
         ]
+    },
+    'sigil-outline-limbo': {
+        fill: '#000000',
+        shadows: [
+            { color: 'rgba(172, 172, 172, 0.95)', blur: 10 },
+            { color: 'rgba(175, 175, 175, 0.88)', blur: 18 },
+            { color: 'rgba(176, 176, 176, 0.8)', blur: 32 },
+            { color: 'rgba(136, 136, 136, 0.96)', blur: 0, offsetX: 1, offsetY: 0 },
+            { color: 'rgba(83, 83, 83, 0.96)', blur: 0, offsetX: -1, offsetY: 0 },
+            { color: 'rgba(64, 64, 64, 0.96)', blur: 0, offsetX: 0, offsetY: 1 },
+            { color: 'rgba(55, 55, 55, 0.94)', blur: 0, offsetX: -1, offsetY: -1 }
+        ]
+    },
+    'sigil-outline-leviathan': {
+        fill: '#000000',
+        shadows: [
+            { color: 'rgba(0, 117, 87, 0.95)', blur: 10 },
+            { color: 'rgba(0, 155, 57, 0.88)', blur: 18 },
+            { color: 'rgba(0, 166, 122, 0.8)', blur: 32 },
+            { color: 'rgba(0, 186, 149, 0.96)', blur: 0, offsetX: 1, offsetY: 0 },
+            { color: 'rgba(0, 101, 98, 0.96)', blur: 0, offsetX: -1, offsetY: 0 },
+            { color: 'rgba(95, 255, 204, 0.96)', blur: 0, offsetX: 0, offsetY: 1 },
+            { color: 'rgba(0, 172, 154, 0.94)', blur: 0, offsetX: -1, offsetY: -1 }
+        ]
     }
 });
 
@@ -6896,6 +6920,31 @@ const SHARE_IMAGE_EFFECT_HANDLERS = Object.freeze({
         if (styleSet.subtitle) {
             styleSet.subtitle.fill = 'rgba(255, 255, 255, 0.82)';
         }
+    },
+    'sigil-effect-breakthrough': styleSet => {
+        const font = '700 24px "Arial", "Sarpanch", sans-serif';
+        styleSet.name.font = font;
+        styleSet.name.letterSpacing = Number.parseFloat((0.1 * parseFontSize(font)).toFixed(2));
+        styleSet.name.lineHeightMultiplier = 1.35;
+        styleSet.name.shadowLayers = [];
+        styleSet.name.transform = text => text.toUpperCase();
+        styleSet.name.fill = (ctx, x, y, width) => {
+            const gradient = ctx.createLinearGradient(x, y, x + width, y + width * 0.6);
+            gradient.addColorStop(0.1, '#f2fdfe');
+            gradient.addColorStop(0.19, '#cfd5e3');
+            gradient.addColorStop(0.2, '#252a48');
+            gradient.addColorStop(0.35, '#312d40');
+            gradient.addColorStop(0.35, '#cdd0e9');
+            gradient.addColorStop(0.4, '#c4c6e9');
+            gradient.addColorStop(0.45, '#bac3f1');
+            gradient.addColorStop(0.5, '#272930');
+            gradient.addColorStop(0.55, '#d0d5f1');
+            gradient.addColorStop(0.7, '#30303e');
+            gradient.addColorStop(0.71, '#eef4fa');
+            gradient.addColorStop(0.75, '#e0e6ef');
+            gradient.addColorStop(0.8, '#e9ebfc');
+            return gradient;
+        };
     }
 });
 
