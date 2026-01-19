@@ -5765,6 +5765,8 @@ function runRollSimulation(options = {}) {
         luckValue
     });
     const computedAuras = buildComputedAuraEntries(AURA_REGISTRY, evaluationContext, luckValue, breakthroughStatsMap);
+    const lucklessAuras = computedAuras.filter(entry => entry.aura && entry.aura.ignoreLuck);
+    const luckAffectedAuras = computedAuras.filter(entry => !entry.aura || !entry.aura.ignoreLuck);
 
     const activeDuneAura = (dunePresetEnabled && baseLuck >= DUNE_LUCK_TARGET) ? duneAuraData : null;
     const activeOblivionAura = (oblivionPresetEnabled && luckValue >= OBLIVION_LUCK_TARGET) ? oblivionAuraData : null;
@@ -5958,8 +5960,20 @@ function runRollSimulation(options = {}) {
             return;
         }
 
-        for (let j = 0; j < computedAuras.length; j++) {
-            const entry = computedAuras[j];
+        for (let j = 0; j < lucklessAuras.length; j++) {
+            const entry = lucklessAuras[j];
+            if (entry.successRatio > 0 && sampleEntropy() < entry.successRatio) {
+                recordAuraWin(entry.aura);
+                if (entry.breakthroughStats) {
+                    entry.breakthroughStats.count++;
+                }
+                rolls++;
+                return;
+            }
+        }
+
+        for (let j = 0; j < luckAffectedAuras.length; j++) {
+            const entry = luckAffectedAuras[j];
             if (entry.successRatio > 0 && sampleEntropy() < entry.successRatio) {
                 recordAuraWin(entry.aura);
                 if (entry.breakthroughStats) {
