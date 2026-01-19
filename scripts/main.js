@@ -2724,6 +2724,9 @@ const auraOutlineOverrides = new Map([
     ['Bloodgarden', 'sigil-outline-blood'],
     ['Cryogenic', 'sigil-outline-cryogenic'],
     ['Leviathan', 'sigil-outline-leviathan'],
+    ['Winter Garden', 'sigil-outline-winter-garden'],
+    ['Dream Traveler', 'sigil-outline-dream-traveler'],
+    ['Sovereign : Frostveil', 'sigil-outline-frostveil'],
 ]);
 
 const glitchOutlineNames = new Set(['Fault', 'Glitch', 'Oppression']);
@@ -2752,7 +2755,10 @@ function resolveAuraStyleClass(aura, biome) {
     const auraEventId = auraData ? getAuraEventId(auraData) : null;
 
     if (auraEventId === 'winter26') {
-        classes.push('sigil-outline-winter-2026');
+        const shortNameCheck = name.includes(' - ') ? name.split(' - ')[0].trim() : name.trim();
+        if (shortNameCheck !== 'Winter Garden' && shortNameCheck !== 'Dream Traveler' && shortNameCheck !== 'Sovereign : Frostveil') {
+            classes.push('sigil-outline-winter-2026');
+        }
     }
 
     if (auraMatchesAnyBiome(auraData, ['pumpkinMoon', 'graveyard'])) {
