@@ -123,11 +123,11 @@
                 <div class="banner__meta">
                     <h1 class="banner__title">Sol's Rolling Simulator</h1>
                     <p class="banner__subtitle">
-                        <button type="button" class="banner__version-button" id="versionInfoButton" aria-haspopup="dialog" aria-expanded="false" data-version-id="v1601">V1.601</button>
+                        <button type="button" class="banner__version-button" id="versionInfoButton" aria-haspopup="dialog" aria-expanded="false" data-version-id="v1602">V1.602</button>
                         <span class="banner__subtitle-divider" aria-hidden="true">◉</span>
                         <span class="banner__subtitle-author">By <span class="banner__subtitle-author-name">not.unnamed</span></span>
                         <span class="banner__subtitle-divider" aria-hidden="true">◉</span>
-                        <span class="banner__subtitle-updated">Updated <time datetime="2026-01-18">2026/01/18</time></span>
+                        <span class="banner__subtitle-updated">Updated <time datetime="2026-01-18">2026/01/19</time></span>
                         <span class="banner__subtitle-divider" aria-hidden="true">◉</span>
                         <span class="banner__subtitle-eon">Sol's RNG Eon 1-14</span>
                     </p>
@@ -547,12 +547,12 @@
                             <span class="preset-collection__title-divider preset-collection__title-divider--end" aria-hidden="true"></span>
                         </h3>
                         <div class="preset-matrix preset-matrix--compact" id="device-buff-preset-panel">
-                            <button type="button" data-luck-value="22.39" onclick="applyDeviceBuffPreset(22.39)"><span class="archangelClass">Archangel Device</span> + Max Luck x25.39</button>
-                            <button type="button" data-luck-value="26.24" onclick="applyDeviceBuffPreset(26.24)"><span class="archangelClass">Archangel Device</span> + <span class="plcClass">Pole Light Core</span> + Max Luck x31.24</button>
-                            <button type="button" data-luck-value="52.47" onclick="applyDeviceBuffPreset(52.47)"><span class="archangelClass">Archangel Device</span> + <span class="plcClass">Pole Light Core</span> + Max Luck + Bonus Roll x55.47</button>
-                            <button type="button" data-luck-value="25.85" onclick="applyDeviceBuffPreset(25.85)"><span class="archangelClass">Archangel Device</span> + Max Luck + Event buffs x25.85</button>
-                            <button type="button" data-luck-value="29.7" onclick="applyDeviceBuffPreset(29.7)"><span class="archangelClass">Archangel Device</span> + <span class="plcClass">Pole Light Core</span> + Max Luck + Event buffs x234.70</button>
-                            <button type="button" data-luck-value="59.4" onclick="applyDeviceBuffPreset(59.4)"><span class="archangelClass">Archangel Device</span> + <span class="plcClass">Pole Light Core</span> + Max Luck + Event buffs + Bonus Roll x64.40</button>
+                            <button type="button" data-luck-value="22.39" onclick="applyDeviceBuffPreset(25.39)"><span class="archangelClass">Archangel Device</span> + Max Luck x25.39</button>
+                            <button type="button" data-luck-value="26.24" onclick="applyDeviceBuffPreset(29.24)"><span class="archangelClass">Archangel Device</span> + <span class="plcClass">Pole Light Core</span> + Max Luck x29.24</button>
+                            <button type="button" data-luck-value="52.47" onclick="applyDeviceBuffPreset(55.47)"><span class="archangelClass">Archangel Device</span> + <span class="plcClass">Pole Light Core</span> + Max Luck + Bonus Roll x55.47</button>
+                            <button type="button" data-luck-value="25.85" onclick="applyDeviceBuffPreset(28.85)"><span class="archangelClass">Archangel Device</span> + Max Luck + Event buffs x28.85</button>
+                            <button type="button" data-luck-value="29.7" onclick="applyDeviceBuffPreset(32.7)"><span class="archangelClass">Archangel Device</span> + <span class="plcClass">Pole Light Core</span> + Max Luck + Event buffs x32.70</button>
+                            <button type="button" data-luck-value="59.4" onclick="applyDeviceBuffPreset(62.4)"><span class="archangelClass">Archangel Device</span> + <span class="plcClass">Pole Light Core</span> + Max Luck + Event buffs + Bonus Roll x62.40</button>
                         </div>
                     </div>
                     <div class="preset-collection">
@@ -909,12 +909,31 @@
 
             <div class="changelog-modal__panels" data-changelog-panels>
                 <section
+                    id="changelog-panel-v1602"
+                    class="changelog-modal__panel"
+                    role="tabpanel"
+                    aria-labelledby="changelog-tab-v1602"
+                    data-changelog-panel="v1602"
+                    tabindex="0"
+                >
+                    <header class="changelog-modal__header">
+                        <h2 class="changelog-modal__title" id="versionChangelogTitle">Version V1.602 Update Notes</h2>
+                        <span class="changelog-tab__subtitle">Quick Device Preset value fix</span>
+                        <p class="changelog-modal__meta">Updated 2026/01/19</p>
+                    </header>
+                    <p class="changelog-modal__intro">Latest changes:</p>
+                    <ul class="changelog-modal__list">
+                        <li>Fixed <span class="archangelClass">Archangel Device</span>'s value giving out the old luck value.</li>
+                    </ul>
+                </section>
+                <section
                     id="changelog-panel-v1601"
                     class="changelog-modal__panel"
                     role="tabpanel"
                     aria-labelledby="changelog-tab-v1601"
                     data-changelog-panel="v1601"
-                    tabindex="0"
+                    hidden
+                    tabindex="-1"
                 >
                     <header class="changelog-modal__header">
                         <h2 class="changelog-modal__title" id="versionChangelogTitle">Version V1.601 Update Notes</h2>
