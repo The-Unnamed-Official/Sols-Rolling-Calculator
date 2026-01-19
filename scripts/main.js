@@ -5399,22 +5399,30 @@ function buildResultEntries(registry, biome, breakthroughStatsMap) {
                 `<span class="sigil-effect-breakthrough__suffix">${detailText}</span>`;
         };
 
+        const eventId = getAuraEventId(aura);
         const specialClassTokens = specialClass
             ? specialClass.split(/\s+/).filter(Boolean)
             : [];
+        const shareSpecialTokens = specialClassTokens.slice();
+        if (eventId === 'winter26' && !shareSpecialTokens.includes('sigil-outline-winter')) {
+            shareSpecialTokens.push('sigil-outline-winter');
+        }
+        const isBreakthroughAura = aura.name.startsWith('Breakthrough');
 
         const createShareVisualRecord = (baseName, countValue, options = {}) => ({
             aura,
-            displayName: baseName,
+            displayName: isBreakthroughAura
+                ? `${baseName} | Times Rolled: ${formatWithCommas(countValue)}`
+                : baseName,
             subtitle: aura.subtitle || null,
             prefix: typeof options.prefix === 'string' && options.prefix.length > 0 ? options.prefix : null,
             variant: options.variant || 'standard',
             count: countValue,
-            countLabel: `Times Rolled: ${formatWithCommas(countValue)}`,
+            countLabel: isBreakthroughAura ? null : `Times Rolled: ${formatWithCommas(countValue)}`,
             classes: {
                 rarity: rarityClass || null,
-                special: specialClassTokens,
-                event: Boolean(eventClass)
+                special: shareSpecialTokens,
+                event: Boolean(eventId)
             }
         });
 
@@ -7006,6 +7014,11 @@ function computeAuraCanvasStyles(record) {
         }
     }
 
+    if (Array.isArray(record?.classes?.special) && record.classes.special.includes('sigil-outline-leviathan')) {
+        baseStyles.name.font = '600 28px "Playfair Display", "Sarpanch", serif';
+        baseStyles.name.letterSpacing = 0;
+    }
+
     if (record && record.prefix) {
         baseStyles.prefix = cloneShareStyle(baseStyles.name);
         baseStyles.prefix.font = baseStyles.name.font;
@@ -7171,16 +7184,28 @@ function renderStyledText(context, text, x, y, style) {
     return cursorX - x;
 }
 
+function createAngleGradient(context, x, y, width, height, angleDeg) {
+    const radians = (angleDeg * Math.PI) / 180;
+    const centerX = x + width / 2;
+    const centerY = y + height / 2;
+    const halfDiagonal = Math.sqrt(width * width + height * height) / 2;
+    const dx = Math.cos(radians) * halfDiagonal;
+    const dy = Math.sin(radians) * halfDiagonal;
+    return context.createLinearGradient(centerX - dx, centerY - dy, centerX + dx, centerY + dy);
+}
+
 function createAuraBlock(context, record) {
     const styles = computeAuraCanvasStyles(record);
     const prefixText = record && record.prefix ? `${record.prefix}` : '';
     const nameText = record && record.displayName ? record.displayName : '';
     const subtitleText = record && record.subtitle ? record.subtitle : '';
     const countText = record && record.countLabel ? record.countLabel : '';
+    const hasBreakthroughBorder = Boolean(record?.classes?.special?.includes('sigil-border-breakthrough'));
 
     const prefixWidth = prefixText ? measureStyledTextWidth(context, prefixText, styles.prefix) : 0;
     const prefixGap = prefixText ? 12 : 0;
     const nameWidth = measureStyledTextWidth(context, nameText, styles.name);
+    const combinedNameWidth = prefixWidth + prefixGap + nameWidth;
     const nameLineHeight = styles.name.lineHeight;
     const countLineHeight = countText ? styles.count.lineHeight : 0;
     const countGap = countText ? 28 : 0;
@@ -7195,6 +7220,44 @@ function createAuraBlock(context, record) {
         draw(ctx, x, y) {
             let currentY = y;
             const nameX = prefixText ? x + prefixWidth + prefixGap : x;
+            if (hasBreakthroughBorder) {
+                ctx.save();
+                ctx.font = styles.name.font;
+                const metricsText = nameText || prefixText || '';
+                const metrics = metricsText ? ctx.measureText(metricsText) : { actualBoundingBoxAscent: 0, actualBoundingBoxDescent: 0 };
+                const fontSize = parseFontSize(styles.name.font);
+                const padding = Math.ceil(fontSize * 0.1);
+                const ascent = metrics.actualBoundingBoxAscent || Math.ceil(fontSize * 0.8);
+                const descent = metrics.actualBoundingBoxDescent || Math.ceil(fontSize * 0.2);
+                const borderWidth = 1;
+                const boxX = x - padding;
+                const boxY = currentY - ascent - padding;
+                const boxWidth = combinedNameWidth + padding * 2;
+                const boxHeight = ascent + descent + padding * 2;
+                const innerX = boxX + borderWidth;
+                const innerY = boxY + borderWidth;
+                const innerWidth = boxWidth - borderWidth * 2;
+                const innerHeight = boxHeight - borderWidth * 2;
+                const bgGradient = createAngleGradient(ctx, innerX, innerY, innerWidth, innerHeight, 150);
+                bgGradient.addColorStop(0, 'rgba(0, 0, 0, 0)');
+                bgGradient.addColorStop(0.15, 'rgba(0, 0, 0, 0)');
+                bgGradient.addColorStop(0.25, '#00000d');
+                bgGradient.addColorStop(1, '#00000d');
+                ctx.fillStyle = bgGradient;
+                ctx.fillRect(innerX, innerY, innerWidth, innerHeight);
+
+                const borderGradient = createAngleGradient(ctx, boxX, boxY, boxWidth, boxHeight, 290);
+                borderGradient.addColorStop(0.05, '#666680');
+                borderGradient.addColorStop(0.1, '#636c88');
+                borderGradient.addColorStop(0.2, 'rgba(0, 0, 0, 0)');
+                borderGradient.addColorStop(0.9, 'rgba(0, 0, 0, 0)');
+                borderGradient.addColorStop(0.95, 'rgba(132, 135, 157, 0.7)');
+                borderGradient.addColorStop(1, 'rgba(132, 135, 157, 0.7)');
+                ctx.strokeStyle = borderGradient;
+                ctx.lineWidth = borderWidth;
+                ctx.strokeRect(boxX + 0.5, boxY + 0.5, boxWidth - 1, boxHeight - 1);
+                ctx.restore();
+            }
             if (prefixText) {
                 renderStyledText(ctx, prefixText, x, currentY, styles.prefix);
             }
@@ -7221,6 +7284,7 @@ async function ensureShareFontsLoaded() {
         document.fonts.load('600 28px "Sarpanch"'),
         document.fonts.load('500 22px "Sarpanch"'),
         document.fonts.load('italic 500 20px "Sarpanch"'),
+        document.fonts.load('600 28px "Playfair Display"'),
         document.fonts.load('700 26px "Noto Serif TC"'),
         document.fonts.load('700 22px "Press Start 2P"')
     ];
