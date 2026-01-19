@@ -6622,6 +6622,52 @@ const SHARE_IMAGE_OUTLINE_STYLES = Object.freeze({
             { color: 'rgba(40, 120, 170, 0.92)', blur: 0, offsetX: -1, offsetY: -1 }
         ]
     },
+    'sigil-outline-winter-garden': {
+        font: '600 35px "Parisienne", "Sarpanch", cursive',
+        letterSpacing: 0.25,
+        lineHeightMultiplier: 1.3,
+        shadowLayers: [],
+        replaceShadows: true,
+        fill: (ctx, x, y, width, height) => {
+            const gradient = ctx.createLinearGradient(x, y, x, y + height);
+            gradient.addColorStop(0.22, '#7ef1ff');
+            gradient.addColorStop(0.35, '#8980ff');
+            gradient.addColorStop(0.5, '#7c68cf');
+            gradient.addColorStop(0.75, '#e0d8fa');
+            return gradient;
+        }
+    },
+    'sigil-outline-dream-traveler': {
+        font: '700 italic 35px "Jura", "Sarpanch", sans-serif',
+        lineHeightMultiplier: 1.3,
+        shadowLayers: [],
+        replaceShadows: true,
+        fill: (ctx, x, y, width, height) => {
+            const gradient = createAngleGradient(ctx, x, y, width, height, 170);
+            gradient.addColorStop(0.27, '#2e1885');
+            gradient.addColorStop(0.33, '#c5aefe');
+            gradient.addColorStop(0.42, '#41307a');
+            gradient.addColorStop(0.46, '#fdeef4');
+            gradient.addColorStop(0.52, '#f3daf3');
+            gradient.addColorStop(0.7, '#6f1930');
+            gradient.addColorStop(0.75, '#c26181');
+            gradient.addColorStop(0.9, '#f1a9cb');
+            return gradient;
+        }
+    },
+    'sigil-outline-frostveil': {
+        font: '600 34px "Kings", "Sarpanch", serif',
+        lineHeightMultiplier: 1.3,
+        shadowLayers: [],
+        replaceShadows: true,
+        fill: (ctx, x, y, width, height) => {
+            const gradient = ctx.createLinearGradient(x, y, x, y + height);
+            gradient.addColorStop(0.35, '#a9afff');
+            gradient.addColorStop(0.5, '#7594f9');
+            gradient.addColorStop(0.7, '#a2dbff');
+            return gradient;
+        }
+    },
     'sigil-outline-cryogenic': {
         fill: '#e9f8ff',
         shadows: [
@@ -6794,11 +6840,30 @@ function applyRarityStyle(style, className) {
 function applyOutlineStyle(style, className) {
     const config = SHARE_IMAGE_OUTLINE_STYLES[className];
     if (!config) return;
+    if (config.font) {
+        style.font = config.font;
+    }
+    if (Number.isFinite(config.letterSpacing)) {
+        style.letterSpacing = config.letterSpacing;
+    }
+    if (typeof config.lineHeightMultiplier === 'number') {
+        style.lineHeightMultiplier = config.lineHeightMultiplier;
+    }
+    if (typeof config.transform === 'function') {
+        style.transform = config.transform;
+    }
     if (config.fill) {
         style.fill = config.fill;
     }
     if (Array.isArray(config.shadows)) {
         style.shadowLayers.push(...config.shadows.map(cloneShareShadowLayer));
+    }
+    if (Array.isArray(config.shadowLayers)) {
+        if (config.replaceShadows) {
+            style.shadowLayers = config.shadowLayers.map(cloneShareShadowLayer);
+        } else {
+            style.shadowLayers.push(...config.shadowLayers.map(cloneShareShadowLayer));
+        }
     }
 }
 
@@ -7015,14 +7080,16 @@ function computeAuraCanvasStyles(record) {
                 .forEach(token => applyEffectStyle(baseStyles, token));
         }
 
-        if (record.classes.event) {
+        if (record.classes.event && (!Array.isArray(record.classes.special) || record.classes.special.length === 0)) {
             applyEventStyle(baseStyles);
         }
     }
 
     if (Array.isArray(record?.classes?.special) && record.classes.special.includes('sigil-outline-leviathan')) {
-        baseStyles.name.font = '600 28px "Playfair Display", "Sarpanch", serif';
-        baseStyles.name.letterSpacing = 0;
+        const font = '600 28px "Playfair Display", "Sarpanch", serif';
+        baseStyles.name.font = font;
+        baseStyles.name.letterSpacing = Number.parseFloat((0.15 * parseFontSize(font)).toFixed(2));
+        baseStyles.name.transform = text => text.toUpperCase();
     }
 
     if (record && record.prefix) {
@@ -7207,10 +7274,30 @@ function createAuraBlock(context, record) {
     const subtitleText = record && record.subtitle ? record.subtitle : '';
     const countText = record && record.countLabel ? record.countLabel : '';
     const hasBreakthroughBorder = Boolean(record?.classes?.special?.includes('sigil-border-breakthrough'));
+    const hasBreakthroughEffect = Boolean(record?.classes?.special?.includes('sigil-effect-breakthrough'));
+    const [breakthroughTitle, ...breakthroughSuffixParts] = hasBreakthroughEffect ? nameText.split(' - ') : [nameText];
+    const breakthroughSuffix = hasBreakthroughEffect && breakthroughSuffixParts.length > 0
+        ? ` - ${breakthroughSuffixParts.join(' - ')}`
+        : '';
+    const breakthroughSuffixStyle = hasBreakthroughEffect
+        ? {
+            ...styles.name,
+            letterSpacing: 0,
+            transform: null
+        }
+        : null;
 
     const prefixWidth = prefixText ? measureStyledTextWidth(context, prefixText, styles.prefix) : 0;
     const prefixGap = prefixText ? 12 : 0;
-    const nameWidth = measureStyledTextWidth(context, nameText, styles.name);
+    const breakthroughTitleWidth = hasBreakthroughEffect
+        ? measureStyledTextWidth(context, breakthroughTitle, styles.name)
+        : 0;
+    const breakthroughSuffixWidth = hasBreakthroughEffect && breakthroughSuffixStyle
+        ? measureStyledTextWidth(context, breakthroughSuffix, breakthroughSuffixStyle)
+        : 0;
+    const nameWidth = hasBreakthroughEffect
+        ? breakthroughTitleWidth + breakthroughSuffixWidth
+        : measureStyledTextWidth(context, nameText, styles.name);
     const combinedNameWidth = prefixWidth + prefixGap + nameWidth;
     const nameLineHeight = styles.name.lineHeight;
     const countLineHeight = countText ? styles.count.lineHeight : 0;
@@ -7267,7 +7354,14 @@ function createAuraBlock(context, record) {
             if (prefixText) {
                 renderStyledText(ctx, prefixText, x, currentY, styles.prefix);
             }
-            renderStyledText(ctx, nameText, nameX, currentY, styles.name);
+            if (hasBreakthroughEffect) {
+                renderStyledText(ctx, breakthroughTitle, nameX, currentY, styles.name);
+                if (breakthroughSuffix && breakthroughSuffixStyle) {
+                    renderStyledText(ctx, breakthroughSuffix, nameX + breakthroughTitleWidth, currentY, breakthroughSuffixStyle);
+                }
+            } else {
+                renderStyledText(ctx, nameText, nameX, currentY, styles.name);
+            }
             if (countText) {
                 const countX = nameX + nameWidth + countGap;
                 renderStyledText(ctx, countText, countX, currentY, styles.count);
@@ -7292,7 +7386,10 @@ async function ensureShareFontsLoaded() {
         document.fonts.load('italic 500 20px "Sarpanch"'),
         document.fonts.load('600 28px "Playfair Display"'),
         document.fonts.load('700 26px "Noto Serif TC"'),
-        document.fonts.load('700 22px "Press Start 2P"')
+        document.fonts.load('700 22px "Press Start 2P"'),
+        document.fonts.load('600 35px "Parisienne"'),
+        document.fonts.load('700 italic 35px "Jura"'),
+        document.fonts.load('600 34px "Kings"')
     ];
     try {
         await Promise.allSettled(requests);
