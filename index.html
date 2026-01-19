@@ -123,7 +123,7 @@
                 <div class="banner__meta">
                     <h1 class="banner__title">Sol's Rolling Simulator</h1>
                     <p class="banner__subtitle">
-                        <button type="button" class="banner__version-button" id="versionInfoButton" aria-haspopup="dialog" aria-expanded="false" data-version-id="v1602">V1.602</button>
+                        <button type="button" class="banner__version-button" id="versionInfoButton" aria-haspopup="dialog" aria-expanded="false" data-version-id="v16xx">V1.6xx</button>
                         <span class="banner__subtitle-divider" aria-hidden="true">◉</span>
                         <span class="banner__subtitle-author">By <span class="banner__subtitle-author-name">not.unnamed</span></span>
                         <span class="banner__subtitle-divider" aria-hidden="true">◉</span>
@@ -790,11 +790,23 @@
                 <button
                     type="button"
                     class="changelog-tab changelog-tab--active"
+                    id="changelog-tab-v16xx"
+                    role="tab"
+                    aria-controls="changelog-panel-v16xx"
+                    aria-selected="true"
+                    data-changelog-tab="v16xx"
+                >
+                    <span class="changelog-tab__title">V1.6xx</span>
+                </button>
+                <button
+                    type="button"
+                    class="changelog-tab changelog-tab--active"
                     id="changelog-tab-v1602"
                     role="tab"
                     aria-controls="changelog-panel-v1602"
-                    aria-selected="true"
+                    aria-selected="false"
                     data-changelog-tab="v1602"
+                    tabindex="-1"
                 >
                     <span class="changelog-tab__title">V1.602</span>
                 </button>
@@ -922,12 +934,36 @@
 
             <div class="changelog-modal__panels" data-changelog-panels>
                 <section
+                    id="changelog-panel-v16xx"
+                    class="changelog-modal__panel"
+                    role="tabpanel"
+                    aria-labelledby="changelog-tab-v16xx"
+                    data-changelog-panel="v16xx"
+                    tabindex="0"
+                >
+                    <header class="changelog-modal__header">
+                        <h2 class="changelog-modal__title" id="versionChangelogTitle">Version V1.6xx Update Notes</h2>
+                        <span class="changelog-tab__subtitle">Image Sharing Style Update</span>
+                        <p class="changelog-modal__meta">Updated 2026/01/19</p>
+                    </header>
+                    <p class="changelog-modal__intro">Latest changes:</p>
+                    <ul class="changelog-modal__list">
+                        <li>Updated the Image Share generation for all recently added auras to include their styling. Examples like:</p>
+                        <ul>
+                            <li><span class="sigil-border-breakthrough"><span class="sigil-effect-breakthrough__title">Breakthrough</span> <span class="sigil-effect-breakthrough__title">- 1,999,999,999 | Times Rolled: X</span></span></li>
+                            <li><span class="sigil-outline-leviathan">Leviathan - 1,730,400,000 | Times Rolled: X</span></li>
+                            <li><span class="sigil-outline-winter">Dream Traveler - 2,025,012,025 | Times Rolled: X</span></li>
+                        </ul>
+                    </ul>
+                </section>
+                <section
                     id="changelog-panel-v1602"
                     class="changelog-modal__panel"
                     role="tabpanel"
                     aria-labelledby="changelog-tab-v1602"
                     data-changelog-panel="v1602"
-                    tabindex="0"
+                    hidden
+                    tabindex="-1"
                 >
                     <header class="changelog-modal__header">
                         <h2 class="changelog-modal__title" id="versionChangelogTitle">Version V1.602 Update Notes</h2>
