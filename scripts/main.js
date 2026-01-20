@@ -2727,6 +2727,8 @@ const auraOutlineOverrides = new Map([
     ['Winter Garden', 'sigil-outline-winter-garden'],
     ['Dream Traveler', 'sigil-outline-dream-traveler'],
     ['Sovereign : Frostveil', 'sigil-outline-frostveil'],
+    ['Erebus', 'sigil-outline-erebus'],
+    ['Lamenthyr', 'sigil-outline-lamenthyr'],
 ]);
 
 const glitchOutlineNames = new Set(['Fault', 'Glitch', 'Oppression']);
@@ -2754,6 +2756,8 @@ function resolveAuraStyleClass(aura, biome) {
     const auraData = typeof aura === 'string' ? null : aura;
     const auraEventId = auraData ? getAuraEventId(auraData) : null;
 
+    const shortName = name.includes(' - ') ? name.split(' - ')[0].trim() : name.trim();
+
     if (auraEventId === 'winter26') {
         const shortNameCheck = name.includes(' - ') ? name.split(' - ')[0].trim() : name.trim();
         if (shortNameCheck !== 'Winter Garden' && shortNameCheck !== 'Dream Traveler' && shortNameCheck !== 'Sovereign : Frostveil') {
@@ -2761,11 +2765,9 @@ function resolveAuraStyleClass(aura, biome) {
         }
     }
 
-    if (auraMatchesAnyBiome(auraData, ['pumpkinMoon', 'graveyard'])) {
+    if (auraMatchesAnyBiome(auraData, ['pumpkinMoon', 'graveyard']) && shortName !== 'Erebus' && shortName !== 'Lamenthyr') {
         classes.push('sigil-outline-halloween');
     }
-
-    const shortName = name.includes(' - ') ? name.split(' - ')[0].trim() : name.trim();
     if (glitchOutlineNames.has(shortName)) {
         classes.push('sigil-outline-glitch');
     }
@@ -2888,6 +2890,12 @@ function formatAuraNameMarkup(aura, overrideName) {
         }
         return breakthroughMarkup;
     }
+    if (baseName.startsWith('Lamenthyr')) {
+        if (aura.subtitle) {
+            return `${baseName} <span class="sigil-subtitle">${aura.subtitle}</span>`;
+        }
+        return baseName;
+    }
     if (aura.subtitle) {
         return `${baseName} <span class="sigil-subtitle">${aura.subtitle}</span>`;
     }
@@ -2901,6 +2909,47 @@ function formatAuraNameText(aura, overrideName) {
         return `${baseName} — ${aura.subtitle}`;
     }
     return baseName;
+}
+
+function syncLamenthyrOutlineText(element) {
+    if (!element) return;
+    const text = element.textContent;
+    if (typeof text !== 'string' || text.length === 0) return;
+    if (element.dataset.text !== text) {
+        element.dataset.text = text;
+    }
+}
+
+function updateLamenthyrOutlineText(container = document) {
+    if (!container) return;
+    container.querySelectorAll('.sigil-outline-lamenthyr').forEach(syncLamenthyrOutlineText);
+}
+
+function observeLamenthyrOutlineText() {
+    updateLamenthyrOutlineText();
+    if (!document.body) return;
+    const observer = new MutationObserver(mutations => {
+        mutations.forEach(mutation => {
+            if (mutation.type === 'childList') {
+                mutation.addedNodes.forEach(node => {
+                    if (node.nodeType !== Node.ELEMENT_NODE) return;
+                    const element = node;
+                    if (element.classList.contains('sigil-outline-lamenthyr')) {
+                        syncLamenthyrOutlineText(element);
+                    }
+                    if (typeof element.querySelectorAll === 'function') {
+                        element.querySelectorAll('.sigil-outline-lamenthyr').forEach(syncLamenthyrOutlineText);
+                    }
+                });
+            } else if (mutation.type === 'characterData') {
+                const parent = mutation.target.parentElement;
+                if (parent && parent.classList.contains('sigil-outline-lamenthyr')) {
+                    syncLamenthyrOutlineText(parent);
+                }
+            }
+        });
+    });
+    observer.observe(document.body, { childList: true, subtree: true, characterData: true });
 }
 
 function determineResultPriority(aura, baseChance) {
@@ -4187,6 +4236,7 @@ document.addEventListener('DOMContentLoaded', initializeRollTriggerFloating);
 document.addEventListener('DOMContentLoaded', setupRollCancellationControl);
 document.addEventListener('DOMContentLoaded', setupNodeShiftAnimation);
 document.addEventListener('DOMContentLoaded', relocateResourcesPanelForMobile);
+document.addEventListener('DOMContentLoaded', observeLamenthyrOutlineText);
 
 document.addEventListener('DOMContentLoaded', () => {
     const confirmButton = document.getElementById('cutsceneWarningConfirm');
@@ -6682,6 +6732,23 @@ const SHARE_IMAGE_OUTLINE_STYLES = Object.freeze({
             return gradient;
         }
     },
+    'sigil-outline-lamenthyr': {
+        font: 'italic 700 26px "Kings", "Sarpanch", sans-serif',
+        letterSpacing: 3.12,
+        lineHeightMultiplier: 1.25,
+        transform: text => text.toUpperCase(),
+        shadowLayers: [
+            { color: 'rgba(0, 0, 0, 0.35)', blur: 6, offsetX: 0, offsetY: 3 }
+        ],
+        replaceShadows: true,
+        fill: (ctx, x, y, width) => {
+            const gradient = ctx.createLinearGradient(x, y, x + width, y + width * 0.4);
+            gradient.addColorStop(0.35, '#420000');
+            gradient.addColorStop(0.5, '#ffc3b6');
+            gradient.addColorStop(0.6, '#420000');
+            return gradient;
+        }
+    },
     'sigil-outline-cryogenic': {
         fill: '#e9f8ff',
         shadows: [
@@ -7013,6 +7080,23 @@ const SHARE_IMAGE_EFFECT_HANDLERS = Object.freeze({
         if (styleSet.subtitle) {
             styleSet.subtitle.fill = 'rgba(255, 255, 255, 0.82)';
         }
+    },
+    'sigil-effect-lamenthyr': styleSet => {
+        const font = 'italic 700 26px "Kings", "Sarpanch", sans-serif';
+        styleSet.name.font = font;
+        styleSet.name.letterSpacing = Number.parseFloat((0.12 * parseFontSize(font)).toFixed(2));
+        styleSet.name.lineHeightMultiplier = 1.25;
+        styleSet.name.shadowLayers = [
+            { color: 'rgba(0, 0, 0, 0.35)', blur: 6, offsetX: 0, offsetY: 3 }
+        ];
+        styleSet.name.transform = text => text.toUpperCase();
+        styleSet.name.fill = (ctx, x, y, width) => {
+            const gradient = ctx.createLinearGradient(x, y, x + width, y + width * 0.4);
+            gradient.addColorStop(0.35, '#420000');
+            gradient.addColorStop(0.5, '#ffc3b6');
+            gradient.addColorStop(0.6, '#420000');
+            return gradient;
+        };
     },
     'sigil-effect-breakthrough': styleSet => {
         const font = '700 24px "Arial", "Sarpanch", sans-serif';

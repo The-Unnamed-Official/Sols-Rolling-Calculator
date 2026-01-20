@@ -127,11 +127,11 @@
                 <div class="banner__meta">
                     <h1 class="banner__title">Sol's Rolling Simulator</h1>
                     <p class="banner__subtitle">
-                        <button type="button" class="banner__version-button" id="versionInfoButton" aria-haspopup="dialog" aria-expanded="false" data-version-id="v1612">V1.612</button>
+                        <button type="button" class="banner__version-button" id="versionInfoButton" aria-haspopup="dialog" aria-expanded="false" data-version-id="v1619">V1.619</button>
                         <span class="banner__subtitle-divider" aria-hidden="true">◉</span>
                         <span class="banner__subtitle-author">By <span class="banner__subtitle-author-name">not.unnamed</span></span>
                         <span class="banner__subtitle-divider" aria-hidden="true">◉</span>
-                        <span class="banner__subtitle-updated">Updated <time datetime="2026-01-18">2026/01/19</time></span>
+                        <span class="banner__subtitle-updated">Updated <time datetime="2026-01-20">2026/01/20</time></span>
                         <span class="banner__subtitle-divider" aria-hidden="true">◉</span>
                         <span class="banner__subtitle-eon">Sol's RNG Eon 1-14</span>
                     </p>
@@ -794,11 +794,23 @@
                 <button
                     type="button"
                     class="changelog-tab changelog-tab--active"
+                    id="changelog-tab-v1619"
+                    role="tab"
+                    aria-controls="changelog-panel-v1619"
+                    aria-selected="true"
+                    data-changelog-tab="v1619"
+                >
+                    <span class="changelog-tab__title">V1.619</span>
+                </button>
+                <button
+                    type="button"
+                    class="changelog-tab changelog-tab--active"
                     id="changelog-tab-v1612"
                     role="tab"
                     aria-controls="changelog-panel-v1612"
-                    aria-selected="true"
+                    aria-selected="false"
                     data-changelog-tab="v1612"
+                    tabindex="-1"
                 >
                     <span class="changelog-tab__title">V1.612</span>
                 </button>
@@ -938,12 +950,37 @@
 
             <div class="changelog-modal__panels" data-changelog-panels>
                 <section
+                    id="changelog-panel-v1619"
+                    class="changelog-modal__panel"
+                    role="tabpanel"
+                    aria-labelledby="changelog-tab-v1619"
+                    data-changelog-panel="v1619"
+                    tabindex="0"
+                >
+                    <header class="changelog-modal__header">
+                        <h2 class="changelog-modal__title" id="versionChangelogTitle">Version V1.619 Update Notes</h2>
+                        <span class="changelog-tab__subtitle">Halloween 2025 style update</span>
+                        <p class="changelog-modal__meta">Updated 2026/01/20</p>
+                    </header>
+                    <p class="changelog-modal__intro">Latest changes:</p>
+                    <ul class="changelog-modal__list">
+                        <li>Fixed rolling results so <span style="font-family: Kings; display: inline-block; font-style: italic;"><span style="position: absolute; text-transform: uppercase; background-clip: text !important; -webkit-text-fill-color: transparent; background: linear-gradient(178deg, #e53a2d 20%, #ffb4a3 26%, #950d05 35%, #950d05 45%, #ffbab0 48%, #950d05 51%, #ffbab0 54%, #ff7069 59%, #630400 65%, #ff837e 79%); -webkit-text-stroke: 0.1em transparent;">Lamenthyr</span><span style="position: relative; text-transform: uppercase; background-clip: text !important; -webkit-text-fill-color: transparent; background: linear-gradient(178deg, #420000 35%, #420000 45%, #ffc3b6 50%, #420000 60%);">Lamenthyr</span></span> applies the full sigil styling with a single class, alongside the <span class="sigil-effect-luminosity">Luminosity</span> and <span class="sigil-outline-erebus">Erebus</span> visual updates.</li>
+                        <li>Updated image sharing visual styles to include the aura styles below:</li>
+                        <ul>
+                            <li><span class="sigil-effect-luminosity">Luminosity - 1,200,000,000 | Times Rolled: X</span></li>
+                            <li><span class="sigil-outline-erebus">Erebus - 1,200,000,000 | Times Rolled: X</span></li>
+                            <li><span style="font-family: Kings; display: inline-block; font-style: italic;"><span style="position: absolute; text-transform: uppercase; background-clip: text !important; -webkit-text-fill-color: transparent; background: linear-gradient(178deg, #e53a2d 20%, #ffb4a3 26%, #950d05 35%, #950d05 45%, #ffbab0 48%, #950d05 51%, #ffbab0 54%, #ff7069 59%, #630400 65%, #ff837e 79%); -webkit-text-stroke: 0.1em transparent;">Lamenthyr - 1,000,000,000 | Times Rolled: X</span><span style="position: relative; text-transform: uppercase; background-clip: text !important; -webkit-text-fill-color: transparent; background: linear-gradient(178deg, #420000 35%, #420000 45%, #ffc3b6 50%, #420000 60%);">Lamenthyr - 1,000,000,000 | Times Rolled: X</span></span></li>
+                        </ul>
+                    </ul>
+                </section>
+                <section
                     id="changelog-panel-v1612"
                     class="changelog-modal__panel"
                     role="tabpanel"
                     aria-labelledby="changelog-tab-v1612"
                     data-changelog-panel="v1612"
-                    tabindex="0"
+                    hidden
+                    tabindex="-1"
                 >
                     <header class="changelog-modal__header">
                         <h2 class="changelog-modal__title" id="versionChangelogTitle">Version V1.612 Update Notes</h2>

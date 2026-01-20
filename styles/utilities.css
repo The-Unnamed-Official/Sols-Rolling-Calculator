@@ -415,6 +415,76 @@
     -webkit-text-stroke: 2.5px transparent;
 }
 
+.sigil-outline-erebus {
+    font-family: Noto Serif TC;
+    background-clip: text !important;
+    -webkit-text-fill-color: rgba(0, 0, 0, 0.7);
+    background: linear-gradient(to bottom, #523123 20%, #661f03 22%, #8c3e30 24%, #882b19 30%, #6b170c 37%, #801b1b 45%, #c03946 50%, #63182d 55%, #6c1730 60%, #6c1730 67%, #850546 75%);
+    -webkit-text-stroke: 2px transparent;
+    clip-path: inset(.21em 0em .245em 0em);
+    text-transform: uppercase;
+}
+
+.sigil-outline-lamenthyr {
+    font-family: Kings;
+    font-style: italic;
+    display: inline-block;
+    position: relative;
+    white-space: nowrap;
+    -webkit-background-clip: text !important;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    background: linear-gradient(178deg, #420000 35%, #420000 45%, #ffc3b6 50%, #420000 60%);
+    text-transform: uppercase;
+}
+
+.sigil-outline-lamenthyr::before {
+    content: attr(data-text);
+    position: absolute;
+    inset: 0;
+    -webkit-background-clip: text !important;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    background: linear-gradient(178deg, #e53a2d 20%, #ffb4a3 26%, #950d05 35%, #950d05 45%, #ffbab0 48%, #950d05 51%, #ffbab0 54%, #ff7069 59%, #630400 65%, #ff837e 79%);
+    -webkit-text-stroke: 0.1em transparent;
+    pointer-events: none;
+}
+
+.sigil-effect-lamenthyr {
+    display: inline-flex;
+    align-items: baseline;
+    font-family: Kings;
+    font-style: italic;
+    white-space: nowrap;
+}
+
+.sigil-effect-lamenthyr__title,
+.sigil-effect-lamenthyr__suffix {
+    position: relative;
+    display: inline-block;
+}
+
+.sigil-effect-lamenthyr__text {
+    display: inline-block;
+}
+
+.sigil-effect-lamenthyr__text--shadow {
+    position: absolute;
+    inset: 0;
+    -webkit-background-clip: text !important;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    background: linear-gradient(178deg, #e53a2d 20%, #ffb4a3 26%, #950d05 35%, #950d05 45%, #ffbab0 48%, #950d05 51%, #ffbab0 54%, #ff7069 59%, #630400 65%, #ff837e 79%);
+    -webkit-text-stroke: 0.1em transparent;
+}
+
+.sigil-effect-lamenthyr__text--shine {
+    position: relative;
+    -webkit-background-clip: text !important;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    background: linear-gradient(178deg, #420000 35%, #420000 45%, #ffc3b6 50%, #420000 60%);
+}
 
 @keyframes class-gradient-vert {
     0% {
@@ -493,13 +563,13 @@
 }
 
 .sigil-effect-luminosity {
-    color: transparent !important;
-    background: linear-gradient(120deg, #f7fdff 0%, #6ad6ff 40%, #e4f7ff 70%, #ffffff 100%);
-    background-size: 200% 200%;
-    -webkit-background-clip: text;
-    background-clip: text;
-    animation: aura-luminosity-gradient 1.6s ease-in-out infinite;
-    text-shadow: 0 0 18px rgba(142, 230, 255, 0.85);
+    font-family: Noto Serif TC;
+    font-weight: bold;
+    font-style: italic;
+    background: linear-gradient(90deg, #a2b3eb 30%, #b6bcde 40%, #c3c9d7, #b1bdc9 65%, #abbad9, #c0ceeb);
+    background-clip: text !important;
+    -webkit-text-fill-color: transparent;
+    position: relative;
 }
 
 .sigil-effect-megaphone {
