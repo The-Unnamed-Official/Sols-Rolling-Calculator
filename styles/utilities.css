@@ -544,13 +544,13 @@
 }
 
 .sigil-effect-luminosity {
-    color: transparent !important;
-    background: linear-gradient(120deg, #f7fdff 0%, #6ad6ff 40%, #e4f7ff 70%, #ffffff 100%);
-    background-size: 200% 200%;
-    -webkit-background-clip: text;
-    background-clip: text;
-    animation: aura-luminosity-gradient 1.6s ease-in-out infinite;
-    text-shadow: 0 0 18px rgba(142, 230, 255, 0.85);
+    font-family: Noto Serif TC;
+    font-weight: bold;
+    font-style: italic;
+    background: linear-gradient(90deg, #a2b3eb 30%, #b6bcde 40%, #c3c9d7, #b1bdc9 65%, #abbad9, #c0ceeb);
+    background-clip: text !important;
+    -webkit-text-fill-color: transparent;
+    position: relative;
 }
 
 .sigil-effect-megaphone {
