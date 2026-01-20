@@ -2727,6 +2727,8 @@ const auraOutlineOverrides = new Map([
     ['Winter Garden', 'sigil-outline-winter-garden'],
     ['Dream Traveler', 'sigil-outline-dream-traveler'],
     ['Sovereign : Frostveil', 'sigil-outline-frostveil'],
+    ['Erebus', 'sigil-outline-erebus'],
+    ['Lamenthyr', 'sigil-outline-lamenthyr'],
 ]);
 
 const glitchOutlineNames = new Set(['Fault', 'Glitch', 'Oppression']);
@@ -2754,6 +2756,8 @@ function resolveAuraStyleClass(aura, biome) {
     const auraData = typeof aura === 'string' ? null : aura;
     const auraEventId = auraData ? getAuraEventId(auraData) : null;
 
+    const shortName = name.includes(' - ') ? name.split(' - ')[0].trim() : name.trim();
+
     if (auraEventId === 'winter26') {
         const shortNameCheck = name.includes(' - ') ? name.split(' - ')[0].trim() : name.trim();
         if (shortNameCheck !== 'Winter Garden' && shortNameCheck !== 'Dream Traveler' && shortNameCheck !== 'Sovereign : Frostveil') {
@@ -2761,11 +2765,9 @@ function resolveAuraStyleClass(aura, biome) {
         }
     }
 
-    if (auraMatchesAnyBiome(auraData, ['pumpkinMoon', 'graveyard'])) {
+    if (auraMatchesAnyBiome(auraData, ['pumpkinMoon', 'graveyard']) && shortName !== 'Erebus' && shortName !== 'Lamenthyr') {
         classes.push('sigil-outline-halloween');
     }
-
-    const shortName = name.includes(' - ') ? name.split(' - ')[0].trim() : name.trim();
     if (glitchOutlineNames.has(shortName)) {
         classes.push('sigil-outline-glitch');
     }

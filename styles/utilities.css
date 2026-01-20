@@ -415,6 +415,18 @@
     -webkit-text-stroke: 2.5px transparent;
 }
 
+.sigil-outline-erebus {
+    font-family: Noto Serif TC;
+    background-clip: text !important;
+    -webkit-text-fill-color: rgba(0, 0, 0, 0.7);
+    background: linear-gradient(to bottom, #523123 20%, #661f03 22%, #8c3e30 24%, #882b19 30%, #6b170c 37%, #801b1b 45%, #c03946 50%, #63182d 55%, #6c1730 60%, #6c1730 67%, #850546 75%);
+    -webkit-text-stroke: 2px transparent;
+    clip-path: inset(.21em 0em .245em 0em);
+    text-transform: uppercase;
+}
+
+.sigil-outline-lamenthyr {
+}
 
 @keyframes class-gradient-vert {
     0% {
