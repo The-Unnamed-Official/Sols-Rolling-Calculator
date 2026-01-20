@@ -2751,7 +2751,6 @@ function resolveAuraStyleClass(aura, biome) {
     if (name.startsWith('Megaphone')) classes.push('sigil-effect-megaphone');
     if (name.startsWith('Nyctophobia')) classes.push('sigil-effect-nyctophobia');
     if (name.startsWith('Breakthrough')) classes.push('sigil-effect-breakthrough', 'sigil-border-breakthrough');
-    if (name.startsWith('Lamenthyr')) classes.push('sigil-effect-lamenthyr');
     if (name.startsWith('Glitch')) classes.push('sigil-effect-glitch');
 
     const auraData = typeof aura === 'string' ? null : aura;
@@ -2892,20 +2891,10 @@ function formatAuraNameMarkup(aura, overrideName) {
         return breakthroughMarkup;
     }
     if (baseName.startsWith('Lamenthyr')) {
-        const [namePart, ...restParts] = baseName.split(' - ');
-        const suffix = restParts.length > 0 ? ` - ${restParts.join(' - ')}` : '';
-        const createLamenthyrSpan = (text, className) => (
-            `<span class="${className}">` +
-            `<span class="sigil-effect-lamenthyr__text sigil-effect-lamenthyr__text--shadow">${text}</span>` +
-            `<span class="sigil-effect-lamenthyr__text sigil-effect-lamenthyr__text--shine">${text}</span>` +
-            `</span>`
-        );
-        const lamenthyrMarkup = createLamenthyrSpan(namePart.toUpperCase(), 'sigil-effect-lamenthyr__title') +
-            (suffix ? createLamenthyrSpan(suffix, 'sigil-effect-lamenthyr__suffix') : '');
         if (aura.subtitle) {
-            return `${lamenthyrMarkup} <span class="sigil-subtitle">${aura.subtitle}</span>`;
+            return `${baseName} <span class="sigil-subtitle">${aura.subtitle}</span>`;
         }
-        return lamenthyrMarkup;
+        return baseName;
     }
     if (aura.subtitle) {
         return `${baseName} <span class="sigil-subtitle">${aura.subtitle}</span>`;
@@ -2920,6 +2909,47 @@ function formatAuraNameText(aura, overrideName) {
         return `${baseName} — ${aura.subtitle}`;
     }
     return baseName;
+}
+
+function syncLamenthyrOutlineText(element) {
+    if (!element) return;
+    const text = element.textContent;
+    if (typeof text !== 'string' || text.length === 0) return;
+    if (element.dataset.text !== text) {
+        element.dataset.text = text;
+    }
+}
+
+function updateLamenthyrOutlineText(container = document) {
+    if (!container) return;
+    container.querySelectorAll('.sigil-outline-lamenthyr').forEach(syncLamenthyrOutlineText);
+}
+
+function observeLamenthyrOutlineText() {
+    updateLamenthyrOutlineText();
+    if (!document.body) return;
+    const observer = new MutationObserver(mutations => {
+        mutations.forEach(mutation => {
+            if (mutation.type === 'childList') {
+                mutation.addedNodes.forEach(node => {
+                    if (node.nodeType !== Node.ELEMENT_NODE) return;
+                    const element = node;
+                    if (element.classList.contains('sigil-outline-lamenthyr')) {
+                        syncLamenthyrOutlineText(element);
+                    }
+                    if (typeof element.querySelectorAll === 'function') {
+                        element.querySelectorAll('.sigil-outline-lamenthyr').forEach(syncLamenthyrOutlineText);
+                    }
+                });
+            } else if (mutation.type === 'characterData') {
+                const parent = mutation.target.parentElement;
+                if (parent && parent.classList.contains('sigil-outline-lamenthyr')) {
+                    syncLamenthyrOutlineText(parent);
+                }
+            }
+        });
+    });
+    observer.observe(document.body, { childList: true, subtree: true, characterData: true });
 }
 
 function determineResultPriority(aura, baseChance) {
@@ -4206,6 +4236,7 @@ document.addEventListener('DOMContentLoaded', initializeRollTriggerFloating);
 document.addEventListener('DOMContentLoaded', setupRollCancellationControl);
 document.addEventListener('DOMContentLoaded', setupNodeShiftAnimation);
 document.addEventListener('DOMContentLoaded', relocateResourcesPanelForMobile);
+document.addEventListener('DOMContentLoaded', observeLamenthyrOutlineText);
 
 document.addEventListener('DOMContentLoaded', () => {
     const confirmButton = document.getElementById('cutsceneWarningConfirm');
@@ -6698,6 +6729,23 @@ const SHARE_IMAGE_OUTLINE_STYLES = Object.freeze({
             gradient.addColorStop(0.35, '#a9afff');
             gradient.addColorStop(0.5, '#7594f9');
             gradient.addColorStop(0.7, '#a2dbff');
+            return gradient;
+        }
+    },
+    'sigil-outline-lamenthyr': {
+        font: 'italic 700 26px "Kings", "Sarpanch", sans-serif',
+        letterSpacing: 3.12,
+        lineHeightMultiplier: 1.25,
+        transform: text => text.toUpperCase(),
+        shadowLayers: [
+            { color: 'rgba(0, 0, 0, 0.35)', blur: 6, offsetX: 0, offsetY: 3 }
+        ],
+        replaceShadows: true,
+        fill: (ctx, x, y, width) => {
+            const gradient = ctx.createLinearGradient(x, y, x + width, y + width * 0.4);
+            gradient.addColorStop(0.35, '#420000');
+            gradient.addColorStop(0.5, '#ffc3b6');
+            gradient.addColorStop(0.6, '#420000');
             return gradient;
         }
     },
