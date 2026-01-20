@@ -429,6 +429,25 @@
     font-family: Kings;
     font-style: italic;
     display: inline-block;
+    position: relative;
+    white-space: nowrap;
+    -webkit-background-clip: text !important;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    background: linear-gradient(178deg, #420000 35%, #420000 45%, #ffc3b6 50%, #420000 60%);
+    text-transform: uppercase;
+}
+
+.sigil-outline-lamenthyr::before {
+    content: attr(data-text);
+    position: absolute;
+    inset: 0;
+    -webkit-background-clip: text !important;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    background: linear-gradient(178deg, #e53a2d 20%, #ffb4a3 26%, #950d05 35%, #950d05 45%, #ffbab0 48%, #950d05 51%, #ffbab0 54%, #ff7069 59%, #630400 65%, #ff837e 79%);
+    -webkit-text-stroke: 0.1em transparent;
+    pointer-events: none;
 }
 
 .sigil-effect-lamenthyr {
