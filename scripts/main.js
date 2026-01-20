@@ -2751,6 +2751,7 @@ function resolveAuraStyleClass(aura, biome) {
     if (name.startsWith('Megaphone')) classes.push('sigil-effect-megaphone');
     if (name.startsWith('Nyctophobia')) classes.push('sigil-effect-nyctophobia');
     if (name.startsWith('Breakthrough')) classes.push('sigil-effect-breakthrough', 'sigil-border-breakthrough');
+    if (name.startsWith('Lamenthyr')) classes.push('sigil-effect-lamenthyr');
     if (name.startsWith('Glitch')) classes.push('sigil-effect-glitch');
 
     const auraData = typeof aura === 'string' ? null : aura;
@@ -2889,6 +2890,22 @@ function formatAuraNameMarkup(aura, overrideName) {
             return `${breakthroughMarkup} <span class="sigil-subtitle">${aura.subtitle}</span>`;
         }
         return breakthroughMarkup;
+    }
+    if (baseName.startsWith('Lamenthyr')) {
+        const [namePart, ...restParts] = baseName.split(' - ');
+        const suffix = restParts.length > 0 ? ` - ${restParts.join(' - ')}` : '';
+        const createLamenthyrSpan = (text, className) => (
+            `<span class="${className}">` +
+            `<span class="sigil-effect-lamenthyr__text sigil-effect-lamenthyr__text--shadow">${text}</span>` +
+            `<span class="sigil-effect-lamenthyr__text sigil-effect-lamenthyr__text--shine">${text}</span>` +
+            `</span>`
+        );
+        const lamenthyrMarkup = createLamenthyrSpan(namePart.toUpperCase(), 'sigil-effect-lamenthyr__title') +
+            (suffix ? createLamenthyrSpan(suffix, 'sigil-effect-lamenthyr__suffix') : '');
+        if (aura.subtitle) {
+            return `${lamenthyrMarkup} <span class="sigil-subtitle">${aura.subtitle}</span>`;
+        }
+        return lamenthyrMarkup;
     }
     if (aura.subtitle) {
         return `${baseName} <span class="sigil-subtitle">${aura.subtitle}</span>`;
@@ -7015,6 +7032,23 @@ const SHARE_IMAGE_EFFECT_HANDLERS = Object.freeze({
         if (styleSet.subtitle) {
             styleSet.subtitle.fill = 'rgba(255, 255, 255, 0.82)';
         }
+    },
+    'sigil-effect-lamenthyr': styleSet => {
+        const font = 'italic 700 26px "Kings", "Sarpanch", sans-serif';
+        styleSet.name.font = font;
+        styleSet.name.letterSpacing = Number.parseFloat((0.12 * parseFontSize(font)).toFixed(2));
+        styleSet.name.lineHeightMultiplier = 1.25;
+        styleSet.name.shadowLayers = [
+            { color: 'rgba(0, 0, 0, 0.35)', blur: 6, offsetX: 0, offsetY: 3 }
+        ];
+        styleSet.name.transform = text => text.toUpperCase();
+        styleSet.name.fill = (ctx, x, y, width) => {
+            const gradient = ctx.createLinearGradient(x, y, x + width, y + width * 0.4);
+            gradient.addColorStop(0.35, '#420000');
+            gradient.addColorStop(0.5, '#ffc3b6');
+            gradient.addColorStop(0.6, '#420000');
+            return gradient;
+        };
     },
     'sigil-effect-breakthrough': styleSet => {
         const font = '700 24px "Arial", "Sarpanch", sans-serif';
