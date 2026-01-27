@@ -127,11 +127,11 @@
                 <div class="banner__meta">
                     <h1 class="banner__title">Sol's Rolling Simulator</h1>
                     <p class="banner__subtitle">
-                        <button type="button" class="banner__version-button" id="versionInfoButton" aria-haspopup="dialog" aria-expanded="false" data-version-id="v1630">V1.630</button>
+                        <button type="button" class="banner__version-button" id="versionInfoButton" aria-haspopup="dialog" aria-expanded="false" data-version-id="v1632">V1.632</button>
                         <span class="banner__subtitle-divider" aria-hidden="true">◉</span>
                         <span class="banner__subtitle-author">By <span class="banner__subtitle-author-name">not.unnamed</span></span>
                         <span class="banner__subtitle-divider" aria-hidden="true">◉</span>
-                        <span class="banner__subtitle-updated">Updated <time datetime="2026-01-27">2026/01/27</time></span>
+                        <span class="banner__subtitle-updated">Updated <time datetime="2026-02-04">2026/02/04</time></span>
                         <span class="banner__subtitle-divider" aria-hidden="true">◉</span>
                         <span class="banner__subtitle-eon">Sol's RNG Eon 1-14</span>
                     </p>
@@ -578,14 +578,20 @@
                             <button type="button" onclick="applyRollPreset(1000000)">1,000,000 Rolls</button>
                             <button type="button" onclick="applyRollPreset(5000000)">5,000,000 Rolls</button>
                             <button type="button" onclick="applyRollPreset(10000000)">10,000,000 Rolls</button>
-                            <button type="button" onclick="applyRollPreset(50000000)">50,000,000 Rolls <span class="roll-warning">(THIS WILL TAKE A LONG TIME)</span></button>
-                            <button type="button" onclick="applyRollPreset(100000000)">100,000,000 Rolls <span class="roll-warning">(THIS WILL TAKE A LONG TIME)</span></button>
-                            <button type="button" onclick="applyRollPreset(500000000)">500,000,000 Rolls <span class="roll-warning">(THIS WILL TAKE A LONG TIME)</span></button>
-                            <button type="button" onclick="applyRollPreset(1000000000)"><span class="roll-high">1,000,000,000 Rolls</span> <span class="roll-warning">(THIS WILL TAKE A SERIOUS TIME)</span></button>
-                            <button type="button" onclick="applyRollPreset(2500000000)"><span class="roll-high">2,500,000,000 Rolls</span> <span class="roll-warning">(THIS WILL TAKE A SERIOUS TIME)</span></button>
-                            <button type="button" onclick="applyRollPreset(5000000000)"><span class="roll-high">5,000,000,000 Rolls</span> <span class="roll-warning">(THIS WILL TAKE A SERIOUS TIME)</span></button>
-                            <button type="button" onclick="applyRollPreset(10000000000)"><span class="roll-highest">10,000,000,000 Rolls</span> <span class="roll-warning">(<span class="roll-high">Seriously</span>... Just don't)</span></button>
-                            <p class="preset-warning preset-warning--slow-roll" id="hundred-million-roll-warning" role="status">⚠️ Processing anything higher than 100,000,000 rolls can and WILL take a long time.</p>
+                            <button type="button" onclick="applyRollPreset(50000000)">50,000,000 Rolls</button>
+                            <button type="button" onclick="applyRollPreset(100000000)">100,000,000 Rolls</button>
+                            <button type="button" onclick="applyRollPreset(500000000)">500,000,000 Rolls</button>
+                            <button type="button" onclick="applyRollPreset(1000000000)">1,000,000,000 Rolls</button>
+                            <button type="button" onclick="applyRollPreset(2500000000)">2,500,000,000 Rolls</button>
+                            <button type="button" onclick="applyRollPreset(5000000000)">5,000,000,000 Rolls</button>
+                            <button type="button" onclick="applyRollPreset(10000000000)">10,000,000,000 Rolls <span class="roll-warning">(THIS WILL TAKE A SERIOUS TIME)</span></button>
+                            <button type="button" onclick="applyRollPreset(25000000000)">25,000,000,000 Rolls <span class="roll-warning">(THIS WILL TAKE A SERIOUS TIME)</span></button>
+                            <button type="button" onclick="applyRollPreset(50000000000)">50,000,000,000 Rolls <span class="roll-warning">(THIS WILL TAKE A SERIOUS TIME)</span></button>
+                            <button type="button" onclick="applyRollPreset(100000000000)"><span class="roll-high">100,000,000,000 Rolls</span> <span class="roll-warning">(THIS WILL TAKE A SERIOUS TIME)</span></button>
+                            <button type="button" onclick="applyRollPreset(250000000000)"><span class="roll-high">250,000,000,000 Rolls</span> <span class="roll-warning">(THIS WILL TAKE A SERIOUS TIME)</span></button>
+                            <button type="button" onclick="applyRollPreset(500000000000)"><span class="roll-high">500,000,000,000 Rolls</span> <span class="roll-warning">(THIS WILL TAKE A SERIOUS TIME)</span></button>
+                            <button type="button" onclick="applyRollPreset(1000000000000)"><span class="roll-highest">1,000,000,000,000 Rolls</span> <span class="roll-warning">(<span class="roll-high">Seriously</span>... Just don't)</span></button>
+                            <p class="preset-warning preset-warning--slow-roll" id="hundred-million-roll-warning" role="status">⚠️ Processing anything higher than 10,000,000,000 rolls can and WILL take a long time.</p>
                         </div>
                     </div>
                   </div>
@@ -684,7 +690,7 @@
     <div id="rollWarningOverlay" class="cutscene-warning-overlay" hidden aria-hidden="true">
         <div class="cutscene-warning surface surface--modal" role="dialog" aria-modal="true" aria-labelledby="rollWarningTitle">
             <p class="cutscene-warning__message">
-                <span id="rollWarningTitle" class="cutscene-warning__note">Heads up</span>: Rolling <span id="rollWarningCount" class="cutscene-warning__ratio">more than 10,000,000</span> times may take a very long time depending on your computer or device. Continue?
+                <span id="rollWarningTitle" class="cutscene-warning__note">Heads up</span>: Rolling <span id="rollWarningCount" class="cutscene-warning__ratio">more than 1,000,000,000</span> times may take a very long time depending on your computer or device. Continue?
             </p>
             <div class="cutscene-warning__actions">
                 <button type="button" class="interface-button interface-button--minor" id="rollWarningConfirm">Proceed Anyway</button>
@@ -794,11 +800,23 @@
                 <button
                     type="button"
                     class="changelog-tab changelog-tab--active"
+                    id="changelog-tab-v1632"
+                    role="tab"
+                    aria-controls="changelog-panel-v1632"
+                    aria-selected="true"
+                    data-changelog-tab="v1632"
+                >
+                    <span class="changelog-tab__title">V1.632</span>
+                </button>
+                <button
+                    type="button"
+                    class="changelog-tab changelog-tab--active"
                     id="changelog-tab-v1630"
                     role="tab"
                     aria-controls="changelog-panel-v1630"
-                    aria-selected="true"
+                    aria-selected="false"
                     data-changelog-tab="v1630"
+                    tabindex="-1"
                 >
                     <span class="changelog-tab__title">V1.630</span>
                 </button>
@@ -962,12 +980,34 @@
 
             <div class="changelog-modal__panels" data-changelog-panels>
                 <section
+                    id="changelog-panel-v1632"
+                    class="changelog-modal__panel"
+                    role="tabpanel"
+                    aria-labelledby="changelog-tab-v1632"
+                    data-changelog-panel="v1632"
+                    tabindex="0"
+                >
+                    <header class="changelog-modal__header">
+                        <h2 class="changelog-modal__title" id="versionChangelogTitle">Version V1.632 Update Notes</h2>
+                        <span class="changelog-tab__subtitle">Rolling Preset Expansion</span>
+                        <p class="changelog-modal__meta">Updated 2026/02/04</p>
+                    </header>
+                    <p class="changelog-modal__intro">Latest changes:</p>
+                    <ul class="changelog-modal__list">
+                        <li>Increased the maximum rolling count from <span class="roll-high">10,000,000,000</span> (10B) to <span class="roll-highest">1,000,000,000,000</span> (1T).</li>
+                        <li>Added new roll presets to bridge the gap between 10B and 1T: 25B, 50B, 100B, 250B, 500B, and 1T.</li>
+                        <li>Moved the high roll warning from 10,000,000+ rolls to 10,000,000,000+ rolls.</li>
+                        <p>Thanks to <a href="https://discord.com/users/1215968633054826507" class="subtitleClass" target="_blank" rel="noopener">@cutie_suzy</a> for pointing this out to me :)</p>
+                    </ul>
+                </section>
+                <section
                     id="changelog-panel-v1630"
                     class="changelog-modal__panel"
                     role="tabpanel"
                     aria-labelledby="changelog-tab-v1630"
                     data-changelog-panel="v1630"
-                    tabindex="0"
+                    hidden
+                    tabindex="-1"
                 >
                     <header class="changelog-modal__header">
                         <h2 class="changelog-modal__title" id="versionChangelogTitle">Version V1.630 Update Notes</h2>

@@ -1,7 +1,7 @@
 (function (global) {
     'use strict';
 
-    const LARGE_ROLL_WARNING_THRESHOLD = 9999999;
+    const LARGE_ROLL_WARNING_THRESHOLD = 999999999;
     const OVERLAY_TRANSITION_FALLBACK_MS = 320;
 
     function revealOverlay(overlay) {
