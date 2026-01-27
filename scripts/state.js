@@ -57,8 +57,7 @@
             exalted: false,
             glorious: false,
             transcendent: false,
-            challenged: false,
-            limbo: false
+            challenged: false
         }
     };
 

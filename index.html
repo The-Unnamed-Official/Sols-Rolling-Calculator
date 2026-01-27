@@ -701,6 +701,18 @@
         </div>
     </div>
 
+    <div id="ygBlessingOverlay" class="cutscene-warning-overlay" hidden aria-hidden="true">
+        <div class="cutscene-warning surface surface--modal" role="dialog" aria-modal="true" aria-labelledby="ygBlessingTitle">
+            <p class="cutscene-warning__message">
+                <span id="ygBlessingTitle" class="cutscene-warning__note">YG Blessing notice</span>:
+                <span id="ygBlessingBody">YG blessing has not been obtainable while these events have been occurring in Sol's RNG (yet).</span>
+            </p>
+            <div class="cutscene-warning__actions">
+                <button type="button" class="interface-button interface-button--minor" id="ygBlessingClose">Got it</button>
+            </div>
+        </div>
+    </div>
+
     <div id="rollWarningOverlay" class="cutscene-warning-overlay" hidden aria-hidden="true">
         <div class="cutscene-warning surface surface--modal" role="dialog" aria-modal="true" aria-labelledby="rollWarningTitle">
             <p class="cutscene-warning__message">
@@ -804,19 +816,18 @@
         <div class="surface surface--modal filter-modal" role="dialog" aria-modal="true" aria-labelledby="auraFilterTitle">
             <div class="filter-modal__header">
                 <h2 class="filter-modal__title" id="auraFilterTitle">Aura Tier Filters</h2>
-                <p class="filter-modal__hint">Toggle tiers to exclude them from roll calculations.</p>
+                <p class="filter-modal__hint">Toggle tiers to skip them in the roll feed and image sharing.</p>
             </div>
             <div class="filter-modal__grid">
-                <button type="button" class="interface-toggle filter-tier-toggle" data-tier-key="basic" data-tier-label="Ignore Basic Auras" aria-pressed="false">Ignore Basic Auras: Off</button>
-                <button type="button" class="interface-toggle filter-tier-toggle" data-tier-key="epic" data-tier-label="Ignore Epic Auras" aria-pressed="false">Ignore Epic Auras: Off</button>
-                <button type="button" class="interface-toggle filter-tier-toggle" data-tier-key="unique" data-tier-label="Ignore Unique Auras" aria-pressed="false">Ignore Unique Auras: Off</button>
-                <button type="button" class="interface-toggle filter-tier-toggle" data-tier-key="legendary" data-tier-label="Ignore Legendary Auras" aria-pressed="false">Ignore Legendary Auras: Off</button>
-                <button type="button" class="interface-toggle filter-tier-toggle" data-tier-key="mythic" data-tier-label="Ignore Mythic Auras" aria-pressed="false">Ignore Mythic Auras: Off</button>
-                <button type="button" class="interface-toggle filter-tier-toggle" data-tier-key="exalted" data-tier-label="Ignore Exalted Auras" aria-pressed="false">Ignore Exalted Auras: Off</button>
-                <button type="button" class="interface-toggle filter-tier-toggle" data-tier-key="glorious" data-tier-label="Ignore Glorious Auras" aria-pressed="false">Ignore Glorious Auras: Off</button>
-                <button type="button" class="interface-toggle filter-tier-toggle" data-tier-key="transcendent" data-tier-label="Ignore Transcendent Auras" aria-pressed="false">Ignore Transcendent Auras: Off</button>
-                <button type="button" class="interface-toggle filter-tier-toggle" data-tier-key="challenged" data-tier-label="Ignore Challenged Auras" aria-pressed="false">Ignore Challenged Auras: Off</button>
-                <button type="button" class="interface-toggle filter-tier-toggle" data-tier-key="limbo" data-tier-label="Ignore Limbo Auras" aria-pressed="false">Ignore Limbo Auras: Off</button>
+                <button type="button" class="interface-toggle filter-tier-toggle" data-tier-key="basic" data-tier-label="Skip Basic Auras" aria-pressed="false">Skip Basic Auras: Off</button>
+                <button type="button" class="interface-toggle filter-tier-toggle" data-tier-key="epic" data-tier-label="Skip Epic Auras" aria-pressed="false">Skip Epic Auras: Off</button>
+                <button type="button" class="interface-toggle filter-tier-toggle" data-tier-key="unique" data-tier-label="Skip Unique Auras" aria-pressed="false">Skip Unique Auras: Off</button>
+                <button type="button" class="interface-toggle filter-tier-toggle" data-tier-key="legendary" data-tier-label="Skip Legendary Auras" aria-pressed="false">Skip Legendary Auras: Off</button>
+                <button type="button" class="interface-toggle filter-tier-toggle" data-tier-key="mythic" data-tier-label="Skip Mythic Auras" aria-pressed="false">Skip Mythic Auras: Off</button>
+                <button type="button" class="interface-toggle filter-tier-toggle" data-tier-key="exalted" data-tier-label="Skip Exalted Auras" aria-pressed="false">Skip Exalted Auras: Off</button>
+                <button type="button" class="interface-toggle filter-tier-toggle" data-tier-key="glorious" data-tier-label="Skip Glorious Auras" aria-pressed="false">Skip Glorious Auras: Off</button>
+                <button type="button" class="interface-toggle filter-tier-toggle" data-tier-key="transcendent" data-tier-label="Skip Transcendent Auras" aria-pressed="false">Skip Transcendent Auras: Off</button>
+                <button type="button" class="interface-toggle filter-tier-toggle" data-tier-key="challenged" data-tier-label="Skip Challenged Auras" aria-pressed="false">Skip Challenged Auras: Off</button>
             </div>
             <div class="filter-modal__actions">
                 <button type="button" class="interface-button interface-button--ghost filter-modal__close" id="auraFilterClose">Close</button>
@@ -845,18 +856,6 @@
                     data-changelog-tab="v1639"
                 >
                     <span class="changelog-tab__title">V1.639</span>
-                </button>
-                <button
-                    type="button"
-                    class="changelog-tab changelog-tab--active"
-                    id="changelog-tab-v1638"
-                    role="tab"
-                    aria-controls="changelog-panel-v1638"
-                    aria-selected="false"
-                    data-changelog-tab="v1638"
-                    tabindex="-1"
-                >
-                    <span class="changelog-tab__title">V1.638</span>
                 </button>
                 <button
                     type="button"
@@ -1039,36 +1038,14 @@
                 >
                     <header class="changelog-modal__header">
                         <h2 class="changelog-modal__title" id="versionChangelogTitle">Version V1.639 Update Notes</h2>
-                        <span class="changelog-tab__subtitle">Axis Event Toggles & Blessing Rules</span>
-                        <p class="changelog-modal__meta">Updated 2026/01/27</p>
-                    </header>
-                    <p class="changelog-modal__intro">Latest changes:</p>
-                    <ul class="changelog-modal__list">
-                        <li>Added the <span class="subtitleClass">Axis Event (2×)</span> luck toggle under XC.</li>
-                        <li>XYZ, XC, Axis, and Dorcelessness now behave as exclusive event switches.</li>
-                        <li>YG Blessing can only be enabled when all event switches are off, or when Dorcelessness is active.</li>
-                        <li>Added a warning popup if YG Blessing is toggled on during XYZ, XC, or Axis events.</li>
-                    </ul>
-                </section>
-                <section
-                    id="changelog-panel-v1638"
-                    class="changelog-modal__panel"
-                    role="tabpanel"
-                    aria-labelledby="changelog-tab-v1638"
-                    data-changelog-panel="v1638"
-                    hidden
-                    tabindex="-1"
-                >
-                    <header class="changelog-modal__header">
-                        <h2 class="changelog-modal__title" id="versionChangelogTitle">Version V1.638 Update Notes</h2>
                         <span class="changelog-tab__subtitle">Optimization Expansion & Filtering Update</span>
                         <p class="changelog-modal__meta">Updated 2026/01/27</p>
                     </header>
                     <p class="changelog-modal__intro">Latest changes:</p>
                     <ul class="changelog-modal__list changelog-modal__list--sub">
                         <li><span class="subtitleClass">Added a Filter Settings dropdown</span> next to the mute button for quick access.</li>
-                        <li><span class="archangelClass">New “Filter Aura Tiers” popup</span> lets you toggle which tiers are ignored during rolls.</li>
-                        <li><span class="boundClass">Ignored tiers are now excluded</span> from roll calculations, summaries, and share results.</li>
+                        <li><span class="archangelClass">New “Filter Aura Tiers” popup</span> lets you toggle which tiers are skipped in the roll feed and image sharing.</li>
+                        <li><span class="boundClass">Skipped tiers are now hidden</span> from roll summaries and share results.</li>
                         <li>Moved the high roll warning from 10,000,000+ rolls to 1,000,000,000+ rolls.</li>
                         <li>Re-alligned some auras to be positioned more accurate and more accessable:</li>
                         <ul>
