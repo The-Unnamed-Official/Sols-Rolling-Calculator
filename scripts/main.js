@@ -2973,10 +2973,11 @@ const AURA_TIER_FILTERS = Object.freeze([
 const AURA_TIER_CLASS_TO_KEY = new Map(AURA_TIER_FILTERS.map(tier => [tier.className, tier.key]));
 const AURA_TIER_SKIP_NAME_OVERRIDES = new Map([
     ['transcendent', ['Nyctophobia']],
-    ['glorious', ['Unknown', 'Elude', 'Prologue', 'Dreamspace']],
+    ['glorious', ['Unknown', 'Elude', 'Prologue', 'Dreamscape']],
     ['exalted', ['Juxtaposition']],
-    ['mythic', ['Anima', 'Nihility', 'Undefined', 'Flowed', 'Shiftlocked']],
-    ['legendary', ['Raven']]
+    ['mythic', ['Anima', 'Nihility', 'Undefined', 'Flowed', 'Shiftlock']],
+    ['legendary', ['Raven']],
+    ['basic', ['Nothing']]
 ]);
 
 function formatAuraTierLabel(tier) {
