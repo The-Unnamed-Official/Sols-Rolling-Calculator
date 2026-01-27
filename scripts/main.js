@@ -6016,44 +6016,100 @@ function runRollSimulation(options = {}) {
         luckAffectedBreakthroughStats[i] = entry.breakthroughStats || null;
     }
 
-    function performSingleRollCheck() {
-        if (duneProbability > 0 && sampleEntropy() < duneProbability) {
-            recordAuraWin(activeDuneAura);
-            rolls++;
-            return;
-        }
-        if (memoryProbability > 0 && sampleEntropy() < memoryProbability) {
-            recordAuraWin(activeMemoryAura);
-            rolls++;
-            return;
+    const buildWeightedSelection = ratios => {
+        const count = ratios.length;
+        if (!count) {
+            return null;
         }
 
-        if (oblivionProbability > 0 && sampleEntropy() < oblivionProbability) {
-            recordAuraWin(activeOblivionAura);
-            rolls++;
-            return;
-        }
+        const cumulativeWeights = new Array(count);
+        let remainingProbability = 1;
+        let totalProbability = 0;
 
-        for (let j = 0; j < lucklessAuraCount; j++) {
-            if (sampleEntropy() < lucklessAuraRatios[j]) {
-                recordAuraWin(lucklessAuraList[j]);
-                const stats = lucklessBreakthroughStats[j];
-                if (stats) {
-                    stats.count++;
+        for (let i = 0; i < count; i++) {
+            const ratio = ratios[i];
+            const weight = remainingProbability * ratio;
+            totalProbability += weight;
+            cumulativeWeights[i] = totalProbability;
+            remainingProbability *= (1 - ratio);
+
+            if (remainingProbability <= 0) {
+                for (let j = i + 1; j < count; j++) {
+                    cumulativeWeights[j] = totalProbability;
                 }
-                rolls++;
-                return;
+                break;
             }
         }
 
-        for (let j = 0; j < luckAffectedAuraCount; j++) {
-            if (sampleEntropy() < luckAffectedAuraRatios[j]) {
-                recordAuraWin(luckAffectedAuraList[j]);
-                const stats = luckAffectedBreakthroughStats[j];
-                if (stats) {
-                    stats.count++;
-                }
-                break;
+        return { cumulativeWeights, totalProbability };
+    };
+
+    const selectWeightedIndex = (selection, randomValue) => {
+        if (!selection || selection.totalProbability <= 0 || randomValue >= selection.totalProbability) {
+            return -1;
+        }
+
+        const { cumulativeWeights } = selection;
+        let low = 0;
+        let high = cumulativeWeights.length - 1;
+
+        while (low < high) {
+            const mid = (low + high) >> 1;
+            if (randomValue < cumulativeWeights[mid]) {
+                high = mid;
+            } else {
+                low = mid + 1;
+            }
+        }
+
+        return low;
+    };
+
+    const prerollAuraList = [];
+    const prerollAuraRatios = [];
+
+    if (duneProbability > 0 && activeDuneAura) {
+        prerollAuraList.push(activeDuneAura);
+        prerollAuraRatios.push(duneProbability);
+    }
+    if (memoryProbability > 0 && activeMemoryAura) {
+        prerollAuraList.push(activeMemoryAura);
+        prerollAuraRatios.push(memoryProbability);
+    }
+    if (oblivionProbability > 0 && activeOblivionAura) {
+        prerollAuraList.push(activeOblivionAura);
+        prerollAuraRatios.push(oblivionProbability);
+    }
+
+    const prerollSelection = buildWeightedSelection(prerollAuraRatios);
+    const lucklessSelection = buildWeightedSelection(lucklessAuraRatios);
+    const luckAffectedSelection = buildWeightedSelection(luckAffectedAuraRatios);
+
+    function performSingleRollCheck() {
+        const prerollIndex = selectWeightedIndex(prerollSelection, sampleEntropy());
+        if (prerollIndex !== -1) {
+            recordAuraWin(prerollAuraList[prerollIndex]);
+            rolls++;
+            return;
+        }
+
+        const lucklessIndex = selectWeightedIndex(lucklessSelection, sampleEntropy());
+        if (lucklessIndex !== -1) {
+            recordAuraWin(lucklessAuraList[lucklessIndex]);
+            const stats = lucklessBreakthroughStats[lucklessIndex];
+            if (stats) {
+                stats.count++;
+            }
+            rolls++;
+            return;
+        }
+
+        const luckAffectedIndex = selectWeightedIndex(luckAffectedSelection, sampleEntropy());
+        if (luckAffectedIndex !== -1) {
+            recordAuraWin(luckAffectedAuraList[luckAffectedIndex]);
+            const stats = luckAffectedBreakthroughStats[luckAffectedIndex];
+            if (stats) {
+                stats.count++;
             }
         }
 
