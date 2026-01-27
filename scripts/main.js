@@ -2902,6 +2902,8 @@ function resolveRarityClass(aura, biome) {
         return 'rarity-tier-challenged';
     }
     if (aura.disableRarityClass) return '';
+    const hasLimboNative = auraMatchesAnyBiome(aura, ['limbo', 'limbo-null']);
+    if (hasLimboNative && biome === 'limbo') return 'rarity-tier-limbo';
     const cyberspaceNative = auraMatchesAnyBiome(aura, ['cyberspace']);
     const hasNativeBiomes = aura && aura.nativeBiomes;
     if (
