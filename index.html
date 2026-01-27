@@ -127,18 +127,24 @@
                 <div class="banner__meta">
                     <h1 class="banner__title">Sol's Rolling Simulator</h1>
                     <p class="banner__subtitle">
-                        <button type="button" class="banner__version-button" id="versionInfoButton" aria-haspopup="dialog" aria-expanded="false" data-version-id="v1630">V1.630</button>
+                        <button type="button" class="banner__version-button" id="versionInfoButton" aria-haspopup="dialog" aria-expanded="false" data-version-id="v1640">V1.640</button>
                         <span class="banner__subtitle-divider" aria-hidden="true">◉</span>
-                        <span class="banner__subtitle-author">By <span class="banner__subtitle-author-name">not.unnamed</span></span>
+                        <span class="banner__subtitle-author">By <span class="banner__subtitle-author-name"><a href="https://discord.com/users/611204110955446301" target="_blank" rel="noopener">not.unnamed</a></span></span>
                         <span class="banner__subtitle-divider" aria-hidden="true">◉</span>
                         <span class="banner__subtitle-updated">Updated <time datetime="2026-01-27">2026/01/27</time></span>
                         <span class="banner__subtitle-divider" aria-hidden="true">◉</span>
-                        <span class="banner__subtitle-eon">Sol's RNG Eon 1-14</span>
+                        <span class="banner__subtitle-eon"><span class="banner__subtitle-game-version"><a href="https://www.roblox.com/games/15532962292/Sols-RNG" target="_blank" rel="noopener">Sol's RNG Eon 1-14</a></span></span>
                     </p>
                 </div>
             </div>
             <div class="masthead__controls">
                 <button class="interface-toggle masthead__mute" id="masterMuteToggle" type="button" aria-pressed="false">Mute</button>
+                <div class="options-menu" id="filterMenu">
+                    <button class="interface-toggle options-menu__trigger" id="filterMenuToggle" type="button" aria-haspopup="menu" aria-expanded="false" aria-controls="filterMenuPanel">Filter Settings</button>
+                    <div class="options-menu__surface" id="filterMenuPanel" aria-labelledby="filterMenuToggle">
+                        <button class="interface-toggle options-menu__item" id="filterAuraTiersButton" type="button">Filter Aura Tiers</button>
+                    </div>
+                </div>
                 <div class="options-menu" id="optionsMenu">
                     <button class="interface-toggle options-menu__trigger" id="optionsMenuToggle" type="button" aria-haspopup="menu" aria-expanded="false" aria-controls="optionsMenuPanel">Settings</button>
                     <div class="options-menu__surface" id="optionsMenuPanel" aria-labelledby="optionsMenuToggle">
@@ -286,6 +292,14 @@
                         <span class="form-field__label">XC Event (2×)</span>
                         <label class="toggle">
                             <input type="checkbox" id="xc-luck-toggle" class="toggle__input">
+                            <span class="toggle__track"></span>
+                            <span class="toggle__thumb"></span>
+                        </label>
+                    </div>
+                    <div id="axis-luck-wrapper" class="form-field form-field--toggle">
+                        <span class="form-field__label">Axis Event (2×)</span>
+                        <label class="toggle">
+                            <input type="checkbox" id="axis-luck-toggle" class="toggle__input">
                             <span class="toggle__track"></span>
                             <span class="toggle__thumb"></span>
                         </label>
@@ -578,14 +592,20 @@
                             <button type="button" onclick="applyRollPreset(1000000)">1,000,000 Rolls</button>
                             <button type="button" onclick="applyRollPreset(5000000)">5,000,000 Rolls</button>
                             <button type="button" onclick="applyRollPreset(10000000)">10,000,000 Rolls</button>
-                            <button type="button" onclick="applyRollPreset(50000000)">50,000,000 Rolls <span class="roll-warning">(THIS WILL TAKE A LONG TIME)</span></button>
-                            <button type="button" onclick="applyRollPreset(100000000)">100,000,000 Rolls <span class="roll-warning">(THIS WILL TAKE A LONG TIME)</span></button>
-                            <button type="button" onclick="applyRollPreset(500000000)">500,000,000 Rolls <span class="roll-warning">(THIS WILL TAKE A LONG TIME)</span></button>
-                            <button type="button" onclick="applyRollPreset(1000000000)"><span class="roll-high">1,000,000,000 Rolls</span> <span class="roll-warning">(THIS WILL TAKE A SERIOUS TIME)</span></button>
-                            <button type="button" onclick="applyRollPreset(2500000000)"><span class="roll-high">2,500,000,000 Rolls</span> <span class="roll-warning">(THIS WILL TAKE A SERIOUS TIME)</span></button>
-                            <button type="button" onclick="applyRollPreset(5000000000)"><span class="roll-high">5,000,000,000 Rolls</span> <span class="roll-warning">(THIS WILL TAKE A SERIOUS TIME)</span></button>
-                            <button type="button" onclick="applyRollPreset(10000000000)"><span class="roll-highest">10,000,000,000 Rolls</span> <span class="roll-warning">(<span class="roll-high">Seriously</span>... Just don't)</span></button>
-                            <p class="preset-warning preset-warning--slow-roll" id="hundred-million-roll-warning" role="status">⚠️ Processing anything higher than 100,000,000 rolls can and WILL take a long time.</p>
+                            <button type="button" onclick="applyRollPreset(50000000)">50,000,000 Rolls <span class="roll-warning">(THIS WILL TAKE SOME TIME)</span></button>
+                            <button type="button" onclick="applyRollPreset(100000000)">100,000,000 Rolls <span class="roll-warning">(THIS WILL TAKE SOME TIME)</span></button>
+                            <button type="button" onclick="applyRollPreset(500000000)">500,000,000 Rolls <span class="roll-warning">(THIS WILL TAKE SOME TIME)</span></button>
+                            <button type="button" onclick="applyRollPreset(1000000000)">1,000,000,000 Rolls <span class="roll-warning">(THIS WILL TAKE A WHILE)</span></button>
+                            <button type="button" onclick="applyRollPreset(2500000000)">2,500,000,000 Rolls <span class="roll-warning">(THIS WILL TAKE A WHILE)</span></button>
+                            <button type="button" onclick="applyRollPreset(5000000000)">5,000,000,000 Rolls <span class="roll-warning">(THIS WILL TAKE A WHILE)</span></button>
+                            <button type="button" onclick="applyRollPreset(10000000000)">10,000,000,000 Rolls <span class="roll-warning">(THIS WILL TAKE A SERIOUS TIME)</span></button>
+                            <button type="button" onclick="applyRollPreset(25000000000)">25,000,000,000 Rolls <span class="roll-warning">(THIS WILL TAKE A SERIOUS TIME)</span></button>
+                            <button type="button" onclick="applyRollPreset(50000000000)">50,000,000,000 Rolls <span class="roll-warning">(THIS WILL TAKE A SERIOUS TIME)</span></button>
+                            <button type="button" onclick="applyRollPreset(100000000000)"><span class="roll-high">100,000,000,000 Rolls</span> <span class="roll-warning">(THIS WILL TAKE A SERIOUS TIME)</span></button>
+                            <button type="button" onclick="applyRollPreset(250000000000)"><span class="roll-high">250,000,000,000 Rolls</span> <span class="roll-warning">(THIS WILL TAKE A SERIOUS TIME)</span></button>
+                            <button type="button" onclick="applyRollPreset(500000000000)"><span class="roll-high">500,000,000,000 Rolls</span> <span class="roll-warning">(THIS WILL TAKE A SERIOUS TIME)</span></button>
+                            <button type="button" onclick="applyRollPreset(1000000000000)"><span class="roll-highest">1,000,000,000,000 Rolls</span> <span class="roll-warning">(<span class="roll-high">Seriously</span>... Just don't)</span></button>
+                            <p class="preset-warning preset-warning--slow-roll" id="hundred-million-roll-warning" role="status">⚠️ Processing anything higher than 10,000,000,000 rolls can and WILL take a long time.</p>
                         </div>
                     </div>
                   </div>
@@ -681,10 +701,22 @@
         </div>
     </div>
 
+    <div id="ygBlessingOverlay" class="cutscene-warning-overlay" hidden aria-hidden="true">
+        <div class="cutscene-warning surface surface--modal" role="dialog" aria-modal="true" aria-labelledby="ygBlessingTitle">
+            <p class="cutscene-warning__message">
+                <span id="ygBlessingTitle" class="cutscene-warning__note">YG Blessing notice</span>:
+                <span id="ygBlessingBody">YG blessing has not been obtainable while these events have been occurring in Sol's RNG (yet).</span>
+            </p>
+            <div class="cutscene-warning__actions">
+                <button type="button" class="interface-button interface-button--minor" id="ygBlessingClose">Got it</button>
+            </div>
+        </div>
+    </div>
+
     <div id="rollWarningOverlay" class="cutscene-warning-overlay" hidden aria-hidden="true">
         <div class="cutscene-warning surface surface--modal" role="dialog" aria-modal="true" aria-labelledby="rollWarningTitle">
             <p class="cutscene-warning__message">
-                <span id="rollWarningTitle" class="cutscene-warning__note">Heads up</span>: Rolling <span id="rollWarningCount" class="cutscene-warning__ratio">more than 10,000,000</span> times may take a very long time depending on your computer or device. Continue?
+                <span id="rollWarningTitle" class="cutscene-warning__note">Heads up</span>: Rolling <span id="rollWarningCount" class="cutscene-warning__ratio">more than 1,000,000,000</span> times may take a very long time depending on your computer or device. Continue?
             </p>
             <div class="cutscene-warning__actions">
                 <button type="button" class="interface-button interface-button--minor" id="rollWarningConfirm">Proceed Anyway</button>
@@ -720,7 +752,12 @@
                         <label class="audio-slider" for="audioMusicVolume">
                             <div class="audio-slider__label-row">
                                 <span class="audio-slider__label">Background Music</span>
-                                <span class="audio-slider__value" data-audio-value="music">50%</span>
+                                <span class="audio-slider__meta">
+                                    <span class="audio-slider__value" data-audio-value="music">50%</span>
+                                    <span class="audio-slider__icon" data-audio-icon="music" aria-hidden="true">
+                                        <i class="fa-solid fa-volume-high"></i>
+                                    </span>
+                                </span>
                             </div>
                             <input
                                 type="range"
@@ -736,7 +773,12 @@
                         <label class="audio-slider" for="audioCutsceneVolume">
                             <div class="audio-slider__label-row">
                                 <span class="audio-slider__label">Cutscene Sounds</span>
-                                <span class="audio-slider__value" data-audio-value="cutscene">50%</span>
+                                <span class="audio-slider__meta">
+                                    <span class="audio-slider__value" data-audio-value="cutscene">50%</span>
+                                    <span class="audio-slider__icon" data-audio-icon="cutscene" aria-hidden="true">
+                                        <i class="fa-solid fa-volume-high"></i>
+                                    </span>
+                                </span>
                             </div>
                             <input
                                 type="range"
@@ -752,7 +794,12 @@
                         <label class="audio-slider" for="audioObtainVolume">
                             <div class="audio-slider__label-row">
                                 <span class="audio-slider__label">Obtain Sounds</span>
-                                <span class="audio-slider__value" data-audio-value="obtain">50%</span>
+                                <span class="audio-slider__meta">
+                                    <span class="audio-slider__value" data-audio-value="obtain">50%</span>
+                                    <span class="audio-slider__icon" data-audio-icon="obtain" aria-hidden="true">
+                                        <i class="fa-solid fa-volume-high"></i>
+                                    </span>
+                                </span>
                             </div>
                             <input
                                 type="range"
@@ -780,6 +827,29 @@
         </div>
     </div>
 
+    <div id="auraFilterOverlay" class="modal-overlay" hidden>
+        <div class="surface surface--modal filter-modal" role="dialog" aria-modal="true" aria-labelledby="auraFilterTitle">
+            <div class="filter-modal__header">
+                <h2 class="filter-modal__title" id="auraFilterTitle">Aura Tier Filters</h2>
+                <p class="filter-modal__hint">Toggle tiers to skip them in the roll feed and image sharing.</p>
+            </div>
+            <div class="filter-modal__grid">
+                <button type="button" class="interface-toggle filter-tier-toggle" data-tier-key="basic" data-tier-label="Skip Basic Auras" aria-pressed="false">Skip Basic Auras: Off</button>
+                <button type="button" class="interface-toggle filter-tier-toggle" data-tier-key="epic" data-tier-label="Skip Epic Auras" aria-pressed="false">Skip Epic Auras: Off</button>
+                <button type="button" class="interface-toggle filter-tier-toggle" data-tier-key="unique" data-tier-label="Skip Unique Auras" aria-pressed="false">Skip Unique Auras: Off</button>
+                <button type="button" class="interface-toggle filter-tier-toggle" data-tier-key="legendary" data-tier-label="Skip Legendary Auras" aria-pressed="false">Skip Legendary Auras: Off</button>
+                <button type="button" class="interface-toggle filter-tier-toggle" data-tier-key="mythic" data-tier-label="Skip Mythic Auras" aria-pressed="false">Skip Mythic Auras: Off</button>
+                <button type="button" class="interface-toggle filter-tier-toggle" data-tier-key="exalted" data-tier-label="Skip Exalted Auras" aria-pressed="false">Skip Exalted Auras: Off</button>
+                <button type="button" class="interface-toggle filter-tier-toggle" data-tier-key="glorious" data-tier-label="Skip Glorious Auras" aria-pressed="false">Skip Glorious Auras: Off</button>
+                <button type="button" class="interface-toggle filter-tier-toggle" data-tier-key="transcendent" data-tier-label="Skip Transcendent Auras" aria-pressed="false">Skip Transcendent Auras: Off</button>
+                <button type="button" class="interface-toggle filter-tier-toggle" data-tier-key="challenged" data-tier-label="Skip Challenged Auras" aria-pressed="false">Skip Challenged Auras: Off</button>
+            </div>
+            <div class="filter-modal__actions">
+                <button type="button" class="interface-button interface-button--ghost filter-modal__close" id="auraFilterClose">Close</button>
+            </div>
+        </div>
+    </div>
+
     <div id="versionChangelogOverlay" class="modal-overlay" hidden>
         <div class="surface surface--modal changelog-modal" role="dialog" aria-modal="true" aria-labelledby="versionChangelogTitle">
             <button
@@ -794,11 +864,23 @@
                 <button
                     type="button"
                     class="changelog-tab changelog-tab--active"
+                    id="changelog-tab-v1640"
+                    role="tab"
+                    aria-controls="changelog-panel-v1640"
+                    aria-selected="true"
+                    data-changelog-tab="v1640"
+                >
+                    <span class="changelog-tab__title">V1.640</span>
+                </button>
+                <button
+                    type="button"
+                    class="changelog-tab changelog-tab--active"
                     id="changelog-tab-v1630"
                     role="tab"
                     aria-controls="changelog-panel-v1630"
-                    aria-selected="true"
+                    aria-selected="false"
                     data-changelog-tab="v1630"
+                    tabindex="-1"
                 >
                     <span class="changelog-tab__title">V1.630</span>
                 </button>
@@ -962,12 +1044,48 @@
 
             <div class="changelog-modal__panels" data-changelog-panels>
                 <section
+                    id="changelog-panel-v1640"
+                    class="changelog-modal__panel"
+                    role="tabpanel"
+                    aria-labelledby="changelog-tab-v1640"
+                    data-changelog-panel="v1640"
+                    tabindex="0"
+                >
+                    <header class="changelog-modal__header">
+                        <h2 class="changelog-modal__title" id="versionChangelogTitle">Version V1.640 Update Notes</h2>
+                        <span class="changelog-tab__subtitle">Optimization Expansion & Filtering Update</span>
+                        <p class="changelog-modal__meta">Updated 2026/01/27</p>
+                    </header>
+                    <p class="changelog-modal__intro">Latest changes:</p>
+                    <ul class="changelog-modal__list changelog-modal__list--sub">
+                        <li><span class="subtitleClass">Added a Filter Settings dropdown</span> next to the mute button for quick access.</li>
+                        <li><span class="archangelClass">New “Filter Aura Tiers” popup</span> lets you toggle which tiers are skipped in the roll feed and image sharing.</li>
+                        <li><span class="boundClass">Skipped tiers are now hidden</span> from roll summaries and share results.</li>
+                        <li>Moved the high roll warning from 10,000,000+ rolls to 1,000,000,000+ rolls.</li>
+                        <li>Re-alligned some auras to be positioned more accurate and more accessable:</li>
+                        <ul>
+                            <li><span class="sigil-outline-illusionary">Illusionary</span> has been positioned to the absolute top. <span class="tinyClass">(<span class="sigil-outline-illusionary">Illusionary</span>'s cutscene has been re-positioned to be the top-most cutscene to be played if rolled)</span></li>
+                            <li><span class="sigil-outline-cryogenic">Cryogenic</span> has been placed directly above Equinox.</li>
+                        </ul>
+                        <p>Credits to <a href="https://discord.com/users/1215968633054826507" class="subtitleClass" target="_blank" rel="noopener">@cutie_suzy</a> for all of these ideas :)</p>
+                    </ul>
+                    <ul class="changelog-modal__list">
+                        <li>Increased the maximum rolling count from <span class="roll-high">10,000,000,000</span> (10B) to <span class="roll-highest">1,000,000,000,000</span> (1T).</li>
+                        <li>Added new roll presets to bridge the gap between 10B and 1T: 25B, 50B, 100B, 250B, 500B, and 1T.</li>
+                        <li>Added Axis Event to the event selection.</li>
+                        <li>Now only one of the event buffs can be enabled as this is how it works in Sol's RNG as well.</li>
+                        <li>Updated the banner info to open my user on Discord when clicked on my name and a link to Sol's RNG's game site on Roblox when clicked on the Eon version.</li>
+                    </ul>
+                    <p>If there's any bugs you encounter, please DM me here <a href="https://discord.com/users/611204110955446301" class="subtitleClass" target="_blank" rel="noopener">@not.unnamed</a></p>
+                </section>
+                <section
                     id="changelog-panel-v1630"
                     class="changelog-modal__panel"
                     role="tabpanel"
                     aria-labelledby="changelog-tab-v1630"
                     data-changelog-panel="v1630"
-                    tabindex="0"
+                    hidden
+                    tabindex="-1"
                 >
                     <header class="changelog-modal__header">
                         <h2 class="changelog-modal__title" id="versionChangelogTitle">Version V1.630 Update Notes</h2>

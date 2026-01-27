@@ -21,6 +21,10 @@ const audioOverlayState = {
     lastFocusedElement: null
 };
 
+const auraFilterOverlayState = {
+    lastFocusedElement: null
+};
+
 const CHANGELOG_VERSION_STORAGE_KEY = 'solsRollingCalculator:lastSeenChangelogVersion';
 const BACKGROUND_ROLLING_STORAGE_KEY = 'solsRollingCalculator:backgroundRollingPreference';
 const AUDIO_SETTINGS_STORAGE_KEY = 'solsRollingCalculator:audioSettings';
@@ -421,6 +425,163 @@ function hideAudioSettingsOverlay() {
     });
 }
 
+function showAuraFilterOverlay() {
+    const overlay = document.getElementById('auraFilterOverlay');
+    if (!overlay) return;
+
+    auraFilterOverlayState.lastFocusedElement = document.activeElement;
+    syncAuraTierFilterButtons();
+    revealOverlay(overlay);
+
+    const firstButton = overlay.querySelector('.filter-tier-toggle');
+    if (firstButton && typeof firstButton.focus === 'function') {
+        try {
+            firstButton.focus({ preventScroll: true });
+        } catch (error) {
+            firstButton.focus();
+        }
+    }
+}
+
+function hideAuraFilterOverlay() {
+    const overlay = document.getElementById('auraFilterOverlay');
+    if (!overlay) return;
+
+    concealOverlay(overlay, {
+        onHidden: () => {
+            const last = auraFilterOverlayState.lastFocusedElement;
+            if (last && typeof last.focus === 'function') {
+                last.focus({ preventScroll: true });
+            }
+            auraFilterOverlayState.lastFocusedElement = null;
+        }
+    });
+}
+
+function syncAuraTierFilterButtons() {
+    const overlay = document.getElementById('auraFilterOverlay');
+    if (!overlay || !appState || !appState.auraTierFilters) {
+        return;
+    }
+
+    overlay.querySelectorAll('.filter-tier-toggle').forEach(button => {
+        const tierKey = button.dataset.tierKey;
+        if (!tierKey) {
+            return;
+        }
+        const label = button.dataset.tierLabel || button.textContent.trim();
+        const enabled = Boolean(appState.auraTierFilters[tierKey]);
+        button.setAttribute('aria-pressed', enabled ? 'true' : 'false');
+        button.textContent = `${label}: ${enabled ? 'On' : 'Off'}`;
+    });
+}
+
+function initializeAuraTierFilterPanel() {
+    const overlay = document.getElementById('auraFilterOverlay');
+    const openButton = document.getElementById('filterAuraTiersButton');
+    const closeButton = document.getElementById('auraFilterClose');
+    if (!overlay || !openButton) return;
+
+    const filterMenu = document.getElementById('filterMenu');
+    const filterMenuToggle = document.getElementById('filterMenuToggle');
+
+    overlay.addEventListener('click', event => {
+        if (event.target === overlay) {
+            hideAuraFilterOverlay();
+        }
+    });
+
+    overlay.addEventListener('keydown', event => {
+        if (event.key === 'Escape') {
+            hideAuraFilterOverlay();
+        }
+    });
+
+    if (closeButton) {
+        closeButton.addEventListener('click', () => hideAuraFilterOverlay());
+    }
+
+    overlay.querySelectorAll('.filter-tier-toggle').forEach(button => {
+        button.addEventListener('click', () => {
+            const tierKey = button.dataset.tierKey;
+            if (!tierKey || !appState || !appState.auraTierFilters) {
+                return;
+            }
+            appState.auraTierFilters[tierKey] = !appState.auraTierFilters[tierKey];
+            syncAuraTierFilterButtons();
+        });
+    });
+
+    openButton.addEventListener('click', event => {
+        event.preventDefault();
+        if (filterMenu) {
+            filterMenu.classList.remove('options-menu--open');
+        }
+        if (filterMenuToggle) {
+            filterMenuToggle.setAttribute('aria-expanded', 'false');
+        }
+        showAuraFilterOverlay();
+    });
+
+    syncAuraTierFilterButtons();
+}
+
+function initializeOptionsMenu(menuId, toggleId, panelId) {
+    const menu = document.getElementById(menuId);
+    const toggleButton = document.getElementById(toggleId);
+    const panel = document.getElementById(panelId);
+    if (!menu || !toggleButton || !panel) {
+        return;
+    }
+
+    const closeMenu = () => {
+        menu.classList.remove('options-menu--open');
+        toggleButton.setAttribute('aria-expanded', 'false');
+    };
+
+    const openMenu = () => {
+        menu.classList.add('options-menu--open');
+        toggleButton.setAttribute('aria-expanded', 'true');
+    };
+
+    toggleButton.addEventListener('click', event => {
+        event.stopPropagation();
+        if (menu.classList.contains('options-menu--open')) {
+            closeMenu();
+        } else {
+            openMenu();
+            if (event.detail === 0) {
+                const firstItem = panel.querySelector('button');
+                if (firstItem) {
+                    firstItem.focus({ preventScroll: true });
+                }
+            }
+        }
+    });
+
+    document.addEventListener('click', event => {
+        if (!menu.contains(event.target)) {
+            closeMenu();
+        }
+    });
+
+    menu.addEventListener('keydown', event => {
+        if (event.key === 'Escape') {
+            closeMenu();
+            toggleButton.focus({ preventScroll: true });
+        }
+    });
+
+    menu.addEventListener('focusout', event => {
+        const nextFocus = event.relatedTarget;
+        if (nextFocus instanceof Node && !menu.contains(nextFocus)) {
+            closeMenu();
+        }
+    });
+
+    closeMenu();
+}
+
 function updateAudioSliderLabel(channel, percentValue) {
     const overlay = document.getElementById('audioSettingsOverlay');
     if (!overlay) return;
@@ -434,6 +595,20 @@ function updateAudioSliderLabel(channel, percentValue) {
     if (input) {
         const clamped = clamp01(percentValue / 100);
         input.style.setProperty('--audio-slider-progress', `${Math.round(clamped * 100)}%`);
+    }
+
+    const icon = overlay.querySelector(`.audio-slider__icon[data-audio-icon="${channel}"] i`);
+    if (icon) {
+        const clampedValue = clamp01(percentValue / 100);
+        let iconClass = 'fa-volume-high';
+        if (clampedValue === 0) {
+            iconClass = 'fa-volume-xmark';
+        } else if (clampedValue <= 0.33) {
+            iconClass = 'fa-volume-off';
+        } else if (clampedValue <= 0.66) {
+            iconClass = 'fa-volume-low';
+        }
+        icon.className = `fa-solid ${iconClass}`;
     }
 }
 
@@ -1952,8 +2127,77 @@ let currentLuck = 1;
 let lastVipMultiplier = 1;
 let lastXyzMultiplier = 1;
 let lastXcMultiplier = 1;
+let lastAxisMultiplier = 1;
 let lastDaveMultiplier = 1;
 let lastDorcelessnessMultiplier = 1;
+let suppressYgBlessingAlert = false;
+
+const EVENT_LUCK_TOGGLE_IDS = Object.freeze([
+    'xyz-luck-toggle',
+    'xc-luck-toggle',
+    'axis-luck-toggle',
+    'dorcelessness-luck-toggle'
+]);
+
+const YG_BLESSING_BLOCKING_EVENT_IDS = Object.freeze([
+    'xyz-luck-toggle',
+    'xc-luck-toggle',
+    'axis-luck-toggle'
+]);
+
+const YG_BLESSING_EVENT_BLOCK_MESSAGE = "YG blessing has not been obtainable while these events have been occurring in Sol's RNG (yet).";
+let eventToggleSyncInProgress = false;
+
+function isAnyToggleActive(toggleIds) {
+    if (!Array.isArray(toggleIds)) {
+        return false;
+    }
+    return toggleIds.some(id => {
+        const toggle = document.getElementById(id);
+        return Boolean(toggle && toggle.checked);
+    });
+}
+
+function setToggleChecked(toggle, checked, { dispatchChange } = {}) {
+    if (!toggle || toggle.checked === checked) {
+        return;
+    }
+    toggle.checked = checked;
+    if (dispatchChange) {
+        toggle.dispatchEvent(new Event('change', { bubbles: true }));
+    }
+}
+
+function disableYgBlessing({ silent = false } = {}) {
+    const ygToggle = document.getElementById('yg-blessing-toggle');
+    if (!ygToggle || !ygToggle.checked) {
+        return;
+    }
+    if (silent) {
+        suppressYgBlessingAlert = true;
+    }
+    setToggleChecked(ygToggle, false, { dispatchChange: true });
+    if (silent) {
+        suppressYgBlessingAlert = false;
+    }
+}
+
+function enforceExclusiveEventToggles(activeToggle) {
+    if (eventToggleSyncInProgress || !activeToggle || !activeToggle.checked) {
+        return;
+    }
+    eventToggleSyncInProgress = true;
+    EVENT_LUCK_TOGGLE_IDS.forEach(id => {
+        if (id === activeToggle.id) {
+            return;
+        }
+        const toggle = document.getElementById(id);
+        if (toggle && toggle.checked) {
+            setToggleChecked(toggle, false, { dispatchChange: true });
+        }
+    });
+    eventToggleSyncInProgress = false;
+}
 
 const MILLION_LUCK_PRESET = 1000000;
 
@@ -2034,11 +2278,13 @@ function applyLuckValue(value, options = {}) {
     lastVipMultiplier = 1;
     lastXyzMultiplier = 1;
     lastXcMultiplier = 1;
+    lastAxisMultiplier = 1;
     lastDaveMultiplier = 1;
     lastDorcelessnessMultiplier = 1;
     document.getElementById('vip-dropdown').value = '1';
     document.getElementById('xyz-luck-toggle').checked = false;
     document.getElementById('xc-luck-toggle').checked = false;
+    document.getElementById('axis-luck-toggle').checked = false;
     document.getElementById('dorcelessness-luck-toggle').checked = false;
     document.getElementById('yg-blessing-toggle').checked = false;
     refreshCustomSelect('vip-dropdown');
@@ -2067,6 +2313,7 @@ function getActiveLuckMultipliers() {
         vip: document.getElementById('vip-dropdown'),
         xyz: document.getElementById('xyz-luck-toggle'),
         xc: document.getElementById('xc-luck-toggle'),
+        axis: document.getElementById('axis-luck-toggle'),
         dorcelessness: document.getElementById('dorcelessness-luck-toggle'),
         dave: document.getElementById('dave-luck-dropdown')
     };
@@ -2078,6 +2325,7 @@ function getActiveLuckMultipliers() {
         vip: parseFloat(controls.vip ? controls.vip.value : '1') || 1,
         xyz: controls.xyz && controls.xyz.checked ? 2 : 1,
         xc: controls.xc && controls.xc.checked ? 2 : 1,
+        axis: controls.axis && controls.axis.checked ? 2 : 1,
         dorcelessness: controls.dorcelessness && controls.dorcelessness.checked ? 2 : 1,
         dave: isLimboBiome && controls.dave ? parseFloat(controls.dave.value) || 1 : 1
     };
@@ -2100,12 +2348,13 @@ function applyLuckDelta(presetValue, options = {}) {
     const targetLuck = Math.max(0, startingLuck + numericPresetValue);
 
     const multipliers = getActiveLuckMultipliers();
-    const multiplierTotal = multipliers.vip * multipliers.xyz * multipliers.xc * multipliers.dorcelessness * multipliers.dave;
+    const multiplierTotal = multipliers.vip * multipliers.xyz * multipliers.xc * multipliers.axis * multipliers.dorcelessness * multipliers.dave;
     baseLuck = multiplierTotal > 0 ? targetLuck / multiplierTotal : targetLuck;
     currentLuck = targetLuck;
     lastVipMultiplier = multipliers.vip;
     lastXyzMultiplier = multipliers.xyz;
     lastXcMultiplier = multipliers.xc;
+    lastAxisMultiplier = multipliers.axis;
     lastDaveMultiplier = multipliers.dave;
     lastDorcelessnessMultiplier = multipliers.dorcelessness;
 
@@ -2228,7 +2477,7 @@ function applyRollPreset(value) {
         return;
     }
 
-    setNumericInputValue(rollField, value, { format: true, min: 1, max: 10000000000 });
+    setNumericInputValue(rollField, value, { format: true, min: 1, max: 1000000000000 });
     playSoundEffect(clickSoundEffectElement, 'ui');
 }
 
@@ -2250,6 +2499,7 @@ function recomputeLuckValue() {
         vip: document.getElementById('vip-dropdown'),
         xyz: document.getElementById('xyz-luck-toggle'),
         xc: document.getElementById('xc-luck-toggle'),
+        axis: document.getElementById('axis-luck-toggle'),
         dorcelessness: document.getElementById('dorcelessness-luck-toggle'),
         dave: document.getElementById('dave-luck-dropdown'),
         luckInput: document.getElementById('luck-total')
@@ -2262,6 +2512,7 @@ function recomputeLuckValue() {
         vip: parseFloat(controls.vip ? controls.vip.value : '1') || 1,
         xyz: controls.xyz && controls.xyz.checked ? 2 : 1,
         xc: controls.xc && controls.xc.checked ? 2 : 1,
+        axis: controls.axis && controls.axis.checked ? 2 : 1,
         dorcelessness: controls.dorcelessness && controls.dorcelessness.checked ? 2 : 1,
         dave: isLimboBiome && controls.dave ? parseFloat(controls.dave.value) || 1 : 1
     };
@@ -2277,6 +2528,7 @@ function recomputeLuckValue() {
         lastVipMultiplier = 1;
         lastXyzMultiplier = 1;
         lastXcMultiplier = 1;
+        lastAxisMultiplier = 1;
         lastDaveMultiplier = 1;
         lastDorcelessnessMultiplier = 1;
         if (controls.vip) {
@@ -2288,6 +2540,9 @@ function recomputeLuckValue() {
         }
         if (controls.xc) {
             controls.xc.checked = false;
+        }
+        if (controls.axis) {
+            controls.axis.checked = false;
         }
         if (controls.dorcelessness) {
             controls.dorcelessness.checked = false;
@@ -2308,10 +2563,11 @@ function recomputeLuckValue() {
         return;
     }
 
-    currentLuck = baseLuck * multipliers.vip * multipliers.xyz * multipliers.xc * multipliers.dorcelessness * multipliers.dave;
+    currentLuck = baseLuck * multipliers.vip * multipliers.xyz * multipliers.xc * multipliers.axis * multipliers.dorcelessness * multipliers.dave;
     lastVipMultiplier = multipliers.vip;
     lastXyzMultiplier = multipliers.xyz;
     lastXcMultiplier = multipliers.xc;
+    lastAxisMultiplier = multipliers.axis;
     lastDaveMultiplier = multipliers.dave;
     lastDorcelessnessMultiplier = multipliers.dorcelessness;
     if (luckField) {
@@ -2342,7 +2598,7 @@ function resetRollCount() {
     const rollField = document.getElementById('roll-total');
     if (rollField) {
         const shouldFormat = document.activeElement !== rollField;
-        setNumericInputValue(rollField, 1, { format: shouldFormat, min: 1, max: 10000000000 });
+        setNumericInputValue(rollField, 1, { format: shouldFormat, min: 1, max: 1000000000000 });
     }
     playSoundEffect(clickSoundEffectElement, 'ui');
 }
@@ -2401,6 +2657,7 @@ function initializeBiomeInterface() {
     const daveLuckContainer = document.getElementById('dave-luck-wrapper');
     const xyzLuckContainer = document.getElementById('xyz-luck-wrapper');
     const xcLuckContainer = document.getElementById('xc-luck-wrapper');
+    const axisLuckContainer = document.getElementById('axis-luck-wrapper');
     const dorcelessnessLuckContainer = document.getElementById('dorcelessness-luck-wrapper');
     const ygBlessingContainer = document.getElementById('yg-blessing-wrapper');
     const luckPresets = document.getElementById('luck-preset-panel');
@@ -2408,12 +2665,14 @@ function initializeBiomeInterface() {
         if (daveLuckContainer) daveLuckContainer.style.display = '';
         if (xyzLuckContainer) xyzLuckContainer.style.display = '';
         if (xcLuckContainer) xcLuckContainer.style.display = '';
+        if (axisLuckContainer) axisLuckContainer.style.display = '';
         if (dorcelessnessLuckContainer) dorcelessnessLuckContainer.style.display = '';
         if (ygBlessingContainer) ygBlessingContainer.style.display = '';
     } else {
         if (daveLuckContainer) daveLuckContainer.style.display = 'none';
         if (xyzLuckContainer) xyzLuckContainer.style.display = '';
         if (xcLuckContainer) xcLuckContainer.style.display = '';
+        if (axisLuckContainer) axisLuckContainer.style.display = '';
         if (dorcelessnessLuckContainer) dorcelessnessLuckContainer.style.display = '';
         if (ygBlessingContainer) ygBlessingContainer.style.display = '';
     }
@@ -2634,8 +2893,15 @@ async function playAuraSequence(queue) {
 }
 
 function resolveRarityClass(aura, biome) {
-    if (aura && aura.disableRarityClass) return '';
-    if (aura && aura.name === 'Fault') return 'rarity-tier-challenged';
+    if (!aura) return '';
+    const auraName = aura.name || '';
+    if (auraName.startsWith('Pixelation')) return 'rarity-tier-transcendent';
+    if (auraName.startsWith('Illusionary')) return 'rarity-tier-challenged';
+    if (auraName === 'Fault') return 'rarity-tier-challenged';
+    if (['Oblivion', 'Memory', 'Neferkhaf'].some(name => auraName.startsWith(name))) {
+        return 'rarity-tier-challenged';
+    }
+    if (aura.disableRarityClass) return '';
     const hasLimboNative = auraMatchesAnyBiome(aura, ['limbo', 'limbo-null']);
     if (hasLimboNative && biome === 'limbo') return 'rarity-tier-limbo';
     const cyberspaceNative = auraMatchesAnyBiome(aura, ['cyberspace']);
@@ -2656,6 +2922,164 @@ function resolveRarityClass(aura, biome) {
     if (chance >= 9999) return 'rarity-tier-unique';
     if (chance >= 999) return 'rarity-tier-epic';
     return 'rarity-tier-basic';
+}
+
+function resolveBaseRarityClass(aura) {
+    if (!aura) return '';
+    const auraName = aura.name || '';
+    if (auraName.startsWith('Pixelation')) return 'rarity-tier-transcendent';
+    if (auraName.startsWith('Illusionary')) return 'rarity-tier-challenged';
+    if (auraName === 'Fault') return 'rarity-tier-challenged';
+    if (['Oblivion', 'Memory', 'Neferkhaf'].some(name => auraName.startsWith(name))) {
+        return 'rarity-tier-challenged';
+    }
+    if (aura.disableRarityClass) return '';
+    const chance = aura.chance;
+    if (chance >= 999999999) return 'rarity-tier-transcendent';
+    if (chance >= 99999999) return 'rarity-tier-glorious';
+    if (chance >= 9999999) return 'rarity-tier-exalted';
+    if (chance >= 999999) return 'rarity-tier-mythic';
+    if (chance >= 99999) return 'rarity-tier-legendary';
+    if (chance >= 9999) return 'rarity-tier-unique';
+    if (chance >= 999) return 'rarity-tier-epic';
+    return 'rarity-tier-basic';
+}
+
+function shouldUseNativeOverrideTier(aura, biome) {
+    if (!aura || aura.disableRarityClass || aura.disableNativeOverrideTier) return false;
+    const hasLimboNative = auraMatchesAnyBiome(aura, ['limbo', 'limbo-null']);
+    if (hasLimboNative && biome === 'limbo') return false;
+    const cyberspaceNative = auraMatchesAnyBiome(aura, ['cyberspace']);
+    const hasNativeBiomes = aura && aura.nativeBiomes;
+    return Boolean(
+        hasNativeBiomes
+        && !aura.nativeBiomes.has('limbo-null')
+        && (!cyberspaceNative || biome === 'cyberspace')
+    );
+}
+
+const AURA_TIER_FILTERS = Object.freeze([
+    { key: 'basic', label: 'Skip Basic Auras', className: 'rarity-tier-basic' },
+    { key: 'epic', label: 'Skip Epic Auras', className: 'rarity-tier-epic' },
+    { key: 'unique', label: 'Skip Unique Auras', className: 'rarity-tier-unique' },
+    { key: 'legendary', label: 'Skip Legendary Auras', className: 'rarity-tier-legendary' },
+    { key: 'mythic', label: 'Skip Mythic Auras', className: 'rarity-tier-mythic' },
+    { key: 'exalted', label: 'Skip Exalted Auras', className: 'rarity-tier-exalted' },
+    { key: 'glorious', label: 'Skip Glorious Auras', className: 'rarity-tier-glorious' },
+    { key: 'transcendent', label: 'Skip Transcendent Auras', className: 'rarity-tier-transcendent' },
+    { key: 'challenged', label: 'Skip Challenged Auras', className: 'rarity-tier-challenged' }
+]);
+
+const AURA_TIER_CLASS_TO_KEY = new Map(AURA_TIER_FILTERS.map(tier => [tier.className, tier.key]));
+const AURA_TIER_SKIP_NAME_OVERRIDES = new Map([
+    ['transcendent', ['Nyctophobia']],
+    ['glorious', ['Unknown', 'Elude', 'Prologue', 'Dreamscape']],
+    ['exalted', ['Juxtaposition']],
+    ['mythic', ['Anima', 'Nihility', 'Undefined', 'Flowed', 'Shiftlock']],
+    ['legendary', ['Raven']],
+    ['basic', ['Nothing']]
+]);
+
+function formatAuraTierLabel(tier) {
+    if (!tier) {
+        return '';
+    }
+    const label = typeof tier.label === 'string' && tier.label.trim().length > 0
+        ? tier.label
+        : tier.key;
+    return label
+        .replace(/^Skip\s+/i, '')
+        .replace(/\s*Auras?$/i, '')
+        .trim();
+}
+
+function getIncludedAuraTierLabels() {
+    if (!appState || !appState.auraTierFilters) {
+        return [];
+    }
+    return AURA_TIER_FILTERS
+        .filter(tier => !appState.auraTierFilters[tier.key])
+        .map(formatAuraTierLabel)
+        .filter(Boolean);
+}
+
+function getAuraFilterSummaryText() {
+    const labels = getIncludedAuraTierLabels();
+    return labels.length > 0 ? labels.join(', ') : 'None';
+}
+
+function resolveAuraTierKey(aura, biome) {
+    if (!aura) {
+        return null;
+    }
+    const rarityClass = typeof resolveRarityClass === 'function'
+        ? resolveRarityClass(aura, biome)
+        : '';
+    return AURA_TIER_CLASS_TO_KEY.get(rarityClass) || null;
+}
+
+function shouldSkipAuraByTierOverride(aura) {
+    if (!aura || !appState || !appState.auraTierFilters) {
+        return false;
+    }
+    const auraName = (aura.name || '').trim();
+    if (!auraName) {
+        return false;
+    }
+    const auraNameLower = auraName.toLowerCase();
+    for (const [tierKey, auraPrefixes] of AURA_TIER_SKIP_NAME_OVERRIDES) {
+        if (!appState.auraTierFilters[tierKey]) {
+            continue;
+        }
+        for (const prefix of auraPrefixes) {
+            if (auraNameLower.startsWith(prefix.toLowerCase())) {
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+function isAuraTierSkipped(aura, biome) {
+    if (shouldSkipAuraByTierOverride(aura)) {
+        return true;
+    }
+    const tierKey = resolveAuraTierKey(aura, biome);
+    if (!tierKey || !appState || !appState.auraTierFilters) {
+        return false;
+    }
+    if (appState.auraTierFilters[tierKey]) {
+        return true;
+    }
+    if (tierKey === 'challenged' && shouldUseNativeOverrideTier(aura, biome)) {
+        const baseTierClass = resolveBaseRarityClass(aura);
+        const baseTierKey = AURA_TIER_CLASS_TO_KEY.get(baseTierClass) || null;
+        if (baseTierKey && appState.auraTierFilters[baseTierKey]) {
+            return true;
+        }
+    }
+    return false;
+}
+
+const CHALLENGED_CUTSCENE_AURAS = new Set(['Oblivion', 'Memory', 'Neferkhaf']);
+
+function shouldSkipAuraCutscene(aura, biome) {
+    if (isAuraTierSkipped(aura, biome)) {
+        return true;
+    }
+    if (!aura || !appState || !appState.auraTierFilters) {
+        return false;
+    }
+    if (!appState.auraTierFilters.challenged) {
+        return false;
+    }
+    const auraName = aura.name || '';
+    for (const label of CHALLENGED_CUTSCENE_AURAS) {
+        if (auraName.startsWith(label)) {
+            return true;
+        }
+    }
+    return false;
 }
 
 const nativeAuraOutlineOverrides = new Map([
@@ -2996,7 +3420,7 @@ const AURA_BLUEPRINT_SOURCE = Object.freeze([
     { name: "Equinox - 2,500,000,000", chance: 2500000000, cutscene: "equinox-cutscene" },
     { name: "Dream Traveler - 2,025,012,025", chance: 2025012025, breakthroughs: nativeBreakthroughs("aurora"), cutscene: "dream-traveler-cutscene" },
     { name: BREAKTHROUGH_AURA_NAME, chance: 1999999999, cutscene: "breakthrough-cutscene" },
-    { name: LEVIATHAN_AURA_NAME, chance: 1730400000, nativeBiomes: ["rainy", "glitch"], cutscene: "leviathan-cutscene" },
+    { name: LEVIATHAN_AURA_NAME, chance: 1730400000, nativeBiomes: ["rainy", "glitch"], cutscene: "leviathan-cutscene", disableNativeOverrideTier: true },
     { name: "Winter Garden - 1,450,012,025", chance: 1450012025, breakthroughs: nativeBreakthroughs("aurora"), cutscene: "winter-garden-cutscene" },
     { name: "Luminosity - 1,200,000,000", chance: 1200000000, cutscene: "luminosity-cutscene" },
     { name: "Erebus - 1,200,000,000", chance: 1200000000, nativeBiomes: ["glitch", "bloodRain"], cutscene: "erebus-cutscene" },
@@ -3531,7 +3955,7 @@ function getAuraEventId(aura) {
     return auraEventIndex.get(aura.name) || null;
 }
 
-const CUTSCENE_PRIORITY_SEQUENCE = ["oblivion-cutscene", "memory-cutscene", "neferkhaf-cutscene", "illusionary-cutscene", "equinox-cutscene", "dream-traveler-cutscene", "breakthrough-cutscene", "leviathan-cutscene", "winter-garden-cutscene", "erebus-cutscene", "luminosity-cutscene", "pixelation-cutscene", "nyctophobia-cutscene", "frostveil-cutscene", "lamenthyr-cutscene", "ascendant-cutscene", "dreammetric-cutscene", "oppression-cutscene", "prowler-cutscene"];
+const CUTSCENE_PRIORITY_SEQUENCE = ["illusionary-cutscene", "oblivion-cutscene", "memory-cutscene", "neferkhaf-cutscene", "equinox-cutscene", "dream-traveler-cutscene", "breakthrough-cutscene", "leviathan-cutscene", "winter-garden-cutscene", "erebus-cutscene", "luminosity-cutscene", "pixelation-cutscene", "nyctophobia-cutscene", "frostveil-cutscene", "lamenthyr-cutscene", "ascendant-cutscene", "dreammetric-cutscene", "oppression-cutscene", "prowler-cutscene"];
 
 oblivionAuraData = AURA_REGISTRY.find(aura => aura.name === OBLIVION_AURA_LABEL) || null;
 memoryAuraData = AURA_REGISTRY.find(aura => aura.name === MEMORY_AURA_LABEL) || null;
@@ -3798,6 +4222,21 @@ function showBiomeConditionOverlay(biomeId, { message: overrideMessage = null, l
 
     title.textContent = titleOverride || `${label} requirements`;
     body.textContent = message;
+    revealOverlay(overlay);
+}
+
+function showYgBlessingOverlay() {
+    if (typeof document === 'undefined') {
+        return;
+    }
+
+    const overlay = document.getElementById('ygBlessingOverlay');
+    const body = document.getElementById('ygBlessingBody');
+    if (!overlay || !body || typeof revealOverlay !== 'function') {
+        return;
+    }
+
+    body.textContent = YG_BLESSING_EVENT_BLOCK_MESSAGE;
     revealOverlay(overlay);
 }
 
@@ -4992,28 +5431,69 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const rollField = document.getElementById('roll-total');
     if (rollField) {
-        bindNumericInputFormatting(rollField, { min: 1, max: 10000000000 });
+        bindNumericInputFormatting(rollField, { min: 1, max: 1000000000000 });
         if (!rollField.dataset.rawValue) {
-            setNumericInputValue(rollField, 1, { format: true, min: 1, max: 10000000000 });
+            setNumericInputValue(rollField, 1, { format: true, min: 1, max: 1000000000000 });
         }
     }
 
     document.getElementById('vip-dropdown').addEventListener('change', recomputeLuckValue);
     const xyzToggle = document.getElementById('xyz-luck-toggle');
+    const axisToggle = document.getElementById('axis-luck-toggle');
     if (xyzToggle) {
-        xyzToggle.addEventListener('change', recomputeLuckValue);
+        xyzToggle.addEventListener('change', () => {
+            enforceExclusiveEventToggles(xyzToggle);
+            if (xyzToggle.checked) {
+                disableYgBlessing({ silent: true });
+            }
+            recomputeLuckValue();
+        });
     }
     const xcToggle = document.getElementById('xc-luck-toggle');
     if (xcToggle) {
-        xcToggle.addEventListener('change', recomputeLuckValue);
+        xcToggle.addEventListener('change', () => {
+            enforceExclusiveEventToggles(xcToggle);
+            if (xcToggle.checked) {
+                disableYgBlessing({ silent: true });
+            }
+            recomputeLuckValue();
+        });
+    }
+    if (axisToggle) {
+        axisToggle.addEventListener('change', () => {
+            enforceExclusiveEventToggles(axisToggle);
+            if (axisToggle.checked) {
+                disableYgBlessing({ silent: true });
+            }
+            recomputeLuckValue();
+        });
     }
     const dorcelessnessToggle = document.getElementById('dorcelessness-luck-toggle');
     if (dorcelessnessToggle) {
-        dorcelessnessToggle.addEventListener('change', recomputeLuckValue);
+        dorcelessnessToggle.addEventListener('change', () => {
+            enforceExclusiveEventToggles(dorcelessnessToggle);
+            recomputeLuckValue();
+        });
     }
     const daveDropdown = document.getElementById('dave-luck-dropdown');
     if (daveDropdown) {
         daveDropdown.addEventListener('change', recomputeLuckValue);
+    }
+
+    const ygBlessingToggle = document.getElementById('yg-blessing-toggle');
+    if (ygBlessingToggle) {
+        ygBlessingToggle.addEventListener('change', () => {
+            if (!ygBlessingToggle.checked) {
+                return;
+            }
+            if (suppressYgBlessingAlert) {
+                return;
+            }
+            if (isAnyToggleActive(YG_BLESSING_BLOCKING_EVENT_IDS)) {
+                showYgBlessingOverlay();
+                disableYgBlessing({ silent: true });
+            }
+        });
     }
 
     if (luckField) {
@@ -5027,11 +5507,13 @@ document.addEventListener('DOMContentLoaded', () => {
             lastVipMultiplier = 1;
             lastXyzMultiplier = 1;
             lastXcMultiplier = 1;
+            lastAxisMultiplier = 1;
             lastDaveMultiplier = 1;
             lastDorcelessnessMultiplier = 1;
             document.getElementById('vip-dropdown').value = '1';
             document.getElementById('xyz-luck-toggle').checked = false;
             document.getElementById('xc-luck-toggle').checked = false;
+            document.getElementById('axis-luck-toggle').checked = false;
             document.getElementById('dorcelessness-luck-toggle').checked = false;
             document.getElementById('yg-blessing-toggle').checked = false;
             refreshCustomSelect('vip-dropdown');
@@ -5062,6 +5544,17 @@ document.addEventListener('DOMContentLoaded', () => {
         biomeConditionOverlay.addEventListener('click', event => {
             if (event.target === biomeConditionOverlay) {
                 concealOverlay(biomeConditionOverlay);
+            }
+        });
+    }
+
+    const ygBlessingOverlay = document.getElementById('ygBlessingOverlay');
+    const ygBlessingClose = document.getElementById('ygBlessingClose');
+    if (ygBlessingOverlay && ygBlessingClose) {
+        ygBlessingClose.addEventListener('click', () => concealOverlay(ygBlessingOverlay));
+        ygBlessingOverlay.addEventListener('click', event => {
+            if (event.target === ygBlessingOverlay) {
+                concealOverlay(ygBlessingOverlay);
             }
         });
     }
@@ -5100,57 +5593,9 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    const settingsMenu = document.getElementById('optionsMenu');
-    const settingsToggleButton = document.getElementById('optionsMenuToggle');
-    const settingsPanel = document.getElementById('optionsMenuPanel');
-    if (settingsMenu && settingsToggleButton && settingsPanel) {
-        const closeSettingsMenu = () => {
-            settingsMenu.classList.remove('options-menu--open');
-            settingsToggleButton.setAttribute('aria-expanded', 'false');
-        };
-
-        const openSettingsMenu = () => {
-            settingsMenu.classList.add('options-menu--open');
-            settingsToggleButton.setAttribute('aria-expanded', 'true');
-        };
-
-        settingsToggleButton.addEventListener('click', event => {
-            event.stopPropagation();
-            if (settingsMenu.classList.contains('options-menu--open')) {
-                closeSettingsMenu();
-            } else {
-                openSettingsMenu();
-                if (event.detail === 0) {
-                    const firstItem = settingsPanel.querySelector('button');
-                    if (firstItem) {
-                        firstItem.focus({ preventScroll: true });
-                    }
-                }
-            }
-        });
-
-        document.addEventListener('click', event => {
-            if (!settingsMenu.contains(event.target)) {
-                closeSettingsMenu();
-            }
-        });
-
-        settingsMenu.addEventListener('keydown', event => {
-            if (event.key === 'Escape') {
-                closeSettingsMenu();
-                settingsToggleButton.focus({ preventScroll: true });
-            }
-        });
-
-        settingsMenu.addEventListener('focusout', event => {
-            const nextFocus = event.relatedTarget;
-            if (nextFocus instanceof Node && !settingsMenu.contains(nextFocus)) {
-                closeSettingsMenu();
-            }
-        });
-
-        closeSettingsMenu();
-    }
+    initializeOptionsMenu('filterMenu', 'filterMenuToggle', 'filterMenuPanel');
+    initializeOptionsMenu('optionsMenu', 'optionsMenuToggle', 'optionsMenuPanel');
+    initializeAuraTierFilterPanel();
 
     const yearEl = document.getElementById('build-year');
     if (yearEl) {
@@ -5430,8 +5875,11 @@ function buildComputedAuraEntries(registry, context, luckValue, breakthroughStat
 }
 
 function buildResultEntries(registry, biome, breakthroughStatsMap) {
-    const entries = [];
+    let entries = [];
     for (const aura of registry) {
+        if (isAuraTierSkipped(aura, biome)) {
+            continue;
+        }
         const winCount = readAuraWinCount(aura);
         if (winCount <= 0) continue;
 
@@ -5479,8 +5927,8 @@ function buildResultEntries(registry, biome, breakthroughStatsMap) {
             }
         });
 
-        const pushVisualEntry = (markup, shareText, priority, visualRecord) => {
-            entries.push({ markup, share: shareText, priority, visual: visualRecord || null });
+        const pushVisualEntry = (markup, shareText, priority, visualRecord, auraName) => {
+            entries.push({ markup, share: shareText, priority, visual: visualRecord || null, auraName: auraName || null });
         };
 
         if (breakthroughStats && breakthroughStats.count > 0) {
@@ -5495,7 +5943,8 @@ function buildResultEntries(registry, biome, breakthroughStatsMap) {
                     : `<span class="${classAttr}">[Native] ${nativeLabel} | Times Rolled: ${formatWithCommas(breakthroughStats.count)}</span>`,
                 `[Native] ${nativeShareName} | Times Rolled: ${formatWithCommas(breakthroughStats.count)}`,
                 determineResultPriority(aura, breakthroughStats.btChance),
-                createShareVisualRecord(btName, breakthroughStats.count, { prefix: '[Native]', variant: 'native' })
+                createShareVisualRecord(btName, breakthroughStats.count, { prefix: '[Native]', variant: 'native' }),
+                aura.name
             );
 
             if (winCount > breakthroughStats.count) {
@@ -5509,7 +5958,8 @@ function buildResultEntries(registry, biome, breakthroughStatsMap) {
                         : `<span class="${classAttr}">${formattedName} | Times Rolled: ${formatWithCommas(remainingCount)}</span>`,
                     `${formattedTextName} | Times Rolled: ${formatWithCommas(remainingCount)}`,
                     determineResultPriority(aura, aura.chance),
-                    createShareVisualRecord(aura.name, remainingCount, { variant: 'standard' })
+                    createShareVisualRecord(aura.name, remainingCount, { variant: 'standard' }),
+                    aura.name
                 );
             }
         } else {
@@ -5522,12 +5972,35 @@ function buildResultEntries(registry, biome, breakthroughStatsMap) {
                     : `<span class="${classAttr}">${formattedName} | Times Rolled: ${formatWithCommas(winCount)}</span>`,
                 `${formattedTextName} | Times Rolled: ${formatWithCommas(winCount)}`,
                 determineResultPriority(aura, aura.chance),
-                createShareVisualRecord(aura.name, winCount, { variant: 'standard' })
+                createShareVisualRecord(aura.name, winCount, { variant: 'standard' }),
+                aura.name
             );
         }
     }
 
+    // Primary sort by computed priority
     entries.sort((a, b) => b.priority - a.priority);
+
+    // Ensure Illusionary entries are always at the very top
+    const illusionaryEntries = entries.filter(e => typeof e.auraName === 'string' && e.auraName.startsWith('Illusionary'));
+    if (illusionaryEntries.length > 0) {
+        // Remove all Illusionary entries from the array
+        entries = entries.filter(e => !(typeof e.auraName === 'string' && e.auraName.startsWith('Illusionary')));
+        // Prepend them in original discovered order
+        entries = [...illusionaryEntries, ...entries];
+    }
+
+    // Ensure Cryogenic entries appear above Equinox entries
+    const cryogenicEntries = entries.filter(e => typeof e.auraName === 'string' && e.auraName.startsWith('Cryogenic'));
+    if (cryogenicEntries.length > 0) {
+        // Remove Cryogenic entries
+        entries = entries.filter(e => !(typeof e.auraName === 'string' && e.auraName.startsWith('Cryogenic')));
+        // Find first Equinox index
+        const equinoxIndex = entries.findIndex(e => typeof e.auraName === 'string' && e.auraName.startsWith('Equinox'));
+        const insertIndex = equinoxIndex >= 0 ? equinoxIndex : 0;
+        // Insert Cryogenic entries before Equinox (or at top if Equinox missing)
+        entries.splice(insertIndex, 0, ...cryogenicEntries);
+    }
     const markupList = [];
     const shareRecords = [];
     const shareVisualRecords = [];
@@ -5710,7 +6183,7 @@ function runRollSimulation(options = {}) {
         ? Number.parseInt(options.totalOverride, 10)
         : null;
 
-    const rollInputValue = getNumericInputValue(rollCountInput, { min: 1, max: 10000000000 });
+    const rollInputValue = getNumericInputValue(rollCountInput, { min: 1, max: 1000000000000 });
     let total = Number.isFinite(totalOverride)
         ? totalOverride
         : rollInputValue;
@@ -5737,7 +6210,7 @@ function runRollSimulation(options = {}) {
     }
 
     const shouldFormatRolls = document.activeElement !== rollCountInput;
-    setNumericInputValue(rollCountInput, total, { format: shouldFormatRolls, min: 1, max: 10000000000 });
+    setNumericInputValue(rollCountInput, total, { format: shouldFormatRolls, min: 1, max: 1000000000000 });
 
     simulationActive = true;
     cancelRollRequested = false;
@@ -5880,7 +6353,7 @@ function runRollSimulation(options = {}) {
             const cutsceneQueue = [];
             for (const videoId of CUTSCENE_PRIORITY_SEQUENCE) {
                 const aura = AURA_REGISTRY.find(entry => entry.cutscene === videoId);
-                if (aura && readAuraWinCount(aura) > 0) {
+                if (aura && readAuraWinCount(aura) > 0 && !shouldSkipAuraCutscene(aura, biome)) {
                     cutsceneQueue.push(videoId);
                 }
             }
@@ -5931,6 +6404,7 @@ function runRollSimulation(options = {}) {
         const usedEventIds = eventSnapshot ? Array.from(eventSnapshot) : [];
         const eventLabels = usedEventIds.map(id => EVENT_LABEL_MAP.get(id) || id);
         const eventSummaryText = eventLabels.length > 0 ? eventLabels.join(', ') : EVENT_SUMMARY_EMPTY_LABEL;
+        const auraFilterSummaryText = getAuraFilterSummaryText();
 
         const resultChunks = [
             `Execution time: ${executionTime} seconds.<br>`,
@@ -5939,7 +6413,8 @@ function runRollSimulation(options = {}) {
             `Biome: ${biomeLabel}<br>`,
             `Rune: ${runeLabel}<br>`,
             `Time: ${timeLabel}<br>`,
-            `Events: ${eventSummaryText}<br><br>`
+            `Events: ${eventSummaryText}<br>`,
+            `Included Aura Tiers: ${auraFilterSummaryText}<br><br>`
         ];
 
         const { markupList, shareRecords, shareVisualRecords } = buildResultEntries(AURA_REGISTRY, biome, breakthroughStatsMap);
@@ -5985,6 +6460,8 @@ function runRollSimulation(options = {}) {
             shareVisuals: shareVisualRecords,
             xpTotal: totalXp,
             xpLines,
+            auraFilterSummary: auraFilterSummaryText,
+            auraFilterTiers: getIncludedAuraTierLabels(),
             executionSeconds: Number.isFinite(executionSeconds) ? executionSeconds : 0
         };
     };
@@ -6500,6 +6977,7 @@ function createDiscordShareText(summary) {
     const eventSummary = summary.eventLabels && summary.eventLabels.length > 0
         ? summary.eventLabels.join(', ')
         : EVENT_SUMMARY_EMPTY_LABEL;
+    const auraFilterSummary = summary.auraFilterSummary || getAuraFilterSummaryText();
     const details = [
         `> **Rolls:** ${formatWithCommas(summary.rolls)}`,
         `> **Luck:** ${formatWithCommas(summary.luck)}`,
@@ -6507,6 +6985,7 @@ function createDiscordShareText(summary) {
         `> **Rune:** ${summary.runeLabel || 'None'}`,
         `> **Time:** ${summary.timeLabel || 'Neutral'}`,
         `> **Events:** ${eventSummary}`,
+        `> **Included Tiers:** ${auraFilterSummary}`,
         `> **Duration:** ${Math.max(0, Math.round(summary.executionSeconds))}s`,
         `> **Total XP:** ${formatWithCommas(summary.xpTotal)}`
     ];
@@ -6540,6 +7019,7 @@ function createPlainShareText(summary) {
     const eventSummary = summary.eventLabels && summary.eventLabels.length > 0
         ? summary.eventLabels.join(', ')
         : EVENT_SUMMARY_EMPTY_LABEL;
+    const auraFilterSummary = summary.auraFilterSummary || getAuraFilterSummaryText();
     const lines = [
         'Sols Roll Result',
         `Rolls: ${formatWithCommas(summary.rolls)}`,
@@ -6548,6 +7028,7 @@ function createPlainShareText(summary) {
         `Rune: ${summary.runeLabel || 'None'}`,
         `Time: ${summary.timeLabel || 'Neutral'}`,
         `Events: ${eventSummary}`,
+        `Included Aura Tiers: ${auraFilterSummary}`,
         `Duration: ${Math.max(0, Math.round(summary.executionSeconds))}s`,
         `Total XP: ${formatWithCommas(summary.xpTotal)}`,
         '',
@@ -7607,6 +8088,7 @@ async function generateShareImage(summary, mode = 'download') {
     const eventSummary = summary.eventLabels && summary.eventLabels.length > 0
         ? summary.eventLabels.join(', ')
         : EVENT_SUMMARY_EMPTY_LABEL;
+    const auraFilterSummary = summary.auraFilterSummary || getAuraFilterSummaryText();
 
     const detailEntries = [
         `Rolls: ${formatWithCommas(summary.rolls)}`,
@@ -7615,6 +8097,7 @@ async function generateShareImage(summary, mode = 'download') {
         `Rune: ${summary.runeLabel || 'None'}`,
         `Time: ${summary.timeLabel || 'Neutral'}`,
         `Events: ${eventSummary}`,
+        `Included Aura Tiers: ${auraFilterSummary}`,
         `Duration: ${Math.max(0, Math.round(summary.executionSeconds))}s`,
         `Total XP: ${formatWithCommas(summary.xpTotal)}`
     ];

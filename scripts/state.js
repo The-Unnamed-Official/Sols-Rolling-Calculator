@@ -47,7 +47,18 @@
         reduceMotion: false,
         backgroundRolling: false,
         videoPlaying: false,
-        scrollLock: null
+        scrollLock: null,
+        auraTierFilters: {
+            basic: false,
+            epic: false,
+            unique: false,
+            legendary: false,
+            mythic: false,
+            exalted: false,
+            glorious: false,
+            transcendent: false,
+            challenged: false
+        }
     };
 
     global.DEFAULT_AUDIO_LEVEL = DEFAULT_AUDIO_LEVEL;
