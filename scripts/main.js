@@ -2909,6 +2909,39 @@ function resolveRarityClass(aura, biome) {
     return 'rarity-tier-basic';
 }
 
+function resolveBaseRarityClass(aura) {
+    if (!aura) return '';
+    const auraName = aura.name || '';
+    if (auraName.startsWith('Pixelation')) return 'rarity-tier-transcendent';
+    if (auraName === 'Fault') return 'rarity-tier-challenged';
+    if (['Oblivion', 'Memory', 'Neferkhaf'].some(name => auraName.startsWith(name))) {
+        return 'rarity-tier-challenged';
+    }
+    if (aura.disableRarityClass) return '';
+    const chance = aura.chance;
+    if (chance >= 999999999) return 'rarity-tier-transcendent';
+    if (chance >= 99999999) return 'rarity-tier-glorious';
+    if (chance >= 9999999) return 'rarity-tier-exalted';
+    if (chance >= 999999) return 'rarity-tier-mythic';
+    if (chance >= 99999) return 'rarity-tier-legendary';
+    if (chance >= 9999) return 'rarity-tier-unique';
+    if (chance >= 999) return 'rarity-tier-epic';
+    return 'rarity-tier-basic';
+}
+
+function shouldUseNativeOverrideTier(aura, biome) {
+    if (!aura || aura.disableRarityClass) return false;
+    const hasLimboNative = auraMatchesAnyBiome(aura, ['limbo', 'limbo-null']);
+    if (hasLimboNative && biome === 'limbo') return false;
+    const cyberspaceNative = auraMatchesAnyBiome(aura, ['cyberspace']);
+    const hasNativeBiomes = aura && aura.nativeBiomes;
+    return Boolean(
+        hasNativeBiomes
+        && !aura.nativeBiomes.has('limbo-null')
+        && (!cyberspaceNative || biome === 'cyberspace')
+    );
+}
+
 const AURA_TIER_FILTERS = Object.freeze([
     { key: 'basic', label: 'Skip Basic Auras', className: 'rarity-tier-basic' },
     { key: 'epic', label: 'Skip Epic Auras', className: 'rarity-tier-epic' },
@@ -2938,7 +2971,38 @@ function isAuraTierSkipped(aura, biome) {
     if (!tierKey || !appState || !appState.auraTierFilters) {
         return false;
     }
-    return Boolean(appState.auraTierFilters[tierKey]);
+    if (appState.auraTierFilters[tierKey]) {
+        return true;
+    }
+    if (tierKey === 'challenged' && shouldUseNativeOverrideTier(aura, biome)) {
+        const baseTierClass = resolveBaseRarityClass(aura);
+        const baseTierKey = AURA_TIER_CLASS_TO_KEY.get(baseTierClass) || null;
+        if (baseTierKey && appState.auraTierFilters[baseTierKey]) {
+            return true;
+        }
+    }
+    return false;
+}
+
+const CHALLENGED_CUTSCENE_AURAS = new Set(['Oblivion', 'Memory', 'Neferkhaf']);
+
+function shouldSkipAuraCutscene(aura, biome) {
+    if (isAuraTierSkipped(aura, biome)) {
+        return true;
+    }
+    if (!aura || !appState || !appState.auraTierFilters) {
+        return false;
+    }
+    if (!appState.auraTierFilters.challenged) {
+        return false;
+    }
+    const auraName = aura.name || '';
+    for (const label of CHALLENGED_CUTSCENE_AURAS) {
+        if (auraName.startsWith(label)) {
+            return true;
+        }
+    }
+    return false;
 }
 
 const nativeAuraOutlineOverrides = new Map([
@@ -6212,7 +6276,7 @@ function runRollSimulation(options = {}) {
             const cutsceneQueue = [];
             for (const videoId of CUTSCENE_PRIORITY_SEQUENCE) {
                 const aura = AURA_REGISTRY.find(entry => entry.cutscene === videoId);
-                if (aura && readAuraWinCount(aura) > 0) {
+                if (aura && readAuraWinCount(aura) > 0 && !shouldSkipAuraCutscene(aura, biome)) {
                     cutsceneQueue.push(videoId);
                 }
             }
