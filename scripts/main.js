@@ -1986,10 +1986,7 @@ function syncLuckVisualEffects(luckValue) {
         return;
     }
 
-    const shouldApplyMillionEffect = luckValue >= MILLION_LUCK_PRESET && !appState.reduceMotion;
-
-    pageBody.classList.toggle('luck-effect--million', shouldApplyMillionEffect);
-
+    pageBody.classList.remove('luck-effect--million');
 }
 
 function resetLuckPresetAnimations() {
@@ -5844,9 +5841,9 @@ function runRollSimulation(options = {}) {
         })()
         : null;
 
-    const MAX_FRAME_DURATION = 14;
-    const MAX_ROLLS_PER_CHUNK = 40000;
-    const CHECK_INTERVAL = 512;
+    const MAX_FRAME_DURATION = 18;
+    const MAX_ROLLS_PER_CHUNK = Math.min(200000, Math.max(60000, Math.ceil(total / 120)));
+    const CHECK_INTERVAL = Math.max(1024, Math.floor(MAX_ROLLS_PER_CHUNK / 32));
     let currentRoll = 0;
 
     const sampleEntropy = (typeof drawEntropy === 'function') ? drawEntropy : Math.random;
@@ -5992,6 +5989,9 @@ function runRollSimulation(options = {}) {
         };
     };
 
+    const lucklessAuraCount = lucklessAuras.length;
+    const luckAffectedAuraCount = luckAffectedAuras.length;
+
     function performSingleRollCheck() {
         if (duneProbability > 0 && sampleEntropy() < duneProbability) {
             recordAuraWin(activeDuneAura);
@@ -6010,7 +6010,7 @@ function runRollSimulation(options = {}) {
             return;
         }
 
-        for (let j = 0; j < lucklessAuras.length; j++) {
+        for (let j = 0; j < lucklessAuraCount; j++) {
             const entry = lucklessAuras[j];
             if (entry.successRatio > 0 && sampleEntropy() < entry.successRatio) {
                 recordAuraWin(entry.aura);
@@ -6022,7 +6022,7 @@ function runRollSimulation(options = {}) {
             }
         }
 
-        for (let j = 0; j < luckAffectedAuras.length; j++) {
+        for (let j = 0; j < luckAffectedAuraCount; j++) {
             const entry = luckAffectedAuras[j];
             if (entry.successRatio > 0 && sampleEntropy() < entry.successRatio) {
                 recordAuraWin(entry.aura);
