@@ -5842,8 +5842,8 @@ function runRollSimulation(options = {}) {
         : null;
 
     const MAX_FRAME_DURATION = 18;
-    const MAX_ROLLS_PER_CHUNK = Math.min(200000, Math.max(60000, Math.ceil(total / 120)));
-    const CHECK_INTERVAL = Math.max(1024, Math.floor(MAX_ROLLS_PER_CHUNK / 32));
+    const MAX_ROLLS_PER_CHUNK = Math.min(500000, Math.max(80000, Math.ceil(total / 90)));
+    const CHECK_INTERVAL = Math.max(1024, Math.floor(MAX_ROLLS_PER_CHUNK / 28));
     let currentRoll = 0;
 
     const sampleEntropy = (typeof drawEntropy === 'function') ? drawEntropy : Math.random;
@@ -5989,8 +5989,32 @@ function runRollSimulation(options = {}) {
         };
     };
 
-    const lucklessAuraCount = lucklessAuras.length;
-    const luckAffectedAuraCount = luckAffectedAuras.length;
+    const lucklessAuraCandidates = lucklessAuras.filter(entry => entry.successRatio > 0);
+    const luckAffectedAuraCandidates = luckAffectedAuras.filter(entry => entry.successRatio > 0);
+    const lucklessAuraCount = lucklessAuraCandidates.length;
+    const luckAffectedAuraCount = luckAffectedAuraCandidates.length;
+
+    const lucklessAuraList = new Array(lucklessAuraCount);
+    const lucklessAuraRatios = new Array(lucklessAuraCount);
+    const lucklessBreakthroughStats = new Array(lucklessAuraCount);
+
+    for (let i = 0; i < lucklessAuraCount; i++) {
+        const entry = lucklessAuraCandidates[i];
+        lucklessAuraList[i] = entry.aura;
+        lucklessAuraRatios[i] = entry.successRatio;
+        lucklessBreakthroughStats[i] = entry.breakthroughStats || null;
+    }
+
+    const luckAffectedAuraList = new Array(luckAffectedAuraCount);
+    const luckAffectedAuraRatios = new Array(luckAffectedAuraCount);
+    const luckAffectedBreakthroughStats = new Array(luckAffectedAuraCount);
+
+    for (let i = 0; i < luckAffectedAuraCount; i++) {
+        const entry = luckAffectedAuraCandidates[i];
+        luckAffectedAuraList[i] = entry.aura;
+        luckAffectedAuraRatios[i] = entry.successRatio;
+        luckAffectedBreakthroughStats[i] = entry.breakthroughStats || null;
+    }
 
     function performSingleRollCheck() {
         if (duneProbability > 0 && sampleEntropy() < duneProbability) {
@@ -6011,11 +6035,11 @@ function runRollSimulation(options = {}) {
         }
 
         for (let j = 0; j < lucklessAuraCount; j++) {
-            const entry = lucklessAuras[j];
-            if (entry.successRatio > 0 && sampleEntropy() < entry.successRatio) {
-                recordAuraWin(entry.aura);
-                if (entry.breakthroughStats) {
-                    entry.breakthroughStats.count++;
+            if (sampleEntropy() < lucklessAuraRatios[j]) {
+                recordAuraWin(lucklessAuraList[j]);
+                const stats = lucklessBreakthroughStats[j];
+                if (stats) {
+                    stats.count++;
                 }
                 rolls++;
                 return;
@@ -6023,11 +6047,11 @@ function runRollSimulation(options = {}) {
         }
 
         for (let j = 0; j < luckAffectedAuraCount; j++) {
-            const entry = luckAffectedAuras[j];
-            if (entry.successRatio > 0 && sampleEntropy() < entry.successRatio) {
-                recordAuraWin(entry.aura);
-                if (entry.breakthroughStats) {
-                    entry.breakthroughStats.count++;
+            if (sampleEntropy() < luckAffectedAuraRatios[j]) {
+                recordAuraWin(luckAffectedAuraList[j]);
+                const stats = luckAffectedBreakthroughStats[j];
+                if (stats) {
+                    stats.count++;
                 }
                 break;
             }
@@ -6044,16 +6068,20 @@ function runRollSimulation(options = {}) {
 
         const deadline = performance.now() + MAX_FRAME_DURATION;
         let processedThisChunk = 0;
+        let timeCheckCounter = 0;
 
         while (currentRoll < total && processedThisChunk < MAX_ROLLS_PER_CHUNK) {
             performSingleRollCheck();
             currentRoll++;
             processedThisChunk++;
+            timeCheckCounter++;
 
-            if (processedThisChunk % CHECK_INTERVAL === 0 && performance.now() >= deadline) {
-                break;
+            if (timeCheckCounter >= CHECK_INTERVAL) {
+                if (performance.now() >= deadline) {
+                    break;
+                }
+                timeCheckCounter = 0;
             }
-
         }
 
         if (updateProgress) {
