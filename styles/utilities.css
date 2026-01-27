@@ -1195,6 +1195,20 @@
     color: var(--accent);
 }
 
+.audio-slider__meta {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.audio-slider__icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--accent);
+    font-size: 0.9rem;
+}
+
 .audio-slider__input {
     --audio-slider-progress: 50%;
     --audio-slider-fill: #55d3ff;

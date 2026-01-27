@@ -596,6 +596,20 @@ function updateAudioSliderLabel(channel, percentValue) {
         const clamped = clamp01(percentValue / 100);
         input.style.setProperty('--audio-slider-progress', `${Math.round(clamped * 100)}%`);
     }
+
+    const icon = overlay.querySelector(`.audio-slider__icon[data-audio-icon="${channel}"] i`);
+    if (icon) {
+        const clampedValue = clamp01(percentValue / 100);
+        let iconClass = 'fa-volume-high';
+        if (clampedValue === 0) {
+            iconClass = 'fa-volume-xmark';
+        } else if (clampedValue <= 0.33) {
+            iconClass = 'fa-volume-off';
+        } else if (clampedValue <= 0.66) {
+            iconClass = 'fa-volume-low';
+        }
+        icon.className = `fa-solid ${iconClass}`;
+    }
 }
 
 function updateUiToggleStatus() {
