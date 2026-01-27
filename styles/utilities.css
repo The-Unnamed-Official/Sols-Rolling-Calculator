@@ -1087,6 +1087,49 @@
     color: var(--text-primary);
 }
 
+.filter-modal {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    width: min(720px, 92vw);
+}
+
+.filter-modal__header {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.filter-modal__title {
+    margin: 0;
+    font-size: clamp(18px, 2vw, 22px);
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+}
+
+.filter-modal__hint {
+    margin: 0;
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+}
+
+.filter-modal__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 12px;
+}
+
+.filter-tier-toggle {
+    width: 100%;
+    text-align: left;
+}
+
+.filter-modal__actions {
+    display: flex;
+    justify-content: flex-end;
+}
+
 .audio-slider,
 .audio-switch,
 .audio-modal__toggle {
