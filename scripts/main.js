@@ -3531,7 +3531,7 @@ function getAuraEventId(aura) {
     return auraEventIndex.get(aura.name) || null;
 }
 
-const CUTSCENE_PRIORITY_SEQUENCE = ["oblivion-cutscene", "memory-cutscene", "neferkhaf-cutscene", "illusionary-cutscene", "equinox-cutscene", "dream-traveler-cutscene", "breakthrough-cutscene", "leviathan-cutscene", "winter-garden-cutscene", "erebus-cutscene", "luminosity-cutscene", "pixelation-cutscene", "nyctophobia-cutscene", "frostveil-cutscene", "lamenthyr-cutscene", "ascendant-cutscene", "dreammetric-cutscene", "oppression-cutscene", "prowler-cutscene"];
+const CUTSCENE_PRIORITY_SEQUENCE = ["illusionary-cutscene", "oblivion-cutscene", "memory-cutscene", "neferkhaf-cutscene", "equinox-cutscene", "dream-traveler-cutscene", "breakthrough-cutscene", "leviathan-cutscene", "winter-garden-cutscene", "erebus-cutscene", "luminosity-cutscene", "pixelation-cutscene", "nyctophobia-cutscene", "frostveil-cutscene", "lamenthyr-cutscene", "ascendant-cutscene", "dreammetric-cutscene", "oppression-cutscene", "prowler-cutscene"];
 
 oblivionAuraData = AURA_REGISTRY.find(aura => aura.name === OBLIVION_AURA_LABEL) || null;
 memoryAuraData = AURA_REGISTRY.find(aura => aura.name === MEMORY_AURA_LABEL) || null;
@@ -5430,7 +5430,7 @@ function buildComputedAuraEntries(registry, context, luckValue, breakthroughStat
 }
 
 function buildResultEntries(registry, biome, breakthroughStatsMap) {
-    const entries = [];
+    let entries = [];
     for (const aura of registry) {
         const winCount = readAuraWinCount(aura);
         if (winCount <= 0) continue;
@@ -5479,8 +5479,8 @@ function buildResultEntries(registry, biome, breakthroughStatsMap) {
             }
         });
 
-        const pushVisualEntry = (markup, shareText, priority, visualRecord) => {
-            entries.push({ markup, share: shareText, priority, visual: visualRecord || null });
+        const pushVisualEntry = (markup, shareText, priority, visualRecord, auraName) => {
+            entries.push({ markup, share: shareText, priority, visual: visualRecord || null, auraName: auraName || null });
         };
 
         if (breakthroughStats && breakthroughStats.count > 0) {
@@ -5495,7 +5495,8 @@ function buildResultEntries(registry, biome, breakthroughStatsMap) {
                     : `<span class="${classAttr}">[Native] ${nativeLabel} | Times Rolled: ${formatWithCommas(breakthroughStats.count)}</span>`,
                 `[Native] ${nativeShareName} | Times Rolled: ${formatWithCommas(breakthroughStats.count)}`,
                 determineResultPriority(aura, breakthroughStats.btChance),
-                createShareVisualRecord(btName, breakthroughStats.count, { prefix: '[Native]', variant: 'native' })
+                createShareVisualRecord(btName, breakthroughStats.count, { prefix: '[Native]', variant: 'native' }),
+                aura.name
             );
 
             if (winCount > breakthroughStats.count) {
@@ -5509,7 +5510,8 @@ function buildResultEntries(registry, biome, breakthroughStatsMap) {
                         : `<span class="${classAttr}">${formattedName} | Times Rolled: ${formatWithCommas(remainingCount)}</span>`,
                     `${formattedTextName} | Times Rolled: ${formatWithCommas(remainingCount)}`,
                     determineResultPriority(aura, aura.chance),
-                    createShareVisualRecord(aura.name, remainingCount, { variant: 'standard' })
+                    createShareVisualRecord(aura.name, remainingCount, { variant: 'standard' }),
+                    aura.name
                 );
             }
         } else {
@@ -5522,12 +5524,35 @@ function buildResultEntries(registry, biome, breakthroughStatsMap) {
                     : `<span class="${classAttr}">${formattedName} | Times Rolled: ${formatWithCommas(winCount)}</span>`,
                 `${formattedTextName} | Times Rolled: ${formatWithCommas(winCount)}`,
                 determineResultPriority(aura, aura.chance),
-                createShareVisualRecord(aura.name, winCount, { variant: 'standard' })
+                createShareVisualRecord(aura.name, winCount, { variant: 'standard' }),
+                aura.name
             );
         }
     }
 
+    // Primary sort by computed priority
     entries.sort((a, b) => b.priority - a.priority);
+
+    // Ensure Illusionary entries are always at the very top
+    const illusionaryEntries = entries.filter(e => typeof e.auraName === 'string' && e.auraName.startsWith('Illusionary'));
+    if (illusionaryEntries.length > 0) {
+        // Remove all Illusionary entries from the array
+        entries = entries.filter(e => !(typeof e.auraName === 'string' && e.auraName.startsWith('Illusionary')));
+        // Prepend them in original discovered order
+        entries = [...illusionaryEntries, ...entries];
+    }
+
+    // Ensure Cryogenic entries appear above Equinox entries
+    const cryogenicEntries = entries.filter(e => typeof e.auraName === 'string' && e.auraName.startsWith('Cryogenic'));
+    if (cryogenicEntries.length > 0) {
+        // Remove Cryogenic entries
+        entries = entries.filter(e => !(typeof e.auraName === 'string' && e.auraName.startsWith('Cryogenic')));
+        // Find first Equinox index
+        const equinoxIndex = entries.findIndex(e => typeof e.auraName === 'string' && e.auraName.startsWith('Equinox'));
+        const insertIndex = equinoxIndex >= 0 ? equinoxIndex : 0;
+        // Insert Cryogenic entries before Equinox (or at top if Equinox missing)
+        entries.splice(insertIndex, 0, ...cryogenicEntries);
+    }
     const markupList = [];
     const shareRecords = [];
     const shareVisualRecords = [];
