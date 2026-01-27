@@ -413,7 +413,7 @@
 }
 
 #filterMenuToggle {
-    width: 190px;
+    width: 220px;
 }
 
 .options-menu__trigger::after {
@@ -459,6 +459,14 @@
     width: 100%;
     text-align: left;
     min-width: 0;
+}
+
+#filterAuraTiersButton {
+    text-align: center;
+}
+
+#audioSettingsButton {
+    text-align: center;
 }
 
 @media (min-width: 1200px) {
