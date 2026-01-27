@@ -1986,10 +1986,7 @@ function syncLuckVisualEffects(luckValue) {
         return;
     }
 
-    const shouldApplyMillionEffect = luckValue >= MILLION_LUCK_PRESET && !appState.reduceMotion;
-
-    pageBody.classList.toggle('luck-effect--million', shouldApplyMillionEffect);
-
+    pageBody.classList.remove('luck-effect--million');
 }
 
 function resetLuckPresetAnimations() {
@@ -5844,9 +5841,9 @@ function runRollSimulation(options = {}) {
         })()
         : null;
 
-    const MAX_FRAME_DURATION = 14;
-    const MAX_ROLLS_PER_CHUNK = 40000;
-    const CHECK_INTERVAL = 512;
+    const MAX_FRAME_DURATION = 18;
+    const MAX_ROLLS_PER_CHUNK = Math.min(500000, Math.max(80000, Math.ceil(total / 90)));
+    const CHECK_INTERVAL = Math.max(1024, Math.floor(MAX_ROLLS_PER_CHUNK / 28));
     let currentRoll = 0;
 
     const sampleEntropy = (typeof drawEntropy === 'function') ? drawEntropy : Math.random;
@@ -5992,44 +5989,127 @@ function runRollSimulation(options = {}) {
         };
     };
 
-    function performSingleRollCheck() {
-        if (duneProbability > 0 && sampleEntropy() < duneProbability) {
-            recordAuraWin(activeDuneAura);
-            rolls++;
-            return;
-        }
-        if (memoryProbability > 0 && sampleEntropy() < memoryProbability) {
-            recordAuraWin(activeMemoryAura);
-            rolls++;
-            return;
+    const lucklessAuraCandidates = lucklessAuras.filter(entry => entry.successRatio > 0);
+    const luckAffectedAuraCandidates = luckAffectedAuras.filter(entry => entry.successRatio > 0);
+    const lucklessAuraCount = lucklessAuraCandidates.length;
+    const luckAffectedAuraCount = luckAffectedAuraCandidates.length;
+
+    const lucklessAuraList = new Array(lucklessAuraCount);
+    const lucklessAuraRatios = new Array(lucklessAuraCount);
+    const lucklessBreakthroughStats = new Array(lucklessAuraCount);
+
+    for (let i = 0; i < lucklessAuraCount; i++) {
+        const entry = lucklessAuraCandidates[i];
+        lucklessAuraList[i] = entry.aura;
+        lucklessAuraRatios[i] = entry.successRatio;
+        lucklessBreakthroughStats[i] = entry.breakthroughStats || null;
+    }
+
+    const luckAffectedAuraList = new Array(luckAffectedAuraCount);
+    const luckAffectedAuraRatios = new Array(luckAffectedAuraCount);
+    const luckAffectedBreakthroughStats = new Array(luckAffectedAuraCount);
+
+    for (let i = 0; i < luckAffectedAuraCount; i++) {
+        const entry = luckAffectedAuraCandidates[i];
+        luckAffectedAuraList[i] = entry.aura;
+        luckAffectedAuraRatios[i] = entry.successRatio;
+        luckAffectedBreakthroughStats[i] = entry.breakthroughStats || null;
+    }
+
+    const buildWeightedSelection = ratios => {
+        const count = ratios.length;
+        if (!count) {
+            return null;
         }
 
-        if (oblivionProbability > 0 && sampleEntropy() < oblivionProbability) {
-            recordAuraWin(activeOblivionAura);
-            rolls++;
-            return;
-        }
+        const cumulativeWeights = new Array(count);
+        let remainingProbability = 1;
+        let totalProbability = 0;
 
-        for (let j = 0; j < lucklessAuras.length; j++) {
-            const entry = lucklessAuras[j];
-            if (entry.successRatio > 0 && sampleEntropy() < entry.successRatio) {
-                recordAuraWin(entry.aura);
-                if (entry.breakthroughStats) {
-                    entry.breakthroughStats.count++;
+        for (let i = 0; i < count; i++) {
+            const ratio = ratios[i];
+            const weight = remainingProbability * ratio;
+            totalProbability += weight;
+            cumulativeWeights[i] = totalProbability;
+            remainingProbability *= (1 - ratio);
+
+            if (remainingProbability <= 0) {
+                for (let j = i + 1; j < count; j++) {
+                    cumulativeWeights[j] = totalProbability;
                 }
-                rolls++;
-                return;
+                break;
             }
         }
 
-        for (let j = 0; j < luckAffectedAuras.length; j++) {
-            const entry = luckAffectedAuras[j];
-            if (entry.successRatio > 0 && sampleEntropy() < entry.successRatio) {
-                recordAuraWin(entry.aura);
-                if (entry.breakthroughStats) {
-                    entry.breakthroughStats.count++;
-                }
-                break;
+        return { cumulativeWeights, totalProbability };
+    };
+
+    const selectWeightedIndex = (selection, randomValue) => {
+        if (!selection || selection.totalProbability <= 0 || randomValue >= selection.totalProbability) {
+            return -1;
+        }
+
+        const { cumulativeWeights } = selection;
+        let low = 0;
+        let high = cumulativeWeights.length - 1;
+
+        while (low < high) {
+            const mid = (low + high) >> 1;
+            if (randomValue < cumulativeWeights[mid]) {
+                high = mid;
+            } else {
+                low = mid + 1;
+            }
+        }
+
+        return low;
+    };
+
+    const prerollAuraList = [];
+    const prerollAuraRatios = [];
+
+    if (duneProbability > 0 && activeDuneAura) {
+        prerollAuraList.push(activeDuneAura);
+        prerollAuraRatios.push(duneProbability);
+    }
+    if (memoryProbability > 0 && activeMemoryAura) {
+        prerollAuraList.push(activeMemoryAura);
+        prerollAuraRatios.push(memoryProbability);
+    }
+    if (oblivionProbability > 0 && activeOblivionAura) {
+        prerollAuraList.push(activeOblivionAura);
+        prerollAuraRatios.push(oblivionProbability);
+    }
+
+    const prerollSelection = buildWeightedSelection(prerollAuraRatios);
+    const lucklessSelection = buildWeightedSelection(lucklessAuraRatios);
+    const luckAffectedSelection = buildWeightedSelection(luckAffectedAuraRatios);
+
+    function performSingleRollCheck() {
+        const prerollIndex = selectWeightedIndex(prerollSelection, sampleEntropy());
+        if (prerollIndex !== -1) {
+            recordAuraWin(prerollAuraList[prerollIndex]);
+            rolls++;
+            return;
+        }
+
+        const lucklessIndex = selectWeightedIndex(lucklessSelection, sampleEntropy());
+        if (lucklessIndex !== -1) {
+            recordAuraWin(lucklessAuraList[lucklessIndex]);
+            const stats = lucklessBreakthroughStats[lucklessIndex];
+            if (stats) {
+                stats.count++;
+            }
+            rolls++;
+            return;
+        }
+
+        const luckAffectedIndex = selectWeightedIndex(luckAffectedSelection, sampleEntropy());
+        if (luckAffectedIndex !== -1) {
+            recordAuraWin(luckAffectedAuraList[luckAffectedIndex]);
+            const stats = luckAffectedBreakthroughStats[luckAffectedIndex];
+            if (stats) {
+                stats.count++;
             }
         }
 
@@ -6044,16 +6124,20 @@ function runRollSimulation(options = {}) {
 
         const deadline = performance.now() + MAX_FRAME_DURATION;
         let processedThisChunk = 0;
+        let timeCheckCounter = 0;
 
         while (currentRoll < total && processedThisChunk < MAX_ROLLS_PER_CHUNK) {
             performSingleRollCheck();
             currentRoll++;
             processedThisChunk++;
+            timeCheckCounter++;
 
-            if (processedThisChunk % CHECK_INTERVAL === 0 && performance.now() >= deadline) {
-                break;
+            if (timeCheckCounter >= CHECK_INTERVAL) {
+                if (performance.now() >= deadline) {
+                    break;
+                }
+                timeCheckCounter = 0;
             }
-
         }
 
         if (updateProgress) {

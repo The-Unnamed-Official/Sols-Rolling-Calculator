@@ -127,11 +127,11 @@
                 <div class="banner__meta">
                     <h1 class="banner__title">Sol's Rolling Simulator</h1>
                     <p class="banner__subtitle">
-                        <button type="button" class="banner__version-button" id="versionInfoButton" aria-haspopup="dialog" aria-expanded="false" data-version-id="v1619">V1.619</button>
+                        <button type="button" class="banner__version-button" id="versionInfoButton" aria-haspopup="dialog" aria-expanded="false" data-version-id="v1630">V1.630</button>
                         <span class="banner__subtitle-divider" aria-hidden="true">◉</span>
                         <span class="banner__subtitle-author">By <span class="banner__subtitle-author-name">not.unnamed</span></span>
                         <span class="banner__subtitle-divider" aria-hidden="true">◉</span>
-                        <span class="banner__subtitle-updated">Updated <time datetime="2026-01-20">2026/01/20</time></span>
+                        <span class="banner__subtitle-updated">Updated <time datetime="2026-01-27">2026/01/27</time></span>
                         <span class="banner__subtitle-divider" aria-hidden="true">◉</span>
                         <span class="banner__subtitle-eon">Sol's RNG Eon 1-14</span>
                     </p>
@@ -794,11 +794,23 @@
                 <button
                     type="button"
                     class="changelog-tab changelog-tab--active"
+                    id="changelog-tab-v1630"
+                    role="tab"
+                    aria-controls="changelog-panel-v1630"
+                    aria-selected="true"
+                    data-changelog-tab="v1630"
+                >
+                    <span class="changelog-tab__title">V1.630</span>
+                </button>
+                <button
+                    type="button"
+                    class="changelog-tab changelog-tab--active"
                     id="changelog-tab-v1619"
                     role="tab"
                     aria-controls="changelog-panel-v1619"
-                    aria-selected="true"
+                    aria-selected="false"
                     data-changelog-tab="v1619"
+                    tabindex="-1"
                 >
                     <span class="changelog-tab__title">V1.619</span>
                 </button>
@@ -950,12 +962,33 @@
 
             <div class="changelog-modal__panels" data-changelog-panels>
                 <section
+                    id="changelog-panel-v1630"
+                    class="changelog-modal__panel"
+                    role="tabpanel"
+                    aria-labelledby="changelog-tab-v1630"
+                    data-changelog-panel="v1630"
+                    tabindex="0"
+                >
+                    <header class="changelog-modal__header">
+                        <h2 class="changelog-modal__title" id="versionChangelogTitle">Version V1.630 Update Notes</h2>
+                        <span class="changelog-tab__subtitle">Heavy Performance Improvements</span>
+                        <p class="changelog-modal__meta">Updated 2026/01/27</p>
+                    </header>
+                    <p class="changelog-modal__intro">Latest changes:</p>
+                    <ul class="changelog-modal__list">
+                        <li><span class="subtitleClass">Optimized roll processing loops</span> to improve throughput for massive roll counts (about 2,000% faster).<span class="tinyClass">Go ahead and test it if you want<span class="footer-credits__ellipsis"></span></span></li>
+                        <li><span class="archangelClass">Streamlined UI progress updates</span> so rolling stays snappy.</li>
+                        <li><span class="oblivionClass">Removed the 1,000,000+ luck RGB effect</span> and <span class="boundClass">handled processing performance issues more efficiently</span>.</li>
+                    </ul>
+                </section>
+                <section
                     id="changelog-panel-v1619"
                     class="changelog-modal__panel"
                     role="tabpanel"
                     aria-labelledby="changelog-tab-v1619"
                     data-changelog-panel="v1619"
-                    tabindex="0"
+                    hidden
+                    tabindex="-1"
                 >
                     <header class="changelog-modal__header">
                         <h2 class="changelog-modal__title" id="versionChangelogTitle">Version V1.619 Update Notes</h2>
