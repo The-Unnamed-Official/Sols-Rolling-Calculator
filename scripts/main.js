@@ -2113,8 +2113,77 @@ let currentLuck = 1;
 let lastVipMultiplier = 1;
 let lastXyzMultiplier = 1;
 let lastXcMultiplier = 1;
+let lastAxisMultiplier = 1;
 let lastDaveMultiplier = 1;
 let lastDorcelessnessMultiplier = 1;
+let suppressYgBlessingAlert = false;
+
+const EVENT_LUCK_TOGGLE_IDS = Object.freeze([
+    'xyz-luck-toggle',
+    'xc-luck-toggle',
+    'axis-luck-toggle',
+    'dorcelessness-luck-toggle'
+]);
+
+const YG_BLESSING_BLOCKING_EVENT_IDS = Object.freeze([
+    'xyz-luck-toggle',
+    'xc-luck-toggle',
+    'axis-luck-toggle'
+]);
+
+const YG_BLESSING_EVENT_BLOCK_MESSAGE = "YG blessing has not been obtainable while these events have been occuring in Sol's RNG (yet).";
+let eventToggleSyncInProgress = false;
+
+function isAnyToggleActive(toggleIds) {
+    if (!Array.isArray(toggleIds)) {
+        return false;
+    }
+    return toggleIds.some(id => {
+        const toggle = document.getElementById(id);
+        return Boolean(toggle && toggle.checked);
+    });
+}
+
+function setToggleChecked(toggle, checked, { dispatchChange } = {}) {
+    if (!toggle || toggle.checked === checked) {
+        return;
+    }
+    toggle.checked = checked;
+    if (dispatchChange) {
+        toggle.dispatchEvent(new Event('change', { bubbles: true }));
+    }
+}
+
+function disableYgBlessing({ silent = false } = {}) {
+    const ygToggle = document.getElementById('yg-blessing-toggle');
+    if (!ygToggle || !ygToggle.checked) {
+        return;
+    }
+    if (silent) {
+        suppressYgBlessingAlert = true;
+    }
+    setToggleChecked(ygToggle, false, { dispatchChange: true });
+    if (silent) {
+        suppressYgBlessingAlert = false;
+    }
+}
+
+function enforceExclusiveEventToggles(activeToggle) {
+    if (eventToggleSyncInProgress || !activeToggle || !activeToggle.checked) {
+        return;
+    }
+    eventToggleSyncInProgress = true;
+    EVENT_LUCK_TOGGLE_IDS.forEach(id => {
+        if (id === activeToggle.id) {
+            return;
+        }
+        const toggle = document.getElementById(id);
+        if (toggle && toggle.checked) {
+            setToggleChecked(toggle, false, { dispatchChange: true });
+        }
+    });
+    eventToggleSyncInProgress = false;
+}
 
 const MILLION_LUCK_PRESET = 1000000;
 
@@ -2195,11 +2264,13 @@ function applyLuckValue(value, options = {}) {
     lastVipMultiplier = 1;
     lastXyzMultiplier = 1;
     lastXcMultiplier = 1;
+    lastAxisMultiplier = 1;
     lastDaveMultiplier = 1;
     lastDorcelessnessMultiplier = 1;
     document.getElementById('vip-dropdown').value = '1';
     document.getElementById('xyz-luck-toggle').checked = false;
     document.getElementById('xc-luck-toggle').checked = false;
+    document.getElementById('axis-luck-toggle').checked = false;
     document.getElementById('dorcelessness-luck-toggle').checked = false;
     document.getElementById('yg-blessing-toggle').checked = false;
     refreshCustomSelect('vip-dropdown');
@@ -2228,6 +2299,7 @@ function getActiveLuckMultipliers() {
         vip: document.getElementById('vip-dropdown'),
         xyz: document.getElementById('xyz-luck-toggle'),
         xc: document.getElementById('xc-luck-toggle'),
+        axis: document.getElementById('axis-luck-toggle'),
         dorcelessness: document.getElementById('dorcelessness-luck-toggle'),
         dave: document.getElementById('dave-luck-dropdown')
     };
@@ -2239,6 +2311,7 @@ function getActiveLuckMultipliers() {
         vip: parseFloat(controls.vip ? controls.vip.value : '1') || 1,
         xyz: controls.xyz && controls.xyz.checked ? 2 : 1,
         xc: controls.xc && controls.xc.checked ? 2 : 1,
+        axis: controls.axis && controls.axis.checked ? 2 : 1,
         dorcelessness: controls.dorcelessness && controls.dorcelessness.checked ? 2 : 1,
         dave: isLimboBiome && controls.dave ? parseFloat(controls.dave.value) || 1 : 1
     };
@@ -2261,12 +2334,13 @@ function applyLuckDelta(presetValue, options = {}) {
     const targetLuck = Math.max(0, startingLuck + numericPresetValue);
 
     const multipliers = getActiveLuckMultipliers();
-    const multiplierTotal = multipliers.vip * multipliers.xyz * multipliers.xc * multipliers.dorcelessness * multipliers.dave;
+    const multiplierTotal = multipliers.vip * multipliers.xyz * multipliers.xc * multipliers.axis * multipliers.dorcelessness * multipliers.dave;
     baseLuck = multiplierTotal > 0 ? targetLuck / multiplierTotal : targetLuck;
     currentLuck = targetLuck;
     lastVipMultiplier = multipliers.vip;
     lastXyzMultiplier = multipliers.xyz;
     lastXcMultiplier = multipliers.xc;
+    lastAxisMultiplier = multipliers.axis;
     lastDaveMultiplier = multipliers.dave;
     lastDorcelessnessMultiplier = multipliers.dorcelessness;
 
@@ -2411,6 +2485,7 @@ function recomputeLuckValue() {
         vip: document.getElementById('vip-dropdown'),
         xyz: document.getElementById('xyz-luck-toggle'),
         xc: document.getElementById('xc-luck-toggle'),
+        axis: document.getElementById('axis-luck-toggle'),
         dorcelessness: document.getElementById('dorcelessness-luck-toggle'),
         dave: document.getElementById('dave-luck-dropdown'),
         luckInput: document.getElementById('luck-total')
@@ -2423,6 +2498,7 @@ function recomputeLuckValue() {
         vip: parseFloat(controls.vip ? controls.vip.value : '1') || 1,
         xyz: controls.xyz && controls.xyz.checked ? 2 : 1,
         xc: controls.xc && controls.xc.checked ? 2 : 1,
+        axis: controls.axis && controls.axis.checked ? 2 : 1,
         dorcelessness: controls.dorcelessness && controls.dorcelessness.checked ? 2 : 1,
         dave: isLimboBiome && controls.dave ? parseFloat(controls.dave.value) || 1 : 1
     };
@@ -2438,6 +2514,7 @@ function recomputeLuckValue() {
         lastVipMultiplier = 1;
         lastXyzMultiplier = 1;
         lastXcMultiplier = 1;
+        lastAxisMultiplier = 1;
         lastDaveMultiplier = 1;
         lastDorcelessnessMultiplier = 1;
         if (controls.vip) {
@@ -2449,6 +2526,9 @@ function recomputeLuckValue() {
         }
         if (controls.xc) {
             controls.xc.checked = false;
+        }
+        if (controls.axis) {
+            controls.axis.checked = false;
         }
         if (controls.dorcelessness) {
             controls.dorcelessness.checked = false;
@@ -2469,10 +2549,11 @@ function recomputeLuckValue() {
         return;
     }
 
-    currentLuck = baseLuck * multipliers.vip * multipliers.xyz * multipliers.xc * multipliers.dorcelessness * multipliers.dave;
+    currentLuck = baseLuck * multipliers.vip * multipliers.xyz * multipliers.xc * multipliers.axis * multipliers.dorcelessness * multipliers.dave;
     lastVipMultiplier = multipliers.vip;
     lastXyzMultiplier = multipliers.xyz;
     lastXcMultiplier = multipliers.xc;
+    lastAxisMultiplier = multipliers.axis;
     lastDaveMultiplier = multipliers.dave;
     lastDorcelessnessMultiplier = multipliers.dorcelessness;
     if (luckField) {
@@ -2562,6 +2643,7 @@ function initializeBiomeInterface() {
     const daveLuckContainer = document.getElementById('dave-luck-wrapper');
     const xyzLuckContainer = document.getElementById('xyz-luck-wrapper');
     const xcLuckContainer = document.getElementById('xc-luck-wrapper');
+    const axisLuckContainer = document.getElementById('axis-luck-wrapper');
     const dorcelessnessLuckContainer = document.getElementById('dorcelessness-luck-wrapper');
     const ygBlessingContainer = document.getElementById('yg-blessing-wrapper');
     const luckPresets = document.getElementById('luck-preset-panel');
@@ -2569,12 +2651,14 @@ function initializeBiomeInterface() {
         if (daveLuckContainer) daveLuckContainer.style.display = '';
         if (xyzLuckContainer) xyzLuckContainer.style.display = '';
         if (xcLuckContainer) xcLuckContainer.style.display = '';
+        if (axisLuckContainer) axisLuckContainer.style.display = '';
         if (dorcelessnessLuckContainer) dorcelessnessLuckContainer.style.display = '';
         if (ygBlessingContainer) ygBlessingContainer.style.display = '';
     } else {
         if (daveLuckContainer) daveLuckContainer.style.display = 'none';
         if (xyzLuckContainer) xyzLuckContainer.style.display = '';
         if (xcLuckContainer) xcLuckContainer.style.display = '';
+        if (axisLuckContainer) axisLuckContainer.style.display = '';
         if (dorcelessnessLuckContainer) dorcelessnessLuckContainer.style.display = '';
         if (ygBlessingContainer) ygBlessingContainer.style.display = '';
     }
@@ -5194,20 +5278,61 @@ document.addEventListener('DOMContentLoaded', () => {
 
     document.getElementById('vip-dropdown').addEventListener('change', recomputeLuckValue);
     const xyzToggle = document.getElementById('xyz-luck-toggle');
+    const axisToggle = document.getElementById('axis-luck-toggle');
     if (xyzToggle) {
-        xyzToggle.addEventListener('change', recomputeLuckValue);
+        xyzToggle.addEventListener('change', () => {
+            enforceExclusiveEventToggles(xyzToggle);
+            if (xyzToggle.checked) {
+                disableYgBlessing({ silent: true });
+            }
+            recomputeLuckValue();
+        });
     }
     const xcToggle = document.getElementById('xc-luck-toggle');
     if (xcToggle) {
-        xcToggle.addEventListener('change', recomputeLuckValue);
+        xcToggle.addEventListener('change', () => {
+            enforceExclusiveEventToggles(xcToggle);
+            if (xcToggle.checked) {
+                disableYgBlessing({ silent: true });
+            }
+            recomputeLuckValue();
+        });
+    }
+    if (axisToggle) {
+        axisToggle.addEventListener('change', () => {
+            enforceExclusiveEventToggles(axisToggle);
+            if (axisToggle.checked) {
+                disableYgBlessing({ silent: true });
+            }
+            recomputeLuckValue();
+        });
     }
     const dorcelessnessToggle = document.getElementById('dorcelessness-luck-toggle');
     if (dorcelessnessToggle) {
-        dorcelessnessToggle.addEventListener('change', recomputeLuckValue);
+        dorcelessnessToggle.addEventListener('change', () => {
+            enforceExclusiveEventToggles(dorcelessnessToggle);
+            recomputeLuckValue();
+        });
     }
     const daveDropdown = document.getElementById('dave-luck-dropdown');
     if (daveDropdown) {
         daveDropdown.addEventListener('change', recomputeLuckValue);
+    }
+
+    const ygBlessingToggle = document.getElementById('yg-blessing-toggle');
+    if (ygBlessingToggle) {
+        ygBlessingToggle.addEventListener('change', () => {
+            if (!ygBlessingToggle.checked) {
+                return;
+            }
+            if (suppressYgBlessingAlert) {
+                return;
+            }
+            if (isAnyToggleActive(YG_BLESSING_BLOCKING_EVENT_IDS)) {
+                window.alert(YG_BLESSING_EVENT_BLOCK_MESSAGE);
+                disableYgBlessing({ silent: true });
+            }
+        });
     }
 
     if (luckField) {
@@ -5221,11 +5346,13 @@ document.addEventListener('DOMContentLoaded', () => {
             lastVipMultiplier = 1;
             lastXyzMultiplier = 1;
             lastXcMultiplier = 1;
+            lastAxisMultiplier = 1;
             lastDaveMultiplier = 1;
             lastDorcelessnessMultiplier = 1;
             document.getElementById('vip-dropdown').value = '1';
             document.getElementById('xyz-luck-toggle').checked = false;
             document.getElementById('xc-luck-toggle').checked = false;
+            document.getElementById('axis-luck-toggle').checked = false;
             document.getElementById('dorcelessness-luck-toggle').checked = false;
             document.getElementById('yg-blessing-toggle').checked = false;
             refreshCustomSelect('vip-dropdown');
