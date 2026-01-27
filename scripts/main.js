@@ -2971,6 +2971,13 @@ const AURA_TIER_FILTERS = Object.freeze([
 ]);
 
 const AURA_TIER_CLASS_TO_KEY = new Map(AURA_TIER_FILTERS.map(tier => [tier.className, tier.key]));
+const AURA_TIER_SKIP_NAME_OVERRIDES = new Map([
+    ['transcendent', ['Nyctophobia']],
+    ['glorious', ['Unknown', 'Elude', 'Prologue', 'Dreamspace']],
+    ['exalted', ['Juxtaposition']],
+    ['mythic', ['Anima', 'Nihility', 'Undefined', 'Flowed', 'Shiftlocked']],
+    ['legendary', ['Raven']]
+]);
 
 function formatAuraTierLabel(tier) {
     if (!tier) {
@@ -3010,7 +3017,32 @@ function resolveAuraTierKey(aura, biome) {
     return AURA_TIER_CLASS_TO_KEY.get(rarityClass) || null;
 }
 
+function shouldSkipAuraByTierOverride(aura) {
+    if (!aura || !appState || !appState.auraTierFilters) {
+        return false;
+    }
+    const auraName = (aura.name || '').trim();
+    if (!auraName) {
+        return false;
+    }
+    const auraNameLower = auraName.toLowerCase();
+    for (const [tierKey, auraPrefixes] of AURA_TIER_SKIP_NAME_OVERRIDES) {
+        if (!appState.auraTierFilters[tierKey]) {
+            continue;
+        }
+        for (const prefix of auraPrefixes) {
+            if (auraNameLower.startsWith(prefix.toLowerCase())) {
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
 function isAuraTierSkipped(aura, biome) {
+    if (shouldSkipAuraByTierOverride(aura)) {
+        return true;
+    }
     const tierKey = resolveAuraTierKey(aura, biome);
     if (!tierKey || !appState || !appState.auraTierFilters) {
         return false;
