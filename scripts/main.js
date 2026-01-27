@@ -21,6 +21,10 @@ const audioOverlayState = {
     lastFocusedElement: null
 };
 
+const auraFilterOverlayState = {
+    lastFocusedElement: null
+};
+
 const CHANGELOG_VERSION_STORAGE_KEY = 'solsRollingCalculator:lastSeenChangelogVersion';
 const BACKGROUND_ROLLING_STORAGE_KEY = 'solsRollingCalculator:backgroundRollingPreference';
 const AUDIO_SETTINGS_STORAGE_KEY = 'solsRollingCalculator:audioSettings';
@@ -419,6 +423,163 @@ function hideAudioSettingsOverlay() {
             audioOverlayState.lastFocusedElement = null;
         }
     });
+}
+
+function showAuraFilterOverlay() {
+    const overlay = document.getElementById('auraFilterOverlay');
+    if (!overlay) return;
+
+    auraFilterOverlayState.lastFocusedElement = document.activeElement;
+    syncAuraTierFilterButtons();
+    revealOverlay(overlay);
+
+    const firstButton = overlay.querySelector('.filter-tier-toggle');
+    if (firstButton && typeof firstButton.focus === 'function') {
+        try {
+            firstButton.focus({ preventScroll: true });
+        } catch (error) {
+            firstButton.focus();
+        }
+    }
+}
+
+function hideAuraFilterOverlay() {
+    const overlay = document.getElementById('auraFilterOverlay');
+    if (!overlay) return;
+
+    concealOverlay(overlay, {
+        onHidden: () => {
+            const last = auraFilterOverlayState.lastFocusedElement;
+            if (last && typeof last.focus === 'function') {
+                last.focus({ preventScroll: true });
+            }
+            auraFilterOverlayState.lastFocusedElement = null;
+        }
+    });
+}
+
+function syncAuraTierFilterButtons() {
+    const overlay = document.getElementById('auraFilterOverlay');
+    if (!overlay || !appState || !appState.auraTierFilters) {
+        return;
+    }
+
+    overlay.querySelectorAll('.filter-tier-toggle').forEach(button => {
+        const tierKey = button.dataset.tierKey;
+        if (!tierKey) {
+            return;
+        }
+        const label = button.dataset.tierLabel || button.textContent.trim();
+        const enabled = Boolean(appState.auraTierFilters[tierKey]);
+        button.setAttribute('aria-pressed', enabled ? 'true' : 'false');
+        button.textContent = `${label}: ${enabled ? 'On' : 'Off'}`;
+    });
+}
+
+function initializeAuraTierFilterPanel() {
+    const overlay = document.getElementById('auraFilterOverlay');
+    const openButton = document.getElementById('filterAuraTiersButton');
+    const closeButton = document.getElementById('auraFilterClose');
+    if (!overlay || !openButton) return;
+
+    const filterMenu = document.getElementById('filterMenu');
+    const filterMenuToggle = document.getElementById('filterMenuToggle');
+
+    overlay.addEventListener('click', event => {
+        if (event.target === overlay) {
+            hideAuraFilterOverlay();
+        }
+    });
+
+    overlay.addEventListener('keydown', event => {
+        if (event.key === 'Escape') {
+            hideAuraFilterOverlay();
+        }
+    });
+
+    if (closeButton) {
+        closeButton.addEventListener('click', () => hideAuraFilterOverlay());
+    }
+
+    overlay.querySelectorAll('.filter-tier-toggle').forEach(button => {
+        button.addEventListener('click', () => {
+            const tierKey = button.dataset.tierKey;
+            if (!tierKey || !appState || !appState.auraTierFilters) {
+                return;
+            }
+            appState.auraTierFilters[tierKey] = !appState.auraTierFilters[tierKey];
+            syncAuraTierFilterButtons();
+        });
+    });
+
+    openButton.addEventListener('click', event => {
+        event.preventDefault();
+        if (filterMenu) {
+            filterMenu.classList.remove('options-menu--open');
+        }
+        if (filterMenuToggle) {
+            filterMenuToggle.setAttribute('aria-expanded', 'false');
+        }
+        showAuraFilterOverlay();
+    });
+
+    syncAuraTierFilterButtons();
+}
+
+function initializeOptionsMenu(menuId, toggleId, panelId) {
+    const menu = document.getElementById(menuId);
+    const toggleButton = document.getElementById(toggleId);
+    const panel = document.getElementById(panelId);
+    if (!menu || !toggleButton || !panel) {
+        return;
+    }
+
+    const closeMenu = () => {
+        menu.classList.remove('options-menu--open');
+        toggleButton.setAttribute('aria-expanded', 'false');
+    };
+
+    const openMenu = () => {
+        menu.classList.add('options-menu--open');
+        toggleButton.setAttribute('aria-expanded', 'true');
+    };
+
+    toggleButton.addEventListener('click', event => {
+        event.stopPropagation();
+        if (menu.classList.contains('options-menu--open')) {
+            closeMenu();
+        } else {
+            openMenu();
+            if (event.detail === 0) {
+                const firstItem = panel.querySelector('button');
+                if (firstItem) {
+                    firstItem.focus({ preventScroll: true });
+                }
+            }
+        }
+    });
+
+    document.addEventListener('click', event => {
+        if (!menu.contains(event.target)) {
+            closeMenu();
+        }
+    });
+
+    menu.addEventListener('keydown', event => {
+        if (event.key === 'Escape') {
+            closeMenu();
+            toggleButton.focus({ preventScroll: true });
+        }
+    });
+
+    menu.addEventListener('focusout', event => {
+        const nextFocus = event.relatedTarget;
+        if (nextFocus instanceof Node && !menu.contains(nextFocus)) {
+            closeMenu();
+        }
+    });
+
+    closeMenu();
 }
 
 function updateAudioSliderLabel(channel, percentValue) {
@@ -2656,6 +2817,39 @@ function resolveRarityClass(aura, biome) {
     if (chance >= 9999) return 'rarity-tier-unique';
     if (chance >= 999) return 'rarity-tier-epic';
     return 'rarity-tier-basic';
+}
+
+const AURA_TIER_FILTERS = Object.freeze([
+    { key: 'basic', label: 'Ignore Basic Auras', className: 'rarity-tier-basic' },
+    { key: 'epic', label: 'Ignore Epic Auras', className: 'rarity-tier-epic' },
+    { key: 'unique', label: 'Ignore Unique Auras', className: 'rarity-tier-unique' },
+    { key: 'legendary', label: 'Ignore Legendary Auras', className: 'rarity-tier-legendary' },
+    { key: 'mythic', label: 'Ignore Mythic Auras', className: 'rarity-tier-mythic' },
+    { key: 'exalted', label: 'Ignore Exalted Auras', className: 'rarity-tier-exalted' },
+    { key: 'glorious', label: 'Ignore Glorious Auras', className: 'rarity-tier-glorious' },
+    { key: 'transcendent', label: 'Ignore Transcendent Auras', className: 'rarity-tier-transcendent' },
+    { key: 'challenged', label: 'Ignore Challenged Auras', className: 'rarity-tier-challenged' },
+    { key: 'limbo', label: 'Ignore Limbo Auras', className: 'rarity-tier-limbo' }
+]);
+
+const AURA_TIER_CLASS_TO_KEY = new Map(AURA_TIER_FILTERS.map(tier => [tier.className, tier.key]));
+
+function resolveAuraTierKey(aura, biome) {
+    if (!aura) {
+        return null;
+    }
+    const rarityClass = typeof resolveRarityClass === 'function'
+        ? resolveRarityClass(aura, biome)
+        : '';
+    return AURA_TIER_CLASS_TO_KEY.get(rarityClass) || null;
+}
+
+function isAuraTierIgnored(aura, biome) {
+    const tierKey = resolveAuraTierKey(aura, biome);
+    if (!tierKey || !appState || !appState.auraTierFilters) {
+        return false;
+    }
+    return Boolean(appState.auraTierFilters[tierKey]);
 }
 
 const nativeAuraOutlineOverrides = new Map([
@@ -5100,57 +5294,9 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    const settingsMenu = document.getElementById('optionsMenu');
-    const settingsToggleButton = document.getElementById('optionsMenuToggle');
-    const settingsPanel = document.getElementById('optionsMenuPanel');
-    if (settingsMenu && settingsToggleButton && settingsPanel) {
-        const closeSettingsMenu = () => {
-            settingsMenu.classList.remove('options-menu--open');
-            settingsToggleButton.setAttribute('aria-expanded', 'false');
-        };
-
-        const openSettingsMenu = () => {
-            settingsMenu.classList.add('options-menu--open');
-            settingsToggleButton.setAttribute('aria-expanded', 'true');
-        };
-
-        settingsToggleButton.addEventListener('click', event => {
-            event.stopPropagation();
-            if (settingsMenu.classList.contains('options-menu--open')) {
-                closeSettingsMenu();
-            } else {
-                openSettingsMenu();
-                if (event.detail === 0) {
-                    const firstItem = settingsPanel.querySelector('button');
-                    if (firstItem) {
-                        firstItem.focus({ preventScroll: true });
-                    }
-                }
-            }
-        });
-
-        document.addEventListener('click', event => {
-            if (!settingsMenu.contains(event.target)) {
-                closeSettingsMenu();
-            }
-        });
-
-        settingsMenu.addEventListener('keydown', event => {
-            if (event.key === 'Escape') {
-                closeSettingsMenu();
-                settingsToggleButton.focus({ preventScroll: true });
-            }
-        });
-
-        settingsMenu.addEventListener('focusout', event => {
-            const nextFocus = event.relatedTarget;
-            if (nextFocus instanceof Node && !settingsMenu.contains(nextFocus)) {
-                closeSettingsMenu();
-            }
-        });
-
-        closeSettingsMenu();
-    }
+    initializeOptionsMenu('filterMenu', 'filterMenuToggle', 'filterMenuPanel');
+    initializeOptionsMenu('optionsMenu', 'optionsMenuToggle', 'optionsMenuPanel');
+    initializeAuraTierFilterPanel();
 
     const yearEl = document.getElementById('build-year');
     if (yearEl) {
@@ -5836,7 +5982,8 @@ function runRollSimulation(options = {}) {
         eventSnapshot,
         luckValue
     });
-    const computedAuras = buildComputedAuraEntries(AURA_REGISTRY, evaluationContext, luckValue, breakthroughStatsMap);
+    const tierFilteredRegistry = AURA_REGISTRY.filter(aura => !isAuraTierIgnored(aura, biome));
+    const computedAuras = buildComputedAuraEntries(tierFilteredRegistry, evaluationContext, luckValue, breakthroughStatsMap);
     const lucklessAuras = computedAuras.filter(entry => entry.aura && entry.aura.ignoreLuck);
     const luckAffectedAuras = computedAuras.filter(entry => !entry.aura || !entry.aura.ignoreLuck);
 
@@ -6093,15 +6240,17 @@ function runRollSimulation(options = {}) {
     const prerollAuraList = [];
     const prerollAuraRatios = [];
 
-    if (duneProbability > 0 && activeDuneAura) {
+    const shouldIncludeAura = aura => aura && !isAuraTierIgnored(aura, biome);
+
+    if (duneProbability > 0 && shouldIncludeAura(activeDuneAura)) {
         prerollAuraList.push(activeDuneAura);
         prerollAuraRatios.push(duneProbability);
     }
-    if (memoryProbability > 0 && activeMemoryAura) {
+    if (memoryProbability > 0 && shouldIncludeAura(activeMemoryAura)) {
         prerollAuraList.push(activeMemoryAura);
         prerollAuraRatios.push(memoryProbability);
     }
-    if (oblivionProbability > 0 && activeOblivionAura) {
+    if (oblivionProbability > 0 && shouldIncludeAura(activeOblivionAura)) {
         prerollAuraList.push(activeOblivionAura);
         prerollAuraRatios.push(oblivionProbability);
     }
