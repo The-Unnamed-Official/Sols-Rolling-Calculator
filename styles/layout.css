@@ -149,12 +149,13 @@
     text-decoration: underline;
     text-decoration-thickness: 0.08em;
     text-underline-offset: 0.4em;
-    transition: color 0.2s ease;
+    transition: color 0.2s ease, text-underline-offset 0.2s ease;
 }
 
 .banner__version-button:hover,
 .banner__version-button:focus-visible {
     color: #d3ecff;
+    text-underline-offset: 0.2em;
 }
 
 .banner__version-button:focus-visible {
@@ -170,6 +171,35 @@
 .banner__subtitle-author-name {
     font-size: 1.15em;
     color: #8d9bff;
+    display: inline;
+    text-decoration: underline;
+    text-decoration-thickness: 0.01em;
+    text-underline-offset: 0.4em;
+    text-transform: inherit;
+    letter-spacing: inherit;
+    transition: color 0.2s ease, text-underline-offset 0.2s ease;
+}
+
+.banner__subtitle-author-name:hover {
+    color: #a7b1ff;
+    text-underline-offset: 0.2em;
+}
+
+.banner__subtitle-game-version {
+    font-size: 1.15em;
+    color: #b4ffba;
+    display: inline;
+    text-decoration: underline;
+    text-decoration-thickness: 0.01em;
+    text-underline-offset: 0.4em;
+    text-transform: inherit;
+    letter-spacing: inherit;
+    transition: color 0.2s ease, text-underline-offset 0.2s ease;
+}
+
+.banner__subtitle-game-version:hover {
+    color: #ceffd2;
+    text-underline-offset: 0.2em;
 }
 
 .banner__subtitle-updated {
