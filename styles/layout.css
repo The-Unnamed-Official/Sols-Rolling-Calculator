@@ -412,6 +412,10 @@
     text-align: left;
 }
 
+#filterMenuToggle {
+    width: 190px;
+}
+
 .options-menu__trigger::after {
     content: '';
     position: absolute;
@@ -1165,4 +1169,3 @@
     border-radius: 12px;
     box-shadow: inset 0 0 18px rgba(70, 130, 210, 0.15);
 }
-

@@ -2882,6 +2882,7 @@ function resolveRarityClass(aura, biome) {
     if (!aura) return '';
     const auraName = aura.name || '';
     if (auraName.startsWith('Pixelation')) return 'rarity-tier-transcendent';
+    if (auraName.startsWith('Illusionary')) return 'rarity-tier-challenged';
     if (auraName === 'Fault') return 'rarity-tier-challenged';
     if (['Oblivion', 'Memory', 'Neferkhaf'].some(name => auraName.startsWith(name))) {
         return 'rarity-tier-challenged';
@@ -2913,6 +2914,7 @@ function resolveBaseRarityClass(aura) {
     if (!aura) return '';
     const auraName = aura.name || '';
     if (auraName.startsWith('Pixelation')) return 'rarity-tier-transcendent';
+    if (auraName.startsWith('Illusionary')) return 'rarity-tier-challenged';
     if (auraName === 'Fault') return 'rarity-tier-challenged';
     if (['Oblivion', 'Memory', 'Neferkhaf'].some(name => auraName.startsWith(name))) {
         return 'rarity-tier-challenged';
@@ -2955,6 +2957,34 @@ const AURA_TIER_FILTERS = Object.freeze([
 ]);
 
 const AURA_TIER_CLASS_TO_KEY = new Map(AURA_TIER_FILTERS.map(tier => [tier.className, tier.key]));
+
+function formatAuraTierLabel(tier) {
+    if (!tier) {
+        return '';
+    }
+    const label = typeof tier.label === 'string' && tier.label.trim().length > 0
+        ? tier.label
+        : tier.key;
+    return label
+        .replace(/^Skip\s+/i, '')
+        .replace(/\s*Auras?$/i, '')
+        .trim();
+}
+
+function getIncludedAuraTierLabels() {
+    if (!appState || !appState.auraTierFilters) {
+        return [];
+    }
+    return AURA_TIER_FILTERS
+        .filter(tier => !appState.auraTierFilters[tier.key])
+        .map(formatAuraTierLabel)
+        .filter(Boolean);
+}
+
+function getAuraFilterSummaryText() {
+    const labels = getIncludedAuraTierLabels();
+    return labels.length > 0 ? labels.join(', ') : 'None';
+}
 
 function resolveAuraTierKey(aura, biome) {
     if (!aura) {
@@ -6327,6 +6357,7 @@ function runRollSimulation(options = {}) {
         const usedEventIds = eventSnapshot ? Array.from(eventSnapshot) : [];
         const eventLabels = usedEventIds.map(id => EVENT_LABEL_MAP.get(id) || id);
         const eventSummaryText = eventLabels.length > 0 ? eventLabels.join(', ') : EVENT_SUMMARY_EMPTY_LABEL;
+        const auraFilterSummaryText = getAuraFilterSummaryText();
 
         const resultChunks = [
             `Execution time: ${executionTime} seconds.<br>`,
@@ -6335,7 +6366,8 @@ function runRollSimulation(options = {}) {
             `Biome: ${biomeLabel}<br>`,
             `Rune: ${runeLabel}<br>`,
             `Time: ${timeLabel}<br>`,
-            `Events: ${eventSummaryText}<br><br>`
+            `Events: ${eventSummaryText}<br>`,
+            `Included Aura Tiers: ${auraFilterSummaryText}<br><br>`
         ];
 
         const { markupList, shareRecords, shareVisualRecords } = buildResultEntries(AURA_REGISTRY, biome, breakthroughStatsMap);
@@ -6381,6 +6413,8 @@ function runRollSimulation(options = {}) {
             shareVisuals: shareVisualRecords,
             xpTotal: totalXp,
             xpLines,
+            auraFilterSummary: auraFilterSummaryText,
+            auraFilterTiers: getIncludedAuraTierLabels(),
             executionSeconds: Number.isFinite(executionSeconds) ? executionSeconds : 0
         };
     };
@@ -6896,6 +6930,7 @@ function createDiscordShareText(summary) {
     const eventSummary = summary.eventLabels && summary.eventLabels.length > 0
         ? summary.eventLabels.join(', ')
         : EVENT_SUMMARY_EMPTY_LABEL;
+    const auraFilterSummary = summary.auraFilterSummary || getAuraFilterSummaryText();
     const details = [
         `> **Rolls:** ${formatWithCommas(summary.rolls)}`,
         `> **Luck:** ${formatWithCommas(summary.luck)}`,
@@ -6903,6 +6938,7 @@ function createDiscordShareText(summary) {
         `> **Rune:** ${summary.runeLabel || 'None'}`,
         `> **Time:** ${summary.timeLabel || 'Neutral'}`,
         `> **Events:** ${eventSummary}`,
+        `> **Included Tiers:** ${auraFilterSummary}`,
         `> **Duration:** ${Math.max(0, Math.round(summary.executionSeconds))}s`,
         `> **Total XP:** ${formatWithCommas(summary.xpTotal)}`
     ];
@@ -6936,6 +6972,7 @@ function createPlainShareText(summary) {
     const eventSummary = summary.eventLabels && summary.eventLabels.length > 0
         ? summary.eventLabels.join(', ')
         : EVENT_SUMMARY_EMPTY_LABEL;
+    const auraFilterSummary = summary.auraFilterSummary || getAuraFilterSummaryText();
     const lines = [
         'Sols Roll Result',
         `Rolls: ${formatWithCommas(summary.rolls)}`,
@@ -6944,6 +6981,7 @@ function createPlainShareText(summary) {
         `Rune: ${summary.runeLabel || 'None'}`,
         `Time: ${summary.timeLabel || 'Neutral'}`,
         `Events: ${eventSummary}`,
+        `Included Aura Tiers: ${auraFilterSummary}`,
         `Duration: ${Math.max(0, Math.round(summary.executionSeconds))}s`,
         `Total XP: ${formatWithCommas(summary.xpTotal)}`,
         '',
@@ -8003,6 +8041,7 @@ async function generateShareImage(summary, mode = 'download') {
     const eventSummary = summary.eventLabels && summary.eventLabels.length > 0
         ? summary.eventLabels.join(', ')
         : EVENT_SUMMARY_EMPTY_LABEL;
+    const auraFilterSummary = summary.auraFilterSummary || getAuraFilterSummaryText();
 
     const detailEntries = [
         `Rolls: ${formatWithCommas(summary.rolls)}`,
@@ -8011,6 +8050,7 @@ async function generateShareImage(summary, mode = 'download') {
         `Rune: ${summary.runeLabel || 'None'}`,
         `Time: ${summary.timeLabel || 'Neutral'}`,
         `Events: ${eventSummary}`,
+        `Included Aura Tiers: ${auraFilterSummary}`,
         `Duration: ${Math.max(0, Math.round(summary.executionSeconds))}s`,
         `Total XP: ${formatWithCommas(summary.xpTotal)}`
     ];
