@@ -2131,7 +2131,7 @@ const YG_BLESSING_BLOCKING_EVENT_IDS = Object.freeze([
     'axis-luck-toggle'
 ]);
 
-const YG_BLESSING_EVENT_BLOCK_MESSAGE = "YG blessing has not been obtainable while these events have been occuring in Sol's RNG (yet).";
+const YG_BLESSING_EVENT_BLOCK_MESSAGE = "YG blessing has not been obtainable while these events have been occurring in Sol's RNG (yet).";
 let eventToggleSyncInProgress = false;
 
 function isAnyToggleActive(toggleIds) {
@@ -2879,8 +2879,14 @@ async function playAuraSequence(queue) {
 }
 
 function resolveRarityClass(aura, biome) {
-    if (aura && aura.disableRarityClass) return '';
-    if (aura && aura.name === 'Fault') return 'rarity-tier-challenged';
+    if (!aura) return '';
+    const auraName = aura.name || '';
+    if (auraName.startsWith('Pixelation')) return 'rarity-tier-transcendent';
+    if (auraName === 'Fault') return 'rarity-tier-challenged';
+    if (['Oblivion', 'Memory', 'Neferkhaf'].some(name => auraName.startsWith(name))) {
+        return 'rarity-tier-challenged';
+    }
+    if (aura.disableRarityClass) return '';
     const hasLimboNative = auraMatchesAnyBiome(aura, ['limbo', 'limbo-null']);
     if (hasLimboNative && biome === 'limbo') return 'rarity-tier-limbo';
     const cyberspaceNative = auraMatchesAnyBiome(aura, ['cyberspace']);
@@ -2904,16 +2910,15 @@ function resolveRarityClass(aura, biome) {
 }
 
 const AURA_TIER_FILTERS = Object.freeze([
-    { key: 'basic', label: 'Ignore Basic Auras', className: 'rarity-tier-basic' },
-    { key: 'epic', label: 'Ignore Epic Auras', className: 'rarity-tier-epic' },
-    { key: 'unique', label: 'Ignore Unique Auras', className: 'rarity-tier-unique' },
-    { key: 'legendary', label: 'Ignore Legendary Auras', className: 'rarity-tier-legendary' },
-    { key: 'mythic', label: 'Ignore Mythic Auras', className: 'rarity-tier-mythic' },
-    { key: 'exalted', label: 'Ignore Exalted Auras', className: 'rarity-tier-exalted' },
-    { key: 'glorious', label: 'Ignore Glorious Auras', className: 'rarity-tier-glorious' },
-    { key: 'transcendent', label: 'Ignore Transcendent Auras', className: 'rarity-tier-transcendent' },
-    { key: 'challenged', label: 'Ignore Challenged Auras', className: 'rarity-tier-challenged' },
-    { key: 'limbo', label: 'Ignore Limbo Auras', className: 'rarity-tier-limbo' }
+    { key: 'basic', label: 'Skip Basic Auras', className: 'rarity-tier-basic' },
+    { key: 'epic', label: 'Skip Epic Auras', className: 'rarity-tier-epic' },
+    { key: 'unique', label: 'Skip Unique Auras', className: 'rarity-tier-unique' },
+    { key: 'legendary', label: 'Skip Legendary Auras', className: 'rarity-tier-legendary' },
+    { key: 'mythic', label: 'Skip Mythic Auras', className: 'rarity-tier-mythic' },
+    { key: 'exalted', label: 'Skip Exalted Auras', className: 'rarity-tier-exalted' },
+    { key: 'glorious', label: 'Skip Glorious Auras', className: 'rarity-tier-glorious' },
+    { key: 'transcendent', label: 'Skip Transcendent Auras', className: 'rarity-tier-transcendent' },
+    { key: 'challenged', label: 'Skip Challenged Auras', className: 'rarity-tier-challenged' }
 ]);
 
 const AURA_TIER_CLASS_TO_KEY = new Map(AURA_TIER_FILTERS.map(tier => [tier.className, tier.key]));
@@ -2928,7 +2933,7 @@ function resolveAuraTierKey(aura, biome) {
     return AURA_TIER_CLASS_TO_KEY.get(rarityClass) || null;
 }
 
-function isAuraTierIgnored(aura, biome) {
+function isAuraTierSkipped(aura, biome) {
     const tierKey = resolveAuraTierKey(aura, biome);
     if (!tierKey || !appState || !appState.auraTierFilters) {
         return false;
@@ -4076,6 +4081,21 @@ function showBiomeConditionOverlay(biomeId, { message: overrideMessage = null, l
 
     title.textContent = titleOverride || `${label} requirements`;
     body.textContent = message;
+    revealOverlay(overlay);
+}
+
+function showYgBlessingOverlay() {
+    if (typeof document === 'undefined') {
+        return;
+    }
+
+    const overlay = document.getElementById('ygBlessingOverlay');
+    const body = document.getElementById('ygBlessingBody');
+    if (!overlay || !body || typeof revealOverlay !== 'function') {
+        return;
+    }
+
+    body.textContent = YG_BLESSING_EVENT_BLOCK_MESSAGE;
     revealOverlay(overlay);
 }
 
@@ -5329,7 +5349,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
             if (isAnyToggleActive(YG_BLESSING_BLOCKING_EVENT_IDS)) {
-                window.alert(YG_BLESSING_EVENT_BLOCK_MESSAGE);
+                showYgBlessingOverlay();
                 disableYgBlessing({ silent: true });
             }
         });
@@ -5383,6 +5403,17 @@ document.addEventListener('DOMContentLoaded', () => {
         biomeConditionOverlay.addEventListener('click', event => {
             if (event.target === biomeConditionOverlay) {
                 concealOverlay(biomeConditionOverlay);
+            }
+        });
+    }
+
+    const ygBlessingOverlay = document.getElementById('ygBlessingOverlay');
+    const ygBlessingClose = document.getElementById('ygBlessingClose');
+    if (ygBlessingOverlay && ygBlessingClose) {
+        ygBlessingClose.addEventListener('click', () => concealOverlay(ygBlessingOverlay));
+        ygBlessingOverlay.addEventListener('click', event => {
+            if (event.target === ygBlessingOverlay) {
+                concealOverlay(ygBlessingOverlay);
             }
         });
     }
@@ -5705,6 +5736,9 @@ function buildComputedAuraEntries(registry, context, luckValue, breakthroughStat
 function buildResultEntries(registry, biome, breakthroughStatsMap) {
     let entries = [];
     for (const aura of registry) {
+        if (isAuraTierSkipped(aura, biome)) {
+            continue;
+        }
         const winCount = readAuraWinCount(aura);
         if (winCount <= 0) continue;
 
@@ -6109,8 +6143,7 @@ function runRollSimulation(options = {}) {
         eventSnapshot,
         luckValue
     });
-    const tierFilteredRegistry = AURA_REGISTRY.filter(aura => !isAuraTierIgnored(aura, biome));
-    const computedAuras = buildComputedAuraEntries(tierFilteredRegistry, evaluationContext, luckValue, breakthroughStatsMap);
+    const computedAuras = buildComputedAuraEntries(AURA_REGISTRY, evaluationContext, luckValue, breakthroughStatsMap);
     const lucklessAuras = computedAuras.filter(entry => entry.aura && entry.aura.ignoreLuck);
     const luckAffectedAuras = computedAuras.filter(entry => !entry.aura || !entry.aura.ignoreLuck);
 
@@ -6367,17 +6400,15 @@ function runRollSimulation(options = {}) {
     const prerollAuraList = [];
     const prerollAuraRatios = [];
 
-    const shouldIncludeAura = aura => aura && !isAuraTierIgnored(aura, biome);
-
-    if (duneProbability > 0 && shouldIncludeAura(activeDuneAura)) {
+    if (duneProbability > 0 && activeDuneAura) {
         prerollAuraList.push(activeDuneAura);
         prerollAuraRatios.push(duneProbability);
     }
-    if (memoryProbability > 0 && shouldIncludeAura(activeMemoryAura)) {
+    if (memoryProbability > 0 && activeMemoryAura) {
         prerollAuraList.push(activeMemoryAura);
         prerollAuraRatios.push(memoryProbability);
     }
-    if (oblivionProbability > 0 && shouldIncludeAura(activeOblivionAura)) {
+    if (oblivionProbability > 0 && activeOblivionAura) {
         prerollAuraList.push(activeOblivionAura);
         prerollAuraRatios.push(oblivionProbability);
     }

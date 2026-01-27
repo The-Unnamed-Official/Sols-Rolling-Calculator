@@ -1123,6 +1123,34 @@
 .filter-tier-toggle {
     width: 100%;
     text-align: left;
+    position: relative;
+    padding-left: 44px;
+    letter-spacing: 0.12em;
+}
+
+.filter-tier-toggle::before {
+    content: '';
+    position: absolute;
+    left: 16px;
+    top: 50%;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: rgba(140, 160, 190, 0.6);
+    box-shadow: 0 0 0 2px rgba(16, 32, 52, 0.65), inset 0 0 6px rgba(0, 0, 0, 0.3);
+    transform: translateY(-50%);
+}
+
+.filter-tier-toggle[aria-pressed="true"] {
+    border-color: rgba(120, 235, 255, 0.95);
+    color: #e9fbff;
+    --button-background: linear-gradient(120deg, rgba(16, 58, 88, 0.95), rgba(8, 22, 44, 0.98));
+    box-shadow: inset 0 0 18px rgba(120, 235, 255, 0.2), 0 12px 22px rgba(0, 0, 0, 0.35);
+}
+
+.filter-tier-toggle[aria-pressed="true"]::before {
+    background: radial-gradient(circle, rgba(120, 235, 255, 1) 0%, rgba(92, 208, 240, 0.65) 60%, rgba(45, 92, 120, 0.4) 100%);
+    box-shadow: 0 0 12px rgba(120, 235, 255, 0.6), 0 0 0 2px rgba(120, 235, 255, 0.8);
 }
 
 .filter-modal__actions {
