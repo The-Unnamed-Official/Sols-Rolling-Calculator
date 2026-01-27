@@ -127,7 +127,7 @@
                 <div class="banner__meta">
                     <h1 class="banner__title">Sol's Rolling Simulator</h1>
                     <p class="banner__subtitle">
-                        <button type="button" class="banner__version-button" id="versionInfoButton" aria-haspopup="dialog" aria-expanded="false" data-version-id="v1638">V1.638</button>
+                        <button type="button" class="banner__version-button" id="versionInfoButton" aria-haspopup="dialog" aria-expanded="false" data-version-id="v1639">V1.639</button>
                         <span class="banner__subtitle-divider" aria-hidden="true">◉</span>
                         <span class="banner__subtitle-author">By <span class="banner__subtitle-author-name">not.unnamed</span></span>
                         <span class="banner__subtitle-divider" aria-hidden="true">◉</span>
@@ -292,6 +292,14 @@
                         <span class="form-field__label">XC Event (2×)</span>
                         <label class="toggle">
                             <input type="checkbox" id="xc-luck-toggle" class="toggle__input">
+                            <span class="toggle__track"></span>
+                            <span class="toggle__thumb"></span>
+                        </label>
+                    </div>
+                    <div id="axis-luck-wrapper" class="form-field form-field--toggle">
+                        <span class="form-field__label">Axis Event (2×)</span>
+                        <label class="toggle">
+                            <input type="checkbox" id="axis-luck-toggle" class="toggle__input">
                             <span class="toggle__track"></span>
                             <span class="toggle__thumb"></span>
                         </label>
@@ -830,11 +838,23 @@
                 <button
                     type="button"
                     class="changelog-tab changelog-tab--active"
+                    id="changelog-tab-v1639"
+                    role="tab"
+                    aria-controls="changelog-panel-v1639"
+                    aria-selected="true"
+                    data-changelog-tab="v1639"
+                >
+                    <span class="changelog-tab__title">V1.639</span>
+                </button>
+                <button
+                    type="button"
+                    class="changelog-tab changelog-tab--active"
                     id="changelog-tab-v1638"
                     role="tab"
                     aria-controls="changelog-panel-v1638"
-                    aria-selected="true"
+                    aria-selected="false"
                     data-changelog-tab="v1638"
+                    tabindex="-1"
                 >
                     <span class="changelog-tab__title">V1.638</span>
                 </button>
@@ -1010,12 +1030,34 @@
 
             <div class="changelog-modal__panels" data-changelog-panels>
                 <section
+                    id="changelog-panel-v1639"
+                    class="changelog-modal__panel"
+                    role="tabpanel"
+                    aria-labelledby="changelog-tab-v1639"
+                    data-changelog-panel="v1639"
+                    tabindex="0"
+                >
+                    <header class="changelog-modal__header">
+                        <h2 class="changelog-modal__title" id="versionChangelogTitle">Version V1.639 Update Notes</h2>
+                        <span class="changelog-tab__subtitle">Axis Event Toggles & Blessing Rules</span>
+                        <p class="changelog-modal__meta">Updated 2026/01/27</p>
+                    </header>
+                    <p class="changelog-modal__intro">Latest changes:</p>
+                    <ul class="changelog-modal__list">
+                        <li>Added the <span class="subtitleClass">Axis Event (2×)</span> luck toggle under XC.</li>
+                        <li>XYZ, XC, Axis, and Dorcelessness now behave as exclusive event switches.</li>
+                        <li>YG Blessing can only be enabled when all event switches are off, or when Dorcelessness is active.</li>
+                        <li>Added a warning popup if YG Blessing is toggled on during XYZ, XC, or Axis events.</li>
+                    </ul>
+                </section>
+                <section
                     id="changelog-panel-v1638"
                     class="changelog-modal__panel"
                     role="tabpanel"
                     aria-labelledby="changelog-tab-v1638"
                     data-changelog-panel="v1638"
-                    tabindex="0"
+                    hidden
+                    tabindex="-1"
                 >
                     <header class="changelog-modal__header">
                         <h2 class="changelog-modal__title" id="versionChangelogTitle">Version V1.638 Update Notes</h2>
