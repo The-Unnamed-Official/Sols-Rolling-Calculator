@@ -3575,7 +3575,7 @@ const AURA_BLUEPRINT_SOURCE = Object.freeze([
     { name: "Savior - 3,200,000", chance: 3200000 },
     { name: "Lunar : Nightfall - 3,000,000", chance: 3000000, nativeBiomes: ["graveyard"] },
     { name: "Parasite - 3,000,000", chance: 3000000, breakthroughs: nativeBreakthroughs("corruption") },
-    { name: "Player : Respawn - 1,999,999", chance: 3000000, breakthroughs: nativeBreakthroughs("corruption") },
+    { name: "Player : Respawn - 1,999,999", chance: 1999999, breakthroughs: nativeBreakthroughs("cyberspace"), nativeBiomes: ["cyberspace"] },
     { name: "Virtual - 2,500,000", chance: 2500000, breakthroughs: nativeBreakthroughs("cyberspace"), nativeBiomes: ["cyberspace"] },
     { name: "Undefined : Defined - 2,222,000", chance: 2222000, breakthroughs: nativeBreakthroughs("null") },
     { name: "Flowed - 2,121,121", chance: 2121121, breakthroughs: nativeBreakthroughs("null") },
