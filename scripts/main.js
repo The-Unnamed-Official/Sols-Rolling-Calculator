@@ -3385,7 +3385,7 @@ function determineResultPriority(aura, baseChance) {
 const MEGAPHONE_AURA_NAME = 'Megaphone - 5,000';
 const BREAKTHROUGH_AURA_NAME = 'Breakthrough - 1,999,999,999';
 const LEVIATHAN_AURA_NAME = 'Leviathan - 1,730,400,000';
-const MONARCH_AURA_NAME = "Monarch - 2,000,000,000";
+const MONARCH_AURA_NAME = "Monarch - 3,000,000,000";
 
 const NATIVE_BREAKTHROUGH_MULTIPLIERS = Object.freeze({
     cyberspace: 2,
@@ -3421,7 +3421,7 @@ const AURA_BLUEPRINT_SOURCE = Object.freeze([
     { name: "Illusionary - 10,000,000", chance: 10000000, nativeBiomes: ["cyberspace"], ignoreLuck: true, fixedRollThreshold: 1, cutscene: "illusionary-cutscene" },
     { name: "Equinox - 2,500,000,000", chance: 2500000000, cutscene: "equinox-cutscene" },
     { name: "Dream Traveler - 2,025,012,025", chance: 2025012025, breakthroughs: nativeBreakthroughs("aurora"), cutscene: "dream-traveler-cutscene" },
-    { name: MONARCH_AURA_NAME, chance: 2000000000, nativeBiomes: ["corruption", "glitch"], disableNativeOverrideTier: true },
+    { name: MONARCH_AURA_NAME, chance: 3000000000, nativeBiomes: ["corruption", "glitch"], disableNativeOverrideTier: true },
     { name: BREAKTHROUGH_AURA_NAME, chance: 1999999999, cutscene: "breakthrough-cutscene" },
     { name: LEVIATHAN_AURA_NAME, chance: 1730400000, nativeBiomes: ["rainy", "glitch"], cutscene: "leviathan-cutscene", disableNativeOverrideTier: true },
     { name: "Winter Garden - 1,450,012,025", chance: 1450012025, breakthroughs: nativeBreakthroughs("aurora"), cutscene: "winter-garden-cutscene" },
