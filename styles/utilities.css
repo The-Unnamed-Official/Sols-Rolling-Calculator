@@ -324,7 +324,7 @@
 .sigil-outline-monarch {
     font-family: Kings;
     text-transform: uppercase;
-    -webkit-background-clip: text !important;
+    background-clip: text !important;
     -webkit-text-fill-color: rgb(32 7 82 / 84%);
     background: linear-gradient(177deg, #e4a4ff 18%, #ffe0ff 20%, #7133f9 27%, #fac0ff 37%, #a364ff 47%, #fff3ff 65%, #6736e6 68%, #d3a5ff 74%);
     -webkit-text-stroke: 2px transparent;
