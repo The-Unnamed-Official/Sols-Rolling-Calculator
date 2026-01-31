@@ -5655,6 +5655,8 @@ function createAuraEvaluationContext(selection, { eventChecker, luckValue } = {}
     const biome = selectionState?.canonicalBiome || 'normal';
     const runeConfig = selectionState?.runeConfig || resolveRuneConfiguration(selectionState?.runeValue);
     const runeValue = selectionState?.runeValue || null;
+    const primaryBiome = selectionState?.primaryBiome || null;
+    const timeBiome = selectionState?.timeBiome || null;
     const exclusivityBiome = runeConfig?.exclusivityBiome || biome;
     const isRoe = biome === 'roe' || runeValue === 'roe';
     const glitchExplicitlySelected = selectionState?.primaryBiome === 'glitch'
@@ -5670,6 +5672,38 @@ function createAuraEvaluationContext(selection, { eventChecker, luckValue } = {}
         ? selectionState.breakthroughBiomes.slice()
         : [exclusivityBiome, biome].filter(Boolean);
 
+    const baseActiveBiomeSet = new Set();
+    if (biome && biome !== 'none') {
+        baseActiveBiomeSet.add(biome);
+    }
+    if (primaryBiome && primaryBiome !== 'none') {
+        baseActiveBiomeSet.add(primaryBiome);
+    }
+    if (timeBiome && timeBiome !== 'none') {
+        baseActiveBiomeSet.add(timeBiome);
+    }
+    const baseActiveBiomes = Array.from(baseActiveBiomeSet);
+
+    const baseBreakthroughCandidates = [];
+    if (primaryBiome && primaryBiome !== 'none') {
+        baseBreakthroughCandidates.push(primaryBiome);
+    }
+    if (timeBiome && timeBiome !== 'none') {
+        baseBreakthroughCandidates.push(timeBiome);
+    }
+    if (biome && biome !== 'none') {
+        baseBreakthroughCandidates.push(biome);
+    }
+    const baseBreakthroughBiomes = [];
+    const baseBreakthroughSeen = new Set();
+    for (const candidate of baseBreakthroughCandidates) {
+        if (!candidate || baseBreakthroughSeen.has(candidate)) {
+            continue;
+        }
+        baseBreakthroughSeen.add(candidate);
+        baseBreakthroughBiomes.push(candidate);
+    }
+
     if (!glitchExplicitlySelected && runeConfig?.exclusivityBiome === 'glitch') {
         activeBiomes = activeBiomes.filter(biomeId => biomeId !== 'glitch');
         breakthroughBiomes = breakthroughBiomes.filter(biomeId => biomeId !== 'glitch');
@@ -5684,7 +5718,10 @@ function createAuraEvaluationContext(selection, { eventChecker, luckValue } = {}
         activeBiomes,
         breakthroughBiomes,
         runeValue,
-        primaryBiome: selectionState?.primaryBiome || null,
+        primaryBiome,
+        timeBiome,
+        baseActiveBiomes,
+        baseBreakthroughBiomes,
         ygBlessingActive: isYgBlessingEnabled(),
         luckSource: getLuckSelectionSource(),
         luckValue: Number.isFinite(luckValue) ? luckValue : currentLuck
@@ -5732,6 +5769,14 @@ function computeStandardEffectiveChance(aura, context) {
         }
     }
 
+    const isRuneIgnoredAura = aura?.name === LEVIATHAN_AURA_NAME || aura?.name === MONARCH_AURA_NAME;
+    const resolvedActiveBiomes = isRuneIgnoredAura && Array.isArray(context.baseActiveBiomes)
+        ? context.baseActiveBiomes
+        : activeBiomes;
+    const resolvedBreakthroughBiomes = isRuneIgnoredAura && Array.isArray(context.baseBreakthroughBiomes)
+        ? context.baseBreakthroughBiomes
+        : breakthroughBiomes;
+
     let allowCyberspaceNativeRarity = true;
     if (aura.nativeBiomes) {
         if (isAuraNativeTo(aura, 'limbo') && !isAuraNativeTo(aura, 'limbo-null')) {
@@ -5743,8 +5788,8 @@ function computeStandardEffectiveChance(aura, context) {
             && eventEnabled
             && GLITCH_EVENT_WHITELIST.has(eventId);
 
-        const activeBiomeList = Array.isArray(activeBiomes) && activeBiomes.length > 0
-            ? activeBiomes
+        const activeBiomeList = Array.isArray(resolvedActiveBiomes) && resolvedActiveBiomes.length > 0
+            ? resolvedActiveBiomes
             : [exclusivityBiome];
         const matchesActiveBiome = auraMatchesAnyBiome(aura, activeBiomeList);
 
@@ -5792,8 +5837,8 @@ function computeStandardEffectiveChance(aura, context) {
         }
 
         if (!breakthroughAppliedViaGlitch) {
-            const candidates = Array.isArray(breakthroughBiomes) && breakthroughBiomes.length > 0
-                ? breakthroughBiomes
+            const candidates = Array.isArray(resolvedBreakthroughBiomes) && resolvedBreakthroughBiomes.length > 0
+                ? resolvedBreakthroughBiomes
                 : [exclusivityBiome, biome].filter(Boolean);
             let multiplier = null;
             for (const candidate of candidates) {
