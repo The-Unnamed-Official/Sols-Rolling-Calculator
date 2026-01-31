@@ -127,11 +127,11 @@
                 <div class="banner__meta">
                     <h1 class="banner__title">Sol's Rolling Simulator</h1>
                     <p class="banner__subtitle">
-                        <button type="button" class="banner__version-button" id="versionInfoButton" aria-haspopup="dialog" aria-expanded="false" data-version-id="v1640">V1.640</button>
+                        <button type="button" class="banner__version-button" id="versionInfoButton" aria-haspopup="dialog" aria-expanded="false" data-version-id="v1641">V1.641</button>
                         <span class="banner__subtitle-divider" aria-hidden="true">◉</span>
                         <span class="banner__subtitle-author">By <span class="banner__subtitle-author-name"><a href="https://discord.com/users/611204110955446301" target="_blank" rel="noopener">not.unnamed</a></span></span>
                         <span class="banner__subtitle-divider" aria-hidden="true">◉</span>
-                        <span class="banner__subtitle-updated">Updated <time datetime="2026-01-27">2026/01/27</time></span>
+                        <span class="banner__subtitle-updated">Updated <time datetime="2026-01-31">2026/01/31</time></span>
                         <span class="banner__subtitle-divider" aria-hidden="true">◉</span>
                         <span class="banner__subtitle-eon"><span class="banner__subtitle-game-version"><a href="https://www.roblox.com/games/15532962292/Sols-RNG" target="_blank" rel="noopener">Sol's RNG Eon 1-14</a></span></span>
                     </p>
@@ -864,11 +864,23 @@
                 <button
                     type="button"
                     class="changelog-tab changelog-tab--active"
+                    id="changelog-tab-v1641"
+                    role="tab"
+                    aria-controls="changelog-panel-v1641"
+                    aria-selected="true"
+                    data-changelog-tab="v1641"
+                >
+                    <span class="changelog-tab__title">V1.641</span>
+                </button>
+                <button
+                    type="button"
+                    class="changelog-tab changelog-tab--active"
                     id="changelog-tab-v1640"
                     role="tab"
                     aria-controls="changelog-panel-v1640"
-                    aria-selected="true"
+                    aria-selected="false"
                     data-changelog-tab="v1640"
+                    tabindex="-1"
                 >
                     <span class="changelog-tab__title">V1.640</span>
                 </button>
@@ -1044,12 +1056,33 @@
 
             <div class="changelog-modal__panels" data-changelog-panels>
                 <section
+                    id="changelog-panel-v1641"
+                    class="changelog-modal__panel"
+                    role="tabpanel"
+                    aria-labelledby="changelog-tab-v1641"
+                    data-changelog-panel="v1641"
+                    tabindex="0"
+                >
+                    <header class="changelog-modal__header">
+                        <h2 class="changelog-modal__title" id="versionChangelogTitle">Version V1.641 Update Notes</h2>
+                        <span class="changelog-tab__subtitle">Quick <span class="sigil-outline-cyberspace">Player : Respawn</span> bugfix</span>
+                        <p class="changelog-modal__meta">Updated 2026/01/31</p>
+                    </header>
+                    <p class="changelog-modal__intro">Latest changes:</p>
+                    <ul class="changelog-modal__list">
+                        <li>Fixed a bug where <span class="sigil-outline-cyberspace">Player : Respawn</span> was native in corruption instead of Cyberspace</li>
+                        <p>Thanks to <a href="https://discord.com/users/966428347485802566" class="subtitleClass" target="_blank" rel="noopener">@mattplays607</a> for pointing this out to me :)</p>
+                    </ul>
+                    <p>If there's any bugs you encounter, please DM me here <a href="https://discord.com/users/611204110955446301" class="subtitleClass" target="_blank" rel="noopener">@not.unnamed</a></p>
+                </section>
+                <section
                     id="changelog-panel-v1640"
                     class="changelog-modal__panel"
                     role="tabpanel"
                     aria-labelledby="changelog-tab-v1640"
                     data-changelog-panel="v1640"
-                    tabindex="0"
+                    hidden
+                    tabindex="-1"
                 >
                     <header class="changelog-modal__header">
                         <h2 class="changelog-modal__title" id="versionChangelogTitle">Version V1.640 Update Notes</h2>
