@@ -5829,18 +5829,14 @@ function determineAuraEffectiveChance(aura, context) {
     }
     if (aura?.name === LEVIATHAN_AURA_NAME) {
         const canonicalBiome = context?.biome || 'normal';
-        const activeBiomes = Array.isArray(context?.activeBiomes) ? context.activeBiomes : [];
-        const inAllowedBiome = LEVIATHAN_ALLOWED_BIOMES.has(canonicalBiome)
-            || activeBiomes.some(biome => LEVIATHAN_ALLOWED_BIOMES.has(biome));
+        const inAllowedBiome = LEVIATHAN_ALLOWED_BIOMES.has(canonicalBiome);
         if (!inAllowedBiome) {
             return Infinity;
         }
     }
     if (aura?.name === MONARCH_AURA_NAME) {
         const canonicalBiome = context?.biome || 'normal';
-        const activeBiomes = Array.isArray(context?.activeBiomes) ? context.activeBiomes : [];
-        const inAllowedBiome = MONARCH_ALLOWED_BIOMES.has(canonicalBiome)
-            || activeBiomes.some(biome => MONARCH_ALLOWED_BIOMES.has(biome));
+        const inAllowedBiome = MONARCH_ALLOWED_BIOMES.has(canonicalBiome);
         if (!inAllowedBiome) {
             return Infinity;
         }
