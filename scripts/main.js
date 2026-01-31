@@ -3552,6 +3552,7 @@ const AURA_BLUEPRINT_SOURCE = Object.freeze([
     { name: "Moonflower - 10,000,000", chance: 10000000, nativeBiomes: ["pumpkinMoon"] },
     { name: "Starscourge - 10,000,000", chance: 10000000, breakthroughs: nativeBreakthroughs("starfall") },
     { name: "Sharkyn - 10,000,000", chance: 10000000, breakthroughs: nativeBreakthroughs("rainy") },
+    { name: "Guardian - 10,000,000", chance: 10000000 },
     { name: "Lost Soul : Wander - 9,400,000", chance: 9400000, breakthroughs: nativeBreakthroughs("aurora") },
     { name: "Stargazer - 9,200,000", chance: 9200000, breakthroughs: nativeBreakthroughs("starfall") },
     { name: "Helios - 9,000,000", chance: 9000000 },
