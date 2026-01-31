@@ -72,6 +72,9 @@
     <video id="leviathan-cutscene" class="cutscene-video" preload="auto" data-audio-channel="cutscene">
         <source src="files/leviathanCutscene.webm" type="video/webm">
     </video>
+    <!-- <video id="monarch-cutscene" class="cutscene-video" preload="auto" data-audio-channel="cutscene">
+        <source src="files/monarchCutscene.webm" type="video/webm">
+    </video> -->
     <video id="ascendant-cutscene" class="cutscene-video" preload="auto" data-audio-channel="cutscene">
         <source src="files/ascendantCutscene.webm" type="video/webm">
     </video>
@@ -127,13 +130,13 @@
                 <div class="banner__meta">
                     <h1 class="banner__title">Sol's Rolling Simulator</h1>
                     <p class="banner__subtitle">
-                        <button type="button" class="banner__version-button" id="versionInfoButton" aria-haspopup="dialog" aria-expanded="false" data-version-id="v1641">V1.641</button>
+                        <button type="button" class="banner__version-button" id="versionInfoButton" aria-haspopup="dialog" aria-expanded="false" data-version-id="v1650">V1.650</button>
                         <span class="banner__subtitle-divider" aria-hidden="true">◉</span>
                         <span class="banner__subtitle-author">By <span class="banner__subtitle-author-name"><a href="https://discord.com/users/611204110955446301" target="_blank" rel="noopener">not.unnamed</a></span></span>
                         <span class="banner__subtitle-divider" aria-hidden="true">◉</span>
                         <span class="banner__subtitle-updated">Updated <time datetime="2026-01-31">2026/01/31</time></span>
                         <span class="banner__subtitle-divider" aria-hidden="true">◉</span>
-                        <span class="banner__subtitle-eon"><span class="banner__subtitle-game-version"><a href="https://www.roblox.com/games/15532962292/Sols-RNG" target="_blank" rel="noopener">Sol's RNG Eon 1-14</a></span></span>
+                        <span class="banner__subtitle-eon"><span class="banner__subtitle-game-version"><a href="https://www.roblox.com/games/15532962292/Sols-RNG" target="_blank" rel="noopener">Sol's RNG Eon 1-15</a></span></span>
                     </p>
                 </div>
             </div>
@@ -645,6 +648,7 @@
                 <li class="footer-credits__item">Leviathan cutscene courtesy of <a href="https://discord.com/users/755614816793788468" target="_blank" rel="noopener">@reeseyhi</a>.</li>
                 <li class="footer-credits__item">Breakthrough cutscene courtesy of <a href="https://discord.com/users/979478452786823259" target="_blank" rel="noopener">@INCONCEIVABLE</a>.</li>
                 <li class="footer-credits__item">Ascendant cutscene courtesy of <a href="https://discord.com/users/823317679708176434" target="_blank" rel="noopener">@Exeael</a>.</li>
+                <li class="footer-credits__item">Monarch cutscene not added yet...</li>
             </ul>
         </details>
     </footer>
@@ -864,11 +868,23 @@
                 <button
                     type="button"
                     class="changelog-tab changelog-tab--active"
+                    id="changelog-tab-v1650"
+                    role="tab"
+                    aria-controls="changelog-panel-v1650"
+                    aria-selected="true"
+                    data-changelog-tab="v1650"
+                >
+                    <span class="changelog-tab__title">V1.650</span>
+                </button>
+                <button
+                    type="button"
+                    class="changelog-tab changelog-tab--active"
                     id="changelog-tab-v1641"
                     role="tab"
                     aria-controls="changelog-panel-v1641"
-                    aria-selected="true"
+                    aria-selected="false"
                     data-changelog-tab="v1641"
+                    tabindex="-1"
                 >
                     <span class="changelog-tab__title">V1.641</span>
                 </button>
@@ -1056,12 +1072,49 @@
 
             <div class="changelog-modal__panels" data-changelog-panels>
                 <section
+                    id="changelog-panel-v1650"
+                    class="changelog-modal__panel"
+                    role="tabpanel"
+                    aria-labelledby="changelog-tab-v1650"
+                    data-changelog-panel="v1650"
+                    tabindex="0"
+                >
+                    <header class="changelog-modal__header">
+                        <h2 class="changelog-modal__title" id="versionChangelogTitle">Version V1.650 Update Notes</h2>
+                        <span class="changelog-tab__subtitle">Eon2 Preperation 2</span>
+                        <p class="changelog-modal__meta">Updated 2026/01/31</p>
+                    </header>
+                    <p class="changelog-modal__intro">Latest changes:</p>
+                    <ul class="changelog-modal__list">
+                        <ul>
+                            <li>Added 12 auras:</li>
+                            <ul>
+                                <li class="listSpace">Starlight : Kunzite<span class="tinyClass">1 in 1,000,000 (1/200,000 from Starfall)</span></li>
+                                <li class="listSpace">Crystallized : Bejeweled<span class="tinyClass">1 in 3,600,000</span></li>
+                                <li class="listSpace">Metabytes<span class="tinyClass">1 in 4,000,000 (1/2,000,000 from Cyberspace)</span></li>
+                                <li class="listSpace">Refraction<span class="tinyClass">1 in 7,242,000</span></li>
+                                <li class="listSpace">Outlaw<span class="tinyClass">1 in 8,000,000 (1/2,500,000 from Rainy)</span></li>
+                                <li class="listSpace">Dominion<span class="tinyClass">1 in 70,000,000 (1/14,000,000 from Heaven)</span></li>
+                                <li class="listSpace">Virtual : Full Control<span class="tinyClass">1 in 80,000,000 (1/40,000,000 from Cyberspace)</span></li>
+                                <li class="listSpace">Atomic : Nucleus<span class="tinyClass">1 in 92,118,000</span></li>
+                                <li class="listSpace">Spectralflow<span class="tinyClass">1 in 100,000,000</span></li>
+                                <li class="listSpace">Perpetual<span class="tinyClass">1 in 315,000,000</span></li>
+                                <li class="listSpace"><span class="sigil-outline-monarch">Monarch</span><span class="tinyClass">1 in 2,000,000,000 (From Corruption/Glitch)</span></li>
+                                <li class="listSpace">???<span class="tinyClass">1 in 2,700,000,000 (Unobtainable until discovered)</span></li>
+                                
+                            </ul>
+                        </ul>
+                    </ul>
+                    <p>If there's any bugs you encounter, please DM me here <a href="https://discord.com/users/611204110955446301" class="subtitleClass" target="_blank" rel="noopener">@not.unnamed</a></p>
+                </section>
+                <section
                     id="changelog-panel-v1641"
                     class="changelog-modal__panel"
                     role="tabpanel"
                     aria-labelledby="changelog-tab-v1641"
                     data-changelog-panel="v1641"
-                    tabindex="0"
+                    hidden
+                    tabindex="-1"
                 >
                     <header class="changelog-modal__header">
                         <h2 class="changelog-modal__title" id="versionChangelogTitle">Version V1.641 Update Notes</h2>
