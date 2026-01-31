@@ -3969,7 +3969,7 @@ function getAuraEventId(aura) {
     return auraEventIndex.get(aura.name) || null;
 }
 
-const CUTSCENE_PRIORITY_SEQUENCE = ["illusionary-cutscene", "oblivion-cutscene", "memory-cutscene", "neferkhaf-cutscene", "equinox-cutscene", "dream-traveler-cutscene", "monarch-cutscene", "breakthrough-cutscene", "leviathan-cutscene", "winter-garden-cutscene", "erebus-cutscene", "luminosity-cutscene", "pixelation-cutscene", "nyctophobia-cutscene", "frostveil-cutscene", "lamenthyr-cutscene", "ascendant-cutscene", "dreammetric-cutscene", "oppression-cutscene", "prowler-cutscene"];
+const CUTSCENE_PRIORITY_SEQUENCE = ["illusionary-cutscene", "oblivion-cutscene", "memory-cutscene", "neferkhaf-cutscene", "monarch-cutscene", "equinox-cutscene", "dream-traveler-cutscene", "breakthrough-cutscene", "leviathan-cutscene", "winter-garden-cutscene", "erebus-cutscene", "luminosity-cutscene", "pixelation-cutscene", "nyctophobia-cutscene", "frostveil-cutscene", "lamenthyr-cutscene", "ascendant-cutscene", "dreammetric-cutscene", "oppression-cutscene", "prowler-cutscene"];
 
 oblivionAuraData = AURA_REGISTRY.find(aura => aura.name === OBLIVION_AURA_LABEL) || null;
 memoryAuraData = AURA_REGISTRY.find(aura => aura.name === MEMORY_AURA_LABEL) || null;
@@ -5830,10 +5830,6 @@ function determineAuraEffectiveChance(aura, context) {
     if (aura?.name === LEVIATHAN_AURA_NAME) {
         const canonicalBiome = context?.biome || 'normal';
         const activeBiomes = Array.isArray(context?.activeBiomes) ? context.activeBiomes : [];
-        const runeValue = context?.runeValue || null;
-        if (runeValue === 'rainyRune' || runeValue === 'roe') {
-            return Infinity;
-        }
         const inAllowedBiome = LEVIATHAN_ALLOWED_BIOMES.has(canonicalBiome)
             || activeBiomes.some(biome => LEVIATHAN_ALLOWED_BIOMES.has(biome));
         if (!inAllowedBiome) {
@@ -5843,10 +5839,6 @@ function determineAuraEffectiveChance(aura, context) {
     if (aura?.name === MONARCH_AURA_NAME) {
         const canonicalBiome = context?.biome || 'normal';
         const activeBiomes = Array.isArray(context?.activeBiomes) ? context.activeBiomes : [];
-        const runeValue = context?.runeValue || null;
-        if (runeValue === 'corruptionRune' || runeValue === 'roe') {
-            return Infinity;
-        }
         const inAllowedBiome = MONARCH_ALLOWED_BIOMES.has(canonicalBiome)
             || activeBiomes.some(biome => MONARCH_ALLOWED_BIOMES.has(biome));
         if (!inAllowedBiome) {
