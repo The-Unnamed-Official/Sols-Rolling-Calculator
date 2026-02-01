@@ -866,7 +866,10 @@
     <div id="auraDetailFilterOverlay" class="modal-overlay" hidden>
         <div class="surface surface--modal filter-modal" role="dialog" aria-modal="true" aria-labelledby="auraDetailFilterTitle">
             <div class="filter-modal__header">
-                <h2 class="filter-modal__title" id="auraDetailFilterTitle">Filter Auras</h2>
+                <div class="filter-modal__header-row">
+                    <h2 class="filter-modal__title" id="auraDetailFilterTitle">Filter Auras</h2>
+                    <button type="button" class="interface-button interface-button--ghost filter-modal__reset" id="auraDetailFilterReset">Reset selection</button>
+                </div>
                 <p class="filter-modal__hint">Toggle specific auras to skip them in the roll feed and image sharing.</p>
             </div>
             <div class="filter-modal__grid filter-modal__grid--scroll" id="auraFilterList" data-aura-filter-list></div>
