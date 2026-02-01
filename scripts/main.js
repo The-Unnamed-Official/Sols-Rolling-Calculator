@@ -33,6 +33,9 @@ const CHANGELOG_VERSION_STORAGE_KEY = 'solsRollingCalculator:lastSeenChangelogVe
 const BACKGROUND_ROLLING_STORAGE_KEY = 'solsRollingCalculator:backgroundRollingPreference';
 const AUDIO_SETTINGS_STORAGE_KEY = 'solsRollingCalculator:audioSettings';
 const AURA_FILTERS_STORAGE_KEY = 'solsRollingCalculator:auraFilters';
+const VISUAL_SETTINGS_STORAGE_KEY = 'solsRollingCalculator:visualSettings';
+const AURA_TIER_FILTERS_STORAGE_KEY = 'solsRollingCalculator:auraTierFilters';
+let reduceMotionPreferenceOverride = null;
 const backgroundRollingPreference = {
     allowed: false,
     suppressPrompt: false
@@ -217,6 +220,62 @@ function hydrateAuraFilters() {
     }
 }
 
+function hydrateAuraTierFilters() {
+    if (typeof window === 'undefined' || !appState) {
+        return;
+    }
+
+    try {
+        const raw = window.localStorage.getItem(AURA_TIER_FILTERS_STORAGE_KEY);
+        if (!raw) {
+            return;
+        }
+        const parsed = JSON.parse(raw);
+        if (!parsed || typeof parsed !== 'object') {
+            return;
+        }
+        if (!appState.auraTierFilters || typeof appState.auraTierFilters !== 'object') {
+            appState.auraTierFilters = {};
+        }
+        Object.entries(parsed).forEach(([tierKey, value]) => {
+            if (typeof tierKey === 'string') {
+                appState.auraTierFilters[tierKey] = Boolean(value);
+            }
+        });
+    } catch (error) {
+        // Ignore malformed storage so defaults remain intact.
+    }
+}
+
+function hydrateVisualSettings() {
+    if (typeof window === 'undefined' || !appState) {
+        return;
+    }
+
+    try {
+        const raw = window.localStorage.getItem(VISUAL_SETTINGS_STORAGE_KEY);
+        if (!raw) {
+            return;
+        }
+        const parsed = JSON.parse(raw);
+        if (!parsed || typeof parsed !== 'object') {
+            return;
+        }
+        if (typeof parsed.glitch === 'boolean') {
+            appState.glitch = parsed.glitch;
+        }
+        if (typeof parsed.cinematic === 'boolean') {
+            appState.cinematic = parsed.cinematic;
+        }
+        if (typeof parsed.reduceMotion === 'boolean') {
+            appState.reduceMotion = parsed.reduceMotion;
+            reduceMotionPreferenceOverride = parsed.reduceMotion;
+        }
+    } catch (error) {
+        // Ignore malformed storage so defaults remain intact.
+    }
+}
+
 function persistAuraFilters() {
     if (typeof window === 'undefined' || !appState || !appState.auraFilters) {
         return;
@@ -226,6 +285,21 @@ function persistAuraFilters() {
         window.localStorage.setItem(
             AURA_FILTERS_STORAGE_KEY,
             JSON.stringify(appState.auraFilters)
+        );
+    } catch (error) {
+        // Ignore storage errors so the UI remains responsive.
+    }
+}
+
+function persistAuraTierFilters() {
+    if (typeof window === 'undefined' || !appState || !appState.auraTierFilters) {
+        return;
+    }
+
+    try {
+        window.localStorage.setItem(
+            AURA_TIER_FILTERS_STORAGE_KEY,
+            JSON.stringify(appState.auraTierFilters)
         );
     } catch (error) {
         // Ignore storage errors so the UI remains responsive.
@@ -252,6 +326,25 @@ function persistAudioSettings() {
         );
     } catch (error) {
         // Ignore write failures to avoid interrupting audio controls.
+    }
+}
+
+function persistVisualSettings() {
+    if (typeof window === 'undefined' || !appState) {
+        return;
+    }
+
+    try {
+        window.localStorage.setItem(
+            VISUAL_SETTINGS_STORAGE_KEY,
+            JSON.stringify({
+                glitch: appState.glitch,
+                cinematic: appState.cinematic,
+                reduceMotion: appState.reduceMotion
+            })
+        );
+    } catch (error) {
+        // Ignore storage errors so the UI remains responsive.
     }
 }
 
@@ -688,6 +781,7 @@ function initializeAuraTierFilterPanel() {
             }
             appState.auraTierFilters[tierKey] = !appState.auraTierFilters[tierKey];
             syncAuraTierFilterButtons();
+            persistAuraTierFilters();
         });
     });
 
@@ -1729,6 +1823,7 @@ function toggleInterfaceAudio() {
 function toggleCinematicMode() {
     const wasCinematic = appState.cinematic;
     appState.cinematic = !appState.cinematic;
+
     const cutsceneToggle = document.getElementById('cinematicToggle');
     if (cutsceneToggle) {
         cutsceneToggle.textContent = appState.cinematic ? 'Cutscenes (Fullscreen recommended): On' : 'Cutscenes (Fullscreen recommended): Off';
@@ -1755,6 +1850,8 @@ function toggleCinematicMode() {
             skipButton.click();
         }
     }
+
+    persistVisualSettings();
 }
 
 function isGlitchBiomeSelected() {
@@ -1792,6 +1889,7 @@ function toggleGlitchEffects() {
 
     playSoundEffect(clickSoundEffectElement, 'ui');
     updateGlitchPresentation();
+    persistVisualSettings();
 }
 
 function applyReducedMotionState(enabled) {
@@ -1840,8 +1938,10 @@ function applyReducedMotionState(enabled) {
 
 function toggleReducedMotion() {
     appState.reduceMotion = !appState.reduceMotion;
+    reduceMotionPreferenceOverride = appState.reduceMotion;
     applyReducedMotionState(appState.reduceMotion);
     playSoundEffect(clickSoundEffectElement, 'ui');
+    persistVisualSettings();
 }
 
 const reduceMotionMediaQuery = typeof window !== 'undefined' && typeof window.matchMedia === 'function'
@@ -1851,8 +1951,12 @@ const reduceMotionMediaQuery = typeof window !== 'undefined' && typeof window.ma
 if (reduceMotionMediaQuery) {
     appState.reduceMotion = reduceMotionMediaQuery.matches;
     reduceMotionMediaQuery.addEventListener('change', event => {
+        if (reduceMotionPreferenceOverride !== null) {
+            return;
+        }
         appState.reduceMotion = event.matches;
         applyReducedMotionState(appState.reduceMotion);
+        persistVisualSettings();
     });
 }
 
@@ -5879,10 +5983,12 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    hydrateVisualSettings();
+
     const cutsceneToggle = document.getElementById('cinematicToggle');
     if (cutsceneToggle) {
-        cutsceneToggle.textContent = 'Cutscenes (Fullscreen recommended): Off';
-        cutsceneToggle.setAttribute('aria-pressed', 'false');
+        cutsceneToggle.textContent = appState.cinematic ? 'Cutscenes (Fullscreen recommended): On' : 'Cutscenes (Fullscreen recommended): Off';
+        cutsceneToggle.setAttribute('aria-pressed', appState.cinematic ? 'true' : 'false');
     }
 
     const glitchToggle = document.getElementById('glitchEffectsToggle');
@@ -5896,6 +6002,7 @@ document.addEventListener('DOMContentLoaded', () => {
     hydrateBackgroundRollingPreference();
     setBackgroundRollingEnabled(backgroundRollingPreference.allowed, { persistPreference: false });
     hydrateAuraFilters();
+    hydrateAuraTierFilters();
 
     const backgroundRollingButton = document.getElementById('backgroundRollingButton');
     if (backgroundRollingButton) {
