@@ -2141,6 +2141,13 @@ const EVENT_LUCK_TOGGLE_IDS = Object.freeze([
     'dorcelessness-luck-toggle'
 ]);
 
+const EXCLUSIVE_EVENT_TOGGLE_IDS = Object.freeze([
+    'xyz-luck-toggle',
+    'xc-luck-toggle',
+    'axis-luck-toggle',
+    'dorcelessness-luck-toggle'
+]);
+
 const YG_BLESSING_BLOCKING_EVENT_IDS = Object.freeze([
     'xyz-luck-toggle',
     'sorry-luck-toggle',
@@ -2189,8 +2196,11 @@ function enforceExclusiveEventToggles(activeToggle) {
     if (eventToggleSyncInProgress || !activeToggle || !activeToggle.checked) {
         return;
     }
+    if (!EXCLUSIVE_EVENT_TOGGLE_IDS.includes(activeToggle.id)) {
+        return;
+    }
     eventToggleSyncInProgress = true;
-    EVENT_LUCK_TOGGLE_IDS.forEach(id => {
+    EXCLUSIVE_EVENT_TOGGLE_IDS.forEach(id => {
         if (id === activeToggle.id) {
             return;
         }
@@ -2330,7 +2340,7 @@ function getActiveLuckMultipliers() {
     return {
         vip: parseFloat(controls.vip ? controls.vip.value : '1') || 1,
         xyz: controls.xyz && controls.xyz.checked ? 2 : 1,
-        sorry: controls.sorry && controls.sorry.checked ? 2 : 1,
+        sorry: controls.sorry && controls.sorry.checked ? 1.2 : 1,
         xc: controls.xc && controls.xc.checked ? 2 : 1,
         axis: controls.axis && controls.axis.checked ? 2 : 1,
         dorcelessness: controls.dorcelessness && controls.dorcelessness.checked ? 2 : 1,
@@ -2520,7 +2530,7 @@ function recomputeLuckValue() {
     const multipliers = {
         vip: parseFloat(controls.vip ? controls.vip.value : '1') || 1,
         xyz: controls.xyz && controls.xyz.checked ? 2 : 1,
-        sorry: controls.sorry && controls.sorry.checked ? 2 : 1,
+        sorry: controls.sorry && controls.sorry.checked ? 1.2 : 1,
         xc: controls.xc && controls.xc.checked ? 2 : 1,
         axis: controls.axis && controls.axis.checked ? 2 : 1,
         dorcelessness: controls.dorcelessness && controls.dorcelessness.checked ? 2 : 1,
