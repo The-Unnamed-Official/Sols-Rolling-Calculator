@@ -25,9 +25,17 @@ const auraFilterOverlayState = {
     lastFocusedElement: null
 };
 
+const auraDetailFilterOverlayState = {
+    lastFocusedElement: null
+};
+
 const CHANGELOG_VERSION_STORAGE_KEY = 'solsRollingCalculator:lastSeenChangelogVersion';
 const BACKGROUND_ROLLING_STORAGE_KEY = 'solsRollingCalculator:backgroundRollingPreference';
 const AUDIO_SETTINGS_STORAGE_KEY = 'solsRollingCalculator:audioSettings';
+const AURA_FILTERS_STORAGE_KEY = 'solsRollingCalculator:auraFilters';
+const VISUAL_SETTINGS_STORAGE_KEY = 'solsRollingCalculator:visualSettings';
+const AURA_TIER_FILTERS_STORAGE_KEY = 'solsRollingCalculator:auraTierFilters';
+let reduceMotionPreferenceOverride = null;
 const backgroundRollingPreference = {
     allowed: false,
     suppressPrompt: false
@@ -185,6 +193,119 @@ function hydrateAudioSettings() {
     }
 }
 
+function hydrateAuraFilters() {
+    if (typeof window === 'undefined' || !appState) {
+        return;
+    }
+
+    try {
+        const raw = window.localStorage.getItem(AURA_FILTERS_STORAGE_KEY);
+        if (!raw) {
+            return;
+        }
+        const parsed = JSON.parse(raw);
+        if (!parsed || typeof parsed !== 'object') {
+            return;
+        }
+        if (!appState.auraFilters || typeof appState.auraFilters !== 'object') {
+            appState.auraFilters = {};
+        }
+        Object.entries(parsed).forEach(([auraName, value]) => {
+            if (typeof auraName === 'string') {
+                appState.auraFilters[auraName] = Boolean(value);
+            }
+        });
+    } catch (error) {
+        // Ignore malformed storage so defaults remain intact.
+    }
+}
+
+function hydrateAuraTierFilters() {
+    if (typeof window === 'undefined' || !appState) {
+        return;
+    }
+
+    try {
+        const raw = window.localStorage.getItem(AURA_TIER_FILTERS_STORAGE_KEY);
+        if (!raw) {
+            return;
+        }
+        const parsed = JSON.parse(raw);
+        if (!parsed || typeof parsed !== 'object') {
+            return;
+        }
+        if (!appState.auraTierFilters || typeof appState.auraTierFilters !== 'object') {
+            appState.auraTierFilters = {};
+        }
+        Object.entries(parsed).forEach(([tierKey, value]) => {
+            if (typeof tierKey === 'string') {
+                appState.auraTierFilters[tierKey] = Boolean(value);
+            }
+        });
+    } catch (error) {
+        // Ignore malformed storage so defaults remain intact.
+    }
+}
+
+function hydrateVisualSettings() {
+    if (typeof window === 'undefined' || !appState) {
+        return;
+    }
+
+    try {
+        const raw = window.localStorage.getItem(VISUAL_SETTINGS_STORAGE_KEY);
+        if (!raw) {
+            return;
+        }
+        const parsed = JSON.parse(raw);
+        if (!parsed || typeof parsed !== 'object') {
+            return;
+        }
+        if (typeof parsed.glitch === 'boolean') {
+            appState.glitch = parsed.glitch;
+        }
+        if (typeof parsed.cinematic === 'boolean') {
+            appState.cinematic = parsed.cinematic;
+        }
+        if (typeof parsed.reduceMotion === 'boolean') {
+            appState.reduceMotion = parsed.reduceMotion;
+            reduceMotionPreferenceOverride = parsed.reduceMotion;
+        }
+    } catch (error) {
+        // Ignore malformed storage so defaults remain intact.
+    }
+}
+
+function persistAuraFilters() {
+    if (typeof window === 'undefined' || !appState || !appState.auraFilters) {
+        return;
+    }
+
+    try {
+        window.localStorage.setItem(
+            AURA_FILTERS_STORAGE_KEY,
+            JSON.stringify(appState.auraFilters)
+        );
+    } catch (error) {
+        // Ignore storage errors so the UI remains responsive.
+    }
+}
+
+function persistAuraTierFilters() {
+    if (typeof window === 'undefined' || !appState || !appState.auraTierFilters) {
+        return;
+    }
+
+    try {
+        window.localStorage.setItem(
+            AURA_TIER_FILTERS_STORAGE_KEY,
+            JSON.stringify(appState.auraTierFilters)
+        );
+    } catch (error) {
+        // Ignore storage errors so the UI remains responsive.
+    }
+}
+
 function persistAudioSettings() {
     if (typeof window === 'undefined') {
         return;
@@ -205,6 +326,25 @@ function persistAudioSettings() {
         );
     } catch (error) {
         // Ignore write failures to avoid interrupting audio controls.
+    }
+}
+
+function persistVisualSettings() {
+    if (typeof window === 'undefined' || !appState) {
+        return;
+    }
+
+    try {
+        window.localStorage.setItem(
+            VISUAL_SETTINGS_STORAGE_KEY,
+            JSON.stringify({
+                glitch: appState.glitch,
+                cinematic: appState.cinematic,
+                reduceMotion: appState.reduceMotion
+            })
+        );
+    } catch (error) {
+        // Ignore storage errors so the UI remains responsive.
     }
 }
 
@@ -458,6 +598,40 @@ function hideAuraFilterOverlay() {
     });
 }
 
+function showAuraDetailFilterOverlay() {
+    const overlay = document.getElementById('auraDetailFilterOverlay');
+    if (!overlay) return;
+
+    auraDetailFilterOverlayState.lastFocusedElement = document.activeElement;
+    populateAuraFilterList();
+    syncAuraFilterButtons();
+    revealOverlay(overlay);
+
+    const firstButton = overlay.querySelector('.filter-aura-toggle');
+    if (firstButton && typeof firstButton.focus === 'function') {
+        try {
+            firstButton.focus({ preventScroll: true });
+        } catch (error) {
+            firstButton.focus();
+        }
+    }
+}
+
+function hideAuraDetailFilterOverlay() {
+    const overlay = document.getElementById('auraDetailFilterOverlay');
+    if (!overlay) return;
+
+    concealOverlay(overlay, {
+        onHidden: () => {
+            const last = auraDetailFilterOverlayState.lastFocusedElement;
+            if (last && typeof last.focus === 'function') {
+                last.focus({ preventScroll: true });
+            }
+            auraDetailFilterOverlayState.lastFocusedElement = null;
+        }
+    });
+}
+
 function syncAuraTierFilterButtons() {
     const overlay = document.getElementById('auraFilterOverlay');
     if (!overlay || !appState || !appState.auraTierFilters) {
@@ -474,6 +648,104 @@ function syncAuraTierFilterButtons() {
         button.setAttribute('aria-pressed', enabled ? 'true' : 'false');
         button.textContent = `${label}: ${enabled ? 'On' : 'Off'}`;
     });
+}
+
+function syncAuraFilterButtons() {
+    const overlay = document.getElementById('auraDetailFilterOverlay');
+    if (!overlay || !appState || !appState.auraFilters) {
+        return;
+    }
+
+    overlay.querySelectorAll('.filter-aura-toggle').forEach(button => {
+        const auraName = button.dataset.auraName;
+        if (!auraName) {
+            return;
+        }
+        const enabled = Boolean(appState.auraFilters[auraName]);
+        button.setAttribute('aria-pressed', enabled ? 'true' : 'false');
+        renderAuraFilterButtonLabel(button, auraName, enabled);
+    });
+}
+
+function renderAuraFilterButtonLabel(button, auraName, enabled) {
+    if (!button || !auraName) {
+        return;
+    }
+    const aura = Array.isArray(AURA_REGISTRY)
+        ? AURA_REGISTRY.find(entry => entry.name === auraName)
+        : null;
+    const isEventAura = aura ? Boolean(getAuraEventId(aura)) : false;
+    const rarityClass = aura && !isEventAura ? resolveBaseRarityClass(aura) : '';
+    const specialClass = aura ? resolveAuraStyleClass(aura, null) : '';
+    const nameClasses = [rarityClass, specialClass].filter(Boolean).join(' ');
+    const nameSpan = document.createElement('span');
+    if (aura && auraName.startsWith('Breakthrough')) {
+        nameSpan.innerHTML = formatAuraNameMarkup(aura);
+    } else {
+        nameSpan.textContent = auraName;
+    }
+    if (nameClasses) {
+        nameSpan.className = nameClasses;
+    }
+
+    button.textContent = '';
+    button.append('Skip ');
+    button.append(nameSpan);
+    button.append(`: ${enabled ? 'On' : 'Off'}`);
+}
+
+function populateAuraFilterList() {
+    const list = document.querySelector('[data-aura-filter-list]');
+    if (!list || !Array.isArray(AURA_REGISTRY)) {
+        return;
+    }
+    if (list.dataset.populated === 'true') {
+        return;
+    }
+
+    list.textContent = '';
+    const sortedAuras = [...AURA_REGISTRY].sort((a, b) => {
+        if (a.chance !== b.chance) {
+            return a.chance - b.chance;
+        }
+        return a.name.localeCompare(b.name);
+    });
+
+    const reorderSequence = [MONARCH_AURA_NAME, DUNE_AURA_LABEL, MEMORY_AURA_LABEL, OBLIVION_AURA_LABEL];
+    const auraByName = new Map(sortedAuras.map(aura => [aura.name, aura]));
+    const filteredAuras = sortedAuras.filter(aura => !reorderSequence.includes(aura.name));
+    const monarchIndex = sortedAuras.findIndex(aura => aura.name === MONARCH_AURA_NAME);
+    const insertionIndex = monarchIndex >= 0
+        ? sortedAuras.slice(0, monarchIndex + 1).filter(aura => !reorderSequence.includes(aura.name)).length
+        : 0;
+    const orderedAuras = reorderSequence.map(name => auraByName.get(name)).filter(Boolean);
+    const displayAuras = monarchIndex >= 0
+        ? [
+            ...filteredAuras.slice(0, insertionIndex),
+            ...orderedAuras,
+            ...filteredAuras.slice(insertionIndex)
+        ]
+        : [...filteredAuras, ...orderedAuras];
+
+    displayAuras.forEach(aura => {
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'interface-toggle filter-tier-toggle filter-aura-toggle';
+        button.dataset.auraName = aura.name;
+        button.setAttribute('aria-pressed', 'false');
+        renderAuraFilterButtonLabel(button, aura.name, false);
+        button.addEventListener('click', () => {
+            if (!appState || !appState.auraFilters) {
+                return;
+            }
+            appState.auraFilters[aura.name] = !appState.auraFilters[aura.name];
+            syncAuraFilterButtons();
+            persistAuraFilters();
+        });
+        list.appendChild(button);
+    });
+
+    list.dataset.populated = 'true';
 }
 
 function initializeAuraTierFilterPanel() {
@@ -509,6 +781,7 @@ function initializeAuraTierFilterPanel() {
             }
             appState.auraTierFilters[tierKey] = !appState.auraTierFilters[tierKey];
             syncAuraTierFilterButtons();
+            persistAuraTierFilters();
         });
     });
 
@@ -524,6 +797,60 @@ function initializeAuraTierFilterPanel() {
     });
 
     syncAuraTierFilterButtons();
+}
+
+function initializeAuraDetailFilterPanel() {
+    const overlay = document.getElementById('auraDetailFilterOverlay');
+    const openButton = document.getElementById('filterAurasButton');
+    const closeButton = document.getElementById('auraDetailFilterClose');
+    const resetButton = document.getElementById('auraDetailFilterReset');
+    if (!overlay || !openButton) return;
+
+    const filterMenu = document.getElementById('filterMenu');
+    const filterMenuToggle = document.getElementById('filterMenuToggle');
+
+    overlay.addEventListener('click', event => {
+        if (event.target === overlay) {
+            hideAuraDetailFilterOverlay();
+        }
+    });
+
+    overlay.addEventListener('keydown', event => {
+        if (event.key === 'Escape') {
+            hideAuraDetailFilterOverlay();
+        }
+    });
+
+    if (closeButton) {
+        closeButton.addEventListener('click', () => hideAuraDetailFilterOverlay());
+    }
+
+    if (resetButton) {
+        resetButton.addEventListener('click', () => {
+            if (!appState || !appState.auraFilters) {
+                return;
+            }
+            Object.keys(appState.auraFilters).forEach(name => {
+                appState.auraFilters[name] = false;
+            });
+            syncAuraFilterButtons();
+            persistAuraFilters();
+        });
+    }
+
+    openButton.addEventListener('click', event => {
+        event.preventDefault();
+        if (filterMenu) {
+            filterMenu.classList.remove('options-menu--open');
+        }
+        if (filterMenuToggle) {
+            filterMenuToggle.setAttribute('aria-expanded', 'false');
+        }
+        showAuraDetailFilterOverlay();
+    });
+
+    populateAuraFilterList();
+    syncAuraFilterButtons();
 }
 
 function initializeOptionsMenu(menuId, toggleId, panelId) {
@@ -1496,6 +1823,7 @@ function toggleInterfaceAudio() {
 function toggleCinematicMode() {
     const wasCinematic = appState.cinematic;
     appState.cinematic = !appState.cinematic;
+
     const cutsceneToggle = document.getElementById('cinematicToggle');
     if (cutsceneToggle) {
         cutsceneToggle.textContent = appState.cinematic ? 'Cutscenes (Fullscreen recommended): On' : 'Cutscenes (Fullscreen recommended): Off';
@@ -1522,6 +1850,8 @@ function toggleCinematicMode() {
             skipButton.click();
         }
     }
+
+    persistVisualSettings();
 }
 
 function isGlitchBiomeSelected() {
@@ -1559,6 +1889,7 @@ function toggleGlitchEffects() {
 
     playSoundEffect(clickSoundEffectElement, 'ui');
     updateGlitchPresentation();
+    persistVisualSettings();
 }
 
 function applyReducedMotionState(enabled) {
@@ -1607,8 +1938,10 @@ function applyReducedMotionState(enabled) {
 
 function toggleReducedMotion() {
     appState.reduceMotion = !appState.reduceMotion;
+    reduceMotionPreferenceOverride = appState.reduceMotion;
     applyReducedMotionState(appState.reduceMotion);
     playSoundEffect(clickSoundEffectElement, 'ui');
+    persistVisualSettings();
 }
 
 const reduceMotionMediaQuery = typeof window !== 'undefined' && typeof window.matchMedia === 'function'
@@ -1618,8 +1951,12 @@ const reduceMotionMediaQuery = typeof window !== 'undefined' && typeof window.ma
 if (reduceMotionMediaQuery) {
     appState.reduceMotion = reduceMotionMediaQuery.matches;
     reduceMotionMediaQuery.addEventListener('change', event => {
+        if (reduceMotionPreferenceOverride !== null) {
+            return;
+        }
         appState.reduceMotion = event.matches;
         applyReducedMotionState(appState.reduceMotion);
+        persistVisualSettings();
     });
 }
 
@@ -3036,6 +3373,37 @@ function getAuraFilterSummaryText() {
     return labels.length > 0 ? labels.join(', ') : 'None';
 }
 
+function initializeAuraFilters(registry) {
+    if (!appState) {
+        return;
+    }
+    if (!appState.auraFilters || typeof appState.auraFilters !== 'object') {
+        appState.auraFilters = {};
+    }
+    if (!Array.isArray(registry)) {
+        return;
+    }
+    registry.forEach(aura => {
+        if (!aura || typeof aura.name !== 'string') {
+            return;
+        }
+        if (typeof appState.auraFilters[aura.name] !== 'boolean') {
+            appState.auraFilters[aura.name] = false;
+        }
+    });
+}
+
+function isAuraFiltered(aura) {
+    if (!aura || !appState || !appState.auraFilters) {
+        return false;
+    }
+    const auraName = aura.name || '';
+    if (!auraName) {
+        return false;
+    }
+    return Boolean(appState.auraFilters[auraName]);
+}
+
 function resolveAuraTierKey(aura, biome) {
     if (!aura) {
         return null;
@@ -3092,7 +3460,7 @@ function isAuraTierSkipped(aura, biome) {
 const CHALLENGED_CUTSCENE_AURAS = new Set(['Oblivion', 'Memory', 'Neferkhaf']);
 
 function shouldSkipAuraCutscene(aura, biome) {
-    if (isAuraTierSkipped(aura, biome)) {
+    if (isAuraTierSkipped(aura, biome) || isAuraFiltered(aura)) {
         return true;
     }
     if (!aura || !appState || !appState.auraTierFilters) {
@@ -3604,6 +3972,7 @@ const AURA_BLUEPRINT_SOURCE = Object.freeze([
     { name: "Lunar : Full Moon - 5,000,000", chance: 5000000, breakthroughs: nativeBreakthroughs("night") },
     { name: "Solar : Solstice - 5,000,000", chance: 5000000, breakthroughs: nativeBreakthroughs("day") },
     { name: "Jack Frost - 4,700,000", chance: 4700000, breakthroughs: nativeBreakthroughs("aurora") },
+    { name: "Zeus - 4,500,000", chance: 4500000 },
     { name: "Shucks - 4,460,000", chance: 4460000, nativeBiomes: ["glitch", "bloodRain"] },
     { name: "Aquatic : Flame - 4,000,000", chance: 4000000 },
     { name: "Metabytes - 4,000,000", chance: 4000000, breakthroughs: nativeBreakthroughs("cyberspace"), nativeBiomes: ["cyberspace"] },
@@ -3772,6 +4141,7 @@ function createAuraRegistry(definitions) {
 }
 
 const AURA_REGISTRY = createAuraRegistry(AURA_BLUEPRINT_SOURCE);
+initializeAuraFilters(AURA_REGISTRY);
 
 const auraRollState = new WeakMap();
 
@@ -5613,10 +5983,12 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    hydrateVisualSettings();
+
     const cutsceneToggle = document.getElementById('cinematicToggle');
     if (cutsceneToggle) {
-        cutsceneToggle.textContent = 'Cutscenes (Fullscreen recommended): Off';
-        cutsceneToggle.setAttribute('aria-pressed', 'false');
+        cutsceneToggle.textContent = appState.cinematic ? 'Cutscenes (Fullscreen recommended): On' : 'Cutscenes (Fullscreen recommended): Off';
+        cutsceneToggle.setAttribute('aria-pressed', appState.cinematic ? 'true' : 'false');
     }
 
     const glitchToggle = document.getElementById('glitchEffectsToggle');
@@ -5629,6 +6001,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     hydrateBackgroundRollingPreference();
     setBackgroundRollingEnabled(backgroundRollingPreference.allowed, { persistPreference: false });
+    hydrateAuraFilters();
+    hydrateAuraTierFilters();
 
     const backgroundRollingButton = document.getElementById('backgroundRollingButton');
     if (backgroundRollingButton) {
@@ -5650,6 +6024,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initializeOptionsMenu('filterMenu', 'filterMenuToggle', 'filterMenuPanel');
     initializeOptionsMenu('optionsMenu', 'optionsMenuToggle', 'optionsMenuPanel');
     initializeAuraTierFilterPanel();
+    initializeAuraDetailFilterPanel();
 
     const yearEl = document.getElementById('build-year');
     if (yearEl) {
@@ -5978,7 +6353,7 @@ function buildComputedAuraEntries(registry, context, luckValue, breakthroughStat
 function buildResultEntries(registry, biome, breakthroughStatsMap) {
     let entries = [];
     for (const aura of registry) {
-        if (isAuraTierSkipped(aura, biome)) {
+        if (isAuraTierSkipped(aura, biome) || isAuraFiltered(aura)) {
             continue;
         }
         const winCount = readAuraWinCount(aura);
