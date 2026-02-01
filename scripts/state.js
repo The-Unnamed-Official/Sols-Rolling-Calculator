@@ -58,7 +58,8 @@
             glorious: false,
             transcendent: false,
             challenged: false
-        }
+        },
+        auraFilters: {}
     };
 
     global.DEFAULT_AUDIO_LEVEL = DEFAULT_AUDIO_LEVEL;

@@ -130,7 +130,7 @@
                 <div class="banner__meta">
                     <h1 class="banner__title">Sol's Rolling Simulator</h1>
                     <p class="banner__subtitle">
-                        <button type="button" class="banner__version-button" id="versionInfoButton" aria-haspopup="dialog" aria-expanded="false" data-version-id="v1659">V1.659</button>
+                        <button type="button" class="banner__version-button" id="versionInfoButton" aria-haspopup="dialog" aria-expanded="false" data-version-id="v1660">V1.660</button>
                         <span class="banner__subtitle-divider" aria-hidden="true">◉</span>
                         <span class="banner__subtitle-author">By <span class="banner__subtitle-author-name"><a href="https://discord.com/users/611204110955446301" target="_blank" rel="noopener">not.unnamed</a></span></span>
                         <span class="banner__subtitle-divider" aria-hidden="true">◉</span>
@@ -146,6 +146,7 @@
                     <button class="interface-toggle options-menu__trigger" id="filterMenuToggle" type="button" aria-haspopup="menu" aria-expanded="false" aria-controls="filterMenuPanel">Filter Settings</button>
                     <div class="options-menu__surface" id="filterMenuPanel" aria-labelledby="filterMenuToggle">
                         <button class="interface-toggle options-menu__item" id="filterAuraTiersButton" type="button">Filter Aura Tiers</button>
+                        <button class="interface-toggle options-menu__item" id="filterAurasButton" type="button">Filter Auras</button>
                     </div>
                 </div>
                 <div class="options-menu" id="optionsMenu">
@@ -862,6 +863,19 @@
         </div>
     </div>
 
+    <div id="auraDetailFilterOverlay" class="modal-overlay" hidden>
+        <div class="surface surface--modal filter-modal" role="dialog" aria-modal="true" aria-labelledby="auraDetailFilterTitle">
+            <div class="filter-modal__header">
+                <h2 class="filter-modal__title" id="auraDetailFilterTitle">Filter Auras</h2>
+                <p class="filter-modal__hint">Toggle specific auras to skip them in the roll feed and image sharing.</p>
+            </div>
+            <div class="filter-modal__grid filter-modal__grid--scroll" id="auraFilterList" data-aura-filter-list></div>
+            <div class="filter-modal__actions">
+                <button type="button" class="interface-button interface-button--ghost filter-modal__close" id="auraDetailFilterClose">Close</button>
+            </div>
+        </div>
+    </div>
+
     <div id="versionChangelogOverlay" class="modal-overlay" hidden>
         <div class="surface surface--modal changelog-modal" role="dialog" aria-modal="true" aria-labelledby="versionChangelogTitle">
             <button
@@ -876,11 +890,23 @@
                 <button
                     type="button"
                     class="changelog-tab changelog-tab--active"
+                    id="changelog-tab-v1660"
+                    role="tab"
+                    aria-controls="changelog-panel-v1660"
+                    aria-selected="true"
+                    data-changelog-tab="v1660"
+                >
+                    <span class="changelog-tab__title">V1.660</span>
+                </button>
+                <button
+                    type="button"
+                    class="changelog-tab changelog-tab--active"
                     id="changelog-tab-v1659"
                     role="tab"
                     aria-controls="changelog-panel-v1659"
-                    aria-selected="true"
+                    aria-selected="false"
                     data-changelog-tab="v1659"
+                    tabindex="-1"
                 >
                     <span class="changelog-tab__title">V1.659</span>
                 </button>
@@ -1104,12 +1130,30 @@
 
             <div class="changelog-modal__panels" data-changelog-panels>
                 <section
+                    id="changelog-panel-v1660"
+                    class="changelog-modal__panel"
+                    role="tabpanel"
+                    aria-labelledby="changelog-tab-v1660"
+                    data-changelog-panel="v1660"
+                    tabindex="0"
+                >
+                    <header class="changelog-modal__header">
+                        <h2 class="changelog-modal__title" id="versionChangelogTitle">Version V1.660 Update Notes</h2>
+                        <span class="changelog-tab__subtitle">Detailed Aura Filtering</span>
+                        <p class="changelog-modal__meta">Updated 2026/02/01</p>
+                    </header>
+                    <p class="changelog-modal__intro">Latest changes:</p>
+                    <ul class="changelog-modal__list">
+                        <li>Added a new <span class="subTitlesClass">Filter Auras</span> popup with a scrollable list so you can skip individual auras in the roll feed and image sharing.</li>
+                    </ul>
+                </section>
+                <section
                     id="changelog-panel-v1659"
                     class="changelog-modal__panel"
                     role="tabpanel"
                     aria-labelledby="changelog-tab-v1659"
                     data-changelog-panel="v1659"
-                    tabindex="0"
+                    tabindex="-1"
                 >
                     <header class="changelog-modal__header">
                         <h2 class="changelog-modal__title" id="versionChangelogTitle">Version V1.659 Update Notes</h2>

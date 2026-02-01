@@ -25,6 +25,10 @@ const auraFilterOverlayState = {
     lastFocusedElement: null
 };
 
+const auraDetailFilterOverlayState = {
+    lastFocusedElement: null
+};
+
 const CHANGELOG_VERSION_STORAGE_KEY = 'solsRollingCalculator:lastSeenChangelogVersion';
 const BACKGROUND_ROLLING_STORAGE_KEY = 'solsRollingCalculator:backgroundRollingPreference';
 const AUDIO_SETTINGS_STORAGE_KEY = 'solsRollingCalculator:audioSettings';
@@ -458,6 +462,40 @@ function hideAuraFilterOverlay() {
     });
 }
 
+function showAuraDetailFilterOverlay() {
+    const overlay = document.getElementById('auraDetailFilterOverlay');
+    if (!overlay) return;
+
+    auraDetailFilterOverlayState.lastFocusedElement = document.activeElement;
+    populateAuraFilterList();
+    syncAuraFilterButtons();
+    revealOverlay(overlay);
+
+    const firstButton = overlay.querySelector('.filter-aura-toggle');
+    if (firstButton && typeof firstButton.focus === 'function') {
+        try {
+            firstButton.focus({ preventScroll: true });
+        } catch (error) {
+            firstButton.focus();
+        }
+    }
+}
+
+function hideAuraDetailFilterOverlay() {
+    const overlay = document.getElementById('auraDetailFilterOverlay');
+    if (!overlay) return;
+
+    concealOverlay(overlay, {
+        onHidden: () => {
+            const last = auraDetailFilterOverlayState.lastFocusedElement;
+            if (last && typeof last.focus === 'function') {
+                last.focus({ preventScroll: true });
+            }
+            auraDetailFilterOverlayState.lastFocusedElement = null;
+        }
+    });
+}
+
 function syncAuraTierFilterButtons() {
     const overlay = document.getElementById('auraFilterOverlay');
     if (!overlay || !appState || !appState.auraTierFilters) {
@@ -474,6 +512,63 @@ function syncAuraTierFilterButtons() {
         button.setAttribute('aria-pressed', enabled ? 'true' : 'false');
         button.textContent = `${label}: ${enabled ? 'On' : 'Off'}`;
     });
+}
+
+function syncAuraFilterButtons() {
+    const overlay = document.getElementById('auraDetailFilterOverlay');
+    if (!overlay || !appState || !appState.auraFilters) {
+        return;
+    }
+
+    overlay.querySelectorAll('.filter-aura-toggle').forEach(button => {
+        const auraName = button.dataset.auraName;
+        if (!auraName) {
+            return;
+        }
+        const label = button.dataset.auraLabel || button.textContent.trim();
+        const enabled = Boolean(appState.auraFilters[auraName]);
+        button.setAttribute('aria-pressed', enabled ? 'true' : 'false');
+        button.textContent = `${label}: ${enabled ? 'On' : 'Off'}`;
+    });
+}
+
+function populateAuraFilterList() {
+    const list = document.querySelector('[data-aura-filter-list]');
+    if (!list || !Array.isArray(AURA_REGISTRY)) {
+        return;
+    }
+    if (list.dataset.populated === 'true') {
+        return;
+    }
+
+    list.textContent = '';
+    const sortedAuras = [...AURA_REGISTRY].sort((a, b) => {
+        if (b.chance !== a.chance) {
+            return b.chance - a.chance;
+        }
+        return a.name.localeCompare(b.name);
+    });
+
+    sortedAuras.forEach(aura => {
+        const button = document.createElement('button');
+        const label = `Skip ${aura.name}`;
+        button.type = 'button';
+        button.className = 'interface-toggle filter-tier-toggle filter-aura-toggle';
+        button.dataset.auraName = aura.name;
+        button.dataset.auraLabel = label;
+        button.setAttribute('aria-pressed', 'false');
+        button.textContent = `${label}: Off`;
+        button.addEventListener('click', () => {
+            if (!appState || !appState.auraFilters) {
+                return;
+            }
+            appState.auraFilters[aura.name] = !appState.auraFilters[aura.name];
+            syncAuraFilterButtons();
+        });
+        list.appendChild(button);
+    });
+
+    list.dataset.populated = 'true';
 }
 
 function initializeAuraTierFilterPanel() {
@@ -524,6 +619,46 @@ function initializeAuraTierFilterPanel() {
     });
 
     syncAuraTierFilterButtons();
+}
+
+function initializeAuraDetailFilterPanel() {
+    const overlay = document.getElementById('auraDetailFilterOverlay');
+    const openButton = document.getElementById('filterAurasButton');
+    const closeButton = document.getElementById('auraDetailFilterClose');
+    if (!overlay || !openButton) return;
+
+    const filterMenu = document.getElementById('filterMenu');
+    const filterMenuToggle = document.getElementById('filterMenuToggle');
+
+    overlay.addEventListener('click', event => {
+        if (event.target === overlay) {
+            hideAuraDetailFilterOverlay();
+        }
+    });
+
+    overlay.addEventListener('keydown', event => {
+        if (event.key === 'Escape') {
+            hideAuraDetailFilterOverlay();
+        }
+    });
+
+    if (closeButton) {
+        closeButton.addEventListener('click', () => hideAuraDetailFilterOverlay());
+    }
+
+    openButton.addEventListener('click', event => {
+        event.preventDefault();
+        if (filterMenu) {
+            filterMenu.classList.remove('options-menu--open');
+        }
+        if (filterMenuToggle) {
+            filterMenuToggle.setAttribute('aria-expanded', 'false');
+        }
+        showAuraDetailFilterOverlay();
+    });
+
+    populateAuraFilterList();
+    syncAuraFilterButtons();
 }
 
 function initializeOptionsMenu(menuId, toggleId, panelId) {
@@ -3036,6 +3171,37 @@ function getAuraFilterSummaryText() {
     return labels.length > 0 ? labels.join(', ') : 'None';
 }
 
+function initializeAuraFilters(registry) {
+    if (!appState) {
+        return;
+    }
+    if (!appState.auraFilters || typeof appState.auraFilters !== 'object') {
+        appState.auraFilters = {};
+    }
+    if (!Array.isArray(registry)) {
+        return;
+    }
+    registry.forEach(aura => {
+        if (!aura || typeof aura.name !== 'string') {
+            return;
+        }
+        if (typeof appState.auraFilters[aura.name] !== 'boolean') {
+            appState.auraFilters[aura.name] = false;
+        }
+    });
+}
+
+function isAuraFiltered(aura) {
+    if (!aura || !appState || !appState.auraFilters) {
+        return false;
+    }
+    const auraName = aura.name || '';
+    if (!auraName) {
+        return false;
+    }
+    return Boolean(appState.auraFilters[auraName]);
+}
+
 function resolveAuraTierKey(aura, biome) {
     if (!aura) {
         return null;
@@ -3092,7 +3258,7 @@ function isAuraTierSkipped(aura, biome) {
 const CHALLENGED_CUTSCENE_AURAS = new Set(['Oblivion', 'Memory', 'Neferkhaf']);
 
 function shouldSkipAuraCutscene(aura, biome) {
-    if (isAuraTierSkipped(aura, biome)) {
+    if (isAuraTierSkipped(aura, biome) || isAuraFiltered(aura)) {
         return true;
     }
     if (!aura || !appState || !appState.auraTierFilters) {
@@ -3772,6 +3938,7 @@ function createAuraRegistry(definitions) {
 }
 
 const AURA_REGISTRY = createAuraRegistry(AURA_BLUEPRINT_SOURCE);
+initializeAuraFilters(AURA_REGISTRY);
 
 const auraRollState = new WeakMap();
 
@@ -5650,6 +5817,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initializeOptionsMenu('filterMenu', 'filterMenuToggle', 'filterMenuPanel');
     initializeOptionsMenu('optionsMenu', 'optionsMenuToggle', 'optionsMenuPanel');
     initializeAuraTierFilterPanel();
+    initializeAuraDetailFilterPanel();
 
     const yearEl = document.getElementById('build-year');
     if (yearEl) {
@@ -5978,7 +6146,7 @@ function buildComputedAuraEntries(registry, context, luckValue, breakthroughStat
 function buildResultEntries(registry, biome, breakthroughStatsMap) {
     let entries = [];
     for (const aura of registry) {
-        if (isAuraTierSkipped(aura, biome)) {
+        if (isAuraTierSkipped(aura, biome) || isAuraFiltered(aura)) {
             continue;
         }
         const winCount = readAuraWinCount(aura);
