@@ -581,7 +581,8 @@ function renderAuraFilterButtonLabel(button, auraName, enabled) {
     const aura = Array.isArray(AURA_REGISTRY)
         ? AURA_REGISTRY.find(entry => entry.name === auraName)
         : null;
-    const rarityClass = aura ? resolveBaseRarityClass(aura) : '';
+    const isEventAura = aura ? Boolean(getAuraEventId(aura)) : false;
+    const rarityClass = aura && !isEventAura ? resolveBaseRarityClass(aura) : '';
     const specialClass = aura ? resolveAuraStyleClass(aura, null) : '';
     const nameClasses = [rarityClass, specialClass].filter(Boolean).join(' ');
     const nameSpan = document.createElement('span');
@@ -613,7 +614,23 @@ function populateAuraFilterList() {
         return a.name.localeCompare(b.name);
     });
 
-    sortedAuras.forEach(aura => {
+    const reorderSequence = [MONARCH_AURA_NAME, DUNE_AURA_LABEL, MEMORY_AURA_LABEL, OBLIVION_AURA_LABEL];
+    const auraByName = new Map(sortedAuras.map(aura => [aura.name, aura]));
+    const filteredAuras = sortedAuras.filter(aura => !reorderSequence.includes(aura.name));
+    const monarchIndex = sortedAuras.findIndex(aura => aura.name === MONARCH_AURA_NAME);
+    const insertionIndex = monarchIndex >= 0
+        ? sortedAuras.slice(0, monarchIndex + 1).filter(aura => !reorderSequence.includes(aura.name)).length
+        : 0;
+    const orderedAuras = reorderSequence.map(name => auraByName.get(name)).filter(Boolean);
+    const displayAuras = monarchIndex >= 0
+        ? [
+            ...filteredAuras.slice(0, insertionIndex),
+            ...orderedAuras,
+            ...filteredAuras.slice(insertionIndex)
+        ]
+        : [...filteredAuras, ...orderedAuras];
+
+    displayAuras.forEach(aura => {
         const button = document.createElement('button');
         button.type = 'button';
         button.className = 'interface-toggle filter-tier-toggle filter-aura-toggle';

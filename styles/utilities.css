@@ -929,18 +929,20 @@
 
 .cutscene-warning-overlay,
 .modal-overlay {
+    --modal-padding: clamp(16px, 4vw, 40px);
     position: fixed;
     inset: 0;
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: clamp(24px, 5vw, 48px);
+    padding: var(--modal-padding);
     background: rgba(3, 8, 18, 0.82);
     backdrop-filter: blur(6px);
     z-index: 9999;
     opacity: 0;
     pointer-events: none;
     transition: opacity 260ms cubic-bezier(0.24, 0.82, 0.25, 1);
+    overflow-y: auto;
 }
 
 .cutscene-warning-overlay[hidden],
@@ -1127,15 +1129,18 @@
 
 .filter-modal__title {
     margin: 0;
-    font-size: clamp(18px, 2vw, 22px);
-    letter-spacing: 0.18em;
-    text-transform: uppercase;
+    font-size: clamp(19px, 2vw, 24px);
+    letter-spacing: 0.08em;
+    font-weight: 600;
+    text-transform: none;
 }
 
 .filter-modal__hint {
     margin: 0;
-    color: var(--text-secondary);
-    font-size: 0.95rem;
+    color: rgba(210, 226, 248, 0.88);
+    font-size: 1rem;
+    letter-spacing: 0.02em;
+    line-height: 1.4;
 }
 
 .filter-modal__grid {
@@ -1152,6 +1157,10 @@
     overflow-x: hidden;
     overflow-x: clip;
     padding-right: 4px;
+}
+
+.filter-modal__grid--stacked {
+    grid-template-columns: minmax(0, 1fr);
 }
 
 .filter-tier-toggle {
@@ -1599,6 +1608,8 @@
     padding: clamp(24px, 4vw, 38px);
     width: min(540px, 90vw);
     transform-origin: center;
+    max-height: calc(100vh - (var(--modal-padding, 24px) + var(--modal-padding, 24px)));
+    overflow-y: auto;
 }
 
 .surface--modal.changelog-modal {
@@ -1609,6 +1620,13 @@
 
 .surface--modal::after {
     border-radius: 0;
+}
+
+@media (max-height: 720px) {
+    .cutscene-warning-overlay,
+    .modal-overlay {
+        align-items: flex-start;
+    }
 }
 
 .cutscene-warning {
