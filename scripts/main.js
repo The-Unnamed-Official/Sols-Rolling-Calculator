@@ -2126,6 +2126,7 @@ let baseLuck = 1;
 let currentLuck = 1;
 let lastVipMultiplier = 1;
 let lastXyzMultiplier = 1;
+let lastSorryMultiplier = 1;
 let lastXcMultiplier = 1;
 let lastAxisMultiplier = 1;
 let lastDaveMultiplier = 1;
@@ -2134,6 +2135,7 @@ let suppressYgBlessingAlert = false;
 
 const EVENT_LUCK_TOGGLE_IDS = Object.freeze([
     'xyz-luck-toggle',
+    'sorry-luck-toggle',
     'xc-luck-toggle',
     'axis-luck-toggle',
     'dorcelessness-luck-toggle'
@@ -2141,6 +2143,7 @@ const EVENT_LUCK_TOGGLE_IDS = Object.freeze([
 
 const YG_BLESSING_BLOCKING_EVENT_IDS = Object.freeze([
     'xyz-luck-toggle',
+    'sorry-luck-toggle',
     'xc-luck-toggle',
     'axis-luck-toggle'
 ]);
@@ -2277,12 +2280,14 @@ function applyLuckValue(value, options = {}) {
     currentLuck = targetLuck;
     lastVipMultiplier = 1;
     lastXyzMultiplier = 1;
+    lastSorryMultiplier = 1;
     lastXcMultiplier = 1;
     lastAxisMultiplier = 1;
     lastDaveMultiplier = 1;
     lastDorcelessnessMultiplier = 1;
     document.getElementById('vip-dropdown').value = '1';
     document.getElementById('xyz-luck-toggle').checked = false;
+    document.getElementById('sorry-luck-toggle').checked = false;
     document.getElementById('xc-luck-toggle').checked = false;
     document.getElementById('axis-luck-toggle').checked = false;
     document.getElementById('dorcelessness-luck-toggle').checked = false;
@@ -2312,6 +2317,7 @@ function getActiveLuckMultipliers() {
         biome: document.getElementById('biome-dropdown'),
         vip: document.getElementById('vip-dropdown'),
         xyz: document.getElementById('xyz-luck-toggle'),
+        sorry: document.getElementById('sorry-luck-toggle'),
         xc: document.getElementById('xc-luck-toggle'),
         axis: document.getElementById('axis-luck-toggle'),
         dorcelessness: document.getElementById('dorcelessness-luck-toggle'),
@@ -2324,6 +2330,7 @@ function getActiveLuckMultipliers() {
     return {
         vip: parseFloat(controls.vip ? controls.vip.value : '1') || 1,
         xyz: controls.xyz && controls.xyz.checked ? 2 : 1,
+        sorry: controls.sorry && controls.sorry.checked ? 2 : 1,
         xc: controls.xc && controls.xc.checked ? 2 : 1,
         axis: controls.axis && controls.axis.checked ? 2 : 1,
         dorcelessness: controls.dorcelessness && controls.dorcelessness.checked ? 2 : 1,
@@ -2348,11 +2355,12 @@ function applyLuckDelta(presetValue, options = {}) {
     const targetLuck = Math.max(0, startingLuck + numericPresetValue);
 
     const multipliers = getActiveLuckMultipliers();
-    const multiplierTotal = multipliers.vip * multipliers.xyz * multipliers.xc * multipliers.axis * multipliers.dorcelessness * multipliers.dave;
+    const multiplierTotal = multipliers.vip * multipliers.xyz * multipliers.sorry * multipliers.xc * multipliers.axis * multipliers.dorcelessness * multipliers.dave;
     baseLuck = multiplierTotal > 0 ? targetLuck / multiplierTotal : targetLuck;
     currentLuck = targetLuck;
     lastVipMultiplier = multipliers.vip;
     lastXyzMultiplier = multipliers.xyz;
+    lastSorryMultiplier = multipliers.sorry;
     lastXcMultiplier = multipliers.xc;
     lastAxisMultiplier = multipliers.axis;
     lastDaveMultiplier = multipliers.dave;
@@ -2498,6 +2506,7 @@ function recomputeLuckValue() {
         biome: document.getElementById('biome-dropdown'),
         vip: document.getElementById('vip-dropdown'),
         xyz: document.getElementById('xyz-luck-toggle'),
+        sorry: document.getElementById('sorry-luck-toggle'),
         xc: document.getElementById('xc-luck-toggle'),
         axis: document.getElementById('axis-luck-toggle'),
         dorcelessness: document.getElementById('dorcelessness-luck-toggle'),
@@ -2511,6 +2520,7 @@ function recomputeLuckValue() {
     const multipliers = {
         vip: parseFloat(controls.vip ? controls.vip.value : '1') || 1,
         xyz: controls.xyz && controls.xyz.checked ? 2 : 1,
+        sorry: controls.sorry && controls.sorry.checked ? 2 : 1,
         xc: controls.xc && controls.xc.checked ? 2 : 1,
         axis: controls.axis && controls.axis.checked ? 2 : 1,
         dorcelessness: controls.dorcelessness && controls.dorcelessness.checked ? 2 : 1,
@@ -2527,6 +2537,7 @@ function recomputeLuckValue() {
         setLuckSelectionSource(LUCK_SELECTION_SOURCE.MANUAL);
         lastVipMultiplier = 1;
         lastXyzMultiplier = 1;
+        lastSorryMultiplier = 1;
         lastXcMultiplier = 1;
         lastAxisMultiplier = 1;
         lastDaveMultiplier = 1;
@@ -2537,6 +2548,9 @@ function recomputeLuckValue() {
         }
         if (controls.xyz) {
             controls.xyz.checked = false;
+        }
+        if (controls.sorry) {
+            controls.sorry.checked = false;
         }
         if (controls.xc) {
             controls.xc.checked = false;
@@ -2563,9 +2577,10 @@ function recomputeLuckValue() {
         return;
     }
 
-    currentLuck = baseLuck * multipliers.vip * multipliers.xyz * multipliers.xc * multipliers.axis * multipliers.dorcelessness * multipliers.dave;
+    currentLuck = baseLuck * multipliers.vip * multipliers.xyz * multipliers.sorry * multipliers.xc * multipliers.axis * multipliers.dorcelessness * multipliers.dave;
     lastVipMultiplier = multipliers.vip;
     lastXyzMultiplier = multipliers.xyz;
+    lastSorryMultiplier = multipliers.sorry;
     lastXcMultiplier = multipliers.xc;
     lastAxisMultiplier = multipliers.axis;
     lastDaveMultiplier = multipliers.dave;
@@ -2656,6 +2671,7 @@ function initializeBiomeInterface() {
     const biome = selectionState.canonicalBiome;
     const daveLuckContainer = document.getElementById('dave-luck-wrapper');
     const xyzLuckContainer = document.getElementById('xyz-luck-wrapper');
+    const sorryLuckContainer = document.getElementById('sorry-luck-wrapper');
     const xcLuckContainer = document.getElementById('xc-luck-wrapper');
     const axisLuckContainer = document.getElementById('axis-luck-wrapper');
     const dorcelessnessLuckContainer = document.getElementById('dorcelessness-luck-wrapper');
@@ -2664,6 +2680,7 @@ function initializeBiomeInterface() {
     if (biome === 'limbo') {
         if (daveLuckContainer) daveLuckContainer.style.display = '';
         if (xyzLuckContainer) xyzLuckContainer.style.display = '';
+        if (sorryLuckContainer) sorryLuckContainer.style.display = '';
         if (xcLuckContainer) xcLuckContainer.style.display = '';
         if (axisLuckContainer) axisLuckContainer.style.display = '';
         if (dorcelessnessLuckContainer) dorcelessnessLuckContainer.style.display = '';
@@ -2671,6 +2688,7 @@ function initializeBiomeInterface() {
     } else {
         if (daveLuckContainer) daveLuckContainer.style.display = 'none';
         if (xyzLuckContainer) xyzLuckContainer.style.display = '';
+        if (sorryLuckContainer) sorryLuckContainer.style.display = '';
         if (xcLuckContainer) xcLuckContainer.style.display = '';
         if (axisLuckContainer) axisLuckContainer.style.display = '';
         if (dorcelessnessLuckContainer) dorcelessnessLuckContainer.style.display = '';
@@ -5453,11 +5471,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
     document.getElementById('vip-dropdown').addEventListener('change', recomputeLuckValue);
     const xyzToggle = document.getElementById('xyz-luck-toggle');
+    const sorryToggle = document.getElementById('sorry-luck-toggle');
     const axisToggle = document.getElementById('axis-luck-toggle');
     if (xyzToggle) {
         xyzToggle.addEventListener('change', () => {
             enforceExclusiveEventToggles(xyzToggle);
             if (xyzToggle.checked) {
+                disableYgBlessing({ silent: true });
+            }
+            recomputeLuckValue();
+        });
+    }
+    if (sorryToggle) {
+        sorryToggle.addEventListener('change', () => {
+            enforceExclusiveEventToggles(sorryToggle);
+            if (sorryToggle.checked) {
                 disableYgBlessing({ silent: true });
             }
             recomputeLuckValue();
@@ -5520,11 +5548,13 @@ document.addEventListener('DOMContentLoaded', () => {
             setLuckSelectionSource(LUCK_SELECTION_SOURCE.MANUAL);
             lastVipMultiplier = 1;
             lastXyzMultiplier = 1;
+            lastSorryMultiplier = 1;
             lastXcMultiplier = 1;
             lastAxisMultiplier = 1;
             lastDaveMultiplier = 1;
             lastDorcelessnessMultiplier = 1;
             document.getElementById('vip-dropdown').value = '1';
+            document.getElementById('sorry-luck-toggle').checked = false;
             document.getElementById('xyz-luck-toggle').checked = false;
             document.getElementById('xc-luck-toggle').checked = false;
             document.getElementById('axis-luck-toggle').checked = false;
