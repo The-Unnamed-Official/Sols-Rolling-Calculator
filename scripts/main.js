@@ -586,7 +586,11 @@ function renderAuraFilterButtonLabel(button, auraName, enabled) {
     const specialClass = aura ? resolveAuraStyleClass(aura, null) : '';
     const nameClasses = [rarityClass, specialClass].filter(Boolean).join(' ');
     const nameSpan = document.createElement('span');
-    nameSpan.textContent = auraName;
+    if (aura && auraName.startsWith('Breakthrough')) {
+        nameSpan.innerHTML = formatAuraNameMarkup(aura);
+    } else {
+        nameSpan.textContent = auraName;
+    }
     if (nameClasses) {
         nameSpan.className = nameClasses;
     }
