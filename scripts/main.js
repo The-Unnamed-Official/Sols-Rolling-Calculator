@@ -568,11 +568,32 @@ function syncAuraFilterButtons() {
         if (!auraName) {
             return;
         }
-        const label = button.dataset.auraLabel || button.textContent.trim();
         const enabled = Boolean(appState.auraFilters[auraName]);
         button.setAttribute('aria-pressed', enabled ? 'true' : 'false');
-        button.textContent = `${label}: ${enabled ? 'On' : 'Off'}`;
+        renderAuraFilterButtonLabel(button, auraName, enabled);
     });
+}
+
+function renderAuraFilterButtonLabel(button, auraName, enabled) {
+    if (!button || !auraName) {
+        return;
+    }
+    const aura = Array.isArray(AURA_REGISTRY)
+        ? AURA_REGISTRY.find(entry => entry.name === auraName)
+        : null;
+    const rarityClass = aura ? resolveBaseRarityClass(aura) : '';
+    const specialClass = aura ? resolveAuraStyleClass(aura, null) : '';
+    const nameClasses = [rarityClass, specialClass].filter(Boolean).join(' ');
+    const nameSpan = document.createElement('span');
+    nameSpan.textContent = auraName;
+    if (nameClasses) {
+        nameSpan.className = nameClasses;
+    }
+
+    button.textContent = '';
+    button.append('Skip ');
+    button.append(nameSpan);
+    button.append(`: ${enabled ? 'On' : 'Off'}`);
 }
 
 function populateAuraFilterList() {
@@ -586,21 +607,19 @@ function populateAuraFilterList() {
 
     list.textContent = '';
     const sortedAuras = [...AURA_REGISTRY].sort((a, b) => {
-        if (b.chance !== a.chance) {
-            return b.chance - a.chance;
+        if (a.chance !== b.chance) {
+            return a.chance - b.chance;
         }
         return a.name.localeCompare(b.name);
     });
 
     sortedAuras.forEach(aura => {
         const button = document.createElement('button');
-        const label = `Skip ${aura.name}`;
         button.type = 'button';
         button.className = 'interface-toggle filter-tier-toggle filter-aura-toggle';
         button.dataset.auraName = aura.name;
-        button.dataset.auraLabel = label;
         button.setAttribute('aria-pressed', 'false');
-        button.textContent = `${label}: Off`;
+        renderAuraFilterButtonLabel(button, aura.name, false);
         button.addEventListener('click', () => {
             if (!appState || !appState.auraFilters) {
                 return;
@@ -669,6 +688,7 @@ function initializeAuraDetailFilterPanel() {
     const overlay = document.getElementById('auraDetailFilterOverlay');
     const openButton = document.getElementById('filterAurasButton');
     const closeButton = document.getElementById('auraDetailFilterClose');
+    const resetButton = document.getElementById('auraDetailFilterReset');
     if (!overlay || !openButton) return;
 
     const filterMenu = document.getElementById('filterMenu');
@@ -688,6 +708,19 @@ function initializeAuraDetailFilterPanel() {
 
     if (closeButton) {
         closeButton.addEventListener('click', () => hideAuraDetailFilterOverlay());
+    }
+
+    if (resetButton) {
+        resetButton.addEventListener('click', () => {
+            if (!appState || !appState.auraFilters) {
+                return;
+            }
+            Object.keys(appState.auraFilters).forEach(name => {
+                appState.auraFilters[name] = false;
+            });
+            syncAuraFilterButtons();
+            persistAuraFilters();
+        });
     }
 
     openButton.addEventListener('click', event => {
