@@ -860,8 +860,19 @@
                         </div>
                     </div>
                     <div class="quality-settings" id="qualitySettings">
-                        <button class="quality-settings__trigger" type="button" id="qualityPreferencesToggle" aria-haspopup="true" aria-expanded="false" aria-controls="qualityPreferencesMenu">Quality Preferances</button>
-                        <div class="quality-settings__menu" id="qualityPreferencesMenu" role="menu" hidden>
+                        <button class="interface-toggle options-menu__item" type="button" id="qualityPreferencesToggle" aria-haspopup="dialog" aria-expanded="false" aria-controls="qualityPreferencesOverlay">Quality Preferances</button>
+                    </div>
+                </div>
+        </div>
+    </div>
+
+    <div id="qualityPreferencesOverlay" class="modal-overlay" hidden>
+        <div class="surface surface--modal filter-modal quality-settings__modal" role="dialog" aria-modal="true" aria-labelledby="qualityPreferencesTitle">
+            <div class="filter-modal__header">
+                <h2 class="filter-modal__title" id="qualityPreferencesTitle">Quality Preferances</h2>
+                <p class="filter-modal__hint">Fine tune visual performance settings and effects.</p>
+            </div>
+            <div class="quality-settings__menu" id="qualityPreferencesMenu" role="menu">
                             <button class="quality-settings__item" type="button" role="menuitemcheckbox" aria-checked="false" data-quality-option="removeParticles">
                                 <span class="quality-settings__name">Remove particles</span>
                                 <span class="quality-settings__description">Disables snowflakes and other floating particle visuals.</span>
@@ -882,9 +893,10 @@
                                 <span class="quality-settings__name">Remove glitch effects</span>
                                 <span class="quality-settings__description">Completely disables glitch visuals and glitch audio behavior.</span>
                             </button>
-                        </div>
-                    </div>
-                </div>
+            </div>
+            <div class="filter-modal__actions">
+                <button type="button" class="interface-button interface-button--ghost filter-modal__close" id="qualityPreferencesClose">Close</button>
+            </div>
         </div>
     </div>
 

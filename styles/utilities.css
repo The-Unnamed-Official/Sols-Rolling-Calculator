@@ -1107,22 +1107,20 @@
 .quality-settings__trigger {
     width: 100%;
     min-width: 0;
-    text-align: left;
+    text-align: center;
 }
 
-#optionsMenuPanel .quality-settings .quality-settings__trigger {
-    padding-inline: 20px 52px;
-}
-
-#optionsMenuPanel .quality-settings .quality-settings__trigger::after {
-    right: 18px;
+.quality-settings__modal {
+    width: min(460px, 92vw);
 }
 
 .quality-settings__menu {
-    right: 0;
-    width: min(420px, calc(100vw - 40px));
+    width: 100%;
     gap: 12px;
+    display: grid;
     padding: 14px;
+    border: 1px solid rgba(124, 205, 255, 0.42);
+    border-radius: 16px;
     border-color: rgba(124, 205, 255, 0.42);
     background: linear-gradient(180deg, rgba(5, 11, 26, 0.98), rgba(2, 6, 18, 0.98));
 }

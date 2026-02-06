@@ -29,6 +29,10 @@ const auraDetailFilterOverlayState = {
     lastFocusedElement: null
 };
 
+const qualityPreferencesOverlayState = {
+    lastFocusedElement: null
+};
+
 const CHANGELOG_VERSION_STORAGE_KEY = 'solsRollingCalculator:lastSeenChangelogVersion';
 const BACKGROUND_ROLLING_STORAGE_KEY = 'solsRollingCalculator:backgroundRollingPreference';
 const AUDIO_SETTINGS_STORAGE_KEY = 'solsRollingCalculator:audioSettings';
@@ -1999,8 +2003,7 @@ function applyQualityPreferencesState() {
 
 function syncQualityPreferenceButtons() {
     const menu = document.getElementById('qualityPreferencesMenu');
-    const trigger = document.getElementById('qualityPreferencesToggle');
-    if (!menu || !trigger) {
+    if (!menu) {
         return;
     }
 
@@ -2021,21 +2024,40 @@ function syncQualityPreferenceButtons() {
 function initializeQualityPreferencesMenu() {
     const trigger = document.getElementById('qualityPreferencesToggle');
     const menu = document.getElementById('qualityPreferencesMenu');
-    const container = document.getElementById('qualitySettings');
-    if (!trigger || !menu || !container) {
+    const overlay = document.getElementById('qualityPreferencesOverlay');
+    const closeButton = document.getElementById('qualityPreferencesClose');
+    if (!trigger || !menu || !overlay) {
         return;
     }
 
     ensureQualityPreferences();
 
     const closeMenu = () => {
-        container.classList.remove('options-menu--open');
-        trigger.setAttribute('aria-expanded', 'false');
+        if (overlay.hasAttribute('hidden') || overlay.hasAttribute('data-closing')) {
+            trigger.setAttribute('aria-expanded', 'false');
+            return;
+        }
+
+        concealOverlay(overlay, {
+            onHidden: () => {
+                trigger.setAttribute('aria-expanded', 'false');
+                const last = qualityPreferencesOverlayState.lastFocusedElement;
+                qualityPreferencesOverlayState.lastFocusedElement = null;
+                if (last && typeof last.focus === 'function') {
+                    last.focus({ preventScroll: true });
+                }
+            }
+        });
     };
 
     const openMenu = () => {
-        container.classList.add('options-menu--open');
+        qualityPreferencesOverlayState.lastFocusedElement = document.activeElement;
+        revealOverlay(overlay);
         trigger.setAttribute('aria-expanded', 'true');
+        const firstButton = menu.querySelector('[data-quality-option]');
+        if (firstButton && typeof firstButton.focus === 'function') {
+            firstButton.focus({ preventScroll: true });
+        }
     };
 
     trigger.addEventListener('click', () => {
@@ -2079,8 +2101,14 @@ function initializeQualityPreferencesMenu() {
         persistVisualSettings();
     });
 
-    document.addEventListener('click', event => {
-        if (!container.contains(event.target)) {
+    if (closeButton) {
+        closeButton.addEventListener('click', () => {
+            closeMenu();
+        });
+    }
+
+    overlay.addEventListener('click', event => {
+        if (event.target === overlay) {
             closeMenu();
         }
     });
@@ -2094,6 +2122,78 @@ function initializeQualityPreferencesMenu() {
 
     closeMenu();
     syncQualityPreferenceButtons();
+}
+
+const CHANGELOG_TIMEZONE_OFFSETS = Object.freeze({
+    UTC: 0,
+    GMT: 0,
+    CET: 60,
+    CEST: 120,
+    EET: 120,
+    EEST: 180,
+    EST: -300,
+    EDT: -240,
+    CST: -360,
+    CDT: -300,
+    MST: -420,
+    MDT: -360,
+    PST: -480,
+    PDT: -420,
+    JST: 540,
+    KST: 540,
+    IST: 330,
+    AEST: 600,
+    AEDT: 660
+});
+
+function formatChangelogLocalDate(date) {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    const rawHour = date.getHours();
+    const period = rawHour >= 12 ? 'PM' : 'AM';
+    const hour = rawHour % 12 || 12;
+    return `${year}/${month}/${day} ${hour}:${minutes} ${period}`;
+}
+
+function localizeChangelogUpdateTimes() {
+    const nodes = Array.from(document.querySelectorAll('.changelog-modal__meta'));
+    if (!nodes.length) {
+        return;
+    }
+
+    const pattern = /^Updated\s+(\d{4})\/(\d{2})\/(\d{2})\s+(\d{1,2}):(\d{2})\s*(AM|PM)\s+([A-Za-z]{2,5})$/i;
+
+    nodes.forEach(node => {
+        const value = node.textContent.trim();
+        const parsed = pattern.exec(value);
+        if (!parsed) {
+            return;
+        }
+
+        const [, y, m, d, h, min, meridiem, timezone] = parsed;
+        const normalizedTz = timezone.toUpperCase();
+        if (!Object.prototype.hasOwnProperty.call(CHANGELOG_TIMEZONE_OFFSETS, normalizedTz)) {
+            return;
+        }
+
+        let hour24 = Number.parseInt(h, 10) % 12;
+        if (meridiem.toUpperCase() === 'PM') {
+            hour24 += 12;
+        }
+
+        const utcMilliseconds = Date.UTC(
+            Number.parseInt(y, 10),
+            Number.parseInt(m, 10) - 1,
+            Number.parseInt(d, 10),
+            hour24,
+            Number.parseInt(min, 10)
+        ) - (CHANGELOG_TIMEZONE_OFFSETS[normalizedTz] * 60 * 1000);
+
+        const localDate = new Date(utcMilliseconds);
+        node.textContent = `Updated ${formatChangelogLocalDate(localDate)}`;
+    });
 }
 
 const reduceMotionMediaQuery = typeof window !== 'undefined' && typeof window.matchMedia === 'function'
@@ -5239,6 +5339,7 @@ document.addEventListener('DOMContentLoaded', setupLuckPresetAdjustmentButtons);
 document.addEventListener('DOMContentLoaded', setupLuckPresetAnimations);
 document.addEventListener('DOMContentLoaded', setupChangelogTabs);
 document.addEventListener('DOMContentLoaded', setupVersionChangelogOverlay);
+document.addEventListener('DOMContentLoaded', localizeChangelogUpdateTimes);
 document.addEventListener('DOMContentLoaded', maybeShowChangelogOnFirstVisit);
 document.addEventListener('DOMContentLoaded', initializeIntroOverlay);
 document.addEventListener('DOMContentLoaded', initializeRollTriggerFloating);
