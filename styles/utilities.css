@@ -1099,6 +1099,104 @@
     color: var(--text-primary);
 }
 
+.quality-settings {
+    margin-top: 8px;
+    width: 100%;
+}
+
+.quality-settings__trigger {
+    width: 100%;
+    min-width: 0;
+    text-align: center;
+}
+
+.quality-settings__modal {
+    width: min(460px, 92vw);
+}
+
+.quality-settings__menu {
+    width: 100%;
+    gap: 12px;
+    display: grid;
+    padding: 14px;
+    border: 1px solid rgba(124, 205, 255, 0.42);
+    border-radius: 16px;
+    border-color: rgba(124, 205, 255, 0.42);
+    background: linear-gradient(180deg, rgba(5, 11, 26, 0.98), rgba(2, 6, 18, 0.98));
+}
+
+.quality-settings__item {
+    border-radius: var(--radius-md);
+    border: 1px solid rgba(151, 207, 255, 0.26);
+    color: #e8f5ff;
+    text-align: left;
+    padding: 11px 13px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.22s ease, border-color 0.22s ease, box-shadow 0.22s ease, background 0.28s ease;
+}
+
+.quality-settings__item::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(120deg, transparent 0%, rgba(168, 224, 255, 0.16) 45%, transparent 78%);
+    transform: translateX(-130%);
+    transition: transform 0.55s ease;
+    pointer-events: none;
+}
+
+.quality-settings__item:hover,
+.quality-settings__item:focus-visible {
+    border-color: rgba(143, 222, 255, 0.7);
+    transform: translateY(-2px);
+    box-shadow: 0 10px 20px rgba(2, 9, 24, 0.42);
+}
+
+.quality-settings__item:hover::before,
+.quality-settings__item:focus-visible::before {
+    transform: translateX(130%);
+}
+
+.quality-settings__item--active {
+    border-color: rgba(105, 236, 174, 0.74);
+    background: linear-gradient(160deg, rgba(23, 72, 61, 0.92), rgba(9, 36, 32, 0.95));
+    box-shadow: inset 0 0 0 1px rgba(105, 236, 174, 0.2);
+}
+
+.quality-settings__name {
+    font-size: 0.82rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.quality-settings__description {
+    font-size: 0.76rem;
+    color: rgba(205, 226, 246, 0.95);
+    line-height: 1.3;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .quality-settings__item,
+    .quality-settings__item::before {
+        transition-duration: 0.01ms;
+    }
+
+    .quality-settings__item:hover,
+    .quality-settings__item:focus-visible {
+        transform: none;
+    }
+
+    .quality-settings__item:hover::before,
+    .quality-settings__item:focus-visible::before {
+        transform: translateX(-130%);
+    }
+}
+
 .filter-modal {
     position: relative;
     display: flex;

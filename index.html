@@ -130,11 +130,11 @@
                 <div class="banner__meta">
                     <h1 class="banner__title">Sol's Rolling Simulator</h1>
                     <p class="banner__subtitle">
-                        <button type="button" class="banner__version-button" id="versionInfoButton" aria-haspopup="dialog" aria-expanded="false" data-version-id="v1662">V1.662</button>
+                        <button type="button" class="banner__version-button" id="versionInfoButton" aria-haspopup="dialog" aria-expanded="false" data-version-id="v1665">V1.665</button>
                         <span class="banner__subtitle-divider" aria-hidden="true">◉</span>
                         <span class="banner__subtitle-author">By <span class="banner__subtitle-author-name"><a href="https://discord.com/users/611204110955446301" target="_blank" rel="noopener">not.unnamed</a></span></span>
                         <span class="banner__subtitle-divider" aria-hidden="true">◉</span>
-                        <span class="banner__subtitle-updated">Updated <time datetime="2026-02-01">2026/02/01</time></span>
+                        <span class="banner__subtitle-updated">Updated <time datetime="2026-02-06T03:15:00+01:00">2026/02/06 3:15 AM CET</time></span>
                         <span class="banner__subtitle-divider" aria-hidden="true">◉</span>
                         <span class="banner__subtitle-eon"><span class="banner__subtitle-game-version"><a href="https://www.roblox.com/games/15532962292/Sols-RNG" target="_blank" rel="noopener">Sol's RNG Eon 1-15</a></span></span>
                     </p>
@@ -153,9 +153,8 @@
                     <button class="interface-toggle options-menu__trigger" id="optionsMenuToggle" type="button" aria-haspopup="menu" aria-expanded="false" aria-controls="optionsMenuPanel">Settings</button>
                     <div class="options-menu__surface" id="optionsMenuPanel" aria-labelledby="optionsMenuToggle">
                         <button class="interface-toggle options-menu__item" id="audioSettingsButton" type="button">Audio</button>
+                        <button class="interface-toggle options-menu__item" id="qualityPreferencesToggle" type="button">Quality Preferances</button>
                         <button class="interface-toggle options-menu__item" id="cinematicToggle" type="button" onclick="toggleCinematicMode()" aria-pressed="false">Cutscenes (Fullscreen recommended): Off</button>
-                        <button class="interface-toggle options-menu__item" id="glitchEffectsToggle" type="button" onclick="toggleGlitchEffects()" aria-pressed="true">Glitch Effects: On</button>
-                        <button class="interface-toggle options-menu__item" id="reduceMotionToggle" type="button" onclick="toggleReducedMotion()" aria-pressed="false">Reduce Animations: Off</button>
                         <button class="interface-toggle options-menu__item" id="backgroundRollingButton" type="button" aria-pressed="false">Allow background rolling: Off</button>
                     </div>
                 </div>
@@ -840,6 +839,40 @@
         </div>
     </div>
 
+    <div id="qualityPreferencesOverlay" class="modal-overlay" hidden>
+        <div class="surface surface--modal filter-modal quality-settings__modal" role="dialog" aria-modal="true" aria-labelledby="qualityPreferencesTitle">
+            <div class="filter-modal__header">
+                <h2 class="filter-modal__title" id="qualityPreferencesTitle">Quality Preferances</h2>
+                <p class="filter-modal__hint">Fine tune visual performance settings and effects.</p>
+            </div>
+            <div class="quality-settings__menu" id="qualityPreferencesMenu" role="menu">
+                <button class="interface-button quality-settings__item" type="button" role="menuitemcheckbox" aria-checked="false" data-quality-option="removeParticles">
+                    <span class="quality-settings__name">Remove particles</span>
+                    <span class="quality-settings__description">Disables snowflakes and other floating particle visuals.</span>
+                </button>
+                <button class="interface-button quality-settings__item" type="button" role="menuitemcheckbox" aria-checked="false" data-quality-option="disableButtonAnimations">
+                    <span class="quality-settings__name">Disable button animations</span>
+                    <span class="quality-settings__description">Stops hover, pulse, and motion effects on buttons.</span>
+                </button>
+                <button class="interface-button quality-settings__item" type="button" role="menuitemcheckbox" aria-checked="false" data-quality-option="disableRollAndSigilAnimations">
+                    <span class="quality-settings__name">Disable roll & sigil animations</span>
+                    <span class="quality-settings__description">Removes roll effect and aura text animation classes.</span>
+                </button>
+                <button class="interface-button quality-settings__item" type="button" role="menuitemcheckbox" aria-checked="false" data-quality-option="reduceGlitchEffects">
+                    <span class="quality-settings__name">Reduce glitch effects</span>
+                    <span class="quality-settings__description">Keeps glitch visuals but tones them down significantly.</span>
+                </button>
+                <button class="interface-button quality-settings__item" type="button" role="menuitemcheckbox" aria-checked="false" data-quality-option="removeGlitchEffects">
+                    <span class="quality-settings__name">Remove glitch effects</span>
+                    <span class="quality-settings__description">Completely disables glitch visuals and glitch audio behavior.</span>
+                </button>
+            </div>
+            <div class="filter-modal__actions">
+                <button type="button" class="interface-button interface-button--ghost filter-modal__close" id="qualityPreferencesClose">Close</button>
+            </div>
+        </div>
+    </div>
+
     <div id="auraFilterOverlay" class="modal-overlay" hidden>
         <div class="surface surface--modal filter-modal" role="dialog" aria-modal="true" aria-labelledby="auraFilterTitle">
             <div class="filter-modal__header">
@@ -893,11 +926,23 @@
                 <button
                     type="button"
                     class="changelog-tab changelog-tab--active"
+                    id="changelog-tab-v1665"
+                    role="tab"
+                    aria-controls="changelog-panel-v1665"
+                    aria-selected="true"
+                    data-changelog-tab="v1665"
+                >
+                    <span class="changelog-tab__title">V1.665</span>
+                </button>
+                <button
+                    type="button"
+                    class="changelog-tab changelog-tab--active"
                     id="changelog-tab-v1660"
                     role="tab"
                     aria-controls="changelog-panel-v1660"
-                    aria-selected="true"
+                    aria-selected="false"
                     data-changelog-tab="v1660"
+                    tabindex="-1"
                 >
                     <span class="changelog-tab__title">V1.660</span>
                 </button>
@@ -1133,12 +1178,37 @@
 
             <div class="changelog-modal__panels" data-changelog-panels>
                 <section
+                    id="changelog-panel-v1665"
+                    class="changelog-modal__panel"
+                    role="tabpanel"
+                    aria-labelledby="changelog-tab-v1665"
+                    data-changelog-panel="v1665"
+                    tabindex="0"
+                >
+                    <header class="changelog-modal__header">
+                        <h2 class="changelog-modal__title" id="versionChangelogTitle">Version V1.665 Update Notes</h2>
+                        <span class="changelog-tab__subtitle">Quality Preferances Expansion</span>
+                        <p class="changelog-modal__meta">Updated 2026/02/06 3:15 AM CET</p>
+                    </header>
+                    <p class="changelog-modal__intro">Latest changes:</p>
+                    <ul class="changelog-modal__list">
+                        <li>Added the new <span class="subTitlesClass">Quality Preferances</span> menu under Audio settings so visual performance options are grouped in one place.</li>
+                        <li>Added a <span class="subtitleClass">Remove particles</span> toggle to disable snowflake/particle effects.</li>
+                        <li>Added a <span class="subtitleClass">Disable button animations</span> toggle to stop hover and button motion effects.</li>
+                        <li>Added a <span class="subtitleClass">Disable roll &amp; sigil animations</span> toggle to reduce animation load from roll effects and aura text classes.</li>
+                        <li>Added both <span class="sigil-outline-glitch">Reduce glitch effects</span> and <span class="sigil-outline-glitch">Remove glitch effects</span> options for lighter or fully disabled glitch presentation.</li>
+                        <li>Each quality option now includes short in-menu explanations and saves your selection so preferences persist between visits.</li>
+                    </ul>
+                    <p>If there's any bugs you encounter, please DM me here <a href="https://discord.com/users/611204110955446301" class="subtitleClass" target="_blank" rel="noopener">@not.unnamed</a></p>
+                </section>
+                <section
                     id="changelog-panel-v1660"
                     class="changelog-modal__panel"
                     role="tabpanel"
                     aria-labelledby="changelog-tab-v1660"
                     data-changelog-panel="v1660"
-                    tabindex="0"
+                    hidden
+                    tabindex="-1"
                 >
                     <header class="changelog-modal__header">
                         <h2 class="changelog-modal__title" id="versionChangelogTitle">Version V1.660 Update Notes</h2>

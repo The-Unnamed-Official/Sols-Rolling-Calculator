@@ -258,6 +258,38 @@ body.reduce-motion .banner__emblem--spinning img {
     animation: none !important;
 }
 
+body.quality-no-button-animations button,
+body.quality-no-button-animations .interface-button,
+body.quality-no-button-animations .interface-toggle,
+body.quality-no-button-animations .roll-trigger,
+body.quality-no-button-animations .roll-cancel {
+    animation: none !important;
+    transition: none !important;
+}
+
+body.quality-no-roll-sigil-animations [class*="sigil-"],
+body.quality-no-roll-sigil-animations .feed__viewport [class*="roll"],
+body.quality-no-roll-sigil-animations .feed__viewport [class*="aura"] {
+    animation: none !important;
+    transition-duration: 0s !important;
+}
+
+body.quality-no-glitch .is-glitching,
+body.quality-no-glitch .biome--glitch,
+body.quality-no-glitch .sigil-effect-glitch,
+body.quality-no-glitch .sigil-outline-glitch {
+    animation: none !important;
+    filter: none !important;
+    text-shadow: none !important;
+}
+
+body.quality-reduced-glitch.biome--glitch,
+body.quality-reduced-glitch .biome--glitch,
+body.quality-reduced-glitch.is-glitching,
+body.quality-reduced-glitch .is-glitching {
+    --glitch-intensity: 0.35;
+}
+
 button {
     --button-scale: 1;
     --button-raise: 0px;
