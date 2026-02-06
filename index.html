@@ -134,7 +134,7 @@
                         <span class="banner__subtitle-divider" aria-hidden="true">◉</span>
                         <span class="banner__subtitle-author">By <span class="banner__subtitle-author-name"><a href="https://discord.com/users/611204110955446301" target="_blank" rel="noopener">not.unnamed</a></span></span>
                         <span class="banner__subtitle-divider" aria-hidden="true">◉</span>
-                        <span class="banner__subtitle-updated">Updated <time datetime="2026-02-06T02:35:00+01:00">2026/02/06 2:35 AM CET</time></span>
+                        <span class="banner__subtitle-updated">Updated <time datetime="2026-02-06T03:13:00+01:00">2026/02/06 3:13 AM CET</time></span>
                         <span class="banner__subtitle-divider" aria-hidden="true">◉</span>
                         <span class="banner__subtitle-eon"><span class="banner__subtitle-game-version"><a href="https://www.roblox.com/games/15532962292/Sols-RNG" target="_blank" rel="noopener">Sol's RNG Eon 1-15</a></span></span>
                     </p>
@@ -153,31 +153,7 @@
                     <button class="interface-toggle options-menu__trigger" id="optionsMenuToggle" type="button" aria-haspopup="menu" aria-expanded="false" aria-controls="optionsMenuPanel">Settings</button>
                     <div class="options-menu__surface" id="optionsMenuPanel" aria-labelledby="optionsMenuToggle">
                         <button class="interface-toggle options-menu__item" id="audioSettingsButton" type="button">Audio</button>
-                        <div class="options-menu quality-settings" id="qualitySettings">
-                        <button class="interface-toggle options-menu__item options-menu__trigger quality-settings__trigger" type="button" id="qualityPreferencesToggle" aria-haspopup="menu" aria-expanded="false" aria-controls="qualityPreferencesMenu">Quality Preferances</button>
-                        <div class="options-menu__surface quality-settings__menu" id="qualityPreferencesMenu" role="menu" aria-labelledby="qualityPreferencesToggle">
-                            <button class="quality-settings__item" type="button" role="menuitemcheckbox" aria-checked="false" data-quality-option="removeParticles">
-                                <span class="quality-settings__name">Remove particles</span>
-                                <span class="quality-settings__description">Disables snowflakes and other floating particle visuals.</span>
-                            </button>
-                            <button class="quality-settings__item" type="button" role="menuitemcheckbox" aria-checked="false" data-quality-option="disableButtonAnimations">
-                                <span class="quality-settings__name">Disable button animations</span>
-                                <span class="quality-settings__description">Stops hover, pulse, and motion effects on buttons.</span>
-                            </button>
-                            <button class="quality-settings__item" type="button" role="menuitemcheckbox" aria-checked="false" data-quality-option="disableRollAndSigilAnimations">
-                                <span class="quality-settings__name">Disable roll & sigil animations</span>
-                                <span class="quality-settings__description">Removes roll effect and aura text animation classes.</span>
-                            </button>
-                            <button class="quality-settings__item" type="button" role="menuitemcheckbox" aria-checked="false" data-quality-option="reduceGlitchEffects">
-                                <span class="quality-settings__name">Reduce glitch effects</span>
-                                <span class="quality-settings__description">Keeps glitch visuals but tones them down significantly.</span>
-                            </button>
-                            <button class="quality-settings__item" type="button" role="menuitemcheckbox" aria-checked="false" data-quality-option="removeGlitchEffects">
-                                <span class="quality-settings__name">Remove glitch effects</span>
-                                <span class="quality-settings__description">Completely disables glitch visuals and glitch audio behavior.</span>
-                            </button>
-                        </div>
-                        </div>
+                        <button class="interface-toggle options-menu__item" id="qualityPreferencesToggle" type="button">Quality Preferances</button>
                         <button class="interface-toggle options-menu__item" id="cinematicToggle" type="button" onclick="toggleCinematicMode()" aria-pressed="false">Cutscenes (Fullscreen recommended): Off</button>
                         <button class="interface-toggle options-menu__item" id="backgroundRollingButton" type="button" aria-pressed="false">Allow background rolling: Off</button>
                     </div>
@@ -873,26 +849,26 @@
                 <p class="filter-modal__hint">Fine tune visual performance settings and effects.</p>
             </div>
             <div class="quality-settings__menu" id="qualityPreferencesMenu" role="menu">
-                            <button class="quality-settings__item" type="button" role="menuitemcheckbox" aria-checked="false" data-quality-option="removeParticles">
-                                <span class="quality-settings__name">Remove particles</span>
-                                <span class="quality-settings__description">Disables snowflakes and other floating particle visuals.</span>
-                            </button>
-                            <button class="quality-settings__item" type="button" role="menuitemcheckbox" aria-checked="false" data-quality-option="disableButtonAnimations">
-                                <span class="quality-settings__name">Disable button animations</span>
-                                <span class="quality-settings__description">Stops hover, pulse, and motion effects on buttons.</span>
-                            </button>
-                            <button class="quality-settings__item" type="button" role="menuitemcheckbox" aria-checked="false" data-quality-option="disableRollAndSigilAnimations">
-                                <span class="quality-settings__name">Disable roll & sigil animations</span>
-                                <span class="quality-settings__description">Removes roll effect and aura text animation classes.</span>
-                            </button>
-                            <button class="quality-settings__item" type="button" role="menuitemcheckbox" aria-checked="false" data-quality-option="reduceGlitchEffects">
-                                <span class="quality-settings__name">Reduce glitch effects</span>
-                                <span class="quality-settings__description">Keeps glitch visuals but tones them down significantly.</span>
-                            </button>
-                            <button class="quality-settings__item" type="button" role="menuitemcheckbox" aria-checked="false" data-quality-option="removeGlitchEffects">
-                                <span class="quality-settings__name">Remove glitch effects</span>
-                                <span class="quality-settings__description">Completely disables glitch visuals and glitch audio behavior.</span>
-                            </button>
+                <button class="interface-button quality-settings__item" type="button" role="menuitemcheckbox" aria-checked="false" data-quality-option="removeParticles">
+                    <span class="quality-settings__name">Remove particles</span>
+                    <span class="quality-settings__description">Disables snowflakes and other floating particle visuals.</span>
+                </button>
+                <button class="interface-button quality-settings__item" type="button" role="menuitemcheckbox" aria-checked="false" data-quality-option="disableButtonAnimations">
+                    <span class="quality-settings__name">Disable button animations</span>
+                    <span class="quality-settings__description">Stops hover, pulse, and motion effects on buttons.</span>
+                </button>
+                <button class="interface-button quality-settings__item" type="button" role="menuitemcheckbox" aria-checked="false" data-quality-option="disableRollAndSigilAnimations">
+                    <span class="quality-settings__name">Disable roll & sigil animations</span>
+                    <span class="quality-settings__description">Removes roll effect and aura text animation classes.</span>
+                </button>
+                <button class="interface-button quality-settings__item" type="button" role="menuitemcheckbox" aria-checked="false" data-quality-option="reduceGlitchEffects">
+                    <span class="quality-settings__name">Reduce glitch effects</span>
+                    <span class="quality-settings__description">Keeps glitch visuals but tones them down significantly.</span>
+                </button>
+                <button class="interface-button quality-settings__item" type="button" role="menuitemcheckbox" aria-checked="false" data-quality-option="removeGlitchEffects">
+                    <span class="quality-settings__name">Remove glitch effects</span>
+                    <span class="quality-settings__description">Completely disables glitch visuals and glitch audio behavior.</span>
+                </button>
             </div>
             <div class="filter-modal__actions">
                 <button type="button" class="interface-button interface-button--ghost filter-modal__close" id="qualityPreferencesClose">Close</button>
@@ -1215,7 +1191,7 @@
                     <header class="changelog-modal__header">
                         <h2 class="changelog-modal__title" id="versionChangelogTitle">Version V1.665 Update Notes</h2>
                         <span class="changelog-tab__subtitle">Quality Preferances Expansion</span>
-                        <p class="changelog-modal__meta">Updated 2026/02/06 2:35 AM CET</p>
+                        <p class="changelog-modal__meta">Updated 2026/02/06 3:13 AM CET</p>
                     </header>
                     <p class="changelog-modal__intro">Latest changes:</p>
                     <ul class="changelog-modal__list">

@@ -1128,7 +1128,6 @@
 .quality-settings__item {
     border-radius: var(--radius-md);
     border: 1px solid rgba(151, 207, 255, 0.26);
-    background: linear-gradient(145deg, rgba(15, 32, 67, 0.9), rgba(8, 18, 40, 0.92));
     color: #e8f5ff;
     text-align: left;
     padding: 11px 13px;
