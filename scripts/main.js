@@ -2029,13 +2029,13 @@ function initializeQualityPreferencesMenu() {
     ensureQualityPreferences();
 
     const closeMenu = () => {
+        container.classList.remove('options-menu--open');
         trigger.setAttribute('aria-expanded', 'false');
-        menu.hidden = true;
     };
 
     const openMenu = () => {
+        container.classList.add('options-menu--open');
         trigger.setAttribute('aria-expanded', 'true');
-        menu.hidden = false;
     };
 
     trigger.addEventListener('click', () => {

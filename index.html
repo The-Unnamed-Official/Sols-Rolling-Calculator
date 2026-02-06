@@ -153,9 +153,9 @@
                     <button class="interface-toggle options-menu__trigger" id="optionsMenuToggle" type="button" aria-haspopup="menu" aria-expanded="false" aria-controls="optionsMenuPanel">Settings</button>
                     <div class="options-menu__surface" id="optionsMenuPanel" aria-labelledby="optionsMenuToggle">
                         <button class="interface-toggle options-menu__item" id="audioSettingsButton" type="button">Audio</button>
-                        <div class="quality-settings" id="qualitySettings">
-                        <button class="quality-settings__trigger" type="button" id="qualityPreferencesToggle" aria-haspopup="true" aria-expanded="false" aria-controls="qualityPreferencesMenu">Quality Preferances</button>
-                        <div class="quality-settings__menu" id="qualityPreferencesMenu" role="menu" hidden>
+                        <div class="options-menu quality-settings" id="qualitySettings">
+                        <button class="interface-toggle options-menu__item options-menu__trigger quality-settings__trigger" type="button" id="qualityPreferencesToggle" aria-haspopup="menu" aria-expanded="false" aria-controls="qualityPreferencesMenu">Quality Preferances</button>
+                        <div class="options-menu__surface quality-settings__menu" id="qualityPreferencesMenu" role="menu" aria-labelledby="qualityPreferencesToggle">
                             <button class="quality-settings__item" type="button" role="menuitemcheckbox" aria-checked="false" data-quality-option="removeParticles">
                                 <span class="quality-settings__name">Remove particles</span>
                                 <span class="quality-settings__description">Disables snowflakes and other floating particle visuals.</span>
