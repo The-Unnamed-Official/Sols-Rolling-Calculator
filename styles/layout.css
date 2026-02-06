@@ -122,8 +122,8 @@
 
 .banner__subtitle {
     margin: 0;
-    font-size: clamp(13px, 1.8vw, 15px);
-    letter-spacing: 0.22em;
+    font-size: clamp(11px, 1.35vw, 13px);
+    letter-spacing: 0.14em;
     text-transform: uppercase;
     color: var(--text-secondary);
     display: flex;
@@ -169,7 +169,7 @@
 }
 
 .banner__subtitle-author-name {
-    font-size: 1.15em;
+    font-size: 1.04em;
     color: #8d9bff;
     display: inline;
     text-decoration: underline;
@@ -186,7 +186,7 @@
 }
 
 .banner__subtitle-game-version {
-    font-size: 1.15em;
+    font-size: 1.04em;
     color: #b4ffba;
     display: inline;
     text-decoration: underline;

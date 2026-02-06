@@ -41,6 +41,26 @@ const backgroundRollingPreference = {
     suppressPrompt: false
 };
 
+const QUALITY_PREFERENCE_KEYS = Object.freeze([
+    'removeParticles',
+    'disableButtonAnimations',
+    'disableRollAndSigilAnimations',
+    'reduceGlitchEffects',
+    'removeGlitchEffects'
+]);
+
+function ensureQualityPreferences() {
+    if (!appState || !appState.qualityPreferences || typeof appState.qualityPreferences !== 'object') {
+        appState.qualityPreferences = {};
+    }
+
+    QUALITY_PREFERENCE_KEYS.forEach(key => {
+        if (typeof appState.qualityPreferences[key] !== 'boolean') {
+            appState.qualityPreferences[key] = false;
+        }
+    });
+}
+
 function applyLatestUpdateBadgeToChangelogTabs(tabs) {
     if (!Array.isArray(tabs) || !tabs.length) {
         return;
@@ -271,6 +291,16 @@ function hydrateVisualSettings() {
             appState.reduceMotion = parsed.reduceMotion;
             reduceMotionPreferenceOverride = parsed.reduceMotion;
         }
+
+        ensureQualityPreferences();
+        const storedQualityPreferences = parsed.qualityPreferences;
+        if (storedQualityPreferences && typeof storedQualityPreferences === 'object') {
+            QUALITY_PREFERENCE_KEYS.forEach(key => {
+                if (typeof storedQualityPreferences[key] === 'boolean') {
+                    appState.qualityPreferences[key] = storedQualityPreferences[key];
+                }
+            });
+        }
     } catch (error) {
         // Ignore malformed storage so defaults remain intact.
     }
@@ -340,7 +370,8 @@ function persistVisualSettings() {
             JSON.stringify({
                 glitch: appState.glitch,
                 cinematic: appState.cinematic,
-                reduceMotion: appState.reduceMotion
+                reduceMotion: appState.reduceMotion,
+                qualityPreferences: appState.qualityPreferences
             })
         );
     } catch (error) {
@@ -1874,8 +1905,10 @@ function isGlitchBiomeSelected() {
 }
 
 function updateGlitchPresentation() {
+    ensureQualityPreferences();
     const glitchBiomeActive = isGlitchBiomeSelected();
-    const enableGlitch = appState.glitch && glitchBiomeActive && !appState.reduceMotion;
+    const removeGlitchEffects = appState.qualityPreferences.removeGlitchEffects;
+    const enableGlitch = appState.glitch && glitchBiomeActive && !appState.reduceMotion && !removeGlitchEffects;
     applyGlitchVisuals(enableGlitch, { forceTheme: glitchBiomeActive });
 }
 
@@ -1944,6 +1977,125 @@ function toggleReducedMotion() {
     persistVisualSettings();
 }
 
+function applyQualityPreferencesState() {
+    ensureQualityPreferences();
+
+    if (pageBody) {
+        pageBody.classList.toggle('quality-no-particles', appState.qualityPreferences.removeParticles);
+        pageBody.classList.toggle('quality-no-button-animations', appState.qualityPreferences.disableButtonAnimations);
+        pageBody.classList.toggle('quality-no-roll-sigil-animations', appState.qualityPreferences.disableRollAndSigilAnimations);
+        pageBody.classList.toggle('quality-reduced-glitch', appState.qualityPreferences.reduceGlitchEffects);
+        pageBody.classList.toggle('quality-no-glitch', appState.qualityPreferences.removeGlitchEffects);
+    }
+
+    if (appState.qualityPreferences.removeGlitchEffects) {
+        appState.qualityPreferences.reduceGlitchEffects = false;
+    }
+
+    syncQualityPreferenceButtons();
+    syncSnowEffect();
+    updateGlitchPresentation();
+}
+
+function syncQualityPreferenceButtons() {
+    const menu = document.getElementById('qualityPreferencesMenu');
+    const trigger = document.getElementById('qualityPreferencesToggle');
+    if (!menu || !trigger) {
+        return;
+    }
+
+    ensureQualityPreferences();
+
+    menu.querySelectorAll('[data-quality-option]').forEach(button => {
+        const key = button.dataset.qualityOption;
+        if (!key || !Object.prototype.hasOwnProperty.call(appState.qualityPreferences, key)) {
+            return;
+        }
+
+        const enabled = Boolean(appState.qualityPreferences[key]);
+        button.setAttribute('aria-checked', enabled ? 'true' : 'false');
+        button.classList.toggle('quality-settings__item--active', enabled);
+    });
+}
+
+function initializeQualityPreferencesMenu() {
+    const trigger = document.getElementById('qualityPreferencesToggle');
+    const menu = document.getElementById('qualityPreferencesMenu');
+    const container = document.getElementById('qualitySettings');
+    if (!trigger || !menu || !container) {
+        return;
+    }
+
+    ensureQualityPreferences();
+
+    const closeMenu = () => {
+        trigger.setAttribute('aria-expanded', 'false');
+        menu.hidden = true;
+    };
+
+    const openMenu = () => {
+        trigger.setAttribute('aria-expanded', 'true');
+        menu.hidden = false;
+    };
+
+    trigger.addEventListener('click', () => {
+        const isOpen = trigger.getAttribute('aria-expanded') === 'true';
+        if (isOpen) {
+            closeMenu();
+            return;
+        }
+        openMenu();
+    });
+
+    menu.addEventListener('click', event => {
+        const button = event.target instanceof Element ? event.target.closest('[data-quality-option]') : null;
+        if (!button) {
+            return;
+        }
+
+        const key = button.dataset.qualityOption;
+        if (!key || !Object.prototype.hasOwnProperty.call(appState.qualityPreferences, key)) {
+            return;
+        }
+
+        if (key === 'removeGlitchEffects') {
+            const nextValue = !appState.qualityPreferences.removeGlitchEffects;
+            appState.qualityPreferences.removeGlitchEffects = nextValue;
+            if (nextValue) {
+                appState.qualityPreferences.reduceGlitchEffects = false;
+            }
+        } else if (key === 'reduceGlitchEffects') {
+            const nextValue = !appState.qualityPreferences.reduceGlitchEffects;
+            appState.qualityPreferences.reduceGlitchEffects = nextValue;
+            if (nextValue) {
+                appState.qualityPreferences.removeGlitchEffects = false;
+            }
+        } else {
+            appState.qualityPreferences[key] = !appState.qualityPreferences[key];
+        }
+
+        applyQualityPreferencesState();
+        playSoundEffect(clickSoundEffectElement, 'ui');
+        persistVisualSettings();
+    });
+
+    document.addEventListener('click', event => {
+        if (!container.contains(event.target)) {
+            closeMenu();
+        }
+    });
+
+    menu.addEventListener('keydown', event => {
+        if (event.key === 'Escape') {
+            closeMenu();
+            trigger.focus({ preventScroll: true });
+        }
+    });
+
+    closeMenu();
+    syncQualityPreferenceButtons();
+}
+
 const reduceMotionMediaQuery = typeof window !== 'undefined' && typeof window.matchMedia === 'function'
     ? window.matchMedia('(prefers-reduced-motion: reduce)')
     : null;
@@ -1976,7 +2128,7 @@ function clearSnowField() {
 
 function renderSnowField() {
     const container = document.getElementById('snowField');
-    if (!container || appState.reduceMotion) return;
+    if (!container || appState.reduceMotion || appState.qualityPreferences?.removeParticles) return;
 
     let viewportWidth = 1280;
     let viewportHeight = 720;
@@ -2024,7 +2176,7 @@ function renderSnowField() {
 }
 
 function syncSnowEffect() {
-    if (!snowEffectState.requested || appState.reduceMotion) {
+    if (!snowEffectState.requested || appState.reduceMotion || appState.qualityPreferences?.removeParticles) {
         clearSnowField();
         return;
     }
@@ -2039,7 +2191,7 @@ function startSnowEffect() {
 
 if (typeof window !== 'undefined') {
     window.addEventListener('resize', () => {
-        if (snowEffectState.requested && !appState.reduceMotion) {
+        if (snowEffectState.requested && !appState.reduceMotion && !appState.qualityPreferences?.removeParticles) {
             renderSnowField();
         }
     });
@@ -2085,7 +2237,9 @@ function resolveBiomeAssetKey(biome, selectionState = null) {
 }
 
 function shouldUseGlitchBaseEffect() {
-    return glitchPresentationEnabled && glitchUiState.isUiGlitching;
+    return glitchPresentationEnabled
+        && glitchUiState.isUiGlitching
+        && !appState.qualityPreferences?.removeGlitchEffects;
 }
 
 function resetGlitchRuinTimer() {
@@ -2109,8 +2263,9 @@ function scheduleGlitchWarbleCycle(bgMusic, chain) {
 
     const baseGain = chain.baseGain ?? computeEffectiveBackgroundVolume(bgMusic);
     const context = chain.context;
-    const duration = randomDecimalBetween(0.18, 0.45);
-    const wobble = randomDecimalBetween(0.08, 0.18);
+    const reducedGlitch = Boolean(appState.qualityPreferences?.reduceGlitchEffects);
+    const duration = reducedGlitch ? randomDecimalBetween(0.26, 0.62) : randomDecimalBetween(0.18, 0.45);
+    const wobble = reducedGlitch ? randomDecimalBetween(0.03, 0.08) : randomDecimalBetween(0.08, 0.18);
     const target = Math.max(0, baseGain - wobble);
 
     if (typeof chain.gainNode.gain.setValueAtTime === 'function') {
@@ -2124,16 +2279,22 @@ function scheduleGlitchWarbleCycle(bgMusic, chain) {
     glitchUiState.activeTimeoutId = window.setTimeout(() => {
         glitchUiState.activeTimeoutId = null;
         scheduleGlitchWarbleCycle(bgMusic, chain);
-    }, Math.floor(randomDecimalBetween(650, 1080)));
+    }, Math.floor(reducedGlitch ? randomDecimalBetween(1200, 2100) : randomDecimalBetween(650, 1080)));
 }
 
 const GLITCH_BURST_TRIGGER_CHANCE = 0.99;
 
 function computeGlitchRestDelay() {
+    if (appState.qualityPreferences?.reduceGlitchEffects) {
+        return Math.floor(randomDecimalBetween(12000, 22000));
+    }
     return Math.floor(randomDecimalBetween(5000, 11000));
 }
 
 function computeGlitchBurstDuration() {
+    if (appState.qualityPreferences?.reduceGlitchEffects) {
+        return Math.floor(randomDecimalBetween(900, 1500));
+    }
     return Math.floor(randomDecimalBetween(2400, 3400));
 }
 
@@ -5991,13 +6152,9 @@ document.addEventListener('DOMContentLoaded', () => {
         cutsceneToggle.setAttribute('aria-pressed', appState.cinematic ? 'true' : 'false');
     }
 
-    const glitchToggle = document.getElementById('glitchEffectsToggle');
-    if (glitchToggle) {
-        glitchToggle.textContent = appState.glitch ? 'Glitch Effects: On' : 'Glitch Effects: Off';
-        glitchToggle.setAttribute('aria-pressed', appState.glitch ? 'true' : 'false');
-    }
-
+    initializeQualityPreferencesMenu();
     applyReducedMotionState(appState.reduceMotion);
+    applyQualityPreferencesState();
 
     hydrateBackgroundRollingPreference();
     setBackgroundRollingEnabled(backgroundRollingPreference.allowed, { persistPreference: false });
