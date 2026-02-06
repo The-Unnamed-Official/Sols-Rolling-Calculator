@@ -45,6 +45,13 @@
         cinematic: false,
         glitch: true,
         reduceMotion: false,
+        qualityPreferences: {
+            removeParticles: false,
+            disableButtonAnimations: false,
+            disableRollAndSigilAnimations: false,
+            reduceGlitchEffects: false,
+            removeGlitchEffects: false
+        },
         backgroundRolling: false,
         videoPlaying: false,
         scrollLock: null,
