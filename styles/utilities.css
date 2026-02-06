@@ -1162,6 +1162,23 @@
     line-height: 1.3;
 }
 
+#optionsMenuPanel .quality-settings {
+    margin-top: 8px;
+    width: 100%;
+    align-items: stretch;
+}
+
+#optionsMenuPanel .quality-settings__trigger {
+    width: 100%;
+    min-width: 0;
+    text-align: center;
+}
+
+#optionsMenuPanel .quality-settings__menu {
+    width: min(360px, calc(100vw - 48px));
+    align-self: center;
+}
+
 .filter-modal {
     position: relative;
     display: flex;

@@ -153,6 +153,31 @@
                     <button class="interface-toggle options-menu__trigger" id="optionsMenuToggle" type="button" aria-haspopup="menu" aria-expanded="false" aria-controls="optionsMenuPanel">Settings</button>
                     <div class="options-menu__surface" id="optionsMenuPanel" aria-labelledby="optionsMenuToggle">
                         <button class="interface-toggle options-menu__item" id="audioSettingsButton" type="button">Audio</button>
+                        <div class="quality-settings" id="qualitySettings">
+                        <button class="quality-settings__trigger" type="button" id="qualityPreferencesToggle" aria-haspopup="true" aria-expanded="false" aria-controls="qualityPreferencesMenu">Quality Preferances</button>
+                        <div class="quality-settings__menu" id="qualityPreferencesMenu" role="menu" hidden>
+                            <button class="quality-settings__item" type="button" role="menuitemcheckbox" aria-checked="false" data-quality-option="removeParticles">
+                                <span class="quality-settings__name">Remove particles</span>
+                                <span class="quality-settings__description">Disables snowflakes and other floating particle visuals.</span>
+                            </button>
+                            <button class="quality-settings__item" type="button" role="menuitemcheckbox" aria-checked="false" data-quality-option="disableButtonAnimations">
+                                <span class="quality-settings__name">Disable button animations</span>
+                                <span class="quality-settings__description">Stops hover, pulse, and motion effects on buttons.</span>
+                            </button>
+                            <button class="quality-settings__item" type="button" role="menuitemcheckbox" aria-checked="false" data-quality-option="disableRollAndSigilAnimations">
+                                <span class="quality-settings__name">Disable roll & sigil animations</span>
+                                <span class="quality-settings__description">Removes roll effect and aura text animation classes.</span>
+                            </button>
+                            <button class="quality-settings__item" type="button" role="menuitemcheckbox" aria-checked="false" data-quality-option="reduceGlitchEffects">
+                                <span class="quality-settings__name">Reduce glitch effects</span>
+                                <span class="quality-settings__description">Keeps glitch visuals but tones them down significantly.</span>
+                            </button>
+                            <button class="quality-settings__item" type="button" role="menuitemcheckbox" aria-checked="false" data-quality-option="removeGlitchEffects">
+                                <span class="quality-settings__name">Remove glitch effects</span>
+                                <span class="quality-settings__description">Completely disables glitch visuals and glitch audio behavior.</span>
+                            </button>
+                        </div>
+                        </div>
                         <button class="interface-toggle options-menu__item" id="cinematicToggle" type="button" onclick="toggleCinematicMode()" aria-pressed="false">Cutscenes (Fullscreen recommended): Off</button>
                         <button class="interface-toggle options-menu__item" id="backgroundRollingButton" type="button" aria-pressed="false">Allow background rolling: Off</button>
                     </div>
