@@ -926,11 +926,23 @@
                 <button
                     type="button"
                     class="changelog-tab changelog-tab--active"
+                    id="changelog-tab-v1666"
+                    role="tab"
+                    aria-controls="changelog-panel-v1666"
+                    aria-selected="true"
+                    data-changelog-tab="v1666"
+                >
+                    <span class="changelog-tab__title">V1.666</span>
+                </button>
+                <button
+                    type="button"
+                    class="changelog-tab changelog-tab--active"
                     id="changelog-tab-v1665"
                     role="tab"
                     aria-controls="changelog-panel-v1665"
-                    aria-selected="true"
+                    aria-selected="false"
                     data-changelog-tab="v1665"
+                    tabindex="-1"
                 >
                     <span class="changelog-tab__title">V1.665</span>
                 </button>
@@ -1178,12 +1190,33 @@
 
             <div class="changelog-modal__panels" data-changelog-panels>
                 <section
+                    id="changelog-panel-v1666"
+                    class="changelog-modal__panel"
+                    role="tabpanel"
+                    aria-labelledby="changelog-tab-v1666"
+                    data-changelog-panel="v1666"
+                    tabindex="0"
+                >
+                    <header class="changelog-modal__header">
+                        <h2 class="changelog-modal__title" id="versionChangelogTitle">Version V1.666 Update Notes</h2>
+                        <span class="changelog-tab__subtitle">Limbo Preset Compatibility</span>
+                        <p class="changelog-modal__meta">Updated 2026/02/08 at 01:45 AM CET</p>
+                    </header>
+                    <p class="changelog-modal__intro">Latest changes:</p>
+                    <ul class="changelog-modal__list">
+                        <li>When selecting <span class="sigil-outline-limbo">Limbo</span>, both <span class="oblivionClass">Oblivion Potion Preset</span> and <span class="duneClass">Dune Potion Preset</span> are now disabled to avoid invalid combinations.</li>
+                        <li>Bug report credit: <a href="https://discord.com/users/1008360412632322088" class="subtitleClass" target="_blank" rel="noopener">antigodthesans</a>.</li>
+                    </ul>
+                    <p>If there's any bugs you encounter, please DM me here <a href="https://discord.com/users/611204110955446301" class="subtitleClass" target="_blank" rel="noopener">@not.unnamed</a></p>
+                </section>
+                <section
                     id="changelog-panel-v1665"
                     class="changelog-modal__panel"
                     role="tabpanel"
                     aria-labelledby="changelog-tab-v1665"
                     data-changelog-panel="v1665"
-                    tabindex="0"
+                    hidden
+                    tabindex="-1"
                 >
                     <header class="changelog-modal__header">
                         <h2 class="changelog-modal__title" id="versionChangelogTitle">Version V1.665 Update Notes</h2>
