@@ -3939,6 +3939,37 @@ function syncLuckPotionButtonState(buttonId, isActive) {
     button.setAttribute('aria-pressed', isActive ? 'true' : 'false');
 }
 
+function syncLuckPotionPresetAvailability(isLimboSelected) {
+    if (typeof document === 'undefined') {
+        return;
+    }
+
+    const potionPresetButtons = ['luck-preset-oblivion', 'luck-preset-dune'];
+    potionPresetButtons.forEach(buttonId => {
+        const button = document.getElementById(buttonId);
+        if (!button) {
+            return;
+        }
+
+        button.disabled = isLimboSelected;
+        if (isLimboSelected) {
+            button.title = 'Unavailable while Limbo is selected.';
+        } else {
+            button.removeAttribute('title');
+        }
+
+        const actionButtons = button.closest('.preset-button')?.querySelectorAll('.preset-button__action');
+        actionButtons?.forEach(actionButton => {
+            actionButton.disabled = isLimboSelected;
+            if (isLimboSelected) {
+                actionButton.title = 'Unavailable while Limbo is selected.';
+            } else {
+                actionButton.removeAttribute('title');
+            }
+        });
+    });
+}
+
 function applyOblivionPresetOptions(options = {}) {
     if ('activateOblivionPreset' in options) {
         oblivionPresetEnabled = options.activateOblivionPreset === true;
@@ -5927,6 +5958,16 @@ function updateBiomeControlConstraints({ source = null, triggerSync = true } = {
     }
 
     const limboSelected = primarySelect.value === 'limbo';
+    if (limboSelected) {
+        if (oblivionPresetEnabled) {
+            applyOblivionPresetOptions({ activateOblivionPreset: false });
+        }
+        if (dunePresetEnabled) {
+            applyDunePresetOptions({ activateDunePreset: false });
+        }
+    }
+    syncLuckPotionPresetAvailability(limboSelected);
+
     Array.from(otherSelect.options).forEach(option => {
         const runeOption = resolveRuneConfiguration(option.value);
         let disabled = false;
