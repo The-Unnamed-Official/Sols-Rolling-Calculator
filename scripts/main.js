@@ -3754,8 +3754,8 @@ const nativeAuraOutlineOverrides = new Map([
 const auraOutlineOverrides = new Map([
     ['Illusionary', 'sigil-outline-illusionary'],
     ['Prowler', 'sigil-outline-prowler'],
-    ['Divinus : Love', 'sigil-outline-valentine'],
-    ['Flushed : Heart Eye', 'sigil-outline-valentine'],
+    ['Divinus : Love', 'sigil-outline-valentine-2024'],
+    ['Flushed : Heart Eye', 'sigil-outline-valentine-2024'],
     ['Pukeko', 'sigil-outline-april'],
     ['Flushed : Troll', 'sigil-outline-april'],
     ['Undefined : Defined', 'sigil-outline-april'],
@@ -4499,6 +4499,7 @@ const EVENT_LIST = [
     { id: "summer25", label: "Summer 2025" },
     { id: "halloween25", label: "Halloween 2025" },
     { id: "winter26", label: "Winter 2026" },
+    { id: "valentine26", label: "Valentine 2026" },
 ];
 
 const EVENT_LABEL_MAP = new Map(EVENT_LIST.map(({ id, label }) => [id, label]));
@@ -4602,6 +4603,9 @@ const EVENT_AURA_LOOKUP = {
         "Dream Traveler - 2,025,012,025",
         "Cryogenic - 250,000"
     ],
+    valentine26: [
+        "",
+    ],
 };
 
 const BIOME_EVENT_CONSTRAINTS = {
@@ -4659,7 +4663,13 @@ function getAuraEventId(aura) {
     return auraEventIndex.get(aura.name) || null;
 }
 
-const CUTSCENE_PRIORITY_SEQUENCE = ["illusionary-cutscene", "oblivion-cutscene", "memory-cutscene", "neferkhaf-cutscene", "monarch-cutscene", "equinox-cutscene", "dream-traveler-cutscene", "breakthrough-cutscene", "leviathan-cutscene", "winter-garden-cutscene", "erebus-cutscene", "luminosity-cutscene", "pixelation-cutscene", "nyctophobia-cutscene", "frostveil-cutscene", "lamenthyr-cutscene", "ascendant-cutscene", "dreammetric-cutscene", "oppression-cutscene", "prowler-cutscene"];
+const CUTSCENE_PRIORITY_SEQUENCE = [
+            "illusionary-cutscene", "oblivion-cutscene", "memory-cutscene", "neferkhaf-cutscene",
+            "monarch-cutscene", "equinox-cutscene", "dream-traveler-cutscene", "breakthrough-cutscene",
+            "leviathan-cutscene", "winter-garden-cutscene", "erebus-cutscene", "luminosity-cutscene",
+            "pixelation-cutscene", "nyctophobia-cutscene", "frostveil-cutscene", "lamenthyr-cutscene",
+            "ascendant-cutscene", "dreammetric-cutscene", "oppression-cutscene", "prowler-cutscene"
+                                    ];
 
 oblivionAuraData = AURA_REGISTRY.find(aura => aura.name === OBLIVION_AURA_LABEL) || null;
 memoryAuraData = AURA_REGISTRY.find(aura => aura.name === MEMORY_AURA_LABEL) || null;
@@ -7964,7 +7974,7 @@ const SHARE_IMAGE_OUTLINE_STYLES = Object.freeze({
             { color: 'rgba(5, 40, 120, 0.9)', blur: 0, offsetX: -1, offsetY: -1 }
         ]
     },
-    'sigil-outline-valentine': {
+    'sigil-outline-valentine-2024': {
         shadows: [
             { color: 'rgba(255, 140, 200, 0.85)', blur: 4 },
             { color: 'rgba(255, 95, 170, 0.75)', blur: 8 },
@@ -7972,6 +7982,16 @@ const SHARE_IMAGE_OUTLINE_STYLES = Object.freeze({
             { color: 'rgba(115, 20, 80, 0.9)', blur: 0, offsetX: -1, offsetY: 1 },
             { color: 'rgba(115, 20, 80, 0.9)', blur: 0, offsetX: 1, offsetY: -1 },
             { color: 'rgba(115, 20, 80, 0.9)', blur: 0, offsetX: -1, offsetY: -1 }
+        ]
+    },
+    'sigil-outline-valentine-2026': {
+        shadows: [
+            { color: 'rgba(255, 140, 200, 0.85)', blur: 4 },
+            { color: 'rgba(248, 127, 184, 0.75)', blur: 8 },
+            { color: 'rgba(140, 45, 105, 0.9)', blur: 0, offsetX: 1, offsetY: 1 },
+            { color: 'rgba(141, 49, 108, 0.9)', blur: 0, offsetX: -1, offsetY: 1 },
+            { color: 'rgba(146, 44, 109, 0.9)', blur: 0, offsetX: 1, offsetY: -1 },
+            { color: 'rgba(126, 13, 85, 0.9)', blur: 0, offsetX: -1, offsetY: -1 }
         ]
     },
     'sigil-outline-april': {

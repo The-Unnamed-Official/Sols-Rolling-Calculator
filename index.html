@@ -130,11 +130,11 @@
                 <div class="banner__meta">
                     <h1 class="banner__title">Sol's Rolling Simulator</h1>
                     <p class="banner__subtitle">
-                        <button type="button" class="banner__version-button" id="versionInfoButton" aria-haspopup="dialog" aria-expanded="false" data-version-id="v1666">V1.666</button>
+                        <button type="button" class="banner__version-button" id="versionInfoButton" aria-haspopup="dialog" aria-expanded="false" data-version-id="v1669">V1.669</button>
                         <span class="banner__subtitle-divider" aria-hidden="true">◉</span>
                         <span class="banner__subtitle-author">By <span class="banner__subtitle-author-name"><a href="https://discord.com/users/611204110955446301" target="_blank" rel="noopener">not.unnamed</a></span></span>
                         <span class="banner__subtitle-divider" aria-hidden="true">◉</span>
-                        <span class="banner__subtitle-updated">Updated <time datetime="2026-02-06T02:00:00+01:00">2026/02/08 2:00 AM CET</time></span>
+                        <span class="banner__subtitle-updated">Updated <time datetime="2026-02-14T15:00:00+01:00">2026/02/14 3:00 PM CET</time></span>
                         <span class="banner__subtitle-divider" aria-hidden="true">◉</span>
                         <span class="banner__subtitle-eon"><span class="banner__subtitle-game-version"><a href="https://www.roblox.com/games/15532962292/Sols-RNG" target="_blank" rel="noopener">Sol's RNG Eon 1-15</a></span></span>
                     </p>
@@ -471,9 +471,10 @@
                             <details class="interface-select interface-select--multi" id="event-selector" data-select="event-selector">
                                 <summary id="event-selector-summary" class="form-field__input form-field__input--event form-field__input--placeholder interface-select__summary" role="button" aria-expanded="false" aria-haspopup="listbox">No events enabled</summary>
                                 <div class="interface-select__menu" id="event-option-list" role="listbox" aria-multiselectable="true">
+
                                     <label class="interface-select__option interface-select__option--checkbox">
                                         <input type="checkbox" value="valentine24" data-event-id="valentine24">
-                                        <span class="interface-select__option-label"><span class="sigil-outline-valentine">Valentine</span> 2024</span>
+                                        <span class="interface-select__option-label"><span class="sigil-outline-valentine-2024">Valentine</span> 2024</span>
                                     </label>
                                     <label class="interface-select__option interface-select__option--checkbox">
                                         <input type="checkbox" value="aprilFools24" data-event-id="aprilFools24">
@@ -511,6 +512,11 @@
                                         <input type="checkbox" value="winter26" data-event-id="winter26">
                                         <span class="interface-select__option-label"><span class="sigil-outline-winter-2026">Winter</span> 2026</span>
                                     </label>
+                                    <label class="interface-select__option  interface-select__option--checkbox">
+                                        <input type="checkbox" value="valentine26" data-event-id="valentine26">
+                                        <span class="interface-select__option-label"><span class="sigil-outline-valentine-2026">Valentine</span> 2026</span>
+                                    </label>
+
                                 </div>
                             </details>
                         </div>
@@ -926,11 +932,23 @@
                 <button
                     type="button"
                     class="changelog-tab changelog-tab--active"
+                    id="changelog-tab-v1669"
+                    role="tab"
+                    aria-controls="changelog-panel-v1669"
+                    aria-selected="true"
+                    data-changelog-tab="v1669"
+                >
+                    <span class="changelog-tab__title">V1.669</span>
+                </button>
+                <button
+                    type="button"
+                    class="changelog-tab changelog-tab--active"
                     id="changelog-tab-v1666"
                     role="tab"
                     aria-controls="changelog-panel-v1666"
-                    aria-selected="true"
+                    aria-selected="false"
                     data-changelog-tab="v1666"
+                    tabindex="-1"
                 >
                     <span class="changelog-tab__title">V1.666</span>
                 </button>
@@ -1189,6 +1207,26 @@
             </div>
 
             <div class="changelog-modal__panels" data-changelog-panels>
+                <section
+                    id="changelog-panel-v1669"
+                    class="changelog-modal__panel"
+                    role="tabpanel"
+                    aria-labelledby="changelog-tab-v1669"
+                    data-changelog-panel="v1669"
+                    tabindex="0"
+                >
+                    <header class="changelog-modal__header">
+                        <h2 class="changelog-modal__title" id="versionChangelogTitle">Version V1.669 Update Notes</h2>
+                        <span class="changelog-tab__subtitle">Valentines Update</span>
+                        <p class="changelog-modal__meta">Updated 2026/02/14 at 3:00 PM CET</p>
+                    </header>
+                    <p class="changelog-modal__intro">Latest changes:</p>
+                    <ul class="changelog-modal__list">
+                        <li>.</li>
+                        <p>Thanks to <a href="https://discord.com/users/" class="subtitleClass" target="_blank" rel="noopener"></a> for pointing this bug out.</p>
+                    </ul>
+                    <p>If there's any bugs you encounter, please DM me here <a href="https://discord.com/users/611204110955446301" class="subtitleClass" target="_blank" rel="noopener">@not.unnamed</a></p>
+                </section>
                 <section
                     id="changelog-panel-v1666"
                     class="changelog-modal__panel"
