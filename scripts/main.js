@@ -437,7 +437,7 @@ const BIOME_TIME_SELECT_ID = 'biome-time-dropdown';
 const DAY_RESTRICTED_BIOMES = new Set(['pumpkinMoon', 'graveyard']);
 const CYBERSPACE_ILLUSIONARY_WARNING_STORAGE_KEY = 'solsRollingCalculator:hideCyberspaceIllusionaryWarning';
 let lastPrimaryBiomeSelection = null;
-const DEV_BIOME_IDS = new Set(['anotherRealm', 'unknown']);
+const DEV_BIOME_IDS = new Set(['anotherRealm', 'mastermind', 'unknown']);
 let devBiomesEnabled = false;
 
 const ROE_NATIVE_BIOMES = Object.freeze([
@@ -2316,6 +2316,7 @@ const biomeAssets = {
     glitch: { image: 'files/glitchBiomeImage.webm', music: 'files/glitchBiomeMusic.mp3' },
     cyberspace: { image: 'files/cyberspaceBiomeImage.jpg', music: 'files/cyberspaceBiomeMusic.mp3' },
     anotherRealm: { image: 'files/anotherRealmBiomeImage.jpg', music: 'files/anotherRealmBiomeMusic.mp3' },
+    mastermind: { image: 'files/mastermindBiomeImage.png', music: 'files/mastermindBiomeMusic.mp3' },
     unknown: { image: 'files/unknownBiomeImage.png', music: 'files/unknownBiomeMusic.mp3' },
     graveyard: { image: 'files/graveyardBiomeImage.jpg', music: 'files/graveyardBiomeMusic.mp3' },
     pumpkinMoon: { image: 'files/pumpkinMoonBiomeImage.jpg', music: 'files/pumpkinMoonBiomeMusic.mp3' },
@@ -3829,6 +3830,7 @@ function resolveAuraStyleClass(aura, biome) {
     if (name.startsWith('Equinox')) classes.push('sigil-effect-equinox');
     if (name.startsWith('Megaphone')) classes.push('sigil-effect-megaphone');
     if (name.startsWith('Nyctophobia')) classes.push('sigil-effect-nyctophobia');
+    if (name.startsWith('Clockwork')) classes.push('sigil-effect-clockwork');
     if (name.startsWith('Breakthrough')) classes.push('sigil-effect-breakthrough', 'sigil-border-breakthrough');
     if (name.startsWith('Glitch')) classes.push('sigil-effect-glitch');
 
@@ -4298,6 +4300,7 @@ const AURA_BLUEPRINT_SOURCE = Object.freeze([
     { name: "Warlock - 666,000", chance: 666000 },
     { name: "Pump : Trickster - 600,000", chance: 600000, nativeBiomes: ["glitch", "pumpkinMoon"] },
     { name: "Prowler - 540,000", chance: 540000, nativeBiomes: ["anotherRealm"], cutscene: "prowler-cutscene" },
+    { name: "Clockwork - 530,000", chance: 530000, nativeBiomes: ["mastermind"], cutscene: "clockwork-cutscene" },
     { name: "Raven - 500,000", chance: 500000, nativeBiomes: ["limbo"] },
     { name: "Hope - 488,725", chance: 488725, breakthroughs: nativeBreakthroughs("heaven") },
     { name: "Terror - 400,000", chance: 400000 },
@@ -4618,6 +4621,7 @@ const BIOME_EVENT_CONSTRAINTS = {
 
 const EVENT_BIOME_CONDITION_MESSAGES = Object.freeze({
     anotherRealm: 'Requires Dev Biomes to be enabled under run parameters.',
+    mastermind: 'Requires Dev Biomes to be enabled under run parameters.',
     graveyard: 'Requires Night time with Halloween 2024 or Halloween 2025 enabled.',
     pumpkinMoon: 'Requires Night time with Halloween 2024 or Halloween 2025 enabled.',
     bloodRain: 'Requires Halloween 2025 enabled.',
@@ -4668,7 +4672,8 @@ const CUTSCENE_PRIORITY_SEQUENCE = [
             "monarch-cutscene", "equinox-cutscene", "dream-traveler-cutscene", "breakthrough-cutscene",
             "leviathan-cutscene", "winter-garden-cutscene", "erebus-cutscene", "luminosity-cutscene",
             "pixelation-cutscene", "nyctophobia-cutscene", "frostveil-cutscene", "lamenthyr-cutscene",
-            "ascendant-cutscene", "dreammetric-cutscene", "oppression-cutscene", "prowler-cutscene"
+            "ascendant-cutscene", "dreammetric-cutscene", "oppression-cutscene", "prowler-cutscene",
+            "clockwork-cutscene"
                                     ];
 
 oblivionAuraData = AURA_REGISTRY.find(aura => aura.name === OBLIVION_AURA_LABEL) || null;
