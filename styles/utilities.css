@@ -321,6 +321,20 @@
         -1px -1px 0 rgba(55, 55, 55, 0.94);
 }
 
+.bigClass {
+    font-size: xx-large !important;
+}
+
+.sigil-outline-mastermind {
+    font-family: Fondamento;
+    font-weight: bold;
+    text-transform: uppercase;
+    -webkit-text-fill-color: black;
+    background-clip: text !important;
+    background: #fcfcfc;
+    -webkit-text-stroke: .8px transparent;
+}
+
 .sigil-outline-leviathan {
     font-family: "Playfair Display", serif;
     text-transform: uppercase;
@@ -374,6 +388,28 @@
     letter-spacing: .1em;
     font-family: Arial, sans-serif;
     text-transform: uppercase;
+}
+
+.sigil-effect-clockwork {
+    font-family: Fondamento;
+    display: inline-block;
+    font-weight: bold;
+    font-style: italic;
+    letter-spacing: .23em;
+    white-space: nowrap;
+    background-clip: text !important;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    -webkit-text-stroke: .8px transparent;
+    background: linear-gradient(
+        to bottom,
+        #000000 25%,
+        #d0d7e1 50%,
+        #ffffff 60%,
+        #363636 65%,
+        #ffffff 69%
+    );
+    
 }
 
 .sigil-outline-winter-garden,
