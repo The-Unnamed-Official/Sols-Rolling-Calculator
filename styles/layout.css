@@ -6,6 +6,11 @@
     gap: clamp(16px, 2vw, 24px);
     position: relative;
     z-index: 1;
+    padding: clamp(12px, 1.8vw, 22px);
+    background: linear-gradient(160deg, rgba(16, 34, 62, 0.52), rgba(9, 20, 40, 0.62));
+    border: 1px solid rgba(127, 227, 255, 0.24);
+    box-shadow: 0 24px 56px rgba(2, 8, 22, 0.46), inset 0 0 0 1px rgba(168, 236, 255, 0.08);
+    backdrop-filter: blur(3px);
 }
 
 .surface {
