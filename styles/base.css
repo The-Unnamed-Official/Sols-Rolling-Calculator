@@ -276,8 +276,7 @@ body.quality-no-roll-sigil-animations .feed__viewport [class*="aura"] {
 
 body.quality-no-glitch .is-glitching,
 body.quality-no-glitch .biome--glitch,
-body.quality-no-glitch .sigil-effect-glitch,
-body.quality-no-glitch .sigil-outline-glitch {
+body.quality-no-glitch .sigil-effect-glitch {
     animation: none !important;
     filter: none !important;
     text-shadow: none !important;
@@ -611,99 +610,75 @@ body.is-glitching .feed__viewport::after {
     display: block;
 }
 
-.snowflake {
+.heart-particle {
     position: absolute;
-    top: -12%;
+    top: calc(100% + 10vh);
     left: var(--x, 50%);
-    opacity: var(--opacity, 0.8);
-    transform: translate3d(calc(-50% + var(--drift, 0px)), -140%, 0);
-    filter: drop-shadow(0 0 6px rgba(204, 223, 255, 0.65));
-    animation: snow-fall var(--fall-duration, 12s) linear infinite;
-    animation-delay: calc(-1 * var(--fall-delay, 0s));
-    will-change: transform;
+    opacity: var(--opacity, 0.75);
+    transform: translate3d(calc(-50% + var(--drift, 0px)), 0, 0);
+    animation: heart-float-up var(--float-duration, 20s) linear infinite;
+    animation-delay: calc(-1 * var(--float-delay, 0s));
+    will-change: transform, opacity;
 }
 
-body.biome--glitch .snowflake {
-    animation-name: snow-fall-glitch;
-    animation-duration: calc(var(--fall-duration, 12s) * 0.18);
-    animation-timing-function: steps(3, jump-both);
-}
-
-.snowflake__icon {
+.heart-particle__sway {
     display: block;
-    color: #ccdfff;
-    font-size: calc(16px * var(--size, 1));
-    animation: snow-spin var(--spin-duration, 14s) linear infinite;
+    animation: heart-sway var(--sway-duration, 5s) ease-in-out infinite alternate;
     transform-origin: center;
 }
 
-body.biome--glitch .snowflake__icon {
-    animation: snow-spin-glitch 0.9s steps(4, end) infinite;
+.heart-particle__icon {
+    display: block;
+    color: #ff8fa5;
+    font-size: calc(14px * var(--size, 1));
+    filter: drop-shadow(0 0 8px rgba(255, 120, 166, var(--glow-strength, 0.65)));
+    animation: heart-pulse 2.2s ease-in-out infinite;
+    transform-origin: center;
 }
 
-@keyframes snow-fall {
-    0% {
-        transform: translate3d(calc(-50% + var(--drift, 0px)), -140%, 0);
-    }
-    16% {
-        transform: translate3d(calc(-50% + (var(--drift, 0px) * 0.75)), -80%, 0);
-    }
-    100% {
-        transform: translate3d(calc(-50% + var(--drift, 0px)), 120vh, 0);
-    }
+body.biome--glitch .heart-particle__icon {
+    color: #ffa9bc;
+    filter: drop-shadow(0 0 8px rgba(255, 120, 166, 0.7));
 }
 
-@keyframes snow-fall-glitch {
+@keyframes heart-float-up {
     0% {
-        transform: translate3d(calc(-50% + var(--drift, 0px)), -140%, 0);
+        transform: translate3d(calc(-50% + var(--drift, 0px)), 0, 0) scale(0.94);
+        opacity: calc(var(--opacity, 0.75) * 0.2);
     }
     10% {
-        transform: translate3d(calc(-50% + (var(--drift, 0px) * -0.4)), 36vh, 0);
+        opacity: var(--opacity, 0.75);
     }
-    22% {
-        transform: translate3d(calc(-50% + (var(--drift, 0px) * 1.35)), -32vh, 0);
+    82% {
+        transform: translate3d(calc(-50% + var(--drift, 0px)), calc(-1 * var(--pop-height, 24vh)), 0) scale(1.04);
+        opacity: var(--opacity, 0.75);
     }
-    38% {
-        transform: translate3d(calc(-50% + (var(--drift, 0px) * 0.12)), 110vh, 0);
-    }
-    52% {
-        transform: translate3d(calc(-50% + (var(--drift, 0px) * -0.8)), -64vh, 0);
-    }
-    68% {
-        transform: translate3d(calc(-50% + (var(--drift, 0px) * 0.6)), 140vh, 0);
-    }
-    84% {
-        transform: translate3d(calc(-50% + (var(--drift, 0px) * -0.18)), -90vh, 0);
+    86% {
+        transform: translate3d(calc(-50% + var(--drift, 0px)), calc(-1 * (var(--pop-height, 24vh) + 2vh)), 0) scale(1.26);
+        opacity: calc(var(--opacity, 0.75) * 0.15);
     }
     100% {
-        transform: translate3d(calc(-50% + var(--drift, 0px)), 120vh, 0);
+        transform: translate3d(calc(-50% + var(--drift, 0px)), calc(-1 * (var(--pop-height, 24vh) + 6vh)), 0) scale(0.18);
+        opacity: 0;
     }
 }
 
-@keyframes snow-spin {
-    from {
-        transform: rotate(0deg);
-    }
-    to {
-        transform: rotate(360deg);
-    }
-}
-
-@keyframes snow-spin-glitch {
+@keyframes heart-sway {
     0% {
-        transform: rotate(-25deg) scale(1.05);
-    }
-    30% {
-        transform: rotate(180deg) scale(0.85);
-    }
-    55% {
-        transform: rotate(-120deg) scale(1.1);
-    }
-    80% {
-        transform: rotate(320deg) scale(0.88);
+        transform: translateX(calc(-1 * var(--sway-distance, 16px)));
     }
     100% {
-        transform: rotate(-40deg) scale(1.02);
+        transform: translateX(var(--sway-distance, 16px));
+    }
+}
+
+@keyframes heart-pulse {
+    0%,
+    100% {
+        transform: scale(0.95);
+    }
+    50% {
+        transform: scale(1.06);
     }
 }
 

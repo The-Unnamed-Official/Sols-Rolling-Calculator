@@ -1912,7 +1912,7 @@ function updateGlitchPresentation() {
     ensureQualityPreferences();
     const glitchBiomeActive = isGlitchBiomeSelected();
     const removeGlitchEffects = appState.qualityPreferences.removeGlitchEffects;
-    const enableGlitch = appState.glitch && glitchBiomeActive && !appState.reduceMotion && !removeGlitchEffects;
+    const enableGlitch = appState.glitch && glitchBiomeActive && !appState.reduceMotion;
     applyGlitchVisuals(enableGlitch, { forceTheme: glitchBiomeActive });
 }
 
@@ -2237,39 +2237,49 @@ function renderSnowField() {
         viewportHeight = window.innerHeight || viewportHeight;
     }
 
-    const baseDensity = Math.floor((viewportWidth * viewportHeight) / 22000);
-    const flakeTotal = Math.min(180, Math.max(52, baseDensity));
+    const baseDensity = Math.floor((viewportWidth * viewportHeight) / 26000);
+    const particleTotal = Math.min(132, Math.max(44, baseDensity));
 
     container.dataset.active = 'true';
     container.replaceChildren();
 
     const fragment = document.createDocumentFragment();
-    for (let i = 0; i < flakeTotal; i++) {
-        const flake = document.createElement('span');
-        flake.className = 'snowflake';
+    for (let i = 0; i < particleTotal; i++) {
+        const heart = document.createElement('span');
+        heart.className = 'heart-particle';
 
-        const size = randomDecimalBetween(0.8, 1.6);
-        const opacity = randomDecimalBetween(0.52, 0.95);
-        const drift = randomDecimalBetween(-42, 42);
-        const duration = randomDecimalBetween(10, 18);
-        const delay = randomDecimalBetween(0, 14);
+        const size = randomDecimalBetween(0.72, 1.45);
+        const opacity = randomDecimalBetween(0.44, 0.88);
+        const drift = randomDecimalBetween(-32, 32);
+        const duration = randomDecimalBetween(14, 26);
+        const delay = randomDecimalBetween(0, 20);
         const x = randomDecimalBetween(0, 100);
-        const spinDuration = randomDecimalBetween(12, 24);
+        const swayDistance = randomDecimalBetween(8, 24);
+        const swayDuration = randomDecimalBetween(3.8, 7.4);
+        const popHeight = randomDecimalBetween(8, 42);
+        const glow = randomDecimalBetween(0.42, 0.8);
 
-        flake.style.setProperty('--size', size.toFixed(2));
-        flake.style.setProperty('--opacity', opacity.toFixed(2));
-        flake.style.setProperty('--drift', `${drift.toFixed(2)}px`);
-        flake.style.setProperty('--fall-duration', `${duration.toFixed(2)}s`);
-        flake.style.setProperty('--fall-delay', `${delay.toFixed(2)}s`);
-        flake.style.setProperty('--x', `${x.toFixed(2)}%`);
-        flake.style.setProperty('--spin-duration', `${spinDuration.toFixed(2)}s`);
+        heart.style.setProperty('--size', size.toFixed(2));
+        heart.style.setProperty('--opacity', opacity.toFixed(2));
+        heart.style.setProperty('--drift', `${drift.toFixed(2)}px`);
+        heart.style.setProperty('--float-duration', `${duration.toFixed(2)}s`);
+        heart.style.setProperty('--float-delay', `${delay.toFixed(2)}s`);
+        heart.style.setProperty('--x', `${x.toFixed(2)}%`);
+        heart.style.setProperty('--sway-distance', `${swayDistance.toFixed(2)}px`);
+        heart.style.setProperty('--sway-duration', `${swayDuration.toFixed(2)}s`);
+        heart.style.setProperty('--pop-height', `${popHeight.toFixed(2)}vh`);
+        heart.style.setProperty('--glow-strength', glow.toFixed(2));
+
+        const sway = document.createElement('span');
+        sway.className = 'heart-particle__sway';
 
         const icon = document.createElement('i');
-        icon.className = 'fa-solid fa-snowflake snowflake__icon';
+        icon.className = 'fa-solid fa-heart heart-particle__icon';
         icon.setAttribute('aria-hidden', 'true');
-        flake.appendChild(icon);
+        sway.appendChild(icon);
+        heart.appendChild(sway);
 
-        fragment.appendChild(flake);
+        fragment.appendChild(heart);
     }
 
     container.appendChild(fragment);
