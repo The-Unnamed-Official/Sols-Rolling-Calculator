@@ -35,8 +35,8 @@
     content: '';
     position: absolute;
     inset: 1px;
-    background: radial-gradient(circle at 50% 0%, rgba(127, 227, 255, 0.08), transparent 40%),
-                linear-gradient(160deg, rgba(10, 18, 34, 0.94), rgba(4, 9, 20, 0.98));
+    background: radial-gradient(circle at 50% 0%, var(--surface-overlay-highlight), transparent 40%),
+                var(--surface-overlay-gradient);
     border-radius: 12px;
     pointer-events: none;
     z-index: 0;
