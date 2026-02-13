@@ -1,11 +1,11 @@
 :root {
     color-scheme: dark;
-    --bg-base: #02060f;
-    --bg-overlay: rgba(1, 5, 12, 0.5);
-    --surface-bg: rgba(7, 12, 24, 0.92);
-    --surface-gradient: linear-gradient(155deg, rgba(10, 16, 32, 0.96), rgba(2, 6, 14, 0.98));
-    --surface-overlay-gradient: linear-gradient(160deg, rgba(10, 18, 34, 0.94), rgba(4, 9, 20, 0.98));
-    --surface-overlay-highlight: rgba(127, 227, 255, 0.08);
+    --bg-base: #071328;
+    --bg-overlay: rgba(5, 14, 30, 0.46);
+    --surface-bg: rgba(12, 22, 40, 0.92);
+    --surface-gradient: linear-gradient(155deg, rgba(18, 33, 60, 0.96), rgba(8, 18, 36, 0.98));
+    --surface-overlay-gradient: linear-gradient(160deg, rgba(18, 36, 64, 0.93), rgba(8, 20, 38, 0.97));
+    --surface-overlay-highlight: rgba(160, 231, 255, 0.1);
     --surface-border: rgba(120, 188, 255, 0.5);
     --surface-glow: rgba(46, 116, 196, 0.42);
     --accent: #7fe3ff;
@@ -649,9 +649,9 @@ body.is-glitching .feed__viewport::after {
 .interface-backdrop__veil {
     position: absolute;
     inset: 0;
-    background: radial-gradient(circle at 20% 20%, rgba(30, 80, 180, 0.28), transparent 42%),
-                radial-gradient(circle at 80% 15%, rgba(18, 42, 110, 0.22), transparent 28%),
-                linear-gradient(135deg, rgba(2, 6, 16, 0.42), rgba(1, 4, 12, 0.5));
+    background: radial-gradient(circle at 20% 20%, rgba(72, 140, 255, 0.3), transparent 42%),
+                radial-gradient(circle at 80% 15%, rgba(42, 112, 230, 0.22), transparent 30%),
+                linear-gradient(135deg, rgba(8, 20, 42, 0.35), rgba(6, 16, 34, 0.44));
     backdrop-filter: blur(5px);
     z-index: 1;
 }
