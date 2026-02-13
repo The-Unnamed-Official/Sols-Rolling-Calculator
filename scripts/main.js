@@ -2213,8 +2213,49 @@ if (reduceMotionMediaQuery) {
 }
 
 const snowEffectState = {
-    requested: false
+    requested: false,
+    mode: 'none'
 };
+
+function createParticleNode(mode) {
+    const particle = document.createElement('span');
+    particle.className = mode === 'snow' ? 'snow-particle' : 'heart-particle';
+
+    const size = randomDecimalBetween(mode === 'snow' ? 0.8 : 1.35, mode === 'snow' ? 1.7 : 2.1);
+    const opacity = randomDecimalBetween(mode === 'snow' ? 0.5 : 0.44, mode === 'snow' ? 0.92 : 0.88);
+    const drift = randomDecimalBetween(-32, 32);
+    const duration = randomDecimalBetween(mode === 'snow' ? 9 : 8, mode === 'snow' ? 17 : 16);
+    const delay = randomDecimalBetween(0, 20);
+    const x = randomDecimalBetween(0, 100);
+    const swayDistance = randomDecimalBetween(8, 24);
+    const swayDuration = randomDecimalBetween(3.8, 7.4);
+    const popHeight = randomDecimalBetween(42, 142);
+    const glow = randomDecimalBetween(mode === 'snow' ? 0.24 : 0.42, mode === 'snow' ? 0.6 : 0.8);
+
+    particle.style.setProperty('--size', size.toFixed(2));
+    particle.style.setProperty('--opacity', opacity.toFixed(2));
+    particle.style.setProperty('--drift', `${drift.toFixed(2)}px`);
+    particle.style.setProperty('--float-duration', `${duration.toFixed(2)}s`);
+    particle.style.setProperty('--float-delay', `${delay.toFixed(2)}s`);
+    particle.style.setProperty('--x', `${x.toFixed(2)}%`);
+    particle.style.setProperty('--sway-distance', `${swayDistance.toFixed(2)}px`);
+    particle.style.setProperty('--sway-duration', `${swayDuration.toFixed(2)}s`);
+    particle.style.setProperty('--pop-height', `${popHeight.toFixed(2)}vh`);
+    particle.style.setProperty('--glow-strength', glow.toFixed(2));
+
+    const sway = document.createElement('span');
+    sway.className = mode === 'snow' ? 'snow-particle__sway' : 'heart-particle__sway';
+
+    const icon = document.createElement('i');
+    icon.className = mode === 'snow'
+        ? 'fa-solid fa-snowflake snow-particle__icon'
+        : 'fa-solid fa-heart heart-particle__icon';
+    icon.setAttribute('aria-hidden', 'true');
+
+    sway.appendChild(icon);
+    particle.appendChild(sway);
+    return particle;
+}
 
 function clearSnowField() {
     const container = document.getElementById('snowField');
@@ -2228,7 +2269,8 @@ function clearSnowField() {
 
 function renderSnowField() {
     const container = document.getElementById('snowField');
-    if (!container || appState.reduceMotion || appState.qualityPreferences?.removeParticles) return;
+    const mode = snowEffectState.mode;
+    if (!container || mode === 'none' || appState.reduceMotion || appState.qualityPreferences?.removeParticles) return;
 
     let viewportWidth = 1280;
     let viewportHeight = 720;
@@ -2245,48 +2287,14 @@ function renderSnowField() {
 
     const fragment = document.createDocumentFragment();
     for (let i = 0; i < particleTotal; i++) {
-        const heart = document.createElement('span');
-        heart.className = 'heart-particle';
-
-        const size = randomDecimalBetween(1.35, 2.1);
-        const opacity = randomDecimalBetween(0.44, 0.88);
-        const drift = randomDecimalBetween(-32, 32);
-        const duration = randomDecimalBetween(8, 16);
-        const delay = randomDecimalBetween(0, 20);
-        const x = randomDecimalBetween(0, 100);
-        const swayDistance = randomDecimalBetween(8, 24);
-        const swayDuration = randomDecimalBetween(3.8, 7.4);
-        const popHeight = randomDecimalBetween(42, 142);
-        const glow = randomDecimalBetween(0.42, 0.8);
-
-        heart.style.setProperty('--size', size.toFixed(2));
-        heart.style.setProperty('--opacity', opacity.toFixed(2));
-        heart.style.setProperty('--drift', `${drift.toFixed(2)}px`);
-        heart.style.setProperty('--float-duration', `${duration.toFixed(2)}s`);
-        heart.style.setProperty('--float-delay', `${delay.toFixed(2)}s`);
-        heart.style.setProperty('--x', `${x.toFixed(2)}%`);
-        heart.style.setProperty('--sway-distance', `${swayDistance.toFixed(2)}px`);
-        heart.style.setProperty('--sway-duration', `${swayDuration.toFixed(2)}s`);
-        heart.style.setProperty('--pop-height', `${popHeight.toFixed(2)}vh`);
-        heart.style.setProperty('--glow-strength', glow.toFixed(2));
-
-        const sway = document.createElement('span');
-        sway.className = 'heart-particle__sway';
-
-        const icon = document.createElement('i');
-        icon.className = 'fa-solid fa-heart heart-particle__icon';
-        icon.setAttribute('aria-hidden', 'true');
-        sway.appendChild(icon);
-        heart.appendChild(sway);
-
-        fragment.appendChild(heart);
+        fragment.appendChild(createParticleNode(mode));
     }
 
     container.appendChild(fragment);
 }
 
 function syncSnowEffect() {
-    if (!snowEffectState.requested || appState.reduceMotion || appState.qualityPreferences?.removeParticles) {
+    if (!snowEffectState.requested || snowEffectState.mode === 'none' || appState.reduceMotion || appState.qualityPreferences?.removeParticles) {
         clearSnowField();
         return;
     }
@@ -4515,6 +4523,11 @@ const EVENT_LIST = [
     { id: "valentine26", label: "Valentine 2026" },
 ];
 
+const VALENTINE_EVENT_IDS = Object.freeze(['valentine24', 'valentine26']);
+const HALLOWEEN_EVENT_IDS = Object.freeze(['halloween24', 'halloween25']);
+const SUMMER_EVENT_IDS = Object.freeze(['summer24', 'summer25']);
+const WINTER_EVENT_IDS = Object.freeze(['winter25', 'winter26']);
+
 const EVENT_LABEL_MAP = new Map(EVENT_LIST.map(({ id, label }) => [id, label]));
 const HALLOWEEN_2024_EVENT_ID = 'halloween24';
 const HARVESTER_AURA_NAME = 'Harvester - 666,000,000';
@@ -4640,8 +4653,47 @@ const EVENT_BIOME_CONDITION_MESSAGES = Object.freeze({
     unknown: 'Requires Dev Biomes to be enabled under run parameters.',
 });
 
-const enabledEvents = new Set();
+const enabledEvents = new Set(['valentine26']);
 const auraEventIndex = new Map();
+
+function hasAnyEnabledEvent(eventIds) {
+    return eventIds.some(eventId => enabledEvents.has(eventId));
+}
+
+function hasCombinedEventsEnabled() {
+    return enabledEvents.size > 1;
+}
+
+function resolveEventThemeVariant() {
+    if (hasCombinedEventsEnabled()) return 'default';
+    if (hasAnyEnabledEvent(VALENTINE_EVENT_IDS)) return 'valentine';
+    if (hasAnyEnabledEvent(WINTER_EVENT_IDS)) return 'winter';
+    if (hasAnyEnabledEvent(HALLOWEEN_EVENT_IDS)) return 'halloween';
+    if (hasAnyEnabledEvent(SUMMER_EVENT_IDS)) return 'summer';
+    return 'default';
+}
+
+function resolveParticleMode() {
+    if (hasCombinedEventsEnabled()) return 'none';
+    if (hasAnyEnabledEvent(VALENTINE_EVENT_IDS)) return 'hearts';
+    if (hasAnyEnabledEvent(WINTER_EVENT_IDS)) return 'snow';
+    return 'none';
+}
+
+function syncEventVisualPresentation() {
+    if (!pageBody) {
+        return;
+    }
+
+    const variant = resolveEventThemeVariant();
+    pageBody.classList.toggle('theme-event-valentine', variant === 'valentine');
+    pageBody.classList.toggle('theme-event-winter', variant === 'winter');
+    pageBody.classList.toggle('theme-event-halloween', variant === 'halloween');
+    pageBody.classList.toggle('theme-event-summer', variant === 'summer');
+
+    snowEffectState.mode = resolveParticleMode();
+    syncSnowEffect();
+}
 
 function biomeEventRequirementsMet(biomeId) {
     if (!biomeId) {
@@ -4985,6 +5037,7 @@ function setEventToggleState(eventId, enabled) {
 
     updateEventSummary();
     enforceBiomeEventRestrictions();
+    syncEventVisualPresentation();
 }
 
 function initializeEventSelector() {
@@ -5013,6 +5066,7 @@ function initializeEventSelector() {
 
     updateEventSummary();
     enforceBiomeEventRestrictions();
+    syncEventVisualPresentation();
 }
 
 function initializeDevBiomeToggle() {
