@@ -1,11 +1,9 @@
 :root {
     color-scheme: dark;
-    --bg-base: #071328;
-    --bg-overlay: rgba(5, 14, 30, 0.46);
-    --surface-bg: rgba(12, 22, 40, 0.92);
-    --surface-gradient: linear-gradient(155deg, rgba(18, 33, 60, 0.96), rgba(8, 18, 36, 0.98));
-    --surface-overlay-gradient: linear-gradient(160deg, rgba(18, 36, 64, 0.93), rgba(8, 20, 38, 0.97));
-    --surface-overlay-highlight: rgba(160, 231, 255, 0.1);
+    --bg-base: #02060f;
+    --bg-overlay: rgba(1, 5, 12, 0.5);
+    --surface-bg: rgba(7, 12, 24, 0.92);
+    --surface-gradient: linear-gradient(155deg, rgba(10, 16, 32, 0.96), rgba(2, 6, 14, 0.98));
     --surface-border: rgba(120, 188, 255, 0.5);
     --surface-glow: rgba(46, 116, 196, 0.42);
     --accent: #7fe3ff;
@@ -356,6 +354,7 @@ body.theme-event-valentine {
     --accent-soft: rgba(255, 143, 194, 0.16);
     --accent-muted: rgba(201, 72, 128, 0.36);
     --accent-rgb: 255 157 198;
+    --accent-rgb-feed: 155 57 98;
     --scrollbar-track-outline: rgba(255, 165, 208, 0.16);
 }
 
@@ -368,6 +367,7 @@ body.theme-event-halloween {
     --accent-soft: rgba(255, 116, 110, 0.16);
     --accent-muted: rgba(189, 66, 60, 0.34);
     --accent-rgb: 255 128 122;
+    --accent-rgb-feed: 155 28 22;
 }
 
 body.theme-event-summer {
@@ -379,6 +379,7 @@ body.theme-event-summer {
     --accent-soft: rgba(255, 231, 130, 0.16);
     --accent-muted: rgba(201, 165, 56, 0.3);
     --accent-rgb: 255 226 126;
+    --accent-rgb-feed: 155 126 26;
 }
 
 body.theme-event-winter {
@@ -395,6 +396,7 @@ body.theme-event-winter {
     --accent-soft: rgba(132, 209, 255, 0.16);
     --accent-muted: rgba(66, 136, 199, 0.34);
     --accent-rgb: 148 221 255;
+    --accent-rgb-feed: 48 121 155;
     --scrollbar-track-outline: rgba(148, 221, 255, 0.18);
 }
 
