@@ -2248,15 +2248,15 @@ function renderSnowField() {
         const heart = document.createElement('span');
         heart.className = 'heart-particle';
 
-        const size = randomDecimalBetween(0.72, 1.45);
+        const size = randomDecimalBetween(1.35, 2.1);
         const opacity = randomDecimalBetween(0.44, 0.88);
         const drift = randomDecimalBetween(-32, 32);
-        const duration = randomDecimalBetween(14, 26);
+        const duration = randomDecimalBetween(8, 16);
         const delay = randomDecimalBetween(0, 20);
         const x = randomDecimalBetween(0, 100);
         const swayDistance = randomDecimalBetween(8, 24);
         const swayDuration = randomDecimalBetween(3.8, 7.4);
-        const popHeight = randomDecimalBetween(8, 42);
+        const popHeight = randomDecimalBetween(42, 142);
         const glow = randomDecimalBetween(0.42, 0.8);
 
         heart.style.setProperty('--size', size.toFixed(2));
