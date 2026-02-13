@@ -4,6 +4,8 @@
     --bg-overlay: rgba(1, 5, 12, 0.5);
     --surface-bg: rgba(7, 12, 24, 0.92);
     --surface-gradient: linear-gradient(155deg, rgba(10, 16, 32, 0.96), rgba(2, 6, 14, 0.98));
+    --surface-overlay-gradient: linear-gradient(160deg, rgba(10, 18, 34, 0.94), rgba(4, 9, 20, 0.98));
+    --surface-overlay-highlight: rgba(127, 227, 255, 0.08);
     --surface-border: rgba(120, 188, 255, 0.5);
     --surface-glow: rgba(46, 116, 196, 0.42);
     --accent: #7fe3ff;
@@ -345,6 +347,8 @@ body.theme-event-valentine {
     --bg-overlay: rgba(18, 4, 14, 0.56);
     --surface-bg: rgba(34, 8, 28, 0.9);
     --surface-gradient: linear-gradient(155deg, rgba(58, 14, 42, 0.95), rgba(22, 6, 17, 0.98));
+    --surface-overlay-gradient: linear-gradient(160deg, rgba(44, 10, 33, 0.94), rgba(17, 4, 14, 0.98));
+    --surface-overlay-highlight: rgba(255, 165, 208, 0.1);
     --surface-border: rgba(255, 138, 189, 0.58);
     --surface-glow: rgba(216, 72, 142, 0.42);
     --accent: #ff9dc6;
@@ -356,6 +360,9 @@ body.theme-event-valentine {
 }
 
 body.theme-event-halloween {
+    --surface-gradient: linear-gradient(155deg, rgba(58, 25, 12, 0.95), rgba(24, 10, 4, 0.98));
+    --surface-overlay-gradient: linear-gradient(160deg, rgba(46, 18, 8, 0.94), rgba(16, 6, 2, 0.98));
+    --surface-overlay-highlight: rgba(255, 154, 120, 0.1);
     --accent: #ff8d86;
     --accent-strong: #ffc0bc;
     --accent-soft: rgba(255, 116, 110, 0.16);
@@ -364,6 +371,9 @@ body.theme-event-halloween {
 }
 
 body.theme-event-summer {
+    --surface-gradient: linear-gradient(155deg, rgba(55, 45, 14, 0.95), rgba(24, 18, 4, 0.98));
+    --surface-overlay-gradient: linear-gradient(160deg, rgba(42, 35, 10, 0.94), rgba(14, 10, 2, 0.98));
+    --surface-overlay-highlight: rgba(255, 229, 143, 0.1);
     --accent: #ffe58f;
     --accent-strong: #fff3be;
     --accent-soft: rgba(255, 231, 130, 0.16);
@@ -376,6 +386,8 @@ body.theme-event-winter {
     --bg-overlay: rgba(3, 15, 32, 0.5);
     --surface-bg: rgba(8, 20, 42, 0.9);
     --surface-gradient: linear-gradient(155deg, rgba(10, 30, 58, 0.96), rgba(4, 16, 36, 0.98));
+    --surface-overlay-gradient: linear-gradient(160deg, rgba(8, 24, 46, 0.94), rgba(3, 12, 28, 0.98));
+    --surface-overlay-highlight: rgba(148, 221, 255, 0.1);
     --surface-border: rgba(146, 215, 255, 0.56);
     --surface-glow: rgba(84, 161, 235, 0.4);
     --accent: #94ddff;
