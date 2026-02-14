@@ -437,7 +437,7 @@ const BIOME_TIME_SELECT_ID = 'biome-time-dropdown';
 const DAY_RESTRICTED_BIOMES = new Set(['pumpkinMoon', 'graveyard']);
 const CYBERSPACE_ILLUSIONARY_WARNING_STORAGE_KEY = 'solsRollingCalculator:hideCyberspaceIllusionaryWarning';
 let lastPrimaryBiomeSelection = null;
-const DEV_BIOME_IDS = new Set(['anotherRealm', 'mastermind', 'unknown']);
+const DEV_BIOME_IDS = new Set(['anotherRealm', 'word', 'mastermind', 'unknown']);
 let devBiomesEnabled = false;
 
 const ROE_NATIVE_BIOMES = Object.freeze([
@@ -2335,6 +2335,7 @@ const biomeAssets = {
     cyberspace: { image: 'files/cyberspaceBiomeImage.jpg', music: 'files/cyberspaceBiomeMusic.mp3' },
     anotherRealm: { image: 'files/anotherRealmBiomeImage.jpg', music: 'files/anotherRealmBiomeMusic.mp3' },
     mastermind: { image: 'files/mastermindBiomeImage.png', music: 'files/mastermindBiomeMusic.mp3' },
+    word: { image: 'files/wordBiomeImage.png', music: 'files/wordBiomeMusic.mp3' },
     unknown: { image: 'files/unknownBiomeImage.png', music: 'files/unknownBiomeMusic.mp3' },
     graveyard: { image: 'files/graveyardBiomeImage.jpg', music: 'files/graveyardBiomeMusic.mp3' },
     pumpkinMoon: { image: 'files/pumpkinMoonBiomeImage.jpg', music: 'files/pumpkinMoonBiomeMusic.mp3' },
@@ -3773,6 +3774,8 @@ const nativeAuraOutlineOverrides = new Map([
 const auraOutlineOverrides = new Map([
     ['Illusionary', 'sigil-outline-illusionary'],
     ['Prowler', 'sigil-outline-prowler'],
+    ['Verdict', 'sigil-outline-word'],
+    ['Attorney', 'sigil-outline-word'],
     ['Divinus : Love', 'sigil-outline-valentine-2024'],
     ['Flushed : Heart Eye', 'sigil-outline-valentine-2024'],
     ['Pukeko', 'sigil-outline-april'],
@@ -3817,7 +3820,7 @@ const auraOutlineOverrides = new Map([
     ['Reaper', 'sigil-outline-blood'],
     ['Celestial : Wicked', 'sigil-outline-blood'],
     ['Lunar : Cultist', 'sigil-outline-blood'],
-    ['Werefolf', 'sigil-outline-blood'],
+    ['Werewolf', 'sigil-outline-blood'],
     ['Bloodgarden', 'sigil-outline-blood'],
     ['Cryogenic', 'sigil-outline-cryogenic'],
     ['Leviathan', 'sigil-outline-leviathan'],
@@ -3827,6 +3830,7 @@ const auraOutlineOverrides = new Map([
     ['Sovereign : Frostveil', 'sigil-outline-frostveil'],
     ['Erebus', 'sigil-outline-erebus'],
     ['Lamenthyr', 'sigil-outline-lamenthyr'],
+    ['Symphony : Bloomed', 'sigil-outline-valentine-2026'],
 ]);
 
 const glitchOutlineNames = new Set(['Fault', 'Glitch', 'Oppression']);
@@ -4176,6 +4180,7 @@ const AURA_BLUEPRINT_SOURCE = Object.freeze([
     { name: "Impeached : I'm Peach - 400,000,000", chance: 400000000 },
     { name: "Cryofang - 380,000,000", chance: 380000000, breakthroughs: nativeBreakthroughs("aurora") },
     { name: "CHILLSEAR - 375,000,000", chance: 375000000, breakthroughs: nativeBreakthroughs("snowy") },
+    { name: "Symphony : Bloomed - 375,000,000", chance: 375000000 },
     { name: "Flora : Evergreen - 370,073,730", chance: 370073730 },
     { name: "Atlas - 360,000,000", chance: 360000000, breakthroughs: nativeBreakthroughs("sandstorm") },
     { name: "Archangel - 350,000,000", chance: 350000000, breakthroughs: nativeBreakthroughs("heaven") },
@@ -4295,18 +4300,22 @@ const AURA_BLUEPRINT_SOURCE = Object.freeze([
     { name: "Shiftlock - 3,325,000", chance: 3325000, breakthroughs: nativeBreakthroughs("null", "limbo"), nativeBiomes: ["limbo-null"] },
     { name: "Headless - 3,200,000", chance: 3200000, nativeBiomes: ["glitch", "graveyard"] },
     { name: "Savior - 3,200,000", chance: 3200000 },
+    { name: "Apatite - 3,133,133", chance: 3133133 },
     { name: "Lunar : Nightfall - 3,000,000", chance: 3000000, nativeBiomes: ["graveyard"] },
     { name: "Parasite - 3,000,000", chance: 3000000, breakthroughs: nativeBreakthroughs("corruption") },
-    { name: "Player : Respawn - 1,999,999", chance: 1999999, breakthroughs: nativeBreakthroughs("cyberspace"), nativeBiomes: ["cyberspace"] },
     { name: "Virtual - 2,500,000", chance: 2500000, breakthroughs: nativeBreakthroughs("cyberspace"), nativeBiomes: ["cyberspace"] },
+    { name: "Evanescent - 2,360,000", chance: 2360000, breakthroughs: nativeBreakthroughs("rainy") },
     { name: "Undefined : Defined - 2,222,000", chance: 2222000, breakthroughs: nativeBreakthroughs("null") },
     { name: "Flowed - 2,121,121", chance: 2121121, breakthroughs: nativeBreakthroughs("null", "limbo"), nativeBiomes: ["limbo-null"] },
     { name: "Lunar : Cultist - 2,000,000", chance: 2000000, nativeBiomes: ["glitch", "graveyard"] },
     { name: "Bounded : Unbound - 2,000,000", chance: 2000000 },
     { name: "Gravitational - 2,000,000", chance: 2000000 },
+    { name: "Player : Respawn - 1,999,999", chance: 1999999, breakthroughs: nativeBreakthroughs("cyberspace"), nativeBiomes: ["cyberspace"] },
+    { name: "Cosmos - 1,766,000", chance: 1766000 },
     { name: "Cosmos - 1,520,000", chance: 1520000 },
     { name: "Celestial : Wicked - 1,500,000", chance: 1500000, nativeBiomes: ["glitch", "pumpkinMoon"] },
     { name: "Astral - 1,336,000", chance: 1336000, breakthroughs: nativeBreakthroughs("starfall") },
+    { name: "symbiosis - 1,331,201", chance: 1336000, breakthroughs: nativeBreakthroughs("corruption") },
     { name: "Rage : Brawler - 1,280,000", chance: 1280000 },
     { name: "Undefined - 1,111,000", chance: 1111000, breakthroughs: nativeBreakthroughs("null", "limbo"), nativeBiomes: ["limbo-null"] },
     { name: "Magnetic : Reverse Polarity - 1,024,000", chance: 1024000 },
@@ -4314,6 +4323,7 @@ const AURA_BLUEPRINT_SOURCE = Object.freeze([
     { name: "Arcane - 1,000,000", chance: 1000000 },
     { name: "Starlight : Kunzite - 1,000,000", chance: 1000000, breakthroughs: nativeBreakthroughs("starfall") },
     { name: "Kyawthuite - 850,000", chance: 850000 },
+    { name: "Verdict - 700,000", chance: 700000, nativeBiomes: ["word"], cutscene: "verdict-cutscene" },
     { name: "Undead : Devil - 666,666", chance: 666666, breakthroughs: nativeBreakthroughs("hell") },
     { name: "Warlock - 666,000", chance: 666000 },
     { name: "Pump : Trickster - 600,000", chance: 600000, nativeBiomes: ["glitch", "pumpkinMoon"] },
@@ -4325,6 +4335,7 @@ const AURA_BLUEPRINT_SOURCE = Object.freeze([
     { name: "Celestial - 350,000", chance: 350000 },
     { name: "Lantern - 333,333", chance: 333333 },
     { name: "Watermelon - 320,000", chance: 320000 },
+    { name: "Attorney - 270,000", chance: 270000, nativeBiomes: ["word"], cutscene: "attorney-cutscene" },
     { name: "Star Rider : Starfish Rider - 250,000", chance: 250000, breakthroughs: nativeBreakthroughs("oldstarfall") },
     { name: "Cryogenic - 250,000", chance: 250000, nativeBiomes: ["aurora"], ignoreLuck: true, fixedRollThreshold: 1 },
     { name: "Star Rider : Snowflake - 240,000", chance: 240000, breakthroughs: nativeBreakthroughs("aurora") },
@@ -4360,6 +4371,7 @@ const AURA_BLUEPRINT_SOURCE = Object.freeze([
     { name: "Lost Soul - 9,200", chance: 9200 },
     { name: "Honey - 8,335", chance: 8335 },
     { name: "Quartz - 8,192", chance: 8192 },
+    { name: "Doddle - 7,500", chance: 7500 },
     { name: "Hazard - 7,000", chance: 7000, breakthroughs: nativeBreakthroughs("corruption") },
     { name: "Flushed : Heart Eye - 6,900", chance: 6900 },
     { name: "Flushed - 6,900", chance: 6900 },
@@ -4630,7 +4642,7 @@ const EVENT_AURA_LOOKUP = {
         "Cryogenic - 250,000"
     ],
     valentine26: [
-        "",
+        "Symphony : Bloomed - 375,000,000",
     ],
 };
 
@@ -4645,6 +4657,7 @@ const BIOME_EVENT_CONSTRAINTS = {
 const EVENT_BIOME_CONDITION_MESSAGES = Object.freeze({
     anotherRealm: 'Requires Dev Biomes to be enabled under run parameters.',
     mastermind: 'Requires Dev Biomes to be enabled under run parameters.',
+    word: 'Requires Dev Biomes to be enabled under run parameters.',
     graveyard: 'Requires Night time with Halloween 2024 or Halloween 2025 enabled.',
     pumpkinMoon: 'Requires Night time with Halloween 2024 or Halloween 2025 enabled.',
     bloodRain: 'Requires Halloween 2025 enabled.',
@@ -4734,8 +4747,8 @@ const CUTSCENE_PRIORITY_SEQUENCE = [
             "monarch-cutscene", "equinox-cutscene", "dream-traveler-cutscene", "breakthrough-cutscene",
             "leviathan-cutscene", "winter-garden-cutscene", "erebus-cutscene", "luminosity-cutscene",
             "pixelation-cutscene", "nyctophobia-cutscene", "frostveil-cutscene", "lamenthyr-cutscene",
-            "ascendant-cutscene", "dreammetric-cutscene", "oppression-cutscene", "prowler-cutscene",
-            "clockwork-cutscene"
+            "ascendant-cutscene", "dreammetric-cutscene", "oppression-cutscene", "verdict-cutscene",
+            "prowler-cutscene", "clockwork-cutscene", "attorney-cutscene"
                                     ];
 
 oblivionAuraData = AURA_REGISTRY.find(aura => aura.name === OBLIVION_AURA_LABEL) || null;
@@ -5592,7 +5605,8 @@ const BIOME_ICON_OVERRIDES = {
     normal: 'files/otherBiomeIcon.png',
     day: 'files/otherBiomeIcon.png',
     night: 'files/otherBiomeIcon.png',
-    aurora: 'files/auroraBiomeIcon.png'
+    aurora: 'files/auroraBiomeIcon.png',
+    word: 'files/heavenBiomeIcon.png'
 };
 
 function getBiomeIconSource(value) {

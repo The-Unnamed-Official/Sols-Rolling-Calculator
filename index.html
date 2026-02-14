@@ -109,6 +109,12 @@
     <video id="clockwork-cutscene" class="cutscene-video" preload="auto" data-audio-channel="cutscene">
         <source src="files/clockworkCutscene.webm" type="video/webm">
     </video>
+    <video id="verdict-cutscene" class="cutscene-video" preload="auto" data-audio-channel="cutscene">
+        <source src="files/verdictCutscene.webm" type="video/webm">
+    </video>
+    <video id="attorney-cutscene" class="cutscene-video" preload="auto" data-audio-channel="cutscene">
+        <source src="files/attorneyCutscene.webm" type="video/webm">
+    </video>
 
     <div id="cinematic-overlay" class="cinematic-overlay" aria-hidden="true"></div>
 
@@ -138,7 +144,7 @@
                         <span class="banner__subtitle-divider" aria-hidden="true">◉</span>
                         <span class="banner__subtitle-author">By <span class="banner__subtitle-author-name"><a href="https://discord.com/users/611204110955446301" target="_blank" rel="noopener">not.unnamed</a></span></span>
                         <span class="banner__subtitle-divider" aria-hidden="true">◉</span>
-                        <span class="banner__subtitle-updated">Updated <time datetime="2026-02-14T15:00:00+01:00">2026/02/14 3:00 PM CET</time></span>
+                        <span class="banner__subtitle-updated">Updated <time datetime="2026-02-14T11:50:00+01:00">2026/02/14 11:50 AM CET</time></span>
                         <span class="banner__subtitle-divider" aria-hidden="true">◉</span>
                         <span class="banner__subtitle-eon"><span class="banner__subtitle-game-version"><a href="https://www.roblox.com/games/15532962292/Sols-RNG" target="_blank" rel="noopener">Sol's RNG Eon 1-15</a></span></span>
                     </p>
@@ -399,6 +405,7 @@
                                     <option value="aurora">Aurora</option>
                                     <option value="anotherRealm">Another Realm</option>
                                     <option value="mastermind">Mastermind</option>
+                                    <option value="word">The Citadel of Orders</option>
                                     <option value="unknown">Unknown</option>
                                 </select>
                                 <details class="interface-select interface-select--single" data-select="biome-primary-dropdown">
@@ -463,6 +470,7 @@
                             <option value="bloodRain">Blood Rain</option>
                             <option value="anotherRealm">Another Realm</option>
                             <option value="mastermind">Mastermind</option>
+                            <option value="word">The Citadel of Orders</option>
                             <option value="unknown">Unknown</option>
                             <option value="blazing">Blazing Sun</option>
                             <option value="aurora">Aurora</option>
@@ -1223,21 +1231,14 @@
                     <header class="changelog-modal__header">
                         <h2 class="changelog-modal__title" id="versionChangelogTitle">Version V1.669 Update Notes</h2>
                         <span class="changelog-tab__subtitle">Valentines Update</span>
-                        <p class="changelog-modal__meta">Updated 2026/02/14 at 3:00 PM CET</p>
+                        <p class="changelog-modal__meta">Updated 2026/02/14 at 11:50 AM CET</p>
                     </header>
                     <p class="changelog-modal__intro">Latest changes:</p>
                     <ul class="changelog-modal__list">
                         <a class="bigClass"><span class="sigil-outline-valentine-2026">Valentine Event 2026</span>!</a>
-                        <p>Now that the <span class="sigil-outline-valentine-2026">Valentine Event</span> of 2026 has begun, everything within the update has been included in this update too :D</p>
+                        <p>Now that the <span class="sigil-outline-valentine-2026">Valentine Event</span> of 2026 has begun, sad that the event only adds one singular rollable aura, but it's still a nice looking one XD</p>
                         <ul>
-                            <li>Added X auras:</li>
-                            <ul>
-                                <li>Blalala <span class="tinyClass">1 in xxxk</span></li>
-                                <li>Blalala <span class="tinyClass">1 in xxxk</span></li>
-                                <li>Blalala <span class="tinyClass">1 in xxxk</span></li>
-                                <li>Blalala <span class="tinyClass">1 in xxxk</span></li>
-                                <li>Blalala <span class="tinyClass">1 in xxxk</span></li>
-                            </ul>
+                            <li>Added the aura <span class="sigil-outline-valentine-2026">Symphony : Bloomed</span> <span class="tinyClass">1 in 375,000,000</span></li>
                         </ul>
                         <li>Snowy particles were moved to winter events selections while valentine events are filled with floating hearts to fit the theme of the current event chosen.</li>
                         <li>The <span class="subtitleClass">Remove particles</span> quality preference now disables the new heart particles too, and <span class="sigil-outline-glitch">Glitch</span> sigil outlines remain visible even when glitch effects are removed.</li>
@@ -1245,6 +1246,11 @@
                     <li>Axis' dev biome <span class="sigil-outline-mastermind">[ Mastermind ]</span> has been added as a dev biome. This including:</li>
                     <ul class="changelog-modal__list">
                         <li>The aura <span class="sigil-effect-clockwork">Clockwork</span> has been added obtained within <span class="sigil-outline-mastermind">[ Mastermind ]</span>. <span class="tinyClass">1 in 530k</span></li>
+                    </ul>
+                    <li>Word's dev biome <span class="sigil-outline-word">The Citadel of Orders</span> has been added as a dev biome. This including:</li>
+                    <ul class="changelog-modal__list">
+                        <li>The aura <span class="sigil-outline-word">Attorney</span> has been added obtained within <span class="sigil-outline-word">The Citadel of Orders</span>. <span class="tinyClass">1 in 270k</span></li>
+                        <li>The aura <span class="sigil-outline-word">Verdict</span> has been added obtained within <span class="sigil-outline-word">The Citadel of Orders</span>. <span class="tinyClass">1 in 700k</span></li>
                     </ul>
                     <li>A fix to the Ascendant cutscene where it would previously take time to load as it was heavily sized + the new cutscene was taken from me instead.</li>
                     <p>If there's any bugs you encounter, please DM me here <a href="https://discord.com/users/611204110955446301" class="subtitleClass" target="_blank" rel="noopener">@not.unnamed</a></p>

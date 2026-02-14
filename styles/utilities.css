@@ -99,6 +99,16 @@
         -1px -1px 0 rgba(186, 171, 75, 0.95);
 }
 
+.sigil-outline-word {
+    text-shadow:
+        0 0 4px rgba(187, 145, 46, 0.85),
+        0 0 8px rgba(197, 167, 68, 0.7),
+        1px 1px 0 rgba(196, 140, 36, 0.95),
+        -1px 1px 0 rgba(111, 72, 21, 0.95),
+        1px -1px 0 rgba(235, 181, 106, 0.95),
+        -1px -1px 0 rgba(230, 164, 83, 0.95);
+}
+
 .sigil-outline-halloween {
     text-shadow:
         0 0 4px rgba(255, 140, 0, 0.85),
