@@ -99,6 +99,16 @@
         -1px -1px 0 rgba(186, 171, 75, 0.95);
 }
 
+.sigil-outline-word {
+    text-shadow:
+        0 0 4px rgba(187, 145, 46, 0.85),
+        0 0 8px rgba(197, 167, 68, 0.7),
+        1px 1px 0 rgba(196, 140, 36, 0.95),
+        -1px 1px 0 rgba(111, 72, 21, 0.95),
+        1px -1px 0 rgba(235, 181, 106, 0.95),
+        -1px -1px 0 rgba(230, 164, 83, 0.95);
+}
+
 .sigil-outline-halloween {
     text-shadow:
         0 0 4px rgba(255, 140, 0, 0.85),
@@ -119,7 +129,7 @@
         -1px -1px 0 rgba(5, 40, 120, 0.9);
 }
 
-.sigil-outline-valentine {
+.sigil-outline-valentine-2024 {
     text-shadow:
         0 0 4px rgba(255, 140, 200, 0.85),
         0 0 8px rgba(255, 95, 170, 0.75),
@@ -127,6 +137,16 @@
         -1px 1px 0 rgba(115, 20, 80, 0.9),
         1px -1px 0 rgba(115, 20, 80, 0.9),
         -1px -1px 0 rgba(115, 20, 80, 0.9);
+}
+
+.sigil-outline-valentine-2026 {
+    text-shadow:
+        0 0 4px rgba(255, 128, 194, 0.85),
+        0 0 8px rgba(255, 121, 184, 0.75),
+        1px 1px 0 rgba(151, 47, 113, 0.9),
+        -1px 1px 0 rgba(164, 41, 119, 0.9),
+        1px -1px 0 rgba(144, 49, 109, 0.9),
+        -1px -1px 0 rgba(129, 15, 87, 0.9);
 }
 
 .sigil-outline-april {
@@ -311,6 +331,20 @@
         -1px -1px 0 rgba(55, 55, 55, 0.94);
 }
 
+.bigClass {
+    font-size: xx-large !important;
+}
+
+.sigil-outline-mastermind {
+    font-family: Fondamento;
+    font-weight: bold;
+    text-transform: uppercase;
+    -webkit-text-fill-color: black;
+    background-clip: text !important;
+    background: #fcfcfc;
+    -webkit-text-stroke: .8px transparent;
+}
+
 .sigil-outline-leviathan {
     font-family: "Playfair Display", serif;
     text-transform: uppercase;
@@ -364,6 +398,28 @@
     letter-spacing: .1em;
     font-family: Arial, sans-serif;
     text-transform: uppercase;
+}
+
+.sigil-effect-clockwork {
+    font-family: Fondamento;
+    display: inline-block;
+    font-weight: bold;
+    font-style: italic;
+    letter-spacing: .23em;
+    white-space: nowrap;
+    background-clip: text !important;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    -webkit-text-stroke: .8px transparent;
+    background: linear-gradient(
+        to bottom,
+        #000000 25%,
+        #d0d7e1 50%,
+        #ffffff 60%,
+        #363636 65%,
+        #ffffff 69%
+    );
+    
 }
 
 .sigil-outline-winter-garden,

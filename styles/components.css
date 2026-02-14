@@ -42,8 +42,8 @@
     letter-spacing: 0.08em;
     padding: 12px 14px;
     color: var(--text-primary);
-    background: rgba(6, 12, 24, 0.9);
-    border: 1px solid rgba(95, 160, 230, 0.35);
+    background: linear-gradient(180deg, rgb(var(--accent-rgb) / 0.1), rgba(6, 12, 24, 0.9));
+    border: 1px solid rgb(var(--accent-rgb) / 0.35);
     border-radius: 10px;
     transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
@@ -136,7 +136,7 @@
     color: var(--text-primary);
     cursor: pointer;
     user-select: none;
-    --button-background: linear-gradient(92deg, rgba(15, 28, 52, 0.9), rgba(10, 20, 38, 0.92));
+    --button-background: linear-gradient(92deg, rgb(var(--accent-rgb) / 0.18), rgba(10, 20, 38, 0.92));
     --button-border-color: var(--accent-muted);
     list-style: none;
 }
@@ -169,7 +169,7 @@
 .interface-select__summary:hover,
 .interface-select__summary:focus-visible {
     border-color: var(--accent);
-    box-shadow: 0 0 0 2px rgba(127, 227, 255, 0.25);
+    box-shadow: 0 0 0 2px rgb(var(--accent-rgb) / 0.25);
     outline: none;
 }
 
@@ -216,7 +216,7 @@
         linear-gradient(var(--accent), var(--accent)) bottom right / var(--corner-thickness) var(--corner-size) no-repeat,
         linear-gradient(175deg, rgba(12, 20, 38, 0.96), rgba(4, 10, 22, 0.98));
     background-repeat: no-repeat;
-    border: 1px solid rgba(95, 160, 230, 0.35);
+    border: 1px solid rgb(var(--accent-rgb) / 0.35);
     border-radius: 0;
     box-shadow: 0 -18px 38px rgba(4, 10, 24, 0.65);
     padding: 14px 16px;
@@ -814,8 +814,8 @@ select.form-field__input option {
     letter-spacing: 0.22em;
     text-transform: uppercase;
     padding: 10px 14px;
-    --button-background: rgba(6, 12, 24, 0.85);
-    --button-border-color: rgba(95, 160, 230, 0.4);
+    --button-background: linear-gradient(180deg, rgb(var(--accent-rgb) / 0.14), rgba(6, 12, 24, 0.85));
+    --button-border-color: rgb(var(--accent-rgb) / 0.4);
     color: var(--text-primary);
     cursor: pointer;
     transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease, background 0.25s ease;
@@ -824,7 +824,7 @@ select.form-field__input option {
 .interface-button:hover,
 .interface-button:focus-visible {
     border-color: var(--accent);
-    box-shadow: inset 0 0 16px rgba(127, 227, 255, 0.18);
+    box-shadow: inset 0 0 16px rgb(var(--accent-rgb) / 0.22);
     --button-scale: 1.03;
     --button-raise: -1px;
     --button-corner-size: 16px;
@@ -843,11 +843,11 @@ select.form-field__input option {
 
 .interface-button--minor {
     min-width: 90px;
-    --button-background: rgba(10, 18, 34, 0.9);
+    --button-background: linear-gradient(180deg, rgb(var(--accent-rgb) / 0.12), rgba(10, 18, 34, 0.9));
 }
 
 .interface-button--ghost {
-    --button-background: rgba(10, 20, 36, 0.7);
+    --button-background: linear-gradient(180deg, rgb(var(--accent-rgb) / 0.08), rgba(10, 20, 36, 0.7));
 }
 
 .control-section--presets {

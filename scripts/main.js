@@ -437,7 +437,7 @@ const BIOME_TIME_SELECT_ID = 'biome-time-dropdown';
 const DAY_RESTRICTED_BIOMES = new Set(['pumpkinMoon', 'graveyard']);
 const CYBERSPACE_ILLUSIONARY_WARNING_STORAGE_KEY = 'solsRollingCalculator:hideCyberspaceIllusionaryWarning';
 let lastPrimaryBiomeSelection = null;
-const DEV_BIOME_IDS = new Set(['anotherRealm', 'unknown']);
+const DEV_BIOME_IDS = new Set(['anotherRealm', 'word', 'mastermind', 'unknown']);
 let devBiomesEnabled = false;
 
 const ROE_NATIVE_BIOMES = Object.freeze([
@@ -1912,7 +1912,7 @@ function updateGlitchPresentation() {
     ensureQualityPreferences();
     const glitchBiomeActive = isGlitchBiomeSelected();
     const removeGlitchEffects = appState.qualityPreferences.removeGlitchEffects;
-    const enableGlitch = appState.glitch && glitchBiomeActive && !appState.reduceMotion && !removeGlitchEffects;
+    const enableGlitch = appState.glitch && glitchBiomeActive && !appState.reduceMotion;
     applyGlitchVisuals(enableGlitch, { forceTheme: glitchBiomeActive });
 }
 
@@ -2213,8 +2213,49 @@ if (reduceMotionMediaQuery) {
 }
 
 const snowEffectState = {
-    requested: false
+    requested: false,
+    mode: 'none'
 };
+
+function createParticleNode(mode) {
+    const particle = document.createElement('span');
+    particle.className = mode === 'snow' ? 'snow-particle' : 'heart-particle';
+
+    const size = randomDecimalBetween(mode === 'snow' ? 0.8 : 1.35, mode === 'snow' ? 1.7 : 2.1);
+    const opacity = randomDecimalBetween(mode === 'snow' ? 0.5 : 0.44, mode === 'snow' ? 0.92 : 0.88);
+    const drift = randomDecimalBetween(-32, 32);
+    const duration = randomDecimalBetween(mode === 'snow' ? 9 : 8, mode === 'snow' ? 17 : 16);
+    const delay = randomDecimalBetween(0, 20);
+    const x = randomDecimalBetween(0, 100);
+    const swayDistance = randomDecimalBetween(8, 24);
+    const swayDuration = randomDecimalBetween(3.8, 7.4);
+    const popHeight = randomDecimalBetween(42, 142);
+    const glow = randomDecimalBetween(mode === 'snow' ? 0.24 : 0.42, mode === 'snow' ? 0.6 : 0.8);
+
+    particle.style.setProperty('--size', size.toFixed(2));
+    particle.style.setProperty('--opacity', opacity.toFixed(2));
+    particle.style.setProperty('--drift', `${drift.toFixed(2)}px`);
+    particle.style.setProperty('--float-duration', `${duration.toFixed(2)}s`);
+    particle.style.setProperty('--float-delay', `${delay.toFixed(2)}s`);
+    particle.style.setProperty('--x', `${x.toFixed(2)}%`);
+    particle.style.setProperty('--sway-distance', `${swayDistance.toFixed(2)}px`);
+    particle.style.setProperty('--sway-duration', `${swayDuration.toFixed(2)}s`);
+    particle.style.setProperty('--pop-height', `${popHeight.toFixed(2)}vh`);
+    particle.style.setProperty('--glow-strength', glow.toFixed(2));
+
+    const sway = document.createElement('span');
+    sway.className = mode === 'snow' ? 'snow-particle__sway' : 'heart-particle__sway';
+
+    const icon = document.createElement('i');
+    icon.className = mode === 'snow'
+        ? 'fa-solid fa-snowflake snow-particle__icon'
+        : 'fa-solid fa-heart heart-particle__icon';
+    icon.setAttribute('aria-hidden', 'true');
+
+    sway.appendChild(icon);
+    particle.appendChild(sway);
+    return particle;
+}
 
 function clearSnowField() {
     const container = document.getElementById('snowField');
@@ -2228,7 +2269,8 @@ function clearSnowField() {
 
 function renderSnowField() {
     const container = document.getElementById('snowField');
-    if (!container || appState.reduceMotion || appState.qualityPreferences?.removeParticles) return;
+    const mode = snowEffectState.mode;
+    if (!container || mode === 'none' || appState.reduceMotion || appState.qualityPreferences?.removeParticles) return;
 
     let viewportWidth = 1280;
     let viewportHeight = 720;
@@ -2237,46 +2279,22 @@ function renderSnowField() {
         viewportHeight = window.innerHeight || viewportHeight;
     }
 
-    const baseDensity = Math.floor((viewportWidth * viewportHeight) / 22000);
-    const flakeTotal = Math.min(180, Math.max(52, baseDensity));
+    const baseDensity = Math.floor((viewportWidth * viewportHeight) / 26000);
+    const particleTotal = Math.min(132, Math.max(44, baseDensity));
 
     container.dataset.active = 'true';
     container.replaceChildren();
 
     const fragment = document.createDocumentFragment();
-    for (let i = 0; i < flakeTotal; i++) {
-        const flake = document.createElement('span');
-        flake.className = 'snowflake';
-
-        const size = randomDecimalBetween(0.8, 1.6);
-        const opacity = randomDecimalBetween(0.52, 0.95);
-        const drift = randomDecimalBetween(-42, 42);
-        const duration = randomDecimalBetween(10, 18);
-        const delay = randomDecimalBetween(0, 14);
-        const x = randomDecimalBetween(0, 100);
-        const spinDuration = randomDecimalBetween(12, 24);
-
-        flake.style.setProperty('--size', size.toFixed(2));
-        flake.style.setProperty('--opacity', opacity.toFixed(2));
-        flake.style.setProperty('--drift', `${drift.toFixed(2)}px`);
-        flake.style.setProperty('--fall-duration', `${duration.toFixed(2)}s`);
-        flake.style.setProperty('--fall-delay', `${delay.toFixed(2)}s`);
-        flake.style.setProperty('--x', `${x.toFixed(2)}%`);
-        flake.style.setProperty('--spin-duration', `${spinDuration.toFixed(2)}s`);
-
-        const icon = document.createElement('i');
-        icon.className = 'fa-solid fa-snowflake snowflake__icon';
-        icon.setAttribute('aria-hidden', 'true');
-        flake.appendChild(icon);
-
-        fragment.appendChild(flake);
+    for (let i = 0; i < particleTotal; i++) {
+        fragment.appendChild(createParticleNode(mode));
     }
 
     container.appendChild(fragment);
 }
 
 function syncSnowEffect() {
-    if (!snowEffectState.requested || appState.reduceMotion || appState.qualityPreferences?.removeParticles) {
+    if (!snowEffectState.requested || snowEffectState.mode === 'none' || appState.reduceMotion || appState.qualityPreferences?.removeParticles) {
         clearSnowField();
         return;
     }
@@ -2316,6 +2334,8 @@ const biomeAssets = {
     glitch: { image: 'files/glitchBiomeImage.webm', music: 'files/glitchBiomeMusic.mp3' },
     cyberspace: { image: 'files/cyberspaceBiomeImage.jpg', music: 'files/cyberspaceBiomeMusic.mp3' },
     anotherRealm: { image: 'files/anotherRealmBiomeImage.jpg', music: 'files/anotherRealmBiomeMusic.mp3' },
+    mastermind: { image: 'files/mastermindBiomeImage.png', music: 'files/mastermindBiomeMusic.mp3' },
+    word: { image: 'files/wordBiomeImage.png', music: 'files/wordBiomeMusic.mp3' },
     unknown: { image: 'files/unknownBiomeImage.png', music: 'files/unknownBiomeMusic.mp3' },
     graveyard: { image: 'files/graveyardBiomeImage.jpg', music: 'files/graveyardBiomeMusic.mp3' },
     pumpkinMoon: { image: 'files/pumpkinMoonBiomeImage.jpg', music: 'files/pumpkinMoonBiomeMusic.mp3' },
@@ -3754,8 +3774,10 @@ const nativeAuraOutlineOverrides = new Map([
 const auraOutlineOverrides = new Map([
     ['Illusionary', 'sigil-outline-illusionary'],
     ['Prowler', 'sigil-outline-prowler'],
-    ['Divinus : Love', 'sigil-outline-valentine'],
-    ['Flushed : Heart Eye', 'sigil-outline-valentine'],
+    ['Verdict', 'sigil-outline-word'],
+    ['Attorney', 'sigil-outline-word'],
+    ['Divinus : Love', 'sigil-outline-valentine-2024'],
+    ['Flushed : Heart Eye', 'sigil-outline-valentine-2024'],
     ['Pukeko', 'sigil-outline-april'],
     ['Flushed : Troll', 'sigil-outline-april'],
     ['Undefined : Defined', 'sigil-outline-april'],
@@ -3798,7 +3820,7 @@ const auraOutlineOverrides = new Map([
     ['Reaper', 'sigil-outline-blood'],
     ['Celestial : Wicked', 'sigil-outline-blood'],
     ['Lunar : Cultist', 'sigil-outline-blood'],
-    ['Werefolf', 'sigil-outline-blood'],
+    ['Werewolf', 'sigil-outline-blood'],
     ['Bloodgarden', 'sigil-outline-blood'],
     ['Cryogenic', 'sigil-outline-cryogenic'],
     ['Leviathan', 'sigil-outline-leviathan'],
@@ -3808,6 +3830,7 @@ const auraOutlineOverrides = new Map([
     ['Sovereign : Frostveil', 'sigil-outline-frostveil'],
     ['Erebus', 'sigil-outline-erebus'],
     ['Lamenthyr', 'sigil-outline-lamenthyr'],
+    ['Symphony : Bloomed', 'sigil-outline-valentine-2026'],
 ]);
 
 const glitchOutlineNames = new Set(['Fault', 'Glitch', 'Oppression']);
@@ -3829,6 +3852,7 @@ function resolveAuraStyleClass(aura, biome) {
     if (name.startsWith('Equinox')) classes.push('sigil-effect-equinox');
     if (name.startsWith('Megaphone')) classes.push('sigil-effect-megaphone');
     if (name.startsWith('Nyctophobia')) classes.push('sigil-effect-nyctophobia');
+    if (name.startsWith('Clockwork')) classes.push('sigil-effect-clockwork');
     if (name.startsWith('Breakthrough')) classes.push('sigil-effect-breakthrough', 'sigil-border-breakthrough');
     if (name.startsWith('Glitch')) classes.push('sigil-effect-glitch');
 
@@ -4156,6 +4180,7 @@ const AURA_BLUEPRINT_SOURCE = Object.freeze([
     { name: "Impeached : I'm Peach - 400,000,000", chance: 400000000 },
     { name: "Cryofang - 380,000,000", chance: 380000000, breakthroughs: nativeBreakthroughs("aurora") },
     { name: "CHILLSEAR - 375,000,000", chance: 375000000, breakthroughs: nativeBreakthroughs("snowy") },
+    { name: "Symphony : Bloomed - 375,000,000", chance: 375000000 },
     { name: "Flora : Evergreen - 370,073,730", chance: 370073730 },
     { name: "Atlas - 360,000,000", chance: 360000000, breakthroughs: nativeBreakthroughs("sandstorm") },
     { name: "Archangel - 350,000,000", chance: 350000000, breakthroughs: nativeBreakthroughs("heaven") },
@@ -4275,18 +4300,22 @@ const AURA_BLUEPRINT_SOURCE = Object.freeze([
     { name: "Shiftlock - 3,325,000", chance: 3325000, breakthroughs: nativeBreakthroughs("null", "limbo"), nativeBiomes: ["limbo-null"] },
     { name: "Headless - 3,200,000", chance: 3200000, nativeBiomes: ["glitch", "graveyard"] },
     { name: "Savior - 3,200,000", chance: 3200000 },
+    { name: "Apatite - 3,133,133", chance: 3133133 },
     { name: "Lunar : Nightfall - 3,000,000", chance: 3000000, nativeBiomes: ["graveyard"] },
     { name: "Parasite - 3,000,000", chance: 3000000, breakthroughs: nativeBreakthroughs("corruption") },
-    { name: "Player : Respawn - 1,999,999", chance: 1999999, breakthroughs: nativeBreakthroughs("cyberspace"), nativeBiomes: ["cyberspace"] },
     { name: "Virtual - 2,500,000", chance: 2500000, breakthroughs: nativeBreakthroughs("cyberspace"), nativeBiomes: ["cyberspace"] },
+    { name: "Evanescent - 2,360,000", chance: 2360000, breakthroughs: nativeBreakthroughs("rainy") },
     { name: "Undefined : Defined - 2,222,000", chance: 2222000, breakthroughs: nativeBreakthroughs("null") },
     { name: "Flowed - 2,121,121", chance: 2121121, breakthroughs: nativeBreakthroughs("null", "limbo"), nativeBiomes: ["limbo-null"] },
     { name: "Lunar : Cultist - 2,000,000", chance: 2000000, nativeBiomes: ["glitch", "graveyard"] },
     { name: "Bounded : Unbound - 2,000,000", chance: 2000000 },
     { name: "Gravitational - 2,000,000", chance: 2000000 },
+    { name: "Player : Respawn - 1,999,999", chance: 1999999, breakthroughs: nativeBreakthroughs("cyberspace"), nativeBiomes: ["cyberspace"] },
+    { name: "Cosmos - 1,766,000", chance: 1766000 },
     { name: "Cosmos - 1,520,000", chance: 1520000 },
     { name: "Celestial : Wicked - 1,500,000", chance: 1500000, nativeBiomes: ["glitch", "pumpkinMoon"] },
     { name: "Astral - 1,336,000", chance: 1336000, breakthroughs: nativeBreakthroughs("starfall") },
+    { name: "symbiosis - 1,331,201", chance: 1336000, breakthroughs: nativeBreakthroughs("corruption") },
     { name: "Rage : Brawler - 1,280,000", chance: 1280000 },
     { name: "Undefined - 1,111,000", chance: 1111000, breakthroughs: nativeBreakthroughs("null", "limbo"), nativeBiomes: ["limbo-null"] },
     { name: "Magnetic : Reverse Polarity - 1,024,000", chance: 1024000 },
@@ -4294,16 +4323,19 @@ const AURA_BLUEPRINT_SOURCE = Object.freeze([
     { name: "Arcane - 1,000,000", chance: 1000000 },
     { name: "Starlight : Kunzite - 1,000,000", chance: 1000000, breakthroughs: nativeBreakthroughs("starfall") },
     { name: "Kyawthuite - 850,000", chance: 850000 },
+    { name: "Verdict - 700,000", chance: 700000, nativeBiomes: ["word"], cutscene: "verdict-cutscene" },
     { name: "Undead : Devil - 666,666", chance: 666666, breakthroughs: nativeBreakthroughs("hell") },
     { name: "Warlock - 666,000", chance: 666000 },
     { name: "Pump : Trickster - 600,000", chance: 600000, nativeBiomes: ["glitch", "pumpkinMoon"] },
     { name: "Prowler - 540,000", chance: 540000, nativeBiomes: ["anotherRealm"], cutscene: "prowler-cutscene" },
+    { name: "Clockwork - 530,000", chance: 530000, nativeBiomes: ["mastermind"], cutscene: "clockwork-cutscene" },
     { name: "Raven - 500,000", chance: 500000, nativeBiomes: ["limbo"] },
     { name: "Hope - 488,725", chance: 488725, breakthroughs: nativeBreakthroughs("heaven") },
     { name: "Terror - 400,000", chance: 400000 },
     { name: "Celestial - 350,000", chance: 350000 },
     { name: "Lantern - 333,333", chance: 333333 },
     { name: "Watermelon - 320,000", chance: 320000 },
+    { name: "Attorney - 270,000", chance: 270000, nativeBiomes: ["word"], cutscene: "attorney-cutscene" },
     { name: "Star Rider : Starfish Rider - 250,000", chance: 250000, breakthroughs: nativeBreakthroughs("oldstarfall") },
     { name: "Cryogenic - 250,000", chance: 250000, nativeBiomes: ["aurora"], ignoreLuck: true, fixedRollThreshold: 1 },
     { name: "Star Rider : Snowflake - 240,000", chance: 240000, breakthroughs: nativeBreakthroughs("aurora") },
@@ -4339,6 +4371,7 @@ const AURA_BLUEPRINT_SOURCE = Object.freeze([
     { name: "Lost Soul - 9,200", chance: 9200 },
     { name: "Honey - 8,335", chance: 8335 },
     { name: "Quartz - 8,192", chance: 8192 },
+    { name: "Doddle - 7,500", chance: 7500 },
     { name: "Hazard - 7,000", chance: 7000, breakthroughs: nativeBreakthroughs("corruption") },
     { name: "Flushed : Heart Eye - 6,900", chance: 6900 },
     { name: "Flushed - 6,900", chance: 6900 },
@@ -4499,7 +4532,13 @@ const EVENT_LIST = [
     { id: "summer25", label: "Summer 2025" },
     { id: "halloween25", label: "Halloween 2025" },
     { id: "winter26", label: "Winter 2026" },
+    { id: "valentine26", label: "Valentine 2026" },
 ];
+
+const VALENTINE_EVENT_IDS = Object.freeze(['valentine24', 'valentine26']);
+const HALLOWEEN_EVENT_IDS = Object.freeze(['halloween24', 'halloween25']);
+const SUMMER_EVENT_IDS = Object.freeze(['summer24', 'summer25']);
+const WINTER_EVENT_IDS = Object.freeze(['winter25', 'winter26']);
 
 const EVENT_LABEL_MAP = new Map(EVENT_LIST.map(({ id, label }) => [id, label]));
 const HALLOWEEN_2024_EVENT_ID = 'halloween24';
@@ -4602,6 +4641,9 @@ const EVENT_AURA_LOOKUP = {
         "Dream Traveler - 2,025,012,025",
         "Cryogenic - 250,000"
     ],
+    valentine26: [
+        "Symphony : Bloomed - 375,000,000",
+    ],
 };
 
 const BIOME_EVENT_CONSTRAINTS = {
@@ -4614,6 +4656,8 @@ const BIOME_EVENT_CONSTRAINTS = {
 
 const EVENT_BIOME_CONDITION_MESSAGES = Object.freeze({
     anotherRealm: 'Requires Dev Biomes to be enabled under run parameters.',
+    mastermind: 'Requires Dev Biomes to be enabled under run parameters.',
+    word: 'Requires Dev Biomes to be enabled under run parameters.',
     graveyard: 'Requires Night time with Halloween 2024 or Halloween 2025 enabled.',
     pumpkinMoon: 'Requires Night time with Halloween 2024 or Halloween 2025 enabled.',
     bloodRain: 'Requires Halloween 2025 enabled.',
@@ -4622,8 +4666,47 @@ const EVENT_BIOME_CONDITION_MESSAGES = Object.freeze({
     unknown: 'Requires Dev Biomes to be enabled under run parameters.',
 });
 
-const enabledEvents = new Set();
+const enabledEvents = new Set(['valentine26']);
 const auraEventIndex = new Map();
+
+function hasAnyEnabledEvent(eventIds) {
+    return eventIds.some(eventId => enabledEvents.has(eventId));
+}
+
+function hasCombinedEventsEnabled() {
+    return enabledEvents.size > 1;
+}
+
+function resolveEventThemeVariant() {
+    if (hasCombinedEventsEnabled()) return 'default';
+    if (hasAnyEnabledEvent(VALENTINE_EVENT_IDS)) return 'valentine';
+    if (hasAnyEnabledEvent(WINTER_EVENT_IDS)) return 'winter';
+    if (hasAnyEnabledEvent(HALLOWEEN_EVENT_IDS)) return 'halloween';
+    if (hasAnyEnabledEvent(SUMMER_EVENT_IDS)) return 'summer';
+    return 'default';
+}
+
+function resolveParticleMode() {
+    if (hasCombinedEventsEnabled()) return 'none';
+    if (hasAnyEnabledEvent(VALENTINE_EVENT_IDS)) return 'hearts';
+    if (hasAnyEnabledEvent(WINTER_EVENT_IDS)) return 'snow';
+    return 'none';
+}
+
+function syncEventVisualPresentation() {
+    if (!pageBody) {
+        return;
+    }
+
+    const variant = resolveEventThemeVariant();
+    pageBody.classList.toggle('theme-event-valentine', variant === 'valentine');
+    pageBody.classList.toggle('theme-event-winter', variant === 'winter');
+    pageBody.classList.toggle('theme-event-halloween', variant === 'halloween');
+    pageBody.classList.toggle('theme-event-summer', variant === 'summer');
+
+    snowEffectState.mode = resolveParticleMode();
+    syncSnowEffect();
+}
 
 function biomeEventRequirementsMet(biomeId) {
     if (!biomeId) {
@@ -4659,7 +4742,14 @@ function getAuraEventId(aura) {
     return auraEventIndex.get(aura.name) || null;
 }
 
-const CUTSCENE_PRIORITY_SEQUENCE = ["illusionary-cutscene", "oblivion-cutscene", "memory-cutscene", "neferkhaf-cutscene", "monarch-cutscene", "equinox-cutscene", "dream-traveler-cutscene", "breakthrough-cutscene", "leviathan-cutscene", "winter-garden-cutscene", "erebus-cutscene", "luminosity-cutscene", "pixelation-cutscene", "nyctophobia-cutscene", "frostveil-cutscene", "lamenthyr-cutscene", "ascendant-cutscene", "dreammetric-cutscene", "oppression-cutscene", "prowler-cutscene"];
+const CUTSCENE_PRIORITY_SEQUENCE = [
+            "illusionary-cutscene", "oblivion-cutscene", "memory-cutscene", "neferkhaf-cutscene",
+            "monarch-cutscene", "equinox-cutscene", "dream-traveler-cutscene", "breakthrough-cutscene",
+            "leviathan-cutscene", "winter-garden-cutscene", "erebus-cutscene", "luminosity-cutscene",
+            "pixelation-cutscene", "nyctophobia-cutscene", "frostveil-cutscene", "lamenthyr-cutscene",
+            "ascendant-cutscene", "dreammetric-cutscene", "oppression-cutscene", "verdict-cutscene",
+            "prowler-cutscene", "clockwork-cutscene", "attorney-cutscene"
+                                    ];
 
 oblivionAuraData = AURA_REGISTRY.find(aura => aura.name === OBLIVION_AURA_LABEL) || null;
 memoryAuraData = AURA_REGISTRY.find(aura => aura.name === MEMORY_AURA_LABEL) || null;
@@ -4960,6 +5050,7 @@ function setEventToggleState(eventId, enabled) {
 
     updateEventSummary();
     enforceBiomeEventRestrictions();
+    syncEventVisualPresentation();
 }
 
 function initializeEventSelector() {
@@ -4988,6 +5079,7 @@ function initializeEventSelector() {
 
     updateEventSummary();
     enforceBiomeEventRestrictions();
+    syncEventVisualPresentation();
 }
 
 function initializeDevBiomeToggle() {
@@ -5513,7 +5605,8 @@ const BIOME_ICON_OVERRIDES = {
     normal: 'files/otherBiomeIcon.png',
     day: 'files/otherBiomeIcon.png',
     night: 'files/otherBiomeIcon.png',
-    aurora: 'files/auroraBiomeIcon.png'
+    aurora: 'files/auroraBiomeIcon.png',
+    word: 'files/heavenBiomeIcon.png'
 };
 
 function getBiomeIconSource(value) {
@@ -7964,7 +8057,7 @@ const SHARE_IMAGE_OUTLINE_STYLES = Object.freeze({
             { color: 'rgba(5, 40, 120, 0.9)', blur: 0, offsetX: -1, offsetY: -1 }
         ]
     },
-    'sigil-outline-valentine': {
+    'sigil-outline-valentine-2024': {
         shadows: [
             { color: 'rgba(255, 140, 200, 0.85)', blur: 4 },
             { color: 'rgba(255, 95, 170, 0.75)', blur: 8 },
@@ -7972,6 +8065,16 @@ const SHARE_IMAGE_OUTLINE_STYLES = Object.freeze({
             { color: 'rgba(115, 20, 80, 0.9)', blur: 0, offsetX: -1, offsetY: 1 },
             { color: 'rgba(115, 20, 80, 0.9)', blur: 0, offsetX: 1, offsetY: -1 },
             { color: 'rgba(115, 20, 80, 0.9)', blur: 0, offsetX: -1, offsetY: -1 }
+        ]
+    },
+    'sigil-outline-valentine-2026': {
+        shadows: [
+            { color: 'rgba(255, 140, 200, 0.85)', blur: 4 },
+            { color: 'rgba(248, 127, 184, 0.75)', blur: 8 },
+            { color: 'rgba(140, 45, 105, 0.9)', blur: 0, offsetX: 1, offsetY: 1 },
+            { color: 'rgba(141, 49, 108, 0.9)', blur: 0, offsetX: -1, offsetY: 1 },
+            { color: 'rgba(146, 44, 109, 0.9)', blur: 0, offsetX: 1, offsetY: -1 },
+            { color: 'rgba(126, 13, 85, 0.9)', blur: 0, offsetX: -1, offsetY: -1 }
         ]
     },
     'sigil-outline-april': {

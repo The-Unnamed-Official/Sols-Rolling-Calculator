@@ -13,6 +13,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Jura:wght@300..700&family=Kings&family=Parisienne&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Parisienne&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Jura:wght@300..700&family=Parisienne&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Fondamento:ital@0;1&display=swap" rel="stylesheet">
     <link rel="icon" type="image/png" sizes="16x16" href="files/favicon-16.png">
     <link rel="icon" type="image/png" sizes="32x32" href="files/favicon-32.png">
     <link rel="icon" type="image/png" sizes="48x48" href="files/favicon-48.png">
@@ -105,6 +106,15 @@
     <video id="prowler-cutscene" class="cutscene-video" preload="auto" data-audio-channel="cutscene">
         <source src="files/prowlerCutscene.webm" type="video/webm">
     </video>
+    <video id="clockwork-cutscene" class="cutscene-video" preload="auto" data-audio-channel="cutscene">
+        <source src="files/clockworkCutscene.webm" type="video/webm">
+    </video>
+    <video id="verdict-cutscene" class="cutscene-video" preload="auto" data-audio-channel="cutscene">
+        <source src="files/verdictCutscene.webm" type="video/webm">
+    </video>
+    <video id="attorney-cutscene" class="cutscene-video" preload="auto" data-audio-channel="cutscene">
+        <source src="files/attorneyCutscene.webm" type="video/webm">
+    </video>
 
     <div id="cinematic-overlay" class="cinematic-overlay" aria-hidden="true"></div>
 
@@ -130,11 +140,11 @@
                 <div class="banner__meta">
                     <h1 class="banner__title">Sol's Rolling Simulator</h1>
                     <p class="banner__subtitle">
-                        <button type="button" class="banner__version-button" id="versionInfoButton" aria-haspopup="dialog" aria-expanded="false" data-version-id="v1666">V1.666</button>
+                        <button type="button" class="banner__version-button" id="versionInfoButton" aria-haspopup="dialog" aria-expanded="false" data-version-id="v1669">V1.669</button>
                         <span class="banner__subtitle-divider" aria-hidden="true">◉</span>
                         <span class="banner__subtitle-author">By <span class="banner__subtitle-author-name"><a href="https://discord.com/users/611204110955446301" target="_blank" rel="noopener">not.unnamed</a></span></span>
                         <span class="banner__subtitle-divider" aria-hidden="true">◉</span>
-                        <span class="banner__subtitle-updated">Updated <time datetime="2026-02-06T02:00:00+01:00">2026/02/08 2:00 AM CET</time></span>
+                        <span class="banner__subtitle-updated">Updated <time datetime="2026-02-14T11:50:00+01:00">2026/02/14 11:50 AM CET</time></span>
                         <span class="banner__subtitle-divider" aria-hidden="true">◉</span>
                         <span class="banner__subtitle-eon"><span class="banner__subtitle-game-version"><a href="https://www.roblox.com/games/15532962292/Sols-RNG" target="_blank" rel="noopener">Sol's RNG Eon 1-15</a></span></span>
                     </p>
@@ -394,6 +404,8 @@
                                     <option value="blazing">Blazing Sun</option>
                                     <option value="aurora">Aurora</option>
                                     <option value="anotherRealm">Another Realm</option>
+                                    <option value="mastermind">Mastermind</option>
+                                    <option value="word">The Citadel of Orders</option>
                                     <option value="unknown">Unknown</option>
                                 </select>
                                 <details class="interface-select interface-select--single" data-select="biome-primary-dropdown">
@@ -457,6 +469,8 @@
                             <option value="graveyard">Graveyard</option>
                             <option value="bloodRain">Blood Rain</option>
                             <option value="anotherRealm">Another Realm</option>
+                            <option value="mastermind">Mastermind</option>
+                            <option value="word">The Citadel of Orders</option>
                             <option value="unknown">Unknown</option>
                             <option value="blazing">Blazing Sun</option>
                             <option value="aurora">Aurora</option>
@@ -471,9 +485,10 @@
                             <details class="interface-select interface-select--multi" id="event-selector" data-select="event-selector">
                                 <summary id="event-selector-summary" class="form-field__input form-field__input--event form-field__input--placeholder interface-select__summary" role="button" aria-expanded="false" aria-haspopup="listbox">No events enabled</summary>
                                 <div class="interface-select__menu" id="event-option-list" role="listbox" aria-multiselectable="true">
+
                                     <label class="interface-select__option interface-select__option--checkbox">
                                         <input type="checkbox" value="valentine24" data-event-id="valentine24">
-                                        <span class="interface-select__option-label"><span class="sigil-outline-valentine">Valentine</span> 2024</span>
+                                        <span class="interface-select__option-label"><span class="sigil-outline-valentine-2024">Valentine</span> 2024</span>
                                     </label>
                                     <label class="interface-select__option interface-select__option--checkbox">
                                         <input type="checkbox" value="aprilFools24" data-event-id="aprilFools24">
@@ -511,6 +526,11 @@
                                         <input type="checkbox" value="winter26" data-event-id="winter26">
                                         <span class="interface-select__option-label"><span class="sigil-outline-winter-2026">Winter</span> 2026</span>
                                     </label>
+                                    <label class="interface-select__option  interface-select__option--checkbox">
+                                        <input type="checkbox" value="valentine26" data-event-id="valentine26">
+                                        <span class="interface-select__option-label"><span class="sigil-outline-valentine-2026">Valentine</span> 2026</span>
+                                    </label>
+
                                 </div>
                             </details>
                         </div>
@@ -655,7 +675,6 @@
                 <li class="footer-credits__item">Unkown biome song courtesy of <a href="https://www.youtube.com/watch?v=LLng8n_1eOY" target="_blank" rel="noopener">Derpcat</a>.</li>
                 <li class="footer-credits__item">Leviathan cutscene courtesy of <a href="https://discord.com/users/755614816793788468" target="_blank" rel="noopener">@reeseyhi</a>.</li>
                 <li class="footer-credits__item">Breakthrough cutscene courtesy of <a href="https://discord.com/users/979478452786823259" target="_blank" rel="noopener">@INCONCEIVABLE</a>.</li>
-                <li class="footer-credits__item">Ascendant cutscene courtesy of <a href="https://discord.com/users/823317679708176434" target="_blank" rel="noopener">@Exeael</a>.</li>
                 <li class="footer-credits__item">Monarch cutscene courtesy of <a href="https://youtu.be/qx8EPFC5vDM" target="_blank" rel="noopener">floob</a>.</li>
             </ul>
         </details>
@@ -848,7 +867,7 @@
             <div class="quality-settings__menu" id="qualityPreferencesMenu" role="menu">
                 <button class="interface-button quality-settings__item" type="button" role="menuitemcheckbox" aria-checked="false" data-quality-option="removeParticles">
                     <span class="quality-settings__name">Remove particles</span>
-                    <span class="quality-settings__description">Disables snowflakes and other floating particle visuals.</span>
+                    <span class="quality-settings__description">Disables floating hearts and other particle visuals.</span>
                 </button>
                 <button class="interface-button quality-settings__item" type="button" role="menuitemcheckbox" aria-checked="false" data-quality-option="disableButtonAnimations">
                     <span class="quality-settings__name">Disable button animations</span>
@@ -926,11 +945,23 @@
                 <button
                     type="button"
                     class="changelog-tab changelog-tab--active"
+                    id="changelog-tab-v1669"
+                    role="tab"
+                    aria-controls="changelog-panel-v1669"
+                    aria-selected="true"
+                    data-changelog-tab="v1669"
+                >
+                    <span class="changelog-tab__title">V1.669</span>
+                </button>
+                <button
+                    type="button"
+                    class="changelog-tab changelog-tab--active"
                     id="changelog-tab-v1666"
                     role="tab"
                     aria-controls="changelog-panel-v1666"
-                    aria-selected="true"
+                    aria-selected="false"
                     data-changelog-tab="v1666"
+                    tabindex="-1"
                 >
                     <span class="changelog-tab__title">V1.666</span>
                 </button>
@@ -1110,7 +1141,7 @@
                     aria-controls="changelog-panel-v1565"
                     aria-selected="false"
                     data-changelog-tab="v1565"
-                    tabindex="-1
+                    tabindex="-1"
                 >
                     <span class="changelog-tab__title">V1.565</span>
                 </button>
@@ -1189,6 +1220,41 @@
             </div>
 
             <div class="changelog-modal__panels" data-changelog-panels>
+                <section
+                    id="changelog-panel-v1669"
+                    class="changelog-modal__panel"
+                    role="tabpanel"
+                    aria-labelledby="changelog-tab-v1669"
+                    data-changelog-panel="v1669"
+                    tabindex="0"
+                >
+                    <header class="changelog-modal__header">
+                        <h2 class="changelog-modal__title" id="versionChangelogTitle">Version V1.669 Update Notes</h2>
+                        <span class="changelog-tab__subtitle">Valentines Update</span>
+                        <p class="changelog-modal__meta">Updated 2026/02/14 at 11:50 AM CET</p>
+                    </header>
+                    <p class="changelog-modal__intro">Latest changes:</p>
+                    <ul class="changelog-modal__list">
+                        <a class="bigClass"><span class="sigil-outline-valentine-2026">Valentine Event 2026</span>!</a>
+                        <p>Now that the <span class="sigil-outline-valentine-2026">Valentine Event</span> of 2026 has begun, sad that the event only adds one singular rollable aura, but it's still a nice looking one XD</p>
+                        <ul>
+                            <li>Added the aura <span class="sigil-outline-valentine-2026">Symphony : Bloomed</span> <span class="tinyClass">1 in 375,000,000</span></li>
+                        </ul>
+                        <li>Snowy particles were moved to winter events selections while valentine events are filled with floating hearts to fit the theme of the current event chosen.</li>
+                        <li>The <span class="subtitleClass">Remove particles</span> quality preference now disables the new heart particles too, and <span class="sigil-outline-glitch">Glitch</span> sigil outlines remain visible even when glitch effects are removed.</li>
+                    </ul>
+                    <li>Axis' dev biome <span class="sigil-outline-mastermind">[ Mastermind ]</span> has been added as a dev biome. This including:</li>
+                    <ul class="changelog-modal__list">
+                        <li>The aura <span class="sigil-effect-clockwork">Clockwork</span> has been added obtained within <span class="sigil-outline-mastermind">[ Mastermind ]</span>. <span class="tinyClass">1 in 530k</span></li>
+                    </ul>
+                    <li>Word's dev biome <span class="sigil-outline-word">The Citadel of Orders</span> has been added as a dev biome. This including:</li>
+                    <ul class="changelog-modal__list">
+                        <li>The aura <span class="sigil-outline-word">Attorney</span> has been added obtained within <span class="sigil-outline-word">The Citadel of Orders</span>. <span class="tinyClass">1 in 270k</span></li>
+                        <li>The aura <span class="sigil-outline-word">Verdict</span> has been added obtained within <span class="sigil-outline-word">The Citadel of Orders</span>. <span class="tinyClass">1 in 700k</span></li>
+                    </ul>
+                    <li>A fix to the Ascendant cutscene where it would previously take time to load as it was heavily sized + the new cutscene was taken from me instead.</li>
+                    <p>If there's any bugs you encounter, please DM me here <a href="https://discord.com/users/611204110955446301" class="subtitleClass" target="_blank" rel="noopener">@not.unnamed</a></p>
+                </section>
                 <section
                     id="changelog-panel-v1666"
                     class="changelog-modal__panel"
