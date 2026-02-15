@@ -4045,7 +4045,9 @@ function formatAuraNameText(aura, overrideName) {
     return baseName;
 }
 
-function syncLamenthyrOutlineText(element) {
+const layeredTextSigilClasses = ['sigil-outline-lamenthyr', 'sigil-outline-edict', 'sigil-effect-clockwork'];
+
+function syncLayeredSigilText(element) {
     if (!element) return;
     const text = element.textContent;
     if (typeof text !== 'string' || text.length === 0) return;
@@ -4054,13 +4056,15 @@ function syncLamenthyrOutlineText(element) {
     }
 }
 
-function updateLamenthyrOutlineText(container = document) {
+function updateLayeredSigilText(container = document) {
     if (!container) return;
-    container.querySelectorAll('.sigil-outline-lamenthyr').forEach(syncLamenthyrOutlineText);
+    layeredTextSigilClasses.forEach(className => {
+        container.querySelectorAll(`.${className}`).forEach(syncLayeredSigilText);
+    });
 }
 
-function observeLamenthyrOutlineText() {
-    updateLamenthyrOutlineText();
+function observeLayeredSigilText() {
+    updateLayeredSigilText();
     if (!document.body) return;
     const observer = new MutationObserver(mutations => {
         mutations.forEach(mutation => {
@@ -4068,17 +4072,19 @@ function observeLamenthyrOutlineText() {
                 mutation.addedNodes.forEach(node => {
                     if (node.nodeType !== Node.ELEMENT_NODE) return;
                     const element = node;
-                    if (element.classList.contains('sigil-outline-lamenthyr')) {
-                        syncLamenthyrOutlineText(element);
-                    }
-                    if (typeof element.querySelectorAll === 'function') {
-                        element.querySelectorAll('.sigil-outline-lamenthyr').forEach(syncLamenthyrOutlineText);
-                    }
+                    layeredTextSigilClasses.forEach(className => {
+                        if (element.classList.contains(className)) {
+                            syncLayeredSigilText(element);
+                        }
+                        if (typeof element.querySelectorAll === 'function') {
+                            element.querySelectorAll(`.${className}`).forEach(syncLayeredSigilText);
+                        }
+                    });
                 });
             } else if (mutation.type === 'characterData') {
                 const parent = mutation.target.parentElement;
-                if (parent && parent.classList.contains('sigil-outline-lamenthyr')) {
-                    syncLamenthyrOutlineText(parent);
+                if (parent && layeredTextSigilClasses.some(className => parent.classList.contains(className))) {
+                    syncLayeredSigilText(parent);
                 }
             }
         });
@@ -5470,7 +5476,7 @@ document.addEventListener('DOMContentLoaded', initializeRollTriggerFloating);
 document.addEventListener('DOMContentLoaded', setupRollCancellationControl);
 document.addEventListener('DOMContentLoaded', setupNodeShiftAnimation);
 document.addEventListener('DOMContentLoaded', relocateResourcesPanelForMobile);
-document.addEventListener('DOMContentLoaded', observeLamenthyrOutlineText);
+document.addEventListener('DOMContentLoaded', observeLayeredSigilText);
 
 document.addEventListener('DOMContentLoaded', () => {
     const confirmButton = document.getElementById('cutsceneWarningConfirm');
