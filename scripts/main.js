@@ -710,8 +710,10 @@ function renderAuraFilterButtonLabel(button, auraName, enabled) {
         ? AURA_REGISTRY.find(entry => entry.name === auraName)
         : null;
     const isEventAura = aura ? Boolean(getAuraEventId(aura)) : false;
-    const rarityClass = aura && !isEventAura ? resolveBaseRarityClass(aura) : '';
     const specialClass = aura ? resolveAuraStyleClass(aura, null) : '';
+    const rarityClass = aura && !isEventAura && !shouldSuppressRarityClassForSpecialStyle(specialClass)
+        ? resolveBaseRarityClass(aura)
+        : '';
     const nameClasses = [rarityClass, specialClass].filter(Boolean).join(' ');
     const nameSpan = document.createElement('span');
     if (aura && auraName.startsWith('Breakthrough')) {
@@ -3906,6 +3908,13 @@ function resolveAuraStyleClass(aura, biome) {
     return classes.join(' ');
 }
 
+function shouldSuppressRarityClassForSpecialStyle(specialClass = '') {
+    if (!specialClass) {
+        return false;
+    }
+    return specialClass.includes('sigil-outline-edict') || specialClass.includes('sigil-effect-clockwork');
+}
+
 const OBLIVION_PRESET_IDENTIFIER = 'oblivion';
 const OBLIVION_LUCK_TARGET = 600000;
 const OBLIVION_AURA_LABEL = 'Oblivion';
@@ -6758,8 +6767,10 @@ function buildResultEntries(registry, biome, breakthroughStatsMap) {
         const winCount = readAuraWinCount(aura);
         if (winCount <= 0) continue;
 
-        const rarityClass = typeof resolveRarityClass === 'function' ? resolveRarityClass(aura, biome) : '';
         const specialClass = typeof resolveAuraStyleClass === 'function' ? resolveAuraStyleClass(aura, biome) : '';
+        const rarityClass = typeof resolveRarityClass === 'function' && !shouldSuppressRarityClassForSpecialStyle(specialClass)
+            ? resolveRarityClass(aura, biome)
+            : '';
         const eventClass = getAuraEventId(aura) ? 'sigil-event-text' : '';
         const classAttr = [rarityClass, specialClass, eventClass].filter(Boolean).join(' ');
         const formattedName = formatAuraNameMarkup(aura);
