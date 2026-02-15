@@ -106,6 +106,10 @@
     display: inline-block;
     position: relative;
     white-space: nowrap;
+    -webkit-background-clip: text !important;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    background: linear-gradient(175deg, #48291a 37%, #c59568 40%, #fffaf4 42%, #fffaf4 53%, #c99f76 55%, #6b4023 58%, #2a2225 71%);
 }
 
 .sigil-outline-edict::before,
@@ -115,6 +119,7 @@
     inset: 0;
     pointer-events: none;
     color: transparent;
+    -webkit-text-fill-color: transparent;
 }
 
 .sigil-outline-edict::before {
@@ -123,14 +128,6 @@
 
 .sigil-outline-edict::after {
     -webkit-text-stroke: 1px #dcb79a;
-}
-
-.sigil-outline-edict {
-    position: relative;
-    -webkit-background-clip: text !important;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    background: linear-gradient(175deg, #48291a 37%, #c59568 40%, #fffaf4 42%, #fffaf4 53%, #c99f76 55%, #6b4023 58%, #2a2225 71%);
 }
 
 .sigil-outline-halloween {
@@ -432,7 +429,6 @@
     letter-spacing: .23em;
     white-space: nowrap;
     position: relative;
-    text-transform: uppercase;
     -webkit-background-clip: text !important;
     -webkit-text-fill-color: transparent;
     background-clip: text;
