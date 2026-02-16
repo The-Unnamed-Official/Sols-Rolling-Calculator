@@ -5,6 +5,11 @@ const pageBody = document.body;
 const reduceMotionToggleButton = document.getElementById('reduceMotionToggle');
 const versionInfoButton = document.getElementById('versionInfoButton');
 const clickSoundEffectElement = document.getElementById('clickSoundFx');
+const qbearMeowSoundEffectElement = document.getElementById('qbearMeowSoundFx');
+const fortePixelatedSecretState = {
+    clickCount: 0,
+    threshold: 13
+};
 const cachedVideoElements = Array.from(document.querySelectorAll('video'));
 const LATEST_UPDATE_LABEL_SUFFIX = ' (Latest Update)';
 let simulationActive = false;
@@ -5487,6 +5492,55 @@ document.addEventListener('DOMContentLoaded', setupNodeShiftAnimation);
 document.addEventListener('DOMContentLoaded', relocateResourcesPanelForMobile);
 document.addEventListener('DOMContentLoaded', observeLayeredSigilText);
 
+
+function spawnFortePixelatedSecretMessage() {
+    const secretLayer = document.getElementById('fortePixelatedSecretLayer');
+    const trigger = document.getElementById('fortePixelatedTrigger');
+    if (!secretLayer || !trigger) {
+        return;
+    }
+
+    const layerRect = secretLayer.getBoundingClientRect();
+    const triggerRect = trigger.getBoundingClientRect();
+    const secretMessage = document.createElement('span');
+    secretMessage.className = 'preset-signoff__secret-message sigil-effect-pixelation';
+    secretMessage.textContent = 'Meow :3';
+    secretMessage.style.setProperty('--secret-left', `${triggerRect.left - layerRect.left + (triggerRect.width / 2)}px`);
+    secretMessage.style.setProperty('--secret-top', `${triggerRect.top - layerRect.top - 8}px`);
+    secretLayer.append(secretMessage);
+
+    secretMessage.addEventListener('animationend', () => {
+        secretMessage.remove();
+    }, { once: true });
+}
+
+function setupFortePixelatedSecret() {
+    const trigger = document.getElementById('fortePixelatedTrigger');
+    if (!trigger) {
+        return;
+    }
+
+    const activateSecret = () => {
+        fortePixelatedSecretState.clickCount += 1;
+        if (fortePixelatedSecretState.clickCount < fortePixelatedSecretState.threshold) {
+            return;
+        }
+
+        fortePixelatedSecretState.clickCount = 0;
+        spawnFortePixelatedSecretMessage();
+        playSoundEffect(qbearMeowSoundEffectElement, 'ui');
+    };
+
+    trigger.addEventListener('click', activateSecret);
+    trigger.addEventListener('keydown', event => {
+        if (event.key !== 'Enter' && event.key !== ' ') {
+            return;
+        }
+        event.preventDefault();
+        activateSecret();
+    });
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     const confirmButton = document.getElementById('cutsceneWarningConfirm');
     if (confirmButton) {
@@ -6224,6 +6278,7 @@ document.addEventListener('DOMContentLoaded', setupBiomeControlDependencies);
 
 document.addEventListener('DOMContentLoaded', () => {
     hydrateAudioSettings();
+    setupFortePixelatedSecret();
     const buttons = document.querySelectorAll('button');
     const inputs = document.querySelectorAll('input');
     const selects = document.querySelectorAll('select');
