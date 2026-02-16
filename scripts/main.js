@@ -10,6 +10,10 @@ const fortePixelatedSecretState = {
     clickCount: 0,
     threshold: 13
 };
+const fortePixelatedPointerState = {
+    x: null,
+    y: null
+};
 const cachedVideoElements = Array.from(document.querySelectorAll('video'));
 const LATEST_UPDATE_LABEL_SUFFIX = ' (Latest Update)';
 let simulationActive = false;
@@ -1595,19 +1599,31 @@ function isSoundChannelActive(category) {
 
 function playSoundEffect(audioElement, category = 'rolling') {
     if (!audioElement) return;
-    if (!isSoundChannelActive(category)) return;
-    if (category !== 'ui' && appState.videoPlaying) return;
 
-    const baseGain = resolveBaseGain(audioElement, category === 'ui' ? 0.3 : 1);
-    const channelMultiplier = getChannelVolumeMultiplier(category);
-    const playbackGain = baseGain * channelMultiplier;
-    if (playbackGain <= 0) return;
+    const resolvePlaybackGain = () => {
+        if (!isSoundChannelActive(category)) return 0;
+        if (category !== 'ui' && appState.videoPlaying) return 0;
+        const baseGain = resolveBaseGain(audioElement, category === 'ui' ? 0.3 : 1);
+        const channelMultiplier = getChannelVolumeMultiplier(category);
+        return baseGain * channelMultiplier;
+    };
 
-    const spawnFallbackPlayer = () => {
+    const initialGain = resolvePlaybackGain();
+    if (initialGain <= 0) return;
+
+    const spawnFallbackPlayer = (currentGain) => {
+        if (currentGain <= 0) {
+            return;
+        }
+
         const sourceUrl = normalizeMediaSource(audioElement);
         if (!sourceUrl) {
             audioElement.currentTime = 0;
+            audioElement.volume = clamp01(currentGain);
             audioElement.muted = false;
+            if (typeof audioElement.removeAttribute === 'function') {
+                audioElement.removeAttribute('muted');
+            }
             audioElement.play().catch(() => {});
             return;
         }
@@ -1620,8 +1636,7 @@ function playSoundEffect(audioElement, category = 'rolling') {
         fallbackPlayer.loop = false;
         fallbackPlayer.playsInline = true;
         fallbackPlayer.autoplay = false;
-
-        fallbackPlayer.volume = clamp01(playbackGain);
+        fallbackPlayer.volume = clamp01(currentGain);
 
         const cleanup = () => {
             fallbackPlayer.pause();
@@ -1651,14 +1666,14 @@ function playSoundEffect(audioElement, category = 'rolling') {
     const context = resumeAudioEngine();
     if (!context) {
         if (audioElement.readyState >= 2) {
-            spawnFallbackPlayer();
+            spawnFallbackPlayer(initialGain);
         }
         return;
     }
 
     const sourceKey = normalizeMediaSource(audioElement);
     if (!sourceKey) {
-        spawnFallbackPlayer();
+        spawnFallbackPlayer(initialGain);
         return;
     }
 
@@ -1687,15 +1702,20 @@ function playSoundEffect(audioElement, category = 'rolling') {
     };
 
     fetchAudioBuffer().then(buffer => {
+        const currentGain = resolvePlaybackGain();
+        if (currentGain <= 0) {
+            return;
+        }
+
         if (!buffer) {
-            spawnFallbackPlayer();
+            spawnFallbackPlayer(currentGain);
             return;
         }
 
         const source = context.createBufferSource();
         source.buffer = buffer;
         const gainNode = context.createGain();
-        gainNode.gain.value = playbackGain;
+        gainNode.gain.value = currentGain;
         source.connect(gainNode).connect(context.destination);
         source.start(0);
     });
@@ -5493,21 +5513,28 @@ document.addEventListener('DOMContentLoaded', relocateResourcesPanelForMobile);
 document.addEventListener('DOMContentLoaded', observeLayeredSigilText);
 
 
-function spawnFortePixelatedSecretMessage() {
+function spawnFortePixelatedSecretMessage(pointerPosition = null) {
     const secretLayer = document.getElementById('fortePixelatedSecretLayer');
     const trigger = document.getElementById('fortePixelatedTrigger');
     if (!secretLayer || !trigger) {
         return;
     }
 
-    const layerRect = secretLayer.getBoundingClientRect();
     const triggerRect = trigger.getBoundingClientRect();
+    const fallbackPosition = {
+        x: triggerRect.left + (triggerRect.width / 2),
+        y: triggerRect.top
+    };
+    const origin = pointerPosition && Number.isFinite(pointerPosition.x) && Number.isFinite(pointerPosition.y)
+        ? pointerPosition
+        : fallbackPosition;
+
     const secretMessage = document.createElement('span');
-    secretMessage.className = 'preset-signoff__secret-message sigil-effect-pixelation';
+    secretMessage.className = 'preset-signoff__secret-message preset-signoff__secret-message--cursor sigil-effect-pixelation';
     secretMessage.textContent = 'Meow :3';
-    secretMessage.style.setProperty('--secret-left', `${triggerRect.left - layerRect.left + (triggerRect.width / 2)}px`);
-    secretMessage.style.setProperty('--secret-top', `${triggerRect.top - layerRect.top - 8}px`);
-    secretLayer.append(secretMessage);
+    secretMessage.style.setProperty('--secret-screen-left', `${origin.x}px`);
+    secretMessage.style.setProperty('--secret-screen-top', `${origin.y}px`);
+    document.body.append(secretMessage);
 
     secretMessage.addEventListener('animationend', () => {
         secretMessage.remove();
@@ -5520,24 +5547,39 @@ function setupFortePixelatedSecret() {
         return;
     }
 
-    const activateSecret = () => {
+    const activateSecret = (event = null) => {
         fortePixelatedSecretState.clickCount += 1;
         if (fortePixelatedSecretState.clickCount < fortePixelatedSecretState.threshold) {
             return;
         }
 
         fortePixelatedSecretState.clickCount = 0;
-        spawnFortePixelatedSecretMessage();
+        const pointerPosition = event && Number.isFinite(event.clientX) && Number.isFinite(event.clientY)
+            ? { x: event.clientX, y: event.clientY }
+            : (Number.isFinite(fortePixelatedPointerState.x) && Number.isFinite(fortePixelatedPointerState.y)
+                ? { x: fortePixelatedPointerState.x, y: fortePixelatedPointerState.y }
+                : null);
+
+        spawnFortePixelatedSecretMessage(pointerPosition);
         playSoundEffect(qbearMeowSoundEffectElement, 'ui');
     };
 
+    const trackPointer = event => {
+        if (!event) return;
+        if (!Number.isFinite(event.clientX) || !Number.isFinite(event.clientY)) return;
+        fortePixelatedPointerState.x = event.clientX;
+        fortePixelatedPointerState.y = event.clientY;
+    };
+
+    trigger.addEventListener('pointermove', trackPointer);
+    trigger.addEventListener('pointerdown', trackPointer);
     trigger.addEventListener('click', activateSecret);
     trigger.addEventListener('keydown', event => {
         if (event.key !== 'Enter' && event.key !== ' ') {
             return;
         }
         event.preventDefault();
-        activateSecret();
+        activateSecret(event);
     });
 }
 
