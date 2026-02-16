@@ -10,10 +10,6 @@ const fortePixelatedSecretState = {
     clickCount: 0,
     threshold: 13
 };
-const fortePixelatedPointerState = {
-    x: null,
-    y: null
-};
 const cachedVideoElements = Array.from(document.querySelectorAll('video'));
 const LATEST_UPDATE_LABEL_SUFFIX = ' (Latest Update)';
 let simulationActive = false;
@@ -5513,7 +5509,7 @@ document.addEventListener('DOMContentLoaded', relocateResourcesPanelForMobile);
 document.addEventListener('DOMContentLoaded', observeLayeredSigilText);
 
 
-function spawnFortePixelatedSecretMessage(pointerPosition = null) {
+function spawnFortePixelatedSecretMessage() {
     const secretLayer = document.getElementById('fortePixelatedSecretLayer');
     const trigger = document.getElementById('fortePixelatedTrigger');
     if (!secretLayer || !trigger) {
@@ -5521,20 +5517,16 @@ function spawnFortePixelatedSecretMessage(pointerPosition = null) {
     }
 
     const triggerRect = trigger.getBoundingClientRect();
-    const fallbackPosition = {
-        x: triggerRect.left + (triggerRect.width / 2),
-        y: triggerRect.top
-    };
-    const origin = pointerPosition && Number.isFinite(pointerPosition.x) && Number.isFinite(pointerPosition.y)
-        ? pointerPosition
-        : fallbackPosition;
+    const layerRect = secretLayer.getBoundingClientRect();
+    const originX = triggerRect.left - layerRect.left + (triggerRect.width / 2);
+    const originY = triggerRect.top - layerRect.top - 10;
 
     const secretMessage = document.createElement('span');
-    secretMessage.className = 'preset-signoff__secret-message preset-signoff__secret-message--cursor sigil-effect-pixelation';
+    secretMessage.className = 'preset-signoff__secret-message preset-signoff__secret-message--above-trigger sigil-effect-pixelation';
     secretMessage.textContent = 'Meow :3';
-    secretMessage.style.setProperty('--secret-screen-left', `${origin.x}px`);
-    secretMessage.style.setProperty('--secret-screen-top', `${origin.y}px`);
-    document.body.append(secretMessage);
+    secretMessage.style.setProperty('--secret-left', `${originX}px`);
+    secretMessage.style.setProperty('--secret-top', `${originY}px`);
+    secretLayer.append(secretMessage);
 
     secretMessage.addEventListener('animationend', () => {
         secretMessage.remove();
@@ -5547,39 +5539,24 @@ function setupFortePixelatedSecret() {
         return;
     }
 
-    const activateSecret = (event = null) => {
+    const activateSecret = () => {
         fortePixelatedSecretState.clickCount += 1;
         if (fortePixelatedSecretState.clickCount < fortePixelatedSecretState.threshold) {
             return;
         }
 
         fortePixelatedSecretState.clickCount = 0;
-        const pointerPosition = event && Number.isFinite(event.clientX) && Number.isFinite(event.clientY)
-            ? { x: event.clientX, y: event.clientY }
-            : (Number.isFinite(fortePixelatedPointerState.x) && Number.isFinite(fortePixelatedPointerState.y)
-                ? { x: fortePixelatedPointerState.x, y: fortePixelatedPointerState.y }
-                : null);
-
-        spawnFortePixelatedSecretMessage(pointerPosition);
+        spawnFortePixelatedSecretMessage();
         playSoundEffect(qbearMeowSoundEffectElement, 'ui');
     };
 
-    const trackPointer = event => {
-        if (!event) return;
-        if (!Number.isFinite(event.clientX) || !Number.isFinite(event.clientY)) return;
-        fortePixelatedPointerState.x = event.clientX;
-        fortePixelatedPointerState.y = event.clientY;
-    };
-
-    trigger.addEventListener('pointermove', trackPointer);
-    trigger.addEventListener('pointerdown', trackPointer);
     trigger.addEventListener('click', activateSecret);
     trigger.addEventListener('keydown', event => {
         if (event.key !== 'Enter' && event.key !== ' ') {
             return;
         }
         event.preventDefault();
-        activateSecret(event);
+        activateSecret();
     });
 }
 
