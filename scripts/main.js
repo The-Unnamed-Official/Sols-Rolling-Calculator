@@ -8,7 +8,8 @@ const clickSoundEffectElement = document.getElementById('clickSoundFx');
 const qbearMeowSoundEffectElement = document.getElementById('qbearMeowSoundFx');
 const fortePixelatedSecretState = {
     clickCount: 0,
-    threshold: 13
+    threshold: 13,
+    revealTimeoutId: null
 };
 const cachedVideoElements = Array.from(document.querySelectorAll('video'));
 const LATEST_UPDATE_LABEL_SUFFIX = ' (Latest Update)';
@@ -5518,8 +5519,20 @@ function spawnFortePixelatedSecretMessage() {
 
     const triggerRect = trigger.getBoundingClientRect();
     const layerRect = secretLayer.getBoundingClientRect();
-    const originX = triggerRect.left - layerRect.left + (triggerRect.width / 2);
-    const originY = triggerRect.top - layerRect.top - 10;
+    const triggerCenterX = triggerRect.left - layerRect.left + (triggerRect.width / 2);
+    const triggerCenterY = triggerRect.top - layerRect.top + (triggerRect.height / 2);
+    const randomAngle = Math.random() * Math.PI * 2;
+    const randomRadius = 18 + (Math.random() * 36);
+    const margin = 14;
+
+    const originX = Math.min(
+        Math.max(triggerCenterX + (Math.cos(randomAngle) * randomRadius), margin),
+        layerRect.width - margin
+    );
+    const originY = Math.min(
+        Math.max(triggerCenterY + (Math.sin(randomAngle) * randomRadius), margin),
+        layerRect.height - margin
+    );
 
     const secretMessage = document.createElement('span');
     secretMessage.className = 'preset-signoff__secret-message preset-signoff__secret-message--above-trigger qbearClass';
@@ -5531,6 +5544,66 @@ function spawnFortePixelatedSecretMessage() {
     secretMessage.addEventListener('animationend', () => {
         secretMessage.remove();
     }, { once: true });
+}
+
+function applyFortePixelatedWaveText() {
+    const trigger = document.getElementById('fortePixelatedTrigger');
+    if (!trigger) {
+        return;
+    }
+
+    const text = trigger.textContent || '';
+    trigger.textContent = '';
+
+    Array.from(text).forEach((character, index) => {
+        const letter = document.createElement('span');
+        letter.className = 'pixel-wave-letter';
+        letter.style.setProperty('--pixel-wave-index', String(index));
+        letter.textContent = character === ' ' ? '\u00A0' : character;
+        trigger.append(letter);
+    });
+}
+
+
+function temporarilyRevealQbearMeowedMessage(trigger) {
+    const statusMessage = trigger.closest('.preset-signoff__status-message');
+    const channelLabel = statusMessage?.querySelector('.sigil-outline-cyberspace');
+    const middleTextNode = statusMessage
+        ? Array.from(statusMessage.childNodes).find(node => node.nodeType === Node.TEXT_NODE)
+        : null;
+
+    if (!statusMessage || !channelLabel || !middleTextNode) {
+        return;
+    }
+
+    let globalPrefixNode = statusMessage.querySelector('[data-global-prefix="true"]');
+    if (!globalPrefixNode) {
+        globalPrefixNode = document.createElement('span');
+        globalPrefixNode.dataset.globalPrefix = 'true';
+        globalPrefixNode.textContent = '[GLOBAL]: ';
+        statusMessage.insertBefore(globalPrefixNode, statusMessage.firstChild);
+    }
+
+    channelLabel.textContent = 'qbear';
+    middleTextNode.textContent = ' has been ';
+    trigger.classList.remove('sigil-effect-pixelation');
+    trigger.classList.add('qbearClass');
+    trigger.textContent = 'MEOWED :3';
+
+    if (fortePixelatedSecretState.revealTimeoutId) {
+        window.clearTimeout(fortePixelatedSecretState.revealTimeoutId);
+    }
+
+    fortePixelatedSecretState.revealTimeoutId = window.setTimeout(() => {
+        globalPrefixNode.remove();
+        channelLabel.textContent = 'FORTE';
+        middleTextNode.textContent = ' HAS BEEN ';
+        trigger.classList.remove('qbearClass');
+        trigger.classList.add('sigil-effect-pixelation');
+        trigger.textContent = 'PIXELATED';
+        applyFortePixelatedWaveText();
+        fortePixelatedSecretState.revealTimeoutId = null;
+    }, 1000);
 }
 
 function setupFortePixelatedSecret() {
@@ -5547,6 +5620,7 @@ function setupFortePixelatedSecret() {
 
         fortePixelatedSecretState.clickCount = 0;
         spawnFortePixelatedSecretMessage();
+        temporarilyRevealQbearMeowedMessage(trigger);
         playSoundEffect(qbearMeowSoundEffectElement, 'ui');
     };
 
@@ -6297,6 +6371,7 @@ document.addEventListener('DOMContentLoaded', setupBiomeControlDependencies);
 
 document.addEventListener('DOMContentLoaded', () => {
     hydrateAudioSettings();
+    applyFortePixelatedWaveText();
     setupFortePixelatedSecret();
     const buttons = document.querySelectorAll('button');
     const inputs = document.querySelectorAll('input');

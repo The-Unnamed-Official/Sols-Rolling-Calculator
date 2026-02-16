@@ -1263,6 +1263,24 @@ body:not(.reduce-motion) #luck-preset-hundred-million.luck-preset-button--master
     outline-offset: 4px;
 }
 
+
+.preset-signoff__status-trigger .pixel-wave-letter {
+    display: inline-block;
+    animation: pixel-wave-letter-float 0.95s ease-in-out infinite;
+    animation-delay: calc(var(--pixel-wave-index, 0) * 0.08s);
+    will-change: transform;
+}
+
+@keyframes pixel-wave-letter-float {
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-0.42em);
+    }
+}
+
 .preset-signoff__secret-layer {
     position: absolute;
     inset: 0;
