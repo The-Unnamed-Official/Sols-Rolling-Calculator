@@ -697,6 +697,11 @@ select.form-field__input option {
     color: transparent;
 }
 
+.qbearClass {
+    font-family: "Press Start 2P";
+    text-transform: uppercase;
+}
+
 .allPotionsClass {
     background: linear-gradient(90deg, #ff6767, #ffff5e, #58ff66, #58fff1, #4b90ff, #ff4be7);
     background-size: 300% 300%;

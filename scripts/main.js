@@ -5522,7 +5522,7 @@ function spawnFortePixelatedSecretMessage() {
     const originY = triggerRect.top - layerRect.top - 10;
 
     const secretMessage = document.createElement('span');
-    secretMessage.className = 'preset-signoff__secret-message preset-signoff__secret-message--above-trigger sigil-effect-pixelation';
+    secretMessage.className = 'preset-signoff__secret-message preset-signoff__secret-message--above-trigger qbearClass';
     secretMessage.textContent = 'Meow :3';
     secretMessage.style.setProperty('--secret-left', `${originX}px`);
     secretMessage.style.setProperty('--secret-top', `${originY}px`);
