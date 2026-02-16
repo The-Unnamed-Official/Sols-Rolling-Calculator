@@ -45,6 +45,7 @@
     <audio id="hundredMillionSound" muted src="files/100_000_000Roll.ogg" type="audio/ogg" data-volume="0.25" data-audio-channel="obtain"></audio>
     <audio id="explosionSoundFx" muted src="files/explosionSound.mp3" type="audio/mpeg" data-volume="0.25" data-audio-channel="obtain"></audio>
     <audio id="limbo99mSoundFx" muted src="files/99mLimboRollSound.mp3" type="audio/mpeg" data-boost="6.7" data-audio-channel="obtain"></audio>
+    <audio id="qbearMeowSoundFx" muted src="files/qbearMeow.mp3" type="audio/mpeg" data-volume="0.55" data-audio-channel="ui"></audio>
 
     <video id="oblivion-cutscene" class="cutscene-video" preload="auto" data-audio-channel="cutscene">
         <source src="files/oblivionCutscene.webm" type="video/webm">
@@ -140,11 +141,11 @@
                 <div class="banner__meta">
                     <h1 class="banner__title">Sol's Rolling Simulator</h1>
                     <p class="banner__subtitle">
-                        <button type="button" class="banner__version-button" id="versionInfoButton" aria-haspopup="dialog" aria-expanded="false" data-version-id="v1702">V1.702</button>
+                        <button type="button" class="banner__version-button" id="versionInfoButton" aria-haspopup="dialog" aria-expanded="false" data-version-id="v1703">V1.703</button>
                         <span class="banner__subtitle-divider" aria-hidden="true">◉</span>
                         <span class="banner__subtitle-author">By <span class="banner__subtitle-author-name"><a href="https://discord.com/users/611204110955446301" target="_blank" rel="noopener">not.unnamed</a></span></span>
                         <span class="banner__subtitle-divider" aria-hidden="true">◉</span>
-                        <span class="banner__subtitle-updated">Updated <time datetime="2026-02-15T23:00:00+01:00">2026/02/15 11:00 PM CET</time></span>
+                        <span class="banner__subtitle-updated">Updated <time datetime="2026-02-16T18:10:00+01:00">2026/02/16 06:10 PM CET</time></span>
                         <span class="banner__subtitle-divider" aria-hidden="true">◉</span>
                         <span class="banner__subtitle-eon"><span class="banner__subtitle-game-version"><a href="https://www.roblox.com/games/15532962292/Sols-RNG" target="_blank" rel="noopener">Sol's RNG Eon 1-16</a></span></span>
                     </p>
@@ -548,8 +549,9 @@
                     <div class="preset-signoff">
                         <p class="preset-signoff__status">
                             <span class="preset-signoff__status-channel">[GLOBAL]:</span>
-                            <span class="preset-signoff__status-message"><span class="sigil-outline-cyberspace">FORTE</span> HAS BEEN <span class="sigil-effect-pixelation">PIXELATED</span></span>
+                            <span class="preset-signoff__status-message"><span class="sigil-outline-cyberspace">FORTE</span> HAS BEEN <span class="sigil-effect-pixelation preset-signoff__status-trigger" id="fortePixelatedTrigger" role="button" tabindex="0" aria-label="Secret trigger: PIXELATED">PIXELATED</span></span>
                         </p>
+                        <div class="preset-signoff__secret-layer" id="fortePixelatedSecretLayer" aria-hidden="true"></div>
                     </div>
                 </div>
             </section>
@@ -945,11 +947,23 @@
                 <button
                     type="button"
                     class="changelog-tab changelog-tab--active"
+                    id="changelog-tab-v1703"
+                    role="tab"
+                    aria-controls="changelog-panel-v1703"
+                    aria-selected="true"
+                    data-changelog-tab="v1703"
+                >
+                    <span class="changelog-tab__title">V1.703</span>
+                </button>
+                <button
+                    type="button"
+                    class="changelog-tab changelog-tab--active"
                     id="changelog-tab-v1702"
                     role="tab"
                     aria-controls="changelog-panel-v1702"
-                    aria-selected="true"
+                    aria-selected="false"
                     data-changelog-tab="v1702"
+                    tabindex="-1"
                 >
                     <span class="changelog-tab__title">V1.702</span>
                 </button>
@@ -1245,12 +1259,28 @@
 
             <div class="changelog-modal__panels" data-changelog-panels>
                 <section
+                    id="changelog-panel-v1703"
+                    class="changelog-modal__panel"
+                    role="tabpanel"
+                    aria-labelledby="changelog-tab-v1703"
+                    data-changelog-panel="v1703"
+                    tabindex="0"
+                >
+                    <header class="changelog-modal__header">
+                        <h2 class="changelog-modal__title" id="versionChangelogTitle">Version V1.703 Update Notes</h2>
+                        <span class="changelog-tab__subtitle">Pixelated Remains</span>
+                        <p class="changelog-modal__meta">Updated 2026/02/16 at 06:10 PM CET</p>
+                    </header>
+                    <p>The <span class="sigil-effect-pixelation">PIXELATED</span> once claimed him, but their pattern has <span class="subtitleClass">settled</span>. Yet the word still holds <span class="sigil-outline-edict">scattered squares</span> within. Press it thirteen times… and see if the signal answers.</p>
+                </section>
+                <section
                     id="changelog-panel-v1702"
                     class="changelog-modal__panel"
                     role="tabpanel"
                     aria-labelledby="changelog-tab-v1702"
                     data-changelog-panel="v1702"
-                    tabindex="0"
+                    hidden
+                    tabindex="-1"
                 >
                     <header class="changelog-modal__header">
                         <h2 class="changelog-modal__title" id="versionChangelogTitle">Version V1.702 Update Notes</h2>

@@ -5,6 +5,12 @@ const pageBody = document.body;
 const reduceMotionToggleButton = document.getElementById('reduceMotionToggle');
 const versionInfoButton = document.getElementById('versionInfoButton');
 const clickSoundEffectElement = document.getElementById('clickSoundFx');
+const qbearMeowSoundEffectElement = document.getElementById('qbearMeowSoundFx');
+const fortePixelatedSecretState = {
+    clickCount: 0,
+    threshold: 13,
+    revealTimeoutId: null
+};
 const cachedVideoElements = Array.from(document.querySelectorAll('video'));
 const LATEST_UPDATE_LABEL_SUFFIX = ' (Latest Update)';
 let simulationActive = false;
@@ -1590,19 +1596,31 @@ function isSoundChannelActive(category) {
 
 function playSoundEffect(audioElement, category = 'rolling') {
     if (!audioElement) return;
-    if (!isSoundChannelActive(category)) return;
-    if (category !== 'ui' && appState.videoPlaying) return;
 
-    const baseGain = resolveBaseGain(audioElement, category === 'ui' ? 0.3 : 1);
-    const channelMultiplier = getChannelVolumeMultiplier(category);
-    const playbackGain = baseGain * channelMultiplier;
-    if (playbackGain <= 0) return;
+    const resolvePlaybackGain = () => {
+        if (!isSoundChannelActive(category)) return 0;
+        if (category !== 'ui' && appState.videoPlaying) return 0;
+        const baseGain = resolveBaseGain(audioElement, category === 'ui' ? 0.3 : 1);
+        const channelMultiplier = getChannelVolumeMultiplier(category);
+        return baseGain * channelMultiplier;
+    };
 
-    const spawnFallbackPlayer = () => {
+    const initialGain = resolvePlaybackGain();
+    if (initialGain <= 0) return;
+
+    const spawnFallbackPlayer = (currentGain) => {
+        if (currentGain <= 0) {
+            return;
+        }
+
         const sourceUrl = normalizeMediaSource(audioElement);
         if (!sourceUrl) {
             audioElement.currentTime = 0;
+            audioElement.volume = clamp01(currentGain);
             audioElement.muted = false;
+            if (typeof audioElement.removeAttribute === 'function') {
+                audioElement.removeAttribute('muted');
+            }
             audioElement.play().catch(() => {});
             return;
         }
@@ -1615,8 +1633,7 @@ function playSoundEffect(audioElement, category = 'rolling') {
         fallbackPlayer.loop = false;
         fallbackPlayer.playsInline = true;
         fallbackPlayer.autoplay = false;
-
-        fallbackPlayer.volume = clamp01(playbackGain);
+        fallbackPlayer.volume = clamp01(currentGain);
 
         const cleanup = () => {
             fallbackPlayer.pause();
@@ -1646,14 +1663,14 @@ function playSoundEffect(audioElement, category = 'rolling') {
     const context = resumeAudioEngine();
     if (!context) {
         if (audioElement.readyState >= 2) {
-            spawnFallbackPlayer();
+            spawnFallbackPlayer(initialGain);
         }
         return;
     }
 
     const sourceKey = normalizeMediaSource(audioElement);
     if (!sourceKey) {
-        spawnFallbackPlayer();
+        spawnFallbackPlayer(initialGain);
         return;
     }
 
@@ -1682,15 +1699,20 @@ function playSoundEffect(audioElement, category = 'rolling') {
     };
 
     fetchAudioBuffer().then(buffer => {
+        const currentGain = resolvePlaybackGain();
+        if (currentGain <= 0) {
+            return;
+        }
+
         if (!buffer) {
-            spawnFallbackPlayer();
+            spawnFallbackPlayer(currentGain);
             return;
         }
 
         const source = context.createBufferSource();
         source.buffer = buffer;
         const gainNode = context.createGain();
-        gainNode.gain.value = playbackGain;
+        gainNode.gain.value = currentGain;
         source.connect(gainNode).connect(context.destination);
         source.start(0);
     });
@@ -5487,6 +5509,129 @@ document.addEventListener('DOMContentLoaded', setupNodeShiftAnimation);
 document.addEventListener('DOMContentLoaded', relocateResourcesPanelForMobile);
 document.addEventListener('DOMContentLoaded', observeLayeredSigilText);
 
+
+function spawnFortePixelatedSecretMessage() {
+    const secretLayer = document.getElementById('fortePixelatedSecretLayer');
+    const trigger = document.getElementById('fortePixelatedTrigger');
+    if (!secretLayer || !trigger) {
+        return;
+    }
+
+    const triggerRect = trigger.getBoundingClientRect();
+    const layerRect = secretLayer.getBoundingClientRect();
+    const triggerCenterX = triggerRect.left - layerRect.left + (triggerRect.width / 2);
+    const triggerCenterY = triggerRect.top - layerRect.top + (triggerRect.height / 2);
+    const randomAngle = Math.random() * Math.PI * 2;
+    const randomRadius = 18 + (Math.random() * 36);
+    const margin = 14;
+
+    const originX = Math.min(
+        Math.max(triggerCenterX + (Math.cos(randomAngle) * randomRadius), margin),
+        layerRect.width - margin
+    );
+    const originY = Math.min(
+        Math.max(triggerCenterY + (Math.sin(randomAngle) * randomRadius), margin),
+        layerRect.height - margin
+    );
+
+    const secretMessage = document.createElement('span');
+    secretMessage.className = 'preset-signoff__secret-message preset-signoff__secret-message--above-trigger qbearClass';
+    secretMessage.textContent = 'Meow :3';
+    secretMessage.style.setProperty('--secret-left', `${originX}px`);
+    secretMessage.style.setProperty('--secret-top', `${originY}px`);
+    secretLayer.append(secretMessage);
+
+    secretMessage.addEventListener('animationend', () => {
+        secretMessage.remove();
+    }, { once: true });
+}
+
+function applyFortePixelatedWaveText() {
+    const trigger = document.getElementById('fortePixelatedTrigger');
+    if (!trigger) {
+        return;
+    }
+
+    const text = trigger.textContent || '';
+    trigger.textContent = '';
+
+    Array.from(text).forEach((character, index) => {
+        const letter = document.createElement('span');
+        letter.className = 'pixel-wave-letter';
+        letter.style.setProperty('--pixel-wave-index', String(index));
+        letter.textContent = character === ' ' ? '\u00A0' : character;
+        trigger.append(letter);
+    });
+}
+
+
+function temporarilyRevealQbearMeowedMessage(trigger) {
+    const statusMessage = trigger.closest('.preset-signoff__status-message');
+    const channelLabel = statusMessage?.querySelector('.sigil-outline-cyberspace');
+    const middleTextNode = statusMessage
+        ? Array.from(statusMessage.childNodes).find(node => node.nodeType === Node.TEXT_NODE)
+        : null;
+
+    if (!statusMessage || !channelLabel || !middleTextNode) {
+        return;
+    }
+
+    let globalPrefixNode = statusMessage.querySelector('[data-global-prefix="true"]');
+    if (!globalPrefixNode) {
+        globalPrefixNode = document.createElement('span');
+        globalPrefixNode.dataset.globalPrefix = 'true';
+        statusMessage.insertBefore(globalPrefixNode, statusMessage.firstChild);
+    }
+
+        channelLabel.textContent = 'QBEAR';
+        middleTextNode.textContent = ' HAS BEEN ';
+        trigger.classList.add('sigil-effect-pixelation');
+        trigger.textContent = 'MEOWED :3';
+        applyFortePixelatedWaveText();
+        fortePixelatedSecretState.revealTimeoutId = null;
+
+    if (fortePixelatedSecretState.revealTimeoutId) {
+        window.clearTimeout(fortePixelatedSecretState.revealTimeoutId);
+    }
+
+    fortePixelatedSecretState.revealTimeoutId = window.setTimeout(() => {
+        channelLabel.textContent = 'FORTE';
+        middleTextNode.textContent = ' HAS BEEN ';
+        trigger.classList.add('sigil-effect-pixelation');
+        trigger.textContent = 'PIXELATED';
+        applyFortePixelatedWaveText();
+        fortePixelatedSecretState.revealTimeoutId = null;
+    }, 1500);
+}
+
+function setupFortePixelatedSecret() {
+    const trigger = document.getElementById('fortePixelatedTrigger');
+    if (!trigger) {
+        return;
+    }
+
+    const activateSecret = () => {
+        fortePixelatedSecretState.clickCount += 1;
+        if (fortePixelatedSecretState.clickCount < fortePixelatedSecretState.threshold) {
+            return;
+        }
+
+        fortePixelatedSecretState.clickCount = 0;
+        spawnFortePixelatedSecretMessage();
+        temporarilyRevealQbearMeowedMessage(trigger);
+        playSoundEffect(qbearMeowSoundEffectElement, 'ui');
+    };
+
+    trigger.addEventListener('click', activateSecret);
+    trigger.addEventListener('keydown', event => {
+        if (event.key !== 'Enter' && event.key !== ' ') {
+            return;
+        }
+        event.preventDefault();
+        activateSecret();
+    });
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     const confirmButton = document.getElementById('cutsceneWarningConfirm');
     if (confirmButton) {
@@ -6224,6 +6369,8 @@ document.addEventListener('DOMContentLoaded', setupBiomeControlDependencies);
 
 document.addEventListener('DOMContentLoaded', () => {
     hydrateAudioSettings();
+    applyFortePixelatedWaveText();
+    setupFortePixelatedSecret();
     const buttons = document.querySelectorAll('button');
     const inputs = document.querySelectorAll('input');
     const selects = document.querySelectorAll('select');
