@@ -5580,30 +5580,28 @@ function temporarilyRevealQbearMeowedMessage(trigger) {
     if (!globalPrefixNode) {
         globalPrefixNode = document.createElement('span');
         globalPrefixNode.dataset.globalPrefix = 'true';
-        globalPrefixNode.textContent = '[GLOBAL]: ';
         statusMessage.insertBefore(globalPrefixNode, statusMessage.firstChild);
     }
 
-    channelLabel.textContent = 'qbear';
-    middleTextNode.textContent = ' has been ';
-    trigger.classList.remove('sigil-effect-pixelation');
-    trigger.classList.add('qbearClass');
-    trigger.textContent = 'MEOWED :3';
+        channelLabel.textContent = 'QBEAR';
+        middleTextNode.textContent = ' HAS BEEN ';
+        trigger.classList.add('sigil-effect-pixelation');
+        trigger.textContent = 'MEOWED :3';
+        applyFortePixelatedWaveText();
+        fortePixelatedSecretState.revealTimeoutId = null;
 
     if (fortePixelatedSecretState.revealTimeoutId) {
         window.clearTimeout(fortePixelatedSecretState.revealTimeoutId);
     }
 
     fortePixelatedSecretState.revealTimeoutId = window.setTimeout(() => {
-        globalPrefixNode.remove();
         channelLabel.textContent = 'FORTE';
         middleTextNode.textContent = ' HAS BEEN ';
-        trigger.classList.remove('qbearClass');
         trigger.classList.add('sigil-effect-pixelation');
         trigger.textContent = 'PIXELATED';
         applyFortePixelatedWaveText();
         fortePixelatedSecretState.revealTimeoutId = null;
-    }, 1000);
+    }, 1500);
 }
 
 function setupFortePixelatedSecret() {
