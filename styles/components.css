@@ -1277,6 +1277,34 @@ body:not(.reduce-motion) #luck-preset-hundred-million.luck-preset-button--master
     animation: preset-signoff-secret-float 1.35s ease-out forwards;
 }
 
+
+.preset-signoff__secret-message--cursor {
+    position: fixed;
+    left: var(--secret-screen-left, 0px);
+    top: var(--secret-screen-top, 0px);
+    z-index: 45;
+    transform: translate(-50%, -35%);
+    animation: preset-signoff-secret-gravity 2.25s cubic-bezier(0.2, 0.7, 0.2, 1) forwards;
+    will-change: transform, opacity;
+}
+
+@keyframes preset-signoff-secret-gravity {
+    0% {
+        transform: translate(-50%, -35%);
+        opacity: 0;
+    }
+    10% {
+        opacity: 1;
+    }
+    25% {
+        transform: translate(-50%, -80%);
+        opacity: 1;
+    }
+    100% {
+        transform: translate(-50%, 180%);
+        opacity: 0;
+    }
+}
 @keyframes preset-signoff-secret-float {
     0% {
         transform: translate(-50%, 0);
