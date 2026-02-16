@@ -1247,6 +1247,50 @@ body:not(.reduce-motion) #luck-preset-hundred-million.luck-preset-button--master
     font-size: clamp(10px, 2.2vw, 12px);
 }
 
+
+.preset-signoff__status-trigger {
+    cursor: pointer;
+    user-select: none;
+}
+
+.preset-signoff__status-trigger:focus-visible {
+    outline: 2px solid rgba(255, 255, 255, 0.85);
+    outline-offset: 4px;
+}
+
+.preset-signoff__secret-layer {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    overflow: visible;
+}
+
+.preset-signoff__secret-message {
+    position: absolute;
+    left: var(--secret-left, 0px);
+    top: var(--secret-top, 0px);
+    transform: translate(-50%, 0);
+    font-size: clamp(10px, 1.8vw, 14px);
+    letter-spacing: 0.08em;
+    white-space: nowrap;
+    opacity: 0;
+    animation: preset-signoff-secret-float 1.35s ease-out forwards;
+}
+
+@keyframes preset-signoff-secret-float {
+    0% {
+        transform: translate(-50%, 0);
+        opacity: 0;
+    }
+    12% {
+        opacity: 1;
+    }
+    100% {
+        transform: translate(-50%, -44px);
+        opacity: 0;
+    }
+}
+
 .preset-signoff__name {
     font-size: clamp(18px, 3vw, 26px);
     font-weight: 700;

@@ -45,6 +45,7 @@
     <audio id="hundredMillionSound" muted src="files/100_000_000Roll.ogg" type="audio/ogg" data-volume="0.25" data-audio-channel="obtain"></audio>
     <audio id="explosionSoundFx" muted src="files/explosionSound.mp3" type="audio/mpeg" data-volume="0.25" data-audio-channel="obtain"></audio>
     <audio id="limbo99mSoundFx" muted src="files/99mLimboRollSound.mp3" type="audio/mpeg" data-boost="6.7" data-audio-channel="obtain"></audio>
+    <audio id="qbearMeowSoundFx" muted src="files/qbearMeow.mp3" type="audio/mpeg" data-volume="0.55" data-audio-channel="ui"></audio>
 
     <video id="oblivion-cutscene" class="cutscene-video" preload="auto" data-audio-channel="cutscene">
         <source src="files/oblivionCutscene.webm" type="video/webm">
@@ -548,8 +549,9 @@
                     <div class="preset-signoff">
                         <p class="preset-signoff__status">
                             <span class="preset-signoff__status-channel">[GLOBAL]:</span>
-                            <span class="preset-signoff__status-message"><span class="sigil-outline-cyberspace">FORTE</span> HAS BEEN <span class="sigil-effect-pixelation">PIXELATED</span></span>
+                            <span class="preset-signoff__status-message"><span class="sigil-outline-cyberspace">FORTE</span> HAS BEEN <span class="sigil-effect-pixelation preset-signoff__status-trigger" id="fortePixelatedTrigger" role="button" tabindex="0" aria-label="Secret trigger: PIXELATED">PIXELATED</span></span>
                         </p>
+                        <div class="preset-signoff__secret-layer" id="fortePixelatedSecretLayer" aria-hidden="true"></div>
                     </div>
                 </div>
             </section>
