@@ -3567,7 +3567,6 @@ function resolveRarityClass(aura, biome) {
     const auraName = aura.name || '';
     if (auraName.startsWith('Pixelation')) return 'rarity-tier-transcendent';
     if (auraName.startsWith('Illusionary')) return 'rarity-tier-challenged';
-    if (auraName.startsWith('Glitch') || auraName.startsWith('Borealis')) return 'rarity-tier-challenged';
     if (auraName === 'Fault') return 'rarity-tier-challenged';
     if (['Oblivion', 'Memory', 'Neferkhaf'].some(name => auraName.startsWith(name))) {
         return 'rarity-tier-challenged';
@@ -3600,7 +3599,6 @@ function resolveBaseRarityClass(aura) {
     const auraName = aura.name || '';
     if (auraName.startsWith('Pixelation')) return 'rarity-tier-transcendent';
     if (auraName.startsWith('Illusionary')) return 'rarity-tier-challenged';
-    if (auraName.startsWith('Glitch') || auraName.startsWith('Borealis')) return 'rarity-tier-challenged';
     if (auraName === 'Fault') return 'rarity-tier-challenged';
     if (['Oblivion', 'Memory', 'Neferkhaf'].some(name => auraName.startsWith(name))) {
         return 'rarity-tier-challenged';
@@ -3644,7 +3642,6 @@ const AURA_TIER_FILTERS = Object.freeze([
 
 const AURA_TIER_CLASS_TO_KEY = new Map(AURA_TIER_FILTERS.map(tier => [tier.className, tier.key]));
 const AURA_TIER_SKIP_NAME_OVERRIDES = new Map([
-    ['challenged', ['Glitch', 'Borealis']],
     ['transcendent', ['Nyctophobia']],
     ['glorious', ['Unknown', 'Elude', 'Prologue', 'Dreamscape']],
     ['exalted', ['Juxtaposition']],
@@ -3885,7 +3882,6 @@ function resolveAuraStyleClass(aura, biome) {
     if (name.startsWith('Nyctophobia')) classes.push('sigil-effect-nyctophobia');
     if (name.startsWith('Clockwork')) classes.push('sigil-effect-clockwork');
     if (name.startsWith('Breakthrough')) classes.push('sigil-effect-breakthrough', 'sigil-border-breakthrough');
-    if (name.startsWith('Glitch')) classes.push('sigil-effect-glitch');
 
     const auraData = typeof aura === 'string' ? null : aura;
     const auraEventId = auraData ? getAuraEventId(auraData) : null;
@@ -3901,9 +3897,6 @@ function resolveAuraStyleClass(aura, biome) {
 
     if (auraMatchesAnyBiome(auraData, ['pumpkinMoon', 'graveyard']) && shortName !== 'Erebus' && shortName !== 'Lamenthyr') {
         classes.push('sigil-outline-halloween');
-    }
-    if (glitchOutlineNames.has(shortName)) {
-        classes.push('sigil-outline-glitch');
     }
 
     if (dreamspaceOutlineNames.has(shortName)) {
