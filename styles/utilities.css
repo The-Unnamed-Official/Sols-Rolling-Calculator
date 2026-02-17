@@ -39,11 +39,6 @@
     text-shadow: 0 0 14px rgba(183, 245, 245, 0.42), 0 0 3px rgba(18, 30, 36, 0.72);
 }
 
-.rarity-tier-challenged {
-    color: #080808;
-    text-shadow: 0 0 6px rgba(255, 255, 255, 0.65), 0 0 2px rgba(0, 0, 0, 0.85);
-}
-
 .rarity-tier-limbo {
     color: #d7d7d7;
     text-shadow:
