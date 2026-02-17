@@ -4367,7 +4367,7 @@ const AURA_BLUEPRINT_SOURCE = Object.freeze([
     { name: "Bounded : Unbound - 2,000,000", chance: 2000000 },
     { name: "Gravitational - 2,000,000", chance: 2000000 },
     { name: "Player : Respawn - 1,999,999", chance: 1999999, breakthroughs: nativeBreakthroughs("cyberspace"), nativeBiomes: ["cyberspace"] },
-    { name: "Cosmos - 1,766,000", chance: 1766000 },
+    { name: "Archmage - 1,766,000", chance: 1766000 },
     { name: "Cosmos - 1,520,000", chance: 1520000 },
     { name: "Celestial : Wicked - 1,500,000", chance: 1500000, nativeBiomes: ["glitch", "pumpkinMoon"] },
     { name: "Astral - 1,336,000", chance: 1336000, breakthroughs: nativeBreakthroughs("starfall") },
