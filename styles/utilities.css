@@ -244,17 +244,7 @@
 }
 
 .sigil-outline-glitch {
-    text-shadow:
-        0 0 6px rgba(255, 255, 255, 0.95),
-        0 0 14px rgba(255, 255, 255, 0.85),
-        2px 0 0 rgba(255, 255, 255, 0.98),
-        -2px 0 0 rgba(255, 255, 255, 0.98),
-        0 2px 0 rgba(255, 255, 255, 0.98),
-        0 -2px 0 rgba(255, 255, 255, 0.98),
-        2px 2px 0 rgba(255, 255, 255, 0.98),
-        -2px 2px 0 rgba(255, 255, 255, 0.98),
-        2px -2px 0 rgba(255, 255, 255, 0.98),
-        -2px -2px 0 rgba(255, 255, 255, 0.98);
+    text-shadow: none !important;
     color: #0f0018;
 }
 
@@ -765,6 +755,7 @@
     background-clip: text !important;
     background-clip: text;
     -webkit-text-fill-color: transparent;
+    text-shadow: none !important;
 }
 
 @keyframes oppressionGradient {
