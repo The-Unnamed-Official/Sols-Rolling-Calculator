@@ -3567,6 +3567,7 @@ function resolveRarityClass(aura, biome) {
     const auraName = aura.name || '';
     if (auraName.startsWith('Pixelation')) return 'rarity-tier-transcendent';
     if (auraName.startsWith('Illusionary')) return 'rarity-tier-challenged';
+    if (auraName.startsWith('Glitch') || auraName.startsWith('Borealis')) return 'rarity-tier-challenged';
     if (auraName === 'Fault') return 'rarity-tier-challenged';
     if (['Oblivion', 'Memory', 'Neferkhaf'].some(name => auraName.startsWith(name))) {
         return 'rarity-tier-challenged';
@@ -3599,6 +3600,7 @@ function resolveBaseRarityClass(aura) {
     const auraName = aura.name || '';
     if (auraName.startsWith('Pixelation')) return 'rarity-tier-transcendent';
     if (auraName.startsWith('Illusionary')) return 'rarity-tier-challenged';
+    if (auraName.startsWith('Glitch') || auraName.startsWith('Borealis')) return 'rarity-tier-challenged';
     if (auraName === 'Fault') return 'rarity-tier-challenged';
     if (['Oblivion', 'Memory', 'Neferkhaf'].some(name => auraName.startsWith(name))) {
         return 'rarity-tier-challenged';
@@ -3642,6 +3644,7 @@ const AURA_TIER_FILTERS = Object.freeze([
 
 const AURA_TIER_CLASS_TO_KEY = new Map(AURA_TIER_FILTERS.map(tier => [tier.className, tier.key]));
 const AURA_TIER_SKIP_NAME_OVERRIDES = new Map([
+    ['challenged', ['Glitch', 'Borealis']],
     ['transcendent', ['Nyctophobia']],
     ['glorious', ['Unknown', 'Elude', 'Prologue', 'Dreamscape']],
     ['exalted', ['Juxtaposition']],
@@ -4195,7 +4198,7 @@ const AURA_BLUEPRINT_SOURCE = Object.freeze([
     { name: "Banshee - 730,000,000", chance: 730000000, nativeBiomes: ["glitch", "graveyard"] },
     { name: "Workshop - 700,000,000", chance: 700000000, breakthroughs: nativeBreakthroughs("aurora") },
     { name: "Wraithlight - 695,000,000", chance: 695000000, nativeBiomes: ["glitch", "bloodRain"] },
-    { name: "Pythos - 666,666,666", chance: 666666666, breakthroughs: nativeBreakthroughs("hell") },
+    { name: "Pythios - 666,666,666", chance: 666666666, breakthroughs: nativeBreakthroughs("hell") },
     { name: "PROLOGUE - 666,616,111", chance: 666616111, nativeBiomes: ["limbo"] },
     { name: "Harvester - 666,000,000", chance: 666000000, nativeBiomes: ["graveyard"] },
     { name: "Apocalypse - 624,000,000", chance: 624000000, nativeBiomes: ["glitch", "graveyard"] },
