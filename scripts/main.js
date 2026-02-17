@@ -3728,7 +3728,13 @@ function resolveAuraTierKey(aura, biome) {
 }
 
 function isForcedChallengedAura(auraName) {
-    return ['Glitch', 'Borealis', 'Dreammetric', 'Oppression'].includes(auraName);
+    if (typeof auraName !== 'string') {
+        return false;
+    }
+    const normalizedAuraName = auraName
+        .split(' - ')[0]
+        .trim();
+    return ['Glitch', 'Borealis', 'Dreammetric', 'Oppression'].includes(normalizedAuraName);
 }
 
 function shouldSkipAuraByTierOverride(aura) {
