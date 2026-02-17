@@ -14,6 +14,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Parisienne&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Jura:wght@300..700&family=Parisienne&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Fondamento:ital@0;1&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Tangerine:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Amatic+SC:wght@400;700&family=Cinzel:wght@400..900&family=Comic+Neue:ital,wght@0,300;0,400;0,700;1,300;1,400;1,700&family=Creepster&family=Grenze+Gotisch:wght@100..900&family=Luckiest+Guy&family=Merriweather:ital,opsz,wght@0,18..144,300..900;1,18..144,300..900&family=Michroma&family=Oswald:wght@200..700&family=Overpass:ital,wght@0,100..900;1,100..900&family=Patrick+Hand&family=Roboto+Flex:opsz,wght,XOPQ,XTRA,YOPQ,YTDE,YTFI,YTLC,YTUC@8..144,100..1000,96,468,79,-203,738,514,712&family=Roboto:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
     <link rel="icon" type="image/png" sizes="16x16" href="files/favicon-16.png">
     <link rel="icon" type="image/png" sizes="32x32" href="files/favicon-32.png">
     <link rel="icon" type="image/png" sizes="48x48" href="files/favicon-48.png">
@@ -141,11 +143,11 @@
                 <div class="banner__meta">
                     <h1 class="banner__title">Sol's Rolling Simulator</h1>
                     <p class="banner__subtitle">
-                        <button type="button" class="banner__version-button" id="versionInfoButton" aria-haspopup="dialog" aria-expanded="false" data-version-id="v1703">V1.703</button>
+                        <button type="button" class="banner__version-button" id="versionInfoButton" aria-haspopup="dialog" aria-expanded="false" data-version-id="v1704">V1.704</button>
                         <span class="banner__subtitle-divider" aria-hidden="true">◉</span>
                         <span class="banner__subtitle-author">By <span class="banner__subtitle-author-name"><a href="https://discord.com/users/611204110955446301" target="_blank" rel="noopener">not.unnamed</a></span></span>
                         <span class="banner__subtitle-divider" aria-hidden="true">◉</span>
-                        <span class="banner__subtitle-updated">Updated <time datetime="2026-02-16T18:10:00+01:00">2026/02/16 06:10 PM CET</time></span>
+                        <span class="banner__subtitle-updated">Updated <time datetime="2026-02-17T06:00:00+01:00">2026/02/17 06:00 AM CET</time></span>
                         <span class="banner__subtitle-divider" aria-hidden="true">◉</span>
                         <span class="banner__subtitle-eon"><span class="banner__subtitle-game-version"><a href="https://www.roblox.com/games/15532962292/Sols-RNG" target="_blank" rel="noopener">Sol's RNG Eon 1-16</a></span></span>
                     </p>
@@ -947,11 +949,23 @@
                 <button
                     type="button"
                     class="changelog-tab changelog-tab--active"
+                    id="changelog-tab-v1704"
+                    role="tab"
+                    aria-controls="changelog-panel-v1704"
+                    aria-selected="true"
+                    data-changelog-tab="v1704"
+                >
+                    <span class="changelog-tab__title">V1.704</span>
+                </button>
+                <button
+                    type="button"
+                    class="changelog-tab changelog-tab--active"
                     id="changelog-tab-v1703"
                     role="tab"
                     aria-controls="changelog-panel-v1703"
-                    aria-selected="true"
+                    aria-selected="false"
                     data-changelog-tab="v1703"
+                    tabindex="-1"
                 >
                     <span class="changelog-tab__title">V1.703</span>
                 </button>
@@ -1259,12 +1273,39 @@
 
             <div class="changelog-modal__panels" data-changelog-panels>
                 <section
+                    id="changelog-panel-v1704"
+                    class="changelog-modal__panel"
+                    role="tabpanel"
+                    aria-labelledby="changelog-tab-v1704"
+                    data-changelog-panel="v1704"
+                    tabindex="0"
+                >
+                    <header class="changelog-modal__header">
+                        <h2 class="changelog-modal__title" id="versionChangelogTitle">Version V1.704 Update Notes</h2>
+                        <span class="changelog-tab__subtitle">Bug Fixes</span>
+                        <p class="changelog-modal__meta">Updated 2026/02/17 at 06:00 AM CET</p>
+                    </header>
+                    <p class="changelog-modal__intro">Latest changes:</p>
+                    <ul class="changelog-modal__list">
+                        <li>Fixed aura naming typo from <span class="sigil-outline-pythios">Pythos</span> to <span class="sigil-outline-pythios">Pythios</span>.</li>
+                        <li>Updated filtering so <span class="sigil-outline-borealis">Borealis</span> is treated as a challenged aura.</li>
+                        <li>Updated filtering so <span class="sigil-effect-outline-glitch">Glitch</span> is treated as a challenged aura.</li>
+                        <p>Thanks to <a href="https://discord.com/users/1234359746153418826" class="subtitleClass" target="_blank" rel="noopener">aksiz.dos_33995</a> for reporting these bugs.</p>
+                        
+                        <li><span class="sigil-effect-outline-glitch">Glitch</span> will now display as it does in-game.</li>
+                        <li><span class="sigil-outline-borealis">Borealis</span> will now display as it does in-game.</li>
+                        <li><span class="sigil-outline-oppression">Oppression</span> will now display as it does in-game.</li>
+                        <li><span class="sigil-outline-dreammetric">Dreammetric</span> will now display as it does in-game.</li>
+                    </ul>
+                </section>
+                <section
                     id="changelog-panel-v1703"
                     class="changelog-modal__panel"
                     role="tabpanel"
                     aria-labelledby="changelog-tab-v1703"
                     data-changelog-panel="v1703"
-                    tabindex="0"
+                    hidden
+                    tabindex="-1"
                 >
                     <header class="changelog-modal__header">
                         <h2 class="changelog-modal__title" id="versionChangelogTitle">Version V1.703 Update Notes</h2>
@@ -1706,7 +1747,7 @@
                                 <li class="listSpace">Apotheosis<span class="tinyClass">1 in 24,649,430</span></li>
                                 <li class="listSpace">Flora : Florest<span class="tinyClass">1 in 32,800,000</span></li>
                                 <li class="listSpace">Prophecy<span class="tinyClass">1 in 275,649,430 (1/55,129,886 from Heaven)</span></li>
-                                <li class="listSpace">Pythos<span class="tinyClass">1 in 666,666,666 (1/111,111,111 from Hell)</span></li>
+                                <li class="listSpace">Pythios<span class="tinyClass">1 in 666,666,666 (1/111,111,111 from Hell)</span></li>
                                 <li class="listSpace">Ascendant<span class="tinyClass">1 in 935,000,000 (1/187,000,000 from Heaven)</span></li>
                                 <li class="listSpace"><span class="sigil-border-breakthrough"><span class="sigil-effect-breakthrough__title">Breakthrough</span></span><span class="tinyClass">1 in 1,999,999,999 (Unobtainable in Null)</span></li>
                                 <li class="listSpace"><span class="sigil-outline-leviathan">Leviathan</span><span class="tinyClass">1 in 1,700,000,000 (From Rainy/Glitch)</span></li>

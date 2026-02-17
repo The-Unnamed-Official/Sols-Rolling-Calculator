@@ -1936,8 +1936,8 @@ function updateGlitchPresentation() {
     ensureQualityPreferences();
     const glitchBiomeActive = isGlitchBiomeSelected();
     const removeGlitchEffects = appState.qualityPreferences.removeGlitchEffects;
-    const enableGlitch = appState.glitch && glitchBiomeActive && !appState.reduceMotion;
-    applyGlitchVisuals(enableGlitch, { forceTheme: glitchBiomeActive });
+    const enableGlitch = appState.glitch && glitchBiomeActive && !appState.reduceMotion && !removeGlitchEffects;
+    applyGlitchVisuals(enableGlitch, { forceTheme: glitchBiomeActive && !removeGlitchEffects });
 }
 
 function toggleGlitchEffects() {
@@ -3565,6 +3565,7 @@ async function playAuraSequence(queue) {
 function resolveRarityClass(aura, biome) {
     if (!aura) return '';
     const auraName = aura.name || '';
+    const skipNativeChallengedClass = isForcedChallengedAura(auraName);
     if (auraName.startsWith('Pixelation')) return 'rarity-tier-transcendent';
     if (auraName.startsWith('Illusionary')) return 'rarity-tier-challenged';
     if (auraName === 'Fault') return 'rarity-tier-challenged';
@@ -3578,6 +3579,7 @@ function resolveRarityClass(aura, biome) {
     const hasNativeBiomes = aura && aura.nativeBiomes;
     if (
         hasNativeBiomes
+        && !skipNativeChallengedClass
         && !aura.nativeBiomes.has('limbo-null')
         && (!cyberspaceNative || biome === 'cyberspace')
     ) {
@@ -3617,6 +3619,8 @@ function resolveBaseRarityClass(aura) {
 
 function shouldUseNativeOverrideTier(aura, biome) {
     if (!aura || aura.disableRarityClass || aura.disableNativeOverrideTier) return false;
+    const auraName = (aura.name || '').trim();
+    if (isForcedChallengedAura(auraName)) return false;
     const hasLimboNative = auraMatchesAnyBiome(aura, ['limbo', 'limbo-null']);
     if (hasLimboNative && biome === 'limbo') return false;
     const cyberspaceNative = auraMatchesAnyBiome(aura, ['cyberspace']);
@@ -3713,10 +3717,24 @@ function resolveAuraTierKey(aura, biome) {
     if (!aura) {
         return null;
     }
+    const auraName = (aura.name || '').trim();
+    if (isForcedChallengedAura(auraName)) {
+        return 'challenged';
+    }
     const rarityClass = typeof resolveRarityClass === 'function'
         ? resolveRarityClass(aura, biome)
         : '';
     return AURA_TIER_CLASS_TO_KEY.get(rarityClass) || null;
+}
+
+function isForcedChallengedAura(auraName) {
+    if (typeof auraName !== 'string') {
+        return false;
+    }
+    const normalizedAuraName = auraName
+        .split(' - ')[0]
+        .trim();
+    return ['Glitch', 'Borealis', 'Dreammetric', 'Oppression'].includes(normalizedAuraName);
 }
 
 function shouldSkipAuraByTierOverride(aura) {
@@ -3855,10 +3873,14 @@ const auraOutlineOverrides = new Map([
     ['Erebus', 'sigil-outline-erebus'],
     ['Lamenthyr', 'sigil-outline-lamenthyr'],
     ['Symphony : Bloomed', 'sigil-outline-valentine-2026'],
+    ['Oppression', 'sigil-outline-oppression'],
+    ['Dreammetric', 'sigil-outline-dreammetric'],
+    ['Borealis', 'sigil-outline-borealis'],
+    ['Glitch', 'sigil-effect-outline-glitch'],
 ]);
 
-const glitchOutlineNames = new Set(['Fault', 'Glitch', 'Oppression']);
-const dreamspaceOutlineNames = new Set(['Dreammetric', 'Borealis', '★★★', '★★', '★']);
+const glitchOutlineNames = new Set(['Fault']);
+const dreamspaceOutlineNames = new Set(['★★★', '★★', '★']);
 const cyberspaceOutlineExclusions = new Set(['Pixelation', 'Illusionary']);
 
 function resolveAuraStyleClass(aura, biome) {
@@ -3878,7 +3900,6 @@ function resolveAuraStyleClass(aura, biome) {
     if (name.startsWith('Nyctophobia')) classes.push('sigil-effect-nyctophobia');
     if (name.startsWith('Clockwork')) classes.push('sigil-effect-clockwork');
     if (name.startsWith('Breakthrough')) classes.push('sigil-effect-breakthrough', 'sigil-border-breakthrough');
-    if (name.startsWith('Glitch')) classes.push('sigil-effect-glitch');
 
     const auraData = typeof aura === 'string' ? null : aura;
     const auraEventId = auraData ? getAuraEventId(auraData) : null;
@@ -3894,9 +3915,6 @@ function resolveAuraStyleClass(aura, biome) {
 
     if (auraMatchesAnyBiome(auraData, ['pumpkinMoon', 'graveyard']) && shortName !== 'Erebus' && shortName !== 'Lamenthyr') {
         classes.push('sigil-outline-halloween');
-    }
-    if (glitchOutlineNames.has(shortName)) {
-        classes.push('sigil-outline-glitch');
     }
 
     if (dreamspaceOutlineNames.has(shortName)) {
@@ -4195,7 +4213,7 @@ const AURA_BLUEPRINT_SOURCE = Object.freeze([
     { name: "Banshee - 730,000,000", chance: 730000000, nativeBiomes: ["glitch", "graveyard"] },
     { name: "Workshop - 700,000,000", chance: 700000000, breakthroughs: nativeBreakthroughs("aurora") },
     { name: "Wraithlight - 695,000,000", chance: 695000000, nativeBiomes: ["glitch", "bloodRain"] },
-    { name: "Pythos - 666,666,666", chance: 666666666, breakthroughs: nativeBreakthroughs("hell") },
+    { name: "Pythios - 666,666,666", chance: 666666666, breakthroughs: nativeBreakthroughs("hell") },
     { name: "PROLOGUE - 666,616,111", chance: 666616111, nativeBiomes: ["limbo"] },
     { name: "Harvester - 666,000,000", chance: 666000000, nativeBiomes: ["graveyard"] },
     { name: "Apocalypse - 624,000,000", chance: 624000000, nativeBiomes: ["glitch", "graveyard"] },

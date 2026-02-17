@@ -274,9 +274,10 @@ body.quality-no-roll-sigil-animations .feed__viewport [class*="aura"] {
     transition-duration: 0s !important;
 }
 
+body.quality-no-glitch.is-glitching,
 body.quality-no-glitch .is-glitching,
-body.quality-no-glitch .biome--glitch,
-body.quality-no-glitch .sigil-effect-glitch {
+body.quality-no-glitch.biome--glitch,
+body.quality-no-glitch .biome--glitch {
     animation: none !important;
     filter: none !important;
     text-shadow: none !important;
