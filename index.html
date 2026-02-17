@@ -141,11 +141,11 @@
                 <div class="banner__meta">
                     <h1 class="banner__title">Sol's Rolling Simulator</h1>
                     <p class="banner__subtitle">
-                        <button type="button" class="banner__version-button" id="versionInfoButton" aria-haspopup="dialog" aria-expanded="false" data-version-id="v1703">V1.703</button>
+                        <button type="button" class="banner__version-button" id="versionInfoButton" aria-haspopup="dialog" aria-expanded="false" data-version-id="v1704">V1.704</button>
                         <span class="banner__subtitle-divider" aria-hidden="true">◉</span>
                         <span class="banner__subtitle-author">By <span class="banner__subtitle-author-name"><a href="https://discord.com/users/611204110955446301" target="_blank" rel="noopener">not.unnamed</a></span></span>
                         <span class="banner__subtitle-divider" aria-hidden="true">◉</span>
-                        <span class="banner__subtitle-updated">Updated <time datetime="2026-02-16T18:10:00+01:00">2026/02/16 06:10 PM CET</time></span>
+                        <span class="banner__subtitle-updated">Updated <time datetime="2026-02-17T04:50:00+01:00">2026/02/17 04:50 AM CET</time></span>
                         <span class="banner__subtitle-divider" aria-hidden="true">◉</span>
                         <span class="banner__subtitle-eon"><span class="banner__subtitle-game-version"><a href="https://www.roblox.com/games/15532962292/Sols-RNG" target="_blank" rel="noopener">Sol's RNG Eon 1-16</a></span></span>
                     </p>
@@ -947,11 +947,23 @@
                 <button
                     type="button"
                     class="changelog-tab changelog-tab--active"
+                    id="changelog-tab-v1704"
+                    role="tab"
+                    aria-controls="changelog-panel-v1704"
+                    aria-selected="true"
+                    data-changelog-tab="v1704"
+                >
+                    <span class="changelog-tab__title">V1.704</span>
+                </button>
+                <button
+                    type="button"
+                    class="changelog-tab changelog-tab--active"
                     id="changelog-tab-v1703"
                     role="tab"
                     aria-controls="changelog-panel-v1703"
-                    aria-selected="true"
+                    aria-selected="false"
                     data-changelog-tab="v1703"
+                    tabindex="-1"
                 >
                     <span class="changelog-tab__title">V1.703</span>
                 </button>
@@ -1259,12 +1271,34 @@
 
             <div class="changelog-modal__panels" data-changelog-panels>
                 <section
+                    id="changelog-panel-v1704"
+                    class="changelog-modal__panel"
+                    role="tabpanel"
+                    aria-labelledby="changelog-tab-v1704"
+                    data-changelog-panel="v1704"
+                    tabindex="0"
+                >
+                    <header class="changelog-modal__header">
+                        <h2 class="changelog-modal__title" id="versionChangelogTitle">Version V1.704 Update Notes</h2>
+                        <span class="changelog-tab__subtitle">Bug Fixes</span>
+                        <p class="changelog-modal__meta">Updated 2026/02/17 at 04:50 AM CET</p>
+                    </header>
+                    <p class="changelog-modal__intro">Latest changes:</p>
+                    <ul class="changelog-modal__list">
+                        <li>Fixed aura naming typo from Pythos to Pythios.</li>
+                        <li>Updated filtering so <span class="sigil-effect-glitch">Glitch</span> is treated as a challenged aura.</li>
+                        <li>Updated filtering so <span class="sigil-outline-dreamspace">Borealis</span> is treated as a challenged aura.</li>
+                    </ul>
+                    <p>Thanks to <a href="https://discord.com/users/1234359746153418826" class="subtitleClass" target="_blank" rel="noopener">aksiz.dos_33995</a> for reporting these bugs.</p>
+                </section>
+                <section
                     id="changelog-panel-v1703"
                     class="changelog-modal__panel"
                     role="tabpanel"
                     aria-labelledby="changelog-tab-v1703"
                     data-changelog-panel="v1703"
-                    tabindex="0"
+                    hidden
+                    tabindex="-1"
                 >
                     <header class="changelog-modal__header">
                         <h2 class="changelog-modal__title" id="versionChangelogTitle">Version V1.703 Update Notes</h2>
@@ -1706,7 +1740,7 @@
                                 <li class="listSpace">Apotheosis<span class="tinyClass">1 in 24,649,430</span></li>
                                 <li class="listSpace">Flora : Florest<span class="tinyClass">1 in 32,800,000</span></li>
                                 <li class="listSpace">Prophecy<span class="tinyClass">1 in 275,649,430 (1/55,129,886 from Heaven)</span></li>
-                                <li class="listSpace">Pythos<span class="tinyClass">1 in 666,666,666 (1/111,111,111 from Hell)</span></li>
+                                <li class="listSpace">Pythios<span class="tinyClass">1 in 666,666,666 (1/111,111,111 from Hell)</span></li>
                                 <li class="listSpace">Ascendant<span class="tinyClass">1 in 935,000,000 (1/187,000,000 from Heaven)</span></li>
                                 <li class="listSpace"><span class="sigil-border-breakthrough"><span class="sigil-effect-breakthrough__title">Breakthrough</span></span><span class="tinyClass">1 in 1,999,999,999 (Unobtainable in Null)</span></li>
                                 <li class="listSpace"><span class="sigil-outline-leviathan">Leviathan</span><span class="tinyClass">1 in 1,700,000,000 (From Rainy/Glitch)</span></li>
