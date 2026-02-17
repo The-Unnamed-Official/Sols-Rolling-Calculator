@@ -663,6 +663,186 @@
     position: relative;
 }
 
+.sigil-effect-outline-glitch {
+    background: linear-gradient(to bottom, black, #4e4e4e);
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: glitchText 1s steps(1, end) infinite;
+    font-weight: bold;
+    font-size: .9em;
+    -webkit-text-stroke: .7px rgba(0, 0, 0, .7);
+}
+
+@keyframes glitchText {
+    0% {
+        font-family: 'Patrick Hand', cursive;
+        font-size: 1em;
+    }
+    7% {
+        font-family: 'Michroma', sans-serif;
+        font-size: .6em;
+    }
+    14% {
+        font-family: 'Oswald', sans-serif;
+        font-size: 1em;
+    }
+    21% {
+        font-family: 'Cinzel', serif;
+        font-size: 1em;
+    }
+    28% {
+        font-family: 'Press Start 2P', monospace;
+        font-size: .6em;
+    }
+    35% {
+        font-family: 'Fondamento', cursive;
+        font-size: 1em;
+    }
+    42% {
+        font-family: 'Amatic SC', cursive;
+        font-size: 1em;
+    }
+    49% {
+        font-family: 'Luckiest Guy', cursive;
+        font-size: 1em;
+    }
+    56% {
+        font-family: 'Overpass', sans-serif;
+        font-size: 1em;
+    }
+    63% {
+        font-family: 'Roboto Flex', sans-serif;
+        font-size: 1em;
+    }
+    70% {
+        font-family: 'Roboto', sans-serif;
+        font-size: 1em;
+    }
+    77% {
+        font-family: 'Merriweather', serif;
+        font-size: 1em;
+    }
+    84% {
+        font-family: 'Grenze Gotisch', cursive;
+        font-size: 1em;
+    }
+    91% {
+        font-family: 'Comic Neue', cursive;
+        font-size: 1em;
+    }
+    100% {
+        font-family: 'Creepster', cursive;
+        font-size: 1em;
+    }
+}
+
+.sigil-outline-pythios {
+    font-family: Kings;
+    text-transform: uppercase;
+    background-clip: text !important;
+    -webkit-text-stroke: 1.8px transparent;
+    background-image: linear-gradient(172deg, #ff6668 17%, #e41b1b 20%, #ff8383 30%, #ff5152 35%, #ffb7b7 43%, #da1f1f 48%, #ff9a9a 53%, #ff1f1f 59%, #aa1414 60%, #ff4547 65%, #ff9698 72%, #ff7677 80%);
+    -webkit-text-fill-color: #340000;
+    font-weight: 700;
+}
+
+.sigil-outline-borealis {
+    font-family: Tangerine;
+    background-clip: text !important;
+    -webkit-text-fill-color: rgb(0 0 0 / 20%);
+    -webkit-text-stroke: 2px transparent;
+    background: linear-gradient(to bottom, #e8b5f8 6%, #fde2ff 8%, #ec96fa 90%);
+    font-size: 140%;
+    letter-spacing: .2em;
+}
+
+.sigil-outline-oppression {
+    font-family: PT Serif;
+    letter-spacing: 0.3125em;
+    display: inline-block;
+    animation: oppressionGradient 2s linear infinite;
+    background: #fff;
+    background-clip: text !important;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+@keyframes oppressionGradient {
+    0% {
+        background: linear-gradient(90deg, white, white, white, white, white, white, black, black, black, white, white, white, black, black, black, white, white, white, black, black, black, white, white, white, white, white, white, white, white, white, black, black, black, white, white, white);
+    }
+
+    5% {
+        background: linear-gradient(90deg, black, black, black, white, white, white, black, black, black, white, white, white, white, white, white, black, black, black, black, black, black, white, white, white, black, black, black, white, white, white, black, black, black, white, white, white);
+    }
+    10% {
+        background: linear-gradient(90deg, white, white, white, black, black, black, white, white, white, white, white, white, black, black, black, white, white, white, white, white, white, black, black, black, white, white, white, white, white, white, white, white, white, white, white, white);
+    }
+    15% {
+        background: linear-gradient(90deg, black, black, black, white, white, white, black, black, black, white, white, white, black, black, black, white, white, white, black, black, black, white, white, white, black, black, black, white, white, white, black, black, black, black, black, black);
+    }
+    20% {
+        background: linear-gradient(90deg, black, black, black, black, black, black, black, black, black, black, black, black, white, white, white, black, black, black, black, black, black, black, black, black, black, black, black, white, white, white, black, black, black, white, white, white);
+    }
+    25% {
+        background: linear-gradient(90deg, white, white, white, white, white, white, black, black, black, white, white, white, black, black, black, white, white, white, black, black, black, white, white, white, black, black, black, black, black, black, black, white, white, white, white, white);
+    }
+    30% {
+        background: linear-gradient(90deg, black, black, black, black, black, black, black, black, black, white, white, white, white, white, white, black, black, black, white, white, white, white, white, white, white, white, white, white, white, white, black, black, black, white, white, white);
+    }
+    35% {
+        background: linear-gradient(90deg, white, white, white, white, white, white, white, white, white, white, white, white, black, black, black, white, white, white, black, black, black, black, black, black, black, black, black, black, black, black, black, black, black, black, black, black);
+    }
+    40% {
+        background: linear-gradient(90deg, black, black, black, white, white, white, black, black, black, black, black, black, white, white, white, black, black, black, black, black, black, white, white, white, black, black, black, white, white, white, white, white, white, white, white, white);
+    }
+    45% {
+        background: linear-gradient(90deg, black, black, black, black, black, black, white, white, white, white, white, white, black, black, black, white, white, white, white, white, white, black, black, black, white, white, white, black, black, black, black, black, black, white, white, white);
+    }
+    50% {
+        background: linear-gradient(90deg, white, white, white, white, white, white, black, black, black, white, white, white, white, white, white, white, white, white, black, black, black, white, white, white, black, black, black, black, black, black, white, white, white, black, black, black);
+    }
+    55% {
+        background: linear-gradient(90deg, black, black, black, black, black, black, white, white, white, black, black, black, black, black, black, white, white, white, black, black, black, white, white, white, white, white, white, white, white, white, black, black, black, white, white, white);
+    }
+    60% {
+        background: linear-gradient(90deg, black, black, black, white, white, white, black, black, black, white, white, white, white, white, white, black, black, black, white, white, white, white, white, white, black, black, black, black, black, black, white, white, white, black, black, black);
+    }
+    65% {
+        background: linear-gradient(90deg, white, white, white, white, white, white, black, black, black, white, white, white, black, black, black, white, white, white, black, black, black, black, black, black, black, black, black, white, white, white, black, black, black, black, black, black);
+    }
+    70% {
+        background: linear-gradient(90deg, black, black, black, white, white, white, white, white, white, black, black, black, white, white, white, white, white, white, black, black, black, white, white, white, white, white, white, white, white, white, black, black, black, white, white, white);
+    }
+    75% {
+        background: linear-gradient(90deg, black, black, black, black, black, black, black, black, black, white, white, white, black, black, black, black, black, black, white, white, white, white, white, white, black, black, black, black, black, black, white, white, white, black, black, black);
+    }
+    80% {
+        background: linear-gradient(90deg, black, black, black, black, black, black, white, white, white, white, white, white, black, black, black, white, white, white, black, black, black, black, black, black, white, white, white, white, white, white, black, black, black, white, white, white);
+    }
+    85% {
+        background: linear-gradient(90deg, black, black, black, black, black, black, black, black, black, black, black, black, white, white, white, white, white, white, black, black, black, white, white, white, black, black, black, black, black, black, white, white, white, black, black, black);
+    }
+    90% {
+        background: linear-gradient(90deg, white, white, white, white, white, white, black, black, black, white, white, white, black, black, black, black, black, black, white, white, white, black, black, black, black, black, black, white, white, white, black, black, black, white, white, white);
+    }
+    95% {
+        background: linear-gradient(90deg, white, white, white, black, black, black, white, white, white, black, black, black, black, black, black, white, white, white, black, black, black, white, white, white, black, black, black, black, black, black, white, white, white, white, white, white);
+    }
+    100% {
+        background: linear-gradient(90deg, black, black, black, white, white, white, black, black, black, white, white, white, black, black, black, white, white, white, black, black, black, black, black, black, black, black, black, white, white, white, black, black, black, black, black, black);
+    }
+}
+
+.sigil-outline-dreammetric {
+    font-family: Playfair Display;
+    background-clip: text !important;
+    -webkit-text-fill-color: transparent;
+    background: linear-gradient(176deg, #fd94ff 35%, #f152f3 40%, #feb1ff 60%, #fc64fc 70%, #ea55ec 80%);
+    -webkit-text-stroke: 0.5px transparent;
+    letter-spacing: 0.14em;
+}
+
 .sigil-effect-megaphone {
     font-family: "Press Start 2P", "Sarpanch", monospace;
     font-weight: 700;
