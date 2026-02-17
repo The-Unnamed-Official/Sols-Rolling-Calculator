@@ -1936,8 +1936,8 @@ function updateGlitchPresentation() {
     ensureQualityPreferences();
     const glitchBiomeActive = isGlitchBiomeSelected();
     const removeGlitchEffects = appState.qualityPreferences.removeGlitchEffects;
-    const enableGlitch = appState.glitch && glitchBiomeActive && !appState.reduceMotion;
-    applyGlitchVisuals(enableGlitch, { forceTheme: glitchBiomeActive });
+    const enableGlitch = appState.glitch && glitchBiomeActive && !appState.reduceMotion && !removeGlitchEffects;
+    applyGlitchVisuals(enableGlitch, { forceTheme: glitchBiomeActive && !removeGlitchEffects });
 }
 
 function toggleGlitchEffects() {
