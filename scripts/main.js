@@ -3858,10 +3858,14 @@ const auraOutlineOverrides = new Map([
     ['Erebus', 'sigil-outline-erebus'],
     ['Lamenthyr', 'sigil-outline-lamenthyr'],
     ['Symphony : Bloomed', 'sigil-outline-valentine-2026'],
+    ['Oppression', 'sigil-outline-oppression'],
+    ['Dreammetric', 'sigil-outline-dreammetric'],
+    ['Borealis', 'sigil-outline-borealis'],
+    ['Glitch', 'sigil-effect-outline-glitch'],
 ]);
 
-const glitchOutlineNames = new Set(['Fault', 'Glitch', 'Oppression']);
-const dreamspaceOutlineNames = new Set(['Dreammetric', 'Borealis', '★★★', '★★', '★']);
+const glitchOutlineNames = new Set(['Fault']);
+const dreamspaceOutlineNames = new Set(['★★★', '★★', '★']);
 const cyberspaceOutlineExclusions = new Set(['Pixelation', 'Illusionary']);
 
 function resolveAuraStyleClass(aura, biome) {
