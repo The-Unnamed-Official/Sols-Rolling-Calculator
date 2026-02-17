@@ -3565,6 +3565,7 @@ async function playAuraSequence(queue) {
 function resolveRarityClass(aura, biome) {
     if (!aura) return '';
     const auraName = aura.name || '';
+    const skipNativeChallengedClass = ['Glitch', 'Borealis', 'Dreammetric', 'Oppression'].includes(auraName);
     if (auraName.startsWith('Pixelation')) return 'rarity-tier-transcendent';
     if (auraName.startsWith('Illusionary')) return 'rarity-tier-challenged';
     if (auraName === 'Fault') return 'rarity-tier-challenged';
@@ -3578,6 +3579,7 @@ function resolveRarityClass(aura, biome) {
     const hasNativeBiomes = aura && aura.nativeBiomes;
     if (
         hasNativeBiomes
+        && !skipNativeChallengedClass
         && !aura.nativeBiomes.has('limbo-null')
         && (!cyberspaceNative || biome === 'cyberspace')
     ) {
@@ -3712,6 +3714,10 @@ function isAuraFiltered(aura) {
 function resolveAuraTierKey(aura, biome) {
     if (!aura) {
         return null;
+    }
+    const auraName = (aura.name || '').trim();
+    if (['Glitch', 'Borealis', 'Dreammetric', 'Oppression'].includes(auraName)) {
+        return 'challenged';
     }
     const rarityClass = typeof resolveRarityClass === 'function'
         ? resolveRarityClass(aura, biome)
