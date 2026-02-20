@@ -39,6 +39,10 @@ const qualityPreferencesOverlayState = {
     lastFocusedElement: null
 };
 
+const trueChanceDisplayOverlayState = {
+    lastFocusedElement: null
+};
+
 const CHANGELOG_VERSION_STORAGE_KEY = 'solsRollingCalculator:lastSeenChangelogVersion';
 const BACKGROUND_ROLLING_STORAGE_KEY = 'solsRollingCalculator:backgroundRollingPreference';
 const AUDIO_SETTINGS_STORAGE_KEY = 'solsRollingCalculator:audioSettings';
@@ -301,6 +305,9 @@ function hydrateVisualSettings() {
             appState.reduceMotion = parsed.reduceMotion;
             reduceMotionPreferenceOverride = parsed.reduceMotion;
         }
+        if (typeof parsed.selectiveTrueChanceDisplay === 'boolean') {
+            appState.selectiveTrueChanceDisplay = parsed.selectiveTrueChanceDisplay;
+        }
 
         ensureQualityPreferences();
         const storedQualityPreferences = parsed.qualityPreferences;
@@ -381,6 +388,7 @@ function persistVisualSettings() {
                 glitch: appState.glitch,
                 cinematic: appState.cinematic,
                 reduceMotion: appState.reduceMotion,
+                selectiveTrueChanceDisplay: Boolean(appState.selectiveTrueChanceDisplay),
                 qualityPreferences: appState.qualityPreferences
             })
         );
@@ -432,6 +440,62 @@ function hideBackgroundRollingOverlay() {
     }
 
     concealOverlay(overlay);
+}
+
+function setSelectiveTrueChanceDisplayEnabled(enabled, { persistPreference = true } = {}) {
+    if (typeof appState === 'object') {
+        appState.selectiveTrueChanceDisplay = Boolean(enabled);
+    }
+
+    const button = document.getElementById('trueChanceDisplayButton');
+    if (button) {
+        button.textContent = `Selective true chance display: ${enabled ? 'On' : 'Off'}`;
+        button.setAttribute('aria-pressed', enabled ? 'true' : 'false');
+    }
+
+    if (persistPreference) {
+        persistVisualSettings();
+    }
+}
+
+function showTrueChanceDisplayOverlay() {
+    const overlay = document.getElementById('trueChanceDisplayOverlay');
+    if (!overlay) {
+        return;
+    }
+
+    trueChanceDisplayOverlayState.lastFocusedElement = document.activeElement instanceof HTMLElement
+        ? document.activeElement
+        : null;
+    revealOverlay(overlay);
+
+    const enableButton = document.getElementById('trueChanceDisplayEnable');
+    if (enableButton && typeof enableButton.focus === 'function') {
+        try {
+            enableButton.focus({ preventScroll: true });
+        } catch (error) {
+            enableButton.focus();
+        }
+    }
+}
+
+function hideTrueChanceDisplayOverlay() {
+    const overlay = document.getElementById('trueChanceDisplayOverlay');
+    if (!overlay) {
+        return;
+    }
+
+    concealOverlay(overlay);
+
+    const target = trueChanceDisplayOverlayState.lastFocusedElement;
+    trueChanceDisplayOverlayState.lastFocusedElement = null;
+    if (target && typeof target.focus === 'function') {
+        try {
+            target.focus({ preventScroll: true });
+        } catch (error) {
+            target.focus();
+        }
+    }
 }
 
 
@@ -5777,6 +5841,30 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     }
+
+    const trueChanceDisplayEnable = document.getElementById('trueChanceDisplayEnable');
+    if (trueChanceDisplayEnable) {
+        trueChanceDisplayEnable.addEventListener('click', () => {
+            setSelectiveTrueChanceDisplayEnabled(true);
+            hideTrueChanceDisplayOverlay();
+        });
+    }
+
+    const trueChanceDisplayCancel = document.getElementById('trueChanceDisplayCancel');
+    if (trueChanceDisplayCancel) {
+        trueChanceDisplayCancel.addEventListener('click', () => {
+            hideTrueChanceDisplayOverlay();
+        });
+    }
+
+    const trueChanceDisplayOverlay = document.getElementById('trueChanceDisplayOverlay');
+    if (trueChanceDisplayOverlay) {
+        trueChanceDisplayOverlay.addEventListener('click', event => {
+            if (event.target === trueChanceDisplayOverlay) {
+                hideTrueChanceDisplayOverlay();
+            }
+        });
+    }
 });
 
 const BIOME_ICON_OVERRIDES = {
@@ -6574,6 +6662,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     hydrateBackgroundRollingPreference();
     setBackgroundRollingEnabled(backgroundRollingPreference.allowed, { persistPreference: false });
+    setSelectiveTrueChanceDisplayEnabled(Boolean(appState.selectiveTrueChanceDisplay), { persistPreference: false });
     hydrateAuraFilters();
     hydrateAuraTierFilters();
 
@@ -6591,6 +6680,18 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             showBackgroundRollingOverlay();
+        });
+    }
+
+    const trueChanceDisplayButton = document.getElementById('trueChanceDisplayButton');
+    if (trueChanceDisplayButton) {
+        trueChanceDisplayButton.addEventListener('click', () => {
+            if (appState.selectiveTrueChanceDisplay) {
+                setSelectiveTrueChanceDisplayEnabled(false);
+                return;
+            }
+
+            showTrueChanceDisplayOverlay();
         });
     }
 
@@ -7008,7 +7109,9 @@ function buildResultEntries(registry, biome, breakthroughStatsMap, luckValue) {
         });
 
         const pushVisualEntry = (markup, shareText, priority, visualRecord, auraName, rarityForRealChance) => {
-            const realChanceValue = formatRealChanceValue(rarityForRealChance, luckValue);
+            const realChanceValue = appState.selectiveTrueChanceDisplay
+                ? formatRealChanceValue(rarityForRealChance, luckValue)
+                : null;
             const realChanceMarkup = realChanceValue
                 ? `${markup}<br><span class="tinyClass">1 in ${realChanceValue}</span>`
                 : markup;

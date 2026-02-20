@@ -169,6 +169,7 @@
                         <button class="interface-toggle options-menu__item" id="qualityPreferencesToggle" type="button">Quality Preferances</button>
                         <button class="interface-toggle options-menu__item" id="cinematicToggle" type="button" onclick="toggleCinematicMode()" aria-pressed="false">Cutscenes (Fullscreen recommended): Off</button>
                         <button class="interface-toggle options-menu__item" id="backgroundRollingButton" type="button" aria-pressed="false">Allow background rolling: Off</button>
+                        <button class="interface-toggle options-menu__item" id="trueChanceDisplayButton" type="button" aria-pressed="false">Selective true chance display: Off</button>
                     </div>
                 </div>
             </div>
@@ -772,6 +773,21 @@
                 <button type="button" class="interface-button interface-button--ghost" id="backgroundRollingCancel">Nevermind</button>
                 <button type="button" class="interface-button interface-button--minor" id="backgroundRollingApply">Apply</button>
                 <button type="button" class="interface-button interface-button--minor" id="backgroundRollingApplyPersist">Apply and never ask again</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="trueChanceDisplayOverlay" class="cutscene-warning-overlay" hidden aria-hidden="true">
+        <div class="cutscene-warning surface surface--modal" role="dialog" aria-modal="true" aria-labelledby="trueChanceDisplayTitle">
+            <p class="cutscene-warning__message">
+                <span id="trueChanceDisplayTitle" class="cutscene-warning__note">Selective true chance display</span>: When enabled, rolled auras in your feed include an extra line showing their true "1 in X" chance based on your active luck.
+            </p>
+            <p class="cutscene-warning__message cutscene-warning__message--subtle">
+                This is useful if you want exact chance context while reviewing simulation results.
+            </p>
+            <div class="cutscene-warning__actions">
+                <button type="button" class="interface-button interface-button--ghost" id="trueChanceDisplayCancel">Nevermind</button>
+                <button type="button" class="interface-button interface-button--minor" id="trueChanceDisplayEnable">Enable</button>
             </div>
         </div>
     </div>
