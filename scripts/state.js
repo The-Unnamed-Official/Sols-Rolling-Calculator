@@ -53,6 +53,7 @@
             removeGlitchEffects: false
         },
         backgroundRolling: false,
+        selectiveTrueChanceDisplay: false,
         videoPlaying: false,
         scrollLock: null,
         auraTierFilters: {
