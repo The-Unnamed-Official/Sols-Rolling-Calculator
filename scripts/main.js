@@ -6923,7 +6923,36 @@ function buildComputedAuraEntries(registry, context, luckValue, breakthroughStat
     return evaluated;
 }
 
-function buildResultEntries(registry, biome, breakthroughStatsMap) {
+function formatRealChanceValue(chanceValue, luckValue) {
+    if (!Number.isFinite(chanceValue) || chanceValue <= 0) {
+        return null;
+    }
+
+    if (!Number.isFinite(luckValue) || luckValue <= 0) {
+        return '∞';
+    }
+
+    const realChance = chanceValue / luckValue;
+    if (!Number.isFinite(realChance) || realChance <= 0) {
+        return '∞';
+    }
+
+    let decimalPlaces = 0;
+    if (realChance < 1000) {
+        decimalPlaces = 3;
+    } else if (realChance < 100000) {
+        decimalPlaces = 2;
+    } else if (realChance < 1000000) {
+        decimalPlaces = 1;
+    }
+
+    return realChance.toLocaleString('en-US', {
+        minimumFractionDigits: 0,
+        maximumFractionDigits: decimalPlaces
+    });
+}
+
+function buildResultEntries(registry, biome, breakthroughStatsMap, luckValue) {
     let entries = [];
     for (const aura of registry) {
         if (isAuraTierSkipped(aura, biome) || isAuraFiltered(aura)) {
@@ -6978,8 +7007,12 @@ function buildResultEntries(registry, biome, breakthroughStatsMap) {
             }
         });
 
-        const pushVisualEntry = (markup, shareText, priority, visualRecord, auraName) => {
-            entries.push({ markup, share: shareText, priority, visual: visualRecord || null, auraName: auraName || null });
+        const pushVisualEntry = (markup, shareText, priority, visualRecord, auraName, rarityForRealChance) => {
+            const realChanceValue = formatRealChanceValue(rarityForRealChance, luckValue);
+            const realChanceMarkup = realChanceValue
+                ? `${markup}<br><span class="tinyClass">1 in ${realChanceValue}</span>`
+                : markup;
+            entries.push({ markup: realChanceMarkup, share: shareText, priority, visual: visualRecord || null, auraName: auraName || null });
         };
 
         if (breakthroughStats && breakthroughStats.count > 0) {
@@ -6995,7 +7028,8 @@ function buildResultEntries(registry, biome, breakthroughStatsMap) {
                 `[Native] ${nativeShareName} | Times Rolled: ${formatWithCommas(breakthroughStats.count)}`,
                 determineResultPriority(aura, breakthroughStats.btChance),
                 createShareVisualRecord(btName, breakthroughStats.count, { prefix: '[Native]', variant: 'native' }),
-                aura.name
+                aura.name,
+                breakthroughStats.btChance
             );
 
             if (winCount > breakthroughStats.count) {
@@ -7010,7 +7044,8 @@ function buildResultEntries(registry, biome, breakthroughStatsMap) {
                     `${formattedTextName} | Times Rolled: ${formatWithCommas(remainingCount)}`,
                     determineResultPriority(aura, aura.chance),
                     createShareVisualRecord(aura.name, remainingCount, { variant: 'standard' }),
-                    aura.name
+                    aura.name,
+                    aura.chance
                 );
             }
         } else {
@@ -7024,7 +7059,8 @@ function buildResultEntries(registry, biome, breakthroughStatsMap) {
                 `${formattedTextName} | Times Rolled: ${formatWithCommas(winCount)}`,
                 determineResultPriority(aura, aura.chance),
                 createShareVisualRecord(aura.name, winCount, { variant: 'standard' }),
-                aura.name
+                aura.name,
+                aura.chance
             );
         }
     }
@@ -7468,7 +7504,7 @@ function runRollSimulation(options = {}) {
             `Included Aura Tiers: ${auraFilterSummaryText}<br><br>`
         ];
 
-        const { markupList, shareRecords, shareVisualRecords } = buildResultEntries(AURA_REGISTRY, biome, breakthroughStatsMap);
+        const { markupList, shareRecords, shareVisualRecords } = buildResultEntries(AURA_REGISTRY, biome, breakthroughStatsMap, luckValue);
         for (const markup of markupList) {
             resultChunks.push(`${markup}<br>`);
         }
