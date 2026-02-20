@@ -7113,7 +7113,7 @@ function buildResultEntries(registry, biome, breakthroughStatsMap, luckValue) {
                 ? formatRealChanceValue(rarityForRealChance, luckValue)
                 : null;
             const realChanceMarkup = realChanceValue
-                ? `${markup}<br><span class="tinyClass">1 in ${realChanceValue}</span>`
+                ? `${markup} <span class="tinyClass">True Chance: 1 in ${realChanceValue}</span>`
                 : markup;
             entries.push({ markup: realChanceMarkup, share: shareText, priority, visual: visualRecord || null, auraName: auraName || null });
         };
