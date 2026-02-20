@@ -147,7 +147,7 @@
                         <span class="banner__subtitle-divider" aria-hidden="true">◉</span>
                         <span class="banner__subtitle-author">By <span class="banner__subtitle-author-name"><a href="https://discord.com/users/611204110955446301" target="_blank" rel="noopener">not.unnamed</a></span></span>
                         <span class="banner__subtitle-divider" aria-hidden="true">◉</span>
-                        <span class="banner__subtitle-updated">Updated <time datetime="2026-02-20T12:20:00+01:00">2026/02/20 12:20 PM CET</time></span>
+                        <span class="banner__subtitle-updated">Updated <time datetime="2026-02-20T13:20:00+01:00">2026/02/20 1:20 PM CET</time></span>
                         <span class="banner__subtitle-divider" aria-hidden="true">◉</span>
                         <span class="banner__subtitle-eon"><span class="banner__subtitle-game-version"><a href="https://www.roblox.com/games/15532962292/Sols-RNG" target="_blank" rel="noopener">Sol's RNG Eon 1-16</a></span></span>
                     </p>
@@ -169,7 +169,7 @@
                         <button class="interface-toggle options-menu__item" id="qualityPreferencesToggle" type="button">Quality Preferances</button>
                         <button class="interface-toggle options-menu__item" id="cinematicToggle" type="button" onclick="toggleCinematicMode()" aria-pressed="false">Cutscenes (Fullscreen recommended): Off</button>
                         <button class="interface-toggle options-menu__item" id="backgroundRollingButton" type="button" aria-pressed="false">Allow background rolling: Off</button>
-                        <button class="interface-toggle options-menu__item" id="trueChanceDisplayButton" type="button" aria-pressed="false">Selective true chance display: Off</button>
+                        <button class="interface-toggle options-menu__item" id="trueChanceDisplayButton" type="button" aria-pressed="false">True chance display: Off</button>
                     </div>
                 </div>
             </div>
@@ -780,7 +780,7 @@
     <div id="trueChanceDisplayOverlay" class="cutscene-warning-overlay" hidden aria-hidden="true">
         <div class="cutscene-warning surface surface--modal" role="dialog" aria-modal="true" aria-labelledby="trueChanceDisplayTitle">
             <p class="cutscene-warning__message">
-                <span id="trueChanceDisplayTitle" class="cutscene-warning__note">Selective true chance display</span>: When enabled, rolled auras in your feed include an extra line showing their true "1 in X" chance based on your active luck.
+                <span id="trueChanceDisplayTitle" class="cutscene-warning__note">True chance display</span>: When enabled, rolled auras in your feed include an extra line showing their true "1 in X" chance based on your active luck.
             </p>
             <p class="cutscene-warning__message cutscene-warning__message--subtle">
                 This is useful if you want exact chance context while reviewing simulation results.
@@ -1047,11 +1047,14 @@
                     <header class="changelog-modal__header">
                         <h2 class="changelog-modal__title" id="versionChangelogTitle">Version V1.707 Update Notes</h2>
                         <span class="changelog-tab__subtitle">True chance display</span>
-                        <p class="changelog-modal__meta">Updated 2026/02/20 at 12:20 PM CET</p>
+                        <p class="changelog-modal__meta">Updated 2026/02/20 at 1:20 PM CET</p>
                     </header>
                     <p class="changelog-modal__intro">Latest changes:</p>
                     <ul class="changelog-modal__list">
-                        <li>Added a true chance display under each aura displaying the accurate chance of the auras you rolled with your luck like this: <span class="tinyClass">1 in xxx,xxx,xxx</span>.</li>
+                        <li>A new True Chance display has been added.</li>
+                        <ul>
+                            <li>When enabled in settings, each rolled aura now shows its accurate relative chance based on your selected luck.</li>
+                        </ul>
                         <p>Thanks to <a href="https://discord.com/users/1215968633054826507" class="subtitleClass" target="_blank" rel="noopener">cutie_suzy</a> for this idea.</p>
                     </ul>
                     <p>If there's any bugs you encounter, please DM me here <a href="https://discord.com/users/611204110955446301" class="subtitleClass" target="_blank" rel="noopener">@not.unnamed</a></p>
