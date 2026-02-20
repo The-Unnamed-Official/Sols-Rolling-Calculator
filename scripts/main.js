@@ -7053,6 +7053,21 @@ function formatRealChanceValue(chanceValue, luckValue) {
     });
 }
 
+const TRUE_CHANCE_HIDDEN_AURA_PREFIXES = Object.freeze([
+    'Oblivion',
+    'Memory',
+    'Neferkhaf',
+    'Cryogenic',
+    'Illusionary'
+]);
+
+function shouldHideSelectiveTrueChanceForAura(auraName) {
+    if (typeof auraName !== 'string') {
+        return false;
+    }
+    return TRUE_CHANCE_HIDDEN_AURA_PREFIXES.some(prefix => auraName.startsWith(prefix));
+}
+
 function buildResultEntries(registry, biome, breakthroughStatsMap, luckValue) {
     let entries = [];
     for (const aura of registry) {
@@ -7109,7 +7124,7 @@ function buildResultEntries(registry, biome, breakthroughStatsMap, luckValue) {
         });
 
         const pushVisualEntry = (markup, shareText, priority, visualRecord, auraName, rarityForRealChance) => {
-            const realChanceValue = appState.selectiveTrueChanceDisplay
+            const realChanceValue = appState.selectiveTrueChanceDisplay && !shouldHideSelectiveTrueChanceForAura(auraName)
                 ? formatRealChanceValue(rarityForRealChance, luckValue)
                 : null;
             const realChanceMarkup = realChanceValue
