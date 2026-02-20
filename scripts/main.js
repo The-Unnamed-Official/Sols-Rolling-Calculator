@@ -39,6 +39,10 @@ const qualityPreferencesOverlayState = {
     lastFocusedElement: null
 };
 
+const trueChanceDisplayOverlayState = {
+    lastFocusedElement: null
+};
+
 const CHANGELOG_VERSION_STORAGE_KEY = 'solsRollingCalculator:lastSeenChangelogVersion';
 const BACKGROUND_ROLLING_STORAGE_KEY = 'solsRollingCalculator:backgroundRollingPreference';
 const AUDIO_SETTINGS_STORAGE_KEY = 'solsRollingCalculator:audioSettings';
@@ -301,6 +305,9 @@ function hydrateVisualSettings() {
             appState.reduceMotion = parsed.reduceMotion;
             reduceMotionPreferenceOverride = parsed.reduceMotion;
         }
+        if (typeof parsed.selectiveTrueChanceDisplay === 'boolean') {
+            appState.selectiveTrueChanceDisplay = parsed.selectiveTrueChanceDisplay;
+        }
 
         ensureQualityPreferences();
         const storedQualityPreferences = parsed.qualityPreferences;
@@ -381,6 +388,7 @@ function persistVisualSettings() {
                 glitch: appState.glitch,
                 cinematic: appState.cinematic,
                 reduceMotion: appState.reduceMotion,
+                selectiveTrueChanceDisplay: Boolean(appState.selectiveTrueChanceDisplay),
                 qualityPreferences: appState.qualityPreferences
             })
         );
@@ -432,6 +440,62 @@ function hideBackgroundRollingOverlay() {
     }
 
     concealOverlay(overlay);
+}
+
+function setSelectiveTrueChanceDisplayEnabled(enabled, { persistPreference = true } = {}) {
+    if (typeof appState === 'object') {
+        appState.selectiveTrueChanceDisplay = Boolean(enabled);
+    }
+
+    const button = document.getElementById('trueChanceDisplayButton');
+    if (button) {
+        button.textContent = `True chance display: ${enabled ? 'On' : 'Off'}`;
+        button.setAttribute('aria-pressed', enabled ? 'true' : 'false');
+    }
+
+    if (persistPreference) {
+        persistVisualSettings();
+    }
+}
+
+function showTrueChanceDisplayOverlay() {
+    const overlay = document.getElementById('trueChanceDisplayOverlay');
+    if (!overlay) {
+        return;
+    }
+
+    trueChanceDisplayOverlayState.lastFocusedElement = document.activeElement instanceof HTMLElement
+        ? document.activeElement
+        : null;
+    revealOverlay(overlay);
+
+    const enableButton = document.getElementById('trueChanceDisplayEnable');
+    if (enableButton && typeof enableButton.focus === 'function') {
+        try {
+            enableButton.focus({ preventScroll: true });
+        } catch (error) {
+            enableButton.focus();
+        }
+    }
+}
+
+function hideTrueChanceDisplayOverlay() {
+    const overlay = document.getElementById('trueChanceDisplayOverlay');
+    if (!overlay) {
+        return;
+    }
+
+    concealOverlay(overlay);
+
+    const target = trueChanceDisplayOverlayState.lastFocusedElement;
+    trueChanceDisplayOverlayState.lastFocusedElement = null;
+    if (target && typeof target.focus === 'function') {
+        try {
+            target.focus({ preventScroll: true });
+        } catch (error) {
+            target.focus();
+        }
+    }
 }
 
 
@@ -5777,6 +5841,30 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     }
+
+    const trueChanceDisplayEnable = document.getElementById('trueChanceDisplayEnable');
+    if (trueChanceDisplayEnable) {
+        trueChanceDisplayEnable.addEventListener('click', () => {
+            setSelectiveTrueChanceDisplayEnabled(true);
+            hideTrueChanceDisplayOverlay();
+        });
+    }
+
+    const trueChanceDisplayCancel = document.getElementById('trueChanceDisplayCancel');
+    if (trueChanceDisplayCancel) {
+        trueChanceDisplayCancel.addEventListener('click', () => {
+            hideTrueChanceDisplayOverlay();
+        });
+    }
+
+    const trueChanceDisplayOverlay = document.getElementById('trueChanceDisplayOverlay');
+    if (trueChanceDisplayOverlay) {
+        trueChanceDisplayOverlay.addEventListener('click', event => {
+            if (event.target === trueChanceDisplayOverlay) {
+                hideTrueChanceDisplayOverlay();
+            }
+        });
+    }
 });
 
 const BIOME_ICON_OVERRIDES = {
@@ -6574,6 +6662,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     hydrateBackgroundRollingPreference();
     setBackgroundRollingEnabled(backgroundRollingPreference.allowed, { persistPreference: false });
+    setSelectiveTrueChanceDisplayEnabled(Boolean(appState.selectiveTrueChanceDisplay), { persistPreference: false });
     hydrateAuraFilters();
     hydrateAuraTierFilters();
 
@@ -6591,6 +6680,18 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             showBackgroundRollingOverlay();
+        });
+    }
+
+    const trueChanceDisplayButton = document.getElementById('trueChanceDisplayButton');
+    if (trueChanceDisplayButton) {
+        trueChanceDisplayButton.addEventListener('click', () => {
+            if (appState.selectiveTrueChanceDisplay) {
+                setSelectiveTrueChanceDisplayEnabled(false);
+                return;
+            }
+
+            showTrueChanceDisplayOverlay();
         });
     }
 
@@ -6923,7 +7024,51 @@ function buildComputedAuraEntries(registry, context, luckValue, breakthroughStat
     return evaluated;
 }
 
-function buildResultEntries(registry, biome, breakthroughStatsMap) {
+function formatRealChanceValue(chanceValue, luckValue) {
+    if (!Number.isFinite(chanceValue) || chanceValue <= 0) {
+        return null;
+    }
+
+    if (!Number.isFinite(luckValue) || luckValue <= 0) {
+        return '∞';
+    }
+
+    const realChance = chanceValue / luckValue;
+    if (!Number.isFinite(realChance) || realChance <= 0) {
+        return '∞';
+    }
+
+    let decimalPlaces = 0;
+    if (realChance < 1000) {
+        decimalPlaces = 3;
+    } else if (realChance < 100000) {
+        decimalPlaces = 2;
+    } else if (realChance < 1000000) {
+        decimalPlaces = 1;
+    }
+
+    return realChance.toLocaleString('en-US', {
+        minimumFractionDigits: 0,
+        maximumFractionDigits: decimalPlaces
+    });
+}
+
+const TRUE_CHANCE_HIDDEN_AURA_PREFIXES = Object.freeze([
+    'Oblivion',
+    'Memory',
+    'Neferkhaf',
+    'Cryogenic',
+    'Illusionary'
+]);
+
+function shouldHideSelectiveTrueChanceForAura(auraName) {
+    if (typeof auraName !== 'string') {
+        return false;
+    }
+    return TRUE_CHANCE_HIDDEN_AURA_PREFIXES.some(prefix => auraName.startsWith(prefix));
+}
+
+function buildResultEntries(registry, biome, breakthroughStatsMap, luckValue) {
     let entries = [];
     for (const aura of registry) {
         if (isAuraTierSkipped(aura, biome) || isAuraFiltered(aura)) {
@@ -6978,8 +7123,14 @@ function buildResultEntries(registry, biome, breakthroughStatsMap) {
             }
         });
 
-        const pushVisualEntry = (markup, shareText, priority, visualRecord, auraName) => {
-            entries.push({ markup, share: shareText, priority, visual: visualRecord || null, auraName: auraName || null });
+        const pushVisualEntry = (markup, shareText, priority, visualRecord, auraName, rarityForRealChance) => {
+            const realChanceValue = appState.selectiveTrueChanceDisplay && !shouldHideSelectiveTrueChanceForAura(auraName)
+                ? formatRealChanceValue(rarityForRealChance, luckValue)
+                : null;
+            const realChanceMarkup = realChanceValue
+                ? `${markup} <span class="tinyClass">True Chance: 1 in ${realChanceValue}</span>`
+                : markup;
+            entries.push({ markup: realChanceMarkup, share: shareText, priority, visual: visualRecord || null, auraName: auraName || null });
         };
 
         if (breakthroughStats && breakthroughStats.count > 0) {
@@ -6995,7 +7146,8 @@ function buildResultEntries(registry, biome, breakthroughStatsMap) {
                 `[Native] ${nativeShareName} | Times Rolled: ${formatWithCommas(breakthroughStats.count)}`,
                 determineResultPriority(aura, breakthroughStats.btChance),
                 createShareVisualRecord(btName, breakthroughStats.count, { prefix: '[Native]', variant: 'native' }),
-                aura.name
+                aura.name,
+                breakthroughStats.btChance
             );
 
             if (winCount > breakthroughStats.count) {
@@ -7010,7 +7162,8 @@ function buildResultEntries(registry, biome, breakthroughStatsMap) {
                     `${formattedTextName} | Times Rolled: ${formatWithCommas(remainingCount)}`,
                     determineResultPriority(aura, aura.chance),
                     createShareVisualRecord(aura.name, remainingCount, { variant: 'standard' }),
-                    aura.name
+                    aura.name,
+                    aura.chance
                 );
             }
         } else {
@@ -7024,7 +7177,8 @@ function buildResultEntries(registry, biome, breakthroughStatsMap) {
                 `${formattedTextName} | Times Rolled: ${formatWithCommas(winCount)}`,
                 determineResultPriority(aura, aura.chance),
                 createShareVisualRecord(aura.name, winCount, { variant: 'standard' }),
-                aura.name
+                aura.name,
+                aura.chance
             );
         }
     }
@@ -7468,7 +7622,7 @@ function runRollSimulation(options = {}) {
             `Included Aura Tiers: ${auraFilterSummaryText}<br><br>`
         ];
 
-        const { markupList, shareRecords, shareVisualRecords } = buildResultEntries(AURA_REGISTRY, biome, breakthroughStatsMap);
+        const { markupList, shareRecords, shareVisualRecords } = buildResultEntries(AURA_REGISTRY, biome, breakthroughStatsMap, luckValue);
         for (const markup of markupList) {
             resultChunks.push(`${markup}<br>`);
         }

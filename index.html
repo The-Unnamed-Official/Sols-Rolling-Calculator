@@ -143,11 +143,11 @@
                 <div class="banner__meta">
                     <h1 class="banner__title">Sol's Rolling Simulator</h1>
                     <p class="banner__subtitle">
-                        <button type="button" class="banner__version-button" id="versionInfoButton" aria-haspopup="dialog" aria-expanded="false" data-version-id="v1705">V1.705</button>
+                        <button type="button" class="banner__version-button" id="versionInfoButton" aria-haspopup="dialog" aria-expanded="false" data-version-id="v1707">v1.707</button>
                         <span class="banner__subtitle-divider" aria-hidden="true">◉</span>
                         <span class="banner__subtitle-author">By <span class="banner__subtitle-author-name"><a href="https://discord.com/users/611204110955446301" target="_blank" rel="noopener">not.unnamed</a></span></span>
                         <span class="banner__subtitle-divider" aria-hidden="true">◉</span>
-                        <span class="banner__subtitle-updated">Updated <time datetime="2026-02-17T06:00:00+01:00">2026/02/17 06:50 PM CET</time></span>
+                        <span class="banner__subtitle-updated">Updated <time datetime="2026-02-20T13:20:00+01:00">2026/02/20 1:20 PM CET</time></span>
                         <span class="banner__subtitle-divider" aria-hidden="true">◉</span>
                         <span class="banner__subtitle-eon"><span class="banner__subtitle-game-version"><a href="https://www.roblox.com/games/15532962292/Sols-RNG" target="_blank" rel="noopener">Sol's RNG Eon 1-16</a></span></span>
                     </p>
@@ -169,6 +169,7 @@
                         <button class="interface-toggle options-menu__item" id="qualityPreferencesToggle" type="button">Quality Preferances</button>
                         <button class="interface-toggle options-menu__item" id="cinematicToggle" type="button" onclick="toggleCinematicMode()" aria-pressed="false">Cutscenes (Fullscreen recommended): Off</button>
                         <button class="interface-toggle options-menu__item" id="backgroundRollingButton" type="button" aria-pressed="false">Allow background rolling: Off</button>
+                        <button class="interface-toggle options-menu__item" id="trueChanceDisplayButton" type="button" aria-pressed="false">True chance display: Off</button>
                     </div>
                 </div>
             </div>
@@ -776,6 +777,21 @@
         </div>
     </div>
 
+    <div id="trueChanceDisplayOverlay" class="cutscene-warning-overlay" hidden aria-hidden="true">
+        <div class="cutscene-warning surface surface--modal" role="dialog" aria-modal="true" aria-labelledby="trueChanceDisplayTitle">
+            <p class="cutscene-warning__message">
+                <span id="trueChanceDisplayTitle" class="cutscene-warning__note">True chance display</span>: When enabled, rolled auras in your feed include an extra line showing their true "1 in X" chance based on your active luck.
+            </p>
+            <p class="cutscene-warning__message cutscene-warning__message--subtle">
+                This is useful if you want exact chance context while reviewing simulation results.
+            </p>
+            <div class="cutscene-warning__actions">
+                <button type="button" class="interface-button interface-button--ghost" id="trueChanceDisplayCancel">Nevermind</button>
+                <button type="button" class="interface-button interface-button--minor" id="trueChanceDisplayEnable">Enable</button>
+            </div>
+        </div>
+    </div>
+
     <div id="audioSettingsOverlay" class="modal-overlay" hidden>
         <div class="surface surface--modal audio-modal" role="dialog" aria-modal="true" aria-labelledby="audioSettingsTitle">
             <div class="audio-modal__header">
@@ -949,11 +965,23 @@
                 <button
                     type="button"
                     class="changelog-tab changelog-tab--active"
+                    id="changelog-tab-v1707"
+                    role="tab"
+                    aria-controls="changelog-panel-v1707"
+                    aria-selected="true"
+                    data-changelog-tab="v1707"
+                >
+                    <span class="changelog-tab__title">V1.707</span>
+                </button>
+                <button
+                    type="button"
+                    class="changelog-tab changelog-tab--active"
                     id="changelog-tab-v1704"
                     role="tab"
                     aria-controls="changelog-panel-v1704"
-                    aria-selected="true"
+                    aria-selected="false"
                     data-changelog-tab="v1704"
+                    tabindex="-1"
                 >
                     <span class="changelog-tab__title">V1.704</span>
                 </button>
@@ -1005,280 +1033,40 @@
                 >
                     <span class="changelog-tab__title">V1.669</span>
                 </button>
-                <button
-                    type="button"
-                    class="changelog-tab changelog-tab--active"
-                    id="changelog-tab-v1666"
-                    role="tab"
-                    aria-controls="changelog-panel-v1666"
-                    aria-selected="false"
-                    data-changelog-tab="v1666"
-                    tabindex="-1"
-                >
-                    <span class="changelog-tab__title">V1.666</span>
-                </button>
-                <button
-                    type="button"
-                    class="changelog-tab changelog-tab--active"
-                    id="changelog-tab-v1665"
-                    role="tab"
-                    aria-controls="changelog-panel-v1665"
-                    aria-selected="false"
-                    data-changelog-tab="v1665"
-                    tabindex="-1"
-                >
-                    <span class="changelog-tab__title">V1.665</span>
-                </button>
-                <button
-                    type="button"
-                    class="changelog-tab changelog-tab--active"
-                    id="changelog-tab-v1660"
-                    role="tab"
-                    aria-controls="changelog-panel-v1660"
-                    aria-selected="false"
-                    data-changelog-tab="v1660"
-                    tabindex="-1"
-                >
-                    <span class="changelog-tab__title">V1.660</span>
-                </button>
-                <button
-                    type="button"
-                    class="changelog-tab changelog-tab--active"
-                    id="changelog-tab-v1659"
-                    role="tab"
-                    aria-controls="changelog-panel-v1659"
-                    aria-selected="false"
-                    data-changelog-tab="v1659"
-                    tabindex="-1"
-                >
-                    <span class="changelog-tab__title">V1.659</span>
-                </button>
-                <button
-                    type="button"
-                    class="changelog-tab changelog-tab--active"
-                    id="changelog-tab-v1658"
-                    role="tab"
-                    aria-controls="changelog-panel-v1658"
-                    aria-selected="false"
-                    data-changelog-tab="v1658"
-                    tabindex="-1"
-                >
-                    <span class="changelog-tab__title">V1.658</span>
-                </button>
-                <button
-                    type="button"
-                    class="changelog-tab changelog-tab--active"
-                    id="changelog-tab-v1656"
-                    role="tab"
-                    aria-controls="changelog-panel-v1656"
-                    aria-selected="false"
-                    data-changelog-tab="v1656"
-                    tabindex="-1"
-                >
-                    <span class="changelog-tab__title">V1.656</span>
-                </button>
-                <button
-                    type="button"
-                    class="changelog-tab changelog-tab--active"
-                    id="changelog-tab-v1641"
-                    role="tab"
-                    aria-controls="changelog-panel-v1641"
-                    aria-selected="false"
-                    data-changelog-tab="v1641"
-                    tabindex="-1"
-                >
-                    <span class="changelog-tab__title">V1.641</span>
-                </button>
-                <button
-                    type="button"
-                    class="changelog-tab changelog-tab--active"
-                    id="changelog-tab-v1640"
-                    role="tab"
-                    aria-controls="changelog-panel-v1640"
-                    aria-selected="false"
-                    data-changelog-tab="v1640"
-                    tabindex="-1"
-                >
-                    <span class="changelog-tab__title">V1.640</span>
-                </button>
-                <button
-                    type="button"
-                    class="changelog-tab changelog-tab--active"
-                    id="changelog-tab-v1630"
-                    role="tab"
-                    aria-controls="changelog-panel-v1630"
-                    aria-selected="false"
-                    data-changelog-tab="v1630"
-                    tabindex="-1"
-                >
-                    <span class="changelog-tab__title">V1.630</span>
-                </button>
-                <button
-                    type="button"
-                    class="changelog-tab changelog-tab--active"
-                    id="changelog-tab-v1619"
-                    role="tab"
-                    aria-controls="changelog-panel-v1619"
-                    aria-selected="false"
-                    data-changelog-tab="v1619"
-                    tabindex="-1"
-                >
-                    <span class="changelog-tab__title">V1.619</span>
-                </button>
-                <button
-                    type="button"
-                    class="changelog-tab changelog-tab--active"
-                    id="changelog-tab-v1612"
-                    role="tab"
-                    aria-controls="changelog-panel-v1612"
-                    aria-selected="false"
-                    data-changelog-tab="v1612"
-                    tabindex="-1"
-                >
-                    <span class="changelog-tab__title">V1.612</span>
-                </button>
-                <button
-                    type="button"
-                    class="changelog-tab changelog-tab--active"
-                    id="changelog-tab-v1602"
-                    role="tab"
-                    aria-controls="changelog-panel-v1602"
-                    aria-selected="false"
-                    data-changelog-tab="v1602"
-                    tabindex="-1"
-                >
-                    <span class="changelog-tab__title">V1.602</span>
-                </button>
-                <button
-                    type="button"
-                    class="changelog-tab changelog-tab--active"
-                    id="changelog-tab-v1601"
-                    role="tab"
-                    aria-controls="changelog-panel-v1601"
-                    aria-selected="false"
-                    data-changelog-tab="v1601"
-                    tabindex="-1"
-                >
-                    <span class="changelog-tab__title">V1.601</span>
-                </button>
-                <button
-                    type="button"
-                    class="changelog-tab changelog-tab--active"
-                    id="changelog-tab-v1600"
-                    role="tab"
-                    aria-controls="changelog-panel-v1600"
-                    aria-selected="false"
-                    data-changelog-tab="v1600"
-                    tabindex="-1"
-                >
-                    <span class="changelog-tab__title">V1.600</span>
-                </button>
-                <button
-                    type="button"
-                    class="changelog-tab changelog-tab--active"
-                    id="changelog-tab-v1566"
-                    role="tab"
-                    aria-controls="changelog-panel-v1566"
-                    aria-selected="false"
-                    data-changelog-tab="v1566"
-                    tabindex="-1"
-                >
-                    <span class="changelog-tab__title">V1.566</span>
-                </button>
-                <button
-                    type="button"
-                    class="changelog-tab changelog-tab--active"
-                    id="changelog-tab-v1565"
-                    role="tab"
-                    aria-controls="changelog-panel-v1565"
-                    aria-selected="false"
-                    data-changelog-tab="v1565"
-                    tabindex="-1"
-                >
-                    <span class="changelog-tab__title">V1.565</span>
-                </button>
-                <button
-                    type="button"
-                    class="changelog-tab changelog-tab--active"
-                    id="changelog-tab-v1563"
-                    role="tab"
-                    aria-controls="changelog-panel-v1563"
-                    aria-selected="false"
-                    data-changelog-tab="v1563"
-                    tabindex="-1"
-                >
-                    <span class="changelog-tab__title">V1.563</span>
-                </button>
-                <button
-                    type="button"
-                    class="changelog-tab"
-                    id="changelog-tab-v1555"
-                    role="tab"
-                    aria-controls="changelog-panel-v1555"
-                    aria-selected="false"
-                    data-changelog-tab="v1555"
-                    tabindex="-1"
-                >
-                    <span class="changelog-tab__title">V1.555</span>
-                </button>
-                <button
-                    type="button"
-                    class="changelog-tab"
-                    id="changelog-tab-v1515"
-                    role="tab"
-                    aria-controls="changelog-panel-v1515"
-                    aria-selected="false"
-                    data-changelog-tab="v1515"
-                    tabindex="-1"
-                >
-                    <span class="changelog-tab__title">V1.515</span>
-                </button>
-                <button
-                    type="button"
-                    class="changelog-tab"
-                    id="changelog-tab-v1509"
-                    role="tab"
-                    aria-controls="changelog-panel-v1509"
-                    aria-selected="false"
-                    data-changelog-tab="v1509"
-                    tabindex="-1"
-                >
-                    <span class="changelog-tab__title">V1.509</span>
-                </button>
-                <button
-                    type="button"
-                    class="changelog-tab"
-                    id="changelog-tab-v1506"
-                    role="tab"
-                    aria-controls="changelog-panel-v1506"
-                    aria-selected="false"
-                    data-changelog-tab="v1506"
-                    tabindex="-1"
-                >
-                    <span class="changelog-tab__title">V1.506</span>
-                </button>
-                <button
-                    type="button"
-                    class="changelog-tab"
-                    id="changelog-tab-v1505"
-                    role="tab"
-                    aria-controls="changelog-panel-v1505"
-                    aria-selected="false"
-                    data-changelog-tab="v1505"
-                    tabindex="-1"
-                >
-                    <span class="changelog-tab__title">V1.505</span>
-                </button>
             </div>
 
             <div class="changelog-modal__panels" data-changelog-panels>
+                <section
+                    id="changelog-panel-v1707"
+                    class="changelog-modal__panel"
+                    role="tabpanel"
+                    aria-labelledby="changelog-tab-v1707"
+                    data-changelog-panel="v1707"
+                    tabindex="0"
+                >
+                    <header class="changelog-modal__header">
+                        <h2 class="changelog-modal__title" id="versionChangelogTitle">Version V1.707 Update Notes</h2>
+                        <span class="changelog-tab__subtitle">Accurate Simulation Display Update</span>
+                        <p class="changelog-modal__meta">Updated 2026/02/20 at 1:20 PM CET</p>
+                    </header>
+                    <p class="changelog-modal__intro">Latest changes:</p>
+                    <ul class="changelog-modal__list">
+                        <li>A new True Chance display has been added.</li>
+                        <ul>
+                            <li>When enabled in settings, each rolled aura now shows its accurate relative chance based on your selected luck.</li>
+                        </ul>
+                        <p>Thanks to <a href="https://discord.com/users/1215968633054826507" class="subtitleClass" target="_blank" rel="noopener">cutie_suzy</a> for this idea.</p>
+                    </ul>
+                    <p>If there's any bugs you encounter, please DM me here <a href="https://discord.com/users/611204110955446301" class="subtitleClass" target="_blank" rel="noopener">@not.unnamed</a></p>
+                </section>
                 <section
                     id="changelog-panel-v1704"
                     class="changelog-modal__panel"
                     role="tabpanel"
                     aria-labelledby="changelog-tab-v1704"
                     data-changelog-panel="v1704"
-                    tabindex="0"
+                    hidden
+                    tabindex="-1"
                 >
                     <header class="changelog-modal__header">
                         <h2 class="changelog-modal__title" id="versionChangelogTitle">Version V1.704 Update Notes</h2>
@@ -1297,6 +1085,7 @@
                         <li><span class="sigil-outline-oppression">Oppression</span> will now display as it does in-game.</li>
                         <li><span class="sigil-outline-dreammetric">Dreammetric</span> will now display as it does in-game.</li>
                     </ul>
+                    <p>If there's any bugs you encounter, please DM me here <a href="https://discord.com/users/611204110955446301" class="subtitleClass" target="_blank" rel="noopener">@not.unnamed</a></p>
                 </section>
                 <section
                     id="changelog-panel-v1703"
@@ -1393,611 +1182,6 @@
                     </ul>
                     <li>A fix to the Ascendant cutscene where it would previously take time to load as it was heavily sized + the new cutscene was taken from me instead.</li>
                     <p>If there's any bugs you encounter, please DM me here <a href="https://discord.com/users/611204110955446301" class="subtitleClass" target="_blank" rel="noopener">@not.unnamed</a></p>
-                </section>
-                <section
-                    id="changelog-panel-v1666"
-                    class="changelog-modal__panel"
-                    role="tabpanel"
-                    aria-labelledby="changelog-tab-v1666"
-                    data-changelog-panel="v1666"
-                    hidden
-                    tabindex="0"
-                >
-                    <header class="changelog-modal__header">
-                        <h2 class="changelog-modal__title" id="versionChangelogTitle">Version V1.666 Update Notes</h2>
-                        <span class="changelog-tab__subtitle">Limbo Preset Compatibility</span>
-                        <p class="changelog-modal__meta">Updated 2026/02/08 at 2:00 AM CET</p>
-                    </header>
-                    <p class="changelog-modal__intro">Latest changes:</p>
-                    <ul class="changelog-modal__list">
-                        <li>When selecting <span class="sigil-outline-limbo">Limbo</span>, both <span class="oblivionClass">Oblivion Potion Preset</span> and <span class="duneClass">Dune Potion Preset</span> are now disabled to avoid invalid combinations.</li>
-                        <p>Thanks to <a href="https://discord.com/users/1008360412632322088" class="subtitleClass" target="_blank" rel="noopener">antigodthesans</a> for pointing this bug out.</p>
-                    </ul>
-                    <p>If there's any bugs you encounter, please DM me here <a href="https://discord.com/users/611204110955446301" class="subtitleClass" target="_blank" rel="noopener">@not.unnamed</a></p>
-                </section>
-                <section
-                    id="changelog-panel-v1665"
-                    class="changelog-modal__panel"
-                    role="tabpanel"
-                    aria-labelledby="changelog-tab-v1665"
-                    data-changelog-panel="v1665"
-                    hidden
-                    tabindex="-1"
-                >
-                    <header class="changelog-modal__header">
-                        <h2 class="changelog-modal__title" id="versionChangelogTitle">Version V1.665 Update Notes</h2>
-                        <span class="changelog-tab__subtitle">Quality Preferances Expansion</span>
-                        <p class="changelog-modal__meta">Updated 2026/02/06 at 3:15 AM CET</p>
-                    </header>
-                    <p class="changelog-modal__intro">Latest changes:</p>
-                    <ul class="changelog-modal__list">
-                        <li>Added the new <span class="subTitlesClass">Quality Preferances</span> menu under Audio settings so visual performance options are grouped in one place.</li>
-                        <li>Added a <span class="subtitleClass">Remove particles</span> toggle to disable snowflake/particle effects.</li>
-                        <li>Added a <span class="subtitleClass">Disable button animations</span> toggle to stop hover and button motion effects.</li>
-                        <li>Added a <span class="subtitleClass">Disable roll &amp; sigil animations</span> toggle to reduce animation load from roll effects and aura text classes.</li>
-                        <li>Added both <span class="sigil-outline-glitch">Reduce glitch effects</span> and <span class="sigil-outline-glitch">Remove glitch effects</span> options for lighter or fully disabled glitch presentation.</li>
-                        <li>Each quality option now includes short in-menu explanations and saves your selection so preferences persist between visits.</li>
-                        <li>When selecting <span class="sigil-outline-limbo">Limbo</span>, both <span class="oblivionClass">Oblivion Potion Preset</span> and <span class="duneClass">Dune Potion Preset</span> are now disabled to avoid invalid combinations.</li>
-                        <li>Bug report credit: <a href="https://discord.com/users/1008360412632322088" class="subtitleClass" target="_blank" rel="noopener">antigodthesans</a>.</li>
-                    </ul>
-                    <p>If there's any bugs you encounter, please DM me here <a href="https://discord.com/users/611204110955446301" class="subtitleClass" target="_blank" rel="noopener">@not.unnamed</a></p>
-                </section>
-                <section
-                    id="changelog-panel-v1660"
-                    class="changelog-modal__panel"
-                    role="tabpanel"
-                    aria-labelledby="changelog-tab-v1660"
-                    data-changelog-panel="v1660"
-                    hidden
-                    tabindex="-1"
-                >
-                    <header class="changelog-modal__header">
-                        <h2 class="changelog-modal__title" id="versionChangelogTitle">Version V1.660 Update Notes</h2>
-                        <span class="changelog-tab__subtitle">Detailed Aura Filtering</span>
-                        <p class="changelog-modal__meta">Updated 2026/02/01</p>
-                    </header>
-                    <p class="changelog-modal__intro">Latest changes:</p>
-                    <ul class="changelog-modal__list">
-                        <li>Added a new <span class="subTitlesClass">Filter Auras</span> popup with a scrollable list that lets you fine-tune which individual auras appear in the roll feed, the summary list, and image sharing.</li>
-                        <li>All settings now save to LocalStorage so everything loads exactly how you left it.</li>
-                        <li>Extended layout support to better fit mobile phones, iPads, and a wider range of laptop and desktop screen sizes.</li>
-                    </ul>
-                </section>
-                <section
-                    id="changelog-panel-v1659"
-                    class="changelog-modal__panel"
-                    role="tabpanel"
-                    aria-labelledby="changelog-tab-v1659"
-                    data-changelog-panel="v1659"
-                    tabindex="-1"
-                >
-                    <header class="changelog-modal__header">
-                        <h2 class="changelog-modal__title" id="versionChangelogTitle">Version V1.659 Update Notes</h2>
-                        <span class="changelog-tab__subtitle">We're Sorry Addition</span>
-                        <p class="changelog-modal__meta">Updated 2026/02/01</p>
-                    </header>
-                    <p class="changelog-modal__intro">Latest changes:</p>
-                    <ul class="changelog-modal__list">
-                        <li>Added the We're Sorry! buff next to VIP/VIP+.</li>
-                    </ul>
-                    <p>If there's any bugs you encounter, please DM me here <a href="https://discord.com/users/611204110955446301" class="subtitleClass" target="_blank" rel="noopener">@not.unnamed</a></p>
-                </section>
-                <section
-                    id="changelog-panel-v1658"
-                    class="changelog-modal__panel"
-                    role="tabpanel"
-                    aria-labelledby="changelog-tab-v1658"
-                    data-changelog-panel="v1658"
-                    hidden
-                    tabindex="-1"
-                >
-                    <header class="changelog-modal__header">
-                        <h2 class="changelog-modal__title" id="versionChangelogTitle">Version V1.658 Update Notes</h2>
-                        <span class="changelog-tab__subtitle">Leviathan &amp; Monarch access fixes</span>
-                        <p class="changelog-modal__meta">Updated 2026/01/31</p>
-                    </header>
-                    <p class="changelog-modal__intro">Latest changes:</p>
-                    <ul class="changelog-modal__list">
-                        <li>Fixed <span class="sigil-outline-leviathan">Leviathan</span> being blocked when Rainy/Glitch biomes are active with Rainstorm rune or ROE active.</li>
-                        <li>Fixed <span class="sigil-outline-monarch">Monarch</span> being blocked when Corruption/Glitch biomes are active with Corruption rune or ROE active.</li>
-                        <li>Adjusted cutscene priority so Monarch plays before Equinox.</li>
-                        <li>Thanks to <a href="https://discord.com/users/855777460163444817" class="subtitleClass" target="_blank" rel="noopener">@qusaizabadneh</a> for pointing this out!</li>
-                    </ul>
-                    <p>If there's any bugs you encounter, please DM me here <a href="https://discord.com/users/611204110955446301" class="subtitleClass" target="_blank" rel="noopener">@not.unnamed</a></p>
-                </section>
-                <section
-                    id="changelog-panel-v1656"
-                    class="changelog-modal__panel"
-                    role="tabpanel"
-                    aria-labelledby="changelog-tab-v1656"
-                    data-changelog-panel="v1656"
-                    hidden
-                    tabindex="-1"
-                >
-                    <header class="changelog-modal__header">
-                        <h2 class="changelog-modal__title" id="versionChangelogTitle">Version V1.656 Update Notes</h2>
-                        <span class="changelog-tab__subtitle">Eon2 Preperation 2</span>
-                        <p class="changelog-modal__meta">Updated 2026/01/31</p>
-                    </header>
-                    <p class="changelog-modal__intro">Latest changes:</p>
-                    <ul class="changelog-modal__list">
-                        <ul>
-                            <li>Added 12 auras:</li>
-                            <ul>
-                                <li class="listSpace">Starlight : Kunzite<span class="tinyClass">1 in 1,000,000 (1/200,000 from Starfall)</span></li>
-                                <li class="listSpace">Crystallized : Bejeweled<span class="tinyClass">1 in 3,600,000</span></li>
-                                <li class="listSpace">Metabytes<span class="tinyClass">1 in 4,000,000 (1/2,000,000 from Cyberspace)</span></li>
-                                <li class="listSpace">Refraction<span class="tinyClass">1 in 7,242,000</span></li>
-                                <li class="listSpace">Outlaw<span class="tinyClass">1 in 8,000,000 (1/2,500,000 from Rainy)</span></li>
-                                <li class="listSpace">Guardian<span class="tinyClass">1 in 10,000,000</span></li>
-                                <li class="listSpace">Dominion<span class="tinyClass">1 in 70,000,000 (1/14,000,000 from Heaven)</span></li>
-                                <li class="listSpace">Virtual : Full Control<span class="tinyClass">1 in 80,000,000 (1/40,000,000 from Cyberspace)</span></li>
-                                <li class="listSpace">Atomic : Nucleus<span class="tinyClass">1 in 92,118,000</span></li>
-                                <li class="listSpace">Spectralflow<span class="tinyClass">1 in 100,000,000</span></li>
-                                <li class="listSpace">Perpetual<span class="tinyClass">1 in 315,000,000</span></li>
-                                <li class="listSpace"><span class="sigil-outline-monarch">Monarch</span><span class="tinyClass">1 in 3,000,000,000 (From Corruption/Glitch)</span></li>
-
-                            </ul>
-                        </ul>
-                    </ul>
-                    <p>If there's any bugs you encounter, please DM me here <a href="https://discord.com/users/611204110955446301" class="subtitleClass" target="_blank" rel="noopener">@not.unnamed</a></p>
-                </section>
-                <section
-                    id="changelog-panel-v1641"
-                    class="changelog-modal__panel"
-                    role="tabpanel"
-                    aria-labelledby="changelog-tab-v1641"
-                    data-changelog-panel="v1641"
-                    hidden
-                    tabindex="-1"
-                >
-                    <header class="changelog-modal__header">
-                        <h2 class="changelog-modal__title" id="versionChangelogTitle">Version V1.641 Update Notes</h2>
-                        <span class="changelog-tab__subtitle">Quick <span class="sigil-outline-cyberspace">Player : Respawn</span> bugfix</span>
-                        <p class="changelog-modal__meta">Updated 2026/01/31</p>
-                    </header>
-                    <p class="changelog-modal__intro">Latest changes:</p>
-                    <ul class="changelog-modal__list">
-                        <li>Fixed a bug where <span class="sigil-outline-cyberspace">Player : Respawn</span> was native in corruption instead of Cyberspace</li>
-                        <p>Thanks to <a href="https://discord.com/users/966428347485802566" class="subtitleClass" target="_blank" rel="noopener">@mattplays607</a> for pointing this out to me :)</p>
-                    </ul>
-                    <p>If there's any bugs you encounter, please DM me here <a href="https://discord.com/users/611204110955446301" class="subtitleClass" target="_blank" rel="noopener">@not.unnamed</a></p>
-                </section>
-                <section
-                    id="changelog-panel-v1640"
-                    class="changelog-modal__panel"
-                    role="tabpanel"
-                    aria-labelledby="changelog-tab-v1640"
-                    data-changelog-panel="v1640"
-                    hidden
-                    tabindex="-1"
-                >
-                    <header class="changelog-modal__header">
-                        <h2 class="changelog-modal__title" id="versionChangelogTitle">Version V1.640 Update Notes</h2>
-                        <span class="changelog-tab__subtitle">Optimization Expansion & Filtering Update</span>
-                        <p class="changelog-modal__meta">Updated 2026/01/27</p>
-                    </header>
-                    <p class="changelog-modal__intro">Latest changes:</p>
-                    <ul class="changelog-modal__list changelog-modal__list--sub">
-                        <li><span class="subtitleClass">Added a Filter Settings dropdown</span> next to the mute button for quick access.</li>
-                        <li><span class="archangelClass">New “Filter Aura Tiers” popup</span> lets you toggle which tiers are skipped in the roll feed and image sharing.</li>
-                        <li><span class="boundClass">Skipped tiers are now hidden</span> from roll summaries and share results.</li>
-                        <li>Moved the high roll warning from 10,000,000+ rolls to 1,000,000,000+ rolls.</li>
-                        <li>Re-alligned some auras to be positioned more accurate and more accessable:</li>
-                        <ul>
-                            <li><span class="sigil-outline-illusionary">Illusionary</span> has been positioned to the absolute top. <span class="tinyClass">(<span class="sigil-outline-illusionary">Illusionary</span>'s cutscene has been re-positioned to be the top-most cutscene to be played if rolled)</span></li>
-                            <li><span class="sigil-outline-cryogenic">Cryogenic</span> has been placed directly above Equinox.</li>
-                        </ul>
-                        <p>Credits to <a href="https://discord.com/users/1215968633054826507" class="subtitleClass" target="_blank" rel="noopener">@cutie_suzy</a> for all of these ideas :)</p>
-                    </ul>
-                    <ul class="changelog-modal__list">
-                        <li>Increased the maximum rolling count from <span class="roll-high">10,000,000,000</span> (10B) to <span class="roll-highest">1,000,000,000,000</span> (1T).</li>
-                        <li>Added new roll presets to bridge the gap between 10B and 1T: 25B, 50B, 100B, 250B, 500B, and 1T.</li>
-                        <li>Added Axis Event to the event selection.</li>
-                        <li>Now only one of the event buffs can be enabled as this is how it works in Sol's RNG as well.</li>
-                        <li>Updated the banner info to open my user on Discord when clicked on my name and a link to Sol's RNG's game site on Roblox when clicked on the Eon version.</li>
-                    </ul>
-                    <p>If there's any bugs you encounter, please DM me here <a href="https://discord.com/users/611204110955446301" class="subtitleClass" target="_blank" rel="noopener">@not.unnamed</a></p>
-                </section>
-                <section
-                    id="changelog-panel-v1630"
-                    class="changelog-modal__panel"
-                    role="tabpanel"
-                    aria-labelledby="changelog-tab-v1630"
-                    data-changelog-panel="v1630"
-                    hidden
-                    tabindex="-1"
-                >
-                    <header class="changelog-modal__header">
-                        <h2 class="changelog-modal__title" id="versionChangelogTitle">Version V1.630 Update Notes</h2>
-                        <span class="changelog-tab__subtitle">Heavy Performance Improvements</span>
-                        <p class="changelog-modal__meta">Updated 2026/01/27</p>
-                    </header>
-                    <p class="changelog-modal__intro">Latest changes:</p>
-                    <ul class="changelog-modal__list">
-                        <li><span class="subtitleClass">Optimized roll processing loops</span> to improve throughput for massive roll counts (about 2,000% faster).<span class="tinyClass">Go ahead and test it if you want<span class="footer-credits__ellipsis"></span></span></li>
-                        <li><span class="archangelClass">Streamlined UI progress updates</span> so rolling stays snappy.</li>
-                        <li><span class="oblivionClass">Removed the 1,000,000+ luck RGB effect</span> and <span class="boundClass">handled processing performance issues more efficiently</span>.</li>
-                    </ul>
-                </section>
-                <section
-                    id="changelog-panel-v1619"
-                    class="changelog-modal__panel"
-                    role="tabpanel"
-                    aria-labelledby="changelog-tab-v1619"
-                    data-changelog-panel="v1619"
-                    hidden
-                    tabindex="-1"
-                >
-                    <header class="changelog-modal__header">
-                        <h2 class="changelog-modal__title" id="versionChangelogTitle">Version V1.619 Update Notes</h2>
-                        <span class="changelog-tab__subtitle">Halloween 2025 style update</span>
-                        <p class="changelog-modal__meta">Updated 2026/01/20</p>
-                    </header>
-                    <p class="changelog-modal__intro">Latest changes:</p>
-                    <ul class="changelog-modal__list">
-                        <li>Fixed rolling results so <span style="font-family: Kings; display: inline-block; font-style: italic;"><span style="position: absolute; text-transform: uppercase; background-clip: text !important; -webkit-text-fill-color: transparent; background: linear-gradient(178deg, #e53a2d 20%, #ffb4a3 26%, #950d05 35%, #950d05 45%, #ffbab0 48%, #950d05 51%, #ffbab0 54%, #ff7069 59%, #630400 65%, #ff837e 79%); -webkit-text-stroke: 0.1em transparent;">Lamenthyr</span><span style="position: relative; text-transform: uppercase; background-clip: text !important; -webkit-text-fill-color: transparent; background: linear-gradient(178deg, #420000 35%, #420000 45%, #ffc3b6 50%, #420000 60%);">Lamenthyr</span></span> applies the full sigil styling with a single class, alongside the <span class="sigil-effect-luminosity">Luminosity</span> and <span class="sigil-outline-erebus">Erebus</span> visual updates.</li>
-                        <li>Updated image sharing visual styles to include the aura styles below:</li>
-                        <ul>
-                            <li><span class="sigil-effect-luminosity">Luminosity - 1,200,000,000 | Times Rolled: X</span></li>
-                            <li><span class="sigil-outline-erebus">Erebus - 1,200,000,000 | Times Rolled: X</span></li>
-                            <li><span style="font-family: Kings; display: inline-block; font-style: italic;"><span style="position: absolute; text-transform: uppercase; background-clip: text !important; -webkit-text-fill-color: transparent; background: linear-gradient(178deg, #e53a2d 20%, #ffb4a3 26%, #950d05 35%, #950d05 45%, #ffbab0 48%, #950d05 51%, #ffbab0 54%, #ff7069 59%, #630400 65%, #ff837e 79%); -webkit-text-stroke: 0.1em transparent;">Lamenthyr - 1,000,000,000 | Times Rolled: X</span><span style="position: relative; text-transform: uppercase; background-clip: text !important; -webkit-text-fill-color: transparent; background: linear-gradient(178deg, #420000 35%, #420000 45%, #ffc3b6 50%, #420000 60%);">Lamenthyr - 1,000,000,000 | Times Rolled: X</span></span></li>
-                        </ul>
-                    </ul>
-                </section>
-                <section
-                    id="changelog-panel-v1612"
-                    class="changelog-modal__panel"
-                    role="tabpanel"
-                    aria-labelledby="changelog-tab-v1612"
-                    data-changelog-panel="v1612"
-                    hidden
-                    tabindex="-1"
-                >
-                    <header class="changelog-modal__header">
-                        <h2 class="changelog-modal__title" id="versionChangelogTitle">Version V1.612 Update Notes</h2>
-                        <span class="changelog-tab__subtitle">Image Sharing Style Update</span>
-                        <p class="changelog-modal__meta">Updated 2026/01/19</p>
-                    </header>
-                    <p class="changelog-modal__intro">Latest changes:</p>
-                    <ul class="changelog-modal__list">
-                        <li>Fixed a bug where the +/- for Quick Device Presets would continue to give out the value of the previous presets.</li>
-                        <p>Thanks to <a href="https://discord.com/users/1234359746153418826" class="subtitleClass" target="_blank" rel="noopener">@aksiz.dos_33995</a> <span style="text-decoration: underline;">once again</span>... for pointing this out to me :)</p>
-                        <li>Fixed a bug where auras unaffected by luck would become unobtainable with any luck above their designated rarity.</li>
-                        <p>Thanks to <a href="https://discord.com/users/1001560164635258900" class="subtitleClass" target="_blank" rel="noopener">@zeefir_</a> for pointing this out to me :)</p>
-                        <li>Updated visual styles for <span class="sigil-outline-dream-traveler">Dream Traveler</span>, <span class="sigil-outline-winter-garden">Winter Garden</span>, <span class="sigil-outline-leviathan">Leviathan</span> and <span class="sigil-outline-frostveil">Sovereign : Frostveil</span>.</li>
-                        <li>Updated image sharing visual styles to include <span class="sigil-outline-winter-2026">Winter Event 2026</span> aura styles and all the other unique auras bellow:</li>
-                        <ul>
-                            <li><span class="sigil-border-breakthrough"><span class="sigil-effect-breakthrough__title">Breakthrough</span> <span class="sigil-effect-breakthrough__title">- 1,999,999,999 | Times Rolled: X</span></span></li>
-                            <li><span class="sigil-outline-leviathan">Leviathan - 1,730,400,000 | Times Rolled: X</span></li>
-                            <li><span class="sigil-outline-dream-traveler">Dream Traveler - 2,025,012,025 | Times Rolled: X</span></li>
-                            <li><span class="sigil-outline-winter-garden">Winter Garden - 1,450,012,025 | Times Rolled: X</span></li>
-                            <li><span class="sigil-outline-frostveil">Sovereign : Frostveil - 1,000,000,000 | Times Rolled: X</span></li>
-                        </ul>
-                    </ul>
-                </section>
-                <section
-                    id="changelog-panel-v1602"
-                    class="changelog-modal__panel"
-                    role="tabpanel"
-                    aria-labelledby="changelog-tab-v1602"
-                    data-changelog-panel="v1602"
-                    hidden
-                    tabindex="-1"
-                >
-                    <header class="changelog-modal__header">
-                        <h2 class="changelog-modal__title" id="versionChangelogTitle">Version V1.602 Update Notes</h2>
-                        <span class="changelog-tab__subtitle">Quick Device Preset value fix</span>
-                        <p class="changelog-modal__meta">Updated 2026/01/19</p>
-                    </header>
-                    <p class="changelog-modal__intro">Latest changes:</p>
-                    <ul class="changelog-modal__list">
-                        <li>Fixed <span class="archangelClass">Archangel Device</span>'s value giving out the old luck value - <span class="subtitleClass tinyClass-colorless">(VIP & VIP+ not included)</span></li>
-                        <p>Thanks to <a href="https://discord.com/users/1234359746153418826" class="subtitleClass" target="_blank" rel="noopener">@aksiz.dos_33995</a> <span style="text-decoration: underline;">AGAIN</span> for pointing this out to me :)</p>
-                    </ul>
-                </section>
-                <section
-                    id="changelog-panel-v1601"
-                    class="changelog-modal__panel"
-                    role="tabpanel"
-                    aria-labelledby="changelog-tab-v1601"
-                    data-changelog-panel="v1601"
-                    hidden
-                    tabindex="-1"
-                >
-                    <header class="changelog-modal__header">
-                        <h2 class="changelog-modal__title" id="versionChangelogTitle">Version V1.601 Update Notes</h2>
-                        <span class="changelog-tab__subtitle">Eon2 Preperation -|- Bugfixes</span>
-                        <p class="changelog-modal__meta">Updated 2026/01/18</p>
-                    </header>
-                    <p class="changelog-modal__intro">Latest changes:</p>
-                    <ul class="changelog-modal__list">
-                        <li>Fixed <span class="sigil-outline-leviathan">Leviathan</span> being obtainable using a Rune of Rainstorm/Everything.</li>
-                        <p>Thanks to <a href="https://discord.com/users/1234359746153418826" class="subtitleClass" target="_blank" rel="noopener">@aksiz.dos_33995</a> for pointing this out to me :)</p>
-                        <li>Fixed runes being usable while <span class="oblivionClass">Oblivion Potion</span> preset was active.</li>
-                        <p>Thanks to <a href="https://discord.com/users/1215968633054826507" class="subtitleClass" target="_blank" rel="noopener">@cutie_suzy</a> for pointing this out to me :)</p>
-                        <li>Updated <span class="sigil-border-breakthrough"><span class="sigil-effect-breakthrough__title">Breakthrough</span></span> to a more accurate style.</li>
-                    </ul>
-                </section>
-                <section
-                    id="changelog-panel-v1600"
-                    class="changelog-modal__panel"
-                    role="tabpanel"
-                    aria-labelledby="changelog-tab-v1600"
-                    data-changelog-panel="v1600"
-                    hidden
-                    tabindex="-1"
-                >
-                    <header class="changelog-modal__header">
-                        <h2 class="changelog-modal__title" id="versionChangelogTitle">Version V1.600 Update Notes</h2>
-                        <span class="changelog-tab__subtitle">Eon2 Preperation</span>
-                        <p class="changelog-modal__meta">Updated 2026/01/17</p>
-                    </header>
-                    <p class="changelog-modal__intro">Latest changes:</p>
-                    <ul class="changelog-modal__list">
-                        <ul>
-                            <li>Added 14 auras:</li>
-                            <ul>
-                                <li class="listSpace">Flutter<span class="tinyClass">1 in 5k</span></li>
-                                <li class="listSpace">Lantern<span class="tinyClass">1 in 333,333</span></li>
-                                <li class="listSpace">Player : Respawn<span class="tinyClass">1 in 1,999,999</span></li>
-                                <li class="listSpace">Flowed<span class="tinyClass">1 in 2,121,121 (1/2,121 from Null)</span></li>
-                                <li class="listSpace">Sharkyn<span class="tinyClass">1 in 10,000,000 (1/2,500,000 from Rainy)</span></li>
-                                <li class="listSpace">Melodic<span class="tinyClass">1 in 11,300,000</span></li>
-                                <li class="listSpace">Apotheosis<span class="tinyClass">1 in 24,649,430</span></li>
-                                <li class="listSpace">Flora : Florest<span class="tinyClass">1 in 32,800,000</span></li>
-                                <li class="listSpace">Prophecy<span class="tinyClass">1 in 275,649,430 (1/55,129,886 from Heaven)</span></li>
-                                <li class="listSpace">Pythios<span class="tinyClass">1 in 666,666,666 (1/111,111,111 from Hell)</span></li>
-                                <li class="listSpace">Ascendant<span class="tinyClass">1 in 935,000,000 (1/187,000,000 from Heaven)</span></li>
-                                <li class="listSpace"><span class="sigil-border-breakthrough"><span class="sigil-effect-breakthrough__title">Breakthrough</span></span><span class="tinyClass">1 in 1,999,999,999 (Unobtainable in Null)</span></li>
-                                <li class="listSpace"><span class="sigil-outline-leviathan">Leviathan</span><span class="tinyClass">1 in 1,700,000,000 (From Rainy/Glitch)</span></li>
-                                <li class="listSpace"><span class="sigil-outline-dreamspace">Borealis</span><span class="tinyClass">1 in 13,333,333 (From Dreamspace)</span></li>
-                                
-                            </ul>
-                        </ul>
-                        <li>Updated the Quick Device presets to use Archangel Device</li>
-                    </ul>
-                </section>
-                <section
-                    id="changelog-panel-v1566"
-                    class="changelog-modal__panel"
-                    role="tabpanel"
-                    aria-labelledby="changelog-tab-v1566"
-                    data-changelog-panel="v1566"
-                    hidden
-                    tabindex="-1"
-                >
-                    <header class="changelog-modal__header">
-                        <h2 class="changelog-modal__title" id="versionChangelogTitle">Version V1.566 Update Notes</h2>
-                        <span class="changelog-tab__subtitle">Aura typo</span>
-                        <p class="changelog-modal__meta">Updated 2026/01/15</p>
-                    </header>
-                    <p class="changelog-modal__intro">Latest changes:</p>
-                    <ul class="changelog-modal__list">
-                        <li>Typo on <span class="sigil-outline-winter-2026">Lost Soul : Wander</span> previously as <span class="sigil-outline-winter-2026">Lost Soul : Wander<span class="sigil-outline-cryogenic">er</span></span>.</li>
-                    </ul>
-                </section>
-                <section
-                    id="changelog-panel-v1565"
-                    class="changelog-modal__panel"
-                    role="tabpanel"
-                    aria-labelledby="changelog-tab-v1565"
-                    data-changelog-panel="v1565"
-                    hidden
-                    tabindex="-1"
-                >
-                    <header class="changelog-modal__header">
-                        <h2 class="changelog-modal__title" id="versionChangelogTitle">Version V1.565 Update Notes</h2>
-                        <span class="changelog-tab__subtitle"><span class="plcClass">Aurora auras native in Glitch</span> bugfix</span>
-                        <p class="changelog-modal__meta">Updated 2026/01/14</p>
-                    </header>
-                    <p class="changelog-modal__intro">Latest changes:</p>
-                    <ul class="changelog-modal__list">
-                        <li>Fixed a bug where Aurora biome auras would become native inside Glitch.</li>
-                        <p>Thanks to <a href="https://discord.com/users/969748049112993853" class="subtitleClass" target="_blank" rel="noopener">@prettyblindinglight</a> for pointing this out to me :)</p>
-                        <li>Updated <span class="sigil-outline-glitch">Glitch</span>, <span class="sigil-outline-dreamspace">Dreamspace</span> and <span class="sigil-outline-cyberspace">Cyberspace</span> biome icons to the same layout as the others.</li>
-                        <li>Removed the <span class="subTitlesClass">Stackable Luck Preset Switch</span> in favor of a more simple <span class="class-outline__low">+/-</span> button method.</li>
-                        <li>Fixed <span class="duneClass">Potion of the Dune</span> interactions with other luck presets.</li>
-                        <li>Prevented <span class="sigil-outline-winter-2026">Dream Traveler</span> and <span class="sigil-outline-winter-2026">Winter Garden</span> from appearing outside the <span class="sigil-outline-winter-2026">Winter Event 2026</span>.</li>
-                        <li><span class="subTitlesClass">Audio settings</span> now save to local storage, including the <span class="class-outline__low">mute</span> state.</li>
-                        <li>Fixed <span class="sigil-outline-cyberspace">Cyberspace</span> auras rolled as native with Rune of Everything.</li>
-                    </ul>
-                </section>
-                <section
-                    id="changelog-panel-v1563"
-                    class="changelog-modal__panel"
-                    role="tabpanel"
-                    aria-labelledby="changelog-tab-v1563"
-                    data-changelog-panel="v1563"
-                    hidden
-                    tabindex="-1"
-                >
-                    <header class="changelog-modal__header">
-                        <h2 class="changelog-modal__title" id="versionChangelogTitle">Version V1.563 Update Notes</h2>
-                        <span class="changelog-tab__subtitle">Cutscenes &amp; Credits</span>
-                        <p class="changelog-modal__meta">Updated 2026/01/09</p>
-                    </header>
-                    <p class="changelog-modal__intro">Latest changes:</p>
-                    <ul class="changelog-modal__list">
-                        <li>Added the cutscenes for <span class="sigil-outline-winter-2026">Winter Garden</span> and <span class="sigil-outline-winter-2026">Dream Traveler</span>.</li>
-                        <li>Updated the credits layout to a three-column list to keep the section compact.</li>
-                        <li><span class="sigil-outline-winter-2026">Winter Garden</span> cutscene credit has been found thanks to <a href="https://sol-rng.fandom.com/wiki/User:MattPlays607#Sol's_RNG" target="_blank" rel="noopener">Matt</a> and the user <a href="https://m.youtube.com/watch?v=6JUcTw2ps_w&pp=ygUfd2ludGVyIGdhcmRlbiBzb2xzIHJuZyBjdXRzY2VuZQ%3D%3D" target="_blank" rel="noopener">Ray</a> for the cutscene :)</li>
-                        <li>Added some nice <span class="subTitlesClass">sub-titles</span> to each changelog update to easily know the content of an update.</li>
-                    </ul>
-                </section>
-                <section
-                    id="changelog-panel-v1555"
-                    class="changelog-modal__panel"
-                    role="tabpanel"
-                    aria-labelledby="changelog-tab-v1555"
-                    data-changelog-panel="v1555"
-                    hidden
-                    tabindex="-1"
-                >
-                    <header class="changelog-modal__header">
-                        <h2 class="changelog-modal__title" id="versionChangelogTitle">Version V1.555 Update Notes</h2>
-                        <span class="changelog-tab__subtitle">Winter Event 2026</span>
-                        <p class="changelog-modal__meta">Updated 2026/01/04</p>
-                    </header>
-                    <p class="changelog-modal__intro">Latest changes:</p>
-                    <ul class="changelog-modal__list">
-                        <li><span class="sigil-outline-winter-2026">Winter Event 2026</span>!</li>
-                        <h2>So sorry for the late update!</h2>
-                        <p>Now that the <span class="sigil-outline-winter-2026">Winter Event</span> of 2026 has begun, everything within the update has been included in this update too :D</p>
-                        <ul>
-                            <li>Added 19 auras:</li>
-                            <ul>
-                                <li><span class="sigil-outline-winter-2026">Snowball</span></li>
-                                1 in 10k (5k in aurora)
-                                <li><span class="sigil-outline-winter-2026">Star Rider: Snowflake</span></li>
-                                1 in 240,000 (1/120,000 from Aurora)
-                                <li><span class="sigil-outline-winter-2026">Gingerbread</span></li>
-                                1 in 3,750,000 (1/1,875,000 from Aurora)
-                                <li><span class="sigil-outline-winter-2026">Jack Frost</span></li>
-                                1 in 4,700,000 (1/2,350,000 from Aurora)
-                                <li><span class="sigil-outline-winter-2026">Lost Soul: Wanderer</span></li>
-                                1 in 9,400,000 (1/4,700,000 in Aurora)
-                                <li><span class="sigil-outline-winter-2026">Frostwood</span></li>
-                                1 in 24,500,000 (1/12,250,000 from Aurora)
-                                <li><span class="sigil-outline-winter-2026">North Pole</span></li>
-                                1 in 45,000,000 (1 in 22,500,000) from Aurora
-                                <li><span class="sigil-outline-winter-2026">Skyburst</span></li>
-                                1 in 60,000,000 (1/30,000,000 from Aurora)
-                                <li><span class="sigil-outline-winter-2026">Encase</span></li>
-                                1 in 230,000,000 (1/115,000,000 from Aurora)
-                                <li><span class="sigil-outline-winter-2026">Cryofang</span></li>
-                                1 in 380,000,000 (1/190,000,000 in Aurora)
-                                <li><span class="sigil-outline-winter-2026">Northern</span></li>
-                                1 in 405,000,000 (1/202,500,000 in Aurora)
-                                <li><span class="sigil-outline-winter-2026">EveNight</span></li>
-                                1 in 424m (212m in aurora)
-                                <li><span class="sigil-outline-winter-2026">Workshop</span></li>
-                                1 in 700m (350m in aurora)
-                                <li><span class="sigil-outline-winter-2026">Parol</span></li>
-                                1 in 760m (380m in aurora)
-                                <li><span class="sigil-outline-winter-2026">Sovereign: Frostveil</span></li>
-                                1 in 1b (1/500m from Aurora)
-                                <li><span class="sigil-outline-winter-2026">Winter Garden</span></li>
-                                1 in 1.45b (725m in aurora)
-                                <li><span class="sigil-outline-winter-2026">Dream Traveler</span></li>
-                                1 in 2b (1b in aurora)
-                                <li><span class="sigil-outline-cryogenic">Cryogenic</span></li>
-                                1 in 250k in aurora (unaffected by luck, similar to illusionary)
-                            </ul>
-                            <li>Aurora biome has been added</li>
-                        </ul>
-                        <li>A mute button directly on the left of the settings dropdown button has been added for a quicker and easier method to silencing the sounds for a ZEN experience</li>
-                    </ul>
-                </section>
-                <section
-                    id="changelog-panel-v1515"
-                    class="changelog-modal__panel"
-                    role="tabpanel"
-                    aria-labelledby="changelog-tab-v1515"
-                    data-changelog-panel="v1515"
-                    hidden
-                    tabindex="-1"
-                >
-                    <header class="changelog-modal__header">
-                        <h2 class="changelog-modal__title" id="versionChangelogTitle">Version V1.515 Update Notes</h2>
-                        <span class="changelog-tab__subtitle">Holiday Enhancements</span>
-                        <p class="changelog-modal__meta">Updated 2025/12/14</p>
-                    </header>
-                    <p class="changelog-modal__intro">Latest changes:</p>
-                    <ul class="changelog-modal__list">
-                        <li>Happy <span class="sigil-outline-winter">Holidays</span> & <span class="christmasClass">Merry Christmas</span>!</li>
-                        <ul>
-                            Have fun with some extra snow on the forecast in the next <span class="sigil-outline-winter">2 months</span>!
-                        </ul>
-
-                        <li>Fixed an issue with <span class="sigil-outline-blood">Blodo Rain's</span> background being "Foggy" which caused lag on some low-end devices and this shouldn't happen anymore.</li>
-
-                        <li>Added a 100,000,000 (100M) Luck preset.</li>
-                        <li>Made Forbidden I, II and III appear when in limbo for more accurate poppings.</li>
-                        <li>Device presets now have a fixed luck without including vip & vip+ considering it did have them included before<span class="footer-credits__ellipsis"></span></li>
-
-                        <li>Also buffed the glitch effect like crazy<span class="footer-credits__ellipsis"></span></li>
-                        
-                        <li>Improved <span class="allPotionsClass">color</span> and display for <span class="oblivionClass">pr</span><span class="godlikeClass">ese</span><span class="duneClass">ts</span>, <span class="sigil-outline-glitch">bi</span><span class="sigil-outline-dreamspace">om</span><span class="sigil-outline-cyberspace">es</span>, <span class="popClass">extras</span> and <span class="moreClass">more</span> to give it all a more <span class="plcClass">pleseant</span> look :D</li>
-                        <p>If there's colors or any form of display that seems difficult to read or understand, please contact me about it so I can fix it ASAP. <a href="https://github.com/The-Unnamed-Official/Sols-Rolling-Calculator/issues/new" target="_blank">Click here</a> and give a slight or extremely detailed explenation of your issue</p>
-                    </ul>
-                </section>
-                <section
-                    id="changelog-panel-v1509"
-                    class="changelog-modal__panel"
-                    role="tabpanel"
-                    aria-labelledby="changelog-tab-v1509"
-                    data-changelog-panel="v1509"
-                    hidden
-                    tabindex="-1"
-                >
-                    <header class="changelog-modal__header">
-                        <h2 class="changelog-modal__title" id="versionChangelogTitle">Version V1.509 Update Notes</h2>
-                        <span class="changelog-tab__subtitle">Roll Count Boost</span>
-                        <p class="changelog-modal__meta">Updated 2025/12/11</p>
-                    </header>
-                    <p class="changelog-modal__intro">Latest changes:</p>
-                    <ul class="changelog-modal__list">
-                        <li>Changed maximum rolling count from <span class="roll-high">100,000,000</span> (100M) to <span class="roll-highest">10,000,000,000</span> (10B)</li>
-                        <ul>
-                            <li>Also added a few rolling presets in-between the existing ones:</li>
-                            <ul>
-                                <li>50,000 <span class="class-outline__low">(50K)</span></li>
-                                <li>500,000 <span class="class-outline__low">(500K)</span></li>
-                                <li>5,000,000 <span class="class-outline__low">(5M)</span></li>
-                                <li>50,000,000 <span class="class-outline__low">(50M)</span></li>
-                                <li class="roll-high">500,000,000 <span class="class-outline__med">(500M)</span></li>
-                                <li class="roll-high">1,000,000,000 <span class="class-outline__med">(1B)</span></li>
-                                <li class="roll-high">2,500,000,000 <span class="class-outline__med">(2.5B)</span></li>
-                                <li class="roll-high">5,000,000,000 <span class="class-outline__med">(5B)</span></li>
-                                <li class="roll-highest">10,000,000,000 <span class="class-outline">(10B)</span></li>
-                            </ul>
-                        </ul>
-                        <li>Added more rolling presets, but be careful... these <span class="roll-high">will</span> take, a <span class="roll-highest">lot</span> of time...</li>
-                        <li>Fixed some luck multiplier selections to display their luck modifier:</li>
-                        <ul>
-                            <li>VIP Luck</li>
-                            <li>Dave's Luck</li>
-                        </ul>
-                    </ul>
-                </section>
-                <section
-                    id="changelog-panel-v1506"
-                    class="changelog-modal__panel"
-                    role="tabpanel"
-                    aria-labelledby="changelog-tab-v1506"
-                    data-changelog-panel="v1506"
-                    hidden
-                    tabindex="-1"
-                >
-                    <header class="changelog-modal__header">
-                        <h2 class="changelog-modal__title" id="versionChangelogTitle">Version V1.506 Update Notes</h2>
-                        <span class="changelog-tab__subtitle">Progress Anchor</span>
-                        <p class="changelog-modal__meta">Updated 2025/12/11</p>
-                    </header>
-                    <p class="changelog-modal__intro">Latest changes:</p>
-                    <ul class="changelog-modal__list">
-                        <li>Progress percentage display in the progress section now anchors to the right, preventing the bar from shaking while rolling.</li>
-                    </ul>
-                </section>
-                <section
-                    id="changelog-panel-v1505"
-                    class="changelog-modal__panel"
-                    role="tabpanel"
-                    aria-labelledby="changelog-tab-v1505"
-                    data-changelog-panel="v1505"
-                    hidden
-                    tabindex="-1"
-                >
-                    <header class="changelog-modal__header">
-                        <h2 class="changelog-modal__title" id="versionChangelogTitle">Version V1.505 Update Notes</h2>
-                        <span class="changelog-tab__subtitle">Progress Precision</span>
-                        <p class="changelog-modal__meta">Updated 2025/12/10</p>
-                    </header>
-                    <p class="changelog-modal__intro">Latest changes:</p>
-                    <ul class="changelog-modal__list">
-                        <li>Progress indicator now shows decimal precision while rolling to better reflect live progress.</li>
-                    </ul>
                 </section>
             </div>
         </div>
