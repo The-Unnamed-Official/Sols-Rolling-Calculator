@@ -4859,7 +4859,7 @@ const EVENT_BIOME_CONDITION_MESSAGES = Object.freeze({
     unknown: 'Requires Dev Biomes to be enabled under run parameters.',
 });
 
-const enabledEvents = new Set(['valentine26']);
+const enabledEvents = new Set();
 const auraEventIndex = new Map();
 
 function hasAnyEnabledEvent(eventIds) {
