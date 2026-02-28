@@ -818,7 +818,7 @@ function populateAuraFilterList() {
         return a.name.localeCompare(b.name);
     });
 
-    const reorderSequence = [MONARCH_AURA_NAME, DUNE_AURA_LABEL, MEMORY_AURA_LABEL, OBLIVION_AURA_LABEL];
+    const reorderSequence = [MONARCH_AURA_NAME, DUNE_AURA_LABEL, BLOOD_AURA_LABEL, MEMORY_AURA_LABEL, OBLIVION_AURA_LABEL];
     const auraByName = new Map(sortedAuras.map(aura => [aura.name, aura]));
     const filteredAuras = sortedAuras.filter(aura => !reorderSequence.includes(aura.name));
     const monarchIndex = sortedAuras.findIndex(aura => aura.name === MONARCH_AURA_NAME);
@@ -2981,13 +2981,22 @@ function applyLuckValue(value, options = {}) {
         if (!('activateDunePreset' in normalizedOptions)) {
             normalizedOptions.activateDunePreset = false;
         }
+        if (!('activateBloodPreset' in normalizedOptions)) {
+            normalizedOptions.activateBloodPreset = false;
+        }
     }
 
     if (normalizedOptions.activateOblivionPreset === true) {
         normalizedOptions.activateDunePreset = false;
+        normalizedOptions.activateBloodPreset = false;
     }
     if (normalizedOptions.activateDunePreset === true) {
         normalizedOptions.activateOblivionPreset = false;
+        normalizedOptions.activateBloodPreset = false;
+    }
+    if (normalizedOptions.activateBloodPreset === true) {
+        normalizedOptions.activateOblivionPreset = false;
+        normalizedOptions.activateDunePreset = false;
     }
     const luckInput = document.getElementById('luck-total');
     const targetLuck = Math.max(0, value);
@@ -3025,6 +3034,9 @@ function applyLuckValue(value, options = {}) {
     }
     if (typeof applyDunePresetOptions === 'function') {
         applyDunePresetOptions(normalizedOptions);
+    }
+    if (typeof applyBloodPresetOptions === 'function') {
+        applyBloodPresetOptions(normalizedOptions);
     }
 }
 
@@ -3094,6 +3106,9 @@ function applyLuckDelta(presetValue, options = {}) {
     if (typeof applyDunePresetOptions === 'function') {
         applyDunePresetOptions(normalizedOptions);
     }
+    if (typeof applyBloodPresetOptions === 'function') {
+        applyBloodPresetOptions(normalizedOptions);
+    }
 }
 
 function buildLuckAdjustmentOptions(button, action, fallbackSource) {
@@ -3106,6 +3121,7 @@ function buildLuckAdjustmentOptions(button, action, fallbackSource) {
         if (action === 'add') {
             options.activateOblivionPreset = true;
             options.activateDunePreset = false;
+            options.activateBloodPreset = false;
         } else if (action === 'subtract') {
             options.activateOblivionPreset = false;
         }
@@ -3115,8 +3131,19 @@ function buildLuckAdjustmentOptions(button, action, fallbackSource) {
         if (action === 'add') {
             options.activateDunePreset = true;
             options.activateOblivionPreset = false;
+            options.activateBloodPreset = false;
         } else if (action === 'subtract') {
             options.activateDunePreset = false;
+        }
+    }
+
+    if (button && button.id === 'luck-preset-blood') {
+        if (action === 'add') {
+            options.activateBloodPreset = true;
+            options.activateOblivionPreset = false;
+            options.activateDunePreset = false;
+        } else if (action === 'subtract') {
+            options.activateBloodPreset = false;
         }
     }
 
@@ -3290,6 +3317,9 @@ function recomputeLuckValue() {
         if (typeof applyDunePresetOptions === 'function') {
             applyDunePresetOptions({ activateDunePreset: false });
         }
+        if (typeof applyBloodPresetOptions === 'function') {
+            applyBloodPresetOptions({ activateBloodPreset: false });
+        }
         return;
     }
 
@@ -3322,6 +3352,9 @@ function resetLuckFields() {
     }
     if (typeof applyDunePresetOptions === 'function') {
         applyDunePresetOptions({ activateDunePreset: false });
+    }
+    if (typeof applyBloodPresetOptions === 'function') {
+        applyBloodPresetOptions({ activateBloodPreset: false });
     }
 }
 
@@ -3633,7 +3666,7 @@ function resolveRarityClass(aura, biome) {
     if (auraName.startsWith('Pixelation')) return 'rarity-tier-transcendent';
     if (auraName.startsWith('Illusionary')) return 'rarity-tier-challenged';
     if (auraName === 'Fault') return 'rarity-tier-challenged';
-    if (['Oblivion', 'Memory', 'Neferkhaf'].some(name => auraName.startsWith(name))) {
+    if (['Oblivion', 'Memory', 'Neferkhaf', '赤月の破片'].some(name => auraName.startsWith(name))) {
         return 'rarity-tier-challenged';
     }
     if (aura.disableRarityClass) return '';
@@ -3666,7 +3699,7 @@ function resolveBaseRarityClass(aura) {
     if (auraName.startsWith('Pixelation')) return 'rarity-tier-transcendent';
     if (auraName.startsWith('Illusionary')) return 'rarity-tier-challenged';
     if (auraName === 'Fault') return 'rarity-tier-challenged';
-    if (['Oblivion', 'Memory', 'Neferkhaf'].some(name => auraName.startsWith(name))) {
+    if (['Oblivion', 'Memory', 'Neferkhaf', '赤月の破片'].some(name => auraName.startsWith(name))) {
         return 'rarity-tier-challenged';
     }
     if (aura.disableRarityClass) return '';
@@ -3844,7 +3877,7 @@ function isAuraTierSkipped(aura, biome) {
     return false;
 }
 
-const CHALLENGED_CUTSCENE_AURAS = new Set(['Oblivion', 'Memory', 'Neferkhaf']);
+const CHALLENGED_CUTSCENE_AURAS = new Set(['Oblivion', 'Memory', 'Neferkhaf', '赤月の破片']);
 
 function shouldSkipAuraCutscene(aura, biome) {
     if (isAuraTierSkipped(aura, biome) || isAuraFiltered(aura)) {
@@ -3957,6 +3990,7 @@ function resolveAuraStyleClass(aura, biome) {
     if (name.startsWith('Oblivion')) classes.push('sigil-effect-oblivion');
     if (name.startsWith('Memory')) classes.push('sigil-effect-memory');
     if (name.startsWith('Neferkhaf')) classes.push('sigil-effect-neferkhaf');
+    if (name.startsWith('赤月の破片')) classes.push('sigil-outline-赤月の破片');
     if (name.startsWith('Pixelation')) classes.push('sigil-effect-pixelation');
     if (name.startsWith('Luminosity')) classes.push('sigil-effect-luminosity');
     if (name.startsWith('Equinox')) classes.push('sigil-effect-equinox');
@@ -4031,12 +4065,20 @@ const DUNE_LUCK_TARGET = 10000;
 const DUNE_AURA_LABEL = 'Neferkhaf';
 const DUNE_POTION_ODDS = 1000;
 
+const BLOOD_PRESET_IDENTIFIER = 'blood';
+const BLOOD_LUCK_TARGET = 11000;
+const BLOOD_AURA_LABEL = '赤月の破片';
+const BLOOD_POTION_ODDS = 1000;
+
 let oblivionPresetEnabled = false;
 let oblivionAuraData = null;
 let memoryAuraData = null;
 
 let dunePresetEnabled = false;
 let duneAuraData = null;
+
+let bloodPresetEnabled = false;
+let bloodAuraData = null;
 
 function handleOblivionPresetSelection(presetKey) {
     if (presetKey !== OBLIVION_PRESET_IDENTIFIER) {
@@ -4046,7 +4088,8 @@ function handleOblivionPresetSelection(presetKey) {
     applyLuckValue(OBLIVION_LUCK_TARGET, {
         luckSource: LUCK_SELECTION_SOURCE.STANDARD_PRESET,
         activateOblivionPreset: true,
-        activateDunePreset: false
+        activateDunePreset: false,
+        activateBloodPreset: false
     });
 }
 
@@ -4058,6 +4101,20 @@ function handleDunePresetSelection(presetKey) {
     applyLuckValue(DUNE_LUCK_TARGET, {
         luckSource: LUCK_SELECTION_SOURCE.STANDARD_PRESET,
         activateDunePreset: true,
+        activateOblivionPreset: false,
+        activateBloodPreset: false
+    });
+}
+
+function handleBloodPresetSelection(presetKey) {
+    if (presetKey !== BLOOD_PRESET_IDENTIFIER) {
+        return;
+    }
+
+    applyLuckValue(BLOOD_LUCK_TARGET, {
+        luckSource: LUCK_SELECTION_SOURCE.STANDARD_PRESET,
+        activateBloodPreset: true,
+        activateDunePreset: false,
         activateOblivionPreset: false
     });
 }
@@ -4081,7 +4138,7 @@ function syncLuckPotionPresetAvailability(isLimboSelected) {
         return;
     }
 
-    const potionPresetButtons = ['luck-preset-oblivion', 'luck-preset-dune'];
+    const potionPresetButtons = ['luck-preset-oblivion', 'luck-preset-dune', 'luck-preset-blood'];
     potionPresetButtons.forEach(buttonId => {
         const button = document.getElementById(buttonId);
         if (!button) {
@@ -4121,6 +4178,13 @@ function applyDunePresetOptions(options = {}) {
     if ('activateDunePreset' in options) {
         dunePresetEnabled = options.activateDunePreset === true;
         syncLuckPotionButtonState('luck-preset-dune', dunePresetEnabled);
+    }
+}
+
+function applyBloodPresetOptions(options = {}) {
+    if ('activateBloodPreset' in options) {
+        bloodPresetEnabled = options.activateBloodPreset === true;
+        syncLuckPotionButtonState('luck-preset-blood', bloodPresetEnabled);
     }
 }
 
@@ -4210,6 +4274,7 @@ function determineResultPriority(aura, baseChance) {
     if (aura.name === OBLIVION_AURA_LABEL) return Number.POSITIVE_INFINITY;
     if (aura.name === MEMORY_AURA_LABEL) return Number.MAX_SAFE_INTEGER;
     if (aura.name === DUNE_AURA_LABEL) return Number.MAX_SAFE_INTEGER - 1;
+    if (aura.name === BLOOD_AURA_LABEL) return Number.MAX_SAFE_INTEGER - 2;
     return baseChance;
 }
 
@@ -4249,6 +4314,7 @@ const AURA_BLUEPRINT_SOURCE = Object.freeze([
     { name: "Oblivion", chance: 2000, requiresOblivionPreset: true, ignoreLuck: true, fixedRollThreshold: 1, subtitle: "The Truth Seeker", cutscene: "oblivion-cutscene", disableRarityClass: true },
     { name: "Memory", chance: 200000, requiresOblivionPreset: true, ignoreLuck: true, fixedRollThreshold: 1, subtitle: "The Fallen", cutscene: "memory-cutscene", disableRarityClass: true },
     { name: "Neferkhaf", chance: 1000, requiresDunePreset: true, ignoreLuck: true, fixedRollThreshold: 1, subtitle: "The Crawler", cutscene: "neferkhaf-cutscene", disableRarityClass: true },
+    { name: "赤月の破片", chance: 1000, requiresBloodPreset: true, ignoreLuck: true, fixedRollThreshold: 1, subtitle: "Fragments Of The Crimson Moon", cutscene: "blood-cutscene", disableRarityClass: true },
     { name: "Illusionary - 10,000,000", chance: 10000000, nativeBiomes: ["cyberspace"], ignoreLuck: true, fixedRollThreshold: 1, cutscene: "illusionary-cutscene" },
     { name: "Equinox - 2,500,000,000", chance: 2500000000, cutscene: "equinox-cutscene" },
     { name: "Dream Traveler - 2,025,012,025", chance: 2025012025, breakthroughs: nativeBreakthroughs("aurora"), cutscene: "dream-traveler-cutscene" },
@@ -4284,6 +4350,7 @@ const AURA_BLUEPRINT_SOURCE = Object.freeze([
     { name: "Matrix : Reality - 601,020,102", chance: 601020102, breakthroughs: nativeBreakthroughs("cyberspace"), nativeBiomes: ["cyberspace"] },
     { name: "Sophyra - 570,000,000", chance: 570000000 },
     { name: "Elude - 555,555,555", chance: 555555555, nativeBiomes: ["limbo"] },
+    { name: "Sailor : Admiral - 540,000,000", chance: 540000000, breakthroughs: nativeBreakthroughs("rainy") },
     { name: "Atlas : Yuletide - 510,000,000", chance: 510000000, breakthroughs: nativeBreakthroughs("snowy") },
     { name: "Matrix : Overdrive - 503,000,000", chance: 503000000, breakthroughs: nativeBreakthroughs("cyberspace"), nativeBiomes: ["cyberspace"] },
     { name: "Ruins - 500,000,000", chance: 500000000 },
@@ -4321,6 +4388,7 @@ const AURA_BLUEPRINT_SOURCE = Object.freeze([
     { name: "Lumenpool - 220,000,000", chance: 220000000, breakthroughs: nativeBreakthroughs("rainy") },
     { name: "Oppression - 220,000,000", chance: 220000000, nativeBiomes: ["glitch"], cutscene: "oppression-cutscene" },
     { name: "Impeached - 200,000,000", chance: 200000000, breakthroughs: nativeBreakthroughs("corruption") },
+    { name: "Raven : Plague - 200,000,000", chance: 200000000, nativeBiomes: ["limbo"] },
     { name: "Nightmare Sky - 190,000,000", chance: 190000000, nativeBiomes: ["pumpkinMoon"] },
     { name: "Felled - 180,000,000", chance: 180000000, breakthroughs: nativeBreakthroughs("hell") },
     { name: "Twilight : Withering Grace - 180,000,000", chance: 180000000, breakthroughs: nativeBreakthroughs("night") },
@@ -4329,6 +4397,7 @@ const AURA_BLUEPRINT_SOURCE = Object.freeze([
     { name: "Overture - 150,000,000", chance: 150000000 },
     { name: "Crimson - 120,000,000", chance: 120000000, nativeBiomes: ["glitch", "bloodRain"] },
     { name: "Abominable - 120,000,000", chance: 120000000, breakthroughs: nativeBreakthroughs("snowy") },
+    { name: "Lily - 112,000,000", chance: 112000000 },
     { name: "Spectraflow - 100,000,000", chance: 100000000 },
     { name: "Starscourge : Radiant - 100,000,000", chance: 100000000, breakthroughs: nativeBreakthroughs("starfall") },
     { name: "Chromatic : GENESIS - 99,999,999", chance: 99999999 },
@@ -4367,8 +4436,10 @@ const AURA_BLUEPRINT_SOURCE = Object.freeze([
     { name: "Blizzard - 27,315,000", chance: 27315000, breakthroughs: nativeBreakthroughs("snowy") },
     { name: "Apotheosis - 24,649,430", chance: 24649430 },
     { name: "Frostwood - 24,500,000", chance: 24500000, breakthroughs: nativeBreakthroughs("aurora") },
+    { name: "Ruby : Brimstone - 24,000,000", chance: 24000000 },
     { name: "Aviator - 24,000,000", chance: 24000000 },
     { name: "Cryptfire - 21,000,000", chance: 21000000, nativeBiomes: ["graveyard"] },
+    { name: "Plasma - 20,600,000", chance: 20000000 },
     { name: "Chromatic - 20,000,000", chance: 20000000 },
     { name: "Lullaby - 17,000,000", chance: 17000000, breakthroughs: nativeBreakthroughs("night") },
     { name: "Icarus - 15,660,000", chance: 15660000, breakthroughs: nativeBreakthroughs("heaven") },
@@ -4430,6 +4501,7 @@ const AURA_BLUEPRINT_SOURCE = Object.freeze([
     { name: "Lunar : Cultist - 2,000,000", chance: 2000000, nativeBiomes: ["glitch", "graveyard"] },
     { name: "Bounded : Unbound - 2,000,000", chance: 2000000 },
     { name: "Gravitational - 2,000,000", chance: 2000000 },
+    { name: "Flutter : Buggify - 2,000,000", chance: 2000000 },
     { name: "Player : Respawn - 1,999,999", chance: 1999999, breakthroughs: nativeBreakthroughs("cyberspace"), nativeBiomes: ["cyberspace"] },
     { name: "Archmage - 1,766,000", chance: 1766000 },
     { name: "Cosmos - 1,520,000", chance: 1520000 },
@@ -4509,6 +4581,7 @@ const AURA_BLUEPRINT_SOURCE = Object.freeze([
     { name: "Magnetic - 2,048", chance: 2048 },
     { name: "Glock - 1,700", chance: 1700 },
     { name: "Atomic - 1,180", chance: 1180 },
+    { name: "Hydrogen - 1,111", chance: 1111 },
     { name: "Precious - 1,024", chance: 1024 },
     { name: "Diaboli - 1,004", chance: 1004 },
     { name: "★★ - 1,000", chance: 1000, nativeBiomes: ["dreamspace"] },
@@ -4863,7 +4936,7 @@ function getAuraEventId(aura) {
 }
 
 const CUTSCENE_PRIORITY_SEQUENCE = [
-            "illusionary-cutscene", "oblivion-cutscene", "memory-cutscene", "neferkhaf-cutscene",
+            "illusionary-cutscene", "oblivion-cutscene", "memory-cutscene", "neferkhaf-cutscene", "blood-cutscene",
             "monarch-cutscene", "equinox-cutscene", "dream-traveler-cutscene", "breakthrough-cutscene",
             "leviathan-cutscene", "winter-garden-cutscene", "erebus-cutscene", "luminosity-cutscene",
             "pixelation-cutscene", "nyctophobia-cutscene", "frostveil-cutscene", "lamenthyr-cutscene",
@@ -4874,6 +4947,7 @@ const CUTSCENE_PRIORITY_SEQUENCE = [
 oblivionAuraData = AURA_REGISTRY.find(aura => aura.name === OBLIVION_AURA_LABEL) || null;
 memoryAuraData = AURA_REGISTRY.find(aura => aura.name === MEMORY_AURA_LABEL) || null;
 duneAuraData = AURA_REGISTRY.find(aura => aura.name === DUNE_AURA_LABEL) || null;
+bloodAuraData = AURA_REGISTRY.find(aura => aura.name === BLOOD_AURA_LABEL) || null;
 
 const ROE_EXCLUSION_SET = new Set([
     "Erebus - 1,200,000,000",
@@ -6325,6 +6399,9 @@ function updateBiomeControlConstraints({ source = null, triggerSync = true } = {
         if (dunePresetEnabled) {
             applyDunePresetOptions({ activateDunePreset: false });
         }
+        if (bloodPresetEnabled) {
+            applyBloodPresetOptions({ activateBloodPreset: false });
+        }
     }
     syncLuckPotionPresetAvailability(limboSelected);
 
@@ -6825,7 +6902,7 @@ function isIllusionaryAura(aura) {
 }
 
 function computeLimboEffectiveChance(aura, context) {
-    if (aura.requiresOblivionPreset || aura.requiresDunePreset) return Infinity;
+    if (aura.requiresOblivionPreset || aura.requiresDunePreset || aura.requiresBloodPreset) return Infinity;
     if (!context.eventChecker(aura)) return Infinity;
     if (!aura.nativeBiomes) return Infinity;
     if (!auraMatchesAnyBiome(aura, LIMBO_NATIVE_FILTER)) return Infinity;
@@ -6840,7 +6917,7 @@ function computeLimboEffectiveChance(aura, context) {
 
 function computeStandardEffectiveChance(aura, context) {
     const { biome, exclusivityBiome, glitchLikeBiome, isRoe, activeBiomes, breakthroughBiomes, primaryBiome } = context;
-    if (aura.requiresOblivionPreset || aura.requiresDunePreset) return Infinity;
+    if (aura.requiresOblivionPreset || aura.requiresDunePreset || aura.requiresBloodPreset) return Infinity;
 
     const eventId = getAuraEventId(aura);
     const eventEnabled = context.eventChecker(aura);
@@ -7057,6 +7134,7 @@ const TRUE_CHANCE_HIDDEN_AURA_PREFIXES = Object.freeze([
     'Oblivion',
     'Memory',
     'Neferkhaf',
+    '赤月の破片',
     'Cryogenic',
     'Illusionary'
 ]);
@@ -7494,9 +7572,11 @@ function runRollSimulation(options = {}) {
     const luckAffectedAuras = computedAuras.filter(entry => !entry.aura || !entry.aura.ignoreLuck);
 
     const activeDuneAura = (dunePresetEnabled && baseLuck >= DUNE_LUCK_TARGET) ? duneAuraData : null;
+    const activeBloodAura = (bloodPresetEnabled && baseLuck >= BLOOD_LUCK_TARGET) ? bloodAuraData : null;
     const activeOblivionAura = (oblivionPresetEnabled && luckValue >= OBLIVION_LUCK_TARGET) ? oblivionAuraData : null;
     const activeMemoryAura = (oblivionPresetEnabled && luckValue >= OBLIVION_LUCK_TARGET) ? memoryAuraData : null;
     const duneProbability = activeDuneAura ? 1 / DUNE_POTION_ODDS : 0;
+    const bloodProbability = activeBloodAura ? 1 / BLOOD_POTION_ODDS : 0;
     const memoryProbability = activeMemoryAura ? 1 / OBLIVION_MEMORY_ODDS : 0;
     const oblivionProbability = activeOblivionAura ? 1 / OBLIVION_POTION_ODDS : 0;
     const cutscenesEnabled = appState.cinematic === true;
@@ -7753,6 +7833,10 @@ function runRollSimulation(options = {}) {
     if (duneProbability > 0 && activeDuneAura) {
         prerollAuraList.push(activeDuneAura);
         prerollAuraRatios.push(duneProbability);
+    }
+    if (bloodProbability > 0 && activeBloodAura) {
+        prerollAuraList.push(activeBloodAura);
+        prerollAuraRatios.push(bloodProbability);
     }
     if (memoryProbability > 0 && activeMemoryAura) {
         prerollAuraList.push(activeMemoryAura);

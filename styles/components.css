@@ -661,6 +661,15 @@ select.form-field__input option {
     color: transparent;
 }
 
+.bloodClass {
+    background: linear-gradient(90deg, #6b0000, #000000, #c61818, #6b0000);
+    background-size: 300% 300%;
+    animation: class-gradient 3.5s linear infinite;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+
 .duneClass {
     background: linear-gradient(90deg, #d2a345, #ffd47d, #c68c18);
     background-size: 300% 300%;
@@ -972,6 +981,11 @@ select.form-field__input option {
 .preset-matrix #luck-preset-oblivion.luck-preset-button--active {
     border-color: rgba(100, 26, 255, 0.85);
     box-shadow: inset 0 0 20px rgba(100, 26, 255, 0.35), 0 0 12px rgba(93, 0, 127, 0.45);
+}
+
+.preset-matrix #luck-preset-blood.luck-preset-button--active {
+    border-color: rgba(255, 26, 26, 0.85);
+    box-shadow: inset 0 0 20px rgba(255, 26, 26, 0.35), 0 0 12px rgba(127, 0, 0, 0.45);
 }
 
 .preset-matrix button.luck-preset-button--active .preset-active-label {
