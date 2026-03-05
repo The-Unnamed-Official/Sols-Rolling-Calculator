@@ -45,8 +45,8 @@
     <audio id="hundredThousandSound" muted src="files/100_000Roll.ogg" type="audio/ogg" data-volume="0.07" data-audio-channel="obtain"></audio>
     <audio id="tenMillionSound" muted src="files/10_000_000Roll.ogg" type="audio/ogg" data-volume="0.25" data-audio-channel="obtain"></audio>
     <audio id="hundredMillionSound" muted src="files/100_000_000Roll.ogg" type="audio/ogg" data-volume="0.25" data-audio-channel="obtain"></audio>
+    <audio id="hundredMillionlimboSound" muted src="files/100_000_000LimboRoll.mp3" type="audio/mpeg" data-boost="6.7" data-audio-channel="obtain"></audio>
     <audio id="explosionSoundFx" muted src="files/explosionSound.mp3" type="audio/mpeg" data-volume="0.25" data-audio-channel="obtain"></audio>
-    <audio id="limbo99mSoundFx" muted src="files/99mLimboRollSound.mp3" type="audio/mpeg" data-boost="6.7" data-audio-channel="obtain"></audio>
     <audio id="qbearMeowSoundFx" muted src="files/qbearMeow.mp3" type="audio/mpeg" data-volume="0.55" data-audio-channel="ui"></audio>
 
     <video id="oblivion-cutscene" class="cutscene-video" preload="auto" data-audio-channel="cutscene">
@@ -146,11 +146,11 @@
                 <div class="banner__meta">
                     <h1 class="banner__title">Sol's Rolling Simulator</h1>
                     <p class="banner__subtitle">
-                        <button type="button" class="banner__version-button" id="versionInfoButton" aria-haspopup="dialog" aria-expanded="false" data-version-id="v1710">v1.710</button>
+                        <button type="button" class="banner__version-button" id="versionInfoButton" aria-haspopup="dialog" aria-expanded="false" data-version-id="v1711">v1.711</button>
                         <span class="banner__subtitle-divider" aria-hidden="true">◉</span>
                         <span class="banner__subtitle-author">By <span class="banner__subtitle-author-name"><a href="https://discord.com/users/611204110955446301" target="_blank" rel="noopener">not.unnamed</a></span></span>
                         <span class="banner__subtitle-divider" aria-hidden="true">◉</span>
-                        <span class="banner__subtitle-updated">Updated <time datetime="2026-02-28T12:50:00+01:00">2026/02/28 12:50 PM CET</time></span>
+                        <span class="banner__subtitle-updated">Updated <time datetime="2026-03-05T21:40:00+01:00">2026/03/05 9:40 PM CET</time></span>
                         <span class="banner__subtitle-divider" aria-hidden="true">◉</span>
                         <span class="banner__subtitle-eon"><span class="banner__subtitle-game-version"><a href="https://www.roblox.com/games/15532962292/Sols-RNG" target="_blank" rel="noopener">Sol's RNG Eon 1-17</a></span></span>
                     </p>
@@ -970,13 +970,25 @@
                 <button
                     type="button"
                     class="changelog-tab changelog-tab--active"
+                    id="changelog-tab-v1711"
+                    role="tab"
+                    aria-controls="changelog-panel-v1711"
+                    aria-selected="true"
+                    data-changelog-tab="v1711"
+                >
+                    <span class="changelog-tab__title">v1.711</span>
+                </button>
+                <button
+                    type="button"
+                    class="changelog-tab changelog-tab--active"
                     id="changelog-tab-v1710"
                     role="tab"
                     aria-controls="changelog-panel-v1710"
-                    aria-selected="true"
+                    aria-selected="false"
                     data-changelog-tab="v1710"
+                    tabindex="-1"
                 >
-                    <span class="changelog-tab__title">V1.710</span>
+                    <span class="changelog-tab__title">v1.710</span>
                 </button>
                 <button
                     type="button"
@@ -988,7 +1000,7 @@
                     data-changelog-tab="v1707"
                     tabindex="-1"
                 >
-                    <span class="changelog-tab__title">V1.707</span>
+                    <span class="changelog-tab__title">v1.707</span>
                 </button>
                 <button
                     type="button"
@@ -1000,7 +1012,7 @@
                     data-changelog-tab="v1704"
                     tabindex="-1"
                 >
-                    <span class="changelog-tab__title">V1.704</span>
+                    <span class="changelog-tab__title">v1.704</span>
                 </button>
                 <button
                     type="button"
@@ -1012,7 +1024,7 @@
                     data-changelog-tab="v1703"
                     tabindex="-1"
                 >
-                    <span class="changelog-tab__title">V1.703</span>
+                    <span class="changelog-tab__title">v1.703</span>
                 </button>
                 <button
                     type="button"
@@ -1024,45 +1036,44 @@
                     data-changelog-tab="v1702"
                     tabindex="-1"
                 >
-                    <span class="changelog-tab__title">V1.702</span>
-                </button>
-                <button
-                    type="button"
-                    class="changelog-tab changelog-tab--active"
-                    id="changelog-tab-v1700"
-                    role="tab"
-                    aria-controls="changelog-panel-v1700"
-                    aria-selected="false"
-                    data-changelog-tab="v1700"
-                    tabindex="-1"
-                >
-                    <span class="changelog-tab__title">V1.7</span>
-                </button>
-                <button
-                    type="button"
-                    class="changelog-tab changelog-tab--active"
-                    id="changelog-tab-v1669"
-                    role="tab"
-                    aria-controls="changelog-panel-v1669"
-                    aria-selected="false"
-                    data-changelog-tab="v1669"
-                    tabindex="-1"
-                >
-                    <span class="changelog-tab__title">V1.669</span>
+                    <span class="changelog-tab__title">v1.702</span>
                 </button>
             </div>
 
             <div class="changelog-modal__panels" data-changelog-panels>
+                <section
+                    id="changelog-panel-v1711"
+                    class="changelog-modal__panel"
+                    role="tabpanel"
+                    aria-labelledby="changelog-tab-v1711"
+                    data-changelog-panel="v1711"
+                    tabindex="0"
+                >
+                    <header class="changelog-modal__header">
+                        <h2 class="changelog-modal__title" id="versionChangelogTitle">Version v1.711 Update Notes</h2>
+                        <span class="changelog-tab__subtitle">Limbo Global SFX Fix</span>
+                        <p class="changelog-modal__meta">Updated 2026/03/05 at 9:40 PM CET</p>
+                    </header>
+                    <p class="changelog-modal__intro">Latest changes:</p>
+                    <ul class="changelog-modal__list">
+                        <li>A quick simple re-addition of the Limbo Global SFX.</li>
+                        <ul>
+                            <li>Made the Limbo Global SFX a little cleaner by re-recording it and balancing the audio for the rest of sounds</li>
+                        </ul>
+                    </ul>
+                    <p>If there's any bugs you encounter, please DM me here <a href="https://discord.com/users/611204110955446301" class="subtitleClass" target="_blank" rel="noopener">@not.unnamed</a></p>
+                </section>
                 <section
                     id="changelog-panel-v1710"
                     class="changelog-modal__panel"
                     role="tabpanel"
                     aria-labelledby="changelog-tab-v1710"
                     data-changelog-panel="v1710"
-                    tabindex="0"
+                    hidden
+                    tabindex="-1"
                 >
                     <header class="changelog-modal__header">
-                        <h2 class="changelog-modal__title" id="versionChangelogTitle">Version V1.710 Update Notes</h2>
+                        <h2 class="changelog-modal__title" id="versionChangelogTitle">Version v1.710 Update Notes</h2>
                         <span class="changelog-tab__subtitle">Red Full Moon | <span class="sigil-outline-赤月の破片">赤月の破片</span></span>
                         <p class="changelog-modal__meta">Updated 2026/02/28 at 12:50 PM CET</p>
                     </header>
@@ -1093,7 +1104,7 @@
                     tabindex="-1"
                 >
                     <header class="changelog-modal__header">
-                        <h2 class="changelog-modal__title" id="versionChangelogTitle">Version V1.707 Update Notes</h2>
+                        <h2 class="changelog-modal__title" id="versionChangelogTitle">Version v1.707 Update Notes</h2>
                         <span class="changelog-tab__subtitle">Accurate Simulation Display Update</span>
                         <p class="changelog-modal__meta">Updated 2026/02/20 at 1:20 PM CET</p>
                     </header>
@@ -1117,7 +1128,7 @@
                     tabindex="-1"
                 >
                     <header class="changelog-modal__header">
-                        <h2 class="changelog-modal__title" id="versionChangelogTitle">Version V1.704 Update Notes</h2>
+                        <h2 class="changelog-modal__title" id="versionChangelogTitle">Version v1.704 Update Notes</h2>
                         <span class="changelog-tab__subtitle">Bug Fixes</span>
                         <p class="changelog-modal__meta">Updated 2026/02/17 at 06:00 AM CET</p>
                     </header>
@@ -1145,7 +1156,7 @@
                     tabindex="-1"
                 >
                     <header class="changelog-modal__header">
-                        <h2 class="changelog-modal__title" id="versionChangelogTitle">Version V1.703 Update Notes</h2>
+                        <h2 class="changelog-modal__title" id="versionChangelogTitle">Version v1.703 Update Notes</h2>
                         <span class="changelog-tab__subtitle">Pixelated Remains</span>
                         <p class="changelog-modal__meta">Updated 2026/02/16 at 06:10 PM CET</p>
                     </header>
@@ -1161,7 +1172,7 @@
                     tabindex="-1"
                 >
                     <header class="changelog-modal__header">
-                        <h2 class="changelog-modal__title" id="versionChangelogTitle">Version V1.702 Update Notes</h2>
+                        <h2 class="changelog-modal__title" id="versionChangelogTitle">Version v1.702 Update Notes</h2>
                         <span class="changelog-tab__subtitle">Aura & Biome Style Alignment</span>
                         <p class="changelog-modal__meta">Updated 2026/02/15 at 11:00 PM CET</p>
                     </header>
@@ -1171,64 +1182,6 @@
                         <li>Updated <span class="sigil-effect-clockwork">Clockwork</span> to look accurate as in Sol's RNG.</li>
                     </ul>
                     <span class="tinyClass">(When Eon 2 👀)</span>
-                    <p>If there's any bugs you encounter, please DM me here <a href="https://discord.com/users/611204110955446301" class="subtitleClass" target="_blank" rel="noopener">@not.unnamed</a></p>
-                </section>
-                <section
-                    id="changelog-panel-v1700"
-                    class="changelog-modal__panel"
-                    role="tabpanel"
-                    aria-labelledby="changelog-tab-v1700"
-                    data-changelog-panel="v1700"
-                    hidden
-                    tabindex="-1"
-                >
-                    <header class="changelog-modal__header">
-                        <h2 class="changelog-modal__title" id="versionChangelogTitle">Version V1.7 Update Notes</h2>
-                        <span class="changelog-tab__subtitle">Valentines Update</span>
-                        <p class="changelog-modal__meta">Updated 2026/02/14 at 7:10 PM CET</p>
-                    </header>
-                    <p class="changelog-modal__intro">Latest changes:</p>
-                    <ul class="changelog-modal__list">
-                        <li>Renamed Word's dev biome <span class="sigil-outline-edict">The Citadel of Orders</span> to <span class="sigil-outline-edict">Edict</span>.</li>
-                        <li>All new auras were added in the previous update, but I had no time to include them in the changelog + Amethyst was not added, but now it is.</li>
-                        <li>Updated to Eon 1-16 now!! <span class="tinyClass">(When Eon 2 👀)</span></li>
-                    </ul>
-                    <p>If there's any bugs you encounter, please DM me here <a href="https://discord.com/users/611204110955446301" class="subtitleClass" target="_blank" rel="noopener">@not.unnamed</a></p>
-                </section>
-                <section
-                    id="changelog-panel-v1669"
-                    class="changelog-modal__panel"
-                    role="tabpanel"
-                    aria-labelledby="changelog-tab-v1669"
-                    data-changelog-panel="v1669"
-                    hidden
-                    tabindex="-1"
-                >
-                    <header class="changelog-modal__header">
-                        <h2 class="changelog-modal__title" id="versionChangelogTitle">Version V1.669 Update Notes</h2>
-                        <span class="changelog-tab__subtitle">Valentines Update</span>
-                        <p class="changelog-modal__meta">Updated 2026/02/14 at 11:50 AM CET</p>
-                    </header>
-                    <p class="changelog-modal__intro">Latest changes:</p>
-                    <ul class="changelog-modal__list">
-                        <a class="bigClass"><span class="sigil-outline-valentine-2026">Valentine Event 2026</span>!</a>
-                        <p>Now that the <span class="sigil-outline-valentine-2026">Valentine Event</span> of 2026 has begun, sad that the event only adds one singular rollable aura, but it's still a nice looking one XD</p>
-                        <ul>
-                            <li>Added the aura <span class="sigil-outline-valentine-2026">Symphony : Bloomed</span> <span class="tinyClass">1 in 375,000,000</span></li>
-                        </ul>
-                        <li>Snowy particles were moved to winter events selections while valentine events are filled with floating hearts to fit the theme of the current event chosen.</li>
-                        <li>The <span class="subtitleClass">Remove particles</span> quality preference now disables the new heart particles too, and <span class="sigil-outline-glitch">Glitch</span> sigil outlines remain visible even when glitch effects are removed.</li>
-                    </ul>
-                    <li>Axis' dev biome <span class="sigil-outline-mastermind">[ Mastermind ]</span> has been added as a dev biome. This including:</li>
-                    <ul class="changelog-modal__list">
-                        <li>The aura <span class="sigil-effect-clockwork">Clockwork</span> has been added obtained within <span class="sigil-outline-mastermind">[ Mastermind ]</span>. <span class="tinyClass">1 in 530k</span></li>
-                    </ul>
-                    <li>Word's dev biome <span class="sigil-outline-edict">The Citadel of Orders</span> has been added as a dev biome. This including:</li>
-                    <ul class="changelog-modal__list">
-                        <li>The aura <span class="sigil-outline-edict">Attorney</span> has been added obtained within <span class="sigil-outline-edict">The Citadel of Orders</span>. <span class="tinyClass">1 in 270k</span></li>
-                        <li>The aura <span class="sigil-outline-edict">Verdict</span> has been added obtained within <span class="sigil-outline-edict">The Citadel of Orders</span>. <span class="tinyClass">1 in 700k</span></li>
-                    </ul>
-                    <li>A fix to the Ascendant cutscene where it would previously take time to load as it was heavily sized + the new cutscene was taken from me instead.</li>
                     <p>If there's any bugs you encounter, please DM me here <a href="https://discord.com/users/611204110955446301" class="subtitleClass" target="_blank" rel="noopener">@not.unnamed</a></p>
                 </section>
             </div>

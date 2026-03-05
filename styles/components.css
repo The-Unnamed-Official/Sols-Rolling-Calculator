@@ -256,7 +256,6 @@ details[data-select="vip-dropdown"] {
     gap: 12px;
     font-size: 13px;
     letter-spacing: 0.08em;
-    text-transform: uppercase;
     color: var(--text-secondary);
     width: 100%;
 }
@@ -380,7 +379,6 @@ details[data-select="vip-dropdown"] {
     color: var(--text-secondary);
     font-size: 11px;
     letter-spacing: 0.08em;
-    text-transform: uppercase;
     cursor: pointer;
     transition: color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
 }
@@ -1220,7 +1218,6 @@ body:not(.reduce-motion) #luck-preset-hundred-million.luck-preset-button--master
     font-family: inherit;
     font-size: 11px;
     letter-spacing: 0.14em;
-    text-transform: uppercase;
     padding: 10px 12px;
     color: var(--text-primary);
     transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease, background 0.25s ease;

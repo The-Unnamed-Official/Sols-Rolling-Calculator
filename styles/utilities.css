@@ -1322,7 +1322,6 @@
       margin: 0;
       font-size: clamp(18px, 2vw, 22px);
       letter-spacing: 0.18em;
-      text-transform: uppercase;
   }
 
   .audio-modal__hint {
@@ -1355,7 +1354,6 @@
 }
 
 .audio-modal__toggle-label {
-    text-transform: uppercase;
     letter-spacing: 0.14em;
     font-weight: 600;
     color: var(--text-primary);
@@ -1433,7 +1431,6 @@
     font-size: 0.82rem;
     font-weight: 700;
     letter-spacing: 0.08em;
-    text-transform: uppercase;
 }
 
 .quality-settings__description {
@@ -1582,7 +1579,6 @@
     align-items: center;
     justify-content: space-between;
     gap: 12px;
-    text-transform: uppercase;
     letter-spacing: 0.14em;
     font-weight: 600;
 }
@@ -1767,7 +1763,6 @@
     font-family: "Sarpanch", sans-serif;
     font-size: clamp(13px, 1.6vw, 15px);
     letter-spacing: 0.16em;
-    text-transform: uppercase;
     padding: 14px 20px 12px;
     border-radius: 12px 12px 0 0;
     box-shadow:
@@ -1784,15 +1779,11 @@
     transform: translateY(15px);
     pointer-events: auto;
     top: -21px;
-    z-index: -100 !important;
+    z-index: -200 !important;
     display: flex;
     flex-direction: column;
     align-items: flex-start;
     text-align: left;
-}
-
-.changelog-tab__title {
-    text-transform: uppercase;
 }
 
 .changelog-tab__subtitle {
@@ -1893,7 +1884,6 @@
     margin: 0;
     font-size: clamp(20px, 3vw, 26px);
     letter-spacing: 0.1em;
-    text-transform: uppercase;
 }
 
 .changelog-modal__meta {

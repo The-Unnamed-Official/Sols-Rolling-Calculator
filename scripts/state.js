@@ -20,7 +20,7 @@
             m10: document.getElementById('tenMillionSound'),
             m100: document.getElementById('hundredMillionSound'),
             explosion: document.getElementById('explosionSoundFx'),
-            limbo99m: document.getElementById('limbo99mSoundFx')
+            m100limbo: document.getElementById('hundredMillionlimboSound')
         }
     };
 
