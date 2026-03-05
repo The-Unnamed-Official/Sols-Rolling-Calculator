@@ -7656,7 +7656,7 @@ function runRollSimulation(options = {}) {
 
         if (highestChance >= 99999999) {
             if (biome === 'limbo') {
-                playSoundEffect(audio.limbo99m, 'obtain');
+                playSoundEffect(audio.m100limbo, 'obtain');
             } else {
                 playSoundEffect(audio.m100, 'obtain');
             }

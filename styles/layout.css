@@ -667,7 +667,7 @@
 }
 
 .feed__tip-label {
-    color: rgb(var(--accent-rgb) / 0.98);
+    color: #b4ffbaef;
     margin-right: 8px;
 }
 
@@ -676,7 +676,7 @@
     font-size: clamp(8px, 1.6vw, 10px);
     letter-spacing: 0.18em;
     text-transform: uppercase;
-    color: rgba(199, 219, 255, 0.8);
+    color: #5a6d90cc;
     text-align: right;
 }
 
@@ -714,14 +714,12 @@
     margin: 0;
     font-size: clamp(16px, 2.3vw, 20px);
     letter-spacing: 0.24em;
-    text-transform: uppercase;
 }
 
 .surface__subtitle {
     margin: 0;
     font-size: 13px;
     letter-spacing: 0.14em;
-    text-transform: uppercase;
     color: var(--text-tertiary);
 }
 
