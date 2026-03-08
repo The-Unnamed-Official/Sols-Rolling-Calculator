@@ -87,15 +87,17 @@ function applyLatestUpdateBadgeToChangelogTabs(tabs) {
             return;
         }
 
+        const titleNode = tab.querySelector('.changelog-tab__title');
+        const labelTarget = titleNode || tab;
         const baseLabel = tab.dataset.baseLabel
-            || tab.textContent.replace(/\s*\(Latest Update\)\s*$/i, '').trim();
+            || labelTarget.textContent.replace(/\s*\(Latest Update\)\s*$/i, '').trim();
         tab.dataset.baseLabel = baseLabel;
 
         if (!badgeAssigned) {
-            tab.textContent = `${baseLabel}${LATEST_UPDATE_LABEL_SUFFIX}`;
+            labelTarget.textContent = `${baseLabel}${LATEST_UPDATE_LABEL_SUFFIX}`;
             badgeAssigned = true;
         } else {
-            tab.textContent = baseLabel;
+            labelTarget.textContent = baseLabel;
         }
     });
 }
@@ -5411,11 +5413,75 @@ function setupChangelogTabs() {
         return;
     }
 
-    const tabs = Array.from(tablist.querySelectorAll('[data-changelog-tab]'));
     const panels = Array.from(document.querySelectorAll('[data-changelog-panel]'));
     const panelContainer = document.querySelector('[data-changelog-panels]');
+    const jumpSelect = document.querySelector('[data-changelog-jump]');
+    const navigationButtons = Array.from(document.querySelectorAll('[data-changelog-nav]'));
 
-    if (!tabs.length || !panels.length) {
+    if (!panels.length) {
+        return;
+    }
+
+    const formatVersionLabel = (versionId, panel) => {
+        const explicitLabel = panel.getAttribute('data-changelog-label');
+        if (explicitLabel) {
+            return explicitLabel.trim();
+        }
+
+        const titleElement = panel.querySelector('.changelog-modal__title');
+        if (titleElement) {
+            const match = titleElement.textContent.match(/v\d+(?:\.\d+)?/i);
+            if (match && match[0]) {
+                return match[0];
+            }
+        }
+
+        const normalizedVersionId = String(versionId || '').trim();
+        if (/^v\d+$/i.test(normalizedVersionId)) {
+            const numericVersion = normalizedVersionId.slice(1);
+            if (numericVersion.length > 1) {
+                return `v${numericVersion.charAt(0)}.${numericVersion.slice(1)}`;
+            }
+        }
+
+        return normalizedVersionId || 'Unknown';
+    };
+
+    let tabs = Array.from(tablist.querySelectorAll('[data-changelog-tab]'));
+    const existingTabIds = new Set(tabs.map(tab => tab.dataset.changelogTab));
+    let missingTabsCreated = false;
+
+    panels.forEach(panel => {
+        const panelId = panel.dataset.changelogPanel;
+        if (!panelId || existingTabIds.has(panelId)) {
+            return;
+        }
+
+        const tab = document.createElement('button');
+        tab.type = 'button';
+        tab.className = 'changelog-tab';
+        tab.id = `changelog-tab-${panelId}`;
+        tab.setAttribute('role', 'tab');
+        tab.setAttribute('aria-controls', panel.id);
+        tab.setAttribute('aria-selected', 'false');
+        tab.setAttribute('tabindex', '-1');
+        tab.dataset.changelogTab = panelId;
+
+        const title = document.createElement('span');
+        title.className = 'changelog-tab__title';
+        title.textContent = formatVersionLabel(panelId, panel);
+        tab.appendChild(title);
+
+        panel.setAttribute('aria-labelledby', tab.id);
+        tablist.appendChild(tab);
+        missingTabsCreated = true;
+    });
+
+    if (missingTabsCreated) {
+        tabs = Array.from(tablist.querySelectorAll('[data-changelog-tab]'));
+    }
+
+    if (!tabs.length) {
         return;
     }
 
@@ -5424,6 +5490,19 @@ function setupChangelogTabs() {
     const panelLookup = new Map();
     panels.forEach(panel => {
         panelLookup.set(panel.dataset.changelogPanel, panel);
+    });
+
+    tabs.forEach(tab => {
+        const panelId = tab.dataset.changelogTab;
+        const panel = panelLookup.get(panelId);
+        if (!panel) {
+            return;
+        }
+        if (!tab.id) {
+            tab.id = `changelog-tab-${panelId}`;
+        }
+        tab.setAttribute('aria-controls', panel.id);
+        panel.setAttribute('aria-labelledby', tab.id);
     });
 
     let activePanelId = null;
@@ -5446,6 +5525,28 @@ function setupChangelogTabs() {
             }
         });
     }
+
+    const getTabIndexById = tabId => tabs.findIndex(tab => tab.dataset.changelogTab === tabId);
+
+    const updateControlsForActiveTab = targetId => {
+        const activeIndex = getTabIndexById(targetId);
+        if (activeIndex === -1) {
+            return;
+        }
+
+        navigationButtons.forEach(button => {
+            const direction = button.getAttribute('data-changelog-nav');
+            if (direction === 'newer') {
+                button.disabled = activeIndex <= 0;
+            } else if (direction === 'older') {
+                button.disabled = activeIndex >= tabs.length - 1;
+            }
+        });
+
+        if (jumpSelect) {
+            jumpSelect.value = targetId;
+        }
+    };
 
     const activateTab = (targetId, { animate = true } = {}) => {
         const nextPanel = panelLookup.get(targetId);
@@ -5506,6 +5607,16 @@ function setupChangelogTabs() {
         }
 
         activePanelId = targetId;
+        updateControlsForActiveTab(targetId);
+
+        const activeTab = tabs.find(tab => tab.dataset.changelogTab === targetId);
+        if (activeTab && typeof activeTab.scrollIntoView === 'function') {
+            activeTab.scrollIntoView({
+                block: 'nearest',
+                inline: 'center',
+                behavior: appState.reduceMotion ? 'auto' : 'smooth'
+            });
+        }
     };
 
     const focusTabByOffset = (currentTab, offset) => {
@@ -5550,6 +5661,49 @@ function setupChangelogTabs() {
             }
         });
     });
+
+    navigationButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            if (!activePanelId) {
+                return;
+            }
+
+            const currentIndex = getTabIndexById(activePanelId);
+            if (currentIndex === -1) {
+                return;
+            }
+
+            const direction = button.getAttribute('data-changelog-nav');
+            const targetIndex = direction === 'older' ? currentIndex + 1 : currentIndex - 1;
+            const targetTab = tabs[targetIndex];
+            if (!targetTab) {
+                return;
+            }
+
+            targetTab.focus();
+            activateTab(targetTab.dataset.changelogTab);
+        });
+    });
+
+    if (jumpSelect) {
+        jumpSelect.innerHTML = '';
+        tabs.forEach(tab => {
+            const option = document.createElement('option');
+            option.value = tab.dataset.changelogTab;
+            option.textContent = tab.dataset.baseLabel || tab.textContent.trim();
+            jumpSelect.appendChild(option);
+        });
+
+        jumpSelect.addEventListener('change', () => {
+            const targetId = jumpSelect.value;
+            const targetTab = tabs.find(tab => tab.dataset.changelogTab === targetId);
+            if (!targetTab) {
+                return;
+            }
+            targetTab.focus();
+            activateTab(targetId);
+        });
+    }
 
     const presetActiveTab = tabs.find(tab => tab.getAttribute('aria-selected') === 'true');
     const initialTab = presetActiveTab || tabs[0];
