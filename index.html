@@ -146,11 +146,11 @@
                 <div class="banner__meta">
                     <h1 class="banner__title">Sol's Rolling Simulator</h1>
                     <p class="banner__subtitle">
-                        <button type="button" class="banner__version-button" id="versionInfoButton" aria-haspopup="dialog" aria-expanded="false" data-version-id="v1711">v1.711</button>
+                        <button type="button" class="banner__version-button" id="versionInfoButton" aria-haspopup="dialog" aria-expanded="false" data-version-id="v1712">v1.712</button>
                         <span class="banner__subtitle-divider" aria-hidden="true">◉</span>
                         <span class="banner__subtitle-author">By <span class="banner__subtitle-author-name"><a href="https://discord.com/users/611204110955446301" target="_blank" rel="noopener">not.unnamed</a></span></span>
                         <span class="banner__subtitle-divider" aria-hidden="true">◉</span>
-                        <span class="banner__subtitle-updated">Updated <time datetime="2026-03-05T21:40:00+01:00">2026/03/05 9:40 PM CET</time></span>
+                        <span class="banner__subtitle-updated">Updated <time datetime="2026-03-08T05:40:00+01:00">2026/03/08 5:40 AM CET</time></span>
                         <span class="banner__subtitle-divider" aria-hidden="true">◉</span>
                         <span class="banner__subtitle-eon"><span class="banner__subtitle-game-version"><a href="https://www.roblox.com/games/15532962292/Sols-RNG" target="_blank" rel="noopener">Sol's RNG Eon 1-17</a></span></span>
                     </p>
@@ -958,99 +958,52 @@
 
     <div id="versionChangelogOverlay" class="modal-overlay" hidden>
         <div class="surface surface--modal changelog-modal" role="dialog" aria-modal="true" aria-labelledby="versionChangelogTitle">
-            <button
-                type="button"
-                class="interface-button interface-button--ghost changelog-modal__close"
-                id="versionChangelogClose"
-                aria-label="Close changelog dialog"
-            >
-                Close
-            </button>
-            <div class="changelog-modal__tabbar" role="tablist" aria-label="Changelog versions" data-changelog-tablist>
-                <button
-                    type="button"
-                    class="changelog-tab changelog-tab--active"
-                    id="changelog-tab-v1711"
-                    role="tab"
-                    aria-controls="changelog-panel-v1711"
-                    aria-selected="true"
-                    data-changelog-tab="v1711"
-                >
-                    <span class="changelog-tab__title">v1.711</span>
-                </button>
-                <button
-                    type="button"
-                    class="changelog-tab changelog-tab--active"
-                    id="changelog-tab-v1710"
-                    role="tab"
-                    aria-controls="changelog-panel-v1710"
-                    aria-selected="false"
-                    data-changelog-tab="v1710"
-                    tabindex="-1"
-                >
-                    <span class="changelog-tab__title">v1.710</span>
-                </button>
-                <button
-                    type="button"
-                    class="changelog-tab changelog-tab--active"
-                    id="changelog-tab-v1707"
-                    role="tab"
-                    aria-controls="changelog-panel-v1707"
-                    aria-selected="false"
-                    data-changelog-tab="v1707"
-                    tabindex="-1"
-                >
-                    <span class="changelog-tab__title">v1.707</span>
-                </button>
-                <button
-                    type="button"
-                    class="changelog-tab changelog-tab--active"
-                    id="changelog-tab-v1704"
-                    role="tab"
-                    aria-controls="changelog-panel-v1704"
-                    aria-selected="false"
-                    data-changelog-tab="v1704"
-                    tabindex="-1"
-                >
-                    <span class="changelog-tab__title">v1.704</span>
-                </button>
-                <button
-                    type="button"
-                    class="changelog-tab changelog-tab--active"
-                    id="changelog-tab-v1703"
-                    role="tab"
-                    aria-controls="changelog-panel-v1703"
-                    aria-selected="false"
-                    data-changelog-tab="v1703"
-                    tabindex="-1"
-                >
-                    <span class="changelog-tab__title">v1.703</span>
-                </button>
-                <button
-                    type="button"
-                    class="changelog-tab changelog-tab--active"
-                    id="changelog-tab-v1702"
-                    role="tab"
-                    aria-controls="changelog-panel-v1702"
-                    aria-selected="false"
-                    data-changelog-tab="v1702"
-                    tabindex="-1"
-                >
-                    <span class="changelog-tab__title">v1.702</span>
-                </button>
+            <h2 class="sr-only" id="versionChangelogTitle">Version changelog</h2>
+
+            <div class="changelog-modal__controls">
+                <button type="button" class="interface-button interface-button--ghost changelog-nav-button" data-changelog-nav="newer" aria-label="View newer version updates">Newer</button>
+                <div class="changelog-modal__tabbar" role="tablist" aria-label="Changelog versions" data-changelog-tablist></div>
+                <button type="button" class="interface-button interface-button--ghost changelog-nav-button" data-changelog-nav="older" aria-label="View older version updates">Older</button>
+                <label class="changelog-version-picker">
+                    <span class="changelog-version-picker__label">Jump to version</span>
+                    <select class="form-field__input form-field__input--native changelog-version-picker__select" data-changelog-jump></select>
+                </label>
             </div>
 
             <div class="changelog-modal__panels" data-changelog-panels>
+                <section
+                    id="changelog-panel-v1712"
+                    class="changelog-modal__panel"
+                    role="tabpanel"
+                    aria-labelledby="changelog-tab-v1712"
+                    data-changelog-panel="v1712"
+                    tabindex="0"
+                >
+                    <header class="changelog-modal__header">
+                        <h2 class="changelog-modal__title">Version v1.712 Update Notes</h2>
+                        <span class="changelog-tab__subtitle">Update Log Changes</span>
+                        <p class="changelog-modal__meta">Updated 2026/03/08 at 5:40 AM CET</p>
+                    </header>
+                    <p class="changelog-modal__intro">Latest changes:</p>
+                    <ul class="changelog-modal__list">
+                        <li>Reworked the Update Changelog method of displaying each update.</li>
+                        <ul>
+                            <li>With this method, even older versions are easily viewable at any time instead of being removed :3</li>
+                        </ul>
+                    </ul>
+                    <p>If there's any bugs you encounter, please DM me here <a href="https://discord.com/users/611204110955446301" class="subtitleClass" target="_blank" rel="noopener">@not.unnamed</a></p>
+                </section>
                 <section
                     id="changelog-panel-v1711"
                     class="changelog-modal__panel"
                     role="tabpanel"
                     aria-labelledby="changelog-tab-v1711"
                     data-changelog-panel="v1711"
-                    tabindex="0"
+                    hidden
+                    tabindex="-1"
                 >
                     <header class="changelog-modal__header">
-                        <h2 class="changelog-modal__title" id="versionChangelogTitle">Version v1.711 Update Notes</h2>
+                        <h2 class="changelog-modal__title">Version v1.711 Update Notes</h2>
                         <span class="changelog-tab__subtitle">Limbo Global SFX Fix</span>
                         <p class="changelog-modal__meta">Updated 2026/03/05 at 9:40 PM CET</p>
                     </header>
@@ -1073,7 +1026,7 @@
                     tabindex="-1"
                 >
                     <header class="changelog-modal__header">
-                        <h2 class="changelog-modal__title" id="versionChangelogTitle">Version v1.710 Update Notes</h2>
+                        <h2 class="changelog-modal__title">Version v1.710 Update Notes</h2>
                         <span class="changelog-tab__subtitle">Red Full Moon | <span class="sigil-outline-赤月の破片">赤月の破片</span></span>
                         <p class="changelog-modal__meta">Updated 2026/02/28 at 12:50 PM CET</p>
                     </header>
@@ -1104,7 +1057,7 @@
                     tabindex="-1"
                 >
                     <header class="changelog-modal__header">
-                        <h2 class="changelog-modal__title" id="versionChangelogTitle">Version v1.707 Update Notes</h2>
+                        <h2 class="changelog-modal__title">Version v1.707 Update Notes</h2>
                         <span class="changelog-tab__subtitle">Accurate Simulation Display Update</span>
                         <p class="changelog-modal__meta">Updated 2026/02/20 at 1:20 PM CET</p>
                     </header>
@@ -1128,7 +1081,7 @@
                     tabindex="-1"
                 >
                     <header class="changelog-modal__header">
-                        <h2 class="changelog-modal__title" id="versionChangelogTitle">Version v1.704 Update Notes</h2>
+                        <h2 class="changelog-modal__title">Version v1.704 Update Notes</h2>
                         <span class="changelog-tab__subtitle">Bug Fixes</span>
                         <p class="changelog-modal__meta">Updated 2026/02/17 at 06:00 AM CET</p>
                     </header>
@@ -1156,7 +1109,7 @@
                     tabindex="-1"
                 >
                     <header class="changelog-modal__header">
-                        <h2 class="changelog-modal__title" id="versionChangelogTitle">Version v1.703 Update Notes</h2>
+                        <h2 class="changelog-modal__title">Version v1.703 Update Notes</h2>
                         <span class="changelog-tab__subtitle">Pixelated Remains</span>
                         <p class="changelog-modal__meta">Updated 2026/02/16 at 06:10 PM CET</p>
                     </header>
@@ -1172,7 +1125,7 @@
                     tabindex="-1"
                 >
                     <header class="changelog-modal__header">
-                        <h2 class="changelog-modal__title" id="versionChangelogTitle">Version v1.702 Update Notes</h2>
+                        <h2 class="changelog-modal__title">Version v1.702 Update Notes</h2>
                         <span class="changelog-tab__subtitle">Aura & Biome Style Alignment</span>
                         <p class="changelog-modal__meta">Updated 2026/02/15 at 11:00 PM CET</p>
                     </header>
