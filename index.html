@@ -206,6 +206,7 @@
                             <span class="resource-link__arrow">➜</span>
                             <span class="resource-link__arrow">➜</span>
                             <span class="resource-link__arrow">➜</span>
+                        </span>
                     </a>
                     <a class="resource-link resource-link--nolifers" href="https://discord.gg/nolifers" target="_blank" rel="noopener">
                         <span class="resource-link__label">Nolifers Discord</span>
@@ -267,7 +268,7 @@
                     <button class="roll-cancel" type="button" id="rollCancelButton" hidden>Cancel Roll</button>
                 </div>
 
-                <section class="control-section">
+                <section class="control-section control-section--luck">
                     <h3 class="control-section__title">Luck Multipliers</h3>
                     <label class="form-field form-field--select" for="vip-dropdown">
                         <span class="form-field__label">VIP Luck</span>
@@ -360,7 +361,7 @@
                     <h2 class="surface__title" id="parameters-heading">Run Parameters</h2>
                     <p class="surface__subtitle">Tune your luck totals, roll counts, biome, and seasonal event modifiers.</p>
                 </header>
-                <div class="control-section">
+                <div class="control-section control-section--run-dev">
                     <div class="form-field form-field--toggle">
                         <span class="form-field__label">Dev Biomes</span>
                         <p>Enable to access experimental biomes like Another Realm and Unknown.</p>
@@ -371,7 +372,7 @@
                         </label>
                     </div>
                 </div>
-                <div class="control-section">
+                <div class="control-section control-section--run-main">
                     <label class="form-field" for="luck-total">
                         <span class="form-field__label">Luck Total</span>
                         <div class="form-field__combo">
@@ -542,7 +543,7 @@
                             </details>
                         </div>
                     </div>
-                    <div class="quick-action-group">
+                    <div class="quick-action-group" role="group" aria-label="Quick biome actions">
                         <button class="interface-button interface-button--ghost" type="button" onclick="setGlitchPreset()">Set <span class="sigil-outline-glitch">Glitch</span></button>
                         <button class="interface-button interface-button--ghost" type="button" onclick="setCyberspacePreset()">Set <span class="sigil-outline-cyberspace">Cyberspace</span></button>
                         <button class="interface-button interface-button--ghost" type="button" onclick="setDreamspacePreset()">Set <span class="sigil-outline-dreamspace">Dreamspace</span></button>

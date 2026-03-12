@@ -611,6 +611,135 @@ select.form-field__input option {
     gap: 10px;
 }
 
+.control-section--luck {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px 12px;
+    padding: clamp(12px, 1.8vw, 16px);
+}
+
+.control-section--luck > .control-section__title,
+.control-section--luck > .form-field--select,
+.control-section--luck > #dave-luck-wrapper {
+    grid-column: 1 / -1;
+}
+
+.control-section--luck > .form-field--toggle {
+    min-height: 48px;
+    padding: 8px 10px;
+    gap: 10px;
+    background: linear-gradient(180deg, rgba(8, 16, 30, 0.76), rgba(4, 10, 20, 0.86));
+    border: 1px solid rgb(var(--accent-rgb) / 0.2);
+    box-shadow: inset 0 0 12px rgb(var(--accent-rgb) / 0.12);
+}
+
+.control-section--luck .form-field__label {
+    line-height: 1.3;
+}
+
+.control-section--run-dev,
+.control-section--run-main {
+    gap: 10px;
+    padding: clamp(12px, 1.8vw, 16px);
+}
+
+.control-section--run-dev .form-field--toggle {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+        "label toggle"
+        "hint toggle";
+    align-items: start;
+    column-gap: 12px;
+    row-gap: 4px;
+    padding: 10px 12px;
+    background: linear-gradient(180deg, rgba(8, 16, 30, 0.74), rgba(4, 10, 20, 0.86));
+    border: 1px solid rgb(var(--accent-rgb) / 0.2);
+    box-shadow: inset 0 0 12px rgb(var(--accent-rgb) / 0.12);
+}
+
+.control-section--run-dev .form-field__label {
+    grid-area: label;
+}
+
+.control-section--run-dev .form-field--toggle > p {
+    grid-area: hint;
+    margin: 0;
+    flex: 1 1 auto;
+    min-width: 0;
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    line-height: 1.45;
+    color: var(--text-tertiary);
+}
+
+.control-section--run-dev .toggle {
+    grid-area: toggle;
+    align-self: center;
+    flex-shrink: 0;
+    margin-left: auto;
+}
+
+.control-section--run-main .form-field__combo {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 8px;
+    align-items: center;
+}
+
+.control-section--run-main .form-field__combo .interface-button {
+    min-height: 42px;
+    padding-inline: 14px;
+}
+
+.control-section--run-main .form-field__input:not(.interface-select__summary):not(.form-field__input--native) {
+    padding: 10px 12px;
+}
+
+.control-section--run-main .interface-select__summary {
+    min-height: 42px;
+    padding: 10px 14px;
+}
+
+.control-section--run-main .quick-action-group {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(142px, 1fr));
+    gap: 8px;
+}
+
+.control-section--run-main .quick-action-group .interface-button {
+    width: 100%;
+    min-height: 42px;
+    padding-inline: 12px;
+    justify-content: center;
+}
+
+@media (max-width: 760px) {
+    .control-section--luck {
+        grid-template-columns: 1fr;
+    }
+
+    .control-section--run-dev .form-field--toggle {
+        grid-template-columns: 1fr;
+        grid-template-areas:
+            "label"
+            "hint"
+            "toggle";
+    }
+
+    .control-section--run-dev .toggle {
+        margin-left: 0;
+    }
+
+    .control-section--run-main .form-field__combo {
+        grid-template-columns: 1fr;
+    }
+
+    .control-section--run-main .form-field__combo .interface-button {
+        width: 100%;
+    }
+}
+
 .christmasClass {
     background: linear-gradient(135deg, #b30a0a 50%, #11cb00 50%);
     -webkit-background-clip: text;

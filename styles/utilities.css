@@ -1044,7 +1044,18 @@
             "side side";
     }
 
+    .interface-header {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .masthead__brand {
+        width: 100%;
+    }
+
     .masthead__controls {
+        width: 100%;
+        margin-left: 0;
         flex-wrap: wrap;
     }
 
@@ -1075,26 +1086,60 @@
 
     .masthead__controls {
         width: 100%;
-        justify-content: center;
         margin-left: 0;
-        align-self: center;
-        flex-wrap: wrap;
+        align-self: stretch;
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
+        justify-content: stretch;
     }
 
     .interface-header {
         flex-direction: column;
-        align-items: flex-start;
+        align-items: stretch;
+    }
+
+    .masthead__controls > .interface-toggle,
+    .masthead__controls > .options-menu {
+        width: 100%;
+        min-width: 0;
+    }
+
+    .masthead__controls .interface-toggle,
+    .masthead__controls .options-menu__trigger,
+    #filterMenuToggle {
+        width: 100%;
+        min-width: 0;
+    }
+
+    .options-menu__surface {
+        left: 0;
+        right: auto;
+        width: min(100%, 420px);
     }
 
     .banner__meta {
-        text-align: center;
+        width: 100%;
+        text-align: left;
     }
 
     .banner__title,
-    .banner__subtitle,
+    .banner__subtitle {
+        text-align: left;
+    }
+
     .surface__title,
     .surface__subtitle {
         text-align: center;
+    }
+
+    .banner__subtitle {
+        gap: 0.45em 0.7em;
+        line-height: 1.4;
+    }
+
+    .banner__subtitle-divider {
+        display: none;
     }
 
     .feed__viewport {
@@ -1119,6 +1164,35 @@
 }
 
 @media (max-width: 980px) {
+    .interface-header {
+        align-items: stretch;
+    }
+
+    .masthead__controls {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
+        align-items: stretch;
+    }
+
+    .masthead__controls > .interface-toggle,
+    .masthead__controls > .options-menu,
+    .masthead__controls .options-menu__trigger,
+    #filterMenuToggle {
+        width: 100%;
+        min-width: 0;
+    }
+
+    .options-menu__surface {
+        left: 0;
+        right: auto;
+        width: min(100%, 420px);
+    }
+
+    .masthead__controls .options-menu__trigger {
+        padding-inline: 16px 56px;
+    }
+
     .preset-matrix--compact {
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }
@@ -1136,16 +1210,41 @@
     }
 
     .interface-header {
-        align-items: center;
+        align-items: stretch;
     }
 
     .masthead__brand {
-        flex-direction: column;
-        text-align: center;
+        flex-direction: row;
+        align-items: flex-start;
+        text-align: left;
+        gap: 12px;
+    }
+
+    .banner__emblem-stack {
+        width: 52px;
+    }
+
+    .banner__title {
+        font-size: clamp(18px, 5.6vw, 23px);
+        letter-spacing: 0.08em;
+    }
+
+    .banner__subtitle {
+        font-size: clamp(10px, 2.8vw, 11px);
+        letter-spacing: 0.1em;
+        gap: 0.35em 0.55em;
+    }
+
+    .masthead__controls {
+        grid-template-columns: 1fr;
     }
 
     .options-menu__trigger {
         text-align: left !important;
+    }
+
+    .options-menu__surface {
+        width: min(100%, calc(100vw - 32px));
     }
 
     .surface {
