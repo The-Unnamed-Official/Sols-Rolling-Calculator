@@ -146,11 +146,11 @@
                 <div class="banner__meta">
                     <h1 class="banner__title">Sol's Rolling Simulator</h1>
                     <p class="banner__subtitle">
-                        <button type="button" class="banner__version-button" id="versionInfoButton" aria-haspopup="dialog" aria-expanded="false" data-version-id="v1712">v1.712</button>
+                        <button type="button" class="banner__version-button" id="versionInfoButton" aria-haspopup="dialog" aria-expanded="false" data-version-id="v1715">v1.715</button>
                         <span class="banner__subtitle-divider" aria-hidden="true">◉</span>
                         <span class="banner__subtitle-author">By <span class="banner__subtitle-author-name"><a href="https://discord.com/users/611204110955446301" target="_blank" rel="noopener">not.unnamed</a></span></span>
                         <span class="banner__subtitle-divider" aria-hidden="true">◉</span>
-                        <span class="banner__subtitle-updated">Updated <time datetime="2026-03-08T05:40:00+01:00">2026/03/08 5:40 AM CET</time></span>
+                        <span class="banner__subtitle-updated">Updated <time datetime="2026-03-12T15:30:00+01:00">2026/03/12 3:30 PM CET</time></span>
                         <span class="banner__subtitle-divider" aria-hidden="true">◉</span>
                         <span class="banner__subtitle-eon"><span class="banner__subtitle-game-version"><a href="https://www.roblox.com/games/15532962292/Sols-RNG" target="_blank" rel="noopener">Sol's RNG Eon 1-17</a></span></span>
                     </p>
@@ -206,6 +206,7 @@
                             <span class="resource-link__arrow">➜</span>
                             <span class="resource-link__arrow">➜</span>
                             <span class="resource-link__arrow">➜</span>
+                        </span>
                     </a>
                     <a class="resource-link resource-link--nolifers" href="https://discord.gg/nolifers" target="_blank" rel="noopener">
                         <span class="resource-link__label">Nolifers Discord</span>
@@ -267,7 +268,7 @@
                     <button class="roll-cancel" type="button" id="rollCancelButton" hidden>Cancel Roll</button>
                 </div>
 
-                <section class="control-section">
+                <section class="control-section control-section--luck">
                     <h3 class="control-section__title">Luck Multipliers</h3>
                     <label class="form-field form-field--select" for="vip-dropdown">
                         <span class="form-field__label">VIP Luck</span>
@@ -332,6 +333,14 @@
                             <span class="toggle__thumb"></span>
                         </label>
                     </div>
+                    <div id="word-luck-wrapper" class="form-field form-field--toggle">
+                        <span class="form-field__label">Word Event (1.2×)</span>
+                        <label class="toggle">
+                            <input type="checkbox" id="word-luck-toggle" class="toggle__input">
+                            <span class="toggle__track"></span>
+                            <span class="toggle__thumb"></span>
+                        </label>
+                    </div>
                     <div id="dorcelessness-luck-wrapper" class="form-field form-field--toggle">
                         <span class="form-field__label">Dorcelessness (2×)</span>
                         <label class="toggle">
@@ -360,7 +369,7 @@
                     <h2 class="surface__title" id="parameters-heading">Run Parameters</h2>
                     <p class="surface__subtitle">Tune your luck totals, roll counts, biome, and seasonal event modifiers.</p>
                 </header>
-                <div class="control-section">
+                <div class="control-section control-section--run-dev">
                     <div class="form-field form-field--toggle">
                         <span class="form-field__label">Dev Biomes</span>
                         <p>Enable to access experimental biomes like Another Realm and Unknown.</p>
@@ -371,7 +380,7 @@
                         </label>
                     </div>
                 </div>
-                <div class="control-section">
+                <div class="control-section control-section--run-main">
                     <label class="form-field" for="luck-total">
                         <span class="form-field__label">Luck Total</span>
                         <div class="form-field__combo">
@@ -542,7 +551,7 @@
                             </details>
                         </div>
                     </div>
-                    <div class="quick-action-group">
+                    <div class="quick-action-group" role="group" aria-label="Quick biome actions">
                         <button class="interface-button interface-button--ghost" type="button" onclick="setGlitchPreset()">Set <span class="sigil-outline-glitch">Glitch</span></button>
                         <button class="interface-button interface-button--ghost" type="button" onclick="setCyberspacePreset()">Set <span class="sigil-outline-cyberspace">Cyberspace</span></button>
                         <button class="interface-button interface-button--ghost" type="button" onclick="setDreamspacePreset()">Set <span class="sigil-outline-dreamspace">Dreamspace</span></button>
@@ -972,12 +981,40 @@
 
             <div class="changelog-modal__panels" data-changelog-panels>
                 <section
+                    id="changelog-panel-v1715"
+                    class="changelog-modal__panel"
+                    role="tabpanel"
+                    aria-labelledby="changelog-tab-v1715"
+                    data-changelog-panel="v1715"
+                    tabindex="0"
+                >
+                    <header class="changelog-modal__header">
+                        <h2 class="changelog-modal__title">Version v1.715 Update Notes</h2>
+                        <span class="changelog-tab__subtitle">UI Rework & Device Parity</span>
+                        <p class="changelog-modal__meta">Updated 2026/03/12 at 5:30 PM CET</p>
+                    </header>
+                    <p class="changelog-modal__intro">Latest changes:</p>
+                    <ul class="changelog-modal__list">
+                        <li>Reworked the Run Parameters UI and Luck Multiplier.</li>
+                        <li>The website now has full support for any device and screen sizes!</li>
+                        <ul>
+                            <li>Phones, tablets, wide-screens, any device you're on? No sweat, they're all supported now!</li>
+                            <ul>
+                                <li>Switch thumbs now adapt their animation for how the length of the Switch is determined from your device</li>
+                                <li>Specific containers have been reworked to fit in with more readability and At least it looks cleaner now :3</li>
+                            </ul>
+                        </ul>
+                    </ul>
+                    <p>If there's any bugs you encounter, please DM me here <a href="https://discord.com/users/611204110955446301" class="subtitleClass" target="_blank" rel="noopener">@not.unnamed</a></p>
+                </section>
+                <section
                     id="changelog-panel-v1712"
                     class="changelog-modal__panel"
                     role="tabpanel"
                     aria-labelledby="changelog-tab-v1712"
                     data-changelog-panel="v1712"
-                    tabindex="0"
+                    hidden
+                    tabindex="-1"
                 >
                     <header class="changelog-modal__header">
                         <h2 class="changelog-modal__title">Version v1.712 Update Notes</h2>

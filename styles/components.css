@@ -516,7 +516,9 @@ select.form-field__input option {
 
 .toggle {
     position: relative;
-    width: 60px;
+    --toggle-inset: 4px;
+    --toggle-thumb-size: 24px;
+    width: clamp(60px, 7.5vw, 74px);
     height: 30px;
     display: inline-flex;
     align-items: center;
@@ -545,7 +547,7 @@ select.form-field__input option {
 
 .toggle__track {
     position: absolute;
-    inset: 4px;
+    inset: var(--toggle-inset);
     border-radius: 0;
     background: rgba(12, 24, 40, 0.88);
     border: 1px solid rgba(127, 227, 255, 0.28);
@@ -561,15 +563,14 @@ select.form-field__input option {
 
 .toggle__thumb {
     position: absolute;
-    width: 24px;
-    height: calc(100% - 8px);
+    width: var(--toggle-thumb-size);
+    height: calc(100% - (var(--toggle-inset) * 2));
     border-radius: 0;
     background: linear-gradient(160deg, rgba(127, 227, 255, 0.95), rgba(98, 210, 255, 0.9));
-    top: 4px;
-    left: 4px;
-    transition: transform 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+    top: var(--toggle-inset);
+    left: var(--toggle-inset);
+    transition: left 0.2s ease, transform 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
     box-shadow: 0 8px 16px rgba(0, 0, 0, 0.45);
-    transform: translateX(var(--thumb-translate, 0));
 }
 
 .toggle:hover .toggle__thumb {
@@ -578,7 +579,7 @@ select.form-field__input option {
 }
 
 .toggle:active .toggle__thumb {
-    transform: translateX(var(--thumb-translate, 0)) scale(0.96);
+    transform: scale(0.96);
 }
 
 .toggle__input:focus-visible + .toggle__track {
@@ -593,22 +594,158 @@ select.form-field__input option {
 }
 
 .toggle__input:checked + .toggle__track + .toggle__thumb {
-    --thumb-translate: 28px;
+    left: calc(100% - var(--toggle-inset) - var(--toggle-thumb-size));
     background: linear-gradient(160deg, rgba(165, 255, 255, 0.95), rgba(127, 227, 255, 0.88));
 }
 
 .toggle--dev-biomes {
-    width: 72px;
-}
-
-.toggle--dev-biomes .toggle__input:checked + .toggle__track + .toggle__thumb {
-    --thumb-translate: 30px;
+    width: clamp(68px, 8vw, 82px);
 }
 
 .quick-action-group {
     display: flex;
     flex-wrap: wrap;
     gap: 10px;
+}
+
+.control-section--luck {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 290px), 1fr));
+    gap: 10px 12px;
+    padding: clamp(12px, 1.8vw, 16px);
+}
+
+.control-section--luck > .control-section__title,
+.control-section--luck > .form-field--select,
+.control-section--luck > #dave-luck-wrapper {
+    grid-column: 1 / -1;
+}
+
+.control-section--luck > .form-field--toggle {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    column-gap: 12px;
+    min-height: 48px;
+    padding: 8px 10px;
+    background: linear-gradient(180deg, rgba(8, 16, 30, 0.76), rgba(4, 10, 20, 0.86));
+    border: 1px solid rgb(var(--accent-rgb) / 0.2);
+    box-shadow: inset 0 0 12px rgb(var(--accent-rgb) / 0.12);
+}
+
+.control-section--luck .form-field__label {
+    white-space: nowrap;
+    line-height: 1.3;
+    font-size: clamp(10.5px, 1.2vw, 12px);
+    letter-spacing: 0.12em;
+}
+
+.control-section--luck > .form-field--toggle .toggle {
+    margin-left: 8px;
+    flex-shrink: 0;
+}
+
+.control-section--run-dev,
+.control-section--run-main {
+    gap: 10px;
+    padding: clamp(12px, 1.8vw, 16px);
+}
+
+.control-section--run-dev .form-field--toggle {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+        "label toggle"
+        "hint toggle";
+    align-items: start;
+    column-gap: 12px;
+    row-gap: 4px;
+    padding: 10px 12px;
+    background: linear-gradient(180deg, rgba(8, 16, 30, 0.74), rgba(4, 10, 20, 0.86));
+    border: 1px solid rgb(var(--accent-rgb) / 0.2);
+    box-shadow: inset 0 0 12px rgb(var(--accent-rgb) / 0.12);
+}
+
+.control-section--run-dev .form-field__label {
+    grid-area: label;
+}
+
+.control-section--run-dev .form-field--toggle > p {
+    grid-area: hint;
+    margin: 0;
+    flex: 1 1 auto;
+    min-width: 0;
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    line-height: 1.45;
+    color: var(--text-tertiary);
+}
+
+.control-section--run-dev .toggle {
+    grid-area: toggle;
+    align-self: center;
+    flex-shrink: 0;
+    margin-left: auto;
+}
+
+.control-section--run-main .form-field__combo {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 8px;
+    align-items: center;
+}
+
+.control-section--run-main .form-field__combo .interface-button {
+    min-height: 42px;
+    padding-inline: 14px;
+}
+
+.control-section--run-main .form-field__input:not(.interface-select__summary):not(.form-field__input--native) {
+    padding: 10px 12px;
+}
+
+.control-section--run-main .interface-select__summary {
+    min-height: 42px;
+    padding: 10px 14px;
+}
+
+.control-section--run-main .quick-action-group {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(142px, 1fr));
+    gap: 8px;
+}
+
+.control-section--run-main .quick-action-group .interface-button {
+    width: 100%;
+    min-height: 42px;
+    padding-inline: 12px;
+    justify-content: center;
+}
+
+@media (max-width: 760px) {
+    .control-section--luck {
+        grid-template-columns: 1fr;
+    }
+
+    .control-section--run-dev .form-field--toggle {
+        grid-template-columns: 1fr;
+        grid-template-areas:
+            "label"
+            "hint"
+            "toggle";
+    }
+
+    .control-section--run-dev .toggle {
+        margin-left: 0;
+    }
+
+    .control-section--run-main .form-field__combo {
+        grid-template-columns: 1fr;
+    }
+
+    .control-section--run-main .form-field__combo .interface-button {
+        width: 100%;
+    }
 }
 
 .christmasClass {
