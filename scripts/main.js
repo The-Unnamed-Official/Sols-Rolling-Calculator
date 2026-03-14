@@ -4345,6 +4345,7 @@ const AURA_BLUEPRINT_SOURCE = Object.freeze([
     { name: "Winter Garden - 1,450,012,025", chance: 1450012025, breakthroughs: nativeBreakthroughs("aurora"), cutscene: "winter-garden-cutscene" },
     { name: "Luminosity - 1,200,000,000", chance: 1200000000, cutscene: "luminosity-cutscene" },
     { name: "Erebus - 1,200,000,000", chance: 1200000000, nativeBiomes: ["glitch", "bloodRain"], cutscene: "erebus-cutscene" },
+    { name: "Godslayer - 1,100,100,100", chance: 1100100100, cutscene: "godslayer-cutscene" },
     { name: "Pixelation - 1,073,741,824", chance: 1073741824, breakthroughs: nativeBreakthroughs("cyberspace"), nativeBiomes: ["cyberspace"], cutscene: "pixelation-cutscene" },
     { name: "Nyctophobia - 1,011,111,010", chance: 1011111010, nativeBiomes: ["limbo"], cutscene: "nyctophobia-cutscene" },
     { name: "Lamenthyr - 1,000,000,000", chance: 1000000000, nativeBiomes: ["glitch", "bloodRain"], cutscene: "lamenthyr-cutscene" },
@@ -4473,6 +4474,7 @@ const AURA_BLUEPRINT_SOURCE = Object.freeze([
     { name: "Wonderland - 12,000,000", chance: 12000000, breakthroughs: nativeBreakthroughs("snowy") },
     { name: "Sailor - 12,000,000", chance: 12000000, breakthroughs: nativeBreakthroughs("rainy") },
     { name: "Melodic - 11,300,000", chance: 11300000 },
+    { name: "Sapphire : Peace - 11,000,500", chance: 11000500 },
     { name: "Moonflower - 10,000,000", chance: 10000000, nativeBiomes: ["pumpkinMoon"] },
     { name: "Starscourge - 10,000,000", chance: 10000000, breakthroughs: nativeBreakthroughs("starfall") },
     { name: "Sharkyn - 10,000,000", chance: 10000000, breakthroughs: nativeBreakthroughs("rainy") },
@@ -4505,6 +4507,7 @@ const AURA_BLUEPRINT_SOURCE = Object.freeze([
     { name: "Shucks - 4,460,000", chance: 4460000, nativeBiomes: ["glitch", "bloodRain"] },
     { name: "Aquatic : Flame - 4,000,000", chance: 4000000 },
     { name: "Metabytes - 4,000,000", chance: 4000000, breakthroughs: nativeBreakthroughs("cyberspace"), nativeBiomes: ["cyberspace"] },
+    { name: "Wraith - 4,100,000", chance: 4100000 },
     { name: "Poseidon - 4,000,000", chance: 4000000, breakthroughs: nativeBreakthroughs("rainy") },
     { name: "Gingerbread - 3,750,000", chance: 3750000, breakthroughs: nativeBreakthroughs("aurora") },
     { name: "Werewolf - 3,600,000", chance: 3600000, nativeBiomes: ["glitch", "graveyard"] },
@@ -4514,6 +4517,7 @@ const AURA_BLUEPRINT_SOURCE = Object.freeze([
     { name: "Savior - 3,200,000", chance: 3200000 },
     { name: "Apatite - 3,133,133", chance: 3133133 },
     { name: "Lunar : Nightfall - 3,000,000", chance: 3000000, nativeBiomes: ["graveyard"] },
+    { name: "Orion - 3,000,000", chance: 3000000, breakthroughs: nativeBreakthroughs("starfall") },
     { name: "Parasite - 3,000,000", chance: 3000000, breakthroughs: nativeBreakthroughs("corruption") },
     { name: "Virtual - 2,500,000", chance: 2500000, breakthroughs: nativeBreakthroughs("cyberspace"), nativeBiomes: ["cyberspace"] },
     { name: "Evanescent - 2,360,000", chance: 2360000, breakthroughs: nativeBreakthroughs("rainy") },
@@ -4533,6 +4537,7 @@ const AURA_BLUEPRINT_SOURCE = Object.freeze([
     { name: "Undefined - 1,111,000", chance: 1111000, breakthroughs: nativeBreakthroughs("null", "limbo"), nativeBiomes: ["limbo-null"] },
     { name: "Magnetic : Reverse Polarity - 1,024,000", chance: 1024000 },
     { name: "Flushed : Troll - 1,000,000", chance: 1000000 },
+    { name: "ゴシック - 1,000,001", chance: 1000001, nativeBiomes: ["limbo"] },
     { name: "Arcane - 1,000,000", chance: 1000000 },
     { name: "Starlight : Kunzite - 1,000,000", chance: 1000000, breakthroughs: nativeBreakthroughs("starfall") },
     { name: "Kyawthuite - 850,000", chance: 850000 },
@@ -4960,9 +4965,9 @@ const CUTSCENE_PRIORITY_SEQUENCE = [
             "illusionary-cutscene", "oblivion-cutscene", "memory-cutscene", "neferkhaf-cutscene", "blood-cutscene",
             "monarch-cutscene", "equinox-cutscene", "dream-traveler-cutscene", "breakthrough-cutscene",
             "leviathan-cutscene", "winter-garden-cutscene", "erebus-cutscene", "luminosity-cutscene",
-            "pixelation-cutscene", "nyctophobia-cutscene", "frostveil-cutscene", "lamenthyr-cutscene",
-            "ascendant-cutscene", "dreammetric-cutscene", "oppression-cutscene", "verdict-cutscene",
-            "prowler-cutscene", "clockwork-cutscene", "attorney-cutscene"
+            "godslayer-cutscene", "pixelation-cutscene", "nyctophobia-cutscene", "frostveil-cutscene",
+            "lamenthyr-cutscene", "ascendant-cutscene", "dreammetric-cutscene", "oppression-cutscene",
+            "verdict-cutscene", "prowler-cutscene", "clockwork-cutscene", "attorney-cutscene"
                                     ];
 
 oblivionAuraData = AURA_REGISTRY.find(aura => aura.name === OBLIVION_AURA_LABEL) || null;
