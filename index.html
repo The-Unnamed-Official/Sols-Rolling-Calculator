@@ -61,6 +61,9 @@
     <video id="neferkhaf-cutscene" class="cutscene-video" preload="auto" data-audio-channel="cutscene">
         <source src="files/neferkhafCutscene.webm" type="video/webm">
     </video>
+    <video id="godslayer-cutscene" class="cutscene-video" preload="auto" data-audio-channel="cutscene">
+        <source src="files/godslayerCutscene.webm" type="video/webm">
+    </video>
     <video id="blood-cutscene" class="cutscene-video" preload="auto" data-audio-channel="cutscene">
         <source src="files/bloodCutscene.webm" type="video/webm">
     </video>
@@ -146,11 +149,11 @@
                 <div class="banner__meta">
                     <h1 class="banner__title">Sol's Rolling Simulator</h1>
                     <p class="banner__subtitle">
-                        <button type="button" class="banner__version-button" id="versionInfoButton" aria-haspopup="dialog" aria-expanded="false" data-version-id="v1715">v1.715</button>
+                        <button type="button" class="banner__version-button" id="versionInfoButton" aria-haspopup="dialog" aria-expanded="false" data-version-id="v1716">v1.716</button>
                         <span class="banner__subtitle-divider" aria-hidden="true">◉</span>
                         <span class="banner__subtitle-author">By <span class="banner__subtitle-author-name"><a href="https://discord.com/users/611204110955446301" target="_blank" rel="noopener">not.unnamed</a></span></span>
                         <span class="banner__subtitle-divider" aria-hidden="true">◉</span>
-                        <span class="banner__subtitle-updated">Updated <time datetime="2026-03-12T15:30:00+01:00">2026/03/12 3:30 PM CET</time></span>
+                        <span class="banner__subtitle-updated">Updated <time datetime="2026-03-14T09:10:00+01:00">2026/03/12 9:10 AM CET</time></span>
                         <span class="banner__subtitle-divider" aria-hidden="true">◉</span>
                         <span class="banner__subtitle-eon"><span class="banner__subtitle-game-version"><a href="https://www.roblox.com/games/15532962292/Sols-RNG" target="_blank" rel="noopener">Sol's RNG Eon 1-17</a></span></span>
                     </p>
@@ -981,12 +984,39 @@
 
             <div class="changelog-modal__panels" data-changelog-panels>
                 <section
+                    id="changelog-panel-v1716"
+                    class="changelog-modal__panel"
+                    role="tabpanel"
+                    aria-labelledby="changelog-tab-v1716"
+                    data-changelog-panel="v1716"
+                    tabindex="0"
+                >
+                    <header class="changelog-modal__header">
+                        <h2 class="changelog-modal__title">Version v1.716 Update Notes</h2>
+                        <span class="changelog-tab__subtitle">Aura Addition</span>
+                        <p class="changelog-modal__meta">Updated 2026/03/14 at 9:10 AM CET</p>
+                    </header>
+                    <p class="changelog-modal__intro">Latest changes:</p>
+                    <ul class="changelog-modal__list">
+                        <li>Added 5 new auras:</li>
+                        <ul>
+                            <li>ゴシック <span class="tinyClass">1 in 1,000,001</span></li>
+                            <li>Orion <span class="tinyClass">1 in 3,000,000</span></li>
+                            <li>Wraith <span class="tinyClass">1 in 4,100,000</span></li>
+                            <li>Sapphire: Peace<span class="tinyClass">1 in 11,000,500</span></li>
+                            <li>Godslayer<span class="tinyClass">1,100,100,100</span></li>
+                        </ul>
+                    </ul>
+                    <p>If there's any bugs you encounter, please DM me here <a href="https://discord.com/users/611204110955446301" class="subtitleClass" target="_blank" rel="noopener">@not.unnamed</a></p>
+                </section>
+                <section
                     id="changelog-panel-v1715"
                     class="changelog-modal__panel"
                     role="tabpanel"
                     aria-labelledby="changelog-tab-v1715"
                     data-changelog-panel="v1715"
-                    tabindex="0"
+                    hidden
+                    tabindex="-1"
                 >
                     <header class="changelog-modal__header">
                         <h2 class="changelog-modal__title">Version v1.715 Update Notes</h2>
