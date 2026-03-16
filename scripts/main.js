@@ -3852,7 +3852,7 @@ function isForcedChallengedAura(auraName) {
     const normalizedAuraName = auraName
         .split(' - ')[0]
         .trim();
-    return ['Glitch', 'Borealis', 'Dreammetric', 'Oppression'].includes(normalizedAuraName);
+    return ['[CONTENT DELETED]', 'Glitch', 'Borealis', 'Dreammetric', 'Oppression'].includes(normalizedAuraName);
 }
 
 function shouldSkipAuraByTierOverride(aura) {
@@ -3995,9 +3995,11 @@ const auraOutlineOverrides = new Map([
     ['Dreammetric', 'sigil-outline-dreammetric'],
     ['Borealis', 'sigil-outline-borealis'],
     ['Glitch', 'sigil-effect-outline-glitch'],
+    ['Fault', 'sigil-outline-glitch'],
+    ['[CONTENT DELETED]', 'sigil-outline-glitch'],
 ]);
 
-const glitchOutlineNames = new Set(['Fault']);
+const glitchOutlineNames = new Set(['Fault', '[CONTENT DELETED']);
 const dreamspaceOutlineNames = new Set(['★★★', '★★', '★']);
 const cyberspaceOutlineExclusions = new Set(['Pixelation', 'Illusionary']);
 
@@ -4597,6 +4599,7 @@ const AURA_BLUEPRINT_SOURCE = Object.freeze([
     { name: "Flutter - 5,000", chance: 5000 },
     { name: "Bleeding - 4,444", chance: 4444 },
     { name: "Sidereum - 4,096", chance: 4096 },
+    { name: "[CONTENT DELETED] - 4,040", chance: 4040, nativeBiomes: ["glitch"], ignoreLuck: true, fixedRollThreshold: 1 },
     { name: "Cola - 3,999", chance: 3999 },
     { name: "Flora - 3,700", chance: 3700 },
     { name: "Pukeko - 3,198", chance: 3198 },
@@ -7324,6 +7327,7 @@ const TRUE_CHANCE_HIDDEN_AURA_PREFIXES = Object.freeze([
     'Memory',
     'Neferkhaf',
     '赤月の破片',
+    '[CONTENT DELETED]',
     'Cryogenic',
     'Illusionary'
 ]);
@@ -7473,6 +7477,43 @@ function buildResultEntries(registry, biome, breakthroughStatsMap, luckValue) {
         // Insert Cryogenic entries before Equinox (or at top if Equinox missing)
         entries.splice(insertIndex, 0, ...cryogenicEntries);
     }
+
+    // Ensure Fault entries are always at the very top
+    const faultEntries = entries.filter(e => typeof e.auraName === 'string' && e.auraName.startsWith('Fault'));
+    if (faultEntries.length > 0) {
+        // Remove all Fault entries from the array
+        entries = entries.filter(e => !(typeof e.auraName === 'string' && e.auraName.startsWith('Fault')));
+        // Prepend them in original discovered order
+        entries = [...faultEntries, ...entries];
+    }
+
+    // Ensure [CONTENT DELETED] entries are always at the very top
+    const contentDeletedEntries = entries.filter(e => typeof e.auraName === 'string' && e.auraName.startsWith('[CONTENT DELETED]'));
+    if (contentDeletedEntries.length > 0) {
+        // Remove all [CONTENT DELETED] entries from the array
+        entries = entries.filter(e => !(typeof e.auraName === 'string' && e.auraName.startsWith('[CONTENT DELETED]')));
+        // Prepend them in original discovered order
+        entries = [...contentDeletedEntries, ...entries];
+    }
+
+    // Ensure Glitch entries are always at the very top
+    const glitchEntries = entries.filter(e => typeof e.auraName === 'string' && e.auraName.startsWith('Glitch'));
+    if (glitchEntries.length > 0) {
+        // Remove all Glitch entries from the array
+        entries = entries.filter(e => !(typeof e.auraName === 'string' && e.auraName.startsWith('Glitch')));
+        // Prepend them in original discovered order
+        entries = [...glitchEntries, ...entries];
+    }
+
+    // Ensure Oppression entries are always at the very top
+    const oppressionEntries = entries.filter(e => typeof e.auraName === 'string' && e.auraName.startsWith('Oppression'));
+    if (oppressionEntries.length > 0) {
+        // Remove all Oppression entries from the array
+        entries = entries.filter(e => !(typeof e.auraName === 'string' && e.auraName.startsWith('Oppression')));
+        // Prepend them in original discovered order
+        entries = [...oppressionEntries, ...entries];
+    }
+    
     const markupList = [];
     const shareRecords = [];
     const shareVisualRecords = [];

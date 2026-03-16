@@ -689,15 +689,13 @@
 @keyframes mythicaldudeFade {
     0%, 100% {
         opacity: 1;
-        font-size: clamp(13px, 1.5vw, 13px);
         filter: drop-shadow(0 0 8px rgb(var(--accent-rgb) / 0.45));
     }
     25% {
-        opacity: 0.72;
+        opacity: 0.33;
     }
     50% {
         opacity: 0.1;
-        font-size: clamp(8px, 1.6vw, 10px);
         filter: none;
     }
 }
