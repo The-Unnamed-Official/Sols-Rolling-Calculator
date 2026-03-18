@@ -5969,6 +5969,84 @@ function setupFortePixelatedSecret() {
     });
 }
 
+function setupSupportFloatToggle() {
+    const supportFloat = document.getElementById('supportFloat');
+    const toggleButton = document.getElementById('supportFloatToggle');
+    const supportLink = document.getElementById('supportFloatLink');
+    const qrButton = document.getElementById('supportFloatQrButton');
+
+    if (!supportFloat || !toggleButton || !supportLink) {
+        return;
+    }
+
+    const setCollapsed = collapsed => {
+        if (collapsed) {
+            setSupportQrDrawerOpen(false);
+        }
+        supportFloat.classList.toggle('support-float--collapsed', collapsed);
+        toggleButton.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
+        toggleButton.setAttribute('aria-label', collapsed ? 'Expand support button' : 'Minimize support button');
+        toggleButton.title = collapsed ? 'Expand' : 'Minimize';
+        supportLink.setAttribute('aria-hidden', collapsed ? 'true' : 'false');
+        supportLink.tabIndex = collapsed ? -1 : 0;
+        if (qrButton) {
+            qrButton.disabled = collapsed;
+            qrButton.tabIndex = collapsed ? -1 : 0;
+            qrButton.setAttribute('aria-hidden', collapsed ? 'true' : 'false');
+        }
+    };
+
+    toggleButton.addEventListener('click', event => {
+        event.preventDefault();
+        event.stopPropagation();
+        setCollapsed(!supportFloat.classList.contains('support-float--collapsed'));
+    });
+
+    setCollapsed(false);
+}
+
+function setSupportQrDrawerOpen(isOpen, { focusQrButton = false } = {}) {
+    const supportFloat = document.getElementById('supportFloat');
+    const qrButton = document.getElementById('supportFloatQrButton');
+    const qrDrawer = document.getElementById('supportQrDrawer');
+    if (!supportFloat || !qrButton || !qrDrawer) {
+        return;
+    }
+
+    supportFloat.classList.toggle('support-float--qr-open', isOpen);
+    qrButton.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+    qrButton.setAttribute('aria-label', isOpen ? 'Hide support QR code' : 'Show support QR code');
+    qrButton.title = isOpen ? 'Hide QR code' : 'Show QR code';
+    qrDrawer.setAttribute('aria-hidden', isOpen ? 'false' : 'true');
+
+    qrDrawer.querySelectorAll('a, button').forEach(element => {
+        if ('tabIndex' in element) {
+            element.tabIndex = isOpen ? 0 : -1;
+        }
+    });
+
+    if (focusQrButton && typeof qrButton.focus === 'function') {
+        try {
+            qrButton.focus({ preventScroll: true });
+        } catch (error) {
+            qrButton.focus();
+        }
+    }
+}
+
+function toggleSupportQrDrawer() {
+    const supportFloat = document.getElementById('supportFloat');
+    if (!supportFloat || supportFloat.classList.contains('support-float--collapsed')) {
+        return;
+    }
+
+    setSupportQrDrawerOpen(!supportFloat.classList.contains('support-float--qr-open'));
+}
+
+function closeSupportQrDrawer({ focusQrButton = false } = {}) {
+    setSupportQrDrawerOpen(false, { focusQrButton });
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     const confirmButton = document.getElementById('cutsceneWarningConfirm');
     if (confirmButton) {
@@ -6735,6 +6813,40 @@ document.addEventListener('DOMContentLoaded', () => {
     hydrateAudioSettings();
     applyFortePixelatedWaveText();
     setupFortePixelatedSecret();
+    setupSupportFloatToggle();
+
+    const supportQrButton = document.getElementById('supportFloatQrButton');
+    if (supportQrButton) {
+        supportQrButton.addEventListener('click', event => {
+            event.preventDefault();
+            event.stopPropagation();
+            toggleSupportQrDrawer();
+        });
+    }
+
+    document.addEventListener('click', event => {
+        const supportFloat = document.getElementById('supportFloat');
+        if (!supportFloat || !supportFloat.classList.contains('support-float--qr-open')) {
+            return;
+        }
+        if (supportFloat.contains(event.target)) {
+            return;
+        }
+        closeSupportQrDrawer();
+    });
+
+    document.addEventListener('keydown', event => {
+        const supportFloat = document.getElementById('supportFloat');
+        if (!supportFloat || !supportFloat.classList.contains('support-float--qr-open')) {
+            return;
+        }
+        if (event.key !== 'Escape' && event.key !== 'Esc') {
+            return;
+        }
+        event.preventDefault();
+        closeSupportQrDrawer({ focusQrButton: true });
+    });
+
     const buttons = document.querySelectorAll('button');
     const inputs = document.querySelectorAll('input');
     const selects = document.querySelectorAll('select');
