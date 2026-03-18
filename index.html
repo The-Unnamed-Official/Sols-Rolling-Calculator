@@ -149,11 +149,11 @@
                 <div class="banner__meta">
                     <h1 class="banner__title">Sol's Rolling Simulator</h1>
                     <p class="banner__subtitle">
-                        <button type="button" class="banner__version-button" id="versionInfoButton" aria-haspopup="dialog" aria-expanded="false" data-version-id="v1720">v1.720</button>
+                        <button type="button" class="banner__version-button" id="versionInfoButton" aria-haspopup="dialog" aria-expanded="false" data-version-id="v1725">v1.725</button>
                         <span class="banner__subtitle-divider" aria-hidden="true">◉</span>
                         <span class="banner__subtitle-author">By <span class="banner__subtitle-author-name"><a href="https://discord.com/users/611204110955446301" target="_blank" rel="noopener">not.unnamed</a></span></span>
                         <span class="banner__subtitle-divider" aria-hidden="true">◉</span>
-                        <span class="banner__subtitle-updated">Updated <time datetime="2026-03-16T12:52:00+01:00">2026/03/16 11:52 AM CET</time></span>
+                        <span class="banner__subtitle-updated">Updated <time datetime="2026-03-18T13:55:00+01:00">2026/03/18 1:55 PM CET</time></span>
                         <span class="banner__subtitle-divider" aria-hidden="true">◉</span>
                         <span class="banner__subtitle-eon"><span class="banner__subtitle-game-version"><a href="https://www.roblox.com/games/15532962292/Sols-RNG" target="_blank" rel="noopener">Sol's RNG Eon 1-17</a></span></span>
                     </p>
@@ -188,6 +188,7 @@
                     <p class="surface__subtitle">Jump into more Sols utilities, reference docs, and communities.</p>
                 </header>
                 <div class="resource-board">
+                    <div class="resource-board__group resource-board__group--primary">
                     <a class="resource-link resource-link--discord" href="https://discord-id-hub.info" target="_blank" rel="noopener">
                         <div class="resource-link__top">
                             <span class="resource-link__label">Discord ID Hub</span>
@@ -224,6 +225,30 @@
                         <span class="resource-link__label">Project Repository</span>
                         <span class="resource-link__meta">Source code</span>
                     </a>
+                    </div>
+                    <div class="resource-board__group resource-board__group--support" aria-label="Support the creator">
+                        <p class="resource-board__support-label">Support the creator</p>
+                        <a class="resource-link resource-link--support resource-link--support-primary" href="https://buymeacoffee.com/theunnamed" target="_blank" rel="noopener">
+                            <span class="resource-link__support-icon" aria-hidden="true">
+                                <i class="fa-solid fa-mug-hot"></i>
+                            </span>
+                            <span class="resource-link__support-body">
+                                <span class="resource-link__label">Buy Me a Coffee</span>
+                                <span class="resource-link__meta">If the calculator helps, you can help fuel future updates and fresh ideas.</span>
+                            </span>
+                            <span class="resource-link__support-chip">Fuel the grind</span>
+                        </a>
+                        <a class="resource-link resource-link--support resource-link--support-secondary" href="https://buymeacoffee.com/theunnamed" target="_blank" rel="noopener">
+                            <span class="resource-link__support-icon" aria-hidden="true">
+                                <i class="fa-solid fa-hand-holding-heart"></i>
+                            </span>
+                            <span class="resource-link__support-body">
+                                <span class="resource-link__label">Support Future Updates</span>
+                                <span class="resource-link__meta">Every donation helps keep the site maintained, polished, and growing.</span>
+                            </span>
+                            <span class="resource-link__support-chip">Show some love</span>
+                        </a>
+                    </div>
                 </div>
             </aside>
 
@@ -983,12 +1008,32 @@
 
             <div class="changelog-modal__panels" data-changelog-panels>
                 <section
+                    id="changelog-panel-v1725"
+                    class="changelog-modal__panel"
+                    role="tabpanel"
+                    aria-labelledby="changelog-tab-v1725"
+                    data-changelog-panel="v1725"
+                    tabindex="0"
+                >
+                    <header class="changelog-modal__header">
+                        <h2 class="changelog-modal__title">Version v1.725 Update Notes</h2>
+                        <span class="changelog-tab__subtitle">Support :)</span>
+                        <p class="changelog-modal__meta">Updated 2026/03/18 at 1:55 PM CET</p>
+                    </header>
+                    <p class="changelog-modal__intro">Latest changes:</p>
+                    <ul class="changelog-modal__list">
+                        <li>Added a dedicated donation section to the Other Resources card with direct support buttons.</li>
+                    </ul>
+                    <p>If there's any bugs you encounter, please DM me here <a href="https://discord.com/users/611204110955446301" class="subtitleClass" target="_blank" rel="noopener">@not.unnamed</a></p>
+                </section>
+                <section
                     id="changelog-panel-v1720"
                     class="changelog-modal__panel"
                     role="tabpanel"
                     aria-labelledby="changelog-tab-v1720"
                     data-changelog-panel="v1720"
-                    tabindex="0"
+                    hidden
+                    tabindex="-1"
                 >
                     <header class="changelog-modal__header">
                         <h2 class="changelog-modal__title">Version v1.720 Update Notes</h2>
