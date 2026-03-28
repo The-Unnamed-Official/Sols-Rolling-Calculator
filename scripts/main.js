@@ -2339,7 +2339,7 @@ function createParticleNode(mode) {
     const icon = document.createElement('i');
     icon.className = mode === 'snow'
         ? 'fa-solid fa-snowflake snow-particle__icon'
-        : 'fa-solid fa-heart heart-particle__icon';
+        : 'fa-solid fa-heart heart-particle__icon'
     icon.setAttribute('aria-hidden', 'true');
 
     sway.appendChild(icon);
@@ -3997,6 +3997,16 @@ const auraOutlineOverrides = new Map([
     ['Glitch', 'sigil-effect-outline-glitch'],
     ['Fault', 'sigil-outline-glitch'],
     ['[CONTENT DELETED]', 'sigil-outline-glitch'],
+    ['Hatchwarden', 'sigil-outline-easter-2026'],
+    ['Emperor', 'sigil-outline-easter-2026'],
+    ['Eggsistance', 'sigil-outline-easter-2026'],
+    ['Celestial : Eclipse', 'sigil-outline-easter-2026'],
+    ['Revive', 'sigil-outline-easter-2026'],
+    ['Eggor', 'sigil-outline-easter-2026'],
+    ['Eostre', 'sigil-outline-easter-2026'],
+    ['Aegis : Eggis', 'sigil-outline-easter-2026'],
+    ['Y.O.L.K.E.G.G.', 'sigil-outline-easter-2026'],
+    ['Sky Festival', 'sigil-outline-easter-2026'],
 ]);
 
 const glitchOutlineNames = new Set(['Fault', '[CONTENT DELETED']);
@@ -4339,18 +4349,22 @@ const AURA_BLUEPRINT_SOURCE = Object.freeze([
     { name: "Neferkhaf", chance: 1000, requiresDunePreset: true, ignoreLuck: true, fixedRollThreshold: 1, subtitle: "The Crawler", cutscene: "neferkhaf-cutscene", disableRarityClass: true },
     { name: "赤月の破片", chance: 1000, requiresBloodPreset: true, ignoreLuck: true, fixedRollThreshold: 1, subtitle: "Fragments Of The Crimson Moon", cutscene: "blood-cutscene", disableRarityClass: true },
     { name: "Illusionary - 10,000,000", chance: 10000000, nativeBiomes: ["cyberspace"], ignoreLuck: true, fixedRollThreshold: 1, cutscene: "illusionary-cutscene" },
+    { name: MONARCH_AURA_NAME, chance: 3000000000, cutscene: "monarch-cutscene", nativeBiomes: ["corruption", "glitch"], disableNativeOverrideTier: true },
+    { name: "Sky Festival - 3,000,000,000", chance: 3000000000, cutscene: "skyFestival-cutscene" },
     { name: "Equinox - 2,500,000,000", chance: 2500000000, cutscene: "equinox-cutscene" },
     { name: "Dream Traveler - 2,025,012,025", chance: 2025012025, breakthroughs: nativeBreakthroughs("aurora"), cutscene: "dream-traveler-cutscene" },
-    { name: MONARCH_AURA_NAME, chance: 3000000000, cutscene: "monarch-cutscene", nativeBiomes: ["corruption", "glitch"], disableNativeOverrideTier: true },
     { name: BREAKTHROUGH_AURA_NAME, chance: 1999999999, cutscene: "breakthrough-cutscene" },
+    { name: "Y.O.L.K.E.G.G. - 1,780,808,080", chance: 1780808080, cutscene: "yolk-garden-cutscene" },
     { name: LEVIATHAN_AURA_NAME, chance: 1730400000, nativeBiomes: ["rainy", "glitch"], cutscene: "leviathan-cutscene", disableNativeOverrideTier: true },
     { name: "Winter Garden - 1,450,012,025", chance: 1450012025, breakthroughs: nativeBreakthroughs("aurora"), cutscene: "winter-garden-cutscene" },
     { name: "Luminosity - 1,200,000,000", chance: 1200000000, cutscene: "luminosity-cutscene" },
     { name: "Erebus - 1,200,000,000", chance: 1200000000, nativeBiomes: ["glitch", "bloodRain"], cutscene: "erebus-cutscene" },
+    { name: "Aegis : Eggis - 1,150,000,000", chance: 1150000000, breakthroughs: nativeBreakthroughs("cyberspace"), nativeBiomes: ["cyberspace"], cutscene: "eggis-cutscene" },
     { name: "Godslayer - 1,100,100,100", chance: 1100100100, cutscene: "godslayer-cutscene" },
     { name: "Pixelation - 1,073,741,824", chance: 1073741824, breakthroughs: nativeBreakthroughs("cyberspace"), nativeBiomes: ["cyberspace"], cutscene: "pixelation-cutscene" },
     { name: "Nyctophobia - 1,011,111,010", chance: 1011111010, nativeBiomes: ["limbo"], cutscene: "nyctophobia-cutscene" },
     { name: "Lamenthyr - 1,000,000,000", chance: 1000000000, nativeBiomes: ["glitch", "bloodRain"], cutscene: "lamenthyr-cutscene" },
+    { name: "Eostre - 1,000,000,000", chance: 1000000000, cutscene: "eostre-cutscene" },
     { name: "Sovereign : Frostveil - 1,000,000,000", chance: 1000000000, breakthroughs: nativeBreakthroughs("aurora"), cutscene: "frostveil-cutscene" },
     { name: "Arachnophobia - 940,000,000", chance: 940000000, nativeBiomes: ["glitch", "pumpkinMoon"] },
     { name: "Ascendant - 935,000,000", chance: 935000000, breakthroughs: nativeBreakthroughs("heaven"), cutscene: "ascendant-cutscene" },
@@ -4366,10 +4380,12 @@ const AURA_BLUEPRINT_SOURCE = Object.freeze([
     { name: "Malediction - 730,000,000", chance: 730000000, nativeBiomes: ["glitch", "bloodRain"] },
     { name: "Banshee - 730,000,000", chance: 730000000, nativeBiomes: ["glitch", "graveyard"] },
     { name: "Workshop - 700,000,000", chance: 700000000, breakthroughs: nativeBreakthroughs("aurora") },
+    { name: "Eggore - 700,000,000", chance: 700000000 },
     { name: "Wraithlight - 695,000,000", chance: 695000000, nativeBiomes: ["glitch", "bloodRain"] },
     { name: "Pythios - 666,666,666", chance: 666666666, breakthroughs: nativeBreakthroughs("hell") },
     { name: "PROLOGUE - 666,616,111", chance: 666616111, nativeBiomes: ["limbo"] },
     { name: "Harvester - 666,000,000", chance: 666000000, nativeBiomes: ["graveyard"] },
+    { name: "Revive - 645,000,000", chance: 645000000 },
     { name: "Apocalypse - 624,000,000", chance: 624000000, nativeBiomes: ["glitch", "graveyard"] },
     { name: "Matrix : Reality - 601,020,102", chance: 601020102, breakthroughs: nativeBreakthroughs("cyberspace"), nativeBiomes: ["cyberspace"] },
     { name: "Sophyra - 570,000,000", chance: 570000000 },
@@ -4388,7 +4404,9 @@ const AURA_BLUEPRINT_SOURCE = Object.freeze([
     { name: "Northern - 405,000,000", chance: 405000000, breakthroughs: nativeBreakthroughs("aurora") },
     { name: "Abyssal Hunter - 400,000,000", chance: 400000000, breakthroughs: nativeBreakthroughs("rainy") },
     { name: "Impeached : I'm Peach - 400,000,000", chance: 400000000 },
+    { name: "Celestial : Eclipse - 384,400,000", chance: 384400000 },
     { name: "Cryofang - 380,000,000", chance: 380000000, breakthroughs: nativeBreakthroughs("aurora") },
+    { name: "Eggsistance - 377,777,777", chance: 377777777 },
     { name: "CHILLSEAR - 375,000,000", chance: 375000000, breakthroughs: nativeBreakthroughs("snowy") },
     { name: "Symphony : Bloomed - 375,000,000", chance: 375000000 },
     { name: "Flora : Evergreen - 370,073,730", chance: 370073730 },
@@ -4433,8 +4451,10 @@ const AURA_BLUEPRINT_SOURCE = Object.freeze([
     { name: "Harnessed : Elements - 85,000,000", chance: 85000000 },
     { name: "Accursed - 82,000,000", chance: 82000000, nativeBiomes: ["glitch", "bloodRain"] },
     { name: "Carriage - 80,000,000", chance: 80000000 },
+    { name: "Emperor - 80,000,000", chance: 80000000 },
     { name: "Sailor : Flying Dutchman - 80,000,000", chance: 80000000, breakthroughs: nativeBreakthroughs("rainy") },
     { name: "Dullahan - 72,000,000", chance: 72000000, nativeBiomes: ["graveyard"] },
+    { name: "Starborn - 72,000,000", chance: 72000000, breakthroughs: nativeBreakthroughs("starfall") },
     { name: "Winter Fantasy - 72,000,000", chance: 72000000, breakthroughs: nativeBreakthroughs("snowy") },
     { name: "Dominion - 70,000,000", chance: 70000000, breakthroughs: nativeBreakthroughs("heaven") },
     { name: "Reaper - 66,000,000", chance: 66000000, nativeBiomes: ["glitch", "bloodRain"] },
@@ -4451,6 +4471,7 @@ const AURA_BLUEPRINT_SOURCE = Object.freeze([
     { name: "{J u x t a p o s i t i o n} - 40,440,400", chance: 40440400, nativeBiomes: ["limbo"] },
     { name: "Virtual : Fatal Error - 40,413,000", chance: 40413000, breakthroughs: nativeBreakthroughs("cyberspace"), nativeBiomes: ["cyberspace"] },
     { name: "Soul Hunter - 40,000,000", chance: 40000000, nativeBiomes: ["graveyard"] },
+    { name: "Hatchwarden - 40,000,000", chance: 40000000 },
     { name: "Chromatic : Kromat1k - 40,000,000", chance: 40000000 },
     { name: "Ethereal - 35,000,000", chance: 35000000 },
     { name: "Flora : Florest - 32,800,000", chance: 32800000 },
@@ -4583,6 +4604,7 @@ const AURA_BLUEPRINT_SOURCE = Object.freeze([
     { name: "Powered - 16,384", chance: 16384 },
     { name: "LEAK - 14,000", chance: 14000 },
     { name: "Rage : Heated - 12,800", chance: 12800 },
+    { name: "Kawaii - 12,300", chance: 12300 },
     { name: "Corrosive - 12,000", chance: 12000, breakthroughs: nativeBreakthroughs("corruption") },
     { name: "Undead - 12,000", chance: 12000, breakthroughs: nativeBreakthroughs("hell") },
     { name: "Snowball - 10,000", chance: 10000, breakthroughs: nativeBreakthroughs("aurora") },
@@ -4755,9 +4777,11 @@ const EVENT_LIST = [
     { id: "halloween25", label: "Halloween 2025" },
     { id: "winter26", label: "Winter 2026" },
     { id: "valentine26", label: "Valentine 2026" },
+    { id: "easter26", label: "Easter 2026" },
 ];
 
 const VALENTINE_EVENT_IDS = Object.freeze(['valentine24', 'valentine26']);
+const EASTER_EVENT_IDS = Object.freeze(['easter26', 'easter26']);
 const HALLOWEEN_EVENT_IDS = Object.freeze(['halloween24', 'halloween25']);
 const SUMMER_EVENT_IDS = Object.freeze(['summer24', 'summer25']);
 const WINTER_EVENT_IDS = Object.freeze(['winter25', 'winter26']);
@@ -4866,6 +4890,18 @@ const EVENT_AURA_LOOKUP = {
     valentine26: [
         "Symphony : Bloomed - 375,000,000",
     ],
+    easter26: [
+        "Hatchwardern - 40,000,000",
+        "Emperor - 80,000,000",
+        "Eggsistance - 377,777,777",
+        "Celestial : Eclipse - 384,400,000",
+        "Revive - 645,000,000",
+        "Eggore - 700,000,000",
+        "Eostre - 1,000,000,000",
+        "Aegis : Eggis - 1,150,000,000",
+        "Y.O.L.K.E.G.G. - 1,780,808,080",
+        "Sky Festival - 3,000,000,000"
+    ]
 };
 
 const BIOME_EVENT_CONSTRAINTS = {
@@ -4902,6 +4938,7 @@ function hasCombinedEventsEnabled() {
 function resolveEventThemeVariant() {
     if (hasCombinedEventsEnabled()) return 'default';
     if (hasAnyEnabledEvent(VALENTINE_EVENT_IDS)) return 'valentine';
+    if (hasAnyEnabledEvent(EASTER_EVENT_IDS)) return 'easter';
     if (hasAnyEnabledEvent(WINTER_EVENT_IDS)) return 'winter';
     if (hasAnyEnabledEvent(HALLOWEEN_EVENT_IDS)) return 'halloween';
     if (hasAnyEnabledEvent(SUMMER_EVENT_IDS)) return 'summer';
@@ -4925,6 +4962,7 @@ function syncEventVisualPresentation() {
     pageBody.classList.toggle('theme-event-winter', variant === 'winter');
     pageBody.classList.toggle('theme-event-halloween', variant === 'halloween');
     pageBody.classList.toggle('theme-event-summer', variant === 'summer');
+    pageBody.classList.toggle('theme-event-easter', variant === 'easter');
 
     snowEffectState.mode = resolveParticleMode();
     syncSnowEffect();

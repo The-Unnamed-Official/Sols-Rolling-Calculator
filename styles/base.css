@@ -383,6 +383,18 @@ body.theme-event-summer {
     --accent-rgb-feed: 155 126 26;
 }
 
+body.theme-event-easter {
+    --surface-gradient: linear-gradient(155deg, rgba(14, 55, 25, 0.95), rgba(4, 24, 12, 0.98));
+    --surface-overlay-gradient: linear-gradient(160deg, rgba(10, 42, 26, 0.94), rgba(2, 14, 6, 0.98));
+    --surface-overlay-highlight: rgba(143, 255, 182, 0.1);
+    --accent: #8fffcd;
+    --accent-strong: #68ffa9;
+    --accent-soft: rgba(130, 255, 215, 0.16);
+    --accent-muted: rgba(56, 201, 165, 0.3);
+    --accent-rgb: 255 226 126;
+    --accent-rgb-feed: 130, 255, 215;
+}
+
 body.theme-event-winter {
     --bg-base: #031123;
     --bg-overlay: rgba(3, 15, 32, 0.5);

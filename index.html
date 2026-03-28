@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sols Rolling Simulator</title>
+    <script src="https://kit.fontawesome.com/f34561342c.js" crossorigin="anonymous"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Sarpanch:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -27,7 +28,6 @@
     <link rel="stylesheet" href="styles/layout.css">
     <link rel="stylesheet" href="styles/components.css">
     <link rel="stylesheet" href="styles/utilities.css">
-    <script src="https://kit.fontawesome.com/fe85db6219.js" crossorigin="anonymous"></script>
 </head>
 <body>
     <div class="interface-backdrop" aria-hidden="true">
@@ -149,13 +149,13 @@
                 <div class="banner__meta">
                     <h1 class="banner__title">Sol's Rolling Simulator</h1>
                     <p class="banner__subtitle">
-                        <button type="button" class="banner__version-button" id="versionInfoButton" aria-haspopup="dialog" aria-expanded="false" data-version-id="v1731">v1.731</button>
+                        <button type="button" class="banner__version-button" id="versionInfoButton" aria-haspopup="dialog" aria-expanded="false" data-version-id="v1750">v1.750</button>
                         <span class="banner__subtitle-divider" aria-hidden="true">◉</span>
                         <span class="banner__subtitle-author">By <span class="banner__subtitle-author-name"><a href="https://discord.com/users/611204110955446301" target="_blank" rel="noopener">not.unnamed</a></span></span>
                         <span class="banner__subtitle-divider" aria-hidden="true">◉</span>
-                        <span class="banner__subtitle-updated">Updated <time datetime="2026-03-20T03:30:00+01:00">2026/03/20 3:30 AM CET</time></span>
+                        <span class="banner__subtitle-updated">Updated <time datetime="2026-03-28T13:55:00+01:00">2026/03/28 1:55 PM CET</time></span>
                         <span class="banner__subtitle-divider" aria-hidden="true">◉</span>
-                        <span class="banner__subtitle-eon"><span class="banner__subtitle-game-version"><a href="https://www.roblox.com/games/15532962292/Sols-RNG" target="_blank" rel="noopener">Sol's RNG Eon 1-17</a></span></span>
+                        <span class="banner__subtitle-eon"><span class="banner__subtitle-game-version"><a href="https://www.roblox.com/games/15532962292/Sols-RNG" target="_blank" rel="noopener">Sol's RNG Eon 1-18</a></span></span>
                     </p>
                 </div>
             </div>
@@ -422,6 +422,7 @@
                                     <option value="bloodRain">Blood Rain</option>
                                     <option value="blazing">Blazing Sun</option>
                                     <option value="aurora">Aurora</option>
+                                    <option value="eggland">Eggland</option>
                                     <option value="anotherRealm">Another Realm</option>
                                     <option value="mastermind">Mastermind</option>
                                     <option value="edict">Edict</option>
@@ -493,6 +494,7 @@
                             <option value="unknown">Unknown</option>
                             <option value="blazing">Blazing Sun</option>
                             <option value="aurora">Aurora</option>
+                            <option value="eggland">Eggland</option>
                             <option value="limbo">Limbo</option>
                             <option value="roe">Rune of Everything</option>
                             <option value="day">Day</option>
@@ -549,7 +551,10 @@
                                         <input type="checkbox" value="valentine26" data-event-id="valentine26">
                                         <span class="interface-select__option-label"><span class="sigil-outline-valentine-2026">Valentine</span> 2026</span>
                                     </label>
-
+                                    <label class="interface-select__option  interface-select__option--checkbox">
+                                        <input type="checkbox" value="easter26" data-event-id="easter26">
+                                        <span class="interface-select__option-label"><span class="sigil-outline-easter-2026">Easter</span> 2026</span>
+                                    </label>
                                 </div>
                             </details>
                         </div>
@@ -1029,6 +1034,50 @@
             </div>
 
             <div class="changelog-modal__panels" data-changelog-panels>
+                <section
+                    id="changelog-panel-v1750"
+                    class="changelog-modal__panel"
+                    role="tabpanel"
+                    aria-labelledby="changelog-tab-v1750"
+                    data-changelog-panel="v1750"
+                    tabindex="0"
+                >
+                    <header class="changelog-modal__header">
+                        <h2 class="changelog-modal__title">Version v1.750 Update Notes</h2>
+                        <span class="changelog-tab__subtitle">Easter Event | Part 1</span>
+                        <p class="changelog-modal__meta">Updated 2026/03/28 at 1:55 PM CET</p>
+                    </header>
+                    <p class="changelog-modal__intro">Latest changes:</p>
+                    <ul class="changelog-modal__list">
+                        <li><span class="sigil-outline-easter-2026">Easter Event 2026</span> has BEGUN!</li>
+                        <ul>
+                            <li>Added 10 new <span class="sigil-outline-easter-2026">Easter Event 2026</span> auras:</li>
+                            <ul>
+                                <li><span class="sigil-outline-easter-2026">Hatchwarden</span> <span class="tinyClass">1 in 40,000,000</span></li>
+                                <li><span class="sigil-outline-easter-2026">Emperor</span> <span class="tinyClass">1 in 80,000,000</span></li>
+                                <li><span class="sigil-outline-easter-2026">Eggsistance</span> <span class="tinyClass">1 in 377,777,777</span></li>
+                                <li><span class="sigil-outline-easter-2026">Celestial : Eclipse</span> <span class="tinyClass">1 in 384,400,000</span></li>
+                                <li><span class="sigil-outline-easter-2026">Revive</span> <span class="tinyClass">1 in 645,000,000</span></li>
+                                <li><span class="sigil-outline-easter-2026">Eggore</span> <span class="tinyClass">1 in 700,000,000</span></li>
+                                <li><span class="sigil-outline-easter-2026">Eostre</span> <span class="tinyClass">1 in 1,000,000,000</span></li>
+                                <li><span class="sigil-outline-easter-2026">Aegis : Eggis</span> <span class="tinyClass">1 in 1,150,000,000</span></li>
+                                <li><span class="sigil-outline-easter-2026">Y.O.L.K.E.G.G.</span> <span class="tinyClass">1 in 1,780,808,080</span></li>
+                                <li><span class="sigil-outline-easter-2026">Sky Festival</span> <span class="tinyClass">1 in 3,000,000,000</span></li>
+                            </ul>
+                        </ul>
+                        
+                        <li>Added 2 new default auras:</li>
+                        <ul>
+                            <li><span class="sigil-outline-valentine-2026">Kawaii</span> <span class="tinyClass">1 in 12,300</span></li>
+                            <li><span class="sigil-outline-innovator">Starborn</span><span class="tinyClass">72,000,000</span></li>
+                        </ul>
+                        <li>Fixed some icons not appearing.</li>
+                    </ul>
+                    <h3>Thanks to Chesser for Donating 5$!
+                        <img src="files/chessarDonation.png" width="555px">
+                    </h3>
+                    <p>If there's any bugs you encounter, please DM me here <a href="https://discord.com/users/611204110955446301" class="subtitleClass" target="_blank" rel="noopener">@not.unnamed</a></p>
+                </section>
                 <section
                     id="changelog-panel-v1730"
                     class="changelog-modal__panel"
