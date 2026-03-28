@@ -4894,7 +4894,6 @@ const EVENT_AURA_LOOKUP = {
         "Hatchwardern - 40,000,000",
         "Emperor - 80,000,000",
         "Eggsistance - 377,777,777",
-        "Celestial : Eclipse - 384,400,000",
         "Revive - 645,000,000",
         "Eggore - 700,000,000",
         "Eostre - 1,000,000,000",
