@@ -4001,7 +4001,7 @@ const auraOutlineOverrides = new Map([
     ['Emperor', 'sigil-outline-easter-2026'],
     ['Eggsistance', 'sigil-outline-easter-2026'],
     ['Revive', 'sigil-outline-easter-2026'],
-    ['Eggor', 'sigil-outline-easter-2026'],
+    ['Eggore', 'sigil-outline-easter-2026'],
     ['Eostre', 'sigil-outline-easter-2026'],
     ['Aegis : Eggis', 'sigil-outline-easter-2026'],
     ['Y.O.L.K.E.G.G.', 'sigil-outline-easter-2026'],
@@ -4353,7 +4353,7 @@ const AURA_BLUEPRINT_SOURCE = Object.freeze([
     { name: "Dream Traveler - 2,025,012,025", chance: 2025012025, breakthroughs: nativeBreakthroughs("aurora"), cutscene: "dream-traveler-cutscene" },
     { name: "Sky Festival - 2,000,000,000", chance: 2000000000, cutscene: "skyFestival-cutscene" },
     { name: BREAKTHROUGH_AURA_NAME, chance: 1999999999, cutscene: "breakthrough-cutscene" },
-    { name: "Y.O.L.K.E.G.G. - 1,780,808,080", chance: 1780808080, cutscene: "yolk-garden-cutscene" },
+    { name: "Y.O.L.K.E.G.G. - 1,780,808,080", chance: 1780808080, cutscene: "yolk-cutscene" },
     { name: LEVIATHAN_AURA_NAME, chance: 1730400000, nativeBiomes: ["rainy", "glitch"], cutscene: "leviathan-cutscene", disableNativeOverrideTier: true },
     { name: "Winter Garden - 1,450,012,025", chance: 1450012025, breakthroughs: nativeBreakthroughs("aurora"), cutscene: "winter-garden-cutscene" },
     { name: "Luminosity - 1,200,000,000", chance: 1200000000, cutscene: "luminosity-cutscene" },
@@ -4898,7 +4898,7 @@ const EVENT_AURA_LOOKUP = {
         "Eostre - 1,000,000,000",
         "Aegis : Eggis - 1,150,000,000",
         "Y.O.L.K.E.G.G. - 1,780,808,080",
-        "Sky Festival - 3,000,000,000"
+        "Sky Festival - 2,000,000,000"
     ]
 };
 
@@ -4922,7 +4922,7 @@ const EVENT_BIOME_CONDITION_MESSAGES = Object.freeze({
     unknown: 'Requires Dev Biomes to be enabled under run parameters.',
 });
 
-const enabledEvents = new Set();
+const enabledEvents = new Set(['easter26']);
 const auraEventIndex = new Map();
 
 function hasAnyEnabledEvent(eventIds) {
@@ -5002,8 +5002,8 @@ function getAuraEventId(aura) {
 
 const CUTSCENE_PRIORITY_SEQUENCE = [
             "illusionary-cutscene", "oblivion-cutscene", "memory-cutscene", "neferkhaf-cutscene", "blood-cutscene",
-            "monarch-cutscene", "equinox-cutscene", "dream-traveler-cutscene", "breakthrough-cutscene",
-            "leviathan-cutscene", "winter-garden-cutscene", "erebus-cutscene", "luminosity-cutscene",
+            "monarch-cutscene", "equinox-cutscene", "dream-traveler-cutscene", "skyFestival-cutscene", "breakthrough-cutscene",
+            "yolk-cutscene", "leviathan-cutscene", "winter-garden-cutscene", "erebus-cutscene", "luminosity-cutscene", "eggis-cutscene",
             "godslayer-cutscene", "pixelation-cutscene", "nyctophobia-cutscene", "frostveil-cutscene",
             "lamenthyr-cutscene", "ascendant-cutscene", "dreammetric-cutscene", "oppression-cutscene",
             "verdict-cutscene", "prowler-cutscene", "clockwork-cutscene", "attorney-cutscene"
