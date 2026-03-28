@@ -4000,7 +4000,6 @@ const auraOutlineOverrides = new Map([
     ['Hatchwarden', 'sigil-outline-easter-2026'],
     ['Emperor', 'sigil-outline-easter-2026'],
     ['Eggsistance', 'sigil-outline-easter-2026'],
-    ['Celestial : Eclipse', 'sigil-outline-easter-2026'],
     ['Revive', 'sigil-outline-easter-2026'],
     ['Eggor', 'sigil-outline-easter-2026'],
     ['Eostre', 'sigil-outline-easter-2026'],
@@ -4891,7 +4890,7 @@ const EVENT_AURA_LOOKUP = {
         "Symphony : Bloomed - 375,000,000",
     ],
     easter26: [
-        "Hatchwardern - 40,000,000",
+        "Hatchwarden - 40,000,000",
         "Emperor - 80,000,000",
         "Eggsistance - 377,777,777",
         "Revive - 645,000,000",
