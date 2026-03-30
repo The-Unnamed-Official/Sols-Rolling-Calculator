@@ -763,6 +763,35 @@
         </a>
     </div>
 
+    <div class="donation-float" id="donationFloat">
+        <button
+            type="button"
+            class="donation-float__toggle"
+            id="donationFloatToggle"
+            aria-controls="donationFloatLink"
+            aria-expanded="true"
+            aria-label="Minimize donation card"
+            title="Minimize"
+        >
+            <span class="donation-float__toggle-icon donation-float__toggle-icon--collapse" aria-hidden="true">
+                <i class="fa-solid fa-minus"></i>
+            </span>
+            <span class="donation-float__toggle-icon donation-float__toggle-icon--expand" aria-hidden="true">
+                <i class="fa-solid fa-hand-holding-dollar"></i>
+            </span>
+        </button>
+        <a class="donation-float__link" id="donationFloatLink" href="#donationFloat" aria-label="Donation list">
+            <span class="donation-float__icon" aria-hidden="true">
+                <i class="fa-solid fa-hand-holding-dollar"></i>
+            </span>
+            <span class="donation-float__content">
+                <span class="donation-float__eyebrow">Donations</span>
+                <span class="donation-float__label">Recent Support</span>
+                <span class="donation-float__meta">Chesser — $5</span>
+            </span>
+        </a>
+    </div>
+
     <div id="cutsceneWarningOverlay" class="cutscene-warning-overlay" hidden>
         <div class="cutscene-warning surface surface--modal" role="dialog" aria-modal="true" aria-labelledby="cutsceneWarningTitle">
             <p class="cutscene-warning__message">
