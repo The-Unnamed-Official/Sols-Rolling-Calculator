@@ -6041,6 +6041,33 @@ function setupSupportFloatToggle() {
     setCollapsed(false);
 }
 
+function setupDonationFloatToggle() {
+    const donationFloat = document.getElementById('donationFloat');
+    const toggleButton = document.getElementById('donationFloatToggle');
+    const donationLink = document.getElementById('donationFloatLink');
+
+    if (!donationFloat || !toggleButton || !donationLink) {
+        return;
+    }
+
+    const setCollapsed = collapsed => {
+        donationFloat.classList.toggle('donation-float--collapsed', collapsed);
+        toggleButton.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
+        toggleButton.setAttribute('aria-label', collapsed ? 'Expand donation card' : 'Minimize donation card');
+        toggleButton.title = collapsed ? 'Expand' : 'Minimize';
+        donationLink.setAttribute('aria-hidden', collapsed ? 'true' : 'false');
+        donationLink.tabIndex = collapsed ? -1 : 0;
+    };
+
+    toggleButton.addEventListener('click', event => {
+        event.preventDefault();
+        event.stopPropagation();
+        setCollapsed(!donationFloat.classList.contains('donation-float--collapsed'));
+    });
+
+    setCollapsed(false);
+}
+
 function setSupportQrDrawerOpen(isOpen, { focusQrButton = false } = {}) {
     const supportFloat = document.getElementById('supportFloat');
     const qrButton = document.getElementById('supportFloatQrButton');
@@ -6850,6 +6877,7 @@ document.addEventListener('DOMContentLoaded', () => {
     applyFortePixelatedWaveText();
     setupFortePixelatedSecret();
     setupSupportFloatToggle();
+    setupDonationFloatToggle();
 
     const supportQrButton = document.getElementById('supportFloatQrButton');
     if (supportQrButton) {
