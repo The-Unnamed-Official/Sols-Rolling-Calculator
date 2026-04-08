@@ -4353,7 +4353,7 @@ const AURA_BLUEPRINT_SOURCE = Object.freeze([
     { name: "Dream Traveler - 2,025,012,025", chance: 2025012025, breakthroughs: nativeBreakthroughs("aurora"), cutscene: "dream-traveler-cutscene" },
     { name: "Sky Festival - 2,000,000,000", chance: 2000000000, cutscene: "skyFestival-cutscene" },
     { name: BREAKTHROUGH_AURA_NAME, chance: 1999999999, cutscene: "breakthrough-cutscene" },
-    { name: "Y.O.L.K.E.G.G. - 1,780,808,080", chance: 1780808080, cutscene: "yolk-cutscene" },
+    { name: "Y.O.L.K.E.G.G. - 1,790,909,090", chance: 1790909090, cutscene: "yolk-cutscene" },
     { name: LEVIATHAN_AURA_NAME, chance: 1730400000, nativeBiomes: ["rainy", "glitch"], cutscene: "leviathan-cutscene", disableNativeOverrideTier: true },
     { name: "Winter Garden - 1,450,012,025", chance: 1450012025, breakthroughs: nativeBreakthroughs("aurora"), cutscene: "winter-garden-cutscene" },
     { name: "Luminosity - 1,200,000,000", chance: 1200000000, cutscene: "luminosity-cutscene" },
@@ -4897,7 +4897,7 @@ const EVENT_AURA_LOOKUP = {
         "Eggore - 700,000,000",
         "Eostre - 1,000,000,000",
         "Aegis : Eggis - 1,150,000,000",
-        "Y.O.L.K.E.G.G. - 1,780,808,080",
+        "Y.O.L.K.E.G.G. - 1,790,909,090",
         "Sky Festival - 2,000,000,000"
     ]
 };
