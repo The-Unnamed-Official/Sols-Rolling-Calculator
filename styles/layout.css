@@ -1355,6 +1355,7 @@
     padding-right: 60px;
     border-radius: 18px;
     text-decoration: none;
+    cursor: default;
     color: #f3ebff;
     letter-spacing: 0.12em;
     text-transform: uppercase;

@@ -855,6 +855,15 @@ select.form-field__input option {
     color: transparent;
 }
 
+.crazyClass {
+    background: linear-gradient(100deg, #ff6767, #ffff5e, #58ff66, #58fff1, #4b90ff, #ff4be7, #cf0000, #ffff00, #004d06, #00146f, #8f00a8, #e68200);
+    background-size: 300% 300%;
+    animation: class-gradient 5.25s linear infinite;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+
 .tutPotion {
     background: linear-gradient(90deg, #fff700, #fffd9d);
     -webkit-background-clip: text;
