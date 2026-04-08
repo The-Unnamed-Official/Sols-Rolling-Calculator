@@ -49,6 +49,9 @@ const AUDIO_SETTINGS_STORAGE_KEY = 'solsRollingCalculator:audioSettings';
 const AURA_FILTERS_STORAGE_KEY = 'solsRollingCalculator:auraFilters';
 const VISUAL_SETTINGS_STORAGE_KEY = 'solsRollingCalculator:visualSettings';
 const AURA_TIER_FILTERS_STORAGE_KEY = 'solsRollingCalculator:auraTierFilters';
+// TEMPORARY CUTSCENE LOCK:
+// Set to false (or remove this block) when you want to allow turning cutscenes off again.
+const FORCE_CUTSCENES_ALWAYS_ON = true;
 let reduceMotionPreferenceOverride = null;
 const backgroundRollingPreference = {
     allowed: false,
@@ -62,6 +65,10 @@ const QUALITY_PREFERENCE_KEYS = Object.freeze([
     'reduceGlitchEffects',
     'removeGlitchEffects'
 ]);
+
+if (FORCE_CUTSCENES_ALWAYS_ON && typeof appState === 'object') {
+    appState.cinematic = true;
+}
 
 function ensureQualityPreferences() {
     if (!appState || !appState.qualityPreferences || typeof appState.qualityPreferences !== 'object') {
@@ -300,7 +307,7 @@ function hydrateVisualSettings() {
         if (typeof parsed.glitch === 'boolean') {
             appState.glitch = parsed.glitch;
         }
-        if (typeof parsed.cinematic === 'boolean') {
+        if (!FORCE_CUTSCENES_ALWAYS_ON && typeof parsed.cinematic === 'boolean') {
             appState.cinematic = parsed.cinematic;
         }
         if (typeof parsed.reduceMotion === 'boolean') {
@@ -322,6 +329,10 @@ function hydrateVisualSettings() {
         }
     } catch (error) {
         // Ignore malformed storage so defaults remain intact.
+    } finally {
+        if (FORCE_CUTSCENES_ALWAYS_ON) {
+            appState.cinematic = true;
+        }
     }
 }
 
@@ -388,7 +399,7 @@ function persistVisualSettings() {
             VISUAL_SETTINGS_STORAGE_KEY,
             JSON.stringify({
                 glitch: appState.glitch,
-                cinematic: appState.cinematic,
+                cinematic: FORCE_CUTSCENES_ALWAYS_ON ? true : appState.cinematic,
                 reduceMotion: appState.reduceMotion,
                 selectiveTrueChanceDisplay: Boolean(appState.selectiveTrueChanceDisplay),
                 qualityPreferences: appState.qualityPreferences
@@ -1947,7 +1958,7 @@ function toggleInterfaceAudio() {
 
 function toggleCinematicMode() {
     const wasCinematic = appState.cinematic;
-    appState.cinematic = !appState.cinematic;
+    appState.cinematic = FORCE_CUTSCENES_ALWAYS_ON ? true : !appState.cinematic;
 
     const cutsceneToggle = document.getElementById('cinematicToggle');
     if (cutsceneToggle) {
