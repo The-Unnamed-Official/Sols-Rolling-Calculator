@@ -51,7 +51,7 @@ const VISUAL_SETTINGS_STORAGE_KEY = 'solsRollingCalculator:visualSettings';
 const AURA_TIER_FILTERS_STORAGE_KEY = 'solsRollingCalculator:auraTierFilters';
 // TEMPORARY CUTSCENE LOCK:
 // Set to false (or remove this block) when you want to allow turning cutscenes off again.
-const FORCE_CUTSCENES_ALWAYS_ON = true;
+const FORCE_CUTSCENES_ALWAYS_ON = false;
 let reduceMotionPreferenceOverride = null;
 const backgroundRollingPreference = {
     allowed: false,
@@ -4826,7 +4826,7 @@ const EVENT_LIST = [
 ];
 
 const VALENTINE_EVENT_IDS = Object.freeze(['valentine24', 'valentine26']);
-const EASTER_EVENT_IDS = Object.freeze(['easter26', 'easter26']);
+const EASTER_EVENT_IDS = Object.freeze(['easter26']);
 const HALLOWEEN_EVENT_IDS = Object.freeze(['halloween24', 'halloween25']);
 const SUMMER_EVENT_IDS = Object.freeze(['summer24', 'summer25']);
 const WINTER_EVENT_IDS = Object.freeze(['winter25', 'winter26']);
@@ -4987,7 +4987,7 @@ const EVENT_BIOME_CONDITION_MESSAGES = Object.freeze({
     unknown: 'Requires Dev Biomes to be enabled under run parameters.',
 });
 
-const enabledEvents = new Set(['easter26', 'aprilFools26']);
+const enabledEvents = new Set(['easter26']);
 const auraEventIndex = new Map();
 
 function hasAnyEnabledEvent(eventIds) {

@@ -181,19 +181,19 @@
                 </div>
             </div>
             <div class="masthead__controls">
-                <button class="interface-toggle masthead__mute" id="masterMuteToggle" type="button" aria-pressed="false"><!--Mute-->SHUT UP</button>
+                <button class="interface-toggle masthead__mute" id="masterMuteToggle" type="button" aria-pressed="false">Mute</button>
                 <div class="options-menu" id="filterMenu">
-                    <button class="interface-toggle options-menu__trigger" id="filterMenuToggle" type="button" aria-haspopup="menu" aria-expanded="false" aria-controls="filterMenuPanel"><!--Filter Settings-->Ignore Shtuff</button>
+                    <button class="interface-toggle options-menu__trigger" id="filterMenuToggle" type="button" aria-haspopup="menu" aria-expanded="false" aria-controls="filterMenuPanel">Filter Settings</button>
                     <div class="options-menu__surface" id="filterMenuPanel" aria-labelledby="filterMenuToggle">
-                        <button class="interface-toggle options-menu__item" id="filterAuraTiersButton" type="button"><!--Filter Aura Tiers-->Get rid of Aura Tiers</button>
-                        <button class="interface-toggle options-menu__item" id="filterAurasButton" type="button"><!--Filter Auras-->Eww Auras...</button>
+                        <button class="interface-toggle options-menu__item" id="filterAuraTiersButton" type="button">Filter Aura Tiers</button>
+                        <button class="interface-toggle options-menu__item" id="filterAurasButton" type="button">Filter Auras</button>
                     </div>
                 </div>
                 <div class="options-menu" id="optionsMenu">
-                    <button class="interface-toggle options-menu__trigger" id="optionsMenuToggle" type="button" aria-haspopup="menu" aria-expanded="false" aria-controls="optionsMenuPanel"><!--Settings-->Edit in your style</button>
+                    <button class="interface-toggle options-menu__trigger" id="optionsMenuToggle" type="button" aria-haspopup="menu" aria-expanded="false" aria-controls="optionsMenuPanel">Settings</button>
                     <div class="options-menu__surface" id="optionsMenuPanel" aria-labelledby="optionsMenuToggle">
-                        <button class="interface-toggle options-menu__item" id="audioSettingsButton" type="button"><!--Audio-->NOISE GO BOOM</button>
-                        <button class="interface-toggle options-menu__item" id="qualityPreferencesToggle" type="button"><!--Quality Preferances-->Performance go boom boom</button>
+                        <button class="interface-toggle options-menu__item" id="audioSettingsButton" type="button">Audio</button>
+                        <button class="interface-toggle options-menu__item" id="qualityPreferencesToggle" type="button">Quality Preferances</button>
                         <button class="interface-toggle options-menu__item" id="cinematicToggle" type="button" onclick="toggleCinematicMode()" aria-pressed="false">Cutscenes (Fullscreen recommended): Off</button>
                         <button class="interface-toggle options-menu__item" id="backgroundRollingButton" type="button" aria-pressed="false">Allow background rolling: Off</button>
                         <button class="interface-toggle options-menu__item" id="trueChanceDisplayButton" type="button" aria-pressed="false">True chance display: Off</button>
@@ -205,8 +205,8 @@
         <div class="interface-layout">
             <aside class="surface surface--side" aria-labelledby="resources-heading">
                 <header class="surface__header">
-                    <h2 class="surface__title" id="resources-heading"><!--Other Resources-->BLA BLA BORING STUFF</h2>
-                    <p class="surface__subtitle"><!--Jump into more Sols utilities, reference docs, and communities.-->Meh meh meh meh</p>
+                    <h2 class="surface__title" id="resources-heading">Other Resources</h2>
+                    <p class="surface__subtitle">Jump into more Sols utilities, reference docs, and communities.</p>
                 </header>
                 <div class="resource-board">
                     <a class="resource-link resource-link--discord" href="https://discord-id-hub.info" target="_blank" rel="noopener">
@@ -250,11 +250,11 @@
 
             <main class="surface surface--results" aria-labelledby="results-heading">
                 <header class="surface__header">
-                    <h2 class="surface__title" id="results-heading"><!--Roll Feed-->Just keep rollin' Just keep rollin'</h2>
-                    <p class="surface__subtitle"><!--High fidelity output with rarity cues, XP tracking, and event modifier callouts.-->Honestly bro... Just roll...</p>
+                    <h2 class="surface__title" id="results-heading">Roll Feed</h2>
+                    <p class="surface__subtitle">High fidelity output with rarity cues, XP tracking, and event modifier callouts.</p>
                 </header>
                 <div class="feed-share" id="feedShareControls">
-                    <button class="interface-button interface-button--minor feed-share__trigger" type="button" id="feedShareButton" aria-haspopup="true" aria-expanded="false" aria-controls="feedShareMenu"><!--Share Result-->SHARE! (If you have friends HAH)</button>
+                    <button class="interface-button interface-button--minor feed-share__trigger" type="button" id="feedShareButton" aria-haspopup="true" aria-expanded="false" aria-controls="feedShareMenu">Share Result</button>
                     <div class="feed-share__menu" id="feedShareMenu" role="menu" hidden>
                         <button class="feed-share__item" type="button" data-share-format="markdown" role="menuitem">Copy Discord Markdown</button>
                         <button class="feed-share__item" type="button" data-share-format="plain" role="menuitem">Copy Plain Text</button>
@@ -273,27 +273,27 @@
                     <span class="loading-indicator__value">0%</span>
                 </div>
                 <div class="feed__viewport" id="simulation-feed" role="status" aria-live="polite">
-                    <!--Configure your parameters and launch a simulation to see results.-->Trallalero Trallala
+                    Configure your parameters and launch a simulation to see results.
                 </div>
                 <div class="feed__meta">
                     <p class="feed__tip"><span class="feed__tip-label">[Tip] Suzy:</span> Get Lucky</p>
-                    <p class="feed__mythic"><span class="feed__mythic-label"><!--MythicDude-->Ballerino Capuchino</span> was here...</p>
+                    <p class="feed__mythic"><span class="feed__mythic-label">MythicDude</span> was here...</p>
                 </div>
             </main>
 
             <aside class="surface surface--controls" aria-labelledby="controls-heading">
                 <header class="surface__header">
-                    <h2 class="surface__title" id="controls-heading"><!--Roll Controls-->Control your whatever man...</h2>
-                    <p class="surface__subtitle"><!--Set your luck profile, multiplier toggles, and simulation preferences.-->Bla.. Bla.. Bla...</p>
+                    <h2 class="surface__title" id="controls-heading">Roll Controls</h2>
+                    <p class="surface__subtitle">Set your luck profile, multiplier toggles, and simulation preferences.</p>
                 </header>
 
                 <div class="control-section control-section--cta">
-                    <button class="roll-trigger" type="button" onclick="runRollSimulation()"><!--Start Rolling-->PRESS THE BUTTON DARN IT</button>
-                    <button class="roll-cancel" type="button" id="rollCancelButton" hidden><!--Cancel Roll-->Forgot something? Skill issue</button>
+                    <button class="roll-trigger" type="button" onclick="runRollSimulation()">Start Rolling</button>
+                    <button class="roll-cancel" type="button" id="rollCancelButton" hidden>Cancel Roll</button>
                 </div>
 
                 <section class="control-section control-section--luck">
-                    <h3 class="control-section__title"><!--Luck Multipliers-->Yea, Luck something. Go nuts</h3>
+                    <h3 class="control-section__title">Luck Multipliers</h3>
                     <label class="form-field form-field--select" for="vip-dropdown">
                         <span class="form-field__label">VIP Luck</span>
                         <span class="form-field__select-shell form-field__select-shell--custom">
@@ -390,8 +390,8 @@
         <div class="interface-subgrid">
             <section class="surface surface--parameters" aria-labelledby="parameters-heading">
                 <header class="surface__header">
-                    <h2 class="surface__title" id="parameters-heading"><!--Run Parameters-->Guess what this is!!!</h2>
-                    <p class="surface__subtitle"><!--Tune your luck totals, roll counts, biome, and seasonal event modifiers.-->NO DESCRIPTION FOR HINTS BAHAHAHAHAHAHAHAHAHAA</p>
+                    <h2 class="surface__title" id="parameters-heading">Run Parameters</h2>
+                    <p class="surface__subtitle">Tune your luck totals, roll counts, biome, and seasonal event modifiers.</p>
                 </header>
                 <div class="control-section control-section--run-dev">
                     <div class="form-field form-field--toggle">
@@ -604,9 +604,9 @@
 
             <section class="surface surface--presets" aria-labelledby="presets-heading">
                 <header class="surface__header">
-                    <h2 class="surface__title" id="presets-heading"><!--Quick Presets-->I spent a lot of time writing all these stupid short idiotic sentences for this stupid event... Just go ahead, it's not like you don't know what this is, it's pretty explanetory whatever you're seeing below this is...</h2>
-                    <!-- <p class="surface__subtitle">Instantly configure popular luck and event-ready presets.</p> -->
-                    <!-- <span class="preset-signoff__name">Aaden</span> -->
+                    <h2 class="surface__title" id="presets-heading">Quick Presets</h2>
+                    <p class="surface__subtitle">Instantly configure popular luck and event-ready presets.</p>
+                    <span class="preset-signoff__name">Aaden</span>
                 </header>
                 <div class="control-section control-section--presets">
                     <div class="preset-collection">
@@ -662,7 +662,7 @@
                             <span class="preset-collection__title-divider preset-collection__title-divider--end" aria-hidden="true"></span>
                         </h3>
                         <div class="preset-matrix" id="roll-preset-panel">
-                            <!-- <button type="button" onclick="applyRollPreset(100)">100 Rolls</button>
+                            <button type="button" onclick="applyRollPreset(100)">100 Rolls</button>
                             <button type="button" onclick="applyRollPreset(250)">250 Rolls</button>
                             <button type="button" onclick="applyRollPreset(500)">500 Rolls</button>
                             <button type="button" onclick="applyRollPreset(1000)">1,000 Rolls</button>
@@ -684,9 +684,9 @@
                             <button type="button" onclick="applyRollPreset(50000000000)">50,000,000,000 Rolls <span class="roll-warning">(THIS WILL TAKE A SERIOUS TIME)</span></button>
                             <button type="button" onclick="applyRollPreset(100000000000)"><span class="roll-high">100,000,000,000 Rolls</span> <span class="roll-warning">(THIS WILL TAKE A SERIOUS TIME)</span></button>
                             <button type="button" onclick="applyRollPreset(250000000000)"><span class="roll-high">250,000,000,000 Rolls</span> <span class="roll-warning">(THIS WILL TAKE A SERIOUS TIME)</span></button>
-                            <button type="button" onclick="applyRollPreset(500000000000)"><span class="roll-high">500,000,000,000 Rolls</span> <span class="roll-warning">(THIS WILL TAKE A SERIOUS TIME)</span></button> -->
+                            <button type="button" onclick="applyRollPreset(500000000000)"><span class="roll-high">500,000,000,000 Rolls</span> <span class="roll-warning">(THIS WILL TAKE A SERIOUS TIME)</span></button>
                             <button type="button" onclick="applyRollPreset(1000000000000)"><span class="roll-highest">1,000,000,000,000 Rolls</span> <span class="roll-warning">(<span class="roll-high">Seriously</span>... Just don't)</span></button>
-                            <p class="preset-warning preset-warning--slow-roll" id="hundred-million-roll-warning" role="status"><!--⚠️ Processing anything higher than 10,000,000,000 rolls can and WILL take a long time.-->This is the only one you get lol</p>
+                            <p class="preset-warning preset-warning--slow-roll" id="hundred-million-roll-warning" role="status">⚠️ Processing anything higher than 10,000,000,000 rolls can and WILL take a long time.</p>
                         </div>
                     </div>
                   </div>
@@ -842,11 +842,11 @@
     <div id="cyberspaceIllusionaryOverlay" class="cutscene-warning-overlay" hidden aria-hidden="true">
         <div class="cutscene-warning surface surface--modal" role="dialog" aria-modal="true" aria-labelledby="cyberspaceIllusionaryTitle">
             <p class="cutscene-warning__message">
-                <span id="cyberspaceIllusionaryTitle" class="cutscene-warning__note">Cyberspace notice</span>: Illusionary rolls at a true <span class="cutscene-warning__ratio">1 in 10,000,000</span> chance... WHO CARED AND WHO ASKED <!--in Cyberspace. Your luck value does not affect this roll, so feel free to use any luck level.-->
+                <span id="cyberspaceIllusionaryTitle" class="cutscene-warning__note">Cyberspace notice</span>: Illusionary rolls at a true <span class="cutscene-warning__ratio">1 in 10,000,000</span> chance in Cyberspace. Your luck value does not affect this roll, so feel free to use any luck level.
             </p>
             <div class="cutscene-warning__actions">
-                <button type="button" class="interface-button interface-button--minor" id="cyberspaceIllusionaryConfirm"><!--Understood-->FINE</button>
-                <button type="button" class="interface-button interface-button--ghost" id="cyberspaceIllusionaryDismiss"><!--Never show again-->NEVER TALK EVER AGAIN</button>
+                <button type="button" class="interface-button interface-button--minor" id="cyberspaceIllusionaryConfirm">Understood</button>
+                <button type="button" class="interface-button interface-button--ghost" id="cyberspaceIllusionaryDismiss">Never show again</button>
             </div>
         </div>
     </div>
@@ -1033,7 +1033,7 @@
                 </button>
             </div>
             <div class="filter-modal__actions">
-                <button type="button" class="interface-button interface-button--ghost filter-modal__close" id="qualityPreferencesClose"><!--Close-->GET OUT</button>
+                <button type="button" class="interface-button interface-button--ghost filter-modal__close" id="qualityPreferencesClose">Close</button>
             </div>
         </div>
     </div>
@@ -1041,7 +1041,7 @@
     <div id="auraFilterOverlay" class="modal-overlay" hidden>
         <div class="surface surface--modal filter-modal" role="dialog" aria-modal="true" aria-labelledby="auraFilterTitle">
             <div class="filter-modal__header">
-                <h2 class="filter-modal__title" id="auraFilterTitle"><!--Aura Tier Filters-->Are these texts necessary??</h2>
+                <h2 class="filter-modal__title" id="auraFilterTitle">Aura Tier Filters</h2>
                 <p class="filter-modal__hint">Toggle tiers to skip them in the roll feed and image sharing.</p>
             </div>
             <div class="filter-modal__grid">
@@ -1056,7 +1056,7 @@
                 <button type="button" class="interface-toggle filter-tier-toggle" data-tier-key="challenged" data-tier-label="Skip Challenged Auras" aria-pressed="false">Skip Challenged Auras: Off</button>
             </div>
             <div class="filter-modal__actions">
-                <button type="button" class="interface-button interface-button--ghost filter-modal__close" id="auraFilterClose"><!--Close-->GET OUT</button>
+                <button type="button" class="interface-button interface-button--ghost filter-modal__close" id="auraFilterClose">Close</button>
             </div>
         </div>
     </div>
@@ -1072,7 +1072,7 @@
             </div>
             <div class="filter-modal__grid filter-modal__grid--scroll filter-modal__grid--stacked" id="auraFilterList" data-aura-filter-list></div>
             <div class="filter-modal__actions">
-                <button type="button" class="interface-button interface-button--ghost filter-modal__close" id="auraDetailFilterClose"><!--Close-->GET OUT</button>
+                <button type="button" class="interface-button interface-button--ghost filter-modal__close" id="auraDetailFilterClose">Close</button>
             </div>
         </div>
     </div>
