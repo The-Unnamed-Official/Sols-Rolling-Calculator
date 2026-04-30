@@ -143,6 +143,9 @@
     <video id="solsLoadingScreen-cutscene" class="cutscene-video" preload="metadata" data-audio-channel="cutscene">
         <source src="files/solsLoadingScreenCutscene.webm" type="video/webm">
     </video>
+    <video id="astraios-cutscene" class="cutscene-video" preload="metadata" data-audio-channel="cutscene">
+        <source src="files/astraiosCutscene.webm" type="video/webm">
+    </video>
 
     <div id="cinematic-overlay" class="cinematic-overlay" aria-hidden="true"></div>
 
@@ -172,9 +175,9 @@
                         <span class="banner__subtitle-divider" aria-hidden="true">◉</span>
                         <span class="banner__subtitle-author">By <span class="banner__subtitle-author-name"><a href="https://discord.com/users/611204110955446301" target="_blank" rel="noopener">not.unnamed</a></span></span>
                         <span class="banner__subtitle-divider" aria-hidden="true">◉</span>
-                        <span class="banner__subtitle-updated">Updated <time datetime="2026-04-30T12:00:00+02:00">2026/04/30 12:00 PM CEST</time></span>
+                        <span class="banner__subtitle-updated">Updated <time datetime="2026-04-30T12:00:00+02:00">2026/04/30 12:30 PM CEST</time></span>
                         <span class="banner__subtitle-divider" aria-hidden="true">◉</span>
-                        <span class="banner__subtitle-eon"><span class="banner__subtitle-game-version"><a href="https://www.roblox.com/games/15532962292/Sols-RNG" target="_blank" rel="noopener">Sol's RNG Eon 1-19</a></span></span>
+                        <span class="banner__subtitle-eon"><span class="banner__subtitle-game-version"><a href="https://www.roblox.com/games/15532962292/Sols-RNG" target="_blank" rel="noopener">Sol's RNG Eon 1-20</a></span></span>
                     </p>
                 </div>
             </div>
@@ -432,6 +435,7 @@
                                     <option value="heaven">Heaven</option>
                                     <option value="corruption">Corruption</option>
                                     <option value="null">Null</option>
+                                    <option value="singularity"><span class="sigil-outline-singularity">Singularity</span></option>
                                     <option value="cyberspace"><span class="sigil-outline-cyberspace">Cyberspace</span></option>
                                     <option value="dreamspace"><span class="sigil-outline-dreamspace">Dreamspace</span></option>
                                     <option value="glitch"><span class="sigil-outline-glitch">Glitch</span></option>
@@ -500,6 +504,7 @@
                             <option value="heaven">Heaven</option>
                             <option value="corruption">Corruption</option>
                             <option value="null">Null</option>
+                            <option value="singularity"><span class="sigil-outline-singularity">Singularity</span></option>
                             <option value="cyberspace"><span class="sigil-outline-cyberspace">Cyberspace</span></option>
                             <option value="dreamspace"><span class="sigil-outline-dreamspace">Dreamspace</span></option>
                             <option value="glitch"><span class="sigil-outline-glitch">Glitch</span></option>
@@ -582,6 +587,7 @@
                     </div>
                     <div class="quick-action-group" role="group" aria-label="Quick biome actions">
                         <button class="interface-button interface-button--ghost" type="button" onclick="setGlitchPreset()">Set <span class="sigil-outline-glitch">Glitch</span></button>
+                        <button class="interface-button interface-button--ghost" type="button" onclick="setSingularityPreset()">Set <span class="sigil-outline-singularity">Singularity</span></button>
                         <button class="interface-button interface-button--ghost" type="button" onclick="setCyberspacePreset()">Set <span class="sigil-outline-cyberspace">Cyberspace</span></button>
                         <button class="interface-button interface-button--ghost" type="button" onclick="setDreamspacePreset()">Set <span class="sigil-outline-dreamspace">Dreamspace</span></button>
                         <button class="interface-button interface-button--ghost" type="button" onclick="setLimboPreset()">Set <span class="sigil-outline-limbo">Limbo</span></button>
@@ -710,7 +716,7 @@
                 <li class="footer-credits__item">Erebus cutscene courtesy of <a href="https://www.youtube.com/watch?v=ift10zMOVRk" target="_blank" rel="noopener">4zell</a>.</li>
                 <li class="footer-credits__item">Lamenthyr cutscene courtesy of <a href="https://www.youtube.com/watch?v=DwEzY_nA054" target="_blank" rel="noopener">Ray</a>.</li>
                 <li class="footer-credits__item">Dreammetric cutscene courtesy of <a href="https://www.youtube.com/watch?v=Qo0P0LYAenQ" target="_blank" rel="noopener">Bocchi.</a>.</li>
-                <li class="footer-credits__item">Equinox cutscene courtesy of <a href="https://www.youtube.com/watch?v=o-u3_KUMKgk" target="_blank" rel="noopener">Silver :3</a>.</li>
+                <li class="footer-credits__item">Equinox cutscene courtesy of <a href="https://discord.com/users/1148667348253933649" target="_blank" rel="noopener">ploqoo</a>.</li>
                 <li class="footer-credits__item">Oppression cutscene courtesy of <a href="https://www.youtube.com/watch?v=dgqkpBYNxiU" target="_blank" rel="noopener">SorrVriety</a>.</li>
                 <li class="footer-credits__item">Oblivion cutscene courtesy of <a href="https://www.youtube.com/watch?v=clQxiIRH8Ps" target="_blank" rel="noopener">Mr-yani</a>.</li>
                 <li class="footer-credits__item">Neferkhaf cutscene courtesy of <a href="https://www.reddit.com/r/SolsRNG/comments/1n3wot3/new_neferkhaf_cutscene/" target="_blank" rel="noopener">Sirothereal</a>.</li>
@@ -729,6 +735,7 @@
                 <li class="footer-credits__item">Equinox : You Are An Idiot cutscene courtesy of <a href="https://discord.com/users/1060938600264515715" target="_blank" rel="noopener">gold_solsrng</a>.</li>
                 <li class="footer-credits__item">A Fool's Experience cutscene courtesy of <a href="https://discord.com/users/1374138224603168929" target="_blank" rel="noopener">fawqz</a>.</li>
                 <li class="footer-credits__item">P.U.K.E.K.O.G.O.D cutscene courtesy of <a href="https://discord.com/users/462990696182448150" target="_blank" rel="noopener">kutay1000</a>.</li>
+                <li class="footer-credits__item">Astraios cutscene courtesy of <a href="https://discord.com/users/1010402510994935929" target="_blank" rel="noopener">remixcodeszz11</a>.</li>
             </ul>
         </details>
     </footer>
@@ -1090,6 +1097,28 @@
             </div>
 
             <div class="changelog-modal__panels" data-changelog-panels>
+                <!-- <section
+                    id="changelog-panel-v1810"
+                    class="changelog-modal__panel"
+                    role="tabpanel"
+                    aria-labelledby="changelog-tab-v1810"
+                    data-changelog-panel="v1810"
+                    data-changelog-label="v1.810"
+                    tabindex="0"
+                >
+                    <header class="changelog-modal__header">
+                        <h2 class="changelog-modal__title">Version v1.810 Update Notes</h2>
+                        <span class="changelog-tab__subtitle">April Fools Ends</span>
+                        <p class="changelog-modal__meta">Updated 2026/05/02 at 12:30 PM CEST</p>
+                    </header>
+                    <p class="changelog-modal__intro">Latest changes:</p>
+                    <ul class="changelog-modal__list">
+                        <li><span class="largeClass"><span class="sigil-outline-april">April Fools Event 2026</span> is now over.</span></li>
+                        <li><span class="largeClass"><span class="sigil-outline-easter-2026">Easter Event 2026</span> stays default enabled for a little longer.</span></li>
+                    </ul>
+                    <p>If there's any bugs you encounter, please DM me here <a href="https://discord.com/users/611204110955446301" class="subtitleClass" target="_blank" rel="noopener">@not.unnamed</a></p>
+                </section> -->
+                
                 <section
                     id="changelog-panel-v1800"
                     class="changelog-modal__panel"
@@ -1101,19 +1130,50 @@
                 >
                     <header class="changelog-modal__header">
                         <h2 class="changelog-modal__title">Version v1.800 Update Notes</h2>
-                        <span class="changelog-tab__subtitle">April Fools Ends</span>
-                        <p class="changelog-modal__meta">Updated 2026/04/30 at 12:00 PM CEST</p>
+                        <span class="changelog-tab__subtitle">Jokes aside, here's Eon 1-20</span>
+                        <p class="changelog-modal__meta">Updated 2026/04/30 at 12:30 PM CEST</p>
                     </header>
                     <p class="changelog-modal__intro">Latest changes:</p>
                     <ul class="changelog-modal__list">
-                        <li><span class="sigil-outline-april">April Fools Event 2026</span> is now over.</li>
-                        <li><span class="sigil-outline-easter-2026">Easter Event 2026</span> stays default enabled for a little longer.</li>
-                        <li>Moved long roll simulations off the main UI thread when supported to reduce visible lag during heavy runs.</li>
-                        <li>Optimized roll-state storage, weighted selection handling, and repeated aura lookup work to make large simulations finish faster.</li>
-                        <li>Improved internal calculation helpers and result-building overhead without changing the main roll math or visual design.</li>
+                        <li><span class="largeClass"><span class="sigil-outline-april">April Fools Event 2026</span> is not over yet, but the simulator has had enough jokes for this year.</span></li>
+                        <ul>
+                            <li>This means all miniture to massive jokes and stupid low-effort vibes are gone, cya next year!</li>
+                        </ul>
+                        <li><span class="largeClass"><span class="sigil-outline-easter-2026">Easter Event 2026</span> also stays default enabled for a little longer.</span></li>
+                        <li><span class="largeClass">Added a new biome called <span class="sigil-outline-singularity">Singularity</span>.</span></li>
+                        <li><span class="largeClass">Added 9 new <span class="sigil-outline-singularity">Singularity</span> exclusive auras:</span></li>
+                        <ul>
+                            <li><span class="sigil-outline-singularity">Pleiades</span><span class="tinyClass">1 in 65,358 [Singularity Exclusive]</span></li>
+                            <li><span class="sigil-outline-singularity">Pulsar</span><span class="tinyClass">1 in 83,345 [Singularity Exclusive]</span></li>
+                            <li><span class="sigil-outline-singularity">Constella</span><span class="tinyClass">1 in 86,988 [Singularity Exclusive]</span></li>
+                            <li><span class="sigil-outline-singularity">Vega</span><span class="tinyClass">1 in 2,580,000 [Singularity Exclusive]</span></li>
+                            <li><span class="sigil-outline-singularity">Astronaut</span><span class="tinyClass">1 in 6,117,196 [Singularity Exclusive]</span></li>
+                            <li><span class="sigil-outline-singularity">Centurion</span><span class="tinyClass">1 in 25,000,000 [Singularity Exclusive]</span></li>
+                            <li><span class="sigil-outline-singularity">Projection</span><span class="tinyClass">1 in 197,000,000 [Singularity Exclusive]</span></li>
+                            <li><span class="sigil-outline-singularity">Gravitational : Point Zero</span><span class="tinyClass">1 in 521,121,900 [Singularity Exclusive]</span></li>
+                            <li><span class="sigil-outline-singularity">Astraios</span><span class="tinyClass">1 in 1,750,000,000 [Singularity Exclusive]</span></li>
+                        </ul>
+                        <li><span class="largeClass">Added 3 new default auras:</span></li>
+                        <ul>
+                            <li>Dizzy <span class="tinyClass">1 in 123</span></li>
+                            <li>Oculus<span class="tinyClass">1 in 23,333,340 [1 in 4,666,668 in Heaven]</span></li>
+                            <li>Virtual : Memory<span class="tinyClass">1 in 232,232,232 [1 in 116,116,116 in Cyberspace]</span></li>
+                        </ul>
+                        <li><span class="largeClass">Updated some auras:</span></li>
+                        <ul>
+                            <li>Updated Equinox's cutscene to the new rework</li>
+                            <li>Fixed the rarity of <span class="sigil-outline-easter-2026">Eggsistance</span> from: 377,777,777 to 307,777,777</span></li>
+                        </ul>
+                        <li><span class="largeClass">Some performance and math fixes:</span></li>
+                        <ul>
+                            <li>Moved long roll simulations off the main UI thread when supported to reduce visible lag during heavy runs.</li>
+                            <li>Optimized roll-state storage, weighted selection handling, and repeated aura lookup work to make large simulations finish faster.</li>
+                            <li>Improved internal calculation helpers and result-building overhead without changing the main roll math or visual design.</li>
+                        </ul>
                     </ul>
                     <p>If there's any bugs you encounter, please DM me here <a href="https://discord.com/users/611204110955446301" class="subtitleClass" target="_blank" rel="noopener">@not.unnamed</a></p>
                 </section>
+
                 <section
                     id="changelog-panel-v5556967"
                     class="changelog-modal__panel"

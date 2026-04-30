@@ -2427,6 +2427,7 @@ const biomeAssets = {
     sandstorm: { image: 'files/sandstormBiomeImage.jpg', music: 'files/sandstormBiomeMusic.mp3' },
     hell: { image: 'files/hellBiomeImage.jpg', music: 'files/hellBiomeMusic.mp3' },
     starfall: { image: 'files/starfallBiomeImage.jpg', music: 'files/starfallBiomeMusic.mp3' },
+    singularity: { image: 'files/singularityBiomeImage.png', music: 'files/singularityBiomeMusic.mp3' },
     heaven: { image: 'files/heavenBiomeImage.png', music: 'files/heavenBiomeMusic.mp3' },
     corruption: { image: 'files/corruptionBiomeImage.jpg', music: 'files/corruptionBiomeMusic.mp3' },
     null: { image: 'files/nullBiomeImage.jpg', music: 'files/nullBiomeMusic.mp3' },
@@ -3411,6 +3412,14 @@ function setDreamspacePreset() {
     updateBiomeControlConstraints({ source: BIOME_PRIMARY_SELECT_ID });
 }
 
+function setSingularityPreset() {
+    setPrimaryBiomeSelection('singularity');
+    setOtherBiomeSelection('none');
+    setTimeBiomeSelection('none');
+    playSoundEffect(clickSoundEffectElement, 'ui');
+    updateBiomeControlConstraints({ source: BIOME_PRIMARY_SELECT_ID });
+}
+
 function setLimboPreset() {
     setPrimaryBiomeSelection('limbo');
     setOtherBiomeSelection('none');
@@ -3968,8 +3977,8 @@ const auraOutlineOverrides = new Map([
     ['Impeached : ImCrine', 'sigil-outline-april'],
     ['Surfer : Symphony', 'sigil-outline-april'],
     ['Workshop : System', 'sigil-outline-april'],
+    ['P.U.K.E.K.O.G.O.D.', 'sigil-outline-april'],
     ["A Fool's Experience", 'sigil-outline-april'],
-    ['P.U.K.E.K.O.G.O.D', 'sigil-outline-april'],
     ['Star Rider : Starfish Rider', 'sigil-outline-summer'],
     ['Watermelon', 'sigil-outline-summer'],
     ['Surfer : Shard Surfer', 'sigil-outline-summer'],
@@ -4007,6 +4016,15 @@ const auraOutlineOverrides = new Map([
     ['Lunar : Cultist', 'sigil-outline-blood'],
     ['Werewolf', 'sigil-outline-blood'],
     ['Bloodgarden', 'sigil-outline-blood'],
+    ['Pleiades', 'sigil-outline-singularity'],
+    ['Pulsar', 'sigil-outline-singularity'],
+    ['Constella', 'sigil-outline-singularity'],
+    ['Vega', 'sigil-outline-singularity'],
+    ['Astronaut', 'sigil-outline-singularity'],
+    ['Centurion', 'sigil-outline-singularity'],
+    ['Projection', 'sigil-outline-singularity'],
+    ['Gravitational : Point Zero', 'sigil-outline-singularity'],
+    ['Astraios', 'sigil-outline-singularity'],
     ['Cryogenic', 'sigil-outline-cryogenic'],
     ['Leviathan', 'sigil-outline-leviathan'],
     ['Monarch', 'sigil-outline-monarch'],
@@ -4381,6 +4399,7 @@ const AURA_BLUEPRINT_SOURCE = Object.freeze([
     { name: "Sky Festival - 2,000,000,000", chance: 2000000000, cutscene: "skyFestival-cutscene" },
     { name: BREAKTHROUGH_AURA_NAME, chance: 1999999999, cutscene: "breakthrough-cutscene" },
     { name: "Y.O.L.K.E.G.G. - 1,790,909,090", chance: 1790909090, cutscene: "yolk-cutscene" },
+    { name: "Astraios - 1,750,000,000", chance:  1750000000, nativeBiomes: ["singularity"], cutscene: "astraios-cutscene" },
     { name: LEVIATHAN_AURA_NAME, chance: 1730400000, nativeBiomes: ["rainy", "glitch"], cutscene: "leviathan-cutscene", disableNativeOverrideTier: true },
     { name: "Winter Garden - 1,450,012,025", chance: 1450012025, breakthroughs: nativeBreakthroughs("aurora"), cutscene: "winter-garden-cutscene" },
     { name: "Luminosity - 1,200,000,000", chance: 1200000000, cutscene: "luminosity-cutscene" },
@@ -4390,8 +4409,8 @@ const AURA_BLUEPRINT_SOURCE = Object.freeze([
     { name: "Pixelation - 1,073,741,824", chance: 1073741824, breakthroughs: nativeBreakthroughs("cyberspace"), nativeBiomes: ["cyberspace"], cutscene: "pixelation-cutscene" },
     { name: "Nyctophobia - 1,011,111,010", chance: 1011111010, nativeBiomes: ["limbo"], cutscene: "nyctophobia-cutscene" },
     { name: "Lamenthyr - 1,000,000,000", chance: 1000000000, nativeBiomes: ["glitch", "bloodRain"], cutscene: "lamenthyr-cutscene" },
-    { name: "A Fool's Experience - 1 in 1,000,000,000", chance: 1000000000, cutscene: "solsLoadingScreen-cutscene" },
-    { name: "P.U.K.E.K.O.G.O.D - 1 in 1,000,000,000", chance: 1000000000, cutscene: "pukekoGod-cutscene" },
+    { name: "A Fool's Experience - 1,000,000,000", chance: 1000000000, cutscene: "solsLoadingScreen-cutscene" },
+    { name: "P.U.K.E.K.O.G.O.D. - 1,000,000,000", chance: 1000000000, cutscene: "pukekoGod-cutscene" },
     { name: "Eostre - 1,000,000,000", chance: 1000000000, cutscene: "eostre-cutscene" },
     { name: "Sovereign : Frostveil - 1,000,000,000", chance: 1000000000, breakthroughs: nativeBreakthroughs("aurora"), cutscene: "frostveil-cutscene" },
     { name: "Arachnophobia - 940,000,000", chance: 940000000, nativeBiomes: ["glitch", "pumpkinMoon"] },
@@ -4422,6 +4441,7 @@ const AURA_BLUEPRINT_SOURCE = Object.freeze([
     { name: "Sophyra - 570,000,000", chance: 570000000 },
     { name: "Elude - 555,555,555", chance: 555555555, nativeBiomes: ["limbo"] },
     { name: "Sailor : Admiral - 540,000,000", chance: 540000000, breakthroughs: nativeBreakthroughs("rainy") },
+    { name: "Gravitational : Point Zero - 521,121,900", chance:  521121900, nativeBiomes: ["singularity"] },
     { name: "Atlas : Yuletide - 510,000,000", chance: 510000000, breakthroughs: nativeBreakthroughs("snowy") },
     { name: "Matrix : Overdrive - 503,000,000", chance: 503000000, breakthroughs: nativeBreakthroughs("cyberspace"), nativeBiomes: ["cyberspace"] },
     { name: "Ruins - 500,000,000", chance: 500000000 },
@@ -4438,7 +4458,7 @@ const AURA_BLUEPRINT_SOURCE = Object.freeze([
     { name: "Impeached : I'm Peach - 400,000,000", chance: 400000000 },
     { name: "Celestial : Eclipse - 384,400,000", chance: 384400000 },
     { name: "Cryofang - 380,000,000", chance: 380000000, breakthroughs: nativeBreakthroughs("aurora") },
-    { name: "Eggsistance - 377,777,777", chance: 377777777 },
+    { name: "Eggsistance - 307,777,777", chance: 307777777 },
     { name: "CHILLSEAR - 375,000,000", chance: 375000000, breakthroughs: nativeBreakthroughs("snowy") },
     { name: "Symphony : Bloomed - 375,000,000", chance: 375000000 },
     { name: "Flora : Evergreen - 370,073,730", chance: 370073730 },
@@ -4457,6 +4477,7 @@ const AURA_BLUEPRINT_SOURCE = Object.freeze([
     { name: "Prophecy - 275,649,430", chance: 275649430, breakthroughs: nativeBreakthroughs("heaven") },
     { name: "Astral : Zodiac - 267,200,000", chance: 267200000, breakthroughs: nativeBreakthroughs("starfall") },
     { name: "Impeached : ImCrine - 250,000,000", chance: 250000000, breakthroughs: nativeBreakthroughs("corruption") },
+    { name: "Virtual : Memory - 232,232,232", chance:  232232232, breakthroughs: nativeBreakthroughs("cyberspace") },
     { name: "Encase - 230,000,000", chance: 230000000, breakthroughs: nativeBreakthroughs("aurora") },
     { name: "Surfer : Shard Surfer - 225,000,000", chance: 225000000, breakthroughs: nativeBreakthroughs("snowy") },
     { name: "HYPER-VOLT : EVER-STORM - 225,000,000", chance: 225000000 },
@@ -4464,6 +4485,7 @@ const AURA_BLUEPRINT_SOURCE = Object.freeze([
     { name: "Oppression - 220,000,000", chance: 220000000, nativeBiomes: ["glitch"], cutscene: "oppression-cutscene" },
     { name: "Impeached - 200,000,000", chance: 200000000, breakthroughs: nativeBreakthroughs("corruption") },
     { name: "Raven : Plague - 200,000,000", chance: 200000000, nativeBiomes: ["limbo"] },
+    { name: "Projection - 197,000,000", chance:  197000000, nativeBiomes: ["singularity"] },
     { name: "Nightmare Sky - 190,000,000", chance: 190000000, nativeBiomes: ["pumpkinMoon"] },
     { name: "Felled - 180,000,000", chance: 180000000, breakthroughs: nativeBreakthroughs("hell") },
     { name: "Twilight : Withering Grace - 180,000,000", chance: 180000000, breakthroughs: nativeBreakthroughs("night") },
@@ -4517,10 +4539,12 @@ const AURA_BLUEPRINT_SOURCE = Object.freeze([
     { name: "Innovator - 30,000,000", chance: 30000000 },
     { name: "Arcane : Dark - 30,000,000", chance: 30000000 },
     { name: "Blizzard - 27,315,000", chance: 27315000, breakthroughs: nativeBreakthroughs("snowy") },
+    { name: "Centurion - 25,000,000", chance:  25000000, nativeBiomes: ["singularity"] },
     { name: "Apotheosis - 24,649,430", chance: 24649430 },
     { name: "Frostwood - 24,500,000", chance: 24500000, breakthroughs: nativeBreakthroughs("aurora") },
     { name: "Ruby : Brimstone - 24,000,000", chance: 24000000 },
     { name: "Aviator - 24,000,000", chance: 24000000 },
+    { name: "Oculus - 23,333,340", chance:  23333340, breakthroughs: nativeBreakthroughs("heaven") },
     { name: "Cryptfire - 21,000,000", chance: 21000000, nativeBiomes: ["graveyard"] },
     { name: "Plasma - 20,600,000", chance: 20000000 },
     { name: "Very Small Sewage Rat That's About 3.082 Studs Long - 20,070,629", chance: 20070629 },
@@ -4558,6 +4582,7 @@ const AURA_BLUEPRINT_SOURCE = Object.freeze([
     { name: "Oni - 6,666,666", chance: 6666666, nativeBiomes: ["glitch", "bloodRain"] },
     { name: "Hades - 6,666,666", chance: 6666666, breakthroughs: nativeBreakthroughs("hell") },
     { name: "Origin - 6,500,000", chance: 6500000 },
+    { name: "Astronaut - 6,117,196", chance:  6117196, nativeBiomes: ["singularity"] },
     { name: "Vital - 6,000,000", chance: 6000000, nativeBiomes: ["pumpkinMoon"] },
     { name: "Twilight - 6,000,000", chance: 6000000, breakthroughs: nativeBreakthroughs("night") },
     { name: "Anima - 5,730,000", chance: 5730000, nativeBiomes: ["limbo"] },
@@ -4581,6 +4606,7 @@ const AURA_BLUEPRINT_SOURCE = Object.freeze([
     { name: "Lunar : Nightfall - 3,000,000", chance: 3000000, nativeBiomes: ["graveyard"] },
     { name: "Orion - 3,000,000", chance: 3000000, breakthroughs: nativeBreakthroughs("starfall") },
     { name: "Parasite - 3,000,000", chance: 3000000, breakthroughs: nativeBreakthroughs("corruption") },
+    { name: "Vega - 2,580,000", chance:  2580000, nativeBiomes: ["singularity"] },
     { name: "Virtual - 2,500,000", chance: 2500000, breakthroughs: nativeBreakthroughs("cyberspace"), nativeBiomes: ["cyberspace"] },
     { name: "Evanescent - 2,360,000", chance: 2360000, breakthroughs: nativeBreakthroughs("rainy") },
     { name: "Undefined : Defined - 2,222,000", chance: 2222000, breakthroughs: nativeBreakthroughs("null") },
@@ -4633,10 +4659,13 @@ const AURA_BLUEPRINT_SOURCE = Object.freeze([
     { name: "Exotic - 99,999", chance: 99999 },
     { name: "Stormal - 90,000", chance: 90000, breakthroughs: nativeBreakthroughs("windy") },
     { name: "Flow - 87,000", chance: 87000 , breakthroughs: nativeBreakthroughs("windy") },
+    { name: "Constella - 86,988", chance:  86988, nativeBiomes: ["singularity"] },
+    { name: "Pulsar - 83,345", chance:  83345, nativeBiomes: ["singularity"] },
     { name: "Permafrost - 73,500", chance: 73500, breakthroughs: nativeBreakthroughs("snowy") },
     { name: "Nautilus - 70,000", chance: 70000 },
     { name: "Hazard : Rays - 70,000", chance: 70000, breakthroughs: nativeBreakthroughs("corruption") },
     { name: "Flushed : Lobotomy - 69,000", chance: 69000 },
+    { name: "Pleiades - 65,358", chance: 65358, nativeBiomes: ["singularity"] },
     { name: "Star Rider - 50,000", chance: 50000, breakthroughs: nativeBreakthroughs("starfall") },
     { name: "Starlight - 50,000", chance: 50000, breakthroughs: nativeBreakthroughs("starfall") },
     { name: "Solar - 50,000", chance: 50000, breakthroughs: nativeBreakthroughs("day") },
@@ -4690,6 +4719,7 @@ const AURA_BLUEPRINT_SOURCE = Object.freeze([
     { name: "Ruby - 350", chance: 350 },
     { name: "Topaz - 150", chance: 150 },
     { name: "Rage - 128", chance: 128 },
+    { name: "Dizzy - 123", chance: 123 },
     { name: "★ - 100", chance: 100, nativeBiomes: ["dreamspace"] },
     { name: "Crystallized - 64", chance: 64 },
     { name: "Divinus : Love - 32", chance: 32 },
@@ -4926,7 +4956,7 @@ const EVENT_AURA_LOOKUP = {
     easter26: [
         "Hatchwarden - 40,000,000",
         "Emperor - 80,000,000",
-        "Eggsistance - 377,777,777",
+        "Eggsistance - 307,777,777",
         "Revive - 645,000,000",
         "Eggore - 700,000,000",
         "Eostre - 1,000,000,000",
@@ -4950,8 +4980,8 @@ const EVENT_AURA_LOOKUP = {
         "Impeached : ImCrine - 250,000,000",
         "Surfer : Symphony - 600,000,000",
         "Workshop : System - 650,000,000",
-        "A Fool's Experience - 1,000,000,000",
-        "P.U.K.E.K.O.G.O.D - 1,000,000,000",
+        "P.U.K.E.K.O.G.O.D. - 1,000,000,000",
+        "A Fool's Experience - 1,000,000,000"
     ]
 };
 
@@ -4975,7 +5005,7 @@ const EVENT_BIOME_CONDITION_MESSAGES = Object.freeze({
     unknown: 'Requires Dev Biomes to be enabled under run parameters.',
 });
 
-const enabledEvents = new Set(['easter26']);
+const enabledEvents = new Set(['aprilFools26', 'easter26']);
 const auraEventIndex = new Map();
 
 function hasAnyEnabledEvent(eventIds) {
@@ -5085,7 +5115,7 @@ function getAuraEventId(aura, { preferEnabled = false, enabledSet = null } = {})
 const CUTSCENE_PRIORITY_SEQUENCE = [
             "trolled-cutscene", "illusionary-cutscene", "oblivion-cutscene", "memory-cutscene", "neferkhaf-cutscene", "blood-cutscene",
             "monarch-cutscene", "idiot-cutscene", "equinox-cutscene", "dream-traveler-cutscene", "skyFestival-cutscene", "breakthrough-cutscene",
-            "yolk-cutscene", "leviathan-cutscene", "winter-garden-cutscene", "erebus-cutscene", "luminosity-cutscene", "eggis-cutscene",
+            "yolk-cutscene", "astraios-cutscene", "leviathan-cutscene", "winter-garden-cutscene", "erebus-cutscene", "luminosity-cutscene", "eggis-cutscene",
             "godslayer-cutscene", "pixelation-cutscene", "nyctophobia-cutscene", "solsLoadingScreen-cutscene", "pukekoGod-cutscene", "frostveil-cutscene",
             "lamenthyr-cutscene", "ascendant-cutscene", "dreammetric-cutscene", "oppression-cutscene",
             "verdict-cutscene", "prowler-cutscene", "clockwork-cutscene", "attorney-cutscene"
