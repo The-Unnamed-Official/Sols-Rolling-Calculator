@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tung Tung Tung Sahur Simulator</title>
+    <title>Sol's RNG Rolling Simulator</title>
     <script src="https://kit.fontawesome.com/f34561342c.js" crossorigin="anonymous"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -12,8 +12,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Jura:wght@300..700&family=Kings&family=Parisienne&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Parisienne&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Jura:wght@300..700&family=Parisienne&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Fondamento:ital@0;1&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Tangerine:wght@400;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Amatic+SC:wght@400;700&family=Cinzel:wght@400..900&family=Comic+Neue:ital,wght@0,300;0,400;0,700;1,300;1,400;1,700&family=Creepster&family=Grenze+Gotisch:wght@100..900&family=Luckiest+Guy&family=Merriweather:ital,opsz,wght@0,18..144,300..900;1,18..144,300..900&family=Michroma&family=Oswald:wght@200..700&family=Overpass:ital,wght@0,100..900;1,100..900&family=Patrick+Hand&family=Roboto+Flex:opsz,wght,XOPQ,XTRA,YOPQ,YTDE,YTFI,YTLC,YTUC@8..144,100..1000,96,468,79,-203,738,514,712&family=Roboto:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
@@ -49,101 +47,104 @@
     <audio id="explosionSoundFx" muted src="files/explosionSound.mp3" type="audio/mpeg" data-volume="0.25" data-audio-channel="obtain"></audio>
     <audio id="qbearMeowSoundFx" muted src="files/qbearMeow.mp3" type="audio/mpeg" data-volume="0.55" data-audio-channel="ui"></audio>
 
-    <video id="oblivion-cutscene" class="cutscene-video" preload="auto" data-audio-channel="cutscene">
+    <video id="oblivion-cutscene" class="cutscene-video" preload="metadata" data-audio-channel="cutscene">
         <source src="files/oblivionCutscene.webm" type="video/webm">
     </video>
-    <video id="memory-cutscene" class="cutscene-video" preload="auto" data-audio-channel="cutscene">
+    <video id="memory-cutscene" class="cutscene-video" preload="metadata" data-audio-channel="cutscene">
         <source src="files/memoryCutscene.webm" type="video/webm">
     </video>
-    <video id="frostveil-cutscene" class="cutscene-video" preload="auto" data-audio-channel="cutscene">
+    <video id="frostveil-cutscene" class="cutscene-video" preload="metadata" data-audio-channel="cutscene">
         <source src="files/frostveilCutscene.webm" type="video/webm">
     </video>
-    <video id="neferkhaf-cutscene" class="cutscene-video" preload="auto" data-audio-channel="cutscene">
+    <video id="neferkhaf-cutscene" class="cutscene-video" preload="metadata" data-audio-channel="cutscene">
         <source src="files/neferkhafCutscene.webm" type="video/webm">
     </video>
-    <video id="godslayer-cutscene" class="cutscene-video" preload="auto" data-audio-channel="cutscene">
+    <video id="godslayer-cutscene" class="cutscene-video" preload="metadata" data-audio-channel="cutscene">
         <source src="files/godslayerCutscene.webm" type="video/webm">
     </video>
-    <video id="blood-cutscene" class="cutscene-video" preload="auto" data-audio-channel="cutscene">
+    <video id="blood-cutscene" class="cutscene-video" preload="metadata" data-audio-channel="cutscene">
         <source src="files/bloodCutscene.webm" type="video/webm">
     </video>
-    <video id="equinox-cutscene" class="cutscene-video" preload="auto" data-audio-channel="cutscene">
+    <video id="equinox-cutscene" class="cutscene-video" preload="metadata" data-audio-channel="cutscene">
         <source src="files/equinoxCutscene.webm" type="video/webm">
     </video>
-    <video id="idiot-cutscene" class="cutscene-video" preload="auto" data-audio-channel="cutscene">
+    <video id="idiot-cutscene" class="cutscene-video" preload="metadata" data-audio-channel="cutscene">
         <source src="files/idiotCutscene.webm" type="video/webm">
     </video>
-    <video id="winter-garden-cutscene" class="cutscene-video" preload="auto" data-audio-channel="cutscene">
+    <video id="winter-garden-cutscene" class="cutscene-video" preload="metadata" data-audio-channel="cutscene">
         <source src="files/winterGardenCutscene.webm" type="video/webm">
     </video>
-    <video id="dream-traveler-cutscene" class="cutscene-video" preload="auto" data-audio-channel="cutscene">
+    <video id="dream-traveler-cutscene" class="cutscene-video" preload="metadata" data-audio-channel="cutscene">
         <source src="files/dreamTravelerCutscene.webm" type="video/webm">
     </video>
-    <video id="luminosity-cutscene" class="cutscene-video" preload="auto" data-audio-channel="cutscene">
+    <video id="luminosity-cutscene" class="cutscene-video" preload="metadata" data-audio-channel="cutscene">
         <source src="files/luminosityCutscene.webm" type="video/webm">
     </video>
-    <video id="leviathan-cutscene" class="cutscene-video" preload="auto" data-audio-channel="cutscene">
+    <video id="leviathan-cutscene" class="cutscene-video" preload="metadata" data-audio-channel="cutscene">
         <source src="files/leviathanCutscene.webm" type="video/webm">
     </video>
-    <video id="monarch-cutscene" class="cutscene-video" preload="auto" data-audio-channel="cutscene">
+    <video id="monarch-cutscene" class="cutscene-video" preload="metadata" data-audio-channel="cutscene">
         <source src="files/monarchCutscene.webm" type="video/webm">
     </video>
-    <video id="ascendant-cutscene" class="cutscene-video" preload="auto" data-audio-channel="cutscene">
+    <video id="ascendant-cutscene" class="cutscene-video" preload="metadata" data-audio-channel="cutscene">
         <source src="files/ascendantCutscene.webm" type="video/webm">
     </video>
-    <video id="breakthrough-cutscene" class="cutscene-video" preload="auto" data-audio-channel="cutscene">
+    <video id="breakthrough-cutscene" class="cutscene-video" preload="metadata" data-audio-channel="cutscene">
         <source src="files/breakthroughCutscene.webm" type="video/webm">
     </video>
-    <video id="pixelation-cutscene" class="cutscene-video" preload="auto" data-audio-channel="cutscene">
+    <video id="pixelation-cutscene" class="cutscene-video" preload="metadata" data-audio-channel="cutscene">
         <source src="files/pixelationCutscene.webm" type="video/webm">
     </video>
-    <video id="nyctophobia-cutscene" class="cutscene-video" preload="auto" data-audio-channel="cutscene">
+    <video id="nyctophobia-cutscene" class="cutscene-video" preload="metadata" data-audio-channel="cutscene">
         <source src="files/nyctophobiaCutscene.webm" type="video/webm">
     </video>
-    <video id="dreammetric-cutscene" class="cutscene-video" preload="auto" data-audio-channel="cutscene">
+    <video id="dreammetric-cutscene" class="cutscene-video" preload="metadata" data-audio-channel="cutscene">
         <source src="files/dreammetricCutscene.webm" type="video/webm">
     </video>
-    <video id="oppression-cutscene" class="cutscene-video" preload="auto" data-audio-channel="cutscene">
+    <video id="oppression-cutscene" class="cutscene-video" preload="metadata" data-audio-channel="cutscene">
         <source src="files/oppressionCutscene.webm" type="video/webm">
     </video>
-    <video id="illusionary-cutscene" class="cutscene-video" preload="auto" data-audio-channel="cutscene">
+    <video id="illusionary-cutscene" class="cutscene-video" preload="metadata" data-audio-channel="cutscene">
         <source src="files/illusionaryCutscene.webm" type="video/webm">
     </video>
-    <video id="trolled-cutscene" class="cutscene-video" preload="auto" data-audio-channel="cutscene">
+    <video id="trolled-cutscene" class="cutscene-video" preload="metadata" data-audio-channel="cutscene">
         <source src="files/trolledCutscene.webm" type="video/webm">
     </video>
-    <video id="lamenthyr-cutscene" class="cutscene-video" preload="auto" data-audio-channel="cutscene">
+    <video id="lamenthyr-cutscene" class="cutscene-video" preload="metadata" data-audio-channel="cutscene">
         <source src="files/lamenthyrCutscene.webm" type="video/webm">
     </video>
-    <video id="erebus-cutscene" class="cutscene-video" preload="auto" data-audio-channel="cutscene">
+    <video id="erebus-cutscene" class="cutscene-video" preload="metadata" data-audio-channel="cutscene">
         <source src="files/erebusCutscene.webm" type="video/webm">
     </video>
-    <video id="prowler-cutscene" class="cutscene-video" preload="auto" data-audio-channel="cutscene">
+    <video id="prowler-cutscene" class="cutscene-video" preload="metadata" data-audio-channel="cutscene">
         <source src="files/prowlerCutscene.webm" type="video/webm">
     </video>
-    <video id="clockwork-cutscene" class="cutscene-video" preload="auto" data-audio-channel="cutscene">
+    <video id="clockwork-cutscene" class="cutscene-video" preload="metadata" data-audio-channel="cutscene">
         <source src="files/clockworkCutscene.webm" type="video/webm">
     </video>
-    <video id="verdict-cutscene" class="cutscene-video" preload="auto" data-audio-channel="cutscene">
+    <video id="verdict-cutscene" class="cutscene-video" preload="metadata" data-audio-channel="cutscene">
         <source src="files/verdictCutscene.webm" type="video/webm">
     </video>
-    <video id="attorney-cutscene" class="cutscene-video" preload="auto" data-audio-channel="cutscene">
+    <video id="attorney-cutscene" class="cutscene-video" preload="metadata" data-audio-channel="cutscene">
         <source src="files/attorneyCutscene.webm" type="video/webm">
     </video>
-    <video id="skyFestival-cutscene" class="cutscene-video" preload="auto" data-audio-channel="cutscene">
+    <video id="skyFestival-cutscene" class="cutscene-video" preload="metadata" data-audio-channel="cutscene">
         <source src="files/skyFestivalCutscene.webm" type="video/webm">
     </video>
-    <video id="yolk-cutscene" class="cutscene-video" preload="auto" data-audio-channel="cutscene">
+    <video id="yolk-cutscene" class="cutscene-video" preload="metadata" data-audio-channel="cutscene">
         <source src="files/yolkCutscene.webm" type="video/webm">
     </video>
-    <video id="eggis-cutscene" class="cutscene-video" preload="auto" data-audio-channel="cutscene">
+    <video id="eggis-cutscene" class="cutscene-video" preload="metadata" data-audio-channel="cutscene">
         <source src="files/eggisCutscene.webm" type="video/webm">
     </video>
-    <video id="pukekoGod-cutscene" class="cutscene-video" preload="auto" data-audio-channel="cutscene">
+    <video id="pukekoGod-cutscene" class="cutscene-video" preload="metadata" data-audio-channel="cutscene">
         <source src="files/pukekoGodCutscene.webm" type="video/webm">
     </video>
-    <video id="solsLoadingScreen-cutscene" class="cutscene-video" preload="auto" data-audio-channel="cutscene">
+    <video id="solsLoadingScreen-cutscene" class="cutscene-video" preload="metadata" data-audio-channel="cutscene">
         <source src="files/solsLoadingScreenCutscene.webm" type="video/webm">
+    </video>
+    <video id="astraios-cutscene" class="cutscene-video" preload="metadata" data-audio-channel="cutscene">
+        <source src="files/astraiosCutscene.webm" type="video/webm">
     </video>
 
     <div id="cinematic-overlay" class="cinematic-overlay" aria-hidden="true"></div>
@@ -168,32 +169,32 @@
                     <img src="files/theUnnamed.jpg" alt="The Unnamed creator portrait" class="banner__emblem-support">
                 </div>
                 <div class="banner__meta">
-                    <h1 class="banner__title"><!--Sol's-->Crappy's <!--Rolling-->Fake Simulator!!!!!!!!!!</h1>
+                    <h1 class="banner__title">Sol's RNG Rolling Simulator</h1>
                     <p class="banner__subtitle">
-                        <button type="button" class="banner__version-button" id="versionInfoButton" aria-haspopup="dialog" aria-expanded="false" data-version-id="v556967">vFIVEFIVE.SIXTYNINE-SIXSEVEN</button>
+                        <button type="button" class="banner__version-button" id="versionInfoButton" aria-haspopup="dialog" aria-expanded="false" data-version-id="v1800">v1.800</button>
                         <span class="banner__subtitle-divider" aria-hidden="true">◉</span>
-                        <span class="banner__subtitle-author">By <span class="banner__subtitle-author-name"><a href="https://discord.com/users/611204110955446301" target="_blank" rel="noopener">not.unnamed676767676767676767</a></span></span>
+                        <span class="banner__subtitle-author">By <span class="banner__subtitle-author-name"><a href="https://discord.com/users/611204110955446301" target="_blank" rel="noopener">not.unnamed</a></span></span>
                         <span class="banner__subtitle-divider" aria-hidden="true">◉</span>
-                        <span class="banner__subtitle-updated">Updated <time datetime="2026-04-11T16:20:00+01:00">2026/04/11 4:20 PM CET</time></span>
+                        <span class="banner__subtitle-updated">Updated <time datetime="2026-04-30T12:00:00+02:00">2026/04/30 12:30 PM CEST</time></span>
                         <span class="banner__subtitle-divider" aria-hidden="true">◉</span>
-                        <span class="banner__subtitle-eon"><span class="banner__subtitle-game-version"><a href="https://www.roblox.com/games/15532962292/Sols-RNG" target="_blank" rel="noopener">Sol's RNG Eon 1-67</a></span></span>
+                        <span class="banner__subtitle-eon"><span class="banner__subtitle-game-version"><a href="https://www.roblox.com/games/15532962292/Sols-RNG" target="_blank" rel="noopener">Sol's RNG Eon 1-20</a></span></span>
                     </p>
                 </div>
             </div>
             <div class="masthead__controls">
-                <button class="interface-toggle masthead__mute" id="masterMuteToggle" type="button" aria-pressed="false"><!--Mute-->SHUT UP</button>
+                <button class="interface-toggle masthead__mute" id="masterMuteToggle" type="button" aria-pressed="false">Mute</button>
                 <div class="options-menu" id="filterMenu">
-                    <button class="interface-toggle options-menu__trigger" id="filterMenuToggle" type="button" aria-haspopup="menu" aria-expanded="false" aria-controls="filterMenuPanel"><!--Filter Settings-->Ignore Shtuff</button>
+                    <button class="interface-toggle options-menu__trigger" id="filterMenuToggle" type="button" aria-haspopup="menu" aria-expanded="false" aria-controls="filterMenuPanel">Filter Settings</button>
                     <div class="options-menu__surface" id="filterMenuPanel" aria-labelledby="filterMenuToggle">
-                        <button class="interface-toggle options-menu__item" id="filterAuraTiersButton" type="button"><!--Filter Aura Tiers-->Get rid of Aura Tiers</button>
-                        <button class="interface-toggle options-menu__item" id="filterAurasButton" type="button"><!--Filter Auras-->Eww Auras...</button>
+                        <button class="interface-toggle options-menu__item" id="filterAuraTiersButton" type="button">Filter Aura Tiers</button>
+                        <button class="interface-toggle options-menu__item" id="filterAurasButton" type="button">Filter Auras</button>
                     </div>
                 </div>
                 <div class="options-menu" id="optionsMenu">
-                    <button class="interface-toggle options-menu__trigger" id="optionsMenuToggle" type="button" aria-haspopup="menu" aria-expanded="false" aria-controls="optionsMenuPanel"><!--Settings-->Edit in your style</button>
+                    <button class="interface-toggle options-menu__trigger" id="optionsMenuToggle" type="button" aria-haspopup="menu" aria-expanded="false" aria-controls="optionsMenuPanel">Settings</button>
                     <div class="options-menu__surface" id="optionsMenuPanel" aria-labelledby="optionsMenuToggle">
-                        <button class="interface-toggle options-menu__item" id="audioSettingsButton" type="button"><!--Audio-->NOISE GO BOOM</button>
-                        <button class="interface-toggle options-menu__item" id="qualityPreferencesToggle" type="button"><!--Quality Preferances-->Performance go boom boom</button>
+                        <button class="interface-toggle options-menu__item" id="audioSettingsButton" type="button">Audio</button>
+                        <button class="interface-toggle options-menu__item" id="qualityPreferencesToggle" type="button">Quality Preferances</button>
                         <button class="interface-toggle options-menu__item" id="cinematicToggle" type="button" onclick="toggleCinematicMode()" aria-pressed="false">Cutscenes (Fullscreen recommended): Off</button>
                         <button class="interface-toggle options-menu__item" id="backgroundRollingButton" type="button" aria-pressed="false">Allow background rolling: Off</button>
                         <button class="interface-toggle options-menu__item" id="trueChanceDisplayButton" type="button" aria-pressed="false">True chance display: Off</button>
@@ -205,8 +206,8 @@
         <div class="interface-layout">
             <aside class="surface surface--side" aria-labelledby="resources-heading">
                 <header class="surface__header">
-                    <h2 class="surface__title" id="resources-heading"><!--Other Resources-->BLA BLA BORING STUFF</h2>
-                    <p class="surface__subtitle"><!--Jump into more Sols utilities, reference docs, and communities.-->Meh meh meh meh</p>
+                    <h2 class="surface__title" id="resources-heading">Other Resources</h2>
+                    <p class="surface__subtitle">Jump into more Sols utilities, reference docs, and communities.</p>
                 </header>
                 <div class="resource-board">
                     <a class="resource-link resource-link--discord" href="https://discord-id-hub.info" target="_blank" rel="noopener">
@@ -250,11 +251,11 @@
 
             <main class="surface surface--results" aria-labelledby="results-heading">
                 <header class="surface__header">
-                    <h2 class="surface__title" id="results-heading"><!--Roll Feed-->Just keep rollin' Just keep rollin'</h2>
-                    <p class="surface__subtitle"><!--High fidelity output with rarity cues, XP tracking, and event modifier callouts.-->Honestly bro... Just roll...</p>
+                    <h2 class="surface__title" id="results-heading">Roll Feed</h2>
+                    <p class="surface__subtitle">High fidelity output with rarity cues, XP tracking, and event modifier callouts.</p>
                 </header>
                 <div class="feed-share" id="feedShareControls">
-                    <button class="interface-button interface-button--minor feed-share__trigger" type="button" id="feedShareButton" aria-haspopup="true" aria-expanded="false" aria-controls="feedShareMenu"><!--Share Result-->SHARE! (If you have friends HAH)</button>
+                    <button class="interface-button interface-button--minor feed-share__trigger" type="button" id="feedShareButton" aria-haspopup="true" aria-expanded="false" aria-controls="feedShareMenu">Share Result</button>
                     <div class="feed-share__menu" id="feedShareMenu" role="menu" hidden>
                         <button class="feed-share__item" type="button" data-share-format="markdown" role="menuitem">Copy Discord Markdown</button>
                         <button class="feed-share__item" type="button" data-share-format="plain" role="menuitem">Copy Plain Text</button>
@@ -273,27 +274,27 @@
                     <span class="loading-indicator__value">0%</span>
                 </div>
                 <div class="feed__viewport" id="simulation-feed" role="status" aria-live="polite">
-                    <!--Configure your parameters and launch a simulation to see results.-->Trallalero Trallala
+                    Configure your parameters and launch a simulation to see results.
                 </div>
                 <div class="feed__meta">
                     <p class="feed__tip"><span class="feed__tip-label">[Tip] Suzy:</span> Get Lucky</p>
-                    <p class="feed__mythic"><span class="feed__mythic-label"><!--MythicDude-->Ballerino Capuchino</span> was here...</p>
+                    <p class="feed__mythic"><span class="feed__mythic-label">MythicDude</span> was here...</p>
                 </div>
             </main>
 
             <aside class="surface surface--controls" aria-labelledby="controls-heading">
                 <header class="surface__header">
-                    <h2 class="surface__title" id="controls-heading"><!--Roll Controls-->Control your whatever man...</h2>
-                    <p class="surface__subtitle"><!--Set your luck profile, multiplier toggles, and simulation preferences.-->Bla.. Bla.. Bla...</p>
+                    <h2 class="surface__title" id="controls-heading">Roll Controls</h2>
+                    <p class="surface__subtitle">Set your luck profile, multiplier toggles, and simulation preferences.</p>
                 </header>
 
                 <div class="control-section control-section--cta">
-                    <button class="roll-trigger" type="button" onclick="runRollSimulation()"><!--Start Rolling-->PRESS THE BUTTON DARN IT</button>
-                    <button class="roll-cancel" type="button" id="rollCancelButton" hidden><!--Cancel Roll-->Forgot something? Skill issue</button>
+                    <button class="roll-trigger" type="button" onclick="runRollSimulation()">Start Rolling</button>
+                    <button class="roll-cancel" type="button" id="rollCancelButton" hidden>Cancel Roll</button>
                 </div>
 
                 <section class="control-section control-section--luck">
-                    <h3 class="control-section__title"><!--Luck Multipliers-->Yea, Luck something. Go nuts</h3>
+                    <h3 class="control-section__title">Luck Multipliers</h3>
                     <label class="form-field form-field--select" for="vip-dropdown">
                         <span class="form-field__label">VIP Luck</span>
                         <span class="form-field__select-shell form-field__select-shell--custom">
@@ -390,8 +391,8 @@
         <div class="interface-subgrid">
             <section class="surface surface--parameters" aria-labelledby="parameters-heading">
                 <header class="surface__header">
-                    <h2 class="surface__title" id="parameters-heading"><!--Run Parameters-->Guess what this is!!!</h2>
-                    <p class="surface__subtitle"><!--Tune your luck totals, roll counts, biome, and seasonal event modifiers.-->NO DESCRIPTION FOR HINTS BAHAHAHAHAHAHAHAHAHAA</p>
+                    <h2 class="surface__title" id="parameters-heading">Run Parameters</h2>
+                    <p class="surface__subtitle">Tune your luck totals, roll counts, biome, and seasonal event modifiers.</p>
                 </header>
                 <div class="control-section control-section--run-dev">
                     <div class="form-field form-field--toggle">
@@ -434,6 +435,7 @@
                                     <option value="heaven">Heaven</option>
                                     <option value="corruption">Corruption</option>
                                     <option value="null">Null</option>
+                                    <option value="singularity"><span class="sigil-outline-singularity">Singularity</span></option>
                                     <option value="cyberspace"><span class="sigil-outline-cyberspace">Cyberspace</span></option>
                                     <option value="dreamspace"><span class="sigil-outline-dreamspace">Dreamspace</span></option>
                                     <option value="glitch"><span class="sigil-outline-glitch">Glitch</span></option>
@@ -502,6 +504,7 @@
                             <option value="heaven">Heaven</option>
                             <option value="corruption">Corruption</option>
                             <option value="null">Null</option>
+                            <option value="singularity"><span class="sigil-outline-singularity">Singularity</span></option>
                             <option value="cyberspace"><span class="sigil-outline-cyberspace">Cyberspace</span></option>
                             <option value="dreamspace"><span class="sigil-outline-dreamspace">Dreamspace</span></option>
                             <option value="glitch"><span class="sigil-outline-glitch">Glitch</span></option>
@@ -584,6 +587,7 @@
                     </div>
                     <div class="quick-action-group" role="group" aria-label="Quick biome actions">
                         <button class="interface-button interface-button--ghost" type="button" onclick="setGlitchPreset()">Set <span class="sigil-outline-glitch">Glitch</span></button>
+                        <button class="interface-button interface-button--ghost" type="button" onclick="setSingularityPreset()">Set <span class="sigil-outline-singularity">Singularity</span></button>
                         <button class="interface-button interface-button--ghost" type="button" onclick="setCyberspacePreset()">Set <span class="sigil-outline-cyberspace">Cyberspace</span></button>
                         <button class="interface-button interface-button--ghost" type="button" onclick="setDreamspacePreset()">Set <span class="sigil-outline-dreamspace">Dreamspace</span></button>
                         <button class="interface-button interface-button--ghost" type="button" onclick="setLimboPreset()">Set <span class="sigil-outline-limbo">Limbo</span></button>
@@ -604,9 +608,9 @@
 
             <section class="surface surface--presets" aria-labelledby="presets-heading">
                 <header class="surface__header">
-                    <h2 class="surface__title" id="presets-heading"><!--Quick Presets-->I spent a lot of time writing all these stupid short idiotic sentences for this stupid event... Just go ahead, it's not like you don't know what this is, it's pretty explanetory whatever you're seeing below this is...</h2>
-                    <!-- <p class="surface__subtitle">Instantly configure popular luck and event-ready presets.</p> -->
-                    <!-- <span class="preset-signoff__name">Aaden</span> -->
+                    <h2 class="surface__title" id="presets-heading">Quick Presets</h2>
+                    <p class="surface__subtitle">Instantly configure popular luck and event-ready presets.</p>
+                    <span class="preset-signoff__name">Aaden</span>
                 </header>
                 <div class="control-section control-section--presets">
                     <div class="preset-collection">
@@ -662,7 +666,7 @@
                             <span class="preset-collection__title-divider preset-collection__title-divider--end" aria-hidden="true"></span>
                         </h3>
                         <div class="preset-matrix" id="roll-preset-panel">
-                            <!-- <button type="button" onclick="applyRollPreset(100)">100 Rolls</button>
+                            <button type="button" onclick="applyRollPreset(100)">100 Rolls</button>
                             <button type="button" onclick="applyRollPreset(250)">250 Rolls</button>
                             <button type="button" onclick="applyRollPreset(500)">500 Rolls</button>
                             <button type="button" onclick="applyRollPreset(1000)">1,000 Rolls</button>
@@ -684,9 +688,9 @@
                             <button type="button" onclick="applyRollPreset(50000000000)">50,000,000,000 Rolls <span class="roll-warning">(THIS WILL TAKE A SERIOUS TIME)</span></button>
                             <button type="button" onclick="applyRollPreset(100000000000)"><span class="roll-high">100,000,000,000 Rolls</span> <span class="roll-warning">(THIS WILL TAKE A SERIOUS TIME)</span></button>
                             <button type="button" onclick="applyRollPreset(250000000000)"><span class="roll-high">250,000,000,000 Rolls</span> <span class="roll-warning">(THIS WILL TAKE A SERIOUS TIME)</span></button>
-                            <button type="button" onclick="applyRollPreset(500000000000)"><span class="roll-high">500,000,000,000 Rolls</span> <span class="roll-warning">(THIS WILL TAKE A SERIOUS TIME)</span></button> -->
+                            <button type="button" onclick="applyRollPreset(500000000000)"><span class="roll-high">500,000,000,000 Rolls</span> <span class="roll-warning">(THIS WILL TAKE A SERIOUS TIME)</span></button>
                             <button type="button" onclick="applyRollPreset(1000000000000)"><span class="roll-highest">1,000,000,000,000 Rolls</span> <span class="roll-warning">(<span class="roll-high">Seriously</span>... Just don't)</span></button>
-                            <p class="preset-warning preset-warning--slow-roll" id="hundred-million-roll-warning" role="status"><!--⚠️ Processing anything higher than 10,000,000,000 rolls can and WILL take a long time.-->This is the only one you get lol</p>
+                            <p class="preset-warning preset-warning--slow-roll" id="hundred-million-roll-warning" role="status">⚠️ Processing anything higher than 10,000,000,000 rolls can and WILL take a long time.</p>
                         </div>
                     </div>
                   </div>
@@ -712,7 +716,7 @@
                 <li class="footer-credits__item">Erebus cutscene courtesy of <a href="https://www.youtube.com/watch?v=ift10zMOVRk" target="_blank" rel="noopener">4zell</a>.</li>
                 <li class="footer-credits__item">Lamenthyr cutscene courtesy of <a href="https://www.youtube.com/watch?v=DwEzY_nA054" target="_blank" rel="noopener">Ray</a>.</li>
                 <li class="footer-credits__item">Dreammetric cutscene courtesy of <a href="https://www.youtube.com/watch?v=Qo0P0LYAenQ" target="_blank" rel="noopener">Bocchi.</a>.</li>
-                <li class="footer-credits__item">Equinox cutscene courtesy of <a href="https://www.youtube.com/watch?v=o-u3_KUMKgk" target="_blank" rel="noopener">Silver :3</a>.</li>
+                <li class="footer-credits__item">Equinox cutscene courtesy of <a href="https://discord.com/users/1148667348253933649" target="_blank" rel="noopener">ploqoo</a>.</li>
                 <li class="footer-credits__item">Oppression cutscene courtesy of <a href="https://www.youtube.com/watch?v=dgqkpBYNxiU" target="_blank" rel="noopener">SorrVriety</a>.</li>
                 <li class="footer-credits__item">Oblivion cutscene courtesy of <a href="https://www.youtube.com/watch?v=clQxiIRH8Ps" target="_blank" rel="noopener">Mr-yani</a>.</li>
                 <li class="footer-credits__item">Neferkhaf cutscene courtesy of <a href="https://www.reddit.com/r/SolsRNG/comments/1n3wot3/new_neferkhaf_cutscene/" target="_blank" rel="noopener">Sirothereal</a>.</li>
@@ -726,12 +730,12 @@
                 <li class="footer-credits__item">Breakthrough cutscene courtesy of <a href="https://discord.com/users/979478452786823259" target="_blank" rel="noopener">@INCONCEIVABLE</a>.</li>
                 <li class="footer-credits__item">Monarch cutscene courtesy of <a href="https://youtu.be/qx8EPFC5vDM" target="_blank" rel="noopener">floob</a>.</li>
                 <li class="footer-credits__item">赤月の破片 cutscene courtesy of <a href="https://discord.com/users/1088288687449702470" target="_blank" rel="noopener">carno._.</a>.</li>
-                <li class="footer-credits__item">Aegis : Eggis cutscene courtesy of <a href="https://discord.com/users/896814372427550730" target="_blank" rel="noopener">poland2q</a>.</li>
                 <li class="footer-credits__item">Y.O.L.K.E.G.G. cutscene courtesy of <a href="https://discord.com/users/896814372427550730" target="_blank" rel="noopener">poland2q</a>.</li>
                 <li class="footer-credits__item">Sky Festival cutscene courtesy of <a href="https://discord.com/users/1237470058591293571" target="_blank" rel="noopener">callumcat_</a>.</li>
                 <li class="footer-credits__item">Equinox : You Are An Idiot cutscene courtesy of <a href="https://discord.com/users/1060938600264515715" target="_blank" rel="noopener">gold_solsrng</a>.</li>
                 <li class="footer-credits__item">A Fool's Experience cutscene courtesy of <a href="https://discord.com/users/1374138224603168929" target="_blank" rel="noopener">fawqz</a>.</li>
                 <li class="footer-credits__item">P.U.K.E.K.O.G.O.D cutscene courtesy of <a href="https://discord.com/users/462990696182448150" target="_blank" rel="noopener">kutay1000</a>.</li>
+                <li class="footer-credits__item">Astraios cutscene courtesy of <a href="https://discord.com/users/1010402510994935929" target="_blank" rel="noopener">remixcodeszz11</a>.</li>
             </ul>
         </details>
     </footer>
@@ -843,11 +847,11 @@
     <div id="cyberspaceIllusionaryOverlay" class="cutscene-warning-overlay" hidden aria-hidden="true">
         <div class="cutscene-warning surface surface--modal" role="dialog" aria-modal="true" aria-labelledby="cyberspaceIllusionaryTitle">
             <p class="cutscene-warning__message">
-                <span id="cyberspaceIllusionaryTitle" class="cutscene-warning__note">Cyberspace notice</span>: Illusionary rolls at a true <span class="cutscene-warning__ratio">1 in 10,000,000</span> chance... WHO CARED AND WHO ASKED <!--in Cyberspace. Your luck value does not affect this roll, so feel free to use any luck level.-->
+                <span id="cyberspaceIllusionaryTitle" class="cutscene-warning__note">Cyberspace notice</span>: Illusionary rolls at a true <span class="cutscene-warning__ratio">1 in 10,000,000</span> chance in Cyberspace. Your luck value does not affect this roll, so feel free to use any luck level.
             </p>
             <div class="cutscene-warning__actions">
-                <button type="button" class="interface-button interface-button--minor" id="cyberspaceIllusionaryConfirm"><!--Understood-->FINE</button>
-                <button type="button" class="interface-button interface-button--ghost" id="cyberspaceIllusionaryDismiss"><!--Never show again-->NEVER TALK EVER AGAIN</button>
+                <button type="button" class="interface-button interface-button--minor" id="cyberspaceIllusionaryConfirm">Understood</button>
+                <button type="button" class="interface-button interface-button--ghost" id="cyberspaceIllusionaryDismiss">Never show again</button>
             </div>
         </div>
     </div>
@@ -1034,7 +1038,7 @@
                 </button>
             </div>
             <div class="filter-modal__actions">
-                <button type="button" class="interface-button interface-button--ghost filter-modal__close" id="qualityPreferencesClose"><!--Close-->GET OUT</button>
+                <button type="button" class="interface-button interface-button--ghost filter-modal__close" id="qualityPreferencesClose">Close</button>
             </div>
         </div>
     </div>
@@ -1042,7 +1046,7 @@
     <div id="auraFilterOverlay" class="modal-overlay" hidden>
         <div class="surface surface--modal filter-modal" role="dialog" aria-modal="true" aria-labelledby="auraFilterTitle">
             <div class="filter-modal__header">
-                <h2 class="filter-modal__title" id="auraFilterTitle"><!--Aura Tier Filters-->Are these texts necessary??</h2>
+                <h2 class="filter-modal__title" id="auraFilterTitle">Aura Tier Filters</h2>
                 <p class="filter-modal__hint">Toggle tiers to skip them in the roll feed and image sharing.</p>
             </div>
             <div class="filter-modal__grid">
@@ -1057,7 +1061,7 @@
                 <button type="button" class="interface-toggle filter-tier-toggle" data-tier-key="challenged" data-tier-label="Skip Challenged Auras" aria-pressed="false">Skip Challenged Auras: Off</button>
             </div>
             <div class="filter-modal__actions">
-                <button type="button" class="interface-button interface-button--ghost filter-modal__close" id="auraFilterClose"><!--Close-->GET OUT</button>
+                <button type="button" class="interface-button interface-button--ghost filter-modal__close" id="auraFilterClose">Close</button>
             </div>
         </div>
     </div>
@@ -1073,7 +1077,7 @@
             </div>
             <div class="filter-modal__grid filter-modal__grid--scroll filter-modal__grid--stacked" id="auraFilterList" data-aura-filter-list></div>
             <div class="filter-modal__actions">
-                <button type="button" class="interface-button interface-button--ghost filter-modal__close" id="auraDetailFilterClose"><!--Close-->GET OUT</button>
+                <button type="button" class="interface-button interface-button--ghost filter-modal__close" id="auraDetailFilterClose">Close</button>
             </div>
         </div>
     </div>
@@ -1093,44 +1097,83 @@
             </div>
 
             <div class="changelog-modal__panels" data-changelog-panels>
-                <section
-                    id="changelog-panel-v556967"
+                <!-- <section
+                    id="changelog-panel-v1810"
                     class="changelog-modal__panel"
                     role="tabpanel"
-                    aria-labelledby="changelog-tab-v556967"
-                    data-changelog-panel="v556967"
-                    data-changelog-label="v55.69-67"
+                    aria-labelledby="changelog-tab-v1810"
+                    data-changelog-panel="v1810"
+                    data-changelog-label="v1.810"
                     tabindex="0"
                 >
                     <header class="changelog-modal__header">
-                        <h2 class="changelog-modal__title">Version vFIVEFIVE.SIXTYNINE-SIXSEVEN Update Notes</h2>
-                        <span class="changelog-tab__subtitle">Easter & April Fools Part 2</span>
-                        <p class="changelog-modal__meta">Updated 2026/04/11 at 4:20 PM CET</p>
+                        <h2 class="changelog-modal__title">Version v1.810 Update Notes</h2>
+                        <span class="changelog-tab__subtitle">April Fools Ends</span>
+                        <p class="changelog-modal__meta">Updated 2026/05/02 at 12:30 PM CEST</p>
                     </header>
                     <p class="changelog-modal__intro">Latest changes:</p>
                     <ul class="changelog-modal__list">
-                        <li><span class="sigil-outline-april">April Fools Part 2</span> & <span class="sigil-outline-easter-2026">Easter Event Part 2</span> has BEGUN!</li>
+                        <li><span class="largeClass"><span class="sigil-outline-april">April Fools Event 2026</span> is now over.</span></li>
+                        <li><span class="largeClass"><span class="sigil-outline-easter-2026">Easter Event 2026</span> stays default enabled for a little longer.</span></li>
+                    </ul>
+                    <p>If there's any bugs you encounter, please DM me here <a href="https://discord.com/users/611204110955446301" class="subtitleClass" target="_blank" rel="noopener">@not.unnamed</a></p>
+                </section> -->
+                
+                <section
+                    id="changelog-panel-v1800"
+                    class="changelog-modal__panel"
+                    role="tabpanel"
+                    aria-labelledby="changelog-tab-v1800"
+                    data-changelog-panel="v1800"
+                    data-changelog-label="v1.800"
+                    tabindex="0"
+                >
+                    <header class="changelog-modal__header">
+                        <h2 class="changelog-modal__title">Version v1.800 Update Notes</h2>
+                        <span class="changelog-tab__subtitle">Jokes aside, here's Eon 1-20</span>
+                        <p class="changelog-modal__meta">Updated 2026/04/30 at 12:30 PM CEST</p>
+                    </header>
+                    <p class="changelog-modal__intro">Latest changes:</p>
+                    <ul class="changelog-modal__list">
+                        <li><span class="largeClass"><span class="sigil-outline-april">April Fools Event 2026</span> is not over yet, but the simulator has had enough jokes for this year.</span></li>
                         <ul>
-                            <li>Added FIVE new <span class="sigil-outline-april">April Fools</span> auras:</li>
-                            <ul>
-                                <li><span class="sigil-outline-april">Impeached : ImCrine</span> <span class="tinyClass">1 in 250,000,000</span></li>
-                                <li><span class="sigil-outline-april">Surfer : Symphony</span> <span class="tinyClass">1 in 600,000,000</span></li>
-                                <li><span class="sigil-outline-april">Workshop : System</span> <span class="tinyClass">1 in 650,000,000</span></li>
-                                <li><span class="sigil-outline-april">P.U.K.E.K.O.G.O.D</span> <span class="tinyClass">1 in 1,000,000,000</span>
-                                    <ul>
-                                        <a>Added cutscene <span class="tinyClass">Courtesy of kutay1000</span></a>
-                                    </ul>
-                                </li>
-                                <li><span class="sigil-outline-april">A Fool's Experience</span> <span class="tinyClass">1 in 1,000,000,000</span>
-                                    <ul>
-                                        <a>Added cutscene <span class="tinyClass">Courtesy of fawqz</span></a>
-                                    </ul>
-                                </li>
-                            </ul>
+                            <li>This means all miniture to massive jokes and stupid low-effort vibes are gone, cya next year!</li>
+                        </ul>
+                        <li><span class="largeClass"><span class="sigil-outline-easter-2026">Easter Event 2026</span> also stays default enabled for a little longer.</span></li>
+                        <li><span class="largeClass">Added a new biome called <span class="sigil-outline-singularity">Singularity</span>.</span></li>
+                        <li><span class="largeClass">Added 9 new <span class="sigil-outline-singularity">Singularity</span> exclusive auras:</span></li>
+                        <ul>
+                            <li><span class="sigil-outline-singularity">Pleiades</span><span class="tinyClass">1 in 65,358 [Singularity Exclusive]</span></li>
+                            <li><span class="sigil-outline-singularity">Pulsar</span><span class="tinyClass">1 in 83,345 [Singularity Exclusive]</span></li>
+                            <li><span class="sigil-outline-singularity">Constella</span><span class="tinyClass">1 in 86,988 [Singularity Exclusive]</span></li>
+                            <li><span class="sigil-outline-singularity">Vega</span><span class="tinyClass">1 in 2,580,000 [Singularity Exclusive]</span></li>
+                            <li><span class="sigil-outline-singularity">Astronaut</span><span class="tinyClass">1 in 6,117,196 [Singularity Exclusive]</span></li>
+                            <li><span class="sigil-outline-singularity">Centurion</span><span class="tinyClass">1 in 25,000,000 [Singularity Exclusive]</span></li>
+                            <li><span class="sigil-outline-singularity">Projection</span><span class="tinyClass">1 in 197,000,000 [Singularity Exclusive]</span></li>
+                            <li><span class="sigil-outline-singularity">Gravitational : Point Zero</span><span class="tinyClass">1 in 521,121,900 [Singularity Exclusive]</span></li>
+                            <li><span class="sigil-outline-singularity">Astraios</span><span class="tinyClass">1 in 1,750,000,000 [Singularity Exclusive]</span></li>
+                        </ul>
+                        <li><span class="largeClass">Added 3 new default auras:</span></li>
+                        <ul>
+                            <li>Dizzy <span class="tinyClass">1 in 123</span></li>
+                            <li>Oculus<span class="tinyClass">1 in 23,333,340 [1 in 4,666,668 in Heaven]</span></li>
+                            <li>Virtual : Memory<span class="tinyClass">1 in 232,232,232 [1 in 116,116,116 in Cyberspace]</span></li>
+                        </ul>
+                        <li><span class="largeClass">Updated some auras:</span></li>
+                        <ul>
+                            <li>Updated Equinox's cutscene to the new rework</li>
+                            <li>Fixed the rarity of <span class="sigil-outline-easter-2026">Eggsistance</span> from: 377,777,777 to 307,777,777</span></li>
+                        </ul>
+                        <li><span class="largeClass">Some performance and math fixes:</span></li>
+                        <ul>
+                            <li>Moved long roll simulations off the main UI thread when supported to reduce visible lag during heavy runs.</li>
+                            <li>Optimized roll-state storage, weighted selection handling, and repeated aura lookup work to make large simulations finish faster.</li>
+                            <li>Improved internal calculation helpers and result-building overhead without changing the main roll math or visual design.</li>
                         </ul>
                     </ul>
                     <p>If there's any bugs you encounter, please DM me here <a href="https://discord.com/users/611204110955446301" class="subtitleClass" target="_blank" rel="noopener">@not.unnamed</a></p>
                 </section>
+
                 <section
                     id="changelog-panel-v5556967"
                     class="changelog-modal__panel"

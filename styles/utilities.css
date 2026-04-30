@@ -248,6 +248,17 @@
         -1px -1px 0 rgba(60, 0, 0, 0.95);
 }
 
+.sigil-outline-singularity {
+    text-shadow:
+        0 0 4px rgba(160, 8, 8, 0.9),
+        0 0 8px rgba(157, 65, 7, 0.75),
+        1px 1px 0 rgba(193, 48, 0, 0.95),
+        -1px 1px 0 rgba(240, 88, 0, 0.95),
+        1px -1px 0 rgba(194, 74, 0, 0.95),
+        -1px -1px 0 rgba(159, 63, 0, 0.95);
+    color: #0f0018;
+}
+
 .sigil-outline-glitch {
     text-shadow:
         0 0 4px rgba(255, 255, 255, 0.9),
@@ -341,6 +352,22 @@
         -3px -3px 0 rgba(10, 34, 76, 0.94);
 }
 
+.sigil-outline-singularity {
+    color: #deeaff;
+    text-shadow:
+        0 0 10px rgba(132, 71, 28, 0.95),
+        0 0 18px rgba(110, 20, 20, 0.88),
+        0 0 32px rgba(90, 67, 12, 0.8),
+        3px 0 0 rgba(105, 15, 15, 0.96),
+        -3px 0 0 rgba(105, 45, 15, 0.96),
+        0 3px 0 rgba(105, 51, 15, 0.96),
+        0 -3px 0 rgba(105, 53, 15, 0.96),
+        3px 3px 0 rgba(88, 26, 12, 0.94),
+        -3px 3px 0 rgba(88, 27, 12, 0.94),
+        3px -3px 0 rgba(76, 18, 10, 0.94),
+        -3px -3px 0 rgba(76, 10, 30, 0.94);
+}
+
 .sigil-outline-limbo {
     color: black;
     text-shadow:
@@ -355,6 +382,10 @@
 
 .bigClass {
     font-size: xx-large !important;
+}
+
+.largeClass {
+    font-size: larger !important;
 }
 
 .sigil-outline-mastermind {
