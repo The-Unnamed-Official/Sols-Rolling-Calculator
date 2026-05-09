@@ -4392,6 +4392,7 @@ const AURA_BLUEPRINT_SOURCE = Object.freeze([
     { name: "Neferkhaf", chance: 1000, requiresDunePreset: true, ignoreLuck: true, fixedRollThreshold: 1, subtitle: "The Crawler", cutscene: "neferkhaf-cutscene", disableRarityClass: true },
     { name: "赤月の破片", chance: 1000, requiresBloodPreset: true, ignoreLuck: true, fixedRollThreshold: 1, subtitle: "Fragments Of The Crimson Moon", cutscene: "blood-cutscene", disableRarityClass: true },
     { name: "Illusionary - 10,000,000", chance: 10000000, nativeBiomes: ["cyberspace"], ignoreLuck: true, fixedRollThreshold: 1, cutscene: "illusionary-cutscene" },
+    { name: "Meta - 10,000", chance: 10000, nativeBiomes: ["cyberspace"], ignoreLuck: true, fixedRollThreshold: 1 },
     { name: MONARCH_AURA_NAME, chance: 3000000000, cutscene: "monarch-cutscene", nativeBiomes: ["corruption", "glitch"], disableNativeOverrideTier: true },
     { name: "Equinox - 2,500,000,000", chance: 2500000000, cutscene: "equinox-cutscene" },
     { name: "Equinox : youareanidiot - 2,500,000,000", chance: 2500000000, cutscene: "idiot-cutscene" },
@@ -4405,7 +4406,7 @@ const AURA_BLUEPRINT_SOURCE = Object.freeze([
     { name: "Luminosity - 1,200,000,000", chance: 1200000000, cutscene: "luminosity-cutscene" },
     { name: "Erebus - 1,200,000,000", chance: 1200000000, nativeBiomes: ["glitch", "bloodRain"], cutscene: "erebus-cutscene" },
     { name: "Aegis : Eggis - 1,150,000,000", chance: 1150000000, breakthroughs: nativeBreakthroughs("cyberspace"), nativeBiomes: ["cyberspace"], cutscene: "eggis-cutscene" },
-    { name: "Godslayer - 1,100,100,100", chance: 1100100100, cutscene: "godslayer-cutscene" },
+    // { name: "Godslayer - 1,100,100,100", chance: 1100100100, cutscene: "godslayer-cutscene" }, Unobtainable until further notice
     { name: "Pixelation - 1,073,741,824", chance: 1073741824, breakthroughs: nativeBreakthroughs("cyberspace"), nativeBiomes: ["cyberspace"], cutscene: "pixelation-cutscene" },
     { name: "Nyctophobia - 1,011,111,010", chance: 1011111010, nativeBiomes: ["limbo"], cutscene: "nyctophobia-cutscene" },
     { name: "Lamenthyr - 1,000,000,000", chance: 1000000000, nativeBiomes: ["glitch", "bloodRain"], cutscene: "lamenthyr-cutscene" },
@@ -4458,6 +4459,7 @@ const AURA_BLUEPRINT_SOURCE = Object.freeze([
     { name: "Impeached : I'm Peach - 400,000,000", chance: 400000000 },
     { name: "Celestial : Eclipse - 384,400,000", chance: 384400000 },
     { name: "Cryofang - 380,000,000", chance: 380000000, breakthroughs: nativeBreakthroughs("aurora") },
+    { name: "Cytokenisis - 330,400,472", chance: 330400472, breakthroughs: nativeBreakthroughs("cyberspace") },
     { name: "Eggsistance - 307,777,777", chance: 307777777 },
     { name: "CHILLSEAR - 375,000,000", chance: 375000000, breakthroughs: nativeBreakthroughs("snowy") },
     { name: "Symphony : Bloomed - 375,000,000", chance: 375000000 },
@@ -4468,6 +4470,7 @@ const AURA_BLUEPRINT_SOURCE = Object.freeze([
     { name: "Dreammetric - 320,000,000", chance: 320000000, nativeBiomes: ["dreamspace"], cutscene: "dreammetric-cutscene" },
     { name: "LOTUSFALL - 320,000,000", chance: 320000000 },
     { name: "Perpetual - 315,000,000", chance: 315000000 },
+    { name: "Dreamer - 315,000,000", chance: 315000000, breakthroughs: nativeBreakthroughs("night") },
     { name: "Maelstrom - 309,999,999", chance: 309999999, breakthroughs: nativeBreakthroughs("windy") },
     { name: "Manta - 300,000,000", chance: 300000000, breakthroughs: nativeBreakthroughs("blazing") },
     { name: "Overture : History - 300,000,000", chance: 300000000 },
@@ -4560,7 +4563,7 @@ const AURA_BLUEPRINT_SOURCE = Object.freeze([
     { name: "Wonderland - 12,000,000", chance: 12000000, breakthroughs: nativeBreakthroughs("snowy") },
     { name: "Sailor - 12,000,000", chance: 12000000, breakthroughs: nativeBreakthroughs("rainy") },
     { name: "Melodic - 11,300,000", chance: 11300000 },
-    { name: "Sapphire : Peace - 11,000,500", chance: 11000500 },
+    // { name: "Sapphire : Peace - 11,000,500", chance: 11000500 }, Unobtainable until further notice
     { name: "Moonflower - 10,000,000", chance: 10000000, nativeBiomes: ["pumpkinMoon"] },
     { name: "Starscourge - 10,000,000", chance: 10000000, breakthroughs: nativeBreakthroughs("starfall") },
     { name: "Sharkyn - 10,000,000", chance: 10000000, breakthroughs: nativeBreakthroughs("rainy") },
@@ -4621,7 +4624,7 @@ const AURA_BLUEPRINT_SOURCE = Object.freeze([
     { name: "Cosmos - 1,520,000", chance: 1520000 },
     { name: "Celestial : Wicked - 1,500,000", chance: 1500000, nativeBiomes: ["glitch", "pumpkinMoon"] },
     { name: "Astral - 1,336,000", chance: 1336000, breakthroughs: nativeBreakthroughs("starfall") },
-    { name: "symbiosis - 1,331,201", chance: 1336000, breakthroughs: nativeBreakthroughs("corruption") },
+    { name: "Symbiosis - 1,331,201", chance: 1336000, breakthroughs: nativeBreakthroughs("corruption") },
     { name: "Rage : Brawler - 1,280,000", chance: 1280000 },
     { name: "StarRider : yourdidit - 1,234,567", chance: 1234567, breakthroughs: nativeBreakthroughs("starfall") },
     { name: "Undefined - 1,111,000", chance: 1111000, breakthroughs: nativeBreakthroughs("null", "limbo"), nativeBiomes: ["limbo-null"] },
@@ -4642,6 +4645,7 @@ const AURA_BLUEPRINT_SOURCE = Object.freeze([
     { name: "Hope - 488,725", chance: 488725, breakthroughs: nativeBreakthroughs("heaven") },
     { name: "Terror - 400,000", chance: 400000 },
     { name: "Celestial - 350,000", chance: 350000 },
+    { name: "Vortex - 399,999", chance: 399999, breakthroughs: nativeBreakthroughs("windy") },
     { name: "Lantern - 333,333", chance: 333333 },
     { name: "Watermelon - 320,000", chance: 320000 },
     { name: "Attorney - 270,000", chance: 270000, nativeBiomes: ["edict"], cutscene: "attorney-cutscene" },
@@ -4658,7 +4662,7 @@ const AURA_BLUEPRINT_SOURCE = Object.freeze([
     { name: "Diaboli : Void - 100,400", chance: 100400 },
     { name: "Exotic - 99,999", chance: 99999 },
     { name: "Stormal - 90,000", chance: 90000, breakthroughs: nativeBreakthroughs("windy") },
-    { name: "Flow - 87,000", chance: 87000 , breakthroughs: nativeBreakthroughs("windy") },
+    { name: "Flow - 87,000", chance: 87000, breakthroughs: nativeBreakthroughs("windy") },
     { name: "Constella - 86,988", chance:  86988, nativeBiomes: ["singularity"] },
     { name: "Pulsar - 83,345", chance:  83345, nativeBiomes: ["singularity"] },
     { name: "Permafrost - 73,500", chance: 73500, breakthroughs: nativeBreakthroughs("snowy") },
@@ -4673,6 +4677,8 @@ const AURA_BLUEPRINT_SOURCE = Object.freeze([
     { name: "Aquatic - 40,000", chance: 40000 },
     { name: "Watt - 32,768", chance: 32768 },
     { name: "Copper - 29,000", chance: 29000 },
+    { name: "Marsh - 29,000", chance: 25000 },
+    { name: "Gilded : Crowned - 20,000", chance: 20000 },
     { name: "Powered - 16,384", chance: 16384 },
     { name: "LEAK - 14,000", chance: 14000 },
     { name: "Rage : Heated - 12,800", chance: 12800 },
@@ -4690,10 +4696,11 @@ const AURA_BLUEPRINT_SOURCE = Object.freeze([
     { name: "Flushed : Heart Eye - 6,900", chance: 6900 },
     { name: "Flushed - 6,900", chance: 6900 },
     { name: MEGAPHONE_AURA_NAME, chance: 5000, requiresYgBlessing: true },
+    { name: "Targeted - 5,000", chance: 5000 },
     { name: "Flutter - 5,000", chance: 5000 },
     { name: "Bleeding - 4,444", chance: 4444 },
     { name: "Sidereum - 4,096", chance: 4096 },
-    { name: "[CONTENT DELETED] - 4,040", chance: 4040, nativeBiomes: ["glitch"], ignoreLuck: true, fixedRollThreshold: 1 },
+    // { name: "[CONTENT DELETED] - 4,040", chance: 4040, nativeBiomes: ["glitch"], ignoreLuck: true, fixedRollThreshold: 1 }, Unobtainable until further notice
     { name: "Cola - 3,999", chance: 3999 },
     { name: "Flora - 3,700", chance: 3700 },
     { name: "Pukeko - 3,198", chance: 3198 },
@@ -7651,7 +7658,8 @@ const TRUE_CHANCE_HIDDEN_AURA_PREFIXES = Object.freeze([
     '赤月の破片',
     '[CONTENT DELETED]',
     'Cryogenic',
-    'Illusionary'
+    'Illusionary',
+    'Meta'
 ]);
 
 function shouldHideSelectiveTrueChanceForAura(auraName) {
@@ -7786,6 +7794,15 @@ function buildResultEntries(registry, biome, breakthroughStatsMap, luckValue) {
         entries = entries.filter(e => !(typeof e.auraName === 'string' && e.auraName.startsWith('Illusionary')));
         // Prepend them in original discovered order
         entries = [...illusionaryEntries, ...entries];
+    }
+
+    // Ensure Meta entries are always at the very top
+    const metaEntries = entries.filter(e => typeof e.auraName === 'string' && e.auraName.startsWith('Meta'));
+    if (metaEntries.length > 0) {
+        // Remove all Meta entries from the array
+        entries = entries.filter(e => !(typeof e.auraName === 'string' && e.auraName.startsWith('Meta')));
+        // Prepend them in original discovered order
+        entries = [...metaEntries, ...entries];
     }
 
     // Ensure Cryogenic entries appear above Equinox entries
