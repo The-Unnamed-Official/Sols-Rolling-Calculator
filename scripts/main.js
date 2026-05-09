@@ -7658,15 +7658,21 @@ const TRUE_CHANCE_HIDDEN_AURA_PREFIXES = Object.freeze([
     '赤月の破片',
     '[CONTENT DELETED]',
     'Cryogenic',
-    'Illusionary',
-    'Meta'
+    'Illusionary'
 ]);
+
+function isExactMetaAuraName(auraName) {
+    if (typeof auraName !== 'string') {
+        return false;
+    }
+    return auraName.trim().split(' - ')[0] === 'Meta';
+}
 
 function shouldHideSelectiveTrueChanceForAura(auraName) {
     if (typeof auraName !== 'string') {
         return false;
     }
-    return TRUE_CHANCE_HIDDEN_AURA_PREFIXES.some(prefix => auraName.startsWith(prefix));
+    return TRUE_CHANCE_HIDDEN_AURA_PREFIXES.some(prefix => auraName.startsWith(prefix)) || isExactMetaAuraName(auraName);
 }
 
 function buildResultEntries(registry, biome, breakthroughStatsMap, luckValue) {
@@ -7796,11 +7802,10 @@ function buildResultEntries(registry, biome, breakthroughStatsMap, luckValue) {
         entries = [...illusionaryEntries, ...entries];
     }
 
-    // Ensure Meta entries are always at the very top
-    const metaEntries = entries.filter(e => typeof e.auraName === 'string' && e.auraName.startsWith('Meta'));
+    // Ensure the Meta aura entry is always at the very top.
+    const metaEntries = entries.filter(e => isExactMetaAuraName(e.auraName));
     if (metaEntries.length > 0) {
-        // Remove all Meta entries from the array
-        entries = entries.filter(e => !(typeof e.auraName === 'string' && e.auraName.startsWith('Meta')));
+        entries = entries.filter(e => !isExactMetaAuraName(e.auraName));
         // Prepend them in original discovered order
         entries = [...metaEntries, ...entries];
     }

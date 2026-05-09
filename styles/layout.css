@@ -1179,6 +1179,8 @@
 
 .support-float--collapsed {
     width: 68px;
+    height: 68px;
+    pointer-events: none;
 }
 
 .support-float--collapsed .support-float__qr-drawer {
@@ -1213,6 +1215,7 @@
     right: 0;
     width: 68px;
     height: 68px;
+    pointer-events: auto;
     border-radius: 18px;
     background:
         radial-gradient(circle at 100% 0%, rgba(255, 197, 224, 0.22), transparent 34%),
@@ -1532,6 +1535,8 @@
 
 .donation-float--collapsed {
     width: 68px;
+    height: 68px;
+    pointer-events: none;
 }
 
 .donation-float--collapsed .donation-float__link {
@@ -1553,6 +1558,7 @@
     right: 0;
     width: 68px;
     height: 68px;
+    pointer-events: auto;
     border-radius: 18px;
     background:
         radial-gradient(circle at 100% 0%, rgba(255, 146, 203, 0.2), transparent 34%),
@@ -1772,19 +1778,13 @@
         font-size: 13px;
     }
 
+    .support-float--collapsed {
+        right: auto;
+        width: 68px;
+    }
+
     .donation-float {
-        right: 16px;
-        bottom: 112px;
-        width: min(280px, calc(100vw - 32px));
-    }
-
-    .donation-float__link {
-        padding: 50px 16px 14px;
-        padding-right: 54px;
-    }
-
-    .donation-float__label {
-        font-size: 13px;
+        display: none;
     }
 }
 
