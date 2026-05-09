@@ -855,6 +855,91 @@ select.form-field__input option {
     color: transparent;
 }
 
+.unobtainableClass {
+    font-family: Sarpanch;
+    font-weight: 700;
+    filter: drop-shadow(1px 0 0 black) drop-shadow(0 1px 0 black) drop-shadow(-.5px 0 0 black) drop-shadow(0 -.5px 0 black);
+    padding-top: auto;
+    padding-bottom: auto;
+    padding-left: auto;
+    padding-right: auto;
+    background-clip: text;
+    color: transparent;
+    animation: unobtainableTitle 1.2s linear infinite;
+}
+
+@keyframes unobtainableTitle {
+    0% {
+        background-image: linear-gradient(to right, #050403, #2b030a, #63040b, #2b030a, #050403);
+    }
+    4.54545% {
+        background-image: linear-gradient(to right, #050403, #2b030a, #63040b, #2b030a, #050403);
+    }
+    9.09091% {
+        background-image: linear-gradient(to right, #050403, #3b0102, #6b040b, #3b0102, #050403);
+    }
+    13.6364% {
+        background-image: linear-gradient(to right, #13110d, #63040b, #9b0916, #63040b, #13110d);
+    }
+    18.1818% {
+        background-image: linear-gradient(to right, #0c120c, #73040b, #a30d1b, #73040b, #0c120c);
+    }
+    22.7273% {
+        background-image: linear-gradient(to right, #770313, #bb020b, #c30a1c, #bb020b, #770313);
+    }
+    27.2727% {
+        background-image: linear-gradient(to right, #95010b, #c3020a, #d40315, #c3020a, #95010b);
+    }
+    31.8182% {
+        background-image: linear-gradient(to right, #bb020b, #ed010b, #df051b, #ed010b, #bb020b);
+    }
+    36.3636% {
+        background-image: linear-gradient(to right, #b3020b, #ed010b, #df051b, #ed010b, #b3020b);
+    }
+    40.9091% {
+        background-image: linear-gradient(to right, #cb0314, #ed010b, #df051b, #ed010b, #cb0314);
+    }
+    45.4545% {
+        background-image: linear-gradient(to right, #df051b, #ed010b, #df051b, #ed010b, #df051b);
+    }
+    50% {
+        background-image: linear-gradient(to right, #df051b, #ed010b, #d3020b, #ed010b, #df051b);
+    }
+    54.5455% {
+        background-image: linear-gradient(to right, #df0312, #e3010b, #bb020b, #e3010b, #df0312);
+    }
+    59.0909% {
+        background-image: linear-gradient(to right, #ec0315, #ed010b, #b3020b, #ed010b, #ec0315);
+    }
+    63.6364% {
+        background-image: linear-gradient(to right, #db030b, #b3020b, #73040b, #b3020b, #db030b);
+    }
+    68.1818% {
+        background-image: linear-gradient(to right, #d30102, #73040b, #3b020a, #73040b, #d30102);
+    }
+    72.7273% {
+        background-image: linear-gradient(to right, #cb0102, #7b0101, #3b020a, #7b0101, #cb0102);
+    }
+    77.2727% {
+        background-image: linear-gradient(to right, #b3020b, #5b020b, #330102, #5b020b, #b3020b);
+    }
+    81.8182% {
+        background-image: linear-gradient(to right, #95010b, #4b020a, #2b0a03, #4b020a, #95010b);
+    }
+    86.3636% {
+        background-image: linear-gradient(to right, #4b020a, #1b0511, #1b0a04, #1b0511, #4b020a);
+    }
+    90.9091% {
+        background-image: linear-gradient(to right, #4b020a, #1b0511, #1b0a04, #1b0511, #4b020a);
+    }
+    95.4545% {
+        background-image: linear-gradient(to right, #42020a, #130304, #1b0a04, #130304, #42020a);
+    }
+    100% {
+        background-image: linear-gradient(to right, #1b0a04, #0c1104, #1b0a04, #0c1104, #1b0a04);
+    }
+}
+
 .crazyClass {
     background: linear-gradient(100deg, #ff6767, #ffff5e, #58ff66, #58fff1, #4b90ff, #ff4be7, #cf0000, #ffff00, #004d06, #00146f, #8f00a8, #e68200);
     background-size: 300% 300%;

@@ -388,6 +388,10 @@
     font-size: larger !important;
 }
 
+.largestClass {
+    font-size: x-large !important;
+}
+
 .sigil-outline-mastermind {
     font-family: Fondamento;
     font-weight: bold;
