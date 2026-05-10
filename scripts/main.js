@@ -3704,7 +3704,7 @@ function resolveRarityClass(aura, biome) {
     const auraName = aura.name || '';
     const skipNativeChallengedClass = isForcedChallengedAura(auraName);
     if (auraName.startsWith('Pixelation')) return 'rarity-tier-transcendent';
-    if (auraName.startsWith('Illusionary')) return 'rarity-tier-challenged';
+    if (auraName.startsWith('Illusionary') || isExactMetaAuraName(auraName)) return 'rarity-tier-challenged';
     if (auraName === 'Fault') return 'rarity-tier-challenged';
     if (['Oblivion', 'Memory', 'Neferkhaf', '赤月の破片'].some(name => auraName.startsWith(name))) {
         return 'rarity-tier-challenged';
@@ -3737,7 +3737,7 @@ function resolveBaseRarityClass(aura) {
     if (!aura) return '';
     const auraName = aura.name || '';
     if (auraName.startsWith('Pixelation')) return 'rarity-tier-transcendent';
-    if (auraName.startsWith('Illusionary')) return 'rarity-tier-challenged';
+    if (auraName.startsWith('Illusionary') || isExactMetaAuraName(auraName)) return 'rarity-tier-challenged';
     if (auraName === 'Fault') return 'rarity-tier-challenged';
     if (['Oblivion', 'Memory', 'Neferkhaf', '赤月の破片'].some(name => auraName.startsWith(name))) {
         return 'rarity-tier-challenged';
@@ -7434,6 +7434,13 @@ function isIllusionaryAura(aura) {
     return aura.name.startsWith('Illusionary');
 }
 
+function isCyberspaceExclusiveLucklessAura(aura) {
+    if (!aura || typeof aura.name !== 'string') {
+        return false;
+    }
+    return isIllusionaryAura(aura) || isExactMetaAuraName(aura.name);
+}
+
 function computeLimboEffectiveChance(aura, context) {
     if (aura.requiresOblivionPreset || aura.requiresDunePreset || aura.requiresBloodPreset) return Infinity;
     if (!context.eventChecker(aura)) return Infinity;
@@ -7495,7 +7502,7 @@ function computeStandardEffectiveChance(aura, context) {
         const inCyberspace = biome === 'cyberspace';
         const cyberspaceActive = inCyberspace || activeBiomeList.includes('cyberspace');
 
-        if (isIllusionaryAura(aura) && !cyberspaceActive) {
+        if (isCyberspaceExclusiveLucklessAura(aura) && !cyberspaceActive) {
             return Infinity;
         }
 
