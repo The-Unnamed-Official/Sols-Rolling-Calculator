@@ -4480,7 +4480,7 @@ const AURA_BLUEPRINT_SOURCE = Object.freeze([
     { name: "Prophecy - 275,649,430", chance: 275649430, breakthroughs: nativeBreakthroughs("heaven") },
     { name: "Astral : Zodiac - 267,200,000", chance: 267200000, breakthroughs: nativeBreakthroughs("starfall") },
     { name: "Impeached : ImCrine - 250,000,000", chance: 250000000, breakthroughs: nativeBreakthroughs("corruption") },
-    { name: "Virtual : Memory - 232,232,232", chance:  232232232, breakthroughs: nativeBreakthroughs("cyberspace") },
+    { name: "Virtual Memory - 232,232,232", chance:  232232232, breakthroughs: nativeBreakthroughs("cyberspace") },
     { name: "Encase - 230,000,000", chance: 230000000, breakthroughs: nativeBreakthroughs("aurora") },
     { name: "Surfer : Shard Surfer - 225,000,000", chance: 225000000, breakthroughs: nativeBreakthroughs("snowy") },
     { name: "HYPER-VOLT : EVER-STORM - 225,000,000", chance: 225000000 },
@@ -5554,9 +5554,16 @@ function showVersionChangelogOverlay() {
         document.addEventListener('keydown', versionChangelogOverlayState.escapeHandler);
     }
 
+    const activeTab = document.querySelector('[data-changelog-tab][aria-selected="true"]');
+    const firstTab = document.querySelector('[data-changelog-tab]');
     const closeButton = document.getElementById('versionChangelogClose');
-    if (closeButton) {
-        closeButton.focus();
+    const focusTarget = activeTab || firstTab || closeButton;
+    if (focusTarget && typeof focusTarget.focus === 'function') {
+        try {
+            focusTarget.focus({ preventScroll: true });
+        } catch (error) {
+            focusTarget.focus();
+        }
     }
 }
 
@@ -5632,6 +5639,37 @@ function setupChangelogTabs() {
 
         return normalizedVersionId || 'Unknown';
     };
+
+    const syncSubupdateTitles = () => {
+        panels.forEach(panel => {
+            const subtitleElement = panel.querySelector('.changelog-modal__header .changelog-tab__subtitle');
+            let updateTitle = '';
+            if (subtitleElement) {
+                const subtitleClone = subtitleElement.cloneNode(true);
+                subtitleClone.querySelectorAll('.tinyClass').forEach(node => node.remove());
+                updateTitle = subtitleClone.textContent.replace(/\s+/g, ' ').trim();
+            }
+            if (!updateTitle) {
+                updateTitle = formatVersionLabel(panel.dataset.changelogPanel, panel)
+                    .replace(/\s*\(Latest Update\)\s*$/i, '')
+                    .trim();
+            }
+            const subupdateTitles = panel.querySelectorAll('[data-changelog-subupdates-title]');
+            subupdateTitles.forEach(title => {
+                const titleCopy = document.createElement('span');
+                titleCopy.className = 'changelog-subupdates__title-copy changelog-tab__subtitle';
+                titleCopy.textContent = updateTitle;
+
+                const titleSuffix = document.createElement('span');
+                titleSuffix.className = 'changelog-subupdates__title-suffix';
+                titleSuffix.textContent = ' sub-updates';
+
+                title.replaceChildren(titleCopy, titleSuffix);
+            });
+        });
+    };
+
+    syncSubupdateTitles();
 
     let tabs = Array.from(tablist.querySelectorAll('[data-changelog-tab]'));
     const existingTabIds = new Set(tabs.map(tab => tab.dataset.changelogTab));

@@ -1379,10 +1379,11 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: clamp(24px, 5vw, 48px);
+    padding: 10px;
     background: radial-gradient(circle at 30% 20%, rgba(127, 227, 255, 0.1), rgba(2, 8, 20, 0.8)),
         linear-gradient(180deg, rgba(2, 6, 14, 0.9), rgba(2, 4, 10, 0.96));
     z-index: 10000;
+    overflow: hidden;
 }
 
 .intro-overlay[hidden] {
@@ -1390,46 +1391,66 @@
 }
 
 .intro-overlay__panel {
-    width: min(680px, 90vw);
+    width: min(680px, calc(100dvw - 20px));
+    max-height: calc(100dvh - 20px);
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 16px;
-    padding: clamp(20px, 4vw, 32px);
+    gap: clamp(8px, 2vmin, 16px);
+    padding: clamp(12px, 3vmin, 28px);
     background: linear-gradient(180deg, rgba(10, 16, 30, 0.96), rgba(4, 10, 20, 0.96));
     border: 1px solid rgba(120, 200, 255, 0.35);
     border-radius: 18px;
     box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55), 0 0 32px rgba(127, 227, 255, 0.16);
     text-align: center;
+    overflow-y: auto;
+    scrollbar-width: thin;
+}
+
+.intro-overlay__logo {
+    display: flex;
+    justify-content: center;
+    min-height: 0;
+    max-width: 100%;
+    flex: 0 1 auto;
 }
 
 .intro-overlay__logo img {
     display: block;
-    width: min(400px, 60vw);
+    width: min(400px, 60vw, 42dvh);
+    max-height: min(400px, 42dvh);
+    object-fit: contain;
     filter: drop-shadow(0 12px 22px rgba(0, 0, 0, 0.5));
 }
 
 .intro-overlay__copy {
     margin: 0;
     color: var(--text-secondary);
-    font-size: 1.05rem;
+    font-size: clamp(0.78rem, 2.5vmin, 1.05rem);
     letter-spacing: 0.08em;
+    line-height: 1.35;
 }
 
 .intro-overlay__start-button {
     --button-scale: 1;
     --button-raise: -2px;
-    padding: 14px 26px;
+    flex: 0 0 auto;
+    position: sticky;
+    bottom: 0;
+    z-index: 1;
+    max-width: 100%;
+    padding: clamp(10px, 2.2vmin, 14px) clamp(16px, 4vmin, 26px);
     border-radius: 12px;
     background: linear-gradient(135deg, #7fe3ff, #3792ff);
     border: 1px solid rgba(120, 200, 255, 0.6);
     color: #03101f;
     font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 0.16em;
+    letter-spacing: clamp(0.08em, 0.35vmin, 0.16em);
     cursor: pointer;
     box-shadow: 0 12px 30px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.4);
     transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+    white-space: normal;
 }
 
 .intro-overlay__start-button:hover {
@@ -2037,27 +2058,28 @@
 .changelog-tab:focus-visible {
     outline: none;
     box-shadow:
-        inset 0 0 0 1px #9de8ff,
+        inset 0 0 0 1px var(--accent-strong),
         0 22px 34px rgba(4, 12, 26, 0.68);
 }
 
 .changelog-tab--active {
     color: var(--text-primary);
-    background: linear-gradient(180deg, rgba(157, 232, 255, 0.78) 0%, rgba(30, 58, 94, 0.98) 100%);
+    background: linear-gradient(180deg, rgb(var(--accent-rgb) / 0.78) 0%, rgb(var(--accent-rgb) / 0.2) 100%);
     transform: translateY(-1px);
     box-shadow:
-        inset 0 0 0 1px rgba(157, 232, 255, 0.65),
+        inset 0 0 0 1px rgb(var(--accent-rgb) / 0.65),
         0 14px 26px rgba(4, 12, 26, 0.62);
     filter: none;
 }
 
 .changelog-modal__panels {
     display: block;
-    overflow: hidden;
+    overflow: visible;
     transition: height 280ms cubic-bezier(0.24, 0.82, 0.25, 1);
 }
 
 .changelog-modal__panels--animating {
+    overflow: hidden;
     will-change: height;
 }
 
@@ -2069,6 +2091,8 @@
     max-height: min(65vh, 640px);
     overflow-y: auto;
     padding-right: 4px;
+    padding-bottom: clamp(22px, 4vh, 36px);
+    scroll-padding-bottom: clamp(22px, 4vh, 36px);
 }
 
 .changelog-modal__panel[hidden] {
@@ -2119,6 +2143,143 @@
 
 .changelog-modal__list li {
     line-height: 1.5;
+}
+
+.changelog-subupdates {
+    display: flex;
+    flex-direction: column;
+    gap: clamp(12px, 2vw, 16px);
+    padding: clamp(14px, 2.4vw, 18px);
+    margin-bottom: clamp(8px, 2vh, 16px);
+    border: 1px solid rgb(var(--accent-rgb) / 0.28);
+    border-radius: 8px;
+    background:
+        radial-gradient(circle at 0% 0%, rgb(var(--accent-rgb) / 0.14), transparent 42%),
+        linear-gradient(180deg, rgb(var(--accent-rgb) / 0.1), rgba(7, 13, 27, 0.72));
+    box-shadow: inset 0 0 24px rgb(var(--accent-rgb) / 0.08);
+}
+
+.changelog-subupdates__header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 8px 16px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid rgb(var(--accent-rgb) / 0.18);
+}
+
+.changelog-subupdates__title {
+    margin: 0;
+    color: var(--accent-strong);
+    font-size: clamp(15px, 2vw, 18px);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+}
+
+.changelog-subupdates__title::before {
+    content: "|- ";
+}
+
+.changelog-subupdates__title::after {
+    content: " -|";
+}
+
+.changelog-subupdates__title-copy.changelog-tab__subtitle,
+.changelog-subupdate-card__title.changelog-tab__subtitle {
+    display: inline;
+    margin-top: 0;
+    text-transform: none;
+}
+
+.changelog-subupdates__title-copy.changelog-tab__subtitle {
+    font-size: inherit;
+    letter-spacing: inherit;
+}
+
+.changelog-subupdate-card__title.changelog-tab__subtitle {
+    font-size: clamp(14px, 2vw, 16px);
+    letter-spacing: 0.08em;
+    line-height: 1.35;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+
+.changelog-subupdates__title-copy.changelog-tab__subtitle::before,
+.changelog-subupdates__title-copy.changelog-tab__subtitle::after,
+.changelog-subupdate-card__title.changelog-tab__subtitle::before,
+.changelog-subupdate-card__title.changelog-tab__subtitle::after {
+    content: none;
+}
+
+.changelog-subupdates__title-suffix {
+    color: var(--accent-strong);
+}
+
+.changelog-subupdates__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 270px), 1fr));
+    gap: 12px;
+    padding-bottom: 2px;
+}
+
+.changelog-subupdate-card {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    min-width: 0;
+    padding: clamp(12px, 2vw, 16px);
+    border: 1px solid rgb(var(--accent-rgb) / 0.22);
+    border-radius: 8px;
+    background:
+        linear-gradient(180deg, rgb(var(--accent-rgb) / 0.08), rgba(4, 10, 22, 0.68));
+    box-shadow: inset 0 0 18px rgb(var(--accent-rgb) / 0.08);
+}
+
+.changelog-subupdate-card__header {
+    display: grid;
+    gap: 5px;
+    min-width: 0;
+}
+
+.changelog-subupdate-card__version {
+    width: fit-content;
+    padding: 4px 8px;
+    border: 1px solid rgb(var(--accent-rgb) / 0.4);
+    border-radius: 8px;
+    color: var(--accent-strong);
+    font-size: 12px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    background: rgb(var(--accent-rgb) / 0.1);
+}
+
+.changelog-subupdate-card__title {
+    color: var(--text-primary);
+    font-size: clamp(14px, 2vw, 16px);
+    letter-spacing: 0.08em;
+    line-height: 1.35;
+}
+
+.changelog-subupdate-card__meta {
+    margin: 0;
+    color: var(--text-secondary);
+    font-size: 12px;
+    letter-spacing: 0.12em;
+    line-height: 1.35;
+    text-transform: uppercase;
+}
+
+.changelog-modal__actions {
+    display: flex;
+    justify-content: center;
+    padding-top: clamp(2px, 1vh, 8px);
+}
+
+.changelog-modal__close-bottom {
+    min-width: 140px;
+    max-width: min(240px, 100%);
 }
 
 .tinyClass {
@@ -2184,6 +2345,133 @@
         flex-direction: column;
         align-items: stretch;
         gap: 6px;
+    }
+
+    .changelog-subupdates__header {
+        align-items: stretch;
+    }
+
+    .changelog-modal__close-bottom {
+        width: min(100%, 280px);
+    }
+}
+
+@media (max-height: 720px) and (orientation: landscape) {
+    .modal-overlay {
+        --modal-padding: clamp(8px, 2vw, 16px);
+    }
+
+    .surface--modal.changelog-modal {
+        gap: clamp(8px, 1.8vh, 12px);
+        height: calc(100dvh - var(--modal-padding) - var(--modal-padding));
+        max-height: calc(100dvh - var(--modal-padding) - var(--modal-padding));
+        overflow: hidden;
+        padding: clamp(14px, 2.6vw, 22px);
+    }
+
+    .changelog-modal__panels {
+        flex: 1 1 auto;
+        min-height: 0;
+        overflow: hidden;
+    }
+
+    .changelog-modal__controls {
+        flex: 0 0 auto;
+        gap: 6px;
+    }
+
+    .changelog-modal__tabbar {
+        gap: 6px;
+        padding: 3px;
+        border-radius: 8px;
+    }
+
+    .changelog-nav-button,
+    .changelog-tab {
+        padding: 7px 10px;
+    }
+
+    .changelog-tab {
+        border-radius: 8px;
+        font-size: 12px;
+        letter-spacing: 0.1em;
+    }
+
+    .changelog-version-picker {
+        gap: 6px;
+    }
+
+    .changelog-version-picker__label {
+        font-size: 0.72rem;
+        letter-spacing: 0.06em;
+    }
+
+    .changelog-modal__panel {
+        gap: 10px;
+        height: 100%;
+        max-height: none;
+        padding-bottom: 20px;
+        scroll-padding-bottom: 20px;
+    }
+
+    .changelog-modal__header {
+        gap: 3px;
+    }
+
+    .changelog-modal__title {
+        font-size: clamp(17px, 2.8vw, 22px);
+        letter-spacing: 0.08em;
+    }
+
+    .changelog-tab__subtitle {
+        margin-top: -3px;
+        font-size: 1.05em;
+        letter-spacing: 0.08em;
+    }
+
+    .changelog-modal__meta {
+        font-size: 12px;
+        letter-spacing: 0.12em;
+    }
+
+    .changelog-modal__list {
+        gap: 0.42em;
+    }
+
+    .changelog-modal__list li {
+        line-height: 1.35;
+    }
+
+    .changelog-subupdates {
+        gap: 8px;
+        margin-bottom: 10px;
+        padding: 10px;
+    }
+
+    .changelog-subupdates__header {
+        padding-bottom: 7px;
+    }
+
+    .changelog-subupdates__grid {
+        gap: 8px;
+    }
+
+    .changelog-subupdate-card {
+        gap: 8px;
+        padding: 10px;
+    }
+
+    .changelog-subupdate-card__meta {
+        letter-spacing: 0.08em;
+    }
+
+    .changelog-modal__actions {
+        flex: 0 0 auto;
+        padding-top: 0;
+    }
+
+    .changelog-modal__close-bottom {
+        min-width: 120px;
     }
 }
 
