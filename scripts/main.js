@@ -62,6 +62,7 @@ const backgroundRollingPreference = {
 const QUALITY_PREFERENCE_KEYS = Object.freeze([
     'removeParticles',
     'disableButtonAnimations',
+    'disableShakes',
     'disableRollAndSigilAnimations',
     'reduceGlitchEffects',
     'removeGlitchEffects'
@@ -520,7 +521,21 @@ const BIOME_OTHER_SELECT_ID = 'biome-other-dropdown';
 const BIOME_TIME_SELECT_ID = 'biome-time-dropdown';
 const DAY_RESTRICTED_BIOMES = new Set(['pumpkinMoon', 'graveyard']);
 const CYBERSPACE_ILLUSIONARY_WARNING_STORAGE_KEY = 'solsRollingCalculator:hideCyberspaceIllusionaryWarning';
+const SINGULARITY_SUMMON_SOUND_ID = 'singularitySummonSound';
+const SINGULARITY_SUMMON_FALLBACK_DURATION_MS = 12500;
+const SINGULARITY_SUMMON_SHAKE_TARGET_SELECTORS = Object.freeze([
+    '.interface-header',
+    '.surface--side',
+    '.surface--results',
+    '.surface--controls',
+    '.surface--parameters',
+    '.surface--presets'
+]);
+const SINGULARITY_SUMMON_SHAKE_TARGET_CLASS = 'singularity-summon-shake-target';
 let lastPrimaryBiomeSelection = null;
+let singularitySummonSequenceId = 0;
+let singularitySummonTimeoutId = null;
+let singularitySummonCleanup = null;
 const DEV_BIOME_IDS = new Set(['anotherRealm', 'edict', 'mastermind', 'unknown']);
 let devBiomesEnabled = false;
 
@@ -649,6 +664,9 @@ function applyChannelVolumeToElements(channel) {
     if (channel === 'music') {
         const bgMusic = document.getElementById('ambientMusic');
         synchronizeBackgroundRouting(bgMusic);
+        if (!isSoundChannelActive('music')) {
+            stopSingularitySummonSequence();
+        }
     }
 }
 
@@ -1872,6 +1890,167 @@ function startBackgroundMusic(bgMusic) {
     }
 }
 
+function clearSingularitySummonShakeTargets() {
+    document.querySelectorAll(`.${SINGULARITY_SUMMON_SHAKE_TARGET_CLASS}`).forEach(element => {
+        element.classList.remove(SINGULARITY_SUMMON_SHAKE_TARGET_CLASS);
+    });
+}
+
+function chooseSingularitySummonShakeTargets() {
+    clearSingularitySummonShakeTargets();
+
+    const candidates = Array.from(new Set(
+        SINGULARITY_SUMMON_SHAKE_TARGET_SELECTORS
+            .map(selector => document.querySelector(selector))
+            .filter(element => element && element.classList)
+    ));
+
+    candidates.forEach(element => {
+        element.classList.add(SINGULARITY_SUMMON_SHAKE_TARGET_CLASS);
+    });
+}
+
+function setSingularitySummonVisualActive(active) {
+    const body = document.body;
+    const root = document.documentElement;
+    if (active) {
+        chooseSingularitySummonShakeTargets();
+    } else {
+        clearSingularitySummonShakeTargets();
+    }
+
+    [body, root].forEach(element => {
+        if (!element || !element.classList) return;
+        element.classList.toggle('singularity-summon-active', Boolean(active));
+    });
+}
+
+function getSingularitySummonSound() {
+    return document.getElementById(SINGULARITY_SUMMON_SOUND_ID);
+}
+
+function areShakeEffectsDisabled() {
+    return Boolean(appState?.qualityPreferences?.disableShakes);
+}
+
+function clearSingularitySummonTimer() {
+    if (singularitySummonTimeoutId === null) return;
+    clearTimeout(singularitySummonTimeoutId);
+    singularitySummonTimeoutId = null;
+}
+
+function stopSingularitySummonSequence({ resetAudio = true } = {}) {
+    singularitySummonSequenceId += 1;
+    clearSingularitySummonTimer();
+    if (typeof singularitySummonCleanup === 'function') {
+        singularitySummonCleanup();
+        singularitySummonCleanup = null;
+    }
+    setSingularitySummonVisualActive(false);
+
+    if (!resetAudio) return;
+
+    const summonSound = getSingularitySummonSound();
+    if (!summonSound) return;
+    summonSound.pause();
+    try {
+        summonSound.currentTime = 0;
+    } catch (error) {
+        console.warn('Unable to reset Singularity summon sound', error);
+    }
+}
+
+function playSingularitySummonSequence(bgMusic, { expectedMusicSrc, onComplete } = {}) {
+    const summonSound = getSingularitySummonSound();
+    if (!summonSound || !isSoundChannelActive('music') || areShakeEffectsDisabled()) {
+        if (typeof onComplete === 'function') {
+            onComplete();
+        }
+        return;
+    }
+
+    stopSingularitySummonSequence();
+    const sequenceId = ++singularitySummonSequenceId;
+
+    if (bgMusic) {
+        bgMusic.pause();
+        try {
+            bgMusic.currentTime = 0;
+        } catch (error) {
+            console.warn('Unable to reset Singularity background music', error);
+        }
+    }
+
+    summonSound.loop = false;
+    summonSound.pause();
+    try {
+        summonSound.currentTime = 0;
+    } catch (error) {
+        console.warn('Unable to rewind Singularity summon sound', error);
+    }
+
+    applyMediaGain(summonSound, { category: 'music', fallbackGain: 0.35 });
+    setSingularitySummonVisualActive(true);
+
+    const cleanup = () => {
+        summonSound.removeEventListener('ended', finish);
+        summonSound.removeEventListener('error', finish);
+        clearSingularitySummonTimer();
+        if (singularitySummonCleanup === cleanup) {
+            singularitySummonCleanup = null;
+        }
+    };
+
+    const finish = () => {
+        if (sequenceId !== singularitySummonSequenceId) {
+            return;
+        }
+
+        cleanup();
+        setSingularitySummonVisualActive(false);
+
+        if (
+            typeof onComplete === 'function'
+            && isSoundChannelActive('music')
+            && (!bgMusic || !expectedMusicSrc || bgMusic.getAttribute('data-current-src') === expectedMusicSrc)
+        ) {
+            onComplete();
+        }
+    };
+
+    singularitySummonCleanup = cleanup;
+    summonSound.addEventListener('ended', finish, { once: true });
+    summonSound.addEventListener('error', finish, { once: true });
+
+    const resolvedDurationMs = Number.isFinite(summonSound.duration) && summonSound.duration > 0
+        ? (summonSound.duration * 1000) + 250
+        : SINGULARITY_SUMMON_FALLBACK_DURATION_MS;
+    singularitySummonTimeoutId = setTimeout(finish, resolvedDurationMs);
+
+    const playPromise = summonSound.play();
+    if (playPromise && typeof playPromise.catch === 'function') {
+        playPromise.catch(() => {
+            finish();
+        });
+    }
+}
+
+function completeActiveSingularitySummonImmediately() {
+    const bgMusic = document.getElementById('ambientMusic');
+    stopSingularitySummonSequence();
+
+    if (!bgMusic || !appState.audio.roll) {
+        return;
+    }
+
+    if (bgMusic.getAttribute('data-current-src') !== biomeAssets.singularity.music) {
+        return;
+    }
+
+    primeBackgroundMusic(bgMusic);
+    startBackgroundMusic(bgMusic);
+}
+
 function updateMasterMuteToggleButton() {
     const masterMuteToggle = document.getElementById('masterMuteToggle');
     if (!masterMuteToggle) return;
@@ -1887,6 +2066,10 @@ function setMasterMuteState(isMuted, { force = false, persist = true } = {}) {
 
     appState.audio.masterMuted = isMuted;
     updateMasterMuteToggleButton();
+
+    if (isMuted) {
+        stopSingularitySummonSequence();
+    }
 
     ['music', 'obtain', 'cutscene', 'ui'].forEach(channel => applyChannelVolumeToElements(channel));
 
@@ -1924,6 +2107,7 @@ function toggleRollingAudio() {
         applyChannelVolumeToElements('music');
         applyChannelVolumeToElements('obtain');
     } else if (bgMusic) {
+        stopSingularitySummonSequence();
         bgMusic.muted = true;
         if (typeof bgMusic.setAttribute === 'function') {
             bgMusic.setAttribute('muted', '');
@@ -2087,6 +2271,7 @@ function applyQualityPreferencesState() {
     if (pageBody) {
         pageBody.classList.toggle('quality-no-particles', appState.qualityPreferences.removeParticles);
         pageBody.classList.toggle('quality-no-button-animations', appState.qualityPreferences.disableButtonAnimations);
+        pageBody.classList.toggle('quality-no-shakes', appState.qualityPreferences.disableShakes);
         pageBody.classList.toggle('quality-no-roll-sigil-animations', appState.qualityPreferences.disableRollAndSigilAnimations);
         pageBody.classList.toggle('quality-reduced-glitch', appState.qualityPreferences.reduceGlitchEffects);
         pageBody.classList.toggle('quality-no-glitch', appState.qualityPreferences.removeGlitchEffects);
@@ -2094,6 +2279,11 @@ function applyQualityPreferencesState() {
 
     if (appState.qualityPreferences.removeGlitchEffects) {
         appState.qualityPreferences.reduceGlitchEffects = false;
+    }
+
+    if (appState.qualityPreferences.disableShakes) {
+        resetLuckPresetAnimations();
+        completeActiveSingularitySummonImmediately();
     }
 
     syncQualityPreferenceButtons();
@@ -2820,6 +3010,11 @@ function applyBiomeTheme(biome, selectionState = null) {
     if (bgMusic && assets) {
         const currentSrc = bgMusic.getAttribute('data-current-src');
         const shouldUpdateMusic = currentSrc !== assets.music;
+        const shouldPlaySingularitySummon = assetKey === 'singularity' && shouldUpdateMusic;
+        const singularitySummonInProgress = assetKey === 'singularity' && typeof singularitySummonCleanup === 'function';
+        if (assetKey !== 'singularity') {
+            stopSingularitySummonSequence();
+        }
         if (shouldUpdateMusic) {
             bgMusic.pause();
             bgMusic.currentTime = 0;
@@ -2835,8 +3030,15 @@ function applyBiomeTheme(biome, selectionState = null) {
             }
         }
 
-        if (appState.audio.roll && (shouldUpdateMusic || bgMusic.paused)) {
-            startBackgroundMusic(bgMusic);
+        if (appState.audio.roll && (shouldUpdateMusic || bgMusic.paused) && !singularitySummonInProgress) {
+            if (shouldPlaySingularitySummon) {
+                playSingularitySummonSequence(bgMusic, {
+                    expectedMusicSrc: assets.music,
+                    onComplete: () => startBackgroundMusic(bgMusic)
+                });
+            } else {
+                startBackgroundMusic(bgMusic);
+            }
         }
     }
 }
@@ -2970,11 +3172,8 @@ function syncLuckVisualEffects(luckValue) {
 }
 
 function resetLuckPresetAnimations() {
-    const animationClasses = ['luck-preset-button--pop', 'luck-preset-button--mega-pop'];
-    const targets = [
-        document.getElementById('luck-preset-one-million'),
-        document.getElementById('luck-preset-ten-million')
-    ];
+    const animationClasses = ['luck-preset-button--pop', 'luck-preset-button--mega-pop', 'luck-preset-button--master-pop'];
+    const targets = Array.from(document.querySelectorAll('.luck-preset-button--shake'));
 
     targets.forEach(button => {
         if (!button) {
@@ -4415,7 +4614,7 @@ const AURA_BLUEPRINT_SOURCE = Object.freeze([
     { name: "Eostre - 1,000,000,000", chance: 1000000000, cutscene: "eostre-cutscene" },
     { name: "Sovereign : Frostveil - 1,000,000,000", chance: 1000000000, breakthroughs: nativeBreakthroughs("aurora"), cutscene: "frostveil-cutscene" },
     { name: "Arachnophobia - 940,000,000", chance: 940000000, nativeBiomes: ["glitch", "pumpkinMoon"] },
-    { name: "Ascendant - 935,000,000", chance: 935000000, breakthroughs: nativeBreakthroughs("heaven"), cutscene: "ascendant-cutscene" },
+    { name: "Ascendant - 935,000,000", chance: 935000000, breakthroughs: nativeBreakthroughs("heaven") },
     { name: "Ravage - 930,000,000", chance: 930000000, nativeBiomes: ["glitch", "graveyard"] },
     { name: "Dreamscape - 850,000,000", chance: 850000000, nativeBiomes: ["limbo"] },
     { name: "Aegis - 825,000,000", chance: 825000000, breakthroughs: nativeBreakthroughs("cyberspace"), nativeBiomes: ["cyberspace"] },
@@ -5124,7 +5323,7 @@ const CUTSCENE_PRIORITY_SEQUENCE = [
             "monarch-cutscene", "idiot-cutscene", "equinox-cutscene", "dream-traveler-cutscene", "skyFestival-cutscene", "breakthrough-cutscene",
             "yolk-cutscene", "astraios-cutscene", "leviathan-cutscene", "winter-garden-cutscene", "erebus-cutscene", "luminosity-cutscene", "eggis-cutscene",
             "godslayer-cutscene", "pixelation-cutscene", "nyctophobia-cutscene", "solsLoadingScreen-cutscene", "pukekoGod-cutscene", "frostveil-cutscene",
-            "lamenthyr-cutscene", "ascendant-cutscene", "dreammetric-cutscene", "oppression-cutscene",
+            "eostre-cutscene", "lamenthyr-cutscene", "dreammetric-cutscene", "oppression-cutscene",
             "verdict-cutscene", "prowler-cutscene", "clockwork-cutscene", "attorney-cutscene"
 ];
 
@@ -5481,11 +5680,11 @@ function initializeDevBiomeToggle() {
 }
 
 function triggerLuckPresetButtonAnimation(button, className) {
-    if (!button) {
+    if (!button || areShakeEffectsDisabled()) {
         return;
     }
 
-    button.classList.remove('luck-preset-button--pop', 'luck-preset-button--mega-pop');
+    button.classList.remove('luck-preset-button--pop', 'luck-preset-button--mega-pop', 'luck-preset-button--master-pop');
     // Force reflow so the animation can retrigger
     void button.offsetWidth;
     button.classList.add(className);
@@ -5497,7 +5696,7 @@ function bindLuckPresetButtonAnimation(button, className, animationNames) {
     }
 
     button.addEventListener('click', () => {
-        if (appState.reduceMotion) {
+        if (appState.reduceMotion || areShakeEffectsDisabled()) {
             return;
         }
         triggerLuckPresetButtonAnimation(button, className);
@@ -5513,13 +5712,16 @@ function bindLuckPresetButtonAnimation(button, className, animationNames) {
 function setupLuckPresetAnimations() {
     resetLuckPresetAnimations();
 
-    const oneMillionButton = document.getElementById('luck-preset-one-million');
-    const tenMillionButton = document.getElementById('luck-preset-ten-million');
-    const hundredMillionButton = document.getElementById('luck-preset-hundred-million');
+    const animationConfigByTier = {
+        mild: { className: 'luck-preset-button--pop', animationNames: ['luckPresetPop'] },
+        aggressive: { className: 'luck-preset-button--mega-pop', animationNames: ['luckPresetMegaPop'] },
+        massive: { className: 'luck-preset-button--master-pop', animationNames: ['luckPresetMasterPop'] }
+    };
 
-    bindLuckPresetButtonAnimation(oneMillionButton, 'luck-preset-button--pop', ['luckPresetPop']);
-    bindLuckPresetButtonAnimation(tenMillionButton, 'luck-preset-button--mega-pop', ['luckPresetMegaPop']);
-    bindLuckPresetButtonAnimation(hundredMillionButton, 'luck-preset-button--master-pop', ['luckPresetMasterPop']);
+    document.querySelectorAll('.luck-preset-button--shake').forEach(button => {
+        const config = animationConfigByTier[button.dataset.shakeTier] || animationConfigByTier.mild;
+        bindLuckPresetButtonAnimation(button, config.className, config.animationNames);
+    });
 }
 
 function setVersionButtonExpanded(state) {

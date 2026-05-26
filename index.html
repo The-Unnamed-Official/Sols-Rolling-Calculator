@@ -35,6 +35,7 @@
     </div>
 
     <audio id="ambientMusic" loop muted src="files/normalBiomeMusic.mp3" type="audio/mpeg" data-volume="0.10" data-audio-channel="music"></audio>
+    <audio id="singularitySummonSound" muted src="files/singularitySummon.mp3" type="audio/mpeg" data-volume="1" data-audio-channel="music"></audio>
     <audio id="rollLoopSound" muted src="files/SolsRollSound.mp3" type="audio/mpeg" data-volume="0.10" data-audio-channel="obtain"></audio>
     <audio id="clickSoundFx" muted src="files/SolsClickSound.mp3" type="audio/mpeg" data-volume="0.10" data-audio-channel="ui"></audio>
     <audio id="hoverSoundFx" muted src="files/SolsHoverSound.mp3" type="audio/mpeg" data-volume="0.15" data-audio-channel="ui"></audio>
@@ -86,9 +87,6 @@
     <video id="monarch-cutscene" class="cutscene-video" preload="metadata" data-audio-channel="cutscene">
         <source src="files/monarchCutscene.webm" type="video/webm">
     </video>
-    <video id="ascendant-cutscene" class="cutscene-video" preload="metadata" data-audio-channel="cutscene">
-        <source src="files/ascendantCutscene.webm" type="video/webm">
-    </video>
     <video id="breakthrough-cutscene" class="cutscene-video" preload="metadata" data-audio-channel="cutscene">
         <source src="files/breakthroughCutscene.webm" type="video/webm">
     </video>
@@ -134,6 +132,9 @@
     <video id="yolk-cutscene" class="cutscene-video" preload="metadata" data-audio-channel="cutscene">
         <source src="files/yolkCutscene.webm" type="video/webm">
     </video>
+    <video id="eostre-cutscene" class="cutscene-video" preload="metadata" data-audio-channel="cutscene">
+        <source src="files/eostreCutscene.webm" type="video/webm">
+    </video>
     <video id="eggis-cutscene" class="cutscene-video" preload="metadata" data-audio-channel="cutscene">
         <source src="files/eggisCutscene.webm" type="video/webm">
     </video>
@@ -171,11 +172,11 @@
                 <div class="banner__meta">
                     <h1 class="banner__title">Sol's RNG Rolling Simulator</h1>
                     <p class="banner__subtitle">
-                        <button type="button" class="banner__version-button" id="versionInfoButton" aria-haspopup="dialog" aria-expanded="false" data-version-id="v1830">v1.830</button>
+                        <button type="button" class="banner__version-button" id="versionInfoButton" aria-haspopup="dialog" aria-expanded="false" data-version-id="v1835">v1.835</button>
                         <span class="banner__subtitle-divider" aria-hidden="true">◉</span>
                         <span class="banner__subtitle-author">By <span class="banner__subtitle-author-name"><a href="https://discord.com/users/611204110955446301" target="_blank" rel="noopener">not.unnamed</a></span></span>
                         <span class="banner__subtitle-divider" aria-hidden="true">◉</span>
-                        <span class="banner__subtitle-updated">Updated <time datetime="2026-05-19T22:22:00+02:00">2026/05/19 10:22 PM CEST</time></span>
+                        <span class="banner__subtitle-updated">Updated <time datetime="2026-05-26T15:47:00+02:00">2026/05/26 3:47 PM CEST</time></span>
                         <span class="banner__subtitle-divider" aria-hidden="true">◉</span>
                         <span class="banner__subtitle-eon"><span class="banner__subtitle-game-version"><a href="https://www.roblox.com/games/15532962292/Sols-RNG" target="_blank" rel="noopener">Sol's RNG Eon 1-21</a></span></span>
                     </p>
@@ -620,10 +621,10 @@
                             <span class="preset-collection__title-divider preset-collection__title-divider--end" aria-hidden="true"></span>
                         </h3>
                         <div class="preset-matrix" id="luck-preset-panel">
-                            <button type="button" id="luck-preset-hundred-million" data-luck-value="100000000000" onclick="applyLuckValue(100000000000, { luckSource: 'standard-preset' })"><span class="crazyClass">ONE HUNDRED BILLION PRESET +100,000,000,000</span></button>
-                            <button type="button" id="luck-preset-hundred-million" data-luck-value="100000000" onclick="applyLuckValue(100000000, { luckSource: 'standard-preset' })"><span class="insaneLuckPresetClass">100 Million Preset +100,000,000</span></button>
-                            <button type="button" id="luck-preset-ten-million" data-luck-value="10000000" onclick="applyLuckValue(10000000, { luckSource: 'standard-preset' })"><span class="insaneLuckPresetClass">10 Million Preset +10,000,000</span></button>
-                            <button type="button" id="luck-preset-one-million" data-luck-value="1000000" onclick="applyLuckValue(1000000, { luckSource: 'standard-preset' })"><span class="insaneLuckPresetClass">1 Million Preset +1,000,000</span></button>
+                            <button type="button" id="luck-preset-hundred-million" class="luck-preset-button--shake" data-shake-tier="massive" data-luck-value="100000000000" onclick="applyLuckValue(100000000000, { luckSource: 'standard-preset' })"><span class="crazyClass">ONE HUNDRED BILLION PRESET +100,000,000,000</span></button>
+                            <button type="button" id="luck-preset-hundred-million" class="luck-preset-button--shake" data-shake-tier="massive" data-luck-value="100000000" onclick="applyLuckValue(100000000, { luckSource: 'standard-preset' })"><span class="insaneLuckPresetClass">100 Million Preset +100,000,000</span></button>
+                            <button type="button" id="luck-preset-ten-million" class="luck-preset-button--shake" data-shake-tier="aggressive" data-luck-value="10000000" onclick="applyLuckValue(10000000, { luckSource: 'standard-preset' })"><span class="insaneLuckPresetClass">10 Million Preset +10,000,000</span></button>
+                            <button type="button" id="luck-preset-one-million" class="luck-preset-button--shake" data-shake-tier="mild" data-luck-value="1000000" onclick="applyLuckValue(1000000, { luckSource: 'standard-preset' })"><span class="insaneLuckPresetClass">1 Million Preset +1,000,000</span></button>
                             <button type="button" data-luck-value="700000" onclick="applyLuckValue(700000, { luckSource: 'standard-preset' })"><span class="pumpBloodClass">Pump King's Blood</span> +700,000</button>
                             <button type="button" data-luck-value="690000" onclick="applyLuckValue(690000, { luckSource: 'standard-preset' })"><span class="allPotionsClass">All Potions</span> +690,000</button>
                             <button type="button" id="luck-preset-oblivion" data-luck-value="600000" aria-pressed="false" onclick="handleOblivionPresetSelection('oblivion')"><span class="oblivionClass">Oblivion Potion</span> +600,000 <span class="preset-active-label" aria-hidden="true">Active</span></button>
@@ -730,8 +731,6 @@
                 <li class="footer-credits__item">Breakthrough cutscene courtesy of <a href="https://discord.com/users/979478452786823259" target="_blank" rel="noopener">@INCONCEIVABLE</a>.</li>
                 <li class="footer-credits__item">Monarch cutscene courtesy of <a href="https://youtu.be/qx8EPFC5vDM" target="_blank" rel="noopener">floob</a>.</li>
                 <li class="footer-credits__item">赤月の破片 cutscene courtesy of <a href="https://discord.com/users/1088288687449702470" target="_blank" rel="noopener">carno._.</a>.</li>
-                <li class="footer-credits__item">Y.O.L.K.E.G.G. cutscene courtesy of <a href="https://discord.com/users/896814372427550730" target="_blank" rel="noopener">poland2q</a>.</li>
-                <li class="footer-credits__item">Sky Festival cutscene courtesy of <a href="https://discord.com/users/1237470058591293571" target="_blank" rel="noopener">callumcat_</a>.</li>
                 <li class="footer-credits__item">Equinox : You Are An Idiot cutscene courtesy of <a href="https://discord.com/users/1060938600264515715" target="_blank" rel="noopener">gold_solsrng</a>.</li>
                 <li class="footer-credits__item">A Fool's Experience cutscene courtesy of <a href="https://discord.com/users/1374138224603168929" target="_blank" rel="noopener">fawqz</a>.</li>
                 <li class="footer-credits__item">P.U.K.E.K.O.G.O.D cutscene courtesy of <a href="https://discord.com/users/462990696182448150" target="_blank" rel="noopener">kutay1000</a>.</li>
@@ -811,7 +810,8 @@
             <span class="donation-float__content">
                 <span class="donation-float__eyebrow">Donations</span>
                 <span class="donation-float__label">Recent Support</span>
-                <span class="donation-float__meta">Chesser - $5 | Stoopid Sols Rat - $1</span>
+                <span class="donation-float__meta">Chesser - $5</span>
+                <span class="donation-float__meta">Stoopid Sols Rat - $1</span>
             </span>
         </a>
     </div>
@@ -847,7 +847,7 @@
     <div id="cyberspaceIllusionaryOverlay" class="cutscene-warning-overlay" hidden aria-hidden="true">
         <div class="cutscene-warning surface surface--modal" role="dialog" aria-modal="true" aria-labelledby="cyberspaceIllusionaryTitle">
             <p class="cutscene-warning__message">
-                <span id="cyberspaceIllusionaryTitle" class="cutscene-warning__note">Cyberspace notice</span>: Illusionary rolls at a true <span class="cutscene-warning__ratio">1 in 10,000,000</span> chance in Cyberspace. Your luck value does not affect this roll, so feel free to use any luck level.
+                <span id="cyberspaceIllusionaryTitle" class="cutscene-warning__note">Cyberspace notice</span>: Illusionary rolls at a true <span class="cutscene-warning__ratio">1 in 10,000,000</span> chance and Meta rolls at a true <span class="cutscene-warning__ratio">1 in 10,000</span> chance in Cyberspace. Your luck value does not affect these rolls, so feel free to use any luck level.
             </p>
             <div class="cutscene-warning__actions">
                 <button type="button" class="interface-button interface-button--minor" id="cyberspaceIllusionaryConfirm">Understood</button>
@@ -1022,7 +1022,11 @@
                 </button>
                 <button class="interface-button quality-settings__item" type="button" role="menuitemcheckbox" aria-checked="false" data-quality-option="disableButtonAnimations">
                     <span class="quality-settings__name">Disable button animations</span>
-                    <span class="quality-settings__description">Stops hover, pulse, and motion effects on buttons.</span>
+                    <span class="quality-settings__description">Stops button hover, pulse, and motion effects, except shake-only effects.</span>
+                </button>
+                <button class="interface-button quality-settings__item" type="button" role="menuitemcheckbox" aria-checked="false" data-quality-option="disableShakes">
+                    <span class="quality-settings__name">Disable Shakes</span>
+                    <span class="quality-settings__description">Disables luck preset shaking and skips the Singularity summon shake and sound.</span>
                 </button>
                 <button class="interface-button quality-settings__item" type="button" role="menuitemcheckbox" aria-checked="false" data-quality-option="disableRollAndSigilAnimations">
                     <span class="quality-settings__name">Disable roll & sigil animations</span>
@@ -1108,7 +1112,7 @@
                 >
                     <header class="changelog-modal__header">
                         <h2 class="changelog-modal__title">Version v1.830 Update Notes</h2>
-                        <span class="changelog-tab__subtitle">Sub-Update Cards & Virtual Memory Fix</span>
+                        <span class="changelog-tab__subtitle">v1.830 Patch Notes</span>
                         <p class="changelog-modal__meta">Updated 2026/05/19 at 10:22 PM CEST</p>
                     </header>
                     <p class="changelog-modal__intro">Latest changes:</p>
@@ -1117,6 +1121,29 @@
                         <li>Renamed Virtual : Memory to Virtual Memory.</li>
                         <li>Fixed Virtual Memory so it no longer displays as a Virtual mutation.</li>
                     </ul>
+                    <section class="changelog-subupdates" aria-labelledby="changelog-subupdates-v1830">
+                        <div class="changelog-subupdates__header">
+                            <h3 class="changelog-subupdates__title" id="changelog-subupdates-v1830" data-changelog-subupdates-title></h3>
+                        </div>
+                        <div class="changelog-subupdates__grid">
+                            <article class="changelog-subupdate-card">
+                                <header class="changelog-subupdate-card__header">
+                                    <span class="changelog-subupdate-card__version">v1.835</span>
+                                    <span class="changelog-subupdate-card__title changelog-tab__subtitle">Summon, Shakes & Cutscenes</span>
+                                    <p class="changelog-subupdate-card__meta">Updated 2026/05/26 at 3:47 PM CEST</p>
+                                </header>
+                                <ul class="changelog-modal__list changelog-modal__list--sub">
+                                    <li>Added a Singularity summon "cutscene".</li>
+                                    <li>Added a Disable Shakes quality preference that disables the four high-luck preset shake animations and skips the Singularity summon sound and shake.</li>
+                                    <li>Adjusted Disable button animations so the preset shake effects are controlled by Disable Shakes instead.</li>
+                                    <li>Updated the Cyberspace notice to mention Meta alongside Illusionary.</li>
+                                    <li>Added an Eostre cutscene.</li>
+                                    <li>Updated the Y.O.L.K.E.G.G. and Sky Festival cutscenes.</li>
+                                    <li>Removed the cutscene for Ascendant as it's not a transcendent aura + less spam when simulating with cutscenes on 👍</li>
+                                </ul>
+                            </article>
+                        </div>
+                    </section>
                     <p>If there's any bugs you encounter, please DM me here <a href="https://discord.com/users/611204110955446301" class="subtitleClass" target="_blank" rel="noopener">@not.unnamed</a></p>
                 </section>
 

@@ -2280,6 +2280,7 @@
 .changelog-modal__close-bottom {
     min-width: 140px;
     max-width: min(240px, 100%);
+    bottom: 10px;
 }
 
 .tinyClass {
@@ -2321,7 +2322,7 @@
     width: min(540px, 90vw);
     transform-origin: center;
     max-height: calc(100vh - (var(--modal-padding, 24px) + var(--modal-padding, 24px)));
-    overflow-y: auto;
+    overflow-y: none;
 }
 
 .surface--modal.changelog-modal {
@@ -2353,6 +2354,7 @@
 
     .changelog-modal__close-bottom {
         width: min(100%, 280px);
+        bottom: 0;
     }
 }
 
@@ -2472,6 +2474,7 @@
 
     .changelog-modal__close-bottom {
         min-width: 120px;
+        bottom: 0;
     }
 }
 
