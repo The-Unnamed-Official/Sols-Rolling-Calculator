@@ -1326,35 +1326,35 @@ body.reduce-motion .preset-button:focus-within .preset-button__actions {
     --button-raise: 0px;
 }
 
-body:not(.reduce-motion) #luck-preset-one-million:hover,
-body:not(.reduce-motion) #luck-preset-one-million:focus-visible {
+body:not(.reduce-motion):not(.quality-no-shakes) .luck-preset-button--shake[data-shake-tier="mild"]:hover,
+body:not(.reduce-motion):not(.quality-no-shakes) .luck-preset-button--shake[data-shake-tier="mild"]:focus-visible {
     animation: luckPresetMildShake 0.62s ease-in-out infinite;
 }
 
-body:not(.reduce-motion) #luck-preset-ten-million:hover,
-body:not(.reduce-motion) #luck-preset-ten-million:focus-visible {
+body:not(.reduce-motion):not(.quality-no-shakes) .luck-preset-button--shake[data-shake-tier="aggressive"]:hover,
+body:not(.reduce-motion):not(.quality-no-shakes) .luck-preset-button--shake[data-shake-tier="aggressive"]:focus-visible {
     animation: luckPresetAggressiveShake 0.44s cubic-bezier(0.36, 0.07, 0.19, 0.97) infinite;
 }
 
-body:not(.reduce-motion) #luck-preset-hundred-million:hover,
-body:not(.reduce-motion) #luck-preset-hundred-million:focus-visible {
+body:not(.reduce-motion):not(.quality-no-shakes) .luck-preset-button--shake[data-shake-tier="massive"]:hover,
+body:not(.reduce-motion):not(.quality-no-shakes) .luck-preset-button--shake[data-shake-tier="massive"]:focus-visible {
     animation: luckPresetMassiveShake 0.44s cubic-bezier(0.36, 0.07, 0.19, 0.97) infinite;
 }
 
-body:not(.reduce-motion) #luck-preset-one-million.luck-preset-button--pop,
-body:not(.reduce-motion) #luck-preset-one-million.luck-preset-button--pop:focus-visible {
+body:not(.reduce-motion):not(.quality-no-shakes) .luck-preset-button--shake.luck-preset-button--pop,
+body:not(.reduce-motion):not(.quality-no-shakes) .luck-preset-button--shake.luck-preset-button--pop:focus-visible {
     animation: luckPresetPop 0.68s cubic-bezier(0.18, 0.72, 0.27, 1);
     z-index: 3;
 }
 
-body:not(.reduce-motion) #luck-preset-ten-million.luck-preset-button--mega-pop,
-body:not(.reduce-motion) #luck-preset-ten-million.luck-preset-button--mega-pop:focus-visible {
+body:not(.reduce-motion):not(.quality-no-shakes) .luck-preset-button--shake.luck-preset-button--mega-pop,
+body:not(.reduce-motion):not(.quality-no-shakes) .luck-preset-button--shake.luck-preset-button--mega-pop:focus-visible {
     animation: luckPresetMegaPop 0.9s cubic-bezier(0.18, 0.78, 0.24, 1.04);
     z-index: 4;
 }
 
-body:not(.reduce-motion) #luck-preset-hundred-million.luck-preset-button--master-pop,
-body:not(.reduce-motion) #luck-preset-hundred-million.luck-preset-button--master-pop:focus-visible {
+body:not(.reduce-motion):not(.quality-no-shakes) .luck-preset-button--shake.luck-preset-button--master-pop,
+body:not(.reduce-motion):not(.quality-no-shakes) .luck-preset-button--shake.luck-preset-button--master-pop:focus-visible {
     animation: luckPresetMasterPop 0.9s cubic-bezier(0.18, 0.78, 0.24, 1.04);
     z-index: 4;
 }

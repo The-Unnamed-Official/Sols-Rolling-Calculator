@@ -48,6 +48,7 @@
         qualityPreferences: {
             removeParticles: false,
             disableButtonAnimations: false,
+            disableShakes: false,
             disableRollAndSigilAnimations: false,
             reduceGlitchEffects: false,
             removeGlitchEffects: false

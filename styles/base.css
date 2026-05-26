@@ -258,7 +258,7 @@ body.reduce-motion .banner__emblem--spinning img {
     animation: none !important;
 }
 
-body.quality-no-button-animations button,
+body.quality-no-button-animations button:not(.luck-preset-button--shake),
 body.quality-no-button-animations .interface-button,
 body.quality-no-button-animations .interface-toggle,
 body.quality-no-button-animations .roll-trigger,
@@ -288,6 +288,609 @@ body.quality-reduced-glitch .biome--glitch,
 body.quality-reduced-glitch.is-glitching,
 body.quality-reduced-glitch .is-glitching {
     --glitch-intensity: 0.35;
+}
+
+body.quality-no-shakes .luck-preset-button--shake {
+    animation: none !important;
+}
+
+@keyframes singularity-summon-shake {
+    0%,
+    100% {
+        transform: translate3d(0, 0, 0) rotate(0deg);
+    }
+
+    2% {
+        transform: translate3d(0.04px, -0.03px, 0) rotate(0.002deg);
+    }
+
+    4% {
+        transform: translate3d(-0.11px, 0.08px, 0) rotate(-0.007deg);
+    }
+
+    6% {
+        transform: translate3d(0.2px, -0.14px, 0) rotate(0.012deg);
+    }
+
+    8% {
+        transform: translate3d(-0.31px, 0.21px, 0) rotate(-0.018deg);
+    }
+
+    10% {
+        transform: translate3d(0.43px, -0.28px, 0) rotate(0.026deg);
+    }
+
+    12% {
+        transform: translate3d(-0.55px, 0.37px, 0) rotate(-0.033deg);
+    }
+
+    14% {
+        transform: translate3d(0.69px, -0.46px, 0) rotate(0.042deg);
+    }
+
+    16% {
+        transform: translate3d(-0.84px, 0.56px, 0) rotate(-0.051deg);
+    }
+
+    18% {
+        transform: translate3d(1px, -0.67px, 0) rotate(0.06deg);
+    }
+
+    20% {
+        transform: translate3d(-1.16px, 0.78px, 0) rotate(-0.07deg);
+    }
+
+    22% {
+        transform: translate3d(1.34px, -0.89px, 0) rotate(0.08deg);
+    }
+
+    24% {
+        transform: translate3d(-1.52px, 1.01px, 0) rotate(-0.091deg);
+    }
+
+    26% {
+        transform: translate3d(1.7px, -1.13px, 0) rotate(0.102deg);
+    }
+
+    28% {
+        transform: translate3d(-1.89px, 1.26px, 0) rotate(-0.114deg);
+    }
+
+    30% {
+        transform: translate3d(2.09px, -1.4px, 0) rotate(0.126deg);
+    }
+
+    32% {
+        transform: translate3d(-2.3px, 1.53px, 0) rotate(-0.138deg);
+    }
+
+    34% {
+        transform: translate3d(2.51px, -1.67px, 0) rotate(0.151deg);
+    }
+
+    36% {
+        transform: translate3d(-2.73px, 1.82px, 0) rotate(-0.164deg);
+    }
+
+    38% {
+        transform: translate3d(2.95px, -1.97px, 0) rotate(0.177deg);
+    }
+
+    40% {
+        transform: translate3d(-3.18px, 2.12px, 0) rotate(-0.191deg);
+    }
+
+    42% {
+        transform: translate3d(3.41px, -2.27px, 0) rotate(0.205deg);
+    }
+
+    44% {
+        transform: translate3d(-3.65px, 2.43px, 0) rotate(-0.219deg);
+    }
+
+    46% {
+        transform: translate3d(3.89px, -2.59px, 0) rotate(0.234deg);
+    }
+
+    48% {
+        transform: translate3d(-4.14px, 2.76px, 0) rotate(-0.248deg);
+    }
+
+    50% {
+        transform: translate3d(4.39px, -2.93px, 0) rotate(0.264deg);
+    }
+
+    52% {
+        transform: translate3d(-4.65px, 3.1px, 0) rotate(-0.279deg);
+    }
+
+    54% {
+        transform: translate3d(4.91px, -3.27px, 0) rotate(0.295deg);
+    }
+
+    56% {
+        transform: translate3d(-5.18px, 3.45px, 0) rotate(-0.311deg);
+    }
+
+    58% {
+        transform: translate3d(5.45px, -3.63px, 0) rotate(0.327deg);
+    }
+
+    60% {
+        transform: translate3d(-5.72px, 3.81px, 0) rotate(-0.343deg);
+    }
+
+    62% {
+        transform: translate3d(6px, -4px, 0) rotate(0.36deg);
+    }
+
+    64% {
+        transform: translate3d(-6.28px, 4.19px, 0) rotate(-0.377deg);
+    }
+
+    66% {
+        transform: translate3d(6.57px, -4.38px, 0) rotate(0.394deg);
+    }
+
+    68% {
+        transform: translate3d(-6.86px, 4.57px, 0) rotate(-0.412deg);
+    }
+
+    70% {
+        transform: translate3d(7.15px, -4.77px, 0) rotate(0.429deg);
+    }
+
+    72% {
+        transform: translate3d(-7.45px, 4.97px, 0) rotate(-0.447deg);
+    }
+
+    74% {
+        transform: translate3d(7.75px, -5.17px, 0) rotate(0.465deg);
+    }
+
+    76% {
+        transform: translate3d(-8.06px, 5.37px, 0) rotate(-0.484deg);
+    }
+
+    78% {
+        transform: translate3d(8.37px, -5.58px, 0) rotate(0.502deg);
+    }
+
+    80% {
+        transform: translate3d(-8.68px, 5.79px, 0) rotate(-0.521deg);
+    }
+
+    82% {
+        transform: translate3d(9px, -6px, 0) rotate(0.54deg);
+    }
+
+    84% {
+        transform: translate3d(-9.32px, 6.21px, 0) rotate(-0.559deg);
+    }
+
+    86% {
+        transform: translate3d(9.64px, -6.43px, 0) rotate(0.579deg);
+    }
+
+    88% {
+        transform: translate3d(-9.97px, 6.65px, 0) rotate(-0.598deg);
+    }
+
+    90% {
+        transform: translate3d(10.3px, -6.87px, 0) rotate(0.618deg);
+    }
+
+    92% {
+        transform: translate3d(-10.63px, 7.09px, 0) rotate(-0.638deg);
+    }
+
+    94% {
+        transform: translate3d(10.97px, -7.31px, 0) rotate(0.658deg);
+    }
+
+    96% {
+        transform: translate3d(-11.31px, 7.54px, 0) rotate(-0.679deg);
+    }
+
+    98% {
+        transform: translate3d(11.65px, -7.77px, 0) rotate(0.699deg);
+    }
+}
+
+@keyframes singularity-summon-background-shake {
+    0%,
+    100% {
+        transform: translate3d(0, 0, 0) rotate(0deg) scale(1.055);
+    }
+
+    3% {
+        transform: translate3d(0.12px, -0.08px, 0) rotate(0.005deg) scale(1.056);
+    }
+
+    6% {
+        transform: translate3d(-0.34px, 0.22px, 0) rotate(-0.013deg) scale(1.057);
+    }
+
+    9% {
+        transform: translate3d(0.61px, -0.4px, 0) rotate(0.023deg) scale(1.057);
+    }
+
+    12% {
+        transform: translate3d(-0.92px, 0.6px, 0) rotate(-0.035deg) scale(1.058);
+    }
+
+    15% {
+        transform: translate3d(1.28px, -0.83px, 0) rotate(0.048deg) scale(1.059);
+    }
+
+    18% {
+        transform: translate3d(-1.66px, 1.08px, 0) rotate(-0.062deg) scale(1.06);
+    }
+
+    21% {
+        transform: translate3d(2.08px, -1.35px, 0) rotate(0.078deg) scale(1.06);
+    }
+
+    24% {
+        transform: translate3d(-2.53px, 1.64px, 0) rotate(-0.095deg) scale(1.061);
+    }
+
+    27% {
+        transform: translate3d(3px, -1.95px, 0) rotate(0.112deg) scale(1.062);
+    }
+
+    30% {
+        transform: translate3d(-3.49px, 2.27px, 0) rotate(-0.131deg) scale(1.063);
+    }
+
+    33% {
+        transform: translate3d(4.01px, -2.6px, 0) rotate(0.15deg) scale(1.064);
+    }
+
+    36% {
+        transform: translate3d(-4.55px, 2.96px, 0) rotate(-0.17deg) scale(1.064);
+    }
+
+    39% {
+        transform: translate3d(5.11px, -3.32px, 0) rotate(0.191deg) scale(1.065);
+    }
+
+    42% {
+        transform: translate3d(-5.69px, 3.7px, 0) rotate(-0.213deg) scale(1.066);
+    }
+
+    45% {
+        transform: translate3d(6.28px, -4.08px, 0) rotate(0.236deg) scale(1.067);
+    }
+
+    48% {
+        transform: translate3d(-6.9px, 4.48px, 0) rotate(-0.259deg) scale(1.067);
+    }
+
+    51% {
+        transform: translate3d(7.53px, -4.9px, 0) rotate(0.283deg) scale(1.068);
+    }
+
+    54% {
+        transform: translate3d(-8.18px, 5.32px, 0) rotate(-0.307deg) scale(1.069);
+    }
+
+    57% {
+        transform: translate3d(8.85px, -5.75px, 0) rotate(0.332deg) scale(1.07);
+    }
+
+    60% {
+        transform: translate3d(-9.54px, 6.2px, 0) rotate(-0.358deg) scale(1.071);
+    }
+
+    63% {
+        transform: translate3d(10.23px, -6.65px, 0) rotate(0.384deg) scale(1.071);
+    }
+
+    66% {
+        transform: translate3d(-10.95px, 7.12px, 0) rotate(-0.411deg) scale(1.072);
+    }
+
+    69% {
+        transform: translate3d(11.68px, -7.59px, 0) rotate(0.438deg) scale(1.073);
+    }
+
+    72% {
+        transform: translate3d(-12.42px, 8.07px, 0) rotate(-0.466deg) scale(1.074);
+    }
+
+    75% {
+        transform: translate3d(13.18px, -8.57px, 0) rotate(0.494deg) scale(1.075);
+    }
+
+    78% {
+        transform: translate3d(-13.95px, 9.07px, 0) rotate(-0.523deg) scale(1.075);
+    }
+
+    81% {
+        transform: translate3d(14.73px, -9.58px, 0) rotate(0.553deg) scale(1.076);
+    }
+
+    84% {
+        transform: translate3d(-15.53px, 10.1px, 0) rotate(-0.582deg) scale(1.077);
+    }
+
+    87% {
+        transform: translate3d(16.34px, -10.62px, 0) rotate(0.613deg) scale(1.078);
+    }
+
+    90% {
+        transform: translate3d(-17.17px, 11.16px, 0) rotate(-0.644deg) scale(1.078);
+    }
+
+    93% {
+        transform: translate3d(18px, -11.7px, 0) rotate(0.675deg) scale(1.079);
+    }
+
+    96% {
+        transform: translate3d(-18.85px, 12.25px, 0) rotate(-0.707deg) scale(1.08);
+    }
+
+    99% {
+        transform: translate3d(19.71px, -12.81px, 0) rotate(0.739deg) scale(1.081);
+    }
+}
+
+@keyframes singularity-summon-shake-strength {
+    0% {
+        --singularity-summon-shake-distance: 2px;
+        --singularity-summon-shake-distance-negative: -2px;
+    }
+
+    8.333% {
+        --singularity-summon-shake-distance: 3px;
+        --singularity-summon-shake-distance-negative: -3px;
+    }
+
+    16.667% {
+        --singularity-summon-shake-distance: 4px;
+        --singularity-summon-shake-distance-negative: -4px;
+    }
+
+    25% {
+        --singularity-summon-shake-distance: 5px;
+        --singularity-summon-shake-distance-negative: -5px;
+    }
+
+    33.333% {
+        --singularity-summon-shake-distance: 6px;
+        --singularity-summon-shake-distance-negative: -6px;
+    }
+
+    41.667% {
+        --singularity-summon-shake-distance: 7px;
+        --singularity-summon-shake-distance-negative: -7px;
+    }
+
+    50% {
+        --singularity-summon-shake-distance: 8px;
+        --singularity-summon-shake-distance-negative: -8px;
+    }
+
+    58.333% {
+        --singularity-summon-shake-distance: 9px;
+        --singularity-summon-shake-distance-negative: -9px;
+    }
+
+    66.667% {
+        --singularity-summon-shake-distance: 10px;
+        --singularity-summon-shake-distance-negative: -10px;
+    }
+
+    75% {
+        --singularity-summon-shake-distance: 11px;
+        --singularity-summon-shake-distance-negative: -11px;
+    }
+
+    83.333% {
+        --singularity-summon-shake-distance: 12px;
+        --singularity-summon-shake-distance-negative: -12px;
+    }
+
+    91.667% {
+        --singularity-summon-shake-distance: 13px;
+        --singularity-summon-shake-distance-negative: -13px;
+    }
+
+    100% {
+        --singularity-summon-shake-distance: 14px;
+        --singularity-summon-shake-distance-negative: -14px;
+    }
+}
+
+@keyframes singularity-summon-translate-jitter {
+    0%,
+    100% {
+        transform: translate3d(0, 0, 0) scale(var(--singularity-summon-shake-scale, 1));
+    }
+
+    12.5% {
+        transform: translate3d(var(--singularity-summon-jitter-1-x, var(--singularity-summon-shake-distance, 2px)), var(--singularity-summon-jitter-1-y, 0px), 0) scale(var(--singularity-summon-shake-scale, 1));
+    }
+
+    25% {
+        transform: translate3d(var(--singularity-summon-jitter-2-x, 0px), var(--singularity-summon-jitter-2-y, var(--singularity-summon-shake-distance-negative, -2px)), 0) scale(var(--singularity-summon-shake-scale, 1));
+    }
+
+    37.5% {
+        transform: translate3d(var(--singularity-summon-jitter-3-x, var(--singularity-summon-shake-distance-negative, -2px)), var(--singularity-summon-jitter-3-y, 0px), 0) scale(var(--singularity-summon-shake-scale, 1));
+    }
+
+    50% {
+        transform: translate3d(var(--singularity-summon-jitter-4-x, 0px), var(--singularity-summon-jitter-4-y, var(--singularity-summon-shake-distance, 2px)), 0) scale(var(--singularity-summon-shake-scale, 1));
+    }
+
+    62.5% {
+        transform: translate3d(var(--singularity-summon-jitter-5-x, var(--singularity-summon-shake-distance, 2px)), var(--singularity-summon-jitter-5-y, 0px), 0) scale(var(--singularity-summon-shake-scale, 1));
+    }
+
+    75% {
+        transform: translate3d(var(--singularity-summon-jitter-6-x, 0px), var(--singularity-summon-jitter-6-y, var(--singularity-summon-shake-distance-negative, -2px)), 0) scale(var(--singularity-summon-shake-scale, 1));
+    }
+
+    87.5% {
+        transform: translate3d(var(--singularity-summon-jitter-7-x, var(--singularity-summon-shake-distance-negative, -2px)), var(--singularity-summon-jitter-7-y, 0px), 0) scale(var(--singularity-summon-shake-scale, 1));
+    }
+}
+
+body.singularity-summon-active .interface-backdrop {
+    --singularity-summon-shake-scale: 1.055;
+    --singularity-summon-shake-phase: -0.09s;
+    animation:
+        singularity-summon-shake-strength 12s steps(12, end) forwards,
+        singularity-summon-translate-jitter 0.34s ease infinite;
+    animation-delay: 0s, var(--singularity-summon-shake-phase);
+    filter: saturate(1.14) contrast(1.05);
+    inset: -7vmax;
+    transform-origin: center;
+    will-change: transform;
+}
+
+body.singularity-summon-active .singularity-summon-shake-target {
+    --singularity-summon-shake-scale: 1;
+    --singularity-summon-shake-phase: 0s;
+    animation:
+        singularity-summon-shake-strength 12s steps(12, end) forwards,
+        singularity-summon-translate-jitter 0.34s ease infinite;
+    animation-delay: 0s, var(--singularity-summon-shake-phase);
+    transform-origin: center;
+    will-change: transform;
+}
+
+body.singularity-summon-active .surface.interface-header {
+    --singularity-summon-shake-phase: -0.02s;
+    --singularity-summon-jitter-1-x: 0px;
+    --singularity-summon-jitter-1-y: var(--singularity-summon-shake-distance-negative);
+    --singularity-summon-jitter-2-x: var(--singularity-summon-shake-distance);
+    --singularity-summon-jitter-2-y: 0px;
+    --singularity-summon-jitter-3-x: 0px;
+    --singularity-summon-jitter-3-y: var(--singularity-summon-shake-distance);
+    --singularity-summon-jitter-4-x: var(--singularity-summon-shake-distance-negative);
+    --singularity-summon-jitter-4-y: 0px;
+    --singularity-summon-jitter-5-x: 0px;
+    --singularity-summon-jitter-5-y: var(--singularity-summon-shake-distance-negative);
+    --singularity-summon-jitter-6-x: var(--singularity-summon-shake-distance);
+    --singularity-summon-jitter-6-y: 0px;
+    --singularity-summon-jitter-7-x: 0px;
+    --singularity-summon-jitter-7-y: var(--singularity-summon-shake-distance);
+}
+
+body.singularity-summon-active .surface.surface--side {
+    --singularity-summon-shake-phase: -0.07s;
+    --singularity-summon-jitter-1-x: var(--singularity-summon-shake-distance-negative);
+    --singularity-summon-jitter-1-y: 0px;
+    --singularity-summon-jitter-2-x: 0px;
+    --singularity-summon-jitter-2-y: var(--singularity-summon-shake-distance);
+    --singularity-summon-jitter-3-x: var(--singularity-summon-shake-distance);
+    --singularity-summon-jitter-3-y: 0px;
+    --singularity-summon-jitter-4-x: 0px;
+    --singularity-summon-jitter-4-y: var(--singularity-summon-shake-distance-negative);
+    --singularity-summon-jitter-5-x: var(--singularity-summon-shake-distance-negative);
+    --singularity-summon-jitter-5-y: 0px;
+    --singularity-summon-jitter-6-x: 0px;
+    --singularity-summon-jitter-6-y: var(--singularity-summon-shake-distance);
+    --singularity-summon-jitter-7-x: var(--singularity-summon-shake-distance);
+    --singularity-summon-jitter-7-y: 0px;
+}
+
+body.singularity-summon-active .surface.surface--results {
+    --singularity-summon-shake-phase: -0.13s;
+    --singularity-summon-jitter-1-x: 0px;
+    --singularity-summon-jitter-1-y: var(--singularity-summon-shake-distance);
+    --singularity-summon-jitter-2-x: var(--singularity-summon-shake-distance-negative);
+    --singularity-summon-jitter-2-y: 0px;
+    --singularity-summon-jitter-3-x: 0px;
+    --singularity-summon-jitter-3-y: var(--singularity-summon-shake-distance-negative);
+    --singularity-summon-jitter-4-x: var(--singularity-summon-shake-distance);
+    --singularity-summon-jitter-4-y: 0px;
+    --singularity-summon-jitter-5-x: 0px;
+    --singularity-summon-jitter-5-y: var(--singularity-summon-shake-distance);
+    --singularity-summon-jitter-6-x: var(--singularity-summon-shake-distance-negative);
+    --singularity-summon-jitter-6-y: 0px;
+    --singularity-summon-jitter-7-x: 0px;
+    --singularity-summon-jitter-7-y: var(--singularity-summon-shake-distance-negative);
+}
+
+body.singularity-summon-active .surface.surface--controls {
+    --singularity-summon-shake-phase: -0.19s;
+    --singularity-summon-jitter-1-x: var(--singularity-summon-shake-distance);
+    --singularity-summon-jitter-1-y: 0px;
+    --singularity-summon-jitter-2-x: 0px;
+    --singularity-summon-jitter-2-y: var(--singularity-summon-shake-distance);
+    --singularity-summon-jitter-3-x: var(--singularity-summon-shake-distance-negative);
+    --singularity-summon-jitter-3-y: 0px;
+    --singularity-summon-jitter-4-x: 0px;
+    --singularity-summon-jitter-4-y: var(--singularity-summon-shake-distance-negative);
+    --singularity-summon-jitter-5-x: var(--singularity-summon-shake-distance);
+    --singularity-summon-jitter-5-y: 0px;
+    --singularity-summon-jitter-6-x: 0px;
+    --singularity-summon-jitter-6-y: var(--singularity-summon-shake-distance);
+    --singularity-summon-jitter-7-x: var(--singularity-summon-shake-distance-negative);
+    --singularity-summon-jitter-7-y: 0px;
+}
+
+body.singularity-summon-active .surface.surface--parameters {
+    --singularity-summon-shake-phase: -0.24s;
+    --singularity-summon-jitter-1-x: var(--singularity-summon-shake-distance-negative);
+    --singularity-summon-jitter-1-y: 0px;
+    --singularity-summon-jitter-2-x: 0px;
+    --singularity-summon-jitter-2-y: var(--singularity-summon-shake-distance-negative);
+    --singularity-summon-jitter-3-x: var(--singularity-summon-shake-distance);
+    --singularity-summon-jitter-3-y: 0px;
+    --singularity-summon-jitter-4-x: 0px;
+    --singularity-summon-jitter-4-y: var(--singularity-summon-shake-distance);
+    --singularity-summon-jitter-5-x: var(--singularity-summon-shake-distance-negative);
+    --singularity-summon-jitter-5-y: 0px;
+    --singularity-summon-jitter-6-x: 0px;
+    --singularity-summon-jitter-6-y: var(--singularity-summon-shake-distance-negative);
+    --singularity-summon-jitter-7-x: var(--singularity-summon-shake-distance);
+    --singularity-summon-jitter-7-y: 0px;
+}
+
+body.singularity-summon-active .surface.surface--presets {
+    --singularity-summon-shake-phase: -0.29s;
+    --singularity-summon-jitter-1-x: 0px;
+    --singularity-summon-jitter-1-y: var(--singularity-summon-shake-distance-negative);
+    --singularity-summon-jitter-2-x: var(--singularity-summon-shake-distance-negative);
+    --singularity-summon-jitter-2-y: 0px;
+    --singularity-summon-jitter-3-x: 0px;
+    --singularity-summon-jitter-3-y: var(--singularity-summon-shake-distance);
+    --singularity-summon-jitter-4-x: var(--singularity-summon-shake-distance);
+    --singularity-summon-jitter-4-y: 0px;
+    --singularity-summon-jitter-5-x: 0px;
+    --singularity-summon-jitter-5-y: var(--singularity-summon-shake-distance-negative);
+    --singularity-summon-jitter-6-x: var(--singularity-summon-shake-distance-negative);
+    --singularity-summon-jitter-6-y: 0px;
+    --singularity-summon-jitter-7-x: 0px;
+    --singularity-summon-jitter-7-y: var(--singularity-summon-shake-distance);
+}
+
+body.singularity-summon-active .surface.interface-footer {
+    --singularity-summon-shake-phase: -0.32s;
+    --singularity-summon-jitter-1-x: var(--singularity-summon-shake-distance);
+    --singularity-summon-jitter-1-y: 0px;
+    --singularity-summon-jitter-2-x: 0px;
+    --singularity-summon-jitter-2-y: var(--singularity-summon-shake-distance-negative);
+    --singularity-summon-jitter-3-x: var(--singularity-summon-shake-distance-negative);
+    --singularity-summon-jitter-3-y: 0px;
+    --singularity-summon-jitter-4-x: 0px;
+    --singularity-summon-jitter-4-y: var(--singularity-summon-shake-distance);
+    --singularity-summon-jitter-5-x: var(--singularity-summon-shake-distance);
+    --singularity-summon-jitter-5-y: 0px;
+    --singularity-summon-jitter-6-x: 0px;
+    --singularity-summon-jitter-6-y: var(--singularity-summon-shake-distance-negative);
+    --singularity-summon-jitter-7-x: var(--singularity-summon-shake-distance-negative);
+    --singularity-summon-jitter-7-y: 0px;
+}
+
+body.quality-no-shakes.singularity-summon-active .interface-backdrop,
+body.quality-no-shakes.singularity-summon-active .singularity-summon-shake-target {
+    animation: none !important;
 }
 
 button {
