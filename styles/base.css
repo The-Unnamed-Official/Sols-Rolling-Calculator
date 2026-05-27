@@ -783,158 +783,27 @@ body.performance-mode [class*="Class"] {
     }
 }
 
-body.singularity-summon-active .interface-backdrop {
-    --singularity-summon-shake-scale: 1.055;
-    --singularity-summon-shake-phase: -0.09s;
-    animation:
-        singularity-summon-shake-strength 12s steps(12, end) forwards,
-        singularity-summon-translate-jitter 0.34s ease infinite;
-    animation-delay: 0s, var(--singularity-summon-shake-phase);
-    filter: saturate(1.14) contrast(1.05);
-    inset: -7vmax;
-    transform-origin: center;
-    will-change: transform;
-}
-
-body.singularity-summon-active .singularity-summon-shake-target {
+body.singularity-summon-active .interface-shell,
+body.singularity-summon-active .interface-footer {
     --singularity-summon-shake-scale: 1;
-    --singularity-summon-shake-phase: 0s;
     animation:
         singularity-summon-shake-strength 12s steps(12, end) forwards,
         singularity-summon-translate-jitter 0.34s ease infinite;
-    animation-delay: 0s, var(--singularity-summon-shake-phase);
     transform-origin: center;
     will-change: transform;
 }
 
-body.singularity-summon-active .surface.interface-header {
-    --singularity-summon-shake-phase: -0.02s;
-    --singularity-summon-jitter-1-x: 0px;
-    --singularity-summon-jitter-1-y: var(--singularity-summon-shake-distance-negative);
-    --singularity-summon-jitter-2-x: var(--singularity-summon-shake-distance);
-    --singularity-summon-jitter-2-y: 0px;
-    --singularity-summon-jitter-3-x: 0px;
-    --singularity-summon-jitter-3-y: var(--singularity-summon-shake-distance);
-    --singularity-summon-jitter-4-x: var(--singularity-summon-shake-distance-negative);
-    --singularity-summon-jitter-4-y: 0px;
-    --singularity-summon-jitter-5-x: 0px;
-    --singularity-summon-jitter-5-y: var(--singularity-summon-shake-distance-negative);
-    --singularity-summon-jitter-6-x: var(--singularity-summon-shake-distance);
-    --singularity-summon-jitter-6-y: 0px;
-    --singularity-summon-jitter-7-x: 0px;
-    --singularity-summon-jitter-7-y: var(--singularity-summon-shake-distance);
+@media (min-width: 1200px) {
+    @supports not (zoom: 1) {
+        body.singularity-summon-active .interface-shell,
+        body.singularity-summon-active .interface-footer {
+            --singularity-summon-shake-scale: var(--ui-scale-desktop);
+        }
+    }
 }
 
-body.singularity-summon-active .surface.surface--side {
-    --singularity-summon-shake-phase: -0.07s;
-    --singularity-summon-jitter-1-x: var(--singularity-summon-shake-distance-negative);
-    --singularity-summon-jitter-1-y: 0px;
-    --singularity-summon-jitter-2-x: 0px;
-    --singularity-summon-jitter-2-y: var(--singularity-summon-shake-distance);
-    --singularity-summon-jitter-3-x: var(--singularity-summon-shake-distance);
-    --singularity-summon-jitter-3-y: 0px;
-    --singularity-summon-jitter-4-x: 0px;
-    --singularity-summon-jitter-4-y: var(--singularity-summon-shake-distance-negative);
-    --singularity-summon-jitter-5-x: var(--singularity-summon-shake-distance-negative);
-    --singularity-summon-jitter-5-y: 0px;
-    --singularity-summon-jitter-6-x: 0px;
-    --singularity-summon-jitter-6-y: var(--singularity-summon-shake-distance);
-    --singularity-summon-jitter-7-x: var(--singularity-summon-shake-distance);
-    --singularity-summon-jitter-7-y: 0px;
-}
-
-body.singularity-summon-active .surface.surface--results {
-    --singularity-summon-shake-phase: -0.13s;
-    --singularity-summon-jitter-1-x: 0px;
-    --singularity-summon-jitter-1-y: var(--singularity-summon-shake-distance);
-    --singularity-summon-jitter-2-x: var(--singularity-summon-shake-distance-negative);
-    --singularity-summon-jitter-2-y: 0px;
-    --singularity-summon-jitter-3-x: 0px;
-    --singularity-summon-jitter-3-y: var(--singularity-summon-shake-distance-negative);
-    --singularity-summon-jitter-4-x: var(--singularity-summon-shake-distance);
-    --singularity-summon-jitter-4-y: 0px;
-    --singularity-summon-jitter-5-x: 0px;
-    --singularity-summon-jitter-5-y: var(--singularity-summon-shake-distance);
-    --singularity-summon-jitter-6-x: var(--singularity-summon-shake-distance-negative);
-    --singularity-summon-jitter-6-y: 0px;
-    --singularity-summon-jitter-7-x: 0px;
-    --singularity-summon-jitter-7-y: var(--singularity-summon-shake-distance-negative);
-}
-
-body.singularity-summon-active .surface.surface--controls {
-    --singularity-summon-shake-phase: -0.19s;
-    --singularity-summon-jitter-1-x: var(--singularity-summon-shake-distance);
-    --singularity-summon-jitter-1-y: 0px;
-    --singularity-summon-jitter-2-x: 0px;
-    --singularity-summon-jitter-2-y: var(--singularity-summon-shake-distance);
-    --singularity-summon-jitter-3-x: var(--singularity-summon-shake-distance-negative);
-    --singularity-summon-jitter-3-y: 0px;
-    --singularity-summon-jitter-4-x: 0px;
-    --singularity-summon-jitter-4-y: var(--singularity-summon-shake-distance-negative);
-    --singularity-summon-jitter-5-x: var(--singularity-summon-shake-distance);
-    --singularity-summon-jitter-5-y: 0px;
-    --singularity-summon-jitter-6-x: 0px;
-    --singularity-summon-jitter-6-y: var(--singularity-summon-shake-distance);
-    --singularity-summon-jitter-7-x: var(--singularity-summon-shake-distance-negative);
-    --singularity-summon-jitter-7-y: 0px;
-}
-
-body.singularity-summon-active .surface.surface--parameters {
-    --singularity-summon-shake-phase: -0.24s;
-    --singularity-summon-jitter-1-x: var(--singularity-summon-shake-distance-negative);
-    --singularity-summon-jitter-1-y: 0px;
-    --singularity-summon-jitter-2-x: 0px;
-    --singularity-summon-jitter-2-y: var(--singularity-summon-shake-distance-negative);
-    --singularity-summon-jitter-3-x: var(--singularity-summon-shake-distance);
-    --singularity-summon-jitter-3-y: 0px;
-    --singularity-summon-jitter-4-x: 0px;
-    --singularity-summon-jitter-4-y: var(--singularity-summon-shake-distance);
-    --singularity-summon-jitter-5-x: var(--singularity-summon-shake-distance-negative);
-    --singularity-summon-jitter-5-y: 0px;
-    --singularity-summon-jitter-6-x: 0px;
-    --singularity-summon-jitter-6-y: var(--singularity-summon-shake-distance-negative);
-    --singularity-summon-jitter-7-x: var(--singularity-summon-shake-distance);
-    --singularity-summon-jitter-7-y: 0px;
-}
-
-body.singularity-summon-active .surface.surface--presets {
-    --singularity-summon-shake-phase: -0.29s;
-    --singularity-summon-jitter-1-x: 0px;
-    --singularity-summon-jitter-1-y: var(--singularity-summon-shake-distance-negative);
-    --singularity-summon-jitter-2-x: var(--singularity-summon-shake-distance-negative);
-    --singularity-summon-jitter-2-y: 0px;
-    --singularity-summon-jitter-3-x: 0px;
-    --singularity-summon-jitter-3-y: var(--singularity-summon-shake-distance);
-    --singularity-summon-jitter-4-x: var(--singularity-summon-shake-distance);
-    --singularity-summon-jitter-4-y: 0px;
-    --singularity-summon-jitter-5-x: 0px;
-    --singularity-summon-jitter-5-y: var(--singularity-summon-shake-distance-negative);
-    --singularity-summon-jitter-6-x: var(--singularity-summon-shake-distance-negative);
-    --singularity-summon-jitter-6-y: 0px;
-    --singularity-summon-jitter-7-x: 0px;
-    --singularity-summon-jitter-7-y: var(--singularity-summon-shake-distance);
-}
-
-body.singularity-summon-active .surface.interface-footer {
-    --singularity-summon-shake-phase: -0.32s;
-    --singularity-summon-jitter-1-x: var(--singularity-summon-shake-distance);
-    --singularity-summon-jitter-1-y: 0px;
-    --singularity-summon-jitter-2-x: 0px;
-    --singularity-summon-jitter-2-y: var(--singularity-summon-shake-distance-negative);
-    --singularity-summon-jitter-3-x: var(--singularity-summon-shake-distance-negative);
-    --singularity-summon-jitter-3-y: 0px;
-    --singularity-summon-jitter-4-x: 0px;
-    --singularity-summon-jitter-4-y: var(--singularity-summon-shake-distance);
-    --singularity-summon-jitter-5-x: var(--singularity-summon-shake-distance);
-    --singularity-summon-jitter-5-y: 0px;
-    --singularity-summon-jitter-6-x: 0px;
-    --singularity-summon-jitter-6-y: var(--singularity-summon-shake-distance-negative);
-    --singularity-summon-jitter-7-x: var(--singularity-summon-shake-distance-negative);
-    --singularity-summon-jitter-7-y: 0px;
-}
-
-body.quality-no-shakes.singularity-summon-active .interface-backdrop,
-body.quality-no-shakes.singularity-summon-active .singularity-summon-shake-target {
+body.quality-no-shakes.singularity-summon-active .interface-shell,
+body.quality-no-shakes.singularity-summon-active .interface-footer {
     animation: none !important;
 }
 
