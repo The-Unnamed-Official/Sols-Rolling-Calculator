@@ -568,15 +568,6 @@ const DAY_RESTRICTED_BIOMES = new Set(['pumpkinMoon', 'graveyard']);
 const CYBERSPACE_ILLUSIONARY_WARNING_STORAGE_KEY = 'solsRollingCalculator:hideCyberspaceIllusionaryWarning';
 const SINGULARITY_SUMMON_SOUND_ID = 'singularitySummonSound';
 const SINGULARITY_SUMMON_FALLBACK_DURATION_MS = 12500;
-const SINGULARITY_SUMMON_SHAKE_TARGET_SELECTORS = Object.freeze([
-    '.interface-header',
-    '.surface--side',
-    '.surface--results',
-    '.surface--controls',
-    '.surface--parameters',
-    '.surface--presets'
-]);
-const SINGULARITY_SUMMON_SHAKE_TARGET_CLASS = 'singularity-summon-shake-target';
 let lastPrimaryBiomeSelection = null;
 let singularitySummonSequenceId = 0;
 let singularitySummonTimeoutId = null;
@@ -1979,34 +1970,9 @@ function startBackgroundMusic(bgMusic) {
     }
 }
 
-function clearSingularitySummonShakeTargets() {
-    document.querySelectorAll(`.${SINGULARITY_SUMMON_SHAKE_TARGET_CLASS}`).forEach(element => {
-        element.classList.remove(SINGULARITY_SUMMON_SHAKE_TARGET_CLASS);
-    });
-}
-
-function chooseSingularitySummonShakeTargets() {
-    clearSingularitySummonShakeTargets();
-
-    const candidates = Array.from(new Set(
-        SINGULARITY_SUMMON_SHAKE_TARGET_SELECTORS
-            .map(selector => document.querySelector(selector))
-            .filter(element => element && element.classList)
-    ));
-
-    candidates.forEach(element => {
-        element.classList.add(SINGULARITY_SUMMON_SHAKE_TARGET_CLASS);
-    });
-}
-
 function setSingularitySummonVisualActive(active) {
     const body = document.body;
     const root = document.documentElement;
-    if (active) {
-        chooseSingularitySummonShakeTargets();
-    } else {
-        clearSingularitySummonShakeTargets();
-    }
 
     [body, root].forEach(element => {
         if (!element || !element.classList) return;
@@ -3299,7 +3265,10 @@ function applyLuckValue(value, options = {}) {
         setLuckSelectionSource(normalizedOptions.luckSource);
     }
 
-    if (normalizedOptions.luckSource === LUCK_SELECTION_SOURCE.STANDARD_PRESET) {
+    const shouldResetSpecialPresets = normalizedOptions.luckSource === LUCK_SELECTION_SOURCE.STANDARD_PRESET
+        || normalizedOptions.luckSource === LUCK_SELECTION_SOURCE.DEVICE_PRESET;
+
+    if (shouldResetSpecialPresets) {
         if (!('activateOblivionPreset' in normalizedOptions)) {
             normalizedOptions.activateOblivionPreset = false;
         }
@@ -3317,11 +3286,9 @@ function applyLuckValue(value, options = {}) {
     }
     if (normalizedOptions.activateDunePreset === true) {
         normalizedOptions.activateOblivionPreset = false;
-        normalizedOptions.activateBloodPreset = false;
     }
     if (normalizedOptions.activateBloodPreset === true) {
         normalizedOptions.activateOblivionPreset = false;
-        normalizedOptions.activateDunePreset = false;
     }
     const luckInput = document.getElementById('luck-total');
     const targetLuck = Math.max(0, value);
@@ -3461,7 +3428,6 @@ function buildLuckAdjustmentOptions(button, action, fallbackSource) {
         if (action === 'add') {
             options.activateDunePreset = true;
             options.activateOblivionPreset = false;
-            options.activateBloodPreset = false;
         } else if (action === 'subtract') {
             options.activateDunePreset = false;
         }
@@ -3471,7 +3437,6 @@ function buildLuckAdjustmentOptions(button, action, fallbackSource) {
         if (action === 'add') {
             options.activateBloodPreset = true;
             options.activateOblivionPreset = false;
-            options.activateDunePreset = false;
         } else if (action === 'subtract') {
             options.activateBloodPreset = false;
         }
@@ -4484,11 +4449,12 @@ function handleDunePresetSelection(presetKey) {
         return;
     }
 
-    applyLuckValue(DUNE_LUCK_TARGET, {
+    const targetLuck = DUNE_LUCK_TARGET + (bloodPresetEnabled ? BLOOD_LUCK_TARGET : 0);
+    applyLuckValue(targetLuck, {
         luckSource: LUCK_SELECTION_SOURCE.STANDARD_PRESET,
         activateDunePreset: true,
         activateOblivionPreset: false,
-        activateBloodPreset: false
+        activateBloodPreset: bloodPresetEnabled
     });
 }
 
@@ -4497,10 +4463,11 @@ function handleBloodPresetSelection(presetKey) {
         return;
     }
 
-    applyLuckValue(BLOOD_LUCK_TARGET, {
+    const targetLuck = BLOOD_LUCK_TARGET + (dunePresetEnabled ? DUNE_LUCK_TARGET : 0);
+    applyLuckValue(targetLuck, {
         luckSource: LUCK_SELECTION_SOURCE.STANDARD_PRESET,
         activateBloodPreset: true,
-        activateDunePreset: false,
+        activateDunePreset: dunePresetEnabled,
         activateOblivionPreset: false
     });
 }
@@ -5985,6 +5952,89 @@ function setupChangelogTabs() {
     };
 
     syncSubupdateTitles();
+
+    const setupSubupdateCards = () => {
+        panels.forEach(panel => {
+            const cards = Array.from(panel.querySelectorAll('.changelog-subupdate-card'));
+            cards.forEach(card => {
+                if (card.dataset.subupdateInitialized === 'true') {
+                    return;
+                }
+
+                const versionElement = card.querySelector('.changelog-subupdate-card__version');
+                const versionLabel = versionElement ? versionElement.textContent.trim() : 'Sub-update';
+                const detailNodes = Array.from(card.querySelectorAll(
+                    '.changelog-subupdate-card__title, .changelog-subupdate-card__meta, .changelog-modal__list--sub'
+                ));
+                card.dataset.subupdateInitialized = 'true';
+                card.dataset.subupdateLabel = versionLabel;
+                card.tabIndex = 0;
+                card.setAttribute('role', 'button');
+                card.setAttribute('aria-expanded', 'false');
+                card.setAttribute('aria-label', `Open ${versionLabel} sub-update`);
+
+                const setCardOpen = isOpen => {
+                    const nextOpen = Boolean(isOpen);
+                    card.classList.toggle('changelog-subupdate-card--open', nextOpen);
+                    card.setAttribute('aria-expanded', nextOpen ? 'true' : 'false');
+                    card.setAttribute('aria-label', `${nextOpen ? 'Close' : 'Open'} ${versionLabel} sub-update`);
+                    detailNodes.forEach(node => {
+                        node.setAttribute('aria-hidden', nextOpen ? 'false' : 'true');
+                    });
+                };
+
+                const closeSiblingCards = () => {
+                    cards.forEach(otherCard => {
+                        if (otherCard === card) {
+                            return;
+                        }
+                        otherCard.classList.remove('changelog-subupdate-card--open');
+                        otherCard.setAttribute('aria-expanded', 'false');
+                        const otherLabel = otherCard.dataset.subupdateLabel || 'Sub-update';
+                        otherCard.setAttribute('aria-label', `Open ${otherLabel} sub-update`);
+                        otherCard.querySelectorAll(
+                            '.changelog-subupdate-card__title, .changelog-subupdate-card__meta, .changelog-modal__list--sub'
+                        ).forEach(node => {
+                            node.setAttribute('aria-hidden', 'true');
+                        });
+                    });
+                };
+
+                card.addEventListener('click', event => {
+                    const target = event.target;
+                    if (target instanceof Element && target.closest('a, button, input, select, textarea, label')) {
+                        return;
+                    }
+
+                    const isOpen = card.classList.contains('changelog-subupdate-card--open');
+                    const headerClicked = target instanceof Element && Boolean(target.closest('.changelog-subupdate-card__header'));
+                    if (isOpen && !headerClicked) {
+                        return;
+                    }
+
+                    if (!isOpen) {
+                        closeSiblingCards();
+                    }
+                    setCardOpen(!isOpen);
+                });
+
+                card.addEventListener('keydown', event => {
+                    if (event.key !== 'Enter' && event.key !== ' ') {
+                        return;
+                    }
+                    event.preventDefault();
+                    if (!card.classList.contains('changelog-subupdate-card--open')) {
+                        closeSiblingCards();
+                    }
+                    setCardOpen(!card.classList.contains('changelog-subupdate-card--open'));
+                });
+
+                setCardOpen(false);
+            });
+        });
+    };
+
+    setupSubupdateCards();
 
     let tabs = Array.from(tablist.querySelectorAll('[data-changelog-tab]'));
     const existingTabIds = new Set(tabs.map(tab => tab.dataset.changelogTab));

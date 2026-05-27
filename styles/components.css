@@ -773,6 +773,15 @@ select.form-field__input option {
     color: transparent;
 }
 
+.singularityClass {
+    background: linear-gradient(90deg, #ff5634, #461d00, #8e2600, #461d00, #ff5634);
+    background-size: 300% 300%;
+    animation: class-gradient 5s linear infinite;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+
 .pumpBloodClass {
     background: linear-gradient(90deg, #ff820d, #ffb168, #ff5b1a, #683200);
     -webkit-background-clip: text;
