@@ -15,13 +15,15 @@ const cachedVideoElements = Array.from(document.querySelectorAll('video'));
 const LATEST_UPDATE_LABEL_SUFFIX = ' (Latest Update)';
 let simulationActive = false;
 let cancelRollRequested = false;
+let experienceStarted = false;
 let activeSimulationWorker = null;
 let lastSimulationSummary = null;
 let shareFeedbackTimerId = null;
 let imageShareModeRequester = null;
 const versionChangelogOverlayState = {
     escapeHandler: null,
-    lastFocusedElement: null
+    lastFocusedElement: null,
+    tabsInitialized: false
 };
 
 const audioOverlayState = {
@@ -49,6 +51,7 @@ const BACKGROUND_ROLLING_STORAGE_KEY = 'solsRollingCalculator:backgroundRollingP
 const AUDIO_SETTINGS_STORAGE_KEY = 'solsRollingCalculator:audioSettings';
 const AURA_FILTERS_STORAGE_KEY = 'solsRollingCalculator:auraFilters';
 const VISUAL_SETTINGS_STORAGE_KEY = 'solsRollingCalculator:visualSettings';
+const PERFORMANCE_DEFAULTS_STORAGE_KEY = 'solsRollingCalculator:performanceDefaults:v1';
 const AURA_TIER_FILTERS_STORAGE_KEY = 'solsRollingCalculator:auraTierFilters';
 // TEMPORARY CUTSCENE LOCK:
 // Set to false (or remove this block) when you want to allow turning cutscenes off again.
@@ -68,6 +71,14 @@ const QUALITY_PREFERENCE_KEYS = Object.freeze([
     'removeGlitchEffects'
 ]);
 
+const PERFORMANCE_FIRST_QUALITY_DEFAULTS = Object.freeze({
+    removeParticles: true,
+    disableButtonAnimations: true,
+    disableShakes: true,
+    disableRollAndSigilAnimations: true,
+    reduceGlitchEffects: true
+});
+
 if (FORCE_CUTSCENES_ALWAYS_ON && typeof appState === 'object') {
     appState.cinematic = true;
 }
@@ -79,7 +90,7 @@ function ensureQualityPreferences() {
 
     QUALITY_PREFERENCE_KEYS.forEach(key => {
         if (typeof appState.qualityPreferences[key] !== 'boolean') {
-            appState.qualityPreferences[key] = false;
+            appState.qualityPreferences[key] = Boolean(PERFORMANCE_FIRST_QUALITY_DEFAULTS[key]);
         }
     });
 }
@@ -412,6 +423,40 @@ function persistVisualSettings() {
     }
 }
 
+function applyPerformanceFirstDefaults() {
+    if (typeof window === 'undefined' || !appState) {
+        return;
+    }
+
+    ensureQualityPreferences();
+
+    let storage = null;
+    try {
+        storage = window.localStorage;
+        if (storage.getItem(PERFORMANCE_DEFAULTS_STORAGE_KEY) === '1') {
+            return;
+        }
+    } catch (error) {
+        storage = null;
+    }
+
+    Object.entries(PERFORMANCE_FIRST_QUALITY_DEFAULTS).forEach(([key, value]) => {
+        appState.qualityPreferences[key] = value;
+    });
+
+    if (appState.qualityPreferences.removeGlitchEffects) {
+        appState.qualityPreferences.reduceGlitchEffects = false;
+    }
+
+    persistVisualSettings();
+
+    try {
+        storage?.setItem(PERFORMANCE_DEFAULTS_STORAGE_KEY, '1');
+    } catch (error) {
+        // Ignore storage errors so visual settings can still be applied for this page load.
+    }
+}
+
 function setBackgroundRollingEnabled(enabled, { persistPreference = true } = {}) {
     if (typeof appState === 'object') {
         appState.backgroundRolling = Boolean(enabled);
@@ -658,6 +703,9 @@ function applyChannelVolumeToElements(channel) {
     }
     const selector = `[data-audio-channel="${channel}"]`;
     document.querySelectorAll(selector).forEach(element => {
+        if (channel === 'music' && element.id === 'ambientMusic') {
+            return;
+        }
         applyMediaGain(element, { category });
     });
 
@@ -985,9 +1033,6 @@ function initializeAuraDetailFilterPanel() {
         }
         showAuraDetailFilterOverlay();
     });
-
-    populateAuraFilterList();
-    syncAuraFilterButtons();
 }
 
 function initializeOptionsMenu(menuId, toggleId, panelId) {
@@ -1196,35 +1241,11 @@ function initializeAudioSettingsPanel() {
 
 function initializeRollTriggerFloating() {
     const cta = document.querySelector('.control-section--cta');
-    const controlsSurface = document.querySelector('.surface--controls');
-    if (!cta || !controlsSurface) return;
+    if (!cta) return;
 
-    let ticking = false;
-
-    const updateMetrics = () => {
-        const controlsRect = controlsSurface.getBoundingClientRect();
-        const ctaRect = cta.getBoundingClientRect();
-        const topOffset = Number.parseFloat(getComputedStyle(cta).top) || 0;
-        const shouldFloat = controlsRect.bottom <= (ctaRect.height + topOffset);
-
-        cta.style.setProperty('--roll-cta-width', `${controlsRect.width}px`);
-        cta.style.setProperty('--roll-cta-left', `${controlsRect.left}px`);
-        cta.classList.toggle('control-section--cta--floating', shouldFloat);
-    };
-
-    const requestSync = () => {
-        if (ticking) return;
-        ticking = true;
-        requestAnimationFrame(() => {
-            updateMetrics();
-            ticking = false;
-        });
-    };
-
-    window.addEventListener('scroll', requestSync, { passive: true });
-    window.addEventListener('resize', requestSync, { passive: true });
-
-    requestSync();
+    cta.classList.remove('control-section--cta--floating');
+    cta.style.removeProperty('--roll-cta-width');
+    cta.style.removeProperty('--roll-cta-left');
 }
 
 function beginSimulationExperience() {
@@ -1237,6 +1258,7 @@ function beginSimulationExperience() {
     }
 
     resumeAudioEngine();
+    experienceStarted = true;
     if (bgMusic) {
         primeBackgroundMusic(bgMusic);
         startBackgroundMusic(bgMusic);
@@ -1560,6 +1582,7 @@ const glitchUiState = {
     waveShaper: null,
     gainNode: null,
     sourceNode: null,
+    sourceElement: null,
     isUiGlitching: false,
     audioPipelineMode: null
 };
@@ -1586,12 +1609,56 @@ function resumeAudioEngine() {
 
 function normalizeMediaSource(element) {
     if (!element) return null;
-    const rawSrc = element.getAttribute('src') || element.currentSrc;
+    const rawSrc = element.getAttribute('src') || element.currentSrc || element.dataset?.src;
     if (!rawSrc) return null;
     try {
         return new URL(rawSrc, window.location.href).href;
     } catch (error) {
         return rawSrc;
+    }
+}
+
+function ensureDeferredMediaSource(element) {
+    if (!element) {
+        return false;
+    }
+
+    let hydrated = false;
+    if (element.dataset?.src && !element.getAttribute('src')) {
+        element.setAttribute('src', element.dataset.src);
+        hydrated = true;
+    }
+
+    if (typeof element.querySelectorAll === 'function') {
+        element.querySelectorAll('source[data-src]').forEach(source => {
+            if (!source.getAttribute('src')) {
+                source.setAttribute('src', source.dataset.src);
+                hydrated = true;
+            }
+        });
+    }
+
+    if (hydrated && typeof element.load === 'function') {
+        element.load();
+    }
+
+    return hydrated;
+}
+
+function mediaSourceMatches(element, sourceUrl) {
+    if (!element || !sourceUrl || typeof window === 'undefined') {
+        return false;
+    }
+
+    const currentSource = element.getAttribute('src') || element.currentSrc;
+    if (!currentSource) {
+        return false;
+    }
+
+    try {
+        return new URL(currentSource, window.location.href).href === new URL(sourceUrl, window.location.href).href;
+    } catch (error) {
+        return currentSource === sourceUrl;
     }
 }
 
@@ -1693,7 +1760,6 @@ function playSoundEffect(audioElement, category = 'rolling') {
 
     const resolvePlaybackGain = () => {
         if (!isSoundChannelActive(category)) return 0;
-        if (category !== 'ui' && appState.videoPlaying) return 0;
         const baseGain = resolveBaseGain(audioElement, category === 'ui' ? 0.3 : 1);
         const channelMultiplier = getChannelVolumeMultiplier(category);
         return baseGain * channelMultiplier;
@@ -1756,9 +1822,7 @@ function playSoundEffect(audioElement, category = 'rolling') {
 
     const context = resumeAudioEngine();
     if (!context) {
-        if (audioElement.readyState >= 2) {
-            spawnFallbackPlayer(initialGain);
-        }
+        spawnFallbackPlayer(initialGain);
         return;
     }
 
@@ -1852,9 +1916,33 @@ function synchronizeBackgroundRouting(bgMusic) {
     return { baseVolume, chain };
 }
 
+function ensureBackgroundMusicSource(bgMusic) {
+    if (!bgMusic) {
+        return;
+    }
+
+    const pendingSrc = bgMusic.getAttribute('data-current-src') || bgMusic.dataset?.src;
+    if (!pendingSrc) {
+        ensureDeferredMediaSource(bgMusic);
+        return;
+    }
+
+    if (!bgMusic.getAttribute('data-current-src')) {
+        bgMusic.setAttribute('data-current-src', pendingSrc);
+    }
+
+    if (!mediaSourceMatches(bgMusic, pendingSrc)) {
+        bgMusic.src = pendingSrc;
+        if (typeof bgMusic.load === 'function') {
+            bgMusic.load();
+        }
+    }
+}
+
 function primeBackgroundMusic(bgMusic) {
     if (!bgMusic) return;
 
+    ensureBackgroundMusicSource(bgMusic);
     synchronizeBackgroundRouting(bgMusic);
     try {
         bgMusic.muted = false;
@@ -1869,6 +1957,7 @@ function primeBackgroundMusic(bgMusic) {
 function startBackgroundMusic(bgMusic) {
     if (!bgMusic) return;
 
+    ensureBackgroundMusicSource(bgMusic);
     const playPromise = bgMusic.play();
     if (playPromise && typeof playPromise.catch === 'function') {
         playPromise.catch(() => {
@@ -1982,6 +2071,7 @@ function playSingularitySummonSequence(bgMusic, { expectedMusicSrc, onComplete }
     }
 
     summonSound.loop = false;
+    ensureDeferredMediaSource(summonSound);
     summonSound.pause();
     try {
         summonSound.currentTime = 0;
@@ -2039,7 +2129,7 @@ function completeActiveSingularitySummonImmediately() {
     const bgMusic = document.getElementById('ambientMusic');
     stopSingularitySummonSequence();
 
-    if (!bgMusic || !appState.audio.roll) {
+    if (!bgMusic || !appState.audio.roll || !experienceStarted) {
         return;
     }
 
@@ -2091,13 +2181,16 @@ function toggleRollingAudio() {
     const bgMusic = document.getElementById('ambientMusic');
     const soundToggle = document.getElementById('rollAudioToggle');
     if (bgMusic && !bgMusic.getAttribute('data-current-src')) {
-        bgMusic.setAttribute('data-current-src', bgMusic.src);
+        const pendingSrc = bgMusic.getAttribute('src') || bgMusic.dataset?.src || bgMusic.currentSrc;
+        if (pendingSrc) {
+            bgMusic.setAttribute('data-current-src', pendingSrc);
+        }
     }
 
     if (appState.audio.roll) {
         resumeAudioEngine();
         playSoundEffect(clickSoundEffectElement, 'ui');
-        if (bgMusic) {
+        if (bgMusic && experienceStarted) {
             primeBackgroundMusic(bgMusic);
             if (glitchPresentationEnabled) {
                 updateGlitchAudioControls(shouldUseGlitchBaseEffect());
@@ -2269,12 +2362,15 @@ function applyQualityPreferencesState() {
     ensureQualityPreferences();
 
     if (pageBody) {
+        const performanceModeActive = Object.entries(PERFORMANCE_FIRST_QUALITY_DEFAULTS)
+            .some(([key, value]) => value && appState.qualityPreferences[key]);
         pageBody.classList.toggle('quality-no-particles', appState.qualityPreferences.removeParticles);
         pageBody.classList.toggle('quality-no-button-animations', appState.qualityPreferences.disableButtonAnimations);
         pageBody.classList.toggle('quality-no-shakes', appState.qualityPreferences.disableShakes);
         pageBody.classList.toggle('quality-no-roll-sigil-animations', appState.qualityPreferences.disableRollAndSigilAnimations);
         pageBody.classList.toggle('quality-reduced-glitch', appState.qualityPreferences.reduceGlitchEffects);
         pageBody.classList.toggle('quality-no-glitch', appState.qualityPreferences.removeGlitchEffects);
+        pageBody.classList.toggle('performance-mode', performanceModeActive);
     }
 
     if (appState.qualityPreferences.removeGlitchEffects) {
@@ -2569,8 +2665,8 @@ function renderSnowField() {
         viewportHeight = window.innerHeight || viewportHeight;
     }
 
-    const baseDensity = Math.floor((viewportWidth * viewportHeight) / 26000);
-    const particleTotal = Math.min(132, Math.max(44, baseDensity));
+    const baseDensity = Math.floor((viewportWidth * viewportHeight) / 90000);
+    const particleTotal = Math.min(48, Math.max(12, baseDensity));
 
     container.dataset.active = 'true';
     container.replaceChildren();
@@ -2735,13 +2831,15 @@ function ensureGlitchAudioChain(audioElement) {
         return null;
     }
 
-    if (glitchUiState.sourceNode && glitchUiState.sourceNode.mediaElement !== audioElement) {
+    if (glitchUiState.sourceNode && glitchUiState.sourceElement !== audioElement) {
         glitchUiState.sourceNode.disconnect();
         glitchUiState.sourceNode = null;
+        glitchUiState.sourceElement = null;
     }
 
     if (!glitchUiState.sourceNode) {
         glitchUiState.sourceNode = context.createMediaElementSource(audioElement);
+        glitchUiState.sourceElement = audioElement;
         glitchUiState.audioPipelineMode = null;
     }
 
@@ -3008,7 +3106,7 @@ function applyBiomeTheme(biome, selectionState = null) {
 
     const bgMusic = document.getElementById('ambientMusic');
     if (bgMusic && assets) {
-        const currentSrc = bgMusic.getAttribute('data-current-src');
+        const currentSrc = bgMusic.getAttribute('data-current-src') || bgMusic.dataset?.src || bgMusic.getAttribute('src');
         const shouldUpdateMusic = currentSrc !== assets.music;
         const shouldPlaySingularitySummon = assetKey === 'singularity' && shouldUpdateMusic;
         const singularitySummonInProgress = assetKey === 'singularity' && typeof singularitySummonCleanup === 'function';
@@ -3017,20 +3115,31 @@ function applyBiomeTheme(biome, selectionState = null) {
         }
         if (shouldUpdateMusic) {
             bgMusic.pause();
-            bgMusic.currentTime = 0;
-            bgMusic.src = assets.music;
+            try {
+                bgMusic.currentTime = 0;
+            } catch (error) {
+                console.warn('Unable to reset background music time', error);
+            }
+            bgMusic.removeAttribute('src');
+            if (bgMusic.dataset) {
+                bgMusic.dataset.src = assets.music;
+            }
             bgMusic.setAttribute('data-current-src', assets.music);
-            bgMusic.load();
+            if (experienceStarted && appState.audio.roll) {
+                ensureBackgroundMusicSource(bgMusic);
+            } else if (typeof bgMusic.load === 'function') {
+                bgMusic.load();
+            }
         }
 
-        if (appState.audio.roll) {
+        if (appState.audio.roll && experienceStarted) {
             primeBackgroundMusic(bgMusic);
             if (glitchPresentationEnabled) {
                 updateGlitchAudioControls(shouldUseGlitchBaseEffect());
             }
         }
 
-        if (appState.audio.roll && (shouldUpdateMusic || bgMusic.paused) && !singularitySummonInProgress) {
+        if (appState.audio.roll && experienceStarted && (shouldUpdateMusic || bgMusic.paused) && !singularitySummonInProgress) {
             if (shouldPlaySingularitySummon) {
                 playSingularitySummonSequence(bgMusic, {
                     expectedMusicSrc: assets.music,
@@ -3733,6 +3842,8 @@ function playAuraVideo(videoId, options = {}) {
             resolve();
             return;
         }
+
+        ensureDeferredMediaSource(video);
 
         if (appState.audio.roll) {
             applyMediaGain(video, { category: 'cutscene' });
@@ -5736,6 +5847,8 @@ function showVersionChangelogOverlay() {
         return;
     }
 
+    ensureChangelogTabsReady();
+
     const activeElement = document.activeElement;
     if (activeElement && typeof activeElement.focus === 'function') {
         versionChangelogOverlayState.lastFocusedElement = activeElement;
@@ -6138,6 +6251,16 @@ function setupChangelogTabs() {
     }
 }
 
+function ensureChangelogTabsReady() {
+    if (versionChangelogOverlayState.tabsInitialized) {
+        return;
+    }
+
+    setupChangelogTabs();
+    localizeChangelogUpdateTimes();
+    versionChangelogOverlayState.tabsInitialized = true;
+}
+
 function setupVersionChangelogOverlay() {
     const overlay = document.getElementById('versionChangelogOverlay');
     const trigger = versionInfoButton;
@@ -6234,9 +6357,7 @@ document.addEventListener('DOMContentLoaded', initializeEventSelector);
 document.addEventListener('DOMContentLoaded', initializeDevBiomeToggle);
 document.addEventListener('DOMContentLoaded', setupLuckPresetAdjustmentButtons);
 document.addEventListener('DOMContentLoaded', setupLuckPresetAnimations);
-document.addEventListener('DOMContentLoaded', setupChangelogTabs);
 document.addEventListener('DOMContentLoaded', setupVersionChangelogOverlay);
-document.addEventListener('DOMContentLoaded', localizeChangelogUpdateTimes);
 document.addEventListener('DOMContentLoaded', maybeShowChangelogOnFirstVisit);
 document.addEventListener('DOMContentLoaded', initializeIntroOverlay);
 document.addEventListener('DOMContentLoaded', initializeRollTriggerFloating);
@@ -6401,7 +6522,7 @@ function setupSupportFloatToggle() {
         setCollapsed(!supportFloat.classList.contains('support-float--collapsed'));
     });
 
-    setCollapsed(false);
+    setCollapsed(true);
 }
 
 function setupDonationFloatToggle() {
@@ -6428,7 +6549,7 @@ function setupDonationFloatToggle() {
         setCollapsed(!donationFloat.classList.contains('donation-float--collapsed'));
     });
 
-    setCollapsed(false);
+    setCollapsed(true);
 }
 
 function setSupportQrDrawerOpen(isOpen, { focusQrButton = false } = {}) {
@@ -6471,6 +6592,57 @@ function toggleSupportQrDrawer() {
 
 function closeSupportQrDrawer({ focusQrButton = false } = {}) {
     setSupportQrDrawerOpen(false, { focusQrButton });
+}
+
+let interactionAudioDelegationBound = false;
+
+function initializeInteractionAudioDelegation() {
+    if (interactionAudioDelegationBound || typeof document === 'undefined') {
+        return;
+    }
+    interactionAudioDelegationBound = true;
+
+    const clickSound = clickSoundEffectElement;
+    const hoverSound = document.getElementById('hoverSoundFx');
+
+    const findInteractiveTarget = (event, selector) => {
+        const target = event.target;
+        if (!(target instanceof Element)) {
+            return null;
+        }
+        const interactive = target.closest(selector);
+        if (!interactive || !document.documentElement.contains(interactive)) {
+            return null;
+        }
+        if ('disabled' in interactive && interactive.disabled) {
+            return null;
+        }
+        return interactive;
+    };
+
+    document.addEventListener('click', event => {
+        if (findInteractiveTarget(event, 'button, input')) {
+            playSoundEffect(clickSound, 'ui');
+        }
+    });
+
+    document.addEventListener('change', event => {
+        if (findInteractiveTarget(event, 'select')) {
+            playSoundEffect(clickSound, 'ui');
+        }
+    });
+
+    document.addEventListener('mouseover', event => {
+        const interactive = findInteractiveTarget(event, 'button, input, select');
+        if (!interactive) {
+            return;
+        }
+        const relatedTarget = event.relatedTarget;
+        if (relatedTarget instanceof Node && interactive.contains(relatedTarget)) {
+            return;
+        }
+        playSoundEffect(hoverSound, 'ui');
+    });
 }
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -7274,26 +7446,7 @@ document.addEventListener('DOMContentLoaded', () => {
         closeSupportQrDrawer({ focusQrButton: true });
     });
 
-    const buttons = document.querySelectorAll('button');
-    const inputs = document.querySelectorAll('input');
-    const selects = document.querySelectorAll('select');
-    const clickSound = clickSoundEffectElement;
-    const hoverSound = document.getElementById('hoverSoundFx');
-
-    buttons.forEach(button => {
-        button.addEventListener('click', () => playSoundEffect(clickSound, 'ui'));
-        button.addEventListener('mouseenter', () => playSoundEffect(hoverSound, 'ui'));
-    });
-
-    inputs.forEach(input => {
-        input.addEventListener('click', () => playSoundEffect(clickSound, 'ui'));
-        input.addEventListener('mouseenter', () => playSoundEffect(hoverSound, 'ui'));
-    });
-
-    selects.forEach(select => {
-        select.addEventListener('change', () => playSoundEffect(clickSound, 'ui'));
-        select.addEventListener('mouseenter', () => playSoundEffect(hoverSound, 'ui'));
-    });
+    initializeInteractionAudioDelegation();
 
     const luckField = document.getElementById('luck-total');
     if (luckField) {
@@ -7457,6 +7610,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     hydrateVisualSettings();
+    applyPerformanceFirstDefaults();
 
     const cutsceneToggle = document.getElementById('cinematicToggle');
     if (cutsceneToggle) {
@@ -8312,6 +8466,66 @@ function selectWeightedIndex(selection, randomValue) {
     return low;
 }
 
+function buildCumulativeSelectionFromProbabilities(probabilities) {
+    const count = Array.isArray(probabilities) ? probabilities.length : 0;
+    if (!count) {
+        return null;
+    }
+
+    const cumulativeWeights = new Float64Array(count);
+    let totalProbability = 0;
+    for (let index = 0; index < count; index++) {
+        const probability = probabilities[index];
+        if (Number.isFinite(probability) && probability > 0) {
+            totalProbability += probability;
+        }
+        cumulativeWeights[index] = totalProbability;
+    }
+
+    if (totalProbability <= 0) {
+        return null;
+    }
+
+    return { cumulativeWeights, totalProbability };
+}
+
+function buildCombinedSimulationSelection(groups) {
+    const auraIndices = [];
+    const breakthroughIndices = [];
+    const probabilities = [];
+    let remainingProbability = 1;
+
+    groups.forEach(group => {
+        const selection = group?.selection;
+        if (!selection || selection.totalProbability <= 0 || remainingProbability <= 0) {
+            return;
+        }
+
+        let previousCumulative = 0;
+        for (let index = 0; index < selection.cumulativeWeights.length; index++) {
+            const cumulative = selection.cumulativeWeights[index];
+            const localProbability = cumulative - previousCumulative;
+            previousCumulative = cumulative;
+            const probability = remainingProbability * localProbability;
+            if (probability <= 0) {
+                continue;
+            }
+
+            auraIndices.push(group.auraIndices[index]);
+            probabilities.push(probability);
+            breakthroughIndices.push(group.breakthroughIndices ? group.breakthroughIndices[index] : -1);
+        }
+
+        remainingProbability *= Math.max(0, 1 - selection.totalProbability);
+    });
+
+    return {
+        auraIndices,
+        breakthroughIndices,
+        selection: buildCumulativeSelectionFromProbabilities(probabilities)
+    };
+}
+
 function createSimulationCandidateConfig(entries) {
     const auraIndices = [];
     const ratios = [];
@@ -8330,7 +8544,7 @@ function createSimulationCandidateConfig(entries) {
 }
 
 function applySimulationWinCounts(winCounts) {
-    const safeCounts = Array.isArray(winCounts) ? winCounts : [];
+    const safeCounts = Array.isArray(winCounts) || ArrayBuffer.isView(winCounts) ? winCounts : [];
     const totalAuraCount = AURA_REGISTRY.length;
     for (let index = 0; index < totalAuraCount; index++) {
         const value = safeCounts[index];
@@ -8343,7 +8557,7 @@ function syncBreakthroughCounts(statsByAuraIndex, breakthroughCounts) {
         return;
     }
 
-    const safeCounts = Array.isArray(breakthroughCounts) ? breakthroughCounts : [];
+    const safeCounts = Array.isArray(breakthroughCounts) || ArrayBuffer.isView(breakthroughCounts) ? breakthroughCounts : [];
     for (let index = 0; index < statsByAuraIndex.length; index++) {
         const stats = statsByAuraIndex[index];
         if (!stats) {
@@ -8735,36 +8949,41 @@ function runRollSimulation(options = {}) {
     const prerollSelection = buildWeightedSelection(prerollAuraRatios);
     const lucklessSelection = buildWeightedSelection(lucklessCandidateConfig.ratios);
     const luckAffectedSelection = buildWeightedSelection(luckAffectedCandidateConfig.ratios);
+    const combinedSelectionConfig = buildCombinedSimulationSelection([
+        {
+            selection: prerollSelection,
+            auraIndices: prerollAuraIndices,
+            breakthroughIndices: null
+        },
+        {
+            selection: lucklessSelection,
+            auraIndices: lucklessCandidateConfig.auraIndices,
+            breakthroughIndices: lucklessCandidateConfig.breakthroughIndices
+        },
+        {
+            selection: luckAffectedSelection,
+            auraIndices: luckAffectedCandidateConfig.auraIndices,
+            breakthroughIndices: luckAffectedCandidateConfig.breakthroughIndices
+        }
+    ]);
 
     const startMainThreadSimulation = () => {
         const localBreakthroughCounts = new Array(AURA_REGISTRY.length).fill(0);
 
         function performSingleRollCheck() {
-            const prerollIndex = selectWeightedIndex(prerollSelection, sampleEntropy());
-            if (prerollIndex !== -1) {
-                auraWinCounts[prerollAuraIndices[prerollIndex]] += 1;
+            const selectedIndex = selectWeightedIndex(combinedSelectionConfig.selection, sampleEntropy());
+            if (selectedIndex === -1) {
                 return;
             }
 
-            const lucklessIndex = selectWeightedIndex(lucklessSelection, sampleEntropy());
-            if (lucklessIndex !== -1) {
-                const auraIndex = lucklessCandidateConfig.auraIndices[lucklessIndex];
+            const auraIndex = combinedSelectionConfig.auraIndices[selectedIndex];
+            if (Number.isInteger(auraIndex) && auraIndex >= 0 && auraIndex < AURA_REGISTRY.length) {
                 auraWinCounts[auraIndex] += 1;
-                const breakthroughIndex = lucklessCandidateConfig.breakthroughIndices[lucklessIndex];
-                if (breakthroughIndex !== -1) {
-                    localBreakthroughCounts[breakthroughIndex] += 1;
-                }
-                return;
             }
 
-            const luckAffectedIndex = selectWeightedIndex(luckAffectedSelection, sampleEntropy());
-            if (luckAffectedIndex !== -1) {
-                const auraIndex = luckAffectedCandidateConfig.auraIndices[luckAffectedIndex];
-                auraWinCounts[auraIndex] += 1;
-                const breakthroughIndex = luckAffectedCandidateConfig.breakthroughIndices[luckAffectedIndex];
-                if (breakthroughIndex !== -1) {
-                    localBreakthroughCounts[breakthroughIndex] += 1;
-                }
+            const breakthroughIndex = combinedSelectionConfig.breakthroughIndices[selectedIndex];
+            if (Number.isInteger(breakthroughIndex) && breakthroughIndex >= 0 && breakthroughIndex < localBreakthroughCounts.length) {
+                localBreakthroughCounts[breakthroughIndex] += 1;
             }
         }
 

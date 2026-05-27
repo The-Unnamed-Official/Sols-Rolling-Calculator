@@ -294,6 +294,51 @@ body.quality-no-shakes .luck-preset-button--shake {
     animation: none !important;
 }
 
+body.performance-mode [class*="Class"],
+body.performance-mode .banner__emblem--spinning img,
+body.performance-mode .support-float--collapsed .support-float__toggle::before,
+body.performance-mode .support-float--collapsed .support-float__toggle::after,
+body.performance-mode .support-float--collapsed .support-float__toggle-icon--expand i,
+body.performance-mode .support-float__link:hover .support-float__icon i,
+body.performance-mode .support-float__link:focus-visible .support-float__icon i {
+    animation: none !important;
+}
+
+body.performance-mode .interface-button,
+body.performance-mode .interface-toggle,
+body.performance-mode .roll-trigger,
+body.performance-mode .roll-cancel,
+body.performance-mode .resource-link,
+body.performance-mode .luck-preset-button,
+body.performance-mode .support-float *,
+body.performance-mode .donation-float * {
+    transition: none !important;
+}
+
+body.performance-mode .interface-footer,
+body.performance-mode .feed__viewport,
+body.performance-mode .resource-link,
+body.performance-mode .support-float,
+body.performance-mode .donation-float {
+    contain: layout paint style;
+}
+
+body.performance-mode .support-float__link::before,
+body.performance-mode .support-float__link::after,
+body.performance-mode .support-float__toggle::before,
+body.performance-mode .support-float__toggle::after,
+body.performance-mode .donation-float__link::before,
+body.performance-mode .donation-float__link::after {
+    display: none !important;
+}
+
+body.performance-mode .support-float__qr-drawer,
+body.performance-mode .support-float--collapsed .support-float__link,
+body.performance-mode .donation-float--collapsed .donation-float__link,
+body.performance-mode [class*="Class"] {
+    filter: none !important;
+}
+
 @keyframes singularity-summon-shake {
     0%,
     100% {
@@ -1241,7 +1286,7 @@ body.is-glitching .feed__viewport::after {
     background-position: center top;
     background-repeat: no-repeat;
     background-size: 100% 100%;
-    background-attachment: fixed;
+    background-attachment: scroll;
     z-index: -2;
     overflow: hidden;
 }
@@ -1270,7 +1315,6 @@ body.is-glitching .feed__viewport::after {
     background: radial-gradient(circle at 20% 20%, rgba(72, 140, 255, 0.3), transparent 42%),
                 radial-gradient(circle at 80% 15%, rgba(42, 112, 230, 0.22), transparent 30%),
                 linear-gradient(135deg, rgba(8, 20, 42, 0.35), rgba(6, 16, 34, 0.44));
-    backdrop-filter: blur(5px);
     z-index: 1;
 }
 

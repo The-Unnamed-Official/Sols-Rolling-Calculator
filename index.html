@@ -4,17 +4,20 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sol's RNG Rolling Simulator</title>
-    <script src="https://kit.fontawesome.com/f34561342c.js" crossorigin="anonymous"></script>
+    <script src="https://kit.fontawesome.com/f34561342c.js" crossorigin="anonymous" defer></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Sarpanch:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@500;600;700&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Jura:wght@300..700&family=Kings&family=Parisienne&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Fondamento:ital@0;1&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Tangerine:wght@400;700&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Amatic+SC:wght@400;700&family=Cinzel:wght@400..900&family=Comic+Neue:ital,wght@0,300;0,400;0,700;1,300;1,400;1,700&family=Creepster&family=Grenze+Gotisch:wght@100..900&family=Luckiest+Guy&family=Merriweather:ital,opsz,wght@0,18..144,300..900;1,18..144,300..900&family=Michroma&family=Oswald:wght@200..700&family=Overpass:ital,wght@0,100..900;1,100..900&family=Patrick+Hand&family=Roboto+Flex:opsz,wght,XOPQ,XTRA,YOPQ,YTDE,YTFI,YTLC,YTUC@8..144,100..1000,96,468,79,-203,738,514,712&family=Roboto:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Sarpanch:wght@400;500;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@500;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+    <link href="https://fonts.googleapis.com/css2?family=Jura:wght@300..700&family=Kings&family=Parisienne&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+    <link href="https://fonts.googleapis.com/css2?family=Fondamento:ital@0;1&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+    <link href="https://fonts.googleapis.com/css2?family=Tangerine:wght@400;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+    <link href="https://fonts.googleapis.com/css2?family=Amatic+SC:wght@400;700&family=Cinzel:wght@400..900&family=Comic+Neue:ital,wght@0,300;0,400;0,700;1,300;1,400;1,700&family=Creepster&family=Grenze+Gotisch:wght@100..900&family=Luckiest+Guy&family=Merriweather:ital,opsz,wght@0,18..144,300..900;1,18..144,300..900&family=Michroma&family=Oswald:wght@200..700&family=Overpass:ital,wght@0,100..900;1,100..900&family=Patrick+Hand&family=Roboto+Flex:opsz,wght,XOPQ,XTRA,YOPQ,YTDE,YTFI,YTLC,YTUC@8..144,100..1000,96,468,79,-203,738,514,712&family=Roboto:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+    <noscript>
+        <link href="https://fonts.googleapis.com/css2?family=Sarpanch:wght@400;500;600;700&display=swap" rel="stylesheet">
+    </noscript>
     <link rel="icon" type="image/png" sizes="16x16" href="files/favicon-16.png">
     <link rel="icon" type="image/png" sizes="32x32" href="files/favicon-32.png">
     <link rel="icon" type="image/png" sizes="48x48" href="files/favicon-48.png">
@@ -29,123 +32,123 @@
 </head>
 <body>
     <div class="interface-backdrop" aria-hidden="true">
-        <video class="interface-backdrop__video" autoplay loop muted playsinline preload="auto" aria-hidden="true"></video>
+        <video class="interface-backdrop__video" autoplay loop muted playsinline preload="none" aria-hidden="true"></video>
         <div class="snow-field" id="snowField" aria-hidden="true"></div>
         <div class="interface-backdrop__veil"></div>
     </div>
 
-    <audio id="ambientMusic" loop muted src="files/normalBiomeMusic.mp3" type="audio/mpeg" data-volume="0.10" data-audio-channel="music"></audio>
-    <audio id="singularitySummonSound" muted src="files/singularitySummon.mp3" type="audio/mpeg" data-volume="1" data-audio-channel="music"></audio>
-    <audio id="rollLoopSound" muted src="files/SolsRollSound.mp3" type="audio/mpeg" data-volume="0.10" data-audio-channel="obtain"></audio>
-    <audio id="clickSoundFx" muted src="files/SolsClickSound.mp3" type="audio/mpeg" data-volume="0.10" data-audio-channel="ui"></audio>
-    <audio id="hoverSoundFx" muted src="files/SolsHoverSound.mp3" type="audio/mpeg" data-volume="0.15" data-audio-channel="ui"></audio>
-    <audio id="thousandSound" muted src="files/1_000Roll.ogg" type="audio/ogg" data-volume="0.25" data-audio-channel="obtain"></audio>
-    <audio id="tenThousandSound" muted src="files/10_000Roll.ogg" type="audio/ogg" data-volume="0.10" data-audio-channel="obtain"></audio>
-    <audio id="hundredThousandSound" muted src="files/100_000Roll.ogg" type="audio/ogg" data-volume="0.07" data-audio-channel="obtain"></audio>
-    <audio id="tenMillionSound" muted src="files/10_000_000Roll.ogg" type="audio/ogg" data-volume="0.25" data-audio-channel="obtain"></audio>
-    <audio id="hundredMillionSound" muted src="files/100_000_000Roll.ogg" type="audio/ogg" data-volume="0.25" data-audio-channel="obtain"></audio>
-    <audio id="hundredMillionlimboSound" muted src="files/100_000_000LimboRoll.mp3" type="audio/mpeg" data-boost="6.7" data-audio-channel="obtain"></audio>
-    <audio id="explosionSoundFx" muted src="files/explosionSound.mp3" type="audio/mpeg" data-volume="0.25" data-audio-channel="obtain"></audio>
-    <audio id="qbearMeowSoundFx" muted src="files/qbearMeow.mp3" type="audio/mpeg" data-volume="0.55" data-audio-channel="ui"></audio>
+    <audio id="ambientMusic" loop muted preload="none" data-src="files/normalBiomeMusic.mp3" type="audio/mpeg" data-volume="0.10" data-audio-channel="music"></audio>
+    <audio id="singularitySummonSound" muted preload="none" data-src="files/singularitySummon.mp3" type="audio/mpeg" data-volume="1" data-audio-channel="music"></audio>
+    <audio id="rollLoopSound" muted preload="none" data-src="files/SolsRollSound.mp3" type="audio/mpeg" data-volume="0.10" data-audio-channel="obtain"></audio>
+    <audio id="clickSoundFx" muted preload="none" data-src="files/SolsClickSound.mp3" type="audio/mpeg" data-volume="0.10" data-audio-channel="ui"></audio>
+    <audio id="hoverSoundFx" muted preload="none" data-src="files/SolsHoverSound.mp3" type="audio/mpeg" data-volume="0.15" data-audio-channel="ui"></audio>
+    <audio id="thousandSound" muted preload="none" data-src="files/1_000Roll.ogg" type="audio/ogg" data-volume="0.25" data-audio-channel="obtain"></audio>
+    <audio id="tenThousandSound" muted preload="none" data-src="files/10_000Roll.ogg" type="audio/ogg" data-volume="0.10" data-audio-channel="obtain"></audio>
+    <audio id="hundredThousandSound" muted preload="none" data-src="files/100_000Roll.ogg" type="audio/ogg" data-volume="0.07" data-audio-channel="obtain"></audio>
+    <audio id="tenMillionSound" muted preload="none" data-src="files/10_000_000Roll.ogg" type="audio/ogg" data-volume="0.25" data-audio-channel="obtain"></audio>
+    <audio id="hundredMillionSound" muted preload="none" data-src="files/100_000_000Roll.ogg" type="audio/ogg" data-volume="0.25" data-audio-channel="obtain"></audio>
+    <audio id="hundredMillionlimboSound" muted preload="none" data-src="files/100_000_000LimboRoll.mp3" type="audio/mpeg" data-boost="6.7" data-audio-channel="obtain"></audio>
+    <audio id="explosionSoundFx" muted preload="none" data-src="files/explosionSound.mp3" type="audio/mpeg" data-volume="0.25" data-audio-channel="obtain"></audio>
+    <audio id="qbearMeowSoundFx" muted preload="none" data-src="files/qbearMeow.mp3" type="audio/mpeg" data-volume="0.55" data-audio-channel="ui"></audio>
 
-    <video id="oblivion-cutscene" class="cutscene-video" preload="metadata" data-audio-channel="cutscene">
-        <source src="files/oblivionCutscene.webm" type="video/webm">
+    <video id="oblivion-cutscene" class="cutscene-video" preload="none" data-audio-channel="cutscene">
+        <source data-src="files/oblivionCutscene.webm" type="video/webm">
     </video>
-    <video id="memory-cutscene" class="cutscene-video" preload="metadata" data-audio-channel="cutscene">
-        <source src="files/memoryCutscene.webm" type="video/webm">
+    <video id="memory-cutscene" class="cutscene-video" preload="none" data-audio-channel="cutscene">
+        <source data-src="files/memoryCutscene.webm" type="video/webm">
     </video>
-    <video id="frostveil-cutscene" class="cutscene-video" preload="metadata" data-audio-channel="cutscene">
-        <source src="files/frostveilCutscene.webm" type="video/webm">
+    <video id="frostveil-cutscene" class="cutscene-video" preload="none" data-audio-channel="cutscene">
+        <source data-src="files/frostveilCutscene.webm" type="video/webm">
     </video>
-    <video id="neferkhaf-cutscene" class="cutscene-video" preload="metadata" data-audio-channel="cutscene">
-        <source src="files/neferkhafCutscene.webm" type="video/webm">
+    <video id="neferkhaf-cutscene" class="cutscene-video" preload="none" data-audio-channel="cutscene">
+        <source data-src="files/neferkhafCutscene.webm" type="video/webm">
     </video>
-    <video id="godslayer-cutscene" class="cutscene-video" preload="metadata" data-audio-channel="cutscene">
-        <source src="files/godslayerCutscene.webm" type="video/webm">
+    <video id="godslayer-cutscene" class="cutscene-video" preload="none" data-audio-channel="cutscene">
+        <source data-src="files/godslayerCutscene.webm" type="video/webm">
     </video>
-    <video id="blood-cutscene" class="cutscene-video" preload="metadata" data-audio-channel="cutscene">
-        <source src="files/bloodCutscene.webm" type="video/webm">
+    <video id="blood-cutscene" class="cutscene-video" preload="none" data-audio-channel="cutscene">
+        <source data-src="files/bloodCutscene.webm" type="video/webm">
     </video>
-    <video id="equinox-cutscene" class="cutscene-video" preload="metadata" data-audio-channel="cutscene">
-        <source src="files/equinoxCutscene.webm" type="video/webm">
+    <video id="equinox-cutscene" class="cutscene-video" preload="none" data-audio-channel="cutscene">
+        <source data-src="files/equinoxCutscene.webm" type="video/webm">
     </video>
-    <video id="idiot-cutscene" class="cutscene-video" preload="metadata" data-audio-channel="cutscene">
-        <source src="files/idiotCutscene.webm" type="video/webm">
+    <video id="idiot-cutscene" class="cutscene-video" preload="none" data-audio-channel="cutscene">
+        <source data-src="files/idiotCutscene.webm" type="video/webm">
     </video>
-    <video id="winter-garden-cutscene" class="cutscene-video" preload="metadata" data-audio-channel="cutscene">
-        <source src="files/winterGardenCutscene.webm" type="video/webm">
+    <video id="winter-garden-cutscene" class="cutscene-video" preload="none" data-audio-channel="cutscene">
+        <source data-src="files/winterGardenCutscene.webm" type="video/webm">
     </video>
-    <video id="dream-traveler-cutscene" class="cutscene-video" preload="metadata" data-audio-channel="cutscene">
-        <source src="files/dreamTravelerCutscene.webm" type="video/webm">
+    <video id="dream-traveler-cutscene" class="cutscene-video" preload="none" data-audio-channel="cutscene">
+        <source data-src="files/dreamTravelerCutscene.webm" type="video/webm">
     </video>
-    <video id="luminosity-cutscene" class="cutscene-video" preload="metadata" data-audio-channel="cutscene">
-        <source src="files/luminosityCutscene.webm" type="video/webm">
+    <video id="luminosity-cutscene" class="cutscene-video" preload="none" data-audio-channel="cutscene">
+        <source data-src="files/luminosityCutscene.webm" type="video/webm">
     </video>
-    <video id="leviathan-cutscene" class="cutscene-video" preload="metadata" data-audio-channel="cutscene">
-        <source src="files/leviathanCutscene.webm" type="video/webm">
+    <video id="leviathan-cutscene" class="cutscene-video" preload="none" data-audio-channel="cutscene">
+        <source data-src="files/leviathanCutscene.webm" type="video/webm">
     </video>
-    <video id="monarch-cutscene" class="cutscene-video" preload="metadata" data-audio-channel="cutscene">
-        <source src="files/monarchCutscene.webm" type="video/webm">
+    <video id="monarch-cutscene" class="cutscene-video" preload="none" data-audio-channel="cutscene">
+        <source data-src="files/monarchCutscene.webm" type="video/webm">
     </video>
-    <video id="breakthrough-cutscene" class="cutscene-video" preload="metadata" data-audio-channel="cutscene">
-        <source src="files/breakthroughCutscene.webm" type="video/webm">
+    <video id="breakthrough-cutscene" class="cutscene-video" preload="none" data-audio-channel="cutscene">
+        <source data-src="files/breakthroughCutscene.webm" type="video/webm">
     </video>
-    <video id="pixelation-cutscene" class="cutscene-video" preload="metadata" data-audio-channel="cutscene">
-        <source src="files/pixelationCutscene.webm" type="video/webm">
+    <video id="pixelation-cutscene" class="cutscene-video" preload="none" data-audio-channel="cutscene">
+        <source data-src="files/pixelationCutscene.webm" type="video/webm">
     </video>
-    <video id="nyctophobia-cutscene" class="cutscene-video" preload="metadata" data-audio-channel="cutscene">
-        <source src="files/nyctophobiaCutscene.webm" type="video/webm">
+    <video id="nyctophobia-cutscene" class="cutscene-video" preload="none" data-audio-channel="cutscene">
+        <source data-src="files/nyctophobiaCutscene.webm" type="video/webm">
     </video>
-    <video id="dreammetric-cutscene" class="cutscene-video" preload="metadata" data-audio-channel="cutscene">
-        <source src="files/dreammetricCutscene.webm" type="video/webm">
+    <video id="dreammetric-cutscene" class="cutscene-video" preload="none" data-audio-channel="cutscene">
+        <source data-src="files/dreammetricCutscene.webm" type="video/webm">
     </video>
-    <video id="oppression-cutscene" class="cutscene-video" preload="metadata" data-audio-channel="cutscene">
-        <source src="files/oppressionCutscene.webm" type="video/webm">
+    <video id="oppression-cutscene" class="cutscene-video" preload="none" data-audio-channel="cutscene">
+        <source data-src="files/oppressionCutscene.webm" type="video/webm">
     </video>
-    <video id="illusionary-cutscene" class="cutscene-video" preload="metadata" data-audio-channel="cutscene">
-        <source src="files/illusionaryCutscene.webm" type="video/webm">
+    <video id="illusionary-cutscene" class="cutscene-video" preload="none" data-audio-channel="cutscene">
+        <source data-src="files/illusionaryCutscene.webm" type="video/webm">
     </video>
-    <video id="trolled-cutscene" class="cutscene-video" preload="metadata" data-audio-channel="cutscene">
-        <source src="files/trolledCutscene.webm" type="video/webm">
+    <video id="trolled-cutscene" class="cutscene-video" preload="none" data-audio-channel="cutscene">
+        <source data-src="files/trolledCutscene.webm" type="video/webm">
     </video>
-    <video id="lamenthyr-cutscene" class="cutscene-video" preload="metadata" data-audio-channel="cutscene">
-        <source src="files/lamenthyrCutscene.webm" type="video/webm">
+    <video id="lamenthyr-cutscene" class="cutscene-video" preload="none" data-audio-channel="cutscene">
+        <source data-src="files/lamenthyrCutscene.webm" type="video/webm">
     </video>
-    <video id="erebus-cutscene" class="cutscene-video" preload="metadata" data-audio-channel="cutscene">
-        <source src="files/erebusCutscene.webm" type="video/webm">
+    <video id="erebus-cutscene" class="cutscene-video" preload="none" data-audio-channel="cutscene">
+        <source data-src="files/erebusCutscene.webm" type="video/webm">
     </video>
-    <video id="prowler-cutscene" class="cutscene-video" preload="metadata" data-audio-channel="cutscene">
-        <source src="files/prowlerCutscene.webm" type="video/webm">
+    <video id="prowler-cutscene" class="cutscene-video" preload="none" data-audio-channel="cutscene">
+        <source data-src="files/prowlerCutscene.webm" type="video/webm">
     </video>
-    <video id="clockwork-cutscene" class="cutscene-video" preload="metadata" data-audio-channel="cutscene">
-        <source src="files/clockworkCutscene.webm" type="video/webm">
+    <video id="clockwork-cutscene" class="cutscene-video" preload="none" data-audio-channel="cutscene">
+        <source data-src="files/clockworkCutscene.webm" type="video/webm">
     </video>
-    <video id="verdict-cutscene" class="cutscene-video" preload="metadata" data-audio-channel="cutscene">
-        <source src="files/verdictCutscene.webm" type="video/webm">
+    <video id="verdict-cutscene" class="cutscene-video" preload="none" data-audio-channel="cutscene">
+        <source data-src="files/verdictCutscene.webm" type="video/webm">
     </video>
-    <video id="attorney-cutscene" class="cutscene-video" preload="metadata" data-audio-channel="cutscene">
-        <source src="files/attorneyCutscene.webm" type="video/webm">
+    <video id="attorney-cutscene" class="cutscene-video" preload="none" data-audio-channel="cutscene">
+        <source data-src="files/attorneyCutscene.webm" type="video/webm">
     </video>
-    <video id="skyFestival-cutscene" class="cutscene-video" preload="metadata" data-audio-channel="cutscene">
-        <source src="files/skyFestivalCutscene.webm" type="video/webm">
+    <video id="skyFestival-cutscene" class="cutscene-video" preload="none" data-audio-channel="cutscene">
+        <source data-src="files/skyFestivalCutscene.webm" type="video/webm">
     </video>
-    <video id="yolk-cutscene" class="cutscene-video" preload="metadata" data-audio-channel="cutscene">
-        <source src="files/yolkCutscene.webm" type="video/webm">
+    <video id="yolk-cutscene" class="cutscene-video" preload="none" data-audio-channel="cutscene">
+        <source data-src="files/yolkCutscene.webm" type="video/webm">
     </video>
-    <video id="eostre-cutscene" class="cutscene-video" preload="metadata" data-audio-channel="cutscene">
-        <source src="files/eostreCutscene.webm" type="video/webm">
+    <video id="eostre-cutscene" class="cutscene-video" preload="none" data-audio-channel="cutscene">
+        <source data-src="files/eostreCutscene.webm" type="video/webm">
     </video>
-    <video id="eggis-cutscene" class="cutscene-video" preload="metadata" data-audio-channel="cutscene">
-        <source src="files/eggisCutscene.webm" type="video/webm">
+    <video id="eggis-cutscene" class="cutscene-video" preload="none" data-audio-channel="cutscene">
+        <source data-src="files/eggisCutscene.webm" type="video/webm">
     </video>
-    <video id="pukekoGod-cutscene" class="cutscene-video" preload="metadata" data-audio-channel="cutscene">
-        <source src="files/pukekoGodCutscene.webm" type="video/webm">
+    <video id="pukekoGod-cutscene" class="cutscene-video" preload="none" data-audio-channel="cutscene">
+        <source data-src="files/pukekoGodCutscene.webm" type="video/webm">
     </video>
-    <video id="solsLoadingScreen-cutscene" class="cutscene-video" preload="metadata" data-audio-channel="cutscene">
-        <source src="files/solsLoadingScreenCutscene.webm" type="video/webm">
+    <video id="solsLoadingScreen-cutscene" class="cutscene-video" preload="none" data-audio-channel="cutscene">
+        <source data-src="files/solsLoadingScreenCutscene.webm" type="video/webm">
     </video>
-    <video id="astraios-cutscene" class="cutscene-video" preload="metadata" data-audio-channel="cutscene">
-        <source src="files/astraiosCutscene.webm" type="video/webm">
+    <video id="astraios-cutscene" class="cutscene-video" preload="none" data-audio-channel="cutscene">
+        <source data-src="files/astraiosCutscene.webm" type="video/webm">
     </video>
 
     <div id="cinematic-overlay" class="cinematic-overlay" aria-hidden="true"></div>
@@ -153,7 +156,7 @@
     <div id="introOverlay" class="intro-overlay" role="dialog" aria-modal="true" aria-label="Start the simulation">
         <div class="intro-overlay__panel">
             <div class="intro-overlay__logo" role="img" aria-label="Sols Rolling Simulator">
-                <img src="files/logo.png" alt="Sols Rolling Simulator logo">
+                <img src="files/logo.png" alt="Sols Rolling Simulator logo" decoding="async" fetchpriority="high">
             </div>
             <p class="intro-overlay__copy">Begin the experience to unlock audio playback.</p>
             <button type="button" class="intro-overlay__start-button" id="startExperienceButton">Start Simulation</button>
@@ -165,18 +168,18 @@
             <div class="masthead__brand">
                 <div class="banner__emblem-stack">
                     <span class="banner__emblem">
-                        <img src="files/logo.png" alt="Sols Rolling Simulator logo" class="banner__emblem-logo">
+                        <img src="files/logo.png" alt="Sols Rolling Simulator logo" class="banner__emblem-logo" decoding="async" fetchpriority="high">
                     </span>
-                    <img src="files/theUnnamed.jpg" alt="The Unnamed creator portrait" class="banner__emblem-support">
+                    <img src="files/theUnnamed.jpg" alt="The Unnamed creator portrait" class="banner__emblem-support" decoding="async">
                 </div>
                 <div class="banner__meta">
                     <h1 class="banner__title">Sol's RNG Rolling Simulator</h1>
                     <p class="banner__subtitle">
-                        <button type="button" class="banner__version-button" id="versionInfoButton" aria-haspopup="dialog" aria-expanded="false" data-version-id="v1835">v1.835</button>
+                        <button type="button" class="banner__version-button" id="versionInfoButton" aria-haspopup="dialog" aria-expanded="false" data-version-id="v1838">v1.838</button>
                         <span class="banner__subtitle-divider" aria-hidden="true">◉</span>
                         <span class="banner__subtitle-author">By <span class="banner__subtitle-author-name"><a href="https://discord.com/users/611204110955446301" target="_blank" rel="noopener">not.unnamed</a></span></span>
                         <span class="banner__subtitle-divider" aria-hidden="true">◉</span>
-                        <span class="banner__subtitle-updated">Updated <time datetime="2026-05-26T15:47:00+02:00">2026/05/26 3:47 PM CEST</time></span>
+                        <span class="banner__subtitle-updated">Updated <time datetime="2026-05-27T17:35:00+02:00">2026/05/27 5:35 PM CEST</time></span>
                         <span class="banner__subtitle-divider" aria-hidden="true">◉</span>
                         <span class="banner__subtitle-eon"><span class="banner__subtitle-game-version"><a href="https://www.roblox.com/games/15532962292/Sols-RNG" target="_blank" rel="noopener">Sol's RNG Eon 1-21</a></span></span>
                     </p>
@@ -214,14 +217,14 @@
                     <a class="resource-link resource-link--discord" href="https://discord-id-hub.info" target="_blank" rel="noopener">
                         <div class="resource-link__top">
                             <span class="resource-link__label">Discord ID Hub</span>
-                            <img class="resource-link__image resource-link__image--discord" src="files/discord-id-hub.png" alt="Discord ID Hub logo">
+                            <img class="resource-link__image resource-link__image--discord" src="files/discord-id-hub.png" alt="Discord ID Hub logo" loading="lazy" decoding="async">
                         </div>
                         <span class="resource-link__meta">API search tools</span>
                     </a>
                     <a class="resource-link resource-link--nodeshift" href="https://the-unnamed-official.github.io/Incremental-Node-Simulator/" target="_blank" rel="noopener">
                         <div class="resource-link__top">
                             <span class="resource-link__label">NodeShift</span>
-                            <img class="resource-link__image resource-link__image--nodeshift" src="files/NodeShift.png" alt="NodeShift Logo">
+                            <img class="resource-link__image resource-link__image--nodeshift" src="files/NodeShift.png" alt="NodeShift Logo" loading="lazy" decoding="async">
                         </div>
                         <span class="resource-link__meta">A game I am currently in the proccess of making!</span>
                     </a>
@@ -754,7 +757,7 @@
         <div class="support-float__qr-drawer" id="supportQrDrawer" aria-hidden="true">
             <div class="support-float__qr-sheet">
                 <p class="support-float__qr-title">Scan to support</p>
-                <img class="support-float__qr-image" src="files/buyMeACoffeQRCode.png" alt="Buy Me a Coffee QR code for The Unnamed">
+                <img class="support-float__qr-image" src="files/buyMeACoffeQRCode.png" alt="Buy Me a Coffee QR code for The Unnamed" loading="lazy" decoding="async">
                 <a class="interface-button interface-button--minor support-float__qr-action" href="https://buymeacoffee.com/theunnamed" target="_blank" rel="noopener" tabindex="-1">Open Link</a>
             </div>
         </div>
@@ -1128,6 +1131,25 @@
                         <div class="changelog-subupdates__grid">
                             <article class="changelog-subupdate-card">
                                 <header class="changelog-subupdate-card__header">
+                                    <span class="changelog-subupdate-card__version">v1.838</span>
+                                    <span class="changelog-subupdate-card__title changelog-tab__subtitle">Performance Upgrades</span>
+                                    <p class="changelog-subupdate-card__meta">Updated 2026/05/27 at 5:28 PM CEST</p>
+                                </header>
+                                <ul class="changelog-modal__list changelog-modal__list--sub">
+                                    <li>Made the site performance-first by default for low-end devices: particles, shake effects, button animations, roll/sigil animations, and intense glitch effects now start reduced or disabled.</li>
+                                    <li>Deferred all audio sources and cutscene video sources so they do not load until they are actually needed.</li>
+                                    <li>Changed the backdrop video, fonts, icons, and images to load more gently so first load and scrolling have less work to do.</li>
+                                    <li>Removed the scroll-time layout measuring that was making scrolling and cursor movement feel jittery.</li>
+                                    <li>Collapsed the floating support and donation panels by default and trimmed expensive fixed-panel animations, filters, and transitions in performance mode.</li>
+                                    <li>Added offscreen rendering savings with content visibility and containment for heavier static sections.</li>
+                                    <li>Lazy-loaded changelog tabs and aura detail filter setup so hidden menus do not do extra startup work.</li>
+                                    <li>Optimized the roll simulator with combined weighted selection, typed result arrays, transferred worker results, and fewer repeated checks per roll.</li>
+                                    <li>Allowed UI and obtain sounds to overlap with no cooldown by spawning independent playback instances for every trigger.</li>
+                                    <li>Kept the quality settings available so players can turn visuals back on if their device can handle them.</li>
+                                </ul>
+                            </article>
+                            <article class="changelog-subupdate-card">
+                                <header class="changelog-subupdate-card__header">
                                     <span class="changelog-subupdate-card__version">v1.835</span>
                                     <span class="changelog-subupdate-card__title changelog-tab__subtitle">Summon, Shakes & Cutscenes</span>
                                     <p class="changelog-subupdate-card__meta">Updated 2026/05/26 at 3:47 PM CEST</p>
@@ -1399,7 +1421,7 @@
                         <li>Fixed some icons not appearing.</li>
                     </ul>
                     <h3>Thanks to Chesser for Donating 5$!
-                        <img src="files/chessarDonation.png" width="555px">
+                        <img src="files/chessarDonation.png" width="555" loading="lazy" decoding="async" alt="Chessar donation screenshot">
                     </h3>
                     <h3>I'm heading away for the next week so April Fools will have to wait until after 7th of April <span class="tinyClass">Sorry /*_*\</span></h3>
                     <p>If there's any bugs you encounter, please DM me here <a href="https://discord.com/users/611204110955446301" class="subtitleClass" target="_blank" rel="noopener">@not.unnamed</a></p>

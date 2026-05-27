@@ -46,11 +46,11 @@
         glitch: true,
         reduceMotion: false,
         qualityPreferences: {
-            removeParticles: false,
-            disableButtonAnimations: false,
-            disableShakes: false,
-            disableRollAndSigilAnimations: false,
-            reduceGlitchEffects: false,
+            removeParticles: true,
+            disableButtonAnimations: true,
+            disableShakes: true,
+            disableRollAndSigilAnimations: true,
+            reduceGlitchEffects: true,
             removeGlitchEffects: false
         },
         backgroundRolling: false,
