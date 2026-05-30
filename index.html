@@ -179,7 +179,7 @@
                         <span class="banner__subtitle-divider" aria-hidden="true">◉</span>
                         <span class="banner__subtitle-author">By <span class="banner__subtitle-author-name"><a href="https://discord.com/users/611204110955446301" target="_blank" rel="noopener">not.unnamed</a></span></span>
                         <span class="banner__subtitle-divider" aria-hidden="true">◉</span>
-                        <span class="banner__subtitle-updated">Updated <time datetime="2026-05-30T11:15:00+02:00">2026/05/30 11:15 AM CEST</time></span>
+                        <span class="banner__subtitle-updated">Updated <time datetime="2026-05-30T14:00:00+02:00">2026/05/30 2:00 PM CEST</time></span>
                         <span class="banner__subtitle-divider" aria-hidden="true">◉</span>
                         <span class="banner__subtitle-eon"><span class="banner__subtitle-game-version"><a href="https://www.roblox.com/games/15532962292/Sols-RNG" target="_blank" rel="noopener">Sol's RNG Eon 1-22</a></span></span>
                     </p>
@@ -638,10 +638,11 @@
                             <button type="button" data-luck-value="3.25" data-limbo-only="true" style="display:none;" onclick="applyLuckValue(3.25, { luckSource: 'standard-preset' })">Forbidden II +325%</button>
                             <button type="button" data-luck-value="13.5" data-limbo-only="true" style="display:none;" onclick="applyLuckValue(13.5, { luckSource: 'standard-preset' })">Forbidden III +1,350%</button>
                             <button type="button" data-luck-value="200000" onclick="applyLuckValue(200000, { luckSource: 'standard-preset' })"><span class="heavenlyClass">Heavenly</span> + <span class="boundClass">Bound</span> +200,000</button>
+                            <button type="button" id="luck-preset-blood-ii" data-luck-value="200000" aria-pressed="false" onclick="handleBloodPresetSelection('blood-ii')"><span class="bloodIIClass">Red Moon II</span> +200,000 <span class="preset-active-label" aria-hidden="true">Active</span></button>
                             <button type="button" data-luck-value="150000" onclick="applyLuckValue(150000, { luckSource: 'standard-preset' })"><span class="heavenlyClass">Heavenly</span> +150,000</button>
                             <button type="button" data-luck-value="75000" onclick="applyLuckValue(75000, { luckSource: 'standard-preset' })"><span class="candyClass">Candy Corn</span> +75,000</button>
                             <button type="button" data-luck-value="50000" onclick="applyLuckValue(50000, { luckSource: 'standard-preset' })"><span class="boundClass">Bound</span> +50,000</button>
-                            <button type="button" id="luck-preset-blood" data-luck-value="11000" aria-pressed="false" onclick="handleBloodPresetSelection('blood')"><span class="bloodClass">Red Moon Potion</span> +11,000 <span class="preset-active-label" aria-hidden="true">Active</span></button>
+                            <button type="button" id="luck-preset-blood-i" data-luck-value="11000" aria-pressed="false" onclick="handleBloodPresetSelection('blood-i')"><span class="bloodClass">Red Moon I</span> +11,000 <span class="preset-active-label" aria-hidden="true">Active</span></button>
                             <button type="button" id="luck-preset-dune" data-luck-value="10000" aria-pressed="false" onclick="handleDunePresetSelection('dune')"><span class="duneClass">Potion of the Dune</span> +10,000 <span class="preset-active-label" aria-hidden="true">Active</span></button>
                             <button type="button" data-luck-value="10000" onclick="applyLuckValue(10000, { luckSource: 'standard-preset' })"><span class="popClass">Popping Potion</span> +10,000</button>
                             <button type="button" data-luck-value="5000" onclick="applyLuckValue(5000, { luckSource: 'standard-preset' })"><span class="tutPotion">Tutorial Potion</span> +5,000</button>
@@ -1116,12 +1117,13 @@
                     <header class="changelog-modal__header">
                         <h2 class="changelog-modal__title">Version v1.840 Update Notes</h2>
                         <span class="changelog-tab__subtitle">Eon1-22 Update! | Easter FINALLY Ends</span>
-                        <p class="changelog-modal__meta">Updated 2026/05/30 at 11:15 AM CEST</p>
+                        <p class="changelog-modal__meta">Updated 2026/05/30 at 2:00 PM CEST</p>
                     </header>
                     <p class="changelog-modal__intro">Latest changes:</p>
                     <ul class="changelog-modal__list">
                         <li><span class="largeClass"><span class="sigil-outline-easter-2026">Easter Event 2026</span> is FINALLY over!</span></li>
                         <li><span class="sigil-outline-easter-2026">Easter Event 2026</span> is no longer default enabled, but it remains available in the event selector for past-event simulations like the others.</li>
+                        <li>Renamed <span class="bloodClass">Red Moon Potion</span> to <span class="bloodClass">Red Moon I</span> and added <span class="bloodIIClass">Red Moon II</span>, which grants +200,000 luck and changes <span class="sigil-outline-赤月の破片">赤月の破片</span> from 1 in 1,000 to 1 in 100.</li>
                     </ul>
                     <p>If there's any bugs you encounter, please DM me here <a href="https://discord.com/users/611204110955446301" class="subtitleClass" target="_blank" rel="noopener">@not.unnamed</a></p>
                 </section>
@@ -1159,8 +1161,8 @@
                                     <p class="changelog-subupdate-card__meta">Updated 2026/05/27 at 10:40 PM CEST</p>
                                 </header>
                                 <ul class="changelog-modal__list changelog-modal__list--sub">
-                                    <li>Allowed Red Moon Potion and Potion of the Dune to stack together.</li>
-                                    <li>Made device buff presets clear active Red Moon Potion and Potion of the Dune states when they replace the current luck.</li>
+                                    <li>Allowed Red Moon I and Potion of the Dune to stack together.</li>
+                                    <li>Made device buff presets clear active Red Moon I and Potion of the Dune states when they replace the current luck.</li>
                                     <li>Changed the Singularity summon shake from separate card shakes to one full interface shake while leaving the backdrop separate.</li>
                                     <li>Turned sub-update changelog cards into organized animated version pills that expand on click.</li>
                                     <li>Updated the device preset plan so the main glove moves to Singularity Device luck, with refreshed max luck and event luck values to match current Sol's RNG luck potential.</li>
@@ -1645,7 +1647,7 @@
                             <li>Lily <span class="tinyClass">1 in 112,000,000</span></li>
                             <li>Raven : Plague <span class="tinyClass">1 in 200,000,000 inside of Limbo</span></li>
                             <li>Sailor : Admiral <span class="tinyClass">1 in 540,000,000 (135,000,000 inside of Rainy)</span></li>
-                            <li><span class="sigil-outline-赤月の破片">赤月の破片</span> <span class="tinyClass">1 in 1,000 from Red Moon Potion</span></li>
+                            <li><span class="sigil-outline-赤月の破片">赤月の破片</span> <span class="tinyClass">1 in 1,000 from Red Moon I (1 in 100 from Red Moon II)</span></li>
                         </ul>
                     </ul>
                     <p>If there's any bugs you encounter, please DM me here <a href="https://discord.com/users/611204110955446301" class="subtitleClass" target="_blank" rel="noopener">@not.unnamed</a></p>

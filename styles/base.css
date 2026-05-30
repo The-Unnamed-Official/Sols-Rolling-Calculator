@@ -294,7 +294,7 @@ body.quality-no-shakes .luck-preset-button--shake {
     animation: none !important;
 }
 
-body.performance-mode [class*="Class"],
+body.performance-mode [class*="Class"]:not(.bloodIIClass):not(.oblivionClass),
 body.performance-mode .banner__emblem--spinning img,
 body.performance-mode .support-float--collapsed .support-float__toggle::before,
 body.performance-mode .support-float--collapsed .support-float__toggle::after,
@@ -335,7 +335,7 @@ body.performance-mode .donation-float__link::after {
 body.performance-mode .support-float__qr-drawer,
 body.performance-mode .support-float--collapsed .support-float__link,
 body.performance-mode .donation-float--collapsed .donation-float__link,
-body.performance-mode [class*="Class"] {
+body.performance-mode [class*="Class"]:not(.bloodIIClass):not(.oblivionClass) {
     filter: none !important;
 }
 

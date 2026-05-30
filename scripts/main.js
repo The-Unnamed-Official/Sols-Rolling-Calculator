@@ -3287,7 +3287,7 @@ function applyLuckValue(value, options = {}) {
     if (normalizedOptions.activateDunePreset === true) {
         normalizedOptions.activateOblivionPreset = false;
     }
-    if (normalizedOptions.activateBloodPreset === true) {
+    if (normalizedOptions.activateBloodPreset) {
         normalizedOptions.activateOblivionPreset = false;
     }
     const luckInput = document.getElementById('luck-total');
@@ -3433,11 +3433,14 @@ function buildLuckAdjustmentOptions(button, action, fallbackSource) {
         }
     }
 
-    if (button && button.id === 'luck-preset-blood') {
+    const bloodPresetConfig = button
+        ? Object.values(BLOOD_PRESET_CONFIGS).find(config => config.buttonId === button.id)
+        : null;
+    if (bloodPresetConfig) {
         if (action === 'add') {
-            options.activateBloodPreset = true;
+            options.activateBloodPreset = bloodPresetConfig.identifier;
             options.activateOblivionPreset = false;
-        } else if (action === 'subtract') {
+        } else if (action === 'subtract' && activeBloodPresetIdentifier === bloodPresetConfig.identifier) {
             options.activateBloodPreset = false;
         }
     }
@@ -4416,10 +4419,23 @@ const DUNE_LUCK_TARGET = 10000;
 const DUNE_AURA_LABEL = 'Neferkhaf';
 const DUNE_POTION_ODDS = 1000;
 
-const BLOOD_PRESET_IDENTIFIER = 'blood';
-const BLOOD_LUCK_TARGET = 11000;
 const BLOOD_AURA_LABEL = '赤月の破片';
-const BLOOD_POTION_ODDS = 1000;
+const BLOOD_I_PRESET_IDENTIFIER = 'blood-i';
+const BLOOD_II_PRESET_IDENTIFIER = 'blood-ii';
+const BLOOD_PRESET_CONFIGS = Object.freeze({
+    [BLOOD_I_PRESET_IDENTIFIER]: Object.freeze({
+        identifier: BLOOD_I_PRESET_IDENTIFIER,
+        buttonId: 'luck-preset-blood-i',
+        luckTarget: 11000,
+        potionOdds: 1000
+    }),
+    [BLOOD_II_PRESET_IDENTIFIER]: Object.freeze({
+        identifier: BLOOD_II_PRESET_IDENTIFIER,
+        buttonId: 'luck-preset-blood-ii',
+        luckTarget: 200000,
+        potionOdds: 100
+    })
+});
 
 let oblivionPresetEnabled = false;
 let oblivionAuraData = null;
@@ -4428,8 +4444,12 @@ let memoryAuraData = null;
 let dunePresetEnabled = false;
 let duneAuraData = null;
 
-let bloodPresetEnabled = false;
+let activeBloodPresetIdentifier = null;
 let bloodAuraData = null;
+
+function getBloodPresetConfig(presetIdentifier = activeBloodPresetIdentifier) {
+    return BLOOD_PRESET_CONFIGS[presetIdentifier] || null;
+}
 
 function handleOblivionPresetSelection(presetKey) {
     if (presetKey !== OBLIVION_PRESET_IDENTIFIER) {
@@ -4449,24 +4469,26 @@ function handleDunePresetSelection(presetKey) {
         return;
     }
 
-    const targetLuck = DUNE_LUCK_TARGET + (bloodPresetEnabled ? BLOOD_LUCK_TARGET : 0);
+    const activeBloodPreset = getBloodPresetConfig();
+    const targetLuck = DUNE_LUCK_TARGET + (activeBloodPreset?.luckTarget || 0);
     applyLuckValue(targetLuck, {
         luckSource: LUCK_SELECTION_SOURCE.STANDARD_PRESET,
         activateDunePreset: true,
         activateOblivionPreset: false,
-        activateBloodPreset: bloodPresetEnabled
+        activateBloodPreset: activeBloodPresetIdentifier
     });
 }
 
 function handleBloodPresetSelection(presetKey) {
-    if (presetKey !== BLOOD_PRESET_IDENTIFIER) {
+    const bloodPreset = getBloodPresetConfig(presetKey);
+    if (!bloodPreset) {
         return;
     }
 
-    const targetLuck = BLOOD_LUCK_TARGET + (dunePresetEnabled ? DUNE_LUCK_TARGET : 0);
+    const targetLuck = bloodPreset.luckTarget + (dunePresetEnabled ? DUNE_LUCK_TARGET : 0);
     applyLuckValue(targetLuck, {
         luckSource: LUCK_SELECTION_SOURCE.STANDARD_PRESET,
-        activateBloodPreset: true,
+        activateBloodPreset: presetKey,
         activateDunePreset: dunePresetEnabled,
         activateOblivionPreset: false
     });
@@ -4491,7 +4513,11 @@ function syncLuckPotionPresetAvailability(isLimboSelected) {
         return;
     }
 
-    const potionPresetButtons = ['luck-preset-oblivion', 'luck-preset-dune', 'luck-preset-blood'];
+    const potionPresetButtons = [
+        'luck-preset-oblivion',
+        'luck-preset-dune',
+        ...Object.values(BLOOD_PRESET_CONFIGS).map(config => config.buttonId)
+    ];
     potionPresetButtons.forEach(buttonId => {
         const button = document.getElementById(buttonId);
         if (!button) {
@@ -4536,8 +4562,15 @@ function applyDunePresetOptions(options = {}) {
 
 function applyBloodPresetOptions(options = {}) {
     if ('activateBloodPreset' in options) {
-        bloodPresetEnabled = options.activateBloodPreset === true;
-        syncLuckPotionButtonState('luck-preset-blood', bloodPresetEnabled);
+        const requestedPreset = options.activateBloodPreset === true
+            ? BLOOD_I_PRESET_IDENTIFIER
+            : options.activateBloodPreset;
+        activeBloodPresetIdentifier = getBloodPresetConfig(requestedPreset)
+            ? requestedPreset
+            : null;
+        Object.values(BLOOD_PRESET_CONFIGS).forEach(config => {
+            syncLuckPotionButtonState(config.buttonId, config.identifier === activeBloodPresetIdentifier);
+        });
     }
 }
 
@@ -7306,7 +7339,7 @@ function updateBiomeControlConstraints({ source = null, triggerSync = true } = {
         if (dunePresetEnabled) {
             applyDunePresetOptions({ activateDunePreset: false });
         }
-        if (bloodPresetEnabled) {
+        if (activeBloodPresetIdentifier) {
             applyBloodPresetOptions({ activateBloodPreset: false });
         }
     }
@@ -8793,11 +8826,12 @@ function runRollSimulation(options = {}) {
     }
 
     const activeDuneAura = (dunePresetEnabled && baseLuck >= DUNE_LUCK_TARGET) ? duneAuraData : null;
-    const activeBloodAura = (bloodPresetEnabled && baseLuck >= BLOOD_LUCK_TARGET) ? bloodAuraData : null;
+    const activeBloodPreset = getBloodPresetConfig();
+    const activeBloodAura = (activeBloodPreset && baseLuck >= activeBloodPreset.luckTarget) ? bloodAuraData : null;
     const activeOblivionAura = (oblivionPresetEnabled && luckValue >= OBLIVION_LUCK_TARGET) ? oblivionAuraData : null;
     const activeMemoryAura = (oblivionPresetEnabled && luckValue >= OBLIVION_LUCK_TARGET) ? memoryAuraData : null;
     const duneProbability = activeDuneAura ? 1 / DUNE_POTION_ODDS : 0;
-    const bloodProbability = activeBloodAura ? 1 / BLOOD_POTION_ODDS : 0;
+    const bloodProbability = activeBloodAura ? 1 / activeBloodPreset.potionOdds : 0;
     const memoryProbability = activeMemoryAura ? 1 / OBLIVION_MEMORY_ODDS : 0;
     const oblivionProbability = activeOblivionAura ? 1 / OBLIVION_POTION_ODDS : 0;
     const cutscenesEnabled = appState.cinematic === true;
