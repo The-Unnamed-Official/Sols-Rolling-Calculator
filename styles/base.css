@@ -1151,7 +1151,7 @@ body.is-glitching .feed__viewport::after {
     position: fixed;
     inset: 0;
     background-color: var(--bg-base);
-    background-image: var(--biome-background, url("files/normalBiomeImage.jpg"));
+    background-image: var(--biome-background, url("files/images/backgrounds/normalBiomeImage.jpg"));
     background-position: center top;
     background-repeat: no-repeat;
     background-size: 100% 100%;
