@@ -593,77 +593,77 @@ const RUNE_CONFIGURATION = Object.freeze({
         themeBiome: 'windy',
         activeBiomes: Object.freeze(['windy']),
         breakthroughBiomes: Object.freeze(['windy']),
-        icon: 'files/windyRuneIcon.png'
+        icon: 'files/images/icons/windyRuneIcon.png'
     }),
     snowyRune: Object.freeze({
         canonicalBiome: 'snowy',
         themeBiome: 'snowy',
         activeBiomes: Object.freeze(['snowy']),
         breakthroughBiomes: Object.freeze(['snowy']),
-        icon: 'files/snowyRuneIcon.png'
+        icon: 'files/images/icons/snowyRuneIcon.png'
     }),
     rainyRune: Object.freeze({
         canonicalBiome: 'rainy',
         themeBiome: 'rainy',
         activeBiomes: Object.freeze(['rainy']),
         breakthroughBiomes: Object.freeze(['rainy']),
-        icon: 'files/rainyRuneIcon.png'
+        icon: 'files/images/icons/rainyRuneIcon.png'
     }),
     sandstormRune: Object.freeze({
         canonicalBiome: 'sandstorm',
         themeBiome: 'sandstorm',
         activeBiomes: Object.freeze(['sandstorm']),
         breakthroughBiomes: Object.freeze(['sandstorm']),
-        icon: 'files/sandstormRuneIcon.png'
+        icon: 'files/images/icons/sandstormRuneIcon.png'
     }),
     starfallRune: Object.freeze({
         canonicalBiome: 'starfall',
         themeBiome: 'starfall',
         activeBiomes: Object.freeze(['starfall']),
         breakthroughBiomes: Object.freeze(['starfall']),
-        icon: 'files/starfallRuneIcon.png'
+        icon: 'files/images/icons/starfallRuneIcon.png'
     }),
     hellRune: Object.freeze({
         canonicalBiome: 'hell',
         themeBiome: 'hell',
         activeBiomes: Object.freeze(['hell']),
         breakthroughBiomes: Object.freeze(['hell']),
-        icon: 'files/hellRuneIcon.png'
+        icon: 'files/images/icons/hellRuneIcon.png'
     }),
     heavenRune: Object.freeze({
         canonicalBiome: 'heaven',
         themeBiome: 'heaven',
         activeBiomes: Object.freeze(['heaven']),
         breakthroughBiomes: Object.freeze(['heaven']),
-        icon: 'files/heavenRuneIcon.png'
+        icon: 'files/images/icons/heavenRuneIcon.png'
     }),
     corruptionRune: Object.freeze({
         canonicalBiome: 'corruption',
         themeBiome: 'corruption',
         activeBiomes: Object.freeze(['corruption']),
         breakthroughBiomes: Object.freeze(['corruption']),
-        icon: 'files/corruptionRuneIcon.png'
+        icon: 'files/images/icons/corruptionRuneIcon.png'
     }),
     nullRune: Object.freeze({
         canonicalBiome: 'null',
         themeBiome: 'null',
         activeBiomes: Object.freeze(['null', 'limbo-null']),
         breakthroughBiomes: Object.freeze(['null', 'limbo-null']),
-        icon: 'files/nullRuneIcon.png'
+        icon: 'files/images/icons/nullRuneIcon.png'
     }),
     eclipseRune: Object.freeze({
         canonicalBiome: 'night',
         themeBiome: 'night',
         activeBiomes: Object.freeze(['day', 'night']),
         breakthroughBiomes: Object.freeze(['day', 'night']),
-        icon: 'files/eclipseRuneIcon.png'
+        icon: 'files/images/icons/eclipseRuneIcon.png'
     }),
     roe: Object.freeze({
         canonicalBiome: 'roe',
         themeBiome: 'roe',
         activeBiomes: ROE_NATIVE_BIOMES,
         breakthroughBiomes: ROE_NATIVE_BIOMES,
-        icon: 'files/roeRuneIcon.png',
+        icon: 'files/images/icons/roeRuneIcon.png',
         glitchLike: true,
         exclusivityBiome: 'glitch'
     })
@@ -2668,33 +2668,33 @@ if (typeof window !== 'undefined') {
 }
 
 const biomeAssets = {
-    normal: { image: 'files/normalBiomeImage.png', music: 'files/normalBiomeMusic.mp3' },
-    roe: { image: 'files/normalBiomeImage.png', music: 'files/normalBiomeMusic.mp3' },
-    day: { image: 'files/dayBiomeImage.jpg', music: 'files/dayBiomeMusic.mp3' },
-    night: { image: 'files/nightBiomeImage.jpg', music: 'files/nightBiomeMusic.mp3' },
-    rainy: { image: 'files/rainyBiomeImage.jpg', music: 'files/rainyBiomeMusic.mp3' },
-    windy: { image: 'files/windyBiomeImage.jpg', music: 'files/windyBiomeMusic.mp3' },
-    snowy: { image: 'files/snowyBiomeImage.jpg', music: 'files/winterBiomeMusic.mp3' },
-    aurora: { image: 'files/auroraBiomeImage.jpg', music: 'files/auroraBiomeMusic.mp3' },
-    sandstorm: { image: 'files/sandstormBiomeImage.jpg', music: 'files/sandstormBiomeMusic.mp3' },
-    hell: { image: 'files/hellBiomeImage.jpg', music: 'files/hellBiomeMusic.mp3' },
-    starfall: { image: 'files/starfallBiomeImage.jpg', music: 'files/starfallBiomeMusic.mp3' },
-    singularity: { image: 'files/singularityBiomeImage.png', music: 'files/singularityBiomeMusic.mp3' },
-    heaven: { image: 'files/heavenBiomeImage.png', music: 'files/heavenBiomeMusic.mp3' },
-    corruption: { image: 'files/corruptionBiomeImage.jpg', music: 'files/corruptionBiomeMusic.mp3' },
-    null: { image: 'files/nullBiomeImage.jpg', music: 'files/nullBiomeMusic.mp3' },
-    dreamspace: { image: 'files/dreamspaceBiomeImage.jpg', music: 'files/dreamspaceBiomeMusic.mp3' },
-    glitch: { image: 'files/glitchBiomeImage.webm', music: 'files/glitchBiomeMusic.mp3' },
-    cyberspace: { image: 'files/cyberspaceBiomeImage.jpg', music: 'files/cyberspaceBiomeMusic.mp3' },
-    anotherRealm: { image: 'files/anotherRealmBiomeImage.jpg', music: 'files/anotherRealmBiomeMusic.mp3' },
-    mastermind: { image: 'files/mastermindBiomeImage.png', music: 'files/mastermindBiomeMusic.mp3' },
-    edict: { image: 'files/wordBiomeImage.png', music: 'files/wordBiomeMusic.mp3' },
-    unknown: { image: 'files/unknownBiomeImage.png', music: 'files/unknownBiomeMusic.mp3' },
-    graveyard: { image: 'files/graveyardBiomeImage.jpg', music: 'files/graveyardBiomeMusic.mp3' },
-    pumpkinMoon: { image: 'files/pumpkinMoonBiomeImage.jpg', music: 'files/pumpkinMoonBiomeMusic.mp3' },
-    bloodRain: { image: 'files/bloodRainBiomeImage.jpg', music: 'files/bloodRainBiomeMusic.mp3' },
-    limbo: { image: 'files/limboImage.jpg', music: 'files/limboMusic.mp3' },
-    blazing: { image: 'files/blazingBiomeImage.jpg', music: 'files/blazingBiomeMusic.mp3' }
+    normal: { image: 'files/images/backgrounds/normalBiomeImage.png', music: 'files/music/normalBiomeMusic.mp3' },
+    roe: { image: 'files/images/backgrounds/normalBiomeImage.png', music: 'files/music/normalBiomeMusic.mp3' },
+    day: { image: 'files/images/backgrounds/dayBiomeImage.jpg', music: 'files/music/dayBiomeMusic.mp3' },
+    night: { image: 'files/images/backgrounds/nightBiomeImage.jpg', music: 'files/music/nightBiomeMusic.mp3' },
+    rainy: { image: 'files/images/backgrounds/rainyBiomeImage.jpg', music: 'files/music/rainyBiomeMusic.mp3' },
+    windy: { image: 'files/images/backgrounds/windyBiomeImage.jpg', music: 'files/music/windyBiomeMusic.mp3' },
+    snowy: { image: 'files/images/backgrounds/snowyBiomeImage.jpg', music: 'files/music/winterBiomeMusic.mp3' },
+    aurora: { image: 'files/images/backgrounds/auroraBiomeImage.jpg', music: 'files/music/auroraBiomeMusic.mp3' },
+    sandstorm: { image: 'files/images/backgrounds/sandstormBiomeImage.jpg', music: 'files/music/sandstormBiomeMusic.mp3' },
+    hell: { image: 'files/images/backgrounds/hellBiomeImage.jpg', music: 'files/music/hellBiomeMusic.mp3' },
+    starfall: { image: 'files/images/backgrounds/starfallBiomeImage.jpg', music: 'files/music/starfallBiomeMusic.mp3' },
+    singularity: { image: 'files/images/backgrounds/singularityBiomeImage.png', music: 'files/music/singularityBiomeMusic.mp3' },
+    heaven: { image: 'files/images/backgrounds/heavenBiomeImage.png', music: 'files/music/heavenBiomeMusic.mp3' },
+    corruption: { image: 'files/images/backgrounds/corruptionBiomeImage.jpg', music: 'files/music/corruptionBiomeMusic.mp3' },
+    null: { image: 'files/images/backgrounds/nullBiomeImage.jpg', music: 'files/music/nullBiomeMusic.mp3' },
+    dreamspace: { image: 'files/images/backgrounds/dreamspaceBiomeImage.jpg', music: 'files/music/dreamspaceBiomeMusic.mp3' },
+    glitch: { image: 'files/videos/biomes/glitchBiomeImage.webm', music: 'files/music/glitchBiomeMusic.mp3' },
+    cyberspace: { image: 'files/images/backgrounds/cyberspaceBiomeImage.jpg', music: 'files/music/cyberspaceBiomeMusic.mp3' },
+    anotherRealm: { image: 'files/images/backgrounds/anotherRealmBiomeImage.jpg', music: 'files/music/anotherRealmBiomeMusic.mp3' },
+    mastermind: { image: 'files/images/backgrounds/mastermindBiomeImage.png', music: 'files/music/mastermindBiomeMusic.mp3' },
+    edict: { image: 'files/images/backgrounds/wordBiomeImage.png', music: 'files/music/wordBiomeMusic.mp3' },
+    unknown: { image: 'files/images/backgrounds/unknownBiomeImage.png', music: 'files/music/unknownBiomeMusic.mp3' },
+    graveyard: { image: 'files/images/backgrounds/graveyardBiomeImage.jpg', music: 'files/music/graveyardBiomeMusic.mp3' },
+    pumpkinMoon: { image: 'files/images/backgrounds/pumpkinMoonBiomeImage.jpg', music: 'files/music/pumpkinMoonBiomeMusic.mp3' },
+    bloodRain: { image: 'files/images/backgrounds/bloodRainBiomeImage.jpg', music: 'files/music/bloodRainBiomeMusic.mp3' },
+    limbo: { image: 'files/images/backgrounds/limboImage.jpg', music: 'files/music/limboMusic.mp3' },
+    blazing: { image: 'files/images/backgrounds/blazingBiomeImage.jpg', music: 'files/music/blazingBiomeMusic.mp3' }
 };
 
 function resolveBiomeAssetKey(biome, selectionState = null) {
@@ -6882,12 +6882,12 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 const BIOME_ICON_OVERRIDES = {
-    none: 'files/otherBiomeIcon.png',
-    normal: 'files/otherBiomeIcon.png',
-    day: 'files/otherBiomeIcon.png',
-    night: 'files/otherBiomeIcon.png',
-    aurora: 'files/auroraBiomeIcon.png',
-    edict: 'files/heavenBiomeIcon.png'
+    none: 'files/images/icons/otherBiomeIcon.png',
+    normal: 'files/images/icons/otherBiomeIcon.png',
+    day: 'files/images/icons/otherBiomeIcon.png',
+    night: 'files/images/icons/otherBiomeIcon.png',
+    aurora: 'files/images/icons/auroraBiomeIcon.png',
+    edict: 'files/images/icons/heavenBiomeIcon.png'
 };
 
 function getBiomeIconSource(value) {
@@ -6902,7 +6902,7 @@ function getBiomeIconSource(value) {
     if (override) {
         return override;
     }
-    return `files/${value}BiomeIcon.png`;
+    return `files/images/icons/${value}BiomeIcon.png`;
 }
 
 function populateBiomeOptionElement(target, option) {
