@@ -3122,9 +3122,11 @@ let baseLuck = 1;
 let currentLuck = 1;
 let lastVipMultiplier = 1;
 let lastXyzMultiplier = 1;
+let lastXyzOldMultiplier = 1;
 let lastSorryMultiplier = 1;
 let lastXcMultiplier = 1;
 let lastAxisMultiplier = 1;
+let lastAxisOldMultiplier = 1;
 let lastWordMultiplier = 1;
 let lastDaveMultiplier = 1;
 let lastDorcelessnessMultiplier = 1;
@@ -3132,26 +3134,32 @@ let suppressYgBlessingAlert = false;
 
 const EVENT_LUCK_TOGGLE_IDS = Object.freeze([
     'xyz-luck-toggle',
+    'xyz-old-luck-toggle',
     'sorry-luck-toggle',
     'xc-luck-toggle',
     'axis-luck-toggle',
+    'axis-old-luck-toggle',
     'word-luck-toggle',
     'dorcelessness-luck-toggle'
 ]);
 
 const EXCLUSIVE_EVENT_TOGGLE_IDS = Object.freeze([
     'xyz-luck-toggle',
+    'xyz-old-luck-toggle',
     'xc-luck-toggle',
     'axis-luck-toggle',
+    'axis-old-luck-toggle',
     'word-luck-toggle',
     'dorcelessness-luck-toggle'
 ]);
 
 const YG_BLESSING_BLOCKING_EVENT_IDS = Object.freeze([
     'xyz-luck-toggle',
+    'xyz-old-luck-toggle',
     'sorry-luck-toggle',
     'xc-luck-toggle',
     'axis-luck-toggle',
+    'axis-old-luck-toggle',
     'word-luck-toggle'
 ]);
 
@@ -3297,17 +3305,21 @@ function applyLuckValue(value, options = {}) {
     currentLuck = targetLuck;
     lastVipMultiplier = 1;
     lastXyzMultiplier = 1;
+    lastXyzOldMultiplier + 1;
     lastSorryMultiplier = 1;
     lastXcMultiplier = 1;
     lastAxisMultiplier = 1;
+    lastAxisOldMultiplier + 1;
     lastWordMultiplier = 1;
     lastDaveMultiplier = 1;
     lastDorcelessnessMultiplier = 1;
     document.getElementById('vip-dropdown').value = '1';
     document.getElementById('xyz-luck-toggle').checked = false;
+    document.getElementById('xyz-old-luck-toggle').checked = false;
     document.getElementById('sorry-luck-toggle').checked = false;
     document.getElementById('xc-luck-toggle').checked = false;
     document.getElementById('axis-luck-toggle').checked = false;
+    document.getElementById('axis-old-luck-toggle').checked = false;
     document.getElementById('word-luck-toggle').checked = false;
     document.getElementById('dorcelessness-luck-toggle').checked = false;
     document.getElementById('yg-blessing-toggle').checked = false;
@@ -3339,9 +3351,11 @@ function getActiveLuckMultipliers() {
         biome: document.getElementById('biome-dropdown'),
         vip: document.getElementById('vip-dropdown'),
         xyz: document.getElementById('xyz-luck-toggle'),
+        xyzOld: document.getElementById('xyz-old-luck-toggle'),
         sorry: document.getElementById('sorry-luck-toggle'),
         xc: document.getElementById('xc-luck-toggle'),
         axis: document.getElementById('axis-luck-toggle'),
+        axisOld: document.getElementById('axis-old-luck-toggle'),
         word: document.getElementById('word-luck-toggle'),
         dorcelessness: document.getElementById('dorcelessness-luck-toggle'),
         dave: document.getElementById('dave-luck-dropdown')
@@ -3352,10 +3366,12 @@ function getActiveLuckMultipliers() {
 
     return {
         vip: parseFloat(controls.vip ? controls.vip.value : '1') || 1,
-        xyz: controls.xyz && controls.xyz.checked ? 2 : 1,
+        xyz: controls.xyz && controls.xyz.checked ? 1.2 : 1,
+        xyzOld: controls.xyzOld && controls.xyzOld.checked ? 2 : 1,
         sorry: controls.sorry && controls.sorry.checked ? 1.2 : 1,
         xc: controls.xc && controls.xc.checked ? 2 : 1,
-        axis: controls.axis && controls.axis.checked ? 2 : 1,
+        axis: controls.axis && controls.axis.checked ? 1.2 : 1,
+        axisOld: controls.axisOld && controls.axisOld.checked ? 2 : 1,
         word: controls.word && controls.word.checked ? 1.2 : 1,
         dorcelessness: controls.dorcelessness && controls.dorcelessness.checked ? 2 : 1,
         dave: isLimboBiome && controls.dave ? parseFloat(controls.dave.value) || 1 : 1
@@ -3379,14 +3395,16 @@ function applyLuckDelta(presetValue, options = {}) {
     const targetLuck = Math.max(0, startingLuck + numericPresetValue);
 
     const multipliers = getActiveLuckMultipliers();
-    const multiplierTotal = multipliers.vip * multipliers.xyz * multipliers.sorry * multipliers.xc * multipliers.axis * multipliers.dorcelessness * multipliers.dave;
+    const multiplierTotal = multipliers.vip * multipliers.xyz * multipliers.xyzOld * multipliers.sorry * multipliers.xc * multipliers.axis * multipliers.axisOld * multipliers.dorcelessness * multipliers.dave;
     baseLuck = multiplierTotal > 0 ? targetLuck / multiplierTotal : targetLuck;
     currentLuck = targetLuck;
     lastVipMultiplier = multipliers.vip;
     lastXyzMultiplier = multipliers.xyz;
+    lastXyzOldMultiplier = multipliers.xyzOld;
     lastSorryMultiplier = multipliers.sorry;
     lastXcMultiplier = multipliers.xc;
     lastAxisMultiplier = multipliers.axis;
+    lastAxisOldMultiplier = multipliers.axisOld;
     lastWordMultiplier = multipliers.word;
     lastDaveMultiplier = multipliers.dave;
     lastDorcelessnessMultiplier = multipliers.dorcelessness;
@@ -3547,9 +3565,11 @@ function recomputeLuckValue() {
         biome: document.getElementById('biome-dropdown'),
         vip: document.getElementById('vip-dropdown'),
         xyz: document.getElementById('xyz-luck-toggle'),
+        xyzOld: document.getElementById('xyz-old-luck-toggle'),
         sorry: document.getElementById('sorry-luck-toggle'),
         xc: document.getElementById('xc-luck-toggle'),
         axis: document.getElementById('axis-luck-toggle'),
+        axisOld: document.getElementById('axis-old-luck-toggle'),
         word: document.getElementById('word-luck-toggle'),
         dorcelessness: document.getElementById('dorcelessness-luck-toggle'),
         dave: document.getElementById('dave-luck-dropdown'),
@@ -3561,10 +3581,12 @@ function recomputeLuckValue() {
 
     const multipliers = {
         vip: parseFloat(controls.vip ? controls.vip.value : '1') || 1,
-        xyz: controls.xyz && controls.xyz.checked ? 2 : 1,
+        xyz: controls.xyz && controls.xyz.checked ? 1.2 : 1,
+        xyzOld: controls.xyzOld && controls.xyzOld.checked ? 2 : 1,
         sorry: controls.sorry && controls.sorry.checked ? 1.2 : 1,
         xc: controls.xc && controls.xc.checked ? 2 : 1,
-        axis: controls.axis && controls.axis.checked ? 2 : 1,
+        axis: controls.axis && controls.axis.checked ? 1.2 : 1,
+        axisOld: controls.axisOld && controls.axisOld.checked ? 2 : 1,
         word: controls.word && controls.word.checked ? 1.2 : 1,
         dorcelessness: controls.dorcelessness && controls.dorcelessness.checked ? 2 : 1,
         dave: isLimboBiome && controls.dave ? parseFloat(controls.dave.value) || 1 : 1
@@ -3580,9 +3602,11 @@ function recomputeLuckValue() {
         setLuckSelectionSource(LUCK_SELECTION_SOURCE.MANUAL);
         lastVipMultiplier = 1;
         lastXyzMultiplier = 1;
+        lastXyzOldMultiplier = 1;
         lastSorryMultiplier = 1;
         lastXcMultiplier = 1;
         lastAxisMultiplier = 1;
+        lastAxisOldMultiplier = 1;
         lastWordMultiplier = 1;
         lastDaveMultiplier = 1;
         lastDorcelessnessMultiplier = 1;
@@ -3593,6 +3617,9 @@ function recomputeLuckValue() {
         if (controls.xyz) {
             controls.xyz.checked = false;
         }
+        if (controls.xyzOld) {
+            controls.xyzOld.checked = false;
+        }
         if (controls.sorry) {
             controls.sorry.checked = false;
         }
@@ -3601,6 +3628,9 @@ function recomputeLuckValue() {
         }
         if (controls.axis) {
             controls.axis.checked = false;
+        }
+        if (controls.axisOld) {
+            controls.axisOld.checked = false;
         }
         if (controls.word) {
             controls.word.checked = false;
@@ -3627,12 +3657,14 @@ function recomputeLuckValue() {
         return;
     }
 
-    currentLuck = baseLuck * multipliers.vip * multipliers.xyz * multipliers.sorry * multipliers.xc * multipliers.axis * multipliers.word * multipliers.dorcelessness * multipliers.dave;
+    currentLuck = baseLuck * multipliers.vip * multipliers.xyz * multipliers.xyzOld * multipliers.sorry * multipliers.xc * multipliers.axis * multipliers.axisOld * multipliers.word * multipliers.dorcelessness * multipliers.dave;
     lastVipMultiplier = multipliers.vip;
     lastXyzMultiplier = multipliers.xyz;
+    lastXyzOldMultiplier = multipliers.xyzOld;
     lastSorryMultiplier = multipliers.sorry;
     lastXcMultiplier = multipliers.xc;
     lastAxisMultiplier = multipliers.axis;
+    lastAxisOldMultiplier = multipliers.axisOld;
     lastWordMultiplier = multipliers.word;
     lastDaveMultiplier = multipliers.dave;
     lastDorcelessnessMultiplier = multipliers.dorcelessness;
@@ -3733,9 +3765,11 @@ function initializeBiomeInterface() {
     const biome = selectionState.canonicalBiome;
     const daveLuckContainer = document.getElementById('dave-luck-wrapper');
     const xyzLuckContainer = document.getElementById('xyz-luck-wrapper');
+    const xyzOldLuckContainer = document.getElementById('xyz-old-luck-wrapper');
     const sorryLuckContainer = document.getElementById('sorry-luck-wrapper');
     const xcLuckContainer = document.getElementById('xc-luck-wrapper');
     const axisLuckContainer = document.getElementById('axis-luck-wrapper');
+    const axisOldLuckContainer = document.getElementById('axis-old-luck-wrapper');
     const wordLuckContainer = document.getElementById('word-luck-wrapper');
     const dorcelessnessLuckContainer = document.getElementById('dorcelessness-luck-wrapper');
     const ygBlessingContainer = document.getElementById('yg-blessing-wrapper');
@@ -3743,18 +3777,22 @@ function initializeBiomeInterface() {
     if (biome === 'limbo') {
         if (daveLuckContainer) daveLuckContainer.style.display = '';
         if (xyzLuckContainer) xyzLuckContainer.style.display = '';
+        if (xyzOldLuckContainer) xyzOldLuckContainer.style.display = '';
         if (sorryLuckContainer) sorryLuckContainer.style.display = '';
         if (xcLuckContainer) xcLuckContainer.style.display = '';
         if (axisLuckContainer) axisLuckContainer.style.display = '';
+        if (axisOldLuckContainer) axisOldLuckContainer.style.display = '';
         if (wordLuckContainer) wordLuckContainer.style.display = '';
         if (dorcelessnessLuckContainer) dorcelessnessLuckContainer.style.display = '';
         if (ygBlessingContainer) ygBlessingContainer.style.display = '';
     } else {
         if (daveLuckContainer) daveLuckContainer.style.display = 'none';
         if (xyzLuckContainer) xyzLuckContainer.style.display = '';
+        if (xyzOldLuckContainer) xyzOldLuckContainer.style.display = '';
         if (sorryLuckContainer) sorryLuckContainer.style.display = '';
         if (xcLuckContainer) xcLuckContainer.style.display = '';
         if (axisLuckContainer) axisLuckContainer.style.display = '';
+        if (axisOldLuckContainer) axisOldLuckContainer.style.display = '';
         if (wordLuckContainer) wordLuckContainer.style.display = '';
         if (dorcelessnessLuckContainer) dorcelessnessLuckContainer.style.display = '';
         if (ygBlessingContainer) ygBlessingContainer.style.display = '';
@@ -3984,7 +4022,7 @@ function resolveRarityClass(aura, biome) {
     if (auraName.startsWith('Pixelation')) return 'rarity-tier-transcendent';
     if (auraName.startsWith('Illusionary') || isExactMetaAuraName(auraName)) return 'rarity-tier-challenged';
     if (auraName === 'Fault') return 'rarity-tier-challenged';
-    if (['Oblivion', 'Memory', 'Neferkhaf', '赤月の破片'].some(name => auraName.startsWith(name))) {
+    if (['Oblivion', 'Memory', 'Neferkhaf', '赤月の破片', 'Projection', 'Gravitational : Point Zero'].some(name => auraName.startsWith(name))) {
         return 'rarity-tier-challenged';
     }
     if (aura.disableRarityClass) return '';
@@ -4017,7 +4055,7 @@ function resolveBaseRarityClass(aura) {
     if (auraName.startsWith('Pixelation')) return 'rarity-tier-transcendent';
     if (auraName.startsWith('Illusionary') || isExactMetaAuraName(auraName)) return 'rarity-tier-challenged';
     if (auraName === 'Fault') return 'rarity-tier-challenged';
-    if (['Oblivion', 'Memory', 'Neferkhaf', '赤月の破片'].some(name => auraName.startsWith(name))) {
+    if (['Oblivion', 'Memory', 'Neferkhaf', '赤月の破片', 'Projection', 'Gravitational : Point Zero'].some(name => auraName.startsWith(name))) {
         return 'rarity-tier-challenged';
     }
     if (aura.disableRarityClass) return '';
@@ -4678,6 +4716,7 @@ const NATIVE_BREAKTHROUGH_MULTIPLIERS = Object.freeze({
     rainy: 4,
     sandstorm: 4,
     starfall: 5,
+    singularity: 5,
     heaven: 5,
     corruption: 5,
     hell: 6,
@@ -4761,7 +4800,7 @@ const AURA_BLUEPRINT_SOURCE = Object.freeze([
     { name: "unknown - 444,444,444", chance: 444444444, nativeBiomes: ["limbo"] },
     { name: "Apostolos - 444,000,000", chance: 444000000 },
     { name: "Afterparty - 440,000,000", chance: 440000000, nativeBiomes: ["glitch", "graveyard"] },
-    { name: "Gargantua - 430,000,000", chance: 430000000, breakthroughs: nativeBreakthroughs("starfall") },
+    { name: "Gargantua - 430,000,000", chance: 430000000, breakthroughs: nativeBreakthroughs("singularity") },
     { name: "EveNight - 424,000,000", chance: 424000000, breakthroughs: nativeBreakthroughs("aurora") },
     { name: "Northern - 405,000,000", chance: 405000000, breakthroughs: nativeBreakthroughs("aurora") },
     { name: "Abyssal Hunter - 400,000,000", chance: 400000000, breakthroughs: nativeBreakthroughs("rainy") },
@@ -4899,7 +4938,7 @@ const AURA_BLUEPRINT_SOURCE = Object.freeze([
     { name: "Vital - 6,000,000", chance: 6000000, nativeBiomes: ["pumpkinMoon"] },
     { name: "Twilight - 6,000,000", chance: 6000000, breakthroughs: nativeBreakthroughs("night") },
     { name: "Anima - 5,730,000", chance: 5730000, nativeBiomes: ["limbo"] },
-    { name: "Galaxy - 5,000,000", chance: 5000000, breakthroughs: nativeBreakthroughs("starfall") },
+    { name: "Galaxy - 5,000,000", chance: 5000000, breakthroughs: nativeBreakthroughs("singularity") },
     { name: "Lunar : Full Moon - 5,000,000", chance: 5000000, breakthroughs: nativeBreakthroughs("night") },
     { name: "Solar : Solstice - 5,000,000", chance: 5000000, breakthroughs: nativeBreakthroughs("day") },
     { name: "Jack Frost - 4,700,000", chance: 4700000, breakthroughs: nativeBreakthroughs("aurora") },
@@ -4968,7 +5007,7 @@ const AURA_BLUEPRINT_SOURCE = Object.freeze([
     { name: "Aether - 180,000", chance: 180000 },
     { name: "Jade - 125,000", chance: 125000 },
     { name: "Divinus : Angel - 120,000", chance: 120000, breakthroughs: nativeBreakthroughs("heaven") },
-    { name: "Comet - 120,000", chance: 120000, breakthroughs: nativeBreakthroughs("starfall") },
+    { name: "Comet - 120,000", chance: 120000, breakthroughs: nativeBreakthroughs("singularity") },
     { name: "Diaboli : Void - 100,400", chance: 100400 },
     { name: "Exotic - 99,999", chance: 99999 },
     { name: "Stormal - 90,000", chance: 90000, breakthroughs: nativeBreakthroughs("windy") },
@@ -5299,6 +5338,9 @@ const EVENT_AURA_LOOKUP = {
         "Workshop : System - 650,000,000",
         "P.U.K.E.K.O.G.O.D. - 1,000,000,000",
         "A Fool's Experience - 1,000,000,000"
+    ],
+    summer26: [
+        ""
     ]
 };
 
@@ -7549,13 +7591,24 @@ document.addEventListener('DOMContentLoaded', () => {
 
     document.getElementById('vip-dropdown').addEventListener('change', recomputeLuckValue);
     const xyzToggle = document.getElementById('xyz-luck-toggle');
+    const xyzOldToggle = document.getElementById('xyz-old-luck-toggle');
     const sorryToggle = document.getElementById('sorry-luck-toggle');
     const axisToggle = document.getElementById('axis-luck-toggle');
+    const axisOldToggle = document.getElementById('axis-old-luck-toggle');
     const wordToggle = document.getElementById('word-luck-toggle');
     if (xyzToggle) {
         xyzToggle.addEventListener('change', () => {
             enforceExclusiveEventToggles(xyzToggle);
             if (xyzToggle.checked) {
+                disableYgBlessing({ silent: true });
+            }
+            recomputeLuckValue();
+        });
+    }
+    if (xyzOldToggle) {
+        xyzOldToggle.addEventListener('change', () => {
+            enforceExclusiveEventToggles(xyzOldToggle);
+            if (xyzOldToggle.checked) {
                 disableYgBlessing({ silent: true });
             }
             recomputeLuckValue();
@@ -7584,6 +7637,15 @@ document.addEventListener('DOMContentLoaded', () => {
         axisToggle.addEventListener('change', () => {
             enforceExclusiveEventToggles(axisToggle);
             if (axisToggle.checked) {
+                disableYgBlessing({ silent: true });
+            }
+            recomputeLuckValue();
+        });
+    }
+    if (axisOldToggle) {
+        axisOldToggle.addEventListener('change', () => {
+            enforceExclusiveEventToggles(axisOldToggle);
+            if (axisOldToggle.checked) {
                 disableYgBlessing({ silent: true });
             }
             recomputeLuckValue();
@@ -7636,17 +7698,22 @@ document.addEventListener('DOMContentLoaded', () => {
             setLuckSelectionSource(LUCK_SELECTION_SOURCE.MANUAL);
             lastVipMultiplier = 1;
             lastXyzMultiplier = 1;
+            lastXyzOldMultiplier = 1;
             lastSorryMultiplier = 1;
             lastXcMultiplier = 1;
             lastAxisMultiplier = 1;
+            lastAxisOldMultiplier = 1;
             lastWordMultiplier = 1;
             lastDaveMultiplier = 1;
             lastDorcelessnessMultiplier = 1;
             document.getElementById('vip-dropdown').value = '1';
             document.getElementById('sorry-luck-toggle').checked = false;
             document.getElementById('xyz-luck-toggle').checked = false;
+            document.getElementById('xyz-old-luck-toggle').checked = false;
             document.getElementById('xc-luck-toggle').checked = false;
             document.getElementById('word-luck-toggle').checked = false;
+            document.getElementById('axis-luck-toggle').checked = false;
+            document.getElementById('axis-old-luck-toggle').checked = false;
             document.getElementById('dorcelessness-luck-toggle').checked = false;
             document.getElementById('yg-blessing-toggle').checked = false;
             refreshCustomSelect('vip-dropdown');
@@ -7781,7 +7848,7 @@ for (const aura of AURA_REGISTRY) {
 }
 
 const LIMBO_NATIVE_FILTER = ['limbo', 'limbo-null'];
-const GLITCH_BREAKTHROUGH_EXCLUSION_SET = new Set(['day', 'night', 'aurora']);
+const GLITCH_BREAKTHROUGH_EXCLUSION_SET = new Set(['day', 'night', 'aurora', 'singularity']);
 const NULL_BIOME_FILTER = new Set(['null', 'limbo-null']);
 const LEVIATHAN_ALLOWED_BIOMES = new Set(['rainy', 'glitch']);
 const MONARCH_ALLOWED_BIOMES = new Set(['corruption', 'glitch']);
