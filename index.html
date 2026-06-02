@@ -175,11 +175,11 @@
                 <div class="banner__meta">
                     <h1 class="banner__title">Sol's RNG Rolling Simulator</h1>
                     <p class="banner__subtitle">
-                        <button type="button" class="banner__version-button" id="versionInfoButton" aria-haspopup="dialog" aria-expanded="false" data-version-id="v1846">v1.846</button>
+                        <button type="button" class="banner__version-button" id="versionInfoButton" aria-haspopup="dialog" aria-expanded="false" data-version-id="v18461">v1.8461</button>
                         <span class="banner__subtitle-divider" aria-hidden="true">◉</span>
                         <span class="banner__subtitle-author">By <span class="banner__subtitle-author-name"><a href="https://discord.com/users/611204110955446301" target="_blank" rel="noopener">not.unnamed</a></span></span>
                         <span class="banner__subtitle-divider" aria-hidden="true">◉</span>
-                        <span class="banner__subtitle-updated">Updated <time datetime="2026-06-02T15:42:00+02:00">2026/06/02 3:42 PM CEST</time></span>
+                        <span class="banner__subtitle-updated">Updated <time datetime="2026-06-02T15:42:00+02:00">2026/06/02 3:50 PM CEST</time></span>
                         <span class="banner__subtitle-divider" aria-hidden="true">◉</span>
                         <span class="banner__subtitle-eon"><span class="banner__subtitle-game-version"><a href="https://www.roblox.com/games/15532962292/Sols-RNG" target="_blank" rel="noopener">Sol's RNG Eon 1-22</a></span></span>
                     </p>
@@ -644,8 +644,8 @@
                             <button type="button" id="luck-preset-hundred-million" class="luck-preset-button--shake" data-shake-tier="massive" data-luck-value="100000000" onclick="applyLuckValue(100000000, { luckSource: 'standard-preset' })"><span class="insaneLuckPresetClass">100 Million Preset +100,000,000</span></button>
                             <button type="button" id="luck-preset-ten-million" class="luck-preset-button--shake" data-shake-tier="aggressive" data-luck-value="10000000" onclick="applyLuckValue(10000000, { luckSource: 'standard-preset' })"><span class="insaneLuckPresetClass">10 Million Preset +10,000,000</span></button>
                             <button type="button" id="luck-preset-one-million" class="luck-preset-button--shake" data-shake-tier="mild" data-luck-value="1000000" onclick="applyLuckValue(1000000, { luckSource: 'standard-preset' })"><span class="insaneLuckPresetClass">1 Million Preset +1,000,000</span></button>
+                            <button type="button" data-luck-value="890000" onclick="applyLuckValue(890000, { luckSource: 'standard-preset' })"><span class="allPotionsClass">All Potions</span> +890,000</button>
                             <button type="button" data-luck-value="700000" onclick="applyLuckValue(700000, { luckSource: 'standard-preset' })"><span class="pumpBloodClass">Pump King's Blood</span> +700,000</button>
-                            <button type="button" data-luck-value="690000" onclick="applyLuckValue(690000, { luckSource: 'standard-preset' })"><span class="allPotionsClass">All Potions</span> +690,000</button>
                             <button type="button" id="luck-preset-oblivion" data-luck-value="600000" aria-pressed="false" onclick="handleOblivionPresetSelection('oblivion')"><span class="oblivionClass">Oblivion Potion</span> +600,000 <span class="preset-active-label" aria-hidden="true">Active</span></button>
                             <button type="button" data-luck-value="600000" onclick="applyLuckValue(600000, { luckSource: 'standard-preset' })"><span class="godlikeClass">Godlike</span> + <span class="heavenlyClass">Heavenly</span> + <span class="boundClass">Bound</span> +600,000</button>
                             <button type="button" data-luck-value="400000" onclick="applyLuckValue(400000, { luckSource: 'standard-preset' })"><span class="godlikeClass">Godlike</span> +400,000</button>
@@ -1145,6 +1145,16 @@
                             <h3 class="changelog-subupdates__title" id="changelog-subupdates-v1840" data-changelog-subupdates-title></h3>
                         </div>
                         <div class="changelog-subupdates__grid">
+                            <article class="changelog-subupdate-card">
+                                <header class="changelog-subupdate-card__header">
+                                    <span class="changelog-subupdate-card__version">v1.8461</span>
+                                    <span class="changelog-subupdate-card__title changelog-tab__subtitle">All potion fix</span>
+                                    <p class="changelog-subupdate-card__meta">Updated 2026/06/02 at 3:50 PM CEST</p>
+                                </header>
+                                <ul class="changelog-modal__list changelog-modal__list--sub">
+                                    <li>Updated the All Potion preset to include <span class="bloodIIClass">Red Moon II</span></li>
+                                </ul>
+                            </article>
                             <article class="changelog-subupdate-card">
                                 <header class="changelog-subupdate-card__header">
                                     <span class="changelog-subupdate-card__version">v1.846</span>
