@@ -175,11 +175,11 @@
                 <div class="banner__meta">
                     <h1 class="banner__title">Sol's RNG Rolling Simulator</h1>
                     <p class="banner__subtitle">
-                        <button type="button" class="banner__version-button" id="versionInfoButton" aria-haspopup="dialog" aria-expanded="false" data-version-id="v1845">v1.845</button>
+                        <button type="button" class="banner__version-button" id="versionInfoButton" aria-haspopup="dialog" aria-expanded="false" data-version-id="v1846">v1.846</button>
                         <span class="banner__subtitle-divider" aria-hidden="true">◉</span>
                         <span class="banner__subtitle-author">By <span class="banner__subtitle-author-name"><a href="https://discord.com/users/611204110955446301" target="_blank" rel="noopener">not.unnamed</a></span></span>
                         <span class="banner__subtitle-divider" aria-hidden="true">◉</span>
-                        <span class="banner__subtitle-updated">Updated <time datetime="2026-06-01T22:30:00+02:00">2026/06/01 10:30 PM CEST</time></span>
+                        <span class="banner__subtitle-updated">Updated <time datetime="2026-06-02T15:42:00+02:00">2026/06/02 3:42 PM CEST</time></span>
                         <span class="banner__subtitle-divider" aria-hidden="true">◉</span>
                         <span class="banner__subtitle-eon"><span class="banner__subtitle-game-version"><a href="https://www.roblox.com/games/15532962292/Sols-RNG" target="_blank" rel="noopener">Sol's RNG Eon 1-22</a></span></span>
                     </p>
@@ -313,14 +313,6 @@
                             </details>
                         </span>
                     </label>
-                    <div id="sorry-luck-wrapper" class="form-field form-field--toggle">
-                        <span class="form-field__label">We're Sorry! (1.2×)</span>
-                        <label class="toggle">
-                            <input type="checkbox" id="sorry-luck-toggle" class="toggle__input">
-                            <span class="toggle__track"></span>
-                            <span class="toggle__thumb"></span>
-                        </label>
-                    </div>
                     <div id="dave-luck-wrapper" class="form-field form-field--select" style="display:none;">
                         <label class="form-field__label" for="dave-luck-dropdown">Dave's Luck</label>
                         <span class="form-field__select-shell form-field__select-shell--custom">
@@ -338,24 +330,48 @@
                             </details>
                         </span>
                     </div>
-                    <div id="xyz-luck-wrapper" class="form-field form-field--toggle">
-                        <span class="form-field__label">XYZ Event (2×)</span>
+                    <div id="dorcelessness-luck-wrapper" class="form-field form-field--toggle">
+                        <span class="form-field__label">Dorcelessness (2×)</span>
                         <label class="toggle">
-                            <input type="checkbox" id="xyz-luck-toggle" class="toggle__input">
+                            <input type="checkbox" id="dorcelessness-luck-toggle" class="toggle__input">
+                            <span class="toggle__track"></span>
+                            <span class="toggle__thumb"></span>
+                        </label>
+                    </div>
+                    <div id="xyz-old-luck-wrapper" class="form-field form-field--toggle">
+                        <span class="form-field__label">XYZ Admin Abuse (2× old)</span>
+                        <label class="toggle">
+                            <input type="checkbox" id="xyz-old-luck-toggle" class="toggle__input">
+                            <span class="toggle__track"></span>
+                            <span class="toggle__thumb"></span>
+                        </label>
+                    </div>
+                    <div id="axis-old-luck-wrapper" class="form-field form-field--toggle">
+                        <span class="form-field__label">Axis Admin Abuse (2× old)</span>
+                        <label class="toggle">
+                            <input type="checkbox" id="axis-old-luck-toggle" class="toggle__input">
                             <span class="toggle__track"></span>
                             <span class="toggle__thumb"></span>
                         </label>
                     </div>
                     <div id="xc-luck-wrapper" class="form-field form-field--toggle">
-                        <span class="form-field__label">XC Event (2×)</span>
+                        <span class="form-field__label">XC Admin Abuse (2×)</span>
                         <label class="toggle">
                             <input type="checkbox" id="xc-luck-toggle" class="toggle__input">
                             <span class="toggle__track"></span>
                             <span class="toggle__thumb"></span>
                         </label>
                     </div>
+                    <div id="xyz-luck-wrapper" class="form-field form-field--toggle">
+                        <span class="form-field__label">XYZ Admin Abuse (1.2×)</span>
+                        <label class="toggle">
+                            <input type="checkbox" id="xyz-luck-toggle" class="toggle__input">
+                            <span class="toggle__track"></span>
+                            <span class="toggle__thumb"></span>
+                        </label>
+                    </div>
                     <div id="axis-luck-wrapper" class="form-field form-field--toggle">
-                        <span class="form-field__label">Axis Event (2×)</span>
+                        <span class="form-field__label">Axis Admin Abuse (1.2×)</span>
                         <label class="toggle">
                             <input type="checkbox" id="axis-luck-toggle" class="toggle__input">
                             <span class="toggle__track"></span>
@@ -363,17 +379,17 @@
                         </label>
                     </div>
                     <div id="word-luck-wrapper" class="form-field form-field--toggle">
-                        <span class="form-field__label">Word Event (1.2×)</span>
+                        <span class="form-field__label">Word Admin Abuse (1.2×)</span>
                         <label class="toggle">
                             <input type="checkbox" id="word-luck-toggle" class="toggle__input">
                             <span class="toggle__track"></span>
                             <span class="toggle__thumb"></span>
                         </label>
                     </div>
-                    <div id="dorcelessness-luck-wrapper" class="form-field form-field--toggle">
-                        <span class="form-field__label">Dorcelessness (2×)</span>
+                    <div id="sorry-luck-wrapper" class="form-field form-field--toggle">
+                        <span class="form-field__label">We're Sorry! (1.2×)</span>
                         <label class="toggle">
-                            <input type="checkbox" id="dorcelessness-luck-toggle" class="toggle__input">
+                            <input type="checkbox" id="sorry-luck-toggle" class="toggle__input">
                             <span class="toggle__track"></span>
                             <span class="toggle__thumb"></span>
                         </label>
@@ -1058,15 +1074,15 @@
                 <p class="filter-modal__hint">Toggle tiers to skip them in the roll feed and image sharing.</p>
             </div>
             <div class="filter-modal__grid">
-                <button type="button" class="interface-toggle filter-tier-toggle" data-tier-key="basic" data-tier-label="Skip Basic Auras" aria-pressed="false">Skip Basic Auras: Off</button>
-                <button type="button" class="interface-toggle filter-tier-toggle" data-tier-key="epic" data-tier-label="Skip Epic Auras" aria-pressed="false">Skip Epic Auras: Off</button>
-                <button type="button" class="interface-toggle filter-tier-toggle" data-tier-key="unique" data-tier-label="Skip Unique Auras" aria-pressed="false">Skip Unique Auras: Off</button>
-                <button type="button" class="interface-toggle filter-tier-toggle" data-tier-key="legendary" data-tier-label="Skip Legendary Auras" aria-pressed="false">Skip Legendary Auras: Off</button>
-                <button type="button" class="interface-toggle filter-tier-toggle" data-tier-key="mythic" data-tier-label="Skip Mythic Auras" aria-pressed="false">Skip Mythic Auras: Off</button>
-                <button type="button" class="interface-toggle filter-tier-toggle" data-tier-key="exalted" data-tier-label="Skip Exalted Auras" aria-pressed="false">Skip Exalted Auras: Off</button>
-                <button type="button" class="interface-toggle filter-tier-toggle" data-tier-key="glorious" data-tier-label="Skip Glorious Auras" aria-pressed="false">Skip Glorious Auras: Off</button>
-                <button type="button" class="interface-toggle filter-tier-toggle" data-tier-key="transcendent" data-tier-label="Skip Transcendent Auras" aria-pressed="false">Skip Transcendent Auras: Off</button>
-                <button type="button" class="interface-toggle filter-tier-toggle" data-tier-key="challenged" data-tier-label="Skip Challenged Auras" aria-pressed="false">Skip Challenged Auras: Off</button>
+                <button type="button" class="interface-toggle filter-tier-toggle" data-tier-key="basic" data-tier-label="Skip Basic Auras" aria-pressed="false">Skip <span class="rarity-tier-basic">Basic</span> Auras: Off</button>
+                <button type="button" class="interface-toggle filter-tier-toggle" data-tier-key="epic" data-tier-label="Skip Epic Auras" aria-pressed="false">Skip <span class="rarity-tier-epic">Epic</span> Auras: Off</button>
+                <button type="button" class="interface-toggle filter-tier-toggle" data-tier-key="unique" data-tier-label="Skip Unique Auras" aria-pressed="false">Skip <span class="rarity-tier-unique">Unique</span> Auras: Off</button>
+                <button type="button" class="interface-toggle filter-tier-toggle" data-tier-key="legendary" data-tier-label="Skip Legendary Auras" aria-pressed="false">Skip <span class="rarity-tier-legendary">Legendary</span> Auras: Off</button>
+                <button type="button" class="interface-toggle filter-tier-toggle" data-tier-key="mythic" data-tier-label="Skip Mythic Auras" aria-pressed="false">Skip <span class="rarity-tier-mythic">Mythic</span> Auras: Off</button>
+                <button type="button" class="interface-toggle filter-tier-toggle" data-tier-key="exalted" data-tier-label="Skip Exalted Auras" aria-pressed="false">Skip <span class="rarity-tier-exalted">Exalted</span> Auras: Off</button>
+                <button type="button" class="interface-toggle filter-tier-toggle" data-tier-key="glorious" data-tier-label="Skip Glorious Auras" aria-pressed="false">Skip <span class="rarity-tier-glorious">Glorious</span> Auras: Off</button>
+                <button type="button" class="interface-toggle filter-tier-toggle" data-tier-key="transcendent" data-tier-label="Skip Transcendent Auras" aria-pressed="false">Skip <span class="rarity-tier-transcendent">Transcendent</span> Auras: Off</button>
+                <button type="button" class="interface-toggle filter-tier-toggle" data-tier-key="challenged" data-tier-label="Skip Challenged Auras" aria-pressed="false">Skip <span class="rarity-tier-challenged">Challenged</span> Auras: Off</button>
             </div>
             <div class="filter-modal__actions">
                 <button type="button" class="interface-button interface-button--ghost filter-modal__close" id="auraFilterClose">Close</button>
@@ -1129,6 +1145,30 @@
                             <h3 class="changelog-subupdates__title" id="changelog-subupdates-v1840" data-changelog-subupdates-title></h3>
                         </div>
                         <div class="changelog-subupdates__grid">
+                            <article class="changelog-subupdate-card">
+                                <header class="changelog-subupdate-card__header">
+                                    <span class="changelog-subupdate-card__version">v1.846</span>
+                                    <span class="changelog-subupdate-card__title changelog-tab__subtitle">Singularity native fix</span>
+                                    <p class="changelog-subupdate-card__meta">Updated 2026/06/02 at 3:42 PM CEST</p>
+                                </header>
+                                <ul class="changelog-modal__list changelog-modal__list--sub">
+                                    <li>Completely forgot some auras are now native in <span class="sigil-outline-singularity">Singularity</span> and not starfall...</li>
+                                    <ul>
+                                        <li><span class="sigil-outline-singularity">Comet</span> is now native in <span class="sigil-outline-singularity">Singularity</span>.</li>
+                                        <li><span class="sigil-outline-singularity">Galaxy</span> is now native in <span class="sigil-outline-singularity">Singularity</span>.</li>
+                                        <li><span class="sigil-outline-singularity">Gargantua</span> is now native in <span class="sigil-outline-singularity">Singularity</span>.</li>
+
+                                        <li><span class="sigil-outline-singularity">Singularity</span> native auras now do not get affected inside glitch.</li>
+                                    </ul>
+                                    <li><span class="sigil-outline-singularity">Gravitational : Point Zero</span> & <span class="sigil-outline-singularity">Projection</span> is now considered <span class="rarity-tier-challenged">Challenged</span> tier</li>
+                                    <li>Changes to Admin Abuse multipliers:</li>
+                                    <ul>
+                                        <li>All Dev event swithces has been renamed from "(Dev) event" to "(Dev) Admin Abuse"</li>
+                                        <li>Xyz and Axis has been updated with an old switch for 2x luck and 1.2x switch</li>
+                                        <span class="tinyClass">This will be updated on later for the devs biomes instead of switches</span>
+                                    </ul>
+                                </ul>
+                            </article>
                             <article class="changelog-subupdate-card">
                                 <header class="changelog-subupdate-card__header">
                                     <span class="changelog-subupdate-card__version">v1.845</span>
@@ -1739,8 +1779,8 @@
                     <p class="changelog-modal__intro">Latest changes:</p>
                     <ul class="changelog-modal__list">
                         <li>Fixed aura naming typo from <span class="sigil-outline-pythios">Pythos</span> to <span class="sigil-outline-pythios">Pythios</span>.</li>
-                        <li>Updated filtering so <span class="sigil-outline-borealis">Borealis</span> is treated as a challenged aura.</li>
-                        <li>Updated filtering so <span class="sigil-effect-outline-glitch">Glitch</span> is treated as a challenged aura.</li>
+                        <li>Updated filtering so <span class="sigil-outline-borealis">Borealis</span> is treated as a <span class="rarity-tier-challenged">Challenged</span> aura.</li>
+                        <li>Updated filtering so <span class="sigil-effect-outline-glitch">Glitch</span> is treated as a <span class="rarity-tier-challenged">Challenged</span> aura.</li>
                         <p>Thanks to <a href="https://discord.com/users/1234359746153418826" class="subtitleClass" target="_blank" rel="noopener">aksiz.dos_33995</a> for reporting these bugs.</p>
                         
                         <li><span class="sigil-effect-outline-glitch">Glitch</span> will now display as it does in-game.</li>
