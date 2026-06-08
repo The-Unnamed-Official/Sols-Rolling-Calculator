@@ -3124,6 +3124,7 @@ let lastVipMultiplier = 1;
 let lastXyzMultiplier = 1;
 let lastXyzOldMultiplier = 1;
 let lastSorryMultiplier = 1;
+let lastAstraldMultiplier = 1;
 let lastXcMultiplier = 1;
 let lastAxisMultiplier = 1;
 let lastAxisOldMultiplier = 1;
@@ -3131,11 +3132,13 @@ let lastWordMultiplier = 1;
 let lastDaveMultiplier = 1;
 let lastDorcelessnessMultiplier = 1;
 let suppressYgBlessingAlert = false;
+let suppressAstraldBlessingAlert = false;
 
 const EVENT_LUCK_TOGGLE_IDS = Object.freeze([
     'xyz-luck-toggle',
     'xyz-old-luck-toggle',
     'sorry-luck-toggle',
+    'astrald-blessing-toggle',
     'xc-luck-toggle',
     'axis-luck-toggle',
     'axis-old-luck-toggle',
@@ -3160,10 +3163,23 @@ const YG_BLESSING_BLOCKING_EVENT_IDS = Object.freeze([
     'xc-luck-toggle',
     'axis-luck-toggle',
     'axis-old-luck-toggle',
-    'word-luck-toggle'
+    'word-luck-toggle',
+    'astrald-blessing-toggle'
+]);
+
+const ASTRALD_BLESSING_BLOCKING_EVENT_IDS = Object.freeze([
+    'xyz-luck-toggle',
+    'xyz-old-luck-toggle',
+    'xc-luck-toggle',
+    'axis-luck-toggle',
+    'axis-old-luck-toggle',
+    'word-luck-toggle',
+    'yg-blessing-toggle',
+    'dorcelessness-luck-toggle'
 ]);
 
 const YG_BLESSING_EVENT_BLOCK_MESSAGE = "YG blessing has not been obtainable while these events have been occurring in Sol's RNG (yet).";
+const ASTRALD_BLESSING_EVENT_BLOCK_MESSAGE = "Astrald blessing has not been obtainable while these events have been occurring in Sol's RNG (yet).";
 let eventToggleSyncInProgress = false;
 
 function isAnyToggleActive(toggleIds) {
@@ -3197,6 +3213,20 @@ function disableYgBlessing({ silent = false } = {}) {
     setToggleChecked(ygToggle, false, { dispatchChange: true });
     if (silent) {
         suppressYgBlessingAlert = false;
+    }
+}
+
+function disableAstraldBlessing({ silent = false } = {}) {
+    const astraldToggle = document.getElementById('astrald-blessing-toggle');
+    if (!astraldToggle || !astraldToggle.checked) {
+        return;
+    }
+    if (silent) {
+        suppressAstraldBlessingAlert = true;
+    }
+    setToggleChecked(astraldToggle, false, { dispatchChange: true });
+    if (silent) {
+        suppressAstraldBlessingAlert = false;
     }
 }
 
@@ -3307,6 +3337,7 @@ function applyLuckValue(value, options = {}) {
     lastXyzMultiplier = 1;
     lastXyzOldMultiplier + 1;
     lastSorryMultiplier = 1;
+    lastAstraldMultiplier = 1;
     lastXcMultiplier = 1;
     lastAxisMultiplier = 1;
     lastAxisOldMultiplier + 1;
@@ -3323,6 +3354,7 @@ function applyLuckValue(value, options = {}) {
     document.getElementById('word-luck-toggle').checked = false;
     document.getElementById('dorcelessness-luck-toggle').checked = false;
     document.getElementById('yg-blessing-toggle').checked = false;
+    document.getElementById('astrald-blessing-toggle').checked = false;
     refreshCustomSelect('vip-dropdown');
     if (document.getElementById('dave-luck-dropdown')) {
         document.getElementById('dave-luck-dropdown').value = '1';
@@ -3353,6 +3385,7 @@ function getActiveLuckMultipliers() {
         xyz: document.getElementById('xyz-luck-toggle'),
         xyzOld: document.getElementById('xyz-old-luck-toggle'),
         sorry: document.getElementById('sorry-luck-toggle'),
+        astrald: document.getElementById('astrald-blessing-toggle'),
         xc: document.getElementById('xc-luck-toggle'),
         axis: document.getElementById('axis-luck-toggle'),
         axisOld: document.getElementById('axis-old-luck-toggle'),
@@ -3369,6 +3402,7 @@ function getActiveLuckMultipliers() {
         xyz: controls.xyz && controls.xyz.checked ? 1.2 : 1,
         xyzOld: controls.xyzOld && controls.xyzOld.checked ? 2 : 1,
         sorry: controls.sorry && controls.sorry.checked ? 1.2 : 1,
+        astrald: controls.astrald && controls.astrald.checked ? 1.2 : 1,
         xc: controls.xc && controls.xc.checked ? 2 : 1,
         axis: controls.axis && controls.axis.checked ? 1.2 : 1,
         axisOld: controls.axisOld && controls.axisOld.checked ? 2 : 1,
@@ -3395,13 +3429,14 @@ function applyLuckDelta(presetValue, options = {}) {
     const targetLuck = Math.max(0, startingLuck + numericPresetValue);
 
     const multipliers = getActiveLuckMultipliers();
-    const multiplierTotal = multipliers.vip * multipliers.xyz * multipliers.xyzOld * multipliers.sorry * multipliers.xc * multipliers.axis * multipliers.axisOld * multipliers.dorcelessness * multipliers.dave;
+    const multiplierTotal = multipliers.vip * multipliers.xyz * multipliers.xyzOld * multipliers.sorry * multipliers.astrald * multipliers.xc * multipliers.axis * multipliers.axisOld * multipliers.dorcelessness * multipliers.dave;
     baseLuck = multiplierTotal > 0 ? targetLuck / multiplierTotal : targetLuck;
     currentLuck = targetLuck;
     lastVipMultiplier = multipliers.vip;
     lastXyzMultiplier = multipliers.xyz;
     lastXyzOldMultiplier = multipliers.xyzOld;
     lastSorryMultiplier = multipliers.sorry;
+    lastAstraldMultiplier = multipliers.astrald;
     lastXcMultiplier = multipliers.xc;
     lastAxisMultiplier = multipliers.axis;
     lastAxisOldMultiplier = multipliers.axisOld;
@@ -3567,6 +3602,7 @@ function recomputeLuckValue() {
         xyz: document.getElementById('xyz-luck-toggle'),
         xyzOld: document.getElementById('xyz-old-luck-toggle'),
         sorry: document.getElementById('sorry-luck-toggle'),
+        astrald: document.getElementById('astrald-blessing-toggle'),
         xc: document.getElementById('xc-luck-toggle'),
         axis: document.getElementById('axis-luck-toggle'),
         axisOld: document.getElementById('axis-old-luck-toggle'),
@@ -3584,6 +3620,7 @@ function recomputeLuckValue() {
         xyz: controls.xyz && controls.xyz.checked ? 1.2 : 1,
         xyzOld: controls.xyzOld && controls.xyzOld.checked ? 2 : 1,
         sorry: controls.sorry && controls.sorry.checked ? 1.2 : 1,
+        astrald: controls.astrald && controls.astrald.checked ? 1.2 : 1,
         xc: controls.xc && controls.xc.checked ? 2 : 1,
         axis: controls.axis && controls.axis.checked ? 1.2 : 1,
         axisOld: controls.axisOld && controls.axisOld.checked ? 2 : 1,
@@ -3604,6 +3641,7 @@ function recomputeLuckValue() {
         lastXyzMultiplier = 1;
         lastXyzOldMultiplier = 1;
         lastSorryMultiplier = 1;
+        lastAstraldMultiplier = 1;
         lastXcMultiplier = 1;
         lastAxisMultiplier = 1;
         lastAxisOldMultiplier = 1;
@@ -3622,6 +3660,9 @@ function recomputeLuckValue() {
         }
         if (controls.sorry) {
             controls.sorry.checked = false;
+        }
+        if (controls.astrald) {
+            controls.astrald.checked = false;
         }
         if (controls.xc) {
             controls.xc.checked = false;
@@ -3657,11 +3698,12 @@ function recomputeLuckValue() {
         return;
     }
 
-    currentLuck = baseLuck * multipliers.vip * multipliers.xyz * multipliers.xyzOld * multipliers.sorry * multipliers.xc * multipliers.axis * multipliers.axisOld * multipliers.word * multipliers.dorcelessness * multipliers.dave;
+    currentLuck = baseLuck * multipliers.vip * multipliers.xyz * multipliers.xyzOld * multipliers.sorry * multipliers.astrald * multipliers.xc * multipliers.axis * multipliers.axisOld * multipliers.word * multipliers.dorcelessness * multipliers.dave;
     lastVipMultiplier = multipliers.vip;
     lastXyzMultiplier = multipliers.xyz;
     lastXyzOldMultiplier = multipliers.xyzOld;
     lastSorryMultiplier = multipliers.sorry;
+    lastAstraldMultiplier = multipliers.astrald;
     lastXcMultiplier = multipliers.xc;
     lastAxisMultiplier = multipliers.axis;
     lastAxisOldMultiplier = multipliers.axisOld;
@@ -3773,6 +3815,7 @@ function initializeBiomeInterface() {
     const wordLuckContainer = document.getElementById('word-luck-wrapper');
     const dorcelessnessLuckContainer = document.getElementById('dorcelessness-luck-wrapper');
     const ygBlessingContainer = document.getElementById('yg-blessing-wrapper');
+    const astraldBlessingContainer = document.getElementById('astrald-blessing-wrapper');
     const luckPresets = document.getElementById('luck-preset-panel');
     if (biome === 'limbo') {
         if (daveLuckContainer) daveLuckContainer.style.display = '';
@@ -3785,6 +3828,7 @@ function initializeBiomeInterface() {
         if (wordLuckContainer) wordLuckContainer.style.display = '';
         if (dorcelessnessLuckContainer) dorcelessnessLuckContainer.style.display = '';
         if (ygBlessingContainer) ygBlessingContainer.style.display = '';
+        if (astraldBlessingContainer) astraldBlessingContainer.style.display = '';
     } else {
         if (daveLuckContainer) daveLuckContainer.style.display = 'none';
         if (xyzLuckContainer) xyzLuckContainer.style.display = '';
@@ -3796,6 +3840,7 @@ function initializeBiomeInterface() {
         if (wordLuckContainer) wordLuckContainer.style.display = '';
         if (dorcelessnessLuckContainer) dorcelessnessLuckContainer.style.display = '';
         if (ygBlessingContainer) ygBlessingContainer.style.display = '';
+        if (astraldBlessingContainer) astraldBlessingContainer.style.display = '';
     }
 
     if (luckPresets) {
@@ -4387,6 +4432,7 @@ function resolveAuraStyleClass(aura, biome) {
     if (name.startsWith('Equinox')) classes.push('sigil-effect-equinox');
     if (name.startsWith('Equinox : youareanidiot')) classes.push('sigil-effect-equinox');
     if (name.startsWith('Megaphone')) classes.push('sigil-effect-megaphone');
+    if (name.startsWith('Astral : Astrald')) classes.push('sigil-effect-astrald');
     if (name.startsWith('Nyctophobia')) classes.push('sigil-effect-nyctophobia');
     if (name.startsWith('Clockwork')) classes.push('sigil-effect-clockwork');
     if (name.startsWith('Breakthrough')) classes.push('sigil-effect-breakthrough', 'sigil-border-breakthrough');
@@ -4998,7 +5044,7 @@ const AURA_BLUEPRINT_SOURCE = Object.freeze([
     { name: "Lantern - 333,333", chance: 333333 },
     { name: "Watermelon - 320,000", chance: 320000 },
     { name: "Attorney - 270,000", chance: 270000, nativeBiomes: ["edict"], cutscene: "attorney-cutscene" },
-    { name: "Astral : Astrald - 267,000", chance: 267000 },
+    { name: "Astral : Astrald - 267,000", chance: 267000, requiresAstraldBlessing: true  },
     { name: "Star Rider : Starfish Rider - 250,000", chance: 250000, breakthroughs: nativeBreakthroughs("oldstarfall") },
     { name: "Cryogenic - 250,000", chance: 250000, nativeBiomes: ["aurora"], ignoreLuck: true, fixedRollThreshold: 1 },
     { name: "Star Rider : Snowflake - 240,000", chance: 240000, breakthroughs: nativeBreakthroughs("aurora") },
@@ -5765,6 +5811,21 @@ function showYgBlessingOverlay() {
     }
 
     body.textContent = YG_BLESSING_EVENT_BLOCK_MESSAGE;
+    revealOverlay(overlay);
+}
+
+function showAstraldBlessingOverlay() {
+    if (typeof document === 'undefined') {
+        return;
+    }
+
+    const overlay = document.getElementById('astraldBlessingOverlay');
+    const body = document.getElementById('astraldBlessingBody');
+    if (!overlay || !body || typeof revealOverlay !== 'function') {
+        return;
+    }
+
+    body.textContent = ASTRALD_BLESSING_EVENT_BLOCK_MESSAGE;
     revealOverlay(overlay);
 }
 
@@ -7596,11 +7657,15 @@ document.addEventListener('DOMContentLoaded', () => {
     const axisToggle = document.getElementById('axis-luck-toggle');
     const axisOldToggle = document.getElementById('axis-old-luck-toggle');
     const wordToggle = document.getElementById('word-luck-toggle');
+    const astraldBlessingToggle = document.getElementById('astrald-blessing-toggle');
+    const dorcelessnessToggle = document.getElementById('dorcelessness-luck-toggle');
+    const ygBlessingToggle = document.getElementById('yg-blessing-toggle');
     if (xyzToggle) {
         xyzToggle.addEventListener('change', () => {
             enforceExclusiveEventToggles(xyzToggle);
             if (xyzToggle.checked) {
                 disableYgBlessing({ silent: true });
+                disableAstraldBlessing({ silent: true });
             }
             recomputeLuckValue();
         });
@@ -7610,6 +7675,7 @@ document.addEventListener('DOMContentLoaded', () => {
             enforceExclusiveEventToggles(xyzOldToggle);
             if (xyzOldToggle.checked) {
                 disableYgBlessing({ silent: true });
+                disableAstraldBlessing({ silent: true });
             }
             recomputeLuckValue();
         });
@@ -7629,6 +7695,7 @@ document.addEventListener('DOMContentLoaded', () => {
             enforceExclusiveEventToggles(xcToggle);
             if (xcToggle.checked) {
                 disableYgBlessing({ silent: true });
+                disableAstraldBlessing({ silent: true });
             }
             recomputeLuckValue();
         });
@@ -7638,6 +7705,7 @@ document.addEventListener('DOMContentLoaded', () => {
             enforceExclusiveEventToggles(axisToggle);
             if (axisToggle.checked) {
                 disableYgBlessing({ silent: true });
+                disableAstraldBlessing({ silent: true });
             }
             recomputeLuckValue();
         });
@@ -7647,6 +7715,7 @@ document.addEventListener('DOMContentLoaded', () => {
             enforceExclusiveEventToggles(axisOldToggle);
             if (axisOldToggle.checked) {
                 disableYgBlessing({ silent: true });
+                disableAstraldBlessing({ silent: true });
             }
             recomputeLuckValue();
         });
@@ -7656,14 +7725,17 @@ document.addEventListener('DOMContentLoaded', () => {
             enforceExclusiveEventToggles(wordToggle);
             if (wordToggle.checked) {
                 disableYgBlessing({ silent: true });
+                disableAstraldBlessing({ silent: true });
             }
             recomputeLuckValue();
         });
     }
-    const dorcelessnessToggle = document.getElementById('dorcelessness-luck-toggle');
     if (dorcelessnessToggle) {
         dorcelessnessToggle.addEventListener('change', () => {
             enforceExclusiveEventToggles(dorcelessnessToggle);
+            if (dorcelessnessToggle.checked) {
+                disableAstraldBlessing({ silent: true });
+            }
             recomputeLuckValue();
         });
     }
@@ -7672,11 +7744,10 @@ document.addEventListener('DOMContentLoaded', () => {
         daveDropdown.addEventListener('change', recomputeLuckValue);
     }
 
-    const ygBlessingToggle = document.getElementById('yg-blessing-toggle');
     if (ygBlessingToggle) {
         ygBlessingToggle.addEventListener('change', () => {
             if (!ygBlessingToggle.checked) {
-                return;
+                disableAstraldBlessing({ silent: true });
             }
             if (suppressYgBlessingAlert) {
                 return;
@@ -7685,6 +7756,24 @@ document.addEventListener('DOMContentLoaded', () => {
                 showYgBlessingOverlay();
                 disableYgBlessing({ silent: true });
             }
+        });
+    }
+
+    if (astraldBlessingToggle) {
+        astraldBlessingToggle.addEventListener('change', () => {
+            enforceExclusiveEventToggles(astraldBlessingToggle);
+            if (!astraldBlessingToggle.checked) {
+                disableYgBlessing({ silent: true });
+            }
+            if (suppressAstraldBlessingAlert) {
+                return;
+            }
+            if (isAnyToggleActive(ASTRALD_BLESSING_BLOCKING_EVENT_IDS)) {
+                showAstraldBlessingOverlay();
+                disableAstraldBlessing({ silent: true });
+                disableYgBlessing({ silent: true });
+            }
+            recomputeLuckValue();
         });
     }
 
@@ -7700,6 +7789,7 @@ document.addEventListener('DOMContentLoaded', () => {
             lastXyzMultiplier = 1;
             lastXyzOldMultiplier = 1;
             lastSorryMultiplier = 1;
+            lastAstraldMultiplier = 1;
             lastXcMultiplier = 1;
             lastAxisMultiplier = 1;
             lastAxisOldMultiplier = 1;
@@ -7716,6 +7806,7 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('axis-old-luck-toggle').checked = false;
             document.getElementById('dorcelessness-luck-toggle').checked = false;
             document.getElementById('yg-blessing-toggle').checked = false;
+            document.getElementById('astrald-blessing-toggle').checked = false;
             refreshCustomSelect('vip-dropdown');
             if (daveDropdown) {
                 daveDropdown.value = '1';
@@ -7755,6 +7846,17 @@ document.addEventListener('DOMContentLoaded', () => {
         ygBlessingOverlay.addEventListener('click', event => {
             if (event.target === ygBlessingOverlay) {
                 concealOverlay(ygBlessingOverlay);
+            }
+        });
+    }
+
+    const astraldBlessingOverlay = document.getElementById('astraldBlessingOverlay');
+    const astraldBlessingClose = document.getElementById('astraldBlessingClose');
+    if (astraldBlessingOverlay && astraldBlessingClose) {
+        astraldBlessingClose.addEventListener('click', () => concealOverlay(astraldBlessingOverlay));
+        astraldBlessingOverlay.addEventListener('click', event => {
+            if (event.target === astraldBlessingOverlay) {
+                concealOverlay(astraldBlessingOverlay);
             }
         });
     }
@@ -7892,6 +7994,15 @@ function isYgBlessingEnabled() {
     return Boolean(toggle && toggle.checked);
 }
 
+function isAstraldBlessingEnabled() {
+    if (typeof document === 'undefined') {
+        return false;
+    }
+
+    const toggle = document.getElementById('astrald-blessing-toggle');
+    return Boolean(toggle && toggle.checked);
+}
+
 function createAuraEvaluationContext(selection, { eventChecker, luckValue, enabledEventsSet } = {}) {
     const selectionState = selection || collectBiomeSelectionState();
     const biome = selectionState?.canonicalBiome || 'normal';
@@ -7965,6 +8076,7 @@ function createAuraEvaluationContext(selection, { eventChecker, luckValue, enabl
         baseActiveBiomes,
         baseBreakthroughBiomes,
         ygBlessingActive: isYgBlessingEnabled(),
+        astraldBlessingActive: isAstraldBlessingEnabled(),
         luckSource: getLuckSelectionSource(),
         luckValue: Number.isFinite(luckValue) ? luckValue : currentLuck,
         enabledEventsSet: enabledEventsSet instanceof Set ? enabledEventsSet : enabledEvents
@@ -8128,6 +8240,16 @@ function determineAuraEffectiveChance(aura, context) {
     }
     if (aura?.requiresYgBlessing) {
         const blessingActive = context?.ygBlessingActive === true;
+        const canonicalBiome = context?.biome || 'normal';
+        if (!blessingActive) {
+            return Infinity;
+        }
+        if (canonicalBiome === 'limbo' || canonicalBiome === 'limbo-null') {
+            return Infinity;
+        }
+    }
+    if (aura?.requiresAstraldBlessing) {
+        const blessingActive = context?.astraldBlessingActive === true;
         const canonicalBiome = context?.biome || 'normal';
         if (!blessingActive) {
             return Infinity;

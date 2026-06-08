@@ -185,6 +185,17 @@
         -1px -1px 0 rgba(80, 80, 80, 0.9);
 }
 
+.sigil-effect-astrald {
+    color: #333355;
+    text-shadow:
+        0 0 4px rgba(190, 190, 190, 0.85),
+        0 0 8px rgba(140, 140, 140, 0.75),
+        1px 1px 0 rgba(80, 80, 80, 0.9),
+        -1px 1px 0 rgba(80, 80, 80, 0.9),
+        1px -1px 0 rgba(80, 80, 80, 0.9),
+        -1px -1px 0 rgba(80, 80, 80, 0.9);
+}
+
 .sigil-outline-summer {
     text-shadow:
         0 0 4px rgba(255, 255, 140, 0.9),

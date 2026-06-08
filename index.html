@@ -175,11 +175,11 @@
                 <div class="banner__meta">
                     <h1 class="banner__title">Sol's RNG Rolling Simulator</h1>
                     <p class="banner__subtitle">
-                        <button type="button" class="banner__version-button" id="versionInfoButton" aria-haspopup="dialog" aria-expanded="false" data-version-id="v1847">v1.847</button>
+                        <button type="button" class="banner__version-button" id="versionInfoButton" aria-haspopup="dialog" aria-expanded="false" data-version-id="v1848">v1.848</button>
                         <span class="banner__subtitle-divider" aria-hidden="true">◉</span>
                         <span class="banner__subtitle-author">By <span class="banner__subtitle-author-name"><a href="https://discord.com/users/611204110955446301" target="_blank" rel="noopener">not.unnamed</a></span></span>
                         <span class="banner__subtitle-divider" aria-hidden="true">◉</span>
-                        <span class="banner__subtitle-updated">Updated <time datetime="2026-06-08T11:00:00+02:00">2026/06/08 11:00 AM CEST</time></span>
+                        <span class="banner__subtitle-updated">Updated <time datetime="2026-06-08T11:20:00+02:00">2026/06/08 11:20 PM CEST</time></span>
                         <span class="banner__subtitle-divider" aria-hidden="true">◉</span>
                         <span class="banner__subtitle-eon"><span class="banner__subtitle-game-version"><a href="https://www.roblox.com/games/15532962292/Sols-RNG" target="_blank" rel="noopener">Sol's RNG Eon 1-22</a></span></span>
                     </p>
@@ -398,6 +398,14 @@
                         <span class="form-field__label">YG Blessing</span>
                         <label class="toggle">
                             <input type="checkbox" id="yg-blessing-toggle" class="toggle__input">
+                            <span class="toggle__track"></span>
+                            <span class="toggle__thumb"></span>
+                        </label>
+                    </div>
+                    <div id="astrald-blessing-wrapper" class="form-field form-field--toggle">
+                        <span class="form-field__label">Astrald's Blessing (1.2×)</span>
+                        <label class="toggle">
+                            <input type="checkbox" id="astrald-blessing-toggle" class="toggle__input">
                             <span class="toggle__track"></span>
                             <span class="toggle__thumb"></span>
                         </label>
@@ -900,6 +908,18 @@
         </div>
     </div>
 
+    <div id="astraldBlessingOverlay" class="cutscene-warning-overlay" hidden aria-hidden="true">
+        <div class="cutscene-warning surface surface--modal" role="dialog" aria-modal="true" aria-labelledby="astraldBlessingTitle">
+            <p class="cutscene-warning__message">
+                <span id="astraldBlessingTitle" class="cutscene-warning__note">Astrald Blessing notice</span>:
+                <span id="astraldBlessingBody">Astrald blessing has not been obtainable while these events have been occurring in Sol's RNG (yet).</span>
+            </p>
+            <div class="cutscene-warning__actions">
+                <button type="button" class="interface-button interface-button--minor" id="astraldBlessingClose">Got it</button>
+            </div>
+        </div>
+    </div>
+
     <div id="rollWarningOverlay" class="cutscene-warning-overlay" hidden aria-hidden="true">
         <div class="cutscene-warning surface surface--modal" role="dialog" aria-modal="true" aria-labelledby="rollWarningTitle">
             <p class="cutscene-warning__message">
@@ -1145,6 +1165,16 @@
                             <h3 class="changelog-subupdates__title" id="changelog-subupdates-v1840" data-changelog-subupdates-title></h3>
                         </div>
                         <div class="changelog-subupdates__grid">
+                            <article class="changelog-subupdate-card">
+                                <header class="changelog-subupdate-card__header">
+                                    <span class="changelog-subupdate-card__version">v1.848</span>
+                                    <span class="changelog-subupdate-card__title changelog-tab__subtitle">Astral : Astrald fix</span>
+                                    <p class="changelog-subupdate-card__meta">Updated 2026/06/08 at 11:20 PM CEST</p>
+                                </header>
+                                <ul class="changelog-modal__list changelog-modal__list--sub">
+                                    <li>Whoopsies, forgot to make Astral : Astrald only obtainable through a luck switch like Megaphone 🥶</li>
+                                </ul>
+                            </article>
                             <article class="changelog-subupdate-card">
                                 <header class="changelog-subupdate-card__header">
                                     <span class="changelog-subupdate-card__version">v1.847</span>
