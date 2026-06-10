@@ -635,9 +635,15 @@
                             <button type="button" data-luck-value="23.21" onclick="applyDeviceBuffPreset(23.21)"><span class="archangelClass">Archangel Device</span> + "Godlike!" + "Soul Master's Talisman" x23.21</button>
                             <button type="button" data-luck-value="30.41" onclick="applyDeviceBuffPreset(30.41)"><span class="archangelClass">Archangel Device</span> + Max Luck x30.41</button>
                             <button type="button" data-luck-value="39.71" onclick="applyDeviceBuffPreset(39.71)"><span class="archangelClass">Archangel Device</span> + Max Luck + Event buffs x39.71</button>
+                            <button type="button" data-luck-value="28.21" onclick="applyDeviceBuffPreset(28.21)"><span class="archangelClass">Archangel Device</span> + <span class="plcClass">PLC Device</span> + "Godlike!" + "Soul Master's Talisman" x28.21</button>
+                            <button type="button" data-luck-value="35.41" onclick="applyDeviceBuffPreset(35.41)"><span class="archangelClass">Archangel Device</span> + <span class="plcClass">PLC Device</span> + Max Luck x35.41</button>
+                            <button type="button" data-luck-value="44.71" onclick="applyDeviceBuffPreset(44.71)"><span class="archangelClass">Archangel Device</span> + <span class="plcClass">PLC Device</span> + Max Luck + Event buffs x44.71</button>
                             <button type="button" data-luck-value="28.21" onclick="applyDeviceBuffPreset(28.21)"><span class="singularityClass">Singularity Device</span> + "Godlike!" + "Soul Master's Talisman" x28.21</button>
                             <button type="button" data-luck-value="35.41" onclick="applyDeviceBuffPreset(35.41)"><span class="singularityClass">Singularity Device</span> + Max Luck x35.41</button>
                             <button type="button" data-luck-value="44.71" onclick="applyDeviceBuffPreset(44.71)"><span class="singularityClass">Singularity Device</span> + Max Luck + Event buffs x44.71</button>
+                            <button type="button" data-luck-value="33.21" onclick="applyDeviceBuffPreset(33.21)"><span class="singularityClass">Singularity Device</span> + <span class="plcClass">PLC Device</span> + "Godlike!" + "Soul Master's Talisman" x33.21</button>
+                            <button type="button" data-luck-value="40.41" onclick="applyDeviceBuffPreset(40.41)"><span class="singularityClass">Singularity Device</span> + <span class="plcClass">PLC Device</span> + Max Luck x40.41</button>
+                            <button type="button" data-luck-value="49.71" onclick="applyDeviceBuffPreset(49.71)"><span class="singularityClass">Singularity Device</span> + <span class="plcClass">PLC Device</span> + Max Luck + Event buffs x49.71</button>
                         </div>
                     </div>
                     <div class="preset-collection">
@@ -1129,20 +1135,21 @@
                 >
                     <header class="changelog-modal__header">
                         <h2 class="changelog-modal__title">Version v1.850 Update Notes</h2>
-                        <span class="changelog-tab__subtitle">Potion, Singularity & Admin Abuse rework</span>
+                        <span class="changelog-tab__subtitle">Presets, Luck, Singularity & Admin Abuse rework</span>
                         <p class="changelog-modal__meta">Updated 2026/06/13 at 12:00 PM CEST</p>
                     </header>
                     <p class="changelog-modal__intro">Latest changes:</p>
                     <ul class="changelog-modal__list">
-                        <li>Fixed <span class="pumpBloodClass">Pump King's Blood</span> and <span class="tutPotion">Tutorial Potion</span><span class="tinyClass-unmoved">(I had no idea this disabled buffs too..)</span> allowing runes. Runes are now blocked with the same warning notification used by <span class="oblivionClass">Oblivion Potion</span>.</li>
-                            <span class="subSpace">Thanks to <a href="https://discord.com/users/1008360412632322088" class="subtitleClass" target="_blank" rel="noopener">antigodthesans</a> for pointing this out.</span>
-                        <li><span class="sigil-outline-singularity">Singularity</span> now gives a 1.1x luck multiplier and shows a notice when selected.</li>
+                        <li>Added 6 new device presets which includes <span class="plcClass">PLC Device</span> for both <span class="archangelClass">Archangel Device</span> and <span class="singularityClass">Singularity Device</span></li>
+                        <li>Fixed Quality Preferences so only Disable button animations removes button animation effects.</li>
                         <li>Luck now live-updates from the active multiplier stack, including <span class="sigil-outline-singularity">Singularity</span>, VIP, Dave's Luck, Dorcelessness, We're Sorry!, Astrald's Blessing, and dev biome Admin Abuse buffs.</li>
                             <span class="subSpace"><span class="tinyClass-colorless">I bet Zeefir is happy about this</span></span>
+                        <li>Fixed add and subtract preset buttons so added or removed luck is included in the active live multiplier stack.</li>
                         <li>Removed the manual <span class="sigil-outline-xyz">Xyz</span>, <span class="sigil-outline-mastermind">Axis</span>, <span class="sigil-outline-xc">XC</span>, and <span class="sigil-outline-edict">Word</span> Admin Abuse switches so only Dorcelessness, We're Sorry!, YG Blessing, and Astrald's Blessing remain in the multiplier panel.</li>
                         <li>Dev biome Admin Abuse buffs now apply from their biomes: <span class="sigil-outline-xyz">Another Realm</span> uses Xyz with an old/new prompt, <span class="sigil-outline-mastermind">Mastermind</span> uses Axis with an old/new prompt, <span class="sigil-outline-xc">Unknown</span> uses XC, and <span class="sigil-outline-edict">Edict</span> uses Word.</li>
-                        <li>Fixed add and subtract preset buttons so added or removed luck is included in the active live multiplier stack.</li>
-                        <li>Fixed Quality Preferences so only Disable button animations removes button animation effects.</li>
+                        <li><span class="sigil-outline-singularity">Singularity</span> now gives a 1.1x luck multiplier and shows a notice when selected.</li>
+                        <li>Fixed <span class="pumpBloodClass">Pump King's Blood</span> and <span class="tutPotion">Tutorial Potion</span><span class="tinyClass-unmoved">(I had no idea this disabled buffs too..)</span> allowing runes. Runes are now blocked with the same warning notification used by <span class="oblivionClass">Oblivion Potion</span>.</li>
+                            <span class="subSpace">Thanks to <a href="https://discord.com/users/1008360412632322088" class="subtitleClass" target="_blank" rel="noopener">antigodthesans</a> for pointing this out.</span>
                         <li>Adjusted the active preset glows so <span class="tutPotion">Tutorial Potion</span> is more yellow and <span class="pumpBloodClass">Pump King's Blood</span> is more orange.</li>
                     </ul>
                     <p>If there's any bugs you encounter, please DM me here <a href="https://discord.com/users/611204110955446301" class="subtitleClass" target="_blank" rel="noopener">@not.unnamed</a></p>
