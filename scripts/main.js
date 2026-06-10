@@ -3698,22 +3698,18 @@ function applyLuckDelta(presetValue, options = {}) {
         setLuckSelectionSource(normalizedOptions.luckSource);
     }
 
-    const luckInput = document.getElementById('luck-total');
-    const existingLuck = luckInput ? getNumericInputValue(luckInput, { min: 0 }) : currentLuck;
-    const startingLuck = Number.isFinite(existingLuck) ? existingLuck : currentLuck;
-    const targetLuck = Math.max(0, startingLuck + numericPresetValue);
-
     const multipliers = getActiveLuckMultipliers();
     const multiplierTotal = getLuckMultiplierTotal(multipliers);
-    baseLuck = multiplierTotal > 0 ? targetLuck / multiplierTotal : targetLuck;
-    currentLuck = targetLuck;
-    syncLastLuckMultipliers(multipliers);
+    const luckInput = document.getElementById('luck-total');
+    const displayedLuck = luckInput ? getNumericInputValue(luckInput, { min: 0 }) : currentLuck;
+    const derivedBaseLuck = multiplierTotal > 0 && Number.isFinite(displayedLuck)
+        ? displayedLuck / multiplierTotal
+        : displayedLuck;
+    const startingBaseLuck = Number.isFinite(baseLuck)
+        ? Math.max(0, baseLuck)
+        : Math.max(0, Number.isFinite(derivedBaseLuck) ? derivedBaseLuck : 0);
 
-    if (luckInput) {
-        setNumericInputValue(luckInput, targetLuck, { format: true, min: 0 });
-    }
-
-    syncLuckVisualEffects(targetLuck);
+    baseLuck = Math.max(0, startingBaseLuck + numericPresetValue);
 
     if (typeof applyOblivionPresetOptions === 'function') {
         applyOblivionPresetOptions(normalizedOptions);

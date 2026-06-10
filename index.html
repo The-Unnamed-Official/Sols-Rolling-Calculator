@@ -175,11 +175,11 @@
                 <div class="banner__meta">
                     <h1 class="banner__title">Sol's RNG Rolling Simulator</h1>
                     <p class="banner__subtitle">
-                        <button type="button" class="banner__version-button" id="versionInfoButton" aria-haspopup="dialog" aria-expanded="false" data-version-id="v1849">v1.849</button>
+                        <button type="button" class="banner__version-button" id="versionInfoButton" aria-haspopup="dialog" aria-expanded="false" data-version-id="v1850">v1.850</button>
                         <span class="banner__subtitle-divider" aria-hidden="true">◉</span>
                         <span class="banner__subtitle-author">By <span class="banner__subtitle-author-name"><a href="https://discord.com/users/611204110955446301" target="_blank" rel="noopener">not.unnamed</a></span></span>
                         <span class="banner__subtitle-divider" aria-hidden="true">◉</span>
-                        <span class="banner__subtitle-updated">Updated <time datetime="2026-06-10T02:45:00+02:00">2026/06/10 2:45 AM CEST</time></span>
+                        <span class="banner__subtitle-updated">Updated <time datetime="2026-06-13T12:00:00+02:00">2026/06/13 12:00 PM CEST</time></span>
                         <span class="banner__subtitle-divider" aria-hidden="true">◉</span>
                         <span class="banner__subtitle-eon"><span class="banner__subtitle-game-version"><a href="https://www.roblox.com/games/15532962292/Sols-RNG" target="_blank" rel="noopener">Sol's RNG Eon 1-22</a></span></span>
                     </p>
@@ -1119,13 +1119,44 @@
 
             <div class="changelog-modal__panels" data-changelog-panels>
                 <section
+                    id="changelog-panel-v1850"
+                    class="changelog-modal__panel"
+                    role="tabpanel"
+                    aria-labelledby="changelog-tab-v1850"
+                    data-changelog-panel="v1850"
+                    data-changelog-label="v1.850"
+                    tabindex="0"
+                >
+                    <header class="changelog-modal__header">
+                        <h2 class="changelog-modal__title">Version v1.850 Update Notes</h2>
+                        <span class="changelog-tab__subtitle">Potion, Singularity & Admin Abuse rework</span>
+                        <p class="changelog-modal__meta">Updated 2026/06/13 at 12:00 PM CEST</p>
+                    </header>
+                    <p class="changelog-modal__intro">Latest changes:</p>
+                    <ul class="changelog-modal__list">
+                        <li>Fixed <span class="pumpBloodClass">Pump King's Blood</span> and <span class="tutPotion">Tutorial Potion</span><span class="tinyClass-unmoved">(I had no idea this disabled buffs too..)</span> allowing runes. Runes are now blocked with the same warning notification used by <span class="oblivionClass">Oblivion Potion</span>.</li>
+                            <span class="subSpace">Thanks to <a href="https://discord.com/users/1008360412632322088" class="subtitleClass" target="_blank" rel="noopener">antigodthesans</a> for pointing this out.</span>
+                        <li><span class="sigil-outline-singularity">Singularity</span> now gives a 1.1x luck multiplier and shows a notice when selected.</li>
+                        <li>Luck now live-updates from the active multiplier stack, including <span class="sigil-outline-singularity">Singularity</span>, VIP, Dave's Luck, Dorcelessness, We're Sorry!, Astrald's Blessing, and dev biome Admin Abuse buffs.</li>
+                            <span class="subSpace"><span class="tinyClass-colorless">I bet Zeefir is happy about this</span></span>
+                        <li>Removed the manual <span class="sigil-outline-xyz">Xyz</span>, <span class="sigil-outline-mastermind">Axis</span>, <span class="sigil-outline-xc">XC</span>, and <span class="sigil-outline-edict">Word</span> Admin Abuse switches so only Dorcelessness, We're Sorry!, YG Blessing, and Astrald's Blessing remain in the multiplier panel.</li>
+                        <li>Dev biome Admin Abuse buffs now apply from their biomes: <span class="sigil-outline-xyz">Another Realm</span> uses Xyz with an old/new prompt, <span class="sigil-outline-mastermind">Mastermind</span> uses Axis with an old/new prompt, <span class="sigil-outline-xc">Unknown</span> uses XC, and <span class="sigil-outline-edict">Edict</span> uses Word.</li>
+                        <li>Fixed add and subtract preset buttons so added or removed luck is included in the active live multiplier stack.</li>
+                        <li>Fixed Quality Preferences so only Disable button animations removes button animation effects.</li>
+                        <li>Adjusted the active preset glows so <span class="tutPotion">Tutorial Potion</span> is more yellow and <span class="pumpBloodClass">Pump King's Blood</span> is more orange.</li>
+                    </ul>
+                    <p>If there's any bugs you encounter, please DM me here <a href="https://discord.com/users/611204110955446301" class="subtitleClass" target="_blank" rel="noopener">@not.unnamed</a></p>
+                </section>
+
+                <section
                     id="changelog-panel-v1840"
                     class="changelog-modal__panel"
                     role="tabpanel"
                     aria-labelledby="changelog-tab-v1840"
                     data-changelog-panel="v1840"
                     data-changelog-label="v1.840"
-                    tabindex="0"
+                    hidden
+                    tabindex="-1"
                 >
                     <header class="changelog-modal__header">
                         <h2 class="changelog-modal__title">Version v1.840 Update Notes</h2>
@@ -1142,24 +1173,6 @@
                             <h3 class="changelog-subupdates__title" id="changelog-subupdates-v1840" data-changelog-subupdates-title></h3>
                         </div>
                         <div class="changelog-subupdates__grid">
-                            <article class="changelog-subupdate-card">
-                                <header class="changelog-subupdate-card__header">
-                                    <span class="changelog-subupdate-card__version">v1.849</span>
-                                    <span class="changelog-subupdate-card__title changelog-tab__subtitle">Potion, Singularity & Admin Abuse rework</span>
-                                    <p class="changelog-subupdate-card__meta">Updated 2026/06/10 at 2:45 AM CEST</p>
-                                </header>
-                                <ul class="changelog-modal__list changelog-modal__list--sub">
-                                    <li>Fixed <span class="pumpBloodClass">Pump King's Blood</span> and <span class="tutPotion">Tutorial Potion</span><span class="tinyClass-unmoved">(I had no idea this disabled buffs too..)</span> allowing runes. Runes are now blocked with the same warning notification used by <span class="oblivionClass">Oblivion Potion</span>.</li>
-                                        <span class="subSpace">Thanks to <a href="https://discord.com/users/1008360412632322088" class="subtitleClass" target="_blank" rel="noopener">antigodthesans</a> for pointing this out.</span>
-                                    <li><span class="sigil-outline-singularity">Singularity</span> now gives a 1.1x luck multiplier and shows a notice when selected.</li>
-                                    <li>Luck now live-updates from the active multiplier stack, including <span class="sigil-outline-singularity">Singularity</span>, VIP, Dave's Luck, Dorcelessness, We're Sorry!, Astrald's Blessing, and dev biome Admin Abuse buffs.</li>
-                                        <span class="subSpace"><span class="tinyClass-colorless">I bet Zeefir is happy about this</span></span>
-                                    <li>Removed the manual <span class="sigil-outline-xyz">Xyz</span>, <span class="sigil-outline-mastermind">Axis</span>, <span class="sigil-outline-xc">XC</span>, and <span class="sigil-outline-edict">Word</span> Admin Abuse switches so only Dorcelessness, We're Sorry!, YG Blessing, and Astrald's Blessing remain in the multiplier panel.</li>
-                                    <li>Dev biome Admin Abuse buffs now apply from their biomes: <span class="sigil-outline-xyz">Another Realm</span> uses Xyz with an old/new prompt, <span class="sigil-outline-mastermind">Mastermind</span> uses Axis with an old/new prompt, <span class="sigil-outline-xc">Unknown</span> uses XC, and <span class="sigil-outline-edict">Edict</span> uses Word.</li>
-                                    <li>Fixed Quality Preferences so only Disable button animations removes button animation effects.</li>
-                                    <li>Adjusted the active preset glows so <span class="tutPotion">Tutorial Potion</span> is more yellow and <span class="pumpBloodClass">Pump King's Blood</span> is more orange.</li>
-                                </ul>
-                            </article>
                             <article class="changelog-subupdate-card">
                                 <header class="changelog-subupdate-card__header">
                                     <span class="changelog-subupdate-card__version">v1.848</span>
