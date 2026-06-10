@@ -566,6 +566,7 @@ const BIOME_OTHER_SELECT_ID = 'biome-other-dropdown';
 const BIOME_TIME_SELECT_ID = 'biome-time-dropdown';
 const DAY_RESTRICTED_BIOMES = new Set(['pumpkinMoon', 'graveyard']);
 const CYBERSPACE_ILLUSIONARY_WARNING_STORAGE_KEY = 'solsRollingCalculator:hideCyberspaceIllusionaryWarning';
+const SINGULARITY_MULTIPLIER_WARNING_STORAGE_KEY = 'solsRollingCalculator:hideSingularityMultiplierWarning';
 const SINGULARITY_SUMMON_SOUND_ID = 'singularitySummonSound';
 const SINGULARITY_SUMMON_FALLBACK_DURATION_MS = 12500;
 let lastPrimaryBiomeSelection = null;
@@ -574,6 +575,42 @@ let singularitySummonTimeoutId = null;
 let singularitySummonCleanup = null;
 const DEV_BIOME_IDS = new Set(['anotherRealm', 'edict', 'mastermind', 'unknown']);
 let devBiomesEnabled = false;
+const SINGULARITY_LUCK_MULTIPLIER = 1.1;
+const DEV_ADMIN_ABUSE_DEFAULT_VARIANT = 'new';
+const DEV_ADMIN_ABUSE_CONFIGS = Object.freeze({
+    anotherRealm: Object.freeze({
+        biomeLabel: 'Another Realm',
+        abuseLabel: 'Xyz',
+        variants: Object.freeze({
+            new: Object.freeze({ label: 'New Xyz Admin Abuse', multiplier: 1.2 }),
+            old: Object.freeze({ label: 'Old Xyz Admin Abuse', multiplier: 2 })
+        }),
+        defaultVariant: DEV_ADMIN_ABUSE_DEFAULT_VARIANT
+    }),
+    mastermind: Object.freeze({
+        biomeLabel: 'Mastermind',
+        abuseLabel: 'Axis',
+        variants: Object.freeze({
+            new: Object.freeze({ label: 'New Axis Admin Abuse', multiplier: 1.2 }),
+            old: Object.freeze({ label: 'Old Axis Admin Abuse', multiplier: 2 })
+        }),
+        defaultVariant: DEV_ADMIN_ABUSE_DEFAULT_VARIANT
+    }),
+    unknown: Object.freeze({
+        biomeLabel: 'Unknown',
+        abuseLabel: 'XC',
+        multiplier: 2
+    }),
+    edict: Object.freeze({
+        biomeLabel: 'Edict',
+        abuseLabel: 'Word',
+        multiplier: 1.2
+    })
+});
+const devAdminAbuseVariantSelections = {
+    anotherRealm: DEV_ADMIN_ABUSE_DEFAULT_VARIANT,
+    mastermind: DEV_ADMIN_ABUSE_DEFAULT_VARIANT
+};
 
 const ROE_NATIVE_BIOMES = Object.freeze([
     'windy',
@@ -1558,6 +1595,246 @@ const cyberspaceIllusionaryWarningManager = (() => {
                 }
             }
             this.hide();
+        },
+        isVisible() {
+            const overlay = getOverlay();
+            return Boolean(overlay && !overlay.hasAttribute('hidden'));
+        }
+    };
+})();
+
+const singularityMultiplierWarningManager = (() => {
+    let suppressed = null;
+
+    const getOverlay = () => document.getElementById('singularityMultiplierOverlay');
+
+    function readSuppressedPreference() {
+        if (suppressed !== null) {
+            return suppressed;
+        }
+
+        if (typeof window === 'undefined') {
+            suppressed = false;
+            return suppressed;
+        }
+
+        try {
+            suppressed = window.localStorage.getItem(SINGULARITY_MULTIPLIER_WARNING_STORAGE_KEY) === 'true';
+        } catch (error) {
+            suppressed = false;
+        }
+
+        return suppressed;
+    }
+
+    function focusPrimaryAction() {
+        const confirmButton = document.getElementById('singularityMultiplierConfirm');
+        if (!confirmButton || typeof confirmButton.focus !== 'function') {
+            return;
+        }
+
+        try {
+            confirmButton.focus({ preventScroll: true });
+        } catch (error) {
+            confirmButton.focus();
+        }
+    }
+
+    return {
+        isSuppressed() {
+            return readSuppressedPreference();
+        },
+        show() {
+            if (readSuppressedPreference()) {
+                return false;
+            }
+
+            const overlay = getOverlay();
+            if (!overlay) {
+                return false;
+            }
+
+            if (!overlay.hasAttribute('hidden')) {
+                return true;
+            }
+
+            revealOverlay(overlay);
+            focusPrimaryAction();
+            return true;
+        },
+        hide() {
+            concealOverlay(getOverlay());
+        },
+        suppress() {
+            suppressed = true;
+            if (typeof window !== 'undefined') {
+                try {
+                    window.localStorage.setItem(SINGULARITY_MULTIPLIER_WARNING_STORAGE_KEY, 'true');
+                } catch (error) {
+                    // Ignore storage issues so the overlay can still be hidden.
+                }
+            }
+            this.hide();
+        },
+        isVisible() {
+            const overlay = getOverlay();
+            return Boolean(overlay && !overlay.hasAttribute('hidden'));
+        }
+    };
+})();
+
+function formatLuckMultiplierLabel(multiplier) {
+    const numericMultiplier = Number(multiplier);
+    if (!Number.isFinite(numericMultiplier)) {
+        return '1x';
+    }
+    return `${Number.isInteger(numericMultiplier) ? numericMultiplier : numericMultiplier.toFixed(1)}x`;
+}
+
+function getDevAdminAbuseConfig(biomeId) {
+    return DEV_ADMIN_ABUSE_CONFIGS[biomeId] || null;
+}
+
+function getSelectedDevAdminAbuseVariant(biomeId) {
+    const config = getDevAdminAbuseConfig(biomeId);
+    if (!config || !config.variants) {
+        return null;
+    }
+
+    const selectedVariant = devAdminAbuseVariantSelections[biomeId] || config.defaultVariant || DEV_ADMIN_ABUSE_DEFAULT_VARIANT;
+    return config.variants[selectedVariant] ? selectedVariant : config.defaultVariant || DEV_ADMIN_ABUSE_DEFAULT_VARIANT;
+}
+
+function getDevAdminAbuseMultiplier(biomeId) {
+    const config = getDevAdminAbuseConfig(biomeId);
+    if (!config) {
+        return 1;
+    }
+
+    if (typeof config.multiplier === 'number') {
+        return config.multiplier;
+    }
+
+    const selectedVariant = getSelectedDevAdminAbuseVariant(biomeId);
+    return config.variants?.[selectedVariant]?.multiplier || 1;
+}
+
+function getDevAdminAbuseMultipliers(biomeId) {
+    const multipliers = {
+        xyz: 1,
+        xyzOld: 1,
+        xc: 1,
+        axis: 1,
+        axisOld: 1,
+        word: 1
+    };
+
+    if (biomeId === 'anotherRealm') {
+        const selectedVariant = getSelectedDevAdminAbuseVariant(biomeId);
+        if (selectedVariant === 'old') {
+            multipliers.xyzOld = getDevAdminAbuseMultiplier(biomeId);
+        } else {
+            multipliers.xyz = getDevAdminAbuseMultiplier(biomeId);
+        }
+        return multipliers;
+    }
+
+    if (biomeId === 'mastermind') {
+        const selectedVariant = getSelectedDevAdminAbuseVariant(biomeId);
+        if (selectedVariant === 'old') {
+            multipliers.axisOld = getDevAdminAbuseMultiplier(biomeId);
+        } else {
+            multipliers.axis = getDevAdminAbuseMultiplier(biomeId);
+        }
+        return multipliers;
+    }
+
+    if (biomeId === 'unknown') {
+        multipliers.xc = getDevAdminAbuseMultiplier(biomeId);
+        return multipliers;
+    }
+
+    if (biomeId === 'edict') {
+        multipliers.word = getDevAdminAbuseMultiplier(biomeId);
+    }
+
+    return multipliers;
+}
+
+function getSingularityLuckMultiplier(biomeId) {
+    return biomeId === 'singularity' ? SINGULARITY_LUCK_MULTIPLIER : 1;
+}
+
+function isDevAdminAbuseBiomeActive(biomeId) {
+    return Boolean(getDevAdminAbuseConfig(biomeId));
+}
+
+const adminAbuseChoiceManager = (() => {
+    let pendingBiomeId = null;
+
+    const getOverlay = () => document.getElementById('adminAbuseChoiceOverlay');
+
+    function focusPrimaryAction() {
+        const button = document.getElementById('adminAbuseChoiceNew');
+        if (!button || typeof button.focus !== 'function') {
+            return;
+        }
+
+        try {
+            button.focus({ preventScroll: true });
+        } catch (error) {
+            button.focus();
+        }
+    }
+
+    function applyVariant(variantKey) {
+        if (!pendingBiomeId) {
+            return;
+        }
+
+        const config = getDevAdminAbuseConfig(pendingBiomeId);
+        if (config?.variants?.[variantKey]) {
+            devAdminAbuseVariantSelections[pendingBiomeId] = variantKey;
+            recomputeLuckValue();
+        }
+    }
+
+    return {
+        show(biomeId) {
+            const config = getDevAdminAbuseConfig(biomeId);
+            if (!config || !config.variants) {
+                return false;
+            }
+
+            pendingBiomeId = biomeId;
+            const overlay = getOverlay();
+            const title = document.getElementById('adminAbuseChoiceTitle');
+            const body = document.getElementById('adminAbuseChoiceBody');
+            const newButton = document.getElementById('adminAbuseChoiceNew');
+            const oldButton = document.getElementById('adminAbuseChoiceOld');
+            const newVariant = config.variants.new;
+            const oldVariant = config.variants.old;
+
+            if (!overlay || !title || !body || !newButton || !oldButton || !newVariant || !oldVariant) {
+                return false;
+            }
+
+            title.textContent = `${config.abuseLabel} Admin Abuse`;
+            body.textContent = `${config.biomeLabel} applies ${config.abuseLabel} Admin Abuse. Choose the new ${formatLuckMultiplierLabel(newVariant.multiplier)} buff or the old ${formatLuckMultiplierLabel(oldVariant.multiplier)} buff.`;
+            newButton.textContent = `${newVariant.label} (${formatLuckMultiplierLabel(newVariant.multiplier)})`;
+            oldButton.textContent = `${oldVariant.label} (${formatLuckMultiplierLabel(oldVariant.multiplier)})`;
+
+            revealOverlay(overlay);
+            focusPrimaryAction();
+            return true;
+        },
+        choose(variantKey) {
+            applyVariant(variantKey);
+            this.hide();
+        },
+        hide() {
+            pendingBiomeId = null;
+            concealOverlay(getOverlay());
         },
         isVisible() {
             const overlay = getOverlay();
@@ -3135,45 +3412,21 @@ let suppressYgBlessingAlert = false;
 let suppressAstraldBlessingAlert = false;
 
 const EVENT_LUCK_TOGGLE_IDS = Object.freeze([
-    'xyz-luck-toggle',
-    'xyz-old-luck-toggle',
     'sorry-luck-toggle',
     'astrald-blessing-toggle',
-    'xc-luck-toggle',
-    'axis-luck-toggle',
-    'axis-old-luck-toggle',
-    'word-luck-toggle',
     'dorcelessness-luck-toggle'
 ]);
 
 const EXCLUSIVE_EVENT_TOGGLE_IDS = Object.freeze([
-    'xyz-luck-toggle',
-    'xyz-old-luck-toggle',
-    'xc-luck-toggle',
-    'axis-luck-toggle',
-    'axis-old-luck-toggle',
-    'word-luck-toggle',
     'dorcelessness-luck-toggle'
 ]);
 
 const YG_BLESSING_BLOCKING_EVENT_IDS = Object.freeze([
-    'xyz-luck-toggle',
-    'xyz-old-luck-toggle',
     'sorry-luck-toggle',
-    'xc-luck-toggle',
-    'axis-luck-toggle',
-    'axis-old-luck-toggle',
-    'word-luck-toggle',
     'astrald-blessing-toggle'
 ]);
 
 const ASTRALD_BLESSING_BLOCKING_EVENT_IDS = Object.freeze([
-    'xyz-luck-toggle',
-    'xyz-old-luck-toggle',
-    'xc-luck-toggle',
-    'axis-luck-toggle',
-    'axis-old-luck-toggle',
-    'word-luck-toggle',
     'yg-blessing-toggle',
     'dorcelessness-luck-toggle'
 ]);
@@ -3200,6 +3453,16 @@ function setToggleChecked(toggle, checked, { dispatchChange } = {}) {
     if (dispatchChange) {
         toggle.dispatchEvent(new Event('change', { bubbles: true }));
     }
+}
+
+function setToggleCheckedById(id, checked, options = {}) {
+    setToggleChecked(document.getElementById(id), checked, options);
+}
+
+function isCurrentDevAdminAbuseActive() {
+    const selectionState = typeof collectBiomeSelectionState === 'function' ? collectBiomeSelectionState() : null;
+    const biome = selectionState?.canonicalBiome || document.getElementById('biome-dropdown')?.value || 'normal';
+    return isDevAdminAbuseBiomeActive(biome);
 }
 
 function disableYgBlessing({ silent = false } = {}) {
@@ -3310,6 +3573,12 @@ function applyLuckValue(value, options = {}) {
         if (!('activateOblivionPreset' in normalizedOptions)) {
             normalizedOptions.activateOblivionPreset = false;
         }
+        if (!('activatePumpKingsBloodPreset' in normalizedOptions)) {
+            normalizedOptions.activatePumpKingsBloodPreset = false;
+        }
+        if (!('activateTutorialPotionPreset' in normalizedOptions)) {
+            normalizedOptions.activateTutorialPotionPreset = false;
+        }
         if (!('activateDunePreset' in normalizedOptions)) {
             normalizedOptions.activateDunePreset = false;
         }
@@ -3319,8 +3588,16 @@ function applyLuckValue(value, options = {}) {
     }
 
     if (normalizedOptions.activateOblivionPreset === true) {
+        normalizedOptions.activatePumpKingsBloodPreset = false;
+        normalizedOptions.activateTutorialPotionPreset = false;
         normalizedOptions.activateDunePreset = false;
         normalizedOptions.activateBloodPreset = false;
+    }
+    if (normalizedOptions.activatePumpKingsBloodPreset === true) {
+        normalizedOptions.activateOblivionPreset = false;
+    }
+    if (normalizedOptions.activateTutorialPotionPreset === true) {
+        normalizedOptions.activateOblivionPreset = false;
     }
     if (normalizedOptions.activateDunePreset === true) {
         normalizedOptions.activateOblivionPreset = false;
@@ -3333,33 +3610,6 @@ function applyLuckValue(value, options = {}) {
 
     baseLuck = targetLuck;
     currentLuck = targetLuck;
-    lastVipMultiplier = 1;
-    lastXyzMultiplier = 1;
-    lastXyzOldMultiplier + 1;
-    lastSorryMultiplier = 1;
-    lastAstraldMultiplier = 1;
-    lastXcMultiplier = 1;
-    lastAxisMultiplier = 1;
-    lastAxisOldMultiplier + 1;
-    lastWordMultiplier = 1;
-    lastDaveMultiplier = 1;
-    lastDorcelessnessMultiplier = 1;
-    document.getElementById('vip-dropdown').value = '1';
-    document.getElementById('xyz-luck-toggle').checked = false;
-    document.getElementById('xyz-old-luck-toggle').checked = false;
-    document.getElementById('sorry-luck-toggle').checked = false;
-    document.getElementById('xc-luck-toggle').checked = false;
-    document.getElementById('axis-luck-toggle').checked = false;
-    document.getElementById('axis-old-luck-toggle').checked = false;
-    document.getElementById('word-luck-toggle').checked = false;
-    document.getElementById('dorcelessness-luck-toggle').checked = false;
-    document.getElementById('yg-blessing-toggle').checked = false;
-    document.getElementById('astrald-blessing-toggle').checked = false;
-    refreshCustomSelect('vip-dropdown');
-    if (document.getElementById('dave-luck-dropdown')) {
-        document.getElementById('dave-luck-dropdown').value = '1';
-        refreshCustomSelect('dave-luck-dropdown');
-    }
 
     if (luckInput) {
         setNumericInputValue(luckInput, targetLuck, { format: true, min: 0 });
@@ -3376,40 +3626,65 @@ function applyLuckValue(value, options = {}) {
     if (typeof applyBloodPresetOptions === 'function') {
         applyBloodPresetOptions(normalizedOptions);
     }
+    if (typeof applyPumpKingsBloodPresetOptions === 'function') {
+        applyPumpKingsBloodPresetOptions(normalizedOptions);
+    }
+    if (typeof applyTutorialPotionPresetOptions === 'function') {
+        applyTutorialPotionPresetOptions(normalizedOptions);
+    }
+
+    recomputeLuckValue();
 }
 
 function getActiveLuckMultipliers() {
     const controls = {
         biome: document.getElementById('biome-dropdown'),
         vip: document.getElementById('vip-dropdown'),
-        xyz: document.getElementById('xyz-luck-toggle'),
-        xyzOld: document.getElementById('xyz-old-luck-toggle'),
         sorry: document.getElementById('sorry-luck-toggle'),
         astrald: document.getElementById('astrald-blessing-toggle'),
-        xc: document.getElementById('xc-luck-toggle'),
-        axis: document.getElementById('axis-luck-toggle'),
-        axisOld: document.getElementById('axis-old-luck-toggle'),
-        word: document.getElementById('word-luck-toggle'),
         dorcelessness: document.getElementById('dorcelessness-luck-toggle'),
         dave: document.getElementById('dave-luck-dropdown')
     };
 
     const biomeValue = controls.biome ? controls.biome.value : 'normal';
     const isLimboBiome = biomeValue === 'limbo';
+    const devAdminAbuseMultipliers = getDevAdminAbuseMultipliers(biomeValue);
 
     return {
         vip: parseFloat(controls.vip ? controls.vip.value : '1') || 1,
-        xyz: controls.xyz && controls.xyz.checked ? 1.2 : 1,
-        xyzOld: controls.xyzOld && controls.xyzOld.checked ? 2 : 1,
+        xyz: devAdminAbuseMultipliers.xyz,
+        xyzOld: devAdminAbuseMultipliers.xyzOld,
         sorry: controls.sorry && controls.sorry.checked ? 1.2 : 1,
         astrald: controls.astrald && controls.astrald.checked ? 1.2 : 1,
-        xc: controls.xc && controls.xc.checked ? 2 : 1,
-        axis: controls.axis && controls.axis.checked ? 1.2 : 1,
-        axisOld: controls.axisOld && controls.axisOld.checked ? 2 : 1,
-        word: controls.word && controls.word.checked ? 1.2 : 1,
+        xc: devAdminAbuseMultipliers.xc,
+        axis: devAdminAbuseMultipliers.axis,
+        axisOld: devAdminAbuseMultipliers.axisOld,
+        word: devAdminAbuseMultipliers.word,
+        singularity: getSingularityLuckMultiplier(biomeValue),
         dorcelessness: controls.dorcelessness && controls.dorcelessness.checked ? 2 : 1,
         dave: isLimboBiome && controls.dave ? parseFloat(controls.dave.value) || 1 : 1
     };
+}
+
+function getLuckMultiplierTotal(multipliers) {
+    return Object.values(multipliers).reduce((total, multiplier) => {
+        const numericMultiplier = Number(multiplier);
+        return total * (Number.isFinite(numericMultiplier) && numericMultiplier > 0 ? numericMultiplier : 1);
+    }, 1);
+}
+
+function syncLastLuckMultipliers(multipliers) {
+    lastVipMultiplier = multipliers.vip;
+    lastXyzMultiplier = multipliers.xyz;
+    lastXyzOldMultiplier = multipliers.xyzOld;
+    lastSorryMultiplier = multipliers.sorry;
+    lastAstraldMultiplier = multipliers.astrald;
+    lastXcMultiplier = multipliers.xc;
+    lastAxisMultiplier = multipliers.axis;
+    lastAxisOldMultiplier = multipliers.axisOld;
+    lastWordMultiplier = multipliers.word;
+    lastDaveMultiplier = multipliers.dave;
+    lastDorcelessnessMultiplier = multipliers.dorcelessness;
 }
 
 function applyLuckDelta(presetValue, options = {}) {
@@ -3429,20 +3704,10 @@ function applyLuckDelta(presetValue, options = {}) {
     const targetLuck = Math.max(0, startingLuck + numericPresetValue);
 
     const multipliers = getActiveLuckMultipliers();
-    const multiplierTotal = multipliers.vip * multipliers.xyz * multipliers.xyzOld * multipliers.sorry * multipliers.astrald * multipliers.xc * multipliers.axis * multipliers.axisOld * multipliers.dorcelessness * multipliers.dave;
+    const multiplierTotal = getLuckMultiplierTotal(multipliers);
     baseLuck = multiplierTotal > 0 ? targetLuck / multiplierTotal : targetLuck;
     currentLuck = targetLuck;
-    lastVipMultiplier = multipliers.vip;
-    lastXyzMultiplier = multipliers.xyz;
-    lastXyzOldMultiplier = multipliers.xyzOld;
-    lastSorryMultiplier = multipliers.sorry;
-    lastAstraldMultiplier = multipliers.astrald;
-    lastXcMultiplier = multipliers.xc;
-    lastAxisMultiplier = multipliers.axis;
-    lastAxisOldMultiplier = multipliers.axisOld;
-    lastWordMultiplier = multipliers.word;
-    lastDaveMultiplier = multipliers.dave;
-    lastDorcelessnessMultiplier = multipliers.dorcelessness;
+    syncLastLuckMultipliers(multipliers);
 
     if (luckInput) {
         setNumericInputValue(luckInput, targetLuck, { format: true, min: 0 });
@@ -3459,6 +3724,14 @@ function applyLuckDelta(presetValue, options = {}) {
     if (typeof applyBloodPresetOptions === 'function') {
         applyBloodPresetOptions(normalizedOptions);
     }
+    if (typeof applyPumpKingsBloodPresetOptions === 'function') {
+        applyPumpKingsBloodPresetOptions(normalizedOptions);
+    }
+    if (typeof applyTutorialPotionPresetOptions === 'function') {
+        applyTutorialPotionPresetOptions(normalizedOptions);
+    }
+
+    recomputeLuckValue();
 }
 
 function buildLuckAdjustmentOptions(button, action, fallbackSource) {
@@ -3470,10 +3743,30 @@ function buildLuckAdjustmentOptions(button, action, fallbackSource) {
     if (button && button.id === 'luck-preset-oblivion') {
         if (action === 'add') {
             options.activateOblivionPreset = true;
+            options.activatePumpKingsBloodPreset = false;
+            options.activateTutorialPotionPreset = false;
             options.activateDunePreset = false;
             options.activateBloodPreset = false;
         } else if (action === 'subtract') {
             options.activateOblivionPreset = false;
+        }
+    }
+
+    if (button && button.id === 'luck-preset-pump-kings-blood') {
+        if (action === 'add') {
+            options.activatePumpKingsBloodPreset = true;
+            options.activateOblivionPreset = false;
+        } else if (action === 'subtract') {
+            options.activatePumpKingsBloodPreset = false;
+        }
+    }
+
+    if (button && button.id === 'luck-preset-tutorial-potion') {
+        if (action === 'add') {
+            options.activateTutorialPotionPreset = true;
+            options.activateOblivionPreset = false;
+        } else if (action === 'subtract') {
+            options.activateTutorialPotionPreset = false;
         }
     }
 
@@ -3596,120 +3889,14 @@ function applyDeviceBuffPreset(multiplier) {
 }
 
 function recomputeLuckValue() {
-    const controls = {
-        biome: document.getElementById('biome-dropdown'),
-        vip: document.getElementById('vip-dropdown'),
-        xyz: document.getElementById('xyz-luck-toggle'),
-        xyzOld: document.getElementById('xyz-old-luck-toggle'),
-        sorry: document.getElementById('sorry-luck-toggle'),
-        astrald: document.getElementById('astrald-blessing-toggle'),
-        xc: document.getElementById('xc-luck-toggle'),
-        axis: document.getElementById('axis-luck-toggle'),
-        axisOld: document.getElementById('axis-old-luck-toggle'),
-        word: document.getElementById('word-luck-toggle'),
-        dorcelessness: document.getElementById('dorcelessness-luck-toggle'),
-        dave: document.getElementById('dave-luck-dropdown'),
-        luckInput: document.getElementById('luck-total')
-    };
+    const luckField = document.getElementById('luck-total');
+    const normalizedBaseLuck = Number.isFinite(baseLuck) ? Math.max(0, baseLuck) : 0;
+    baseLuck = normalizedBaseLuck;
 
-    const biomeValue = controls.biome ? controls.biome.value : 'normal';
-    const isLimboBiome = biomeValue === 'limbo';
+    const multipliers = getActiveLuckMultipliers();
+    currentLuck = normalizedBaseLuck * getLuckMultiplierTotal(multipliers);
+    syncLastLuckMultipliers(multipliers);
 
-    const multipliers = {
-        vip: parseFloat(controls.vip ? controls.vip.value : '1') || 1,
-        xyz: controls.xyz && controls.xyz.checked ? 1.2 : 1,
-        xyzOld: controls.xyzOld && controls.xyzOld.checked ? 2 : 1,
-        sorry: controls.sorry && controls.sorry.checked ? 1.2 : 1,
-        astrald: controls.astrald && controls.astrald.checked ? 1.2 : 1,
-        xc: controls.xc && controls.xc.checked ? 2 : 1,
-        axis: controls.axis && controls.axis.checked ? 1.2 : 1,
-        axisOld: controls.axisOld && controls.axisOld.checked ? 2 : 1,
-        word: controls.word && controls.word.checked ? 1.2 : 1,
-        dorcelessness: controls.dorcelessness && controls.dorcelessness.checked ? 2 : 1,
-        dave: isLimboBiome && controls.dave ? parseFloat(controls.dave.value) || 1 : 1
-    };
-
-    const luckField = controls.luckInput;
-    const rawLuckValue = luckField ? (luckField.dataset.rawValue ?? '') : '';
-    const enteredLuck = rawLuckValue ? Number.parseFloat(rawLuckValue) : NaN;
-    if (luckField && rawLuckValue && Number.isFinite(enteredLuck) && enteredLuck !== currentLuck) {
-        const normalizedLuck = Math.max(0, enteredLuck);
-        baseLuck = normalizedLuck;
-        currentLuck = normalizedLuck;
-        setLuckSelectionSource(LUCK_SELECTION_SOURCE.MANUAL);
-        lastVipMultiplier = 1;
-        lastXyzMultiplier = 1;
-        lastXyzOldMultiplier = 1;
-        lastSorryMultiplier = 1;
-        lastAstraldMultiplier = 1;
-        lastXcMultiplier = 1;
-        lastAxisMultiplier = 1;
-        lastAxisOldMultiplier = 1;
-        lastWordMultiplier = 1;
-        lastDaveMultiplier = 1;
-        lastDorcelessnessMultiplier = 1;
-        if (controls.vip) {
-            controls.vip.value = '1';
-            refreshCustomSelect('vip-dropdown');
-        }
-        if (controls.xyz) {
-            controls.xyz.checked = false;
-        }
-        if (controls.xyzOld) {
-            controls.xyzOld.checked = false;
-        }
-        if (controls.sorry) {
-            controls.sorry.checked = false;
-        }
-        if (controls.astrald) {
-            controls.astrald.checked = false;
-        }
-        if (controls.xc) {
-            controls.xc.checked = false;
-        }
-        if (controls.axis) {
-            controls.axis.checked = false;
-        }
-        if (controls.axisOld) {
-            controls.axisOld.checked = false;
-        }
-        if (controls.word) {
-            controls.word.checked = false;
-        }
-        if (controls.dorcelessness) {
-            controls.dorcelessness.checked = false;
-        }
-        if (controls.dave) {
-            controls.dave.value = '1';
-            refreshCustomSelect('dave-luck-dropdown');
-        }
-        const shouldFormat = document.activeElement !== luckField;
-        setNumericInputValue(luckField, baseLuck, { format: shouldFormat, min: 0 });
-        syncLuckVisualEffects(baseLuck);
-        if (typeof applyOblivionPresetOptions === 'function') {
-            applyOblivionPresetOptions({ activateOblivionPreset: false });
-        }
-        if (typeof applyDunePresetOptions === 'function') {
-            applyDunePresetOptions({ activateDunePreset: false });
-        }
-        if (typeof applyBloodPresetOptions === 'function') {
-            applyBloodPresetOptions({ activateBloodPreset: false });
-        }
-        return;
-    }
-
-    currentLuck = baseLuck * multipliers.vip * multipliers.xyz * multipliers.xyzOld * multipliers.sorry * multipliers.astrald * multipliers.xc * multipliers.axis * multipliers.axisOld * multipliers.word * multipliers.dorcelessness * multipliers.dave;
-    lastVipMultiplier = multipliers.vip;
-    lastXyzMultiplier = multipliers.xyz;
-    lastXyzOldMultiplier = multipliers.xyzOld;
-    lastSorryMultiplier = multipliers.sorry;
-    lastAstraldMultiplier = multipliers.astrald;
-    lastXcMultiplier = multipliers.xc;
-    lastAxisMultiplier = multipliers.axis;
-    lastAxisOldMultiplier = multipliers.axisOld;
-    lastWordMultiplier = multipliers.word;
-    lastDaveMultiplier = multipliers.dave;
-    lastDorcelessnessMultiplier = multipliers.dorcelessness;
     if (luckField) {
         const shouldFormat = document.activeElement !== luckField;
         setNumericInputValue(luckField, currentLuck, { format: shouldFormat, min: 0 });
@@ -3720,21 +3907,15 @@ function recomputeLuckValue() {
 
 function resetLuckFields() {
     const luckInput = document.getElementById('luck-total');
+    baseLuck = 1;
+    currentLuck = 1;
     if (luckInput) {
         const shouldFormat = document.activeElement !== luckInput;
-        setNumericInputValue(luckInput, 1, { format: shouldFormat, min: 0 });
+        setNumericInputValue(luckInput, baseLuck, { format: shouldFormat, min: 0 });
     }
     playSoundEffect(clickSoundEffectElement, 'ui');
+    clearActiveLuckPotionPresets();
     recomputeLuckValue();
-    if (typeof applyOblivionPresetOptions === 'function') {
-        applyOblivionPresetOptions({ activateOblivionPreset: false });
-    }
-    if (typeof applyDunePresetOptions === 'function') {
-        applyDunePresetOptions({ activateDunePreset: false });
-    }
-    if (typeof applyBloodPresetOptions === 'function') {
-        applyBloodPresetOptions({ activateBloodPreset: false });
-    }
 }
 
 function resetRollCount() {
@@ -3806,41 +3987,28 @@ function initializeBiomeInterface() {
     const selectionState = collectBiomeSelectionState();
     const biome = selectionState.canonicalBiome;
     const daveLuckContainer = document.getElementById('dave-luck-wrapper');
-    const xyzLuckContainer = document.getElementById('xyz-luck-wrapper');
-    const xyzOldLuckContainer = document.getElementById('xyz-old-luck-wrapper');
     const sorryLuckContainer = document.getElementById('sorry-luck-wrapper');
-    const xcLuckContainer = document.getElementById('xc-luck-wrapper');
-    const axisLuckContainer = document.getElementById('axis-luck-wrapper');
-    const axisOldLuckContainer = document.getElementById('axis-old-luck-wrapper');
-    const wordLuckContainer = document.getElementById('word-luck-wrapper');
     const dorcelessnessLuckContainer = document.getElementById('dorcelessness-luck-wrapper');
     const ygBlessingContainer = document.getElementById('yg-blessing-wrapper');
     const astraldBlessingContainer = document.getElementById('astrald-blessing-wrapper');
     const luckPresets = document.getElementById('luck-preset-panel');
     if (biome === 'limbo') {
         if (daveLuckContainer) daveLuckContainer.style.display = '';
-        if (xyzLuckContainer) xyzLuckContainer.style.display = '';
-        if (xyzOldLuckContainer) xyzOldLuckContainer.style.display = '';
         if (sorryLuckContainer) sorryLuckContainer.style.display = '';
-        if (xcLuckContainer) xcLuckContainer.style.display = '';
-        if (axisLuckContainer) axisLuckContainer.style.display = '';
-        if (axisOldLuckContainer) axisOldLuckContainer.style.display = '';
-        if (wordLuckContainer) wordLuckContainer.style.display = '';
         if (dorcelessnessLuckContainer) dorcelessnessLuckContainer.style.display = '';
         if (ygBlessingContainer) ygBlessingContainer.style.display = '';
         if (astraldBlessingContainer) astraldBlessingContainer.style.display = '';
     } else {
         if (daveLuckContainer) daveLuckContainer.style.display = 'none';
-        if (xyzLuckContainer) xyzLuckContainer.style.display = '';
-        if (xyzOldLuckContainer) xyzOldLuckContainer.style.display = '';
         if (sorryLuckContainer) sorryLuckContainer.style.display = '';
-        if (xcLuckContainer) xcLuckContainer.style.display = '';
-        if (axisLuckContainer) axisLuckContainer.style.display = '';
-        if (axisOldLuckContainer) axisOldLuckContainer.style.display = '';
-        if (wordLuckContainer) wordLuckContainer.style.display = '';
         if (dorcelessnessLuckContainer) dorcelessnessLuckContainer.style.display = '';
         if (ygBlessingContainer) ygBlessingContainer.style.display = '';
         if (astraldBlessingContainer) astraldBlessingContainer.style.display = '';
+    }
+
+    if (isDevAdminAbuseBiomeActive(biome)) {
+        disableYgBlessing({ silent: true });
+        disableAstraldBlessing({ silent: true });
     }
 
     if (luckPresets) {
@@ -4313,7 +4481,7 @@ const nativeAuraOutlineOverrides = new Map([
 
 const auraOutlineOverrides = new Map([
     ['Illusionary', 'sigil-outline-illusionary'],
-    ['Prowler', 'sigil-outline-prowler'],
+    ['Prowler', 'sigil-outline-xyz'],
     ['Verdict', 'sigil-outline-edict'],
     ['Attorney', 'sigil-outline-edict'],
     ['Divinus : Love', 'sigil-outline-valentine-2024'],
@@ -4498,6 +4666,12 @@ const MEMORY_AURA_LABEL = 'Memory';
 const OBLIVION_POTION_ODDS = 2000;
 const OBLIVION_MEMORY_ODDS = 100;
 
+const PUMP_KINGS_BLOOD_PRESET_IDENTIFIER = 'pump-kings-blood';
+const PUMP_KINGS_BLOOD_LUCK_TARGET = 700000;
+
+const TUTORIAL_POTION_PRESET_IDENTIFIER = 'tutorial-potion';
+const TUTORIAL_POTION_LUCK_TARGET = 5000;
+
 const DUNE_PRESET_IDENTIFIER = 'dune';
 const DUNE_LUCK_TARGET = 10000;
 const DUNE_AURA_LABEL = 'Neferkhaf';
@@ -4525,6 +4699,9 @@ let oblivionPresetEnabled = false;
 let oblivionAuraData = null;
 let memoryAuraData = null;
 
+let pumpKingsBloodPresetEnabled = false;
+let tutorialPotionPresetEnabled = false;
+
 let dunePresetEnabled = false;
 let duneAuraData = null;
 
@@ -4545,6 +4722,30 @@ function handleOblivionPresetSelection(presetKey) {
         activateOblivionPreset: true,
         activateDunePreset: false,
         activateBloodPreset: false
+    });
+}
+
+function handlePumpKingsBloodPresetSelection(presetKey) {
+    if (presetKey !== PUMP_KINGS_BLOOD_PRESET_IDENTIFIER) {
+        return;
+    }
+
+    applyLuckValue(PUMP_KINGS_BLOOD_LUCK_TARGET, {
+        luckSource: LUCK_SELECTION_SOURCE.STANDARD_PRESET,
+        activatePumpKingsBloodPreset: true,
+        activateOblivionPreset: false
+    });
+}
+
+function handleTutorialPotionPresetSelection(presetKey) {
+    if (presetKey !== TUTORIAL_POTION_PRESET_IDENTIFIER) {
+        return;
+    }
+
+    applyLuckValue(TUTORIAL_POTION_LUCK_TARGET, {
+        luckSource: LUCK_SELECTION_SOURCE.STANDARD_PRESET,
+        activateTutorialPotionPreset: true,
+        activateOblivionPreset: false
     });
 }
 
@@ -4599,6 +4800,8 @@ function syncLuckPotionPresetAvailability(isLimboSelected) {
 
     const potionPresetButtons = [
         'luck-preset-oblivion',
+        'luck-preset-pump-kings-blood',
+        'luck-preset-tutorial-potion',
         'luck-preset-dune',
         ...Object.values(BLOOD_PRESET_CONFIGS).map(config => config.buttonId)
     ];
@@ -4637,6 +4840,26 @@ function applyOblivionPresetOptions(options = {}) {
     }
 }
 
+function applyPumpKingsBloodPresetOptions(options = {}) {
+    if ('activatePumpKingsBloodPreset' in options) {
+        pumpKingsBloodPresetEnabled = options.activatePumpKingsBloodPreset === true;
+        syncLuckPotionButtonState('luck-preset-pump-kings-blood', pumpKingsBloodPresetEnabled);
+        if (typeof updateBiomeControlConstraints === 'function') {
+            updateBiomeControlConstraints({ triggerSync: true });
+        }
+    }
+}
+
+function applyTutorialPotionPresetOptions(options = {}) {
+    if ('activateTutorialPotionPreset' in options) {
+        tutorialPotionPresetEnabled = options.activateTutorialPotionPreset === true;
+        syncLuckPotionButtonState('luck-preset-tutorial-potion', tutorialPotionPresetEnabled);
+        if (typeof updateBiomeControlConstraints === 'function') {
+            updateBiomeControlConstraints({ triggerSync: true });
+        }
+    }
+}
+
 function applyDunePresetOptions(options = {}) {
     if ('activateDunePreset' in options) {
         dunePresetEnabled = options.activateDunePreset === true;
@@ -4655,6 +4878,42 @@ function applyBloodPresetOptions(options = {}) {
         Object.values(BLOOD_PRESET_CONFIGS).forEach(config => {
             syncLuckPotionButtonState(config.buttonId, config.identifier === activeBloodPresetIdentifier);
         });
+    }
+}
+
+function clearActiveLuckPotionPresets({ syncBiomeConstraints = true } = {}) {
+    let changed = false;
+
+    if (oblivionPresetEnabled) {
+        oblivionPresetEnabled = false;
+        syncLuckPotionButtonState('luck-preset-oblivion', false);
+        changed = true;
+    }
+    if (pumpKingsBloodPresetEnabled) {
+        pumpKingsBloodPresetEnabled = false;
+        syncLuckPotionButtonState('luck-preset-pump-kings-blood', false);
+        changed = true;
+    }
+    if (tutorialPotionPresetEnabled) {
+        tutorialPotionPresetEnabled = false;
+        syncLuckPotionButtonState('luck-preset-tutorial-potion', false);
+        changed = true;
+    }
+    if (dunePresetEnabled) {
+        dunePresetEnabled = false;
+        syncLuckPotionButtonState('luck-preset-dune', false);
+        changed = true;
+    }
+    if (activeBloodPresetIdentifier) {
+        activeBloodPresetIdentifier = null;
+        Object.values(BLOOD_PRESET_CONFIGS).forEach(config => {
+            syncLuckPotionButtonState(config.buttonId, false);
+        });
+        changed = true;
+    }
+
+    if (changed && typeof updateBiomeControlConstraints === 'function') {
+        updateBiomeControlConstraints({ triggerSync: syncBiomeConstraints });
     }
 }
 
@@ -5702,6 +5961,20 @@ document.addEventListener('keydown', event => {
         const cyberspaceOverlayVisible = cyberspaceOverlay && !cyberspaceOverlay.hasAttribute('hidden');
         if (cyberspaceOverlayVisible) {
             cyberspaceIllusionaryWarningManager.hide();
+            return;
+        }
+
+        const singularityOverlay = document.getElementById('singularityMultiplierOverlay');
+        const singularityOverlayVisible = singularityOverlay && !singularityOverlay.hasAttribute('hidden');
+        if (singularityOverlayVisible) {
+            singularityMultiplierWarningManager.hide();
+            return;
+        }
+
+        const adminAbuseChoiceOverlay = document.getElementById('adminAbuseChoiceOverlay');
+        const adminAbuseChoiceOverlayVisible = adminAbuseChoiceOverlay && !adminAbuseChoiceOverlay.hasAttribute('hidden');
+        if (adminAbuseChoiceOverlayVisible) {
+            adminAbuseChoiceManager.hide();
             return;
         }
         closeOpenSelectMenus(null, { focusSummary: true });
@@ -6902,6 +7175,52 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    const singularityConfirm = document.getElementById('singularityMultiplierConfirm');
+    if (singularityConfirm) {
+        singularityConfirm.addEventListener('click', () => {
+            singularityMultiplierWarningManager.hide();
+        });
+    }
+
+    const singularityDismiss = document.getElementById('singularityMultiplierDismiss');
+    if (singularityDismiss) {
+        singularityDismiss.addEventListener('click', () => {
+            singularityMultiplierWarningManager.suppress();
+        });
+    }
+
+    const singularityOverlay = document.getElementById('singularityMultiplierOverlay');
+    if (singularityOverlay) {
+        singularityOverlay.addEventListener('click', event => {
+            if (event.target === singularityOverlay) {
+                singularityMultiplierWarningManager.hide();
+            }
+        });
+    }
+
+    const adminAbuseChoiceNew = document.getElementById('adminAbuseChoiceNew');
+    if (adminAbuseChoiceNew) {
+        adminAbuseChoiceNew.addEventListener('click', () => {
+            adminAbuseChoiceManager.choose('new');
+        });
+    }
+
+    const adminAbuseChoiceOld = document.getElementById('adminAbuseChoiceOld');
+    if (adminAbuseChoiceOld) {
+        adminAbuseChoiceOld.addEventListener('click', () => {
+            adminAbuseChoiceManager.choose('old');
+        });
+    }
+
+    const adminAbuseChoiceOverlay = document.getElementById('adminAbuseChoiceOverlay');
+    if (adminAbuseChoiceOverlay) {
+        adminAbuseChoiceOverlay.addEventListener('click', event => {
+            if (event.target === adminAbuseChoiceOverlay) {
+                adminAbuseChoiceManager.hide();
+            }
+        });
+    }
+
     const rollConfirm = document.getElementById('rollWarningConfirm');
     if (rollConfirm) {
         rollConfirm.addEventListener('click', () => {
@@ -7351,7 +7670,8 @@ function updateBiomeControlConstraints({ source = null, triggerSync = true } = {
     let timeChanged = false;
 
     const selectedRuneConfig = resolveRuneConfiguration(otherSelect.value);
-    const runeActive = selectedRuneConfig !== null && !oblivionPresetEnabled;
+    const specialPotionBlocksRunes = oblivionPresetEnabled || pumpKingsBloodPresetEnabled || tutorialPotionPresetEnabled;
+    const runeActive = selectedRuneConfig !== null && !specialPotionBlocksRunes;
 
     if (timeSelect.value === 'day' && DAY_RESTRICTED_BIOMES.has(primarySelect.value)) {
         if (source === BIOME_TIME_SELECT_ID) {
@@ -7429,7 +7749,7 @@ function updateBiomeControlConstraints({ source = null, triggerSync = true } = {
         }
     }
 
-    if (oblivionPresetEnabled && selectedRuneConfig !== null) {
+    if (specialPotionBlocksRunes && selectedRuneConfig !== null) {
         otherSelect.value = 'none';
         otherChanged = true;
     }
@@ -7438,6 +7758,12 @@ function updateBiomeControlConstraints({ source = null, triggerSync = true } = {
     if (limboSelected) {
         if (oblivionPresetEnabled) {
             applyOblivionPresetOptions({ activateOblivionPreset: false });
+        }
+        if (pumpKingsBloodPresetEnabled) {
+            applyPumpKingsBloodPresetOptions({ activatePumpKingsBloodPreset: false });
+        }
+        if (tutorialPotionPresetEnabled) {
+            applyTutorialPotionPresetOptions({ activateTutorialPotionPreset: false });
         }
         if (dunePresetEnabled) {
             applyDunePresetOptions({ activateDunePreset: false });
@@ -7455,6 +7781,16 @@ function updateBiomeControlConstraints({ source = null, triggerSync = true } = {
         if (oblivionPresetEnabled && runeOption) {
             disabled = true;
             title = 'Unavailable while Oblivion preset is active.';
+            option.dataset.conditionMessage = title;
+            option.dataset.conditionLabel = option.textContent?.trim() || 'Rune';
+        } else if (pumpKingsBloodPresetEnabled && runeOption) {
+            disabled = true;
+            title = "Unavailable while Pump King's Blood is active.";
+            option.dataset.conditionMessage = title;
+            option.dataset.conditionLabel = option.textContent?.trim() || 'Rune';
+        } else if (tutorialPotionPresetEnabled && runeOption) {
+            disabled = true;
+            title = 'Unavailable while Tutorial Potion is active.';
             option.dataset.conditionMessage = title;
             option.dataset.conditionLabel = option.textContent?.trim() || 'Rune';
         } else if (limboSelected && runeOption) {
@@ -7508,6 +7844,12 @@ function updateBiomeControlConstraints({ source = null, triggerSync = true } = {
     if (currentPrimarySelection !== lastPrimaryBiomeSelection) {
         if (currentPrimarySelection === 'cyberspace' && !cyberspaceIllusionaryWarningManager.isSuppressed()) {
             cyberspaceIllusionaryWarningManager.show();
+        }
+        if (currentPrimarySelection === 'singularity' && !singularityMultiplierWarningManager.isSuppressed()) {
+            singularityMultiplierWarningManager.show();
+        }
+        if (currentPrimarySelection === 'anotherRealm' || currentPrimarySelection === 'mastermind') {
+            adminAbuseChoiceManager.show(currentPrimarySelection);
         }
         const unmetRequirements = EVENT_BIOME_CONDITION_MESSAGES[currentPrimarySelection]
             && !biomeEventRequirementsMet(currentPrimarySelection);
@@ -7651,81 +7993,15 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     document.getElementById('vip-dropdown').addEventListener('change', recomputeLuckValue);
-    const xyzToggle = document.getElementById('xyz-luck-toggle');
-    const xyzOldToggle = document.getElementById('xyz-old-luck-toggle');
     const sorryToggle = document.getElementById('sorry-luck-toggle');
-    const axisToggle = document.getElementById('axis-luck-toggle');
-    const axisOldToggle = document.getElementById('axis-old-luck-toggle');
-    const wordToggle = document.getElementById('word-luck-toggle');
     const astraldBlessingToggle = document.getElementById('astrald-blessing-toggle');
     const dorcelessnessToggle = document.getElementById('dorcelessness-luck-toggle');
     const ygBlessingToggle = document.getElementById('yg-blessing-toggle');
-    if (xyzToggle) {
-        xyzToggle.addEventListener('change', () => {
-            enforceExclusiveEventToggles(xyzToggle);
-            if (xyzToggle.checked) {
-                disableYgBlessing({ silent: true });
-                disableAstraldBlessing({ silent: true });
-            }
-            recomputeLuckValue();
-        });
-    }
-    if (xyzOldToggle) {
-        xyzOldToggle.addEventListener('change', () => {
-            enforceExclusiveEventToggles(xyzOldToggle);
-            if (xyzOldToggle.checked) {
-                disableYgBlessing({ silent: true });
-                disableAstraldBlessing({ silent: true });
-            }
-            recomputeLuckValue();
-        });
-    }
     if (sorryToggle) {
         sorryToggle.addEventListener('change', () => {
             enforceExclusiveEventToggles(sorryToggle);
             if (sorryToggle.checked) {
                 disableYgBlessing({ silent: true });
-            }
-            recomputeLuckValue();
-        });
-    }
-    const xcToggle = document.getElementById('xc-luck-toggle');
-    if (xcToggle) {
-        xcToggle.addEventListener('change', () => {
-            enforceExclusiveEventToggles(xcToggle);
-            if (xcToggle.checked) {
-                disableYgBlessing({ silent: true });
-                disableAstraldBlessing({ silent: true });
-            }
-            recomputeLuckValue();
-        });
-    }
-    if (axisToggle) {
-        axisToggle.addEventListener('change', () => {
-            enforceExclusiveEventToggles(axisToggle);
-            if (axisToggle.checked) {
-                disableYgBlessing({ silent: true });
-                disableAstraldBlessing({ silent: true });
-            }
-            recomputeLuckValue();
-        });
-    }
-    if (axisOldToggle) {
-        axisOldToggle.addEventListener('change', () => {
-            enforceExclusiveEventToggles(axisOldToggle);
-            if (axisOldToggle.checked) {
-                disableYgBlessing({ silent: true });
-                disableAstraldBlessing({ silent: true });
-            }
-            recomputeLuckValue();
-        });
-    }
-    if (wordToggle) {
-        wordToggle.addEventListener('change', () => {
-            enforceExclusiveEventToggles(wordToggle);
-            if (wordToggle.checked) {
-                disableYgBlessing({ silent: true });
-                disableAstraldBlessing({ silent: true });
             }
             recomputeLuckValue();
         });
@@ -7752,7 +8028,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (suppressYgBlessingAlert) {
                 return;
             }
-            if (isAnyToggleActive(YG_BLESSING_BLOCKING_EVENT_IDS)) {
+            if (isAnyToggleActive(YG_BLESSING_BLOCKING_EVENT_IDS) || isCurrentDevAdminAbuseActive()) {
                 showYgBlessingOverlay();
                 disableYgBlessing({ silent: true });
             }
@@ -7768,7 +8044,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (suppressAstraldBlessingAlert) {
                 return;
             }
-            if (isAnyToggleActive(ASTRALD_BLESSING_BLOCKING_EVENT_IDS)) {
+            if (isAnyToggleActive(ASTRALD_BLESSING_BLOCKING_EVENT_IDS) || isCurrentDevAdminAbuseActive()) {
                 showAstraldBlessingOverlay();
                 disableAstraldBlessing({ silent: true });
                 disableYgBlessing({ silent: true });
@@ -7783,37 +8059,15 @@ document.addEventListener('DOMContentLoaded', () => {
             const parsed = raw ? Number.parseFloat(raw) : NaN;
             const normalized = Number.isFinite(parsed) && parsed > 0 ? Math.max(0, parsed) : 0;
             baseLuck = normalized;
-            currentLuck = normalized;
             setLuckSelectionSource(LUCK_SELECTION_SOURCE.MANUAL);
-            lastVipMultiplier = 1;
-            lastXyzMultiplier = 1;
-            lastXyzOldMultiplier = 1;
-            lastSorryMultiplier = 1;
-            lastAstraldMultiplier = 1;
-            lastXcMultiplier = 1;
-            lastAxisMultiplier = 1;
-            lastAxisOldMultiplier = 1;
-            lastWordMultiplier = 1;
-            lastDaveMultiplier = 1;
-            lastDorcelessnessMultiplier = 1;
-            document.getElementById('vip-dropdown').value = '1';
-            document.getElementById('sorry-luck-toggle').checked = false;
-            document.getElementById('xyz-luck-toggle').checked = false;
-            document.getElementById('xyz-old-luck-toggle').checked = false;
-            document.getElementById('xc-luck-toggle').checked = false;
-            document.getElementById('word-luck-toggle').checked = false;
-            document.getElementById('axis-luck-toggle').checked = false;
-            document.getElementById('axis-old-luck-toggle').checked = false;
-            document.getElementById('dorcelessness-luck-toggle').checked = false;
-            document.getElementById('yg-blessing-toggle').checked = false;
-            document.getElementById('astrald-blessing-toggle').checked = false;
-            refreshCustomSelect('vip-dropdown');
-            if (daveDropdown) {
-                daveDropdown.value = '1';
-                refreshCustomSelect('dave-luck-dropdown');
-            }
-            syncLuckVisualEffects(baseLuck);
+            clearActiveLuckPotionPresets({ syncBiomeConstraints: false });
+            const multipliers = getActiveLuckMultipliers();
+            currentLuck = baseLuck * getLuckMultiplierTotal(multipliers);
+            syncLastLuckMultipliers(multipliers);
+            syncLuckVisualEffects(currentLuck);
         });
+
+        luckField.addEventListener('blur', recomputeLuckValue);
     }
 
     const biomeDropdown = document.getElementById('biome-dropdown');
@@ -9933,7 +10187,7 @@ const SHARE_IMAGE_OUTLINE_STYLES = Object.freeze({
             { color: 'rgba(60, 20, 0, 0.95)', blur: 0, offsetX: -1, offsetY: -1 }
         ]
     },
-    'sigil-outline-prowler': {
+    'sigil-outline-xyz': {
         shadows: [
             { color: 'rgba(80, 170, 255, 0.85)', blur: 4 },
             { color: 'rgba(20, 110, 220, 0.7)', blur: 8 },

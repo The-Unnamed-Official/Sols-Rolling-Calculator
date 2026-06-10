@@ -1289,6 +1289,18 @@ body.quality-no-button-animations .bloodIIClass {
     --button-background: rgba(34, 28, 14, 0.9);
 }
 
+.preset-matrix #luck-preset-pump-kings-blood.luck-preset-button--active {
+    --button-background: linear-gradient(110deg, rgba(86, 34, 0, 0.95), rgba(28, 12, 2, 0.95), rgba(112, 42, 0, 0.92));
+    border-color: rgba(255, 137, 32, 0.95);
+    box-shadow: inset 0 0 24px rgba(255, 125, 13, 0.46), 0 0 14px rgba(255, 118, 13, 0.68), 0 0 28px rgba(145, 64, 0, 0.58);
+}
+
+.preset-matrix #luck-preset-tutorial-potion.luck-preset-button--active {
+    --button-background: linear-gradient(110deg, rgba(90, 78, 0, 0.94), rgba(28, 27, 4, 0.95), rgba(116, 104, 0, 0.92));
+    border-color: rgba(255, 247, 64, 0.95);
+    box-shadow: inset 0 0 24px rgba(255, 247, 0, 0.42), 0 0 14px rgba(255, 247, 64, 0.62), 0 0 28px rgba(180, 144, 0, 0.52);
+}
+
 .preset-matrix #luck-preset-oblivion {
     --button-background: linear-gradient(110deg, rgba(28, 0, 52, 0.94), rgba(8, 0, 18, 0.94), rgba(50, 0, 84, 0.92));
     --button-border-color: rgba(159, 64, 255, 0.72);

@@ -175,11 +175,11 @@
                 <div class="banner__meta">
                     <h1 class="banner__title">Sol's RNG Rolling Simulator</h1>
                     <p class="banner__subtitle">
-                        <button type="button" class="banner__version-button" id="versionInfoButton" aria-haspopup="dialog" aria-expanded="false" data-version-id="v1848">v1.848</button>
+                        <button type="button" class="banner__version-button" id="versionInfoButton" aria-haspopup="dialog" aria-expanded="false" data-version-id="v1849">v1.849</button>
                         <span class="banner__subtitle-divider" aria-hidden="true">◉</span>
                         <span class="banner__subtitle-author">By <span class="banner__subtitle-author-name"><a href="https://discord.com/users/611204110955446301" target="_blank" rel="noopener">not.unnamed</a></span></span>
                         <span class="banner__subtitle-divider" aria-hidden="true">◉</span>
-                        <span class="banner__subtitle-updated">Updated <time datetime="2026-06-08T11:20:00+02:00">2026/06/08 11:20 PM CEST</time></span>
+                        <span class="banner__subtitle-updated">Updated <time datetime="2026-06-10T02:45:00+02:00">2026/06/10 2:45 AM CEST</time></span>
                         <span class="banner__subtitle-divider" aria-hidden="true">◉</span>
                         <span class="banner__subtitle-eon"><span class="banner__subtitle-game-version"><a href="https://www.roblox.com/games/15532962292/Sols-RNG" target="_blank" rel="noopener">Sol's RNG Eon 1-22</a></span></span>
                     </p>
@@ -334,54 +334,6 @@
                         <span class="form-field__label">Dorcelessness (2×)</span>
                         <label class="toggle">
                             <input type="checkbox" id="dorcelessness-luck-toggle" class="toggle__input">
-                            <span class="toggle__track"></span>
-                            <span class="toggle__thumb"></span>
-                        </label>
-                    </div>
-                    <div id="xyz-old-luck-wrapper" class="form-field form-field--toggle">
-                        <span class="form-field__label">XYZ Admin Abuse (2× old)</span>
-                        <label class="toggle">
-                            <input type="checkbox" id="xyz-old-luck-toggle" class="toggle__input">
-                            <span class="toggle__track"></span>
-                            <span class="toggle__thumb"></span>
-                        </label>
-                    </div>
-                    <div id="axis-old-luck-wrapper" class="form-field form-field--toggle">
-                        <span class="form-field__label">Axis Admin Abuse (2× old)</span>
-                        <label class="toggle">
-                            <input type="checkbox" id="axis-old-luck-toggle" class="toggle__input">
-                            <span class="toggle__track"></span>
-                            <span class="toggle__thumb"></span>
-                        </label>
-                    </div>
-                    <div id="xc-luck-wrapper" class="form-field form-field--toggle">
-                        <span class="form-field__label">XC Admin Abuse (2×)</span>
-                        <label class="toggle">
-                            <input type="checkbox" id="xc-luck-toggle" class="toggle__input">
-                            <span class="toggle__track"></span>
-                            <span class="toggle__thumb"></span>
-                        </label>
-                    </div>
-                    <div id="xyz-luck-wrapper" class="form-field form-field--toggle">
-                        <span class="form-field__label">XYZ Admin Abuse (1.2×)</span>
-                        <label class="toggle">
-                            <input type="checkbox" id="xyz-luck-toggle" class="toggle__input">
-                            <span class="toggle__track"></span>
-                            <span class="toggle__thumb"></span>
-                        </label>
-                    </div>
-                    <div id="axis-luck-wrapper" class="form-field form-field--toggle">
-                        <span class="form-field__label">Axis Admin Abuse (1.2×)</span>
-                        <label class="toggle">
-                            <input type="checkbox" id="axis-luck-toggle" class="toggle__input">
-                            <span class="toggle__track"></span>
-                            <span class="toggle__thumb"></span>
-                        </label>
-                    </div>
-                    <div id="word-luck-wrapper" class="form-field form-field--toggle">
-                        <span class="form-field__label">Word Admin Abuse (1.2×)</span>
-                        <label class="toggle">
-                            <input type="checkbox" id="word-luck-toggle" class="toggle__input">
                             <span class="toggle__track"></span>
                             <span class="toggle__thumb"></span>
                         </label>
@@ -653,7 +605,7 @@
                             <button type="button" id="luck-preset-ten-million" class="luck-preset-button--shake" data-shake-tier="aggressive" data-luck-value="10000000" onclick="applyLuckValue(10000000, { luckSource: 'standard-preset' })"><span class="insaneLuckPresetClass">10 Million Preset +10,000,000</span></button>
                             <button type="button" id="luck-preset-one-million" class="luck-preset-button--shake" data-shake-tier="mild" data-luck-value="1000000" onclick="applyLuckValue(1000000, { luckSource: 'standard-preset' })"><span class="insaneLuckPresetClass">1 Million Preset +1,000,000</span></button>
                             <button type="button" data-luck-value="890000" onclick="applyLuckValue(890000, { luckSource: 'standard-preset', activateDunePreset: true, activateBloodPreset: 'blood-ii' })"><span class="allPotionsClass">All Potions</span> +890,000</button>
-                            <button type="button" data-luck-value="700000" onclick="applyLuckValue(700000, { luckSource: 'standard-preset' })"><span class="pumpBloodClass">Pump King's Blood</span> +700,000</button>
+                            <button type="button" id="luck-preset-pump-kings-blood" data-luck-value="700000" aria-pressed="false" onclick="handlePumpKingsBloodPresetSelection('pump-kings-blood')"><span class="pumpBloodClass">Pump King's Blood</span> +700,000 <span class="preset-active-label" aria-hidden="true">Active</span></button>
                             <button type="button" id="luck-preset-oblivion" data-luck-value="600000" aria-pressed="false" onclick="handleOblivionPresetSelection('oblivion')"><span class="oblivionClass">Oblivion Potion</span> +600,000 <span class="preset-active-label" aria-hidden="true">Active</span></button>
                             <button type="button" data-luck-value="600000" onclick="applyLuckValue(600000, { luckSource: 'standard-preset' })"><span class="godlikeClass">Godlike</span> + <span class="heavenlyClass">Heavenly</span> + <span class="boundClass">Bound</span> +600,000</button>
                             <button type="button" data-luck-value="400000" onclick="applyLuckValue(400000, { luckSource: 'standard-preset' })"><span class="godlikeClass">Godlike</span> +400,000</button>
@@ -669,7 +621,7 @@
                             <button type="button" id="luck-preset-blood-i" data-luck-value="11000" aria-pressed="false" onclick="handleBloodPresetSelection('blood-i')"><span class="bloodClass">Red Moon I</span> +11,000 <span class="preset-active-label" aria-hidden="true">Active</span></button>
                             <button type="button" id="luck-preset-dune" data-luck-value="10000" aria-pressed="false" onclick="handleDunePresetSelection('dune')"><span class="duneClass">Potion of the Dune</span> +10,000 <span class="preset-active-label" aria-hidden="true">Active</span></button>
                             <button type="button" data-luck-value="10000" onclick="applyLuckValue(10000, { luckSource: 'standard-preset' })"><span class="popClass">Popping Potion</span> +10,000</button>
-                            <button type="button" data-luck-value="5000" onclick="applyLuckValue(5000, { luckSource: 'standard-preset' })"><span class="tutPotion">Tutorial Potion</span> +5,000</button>
+                            <button type="button" id="luck-preset-tutorial-potion" data-luck-value="5000" aria-pressed="false" onclick="handleTutorialPotionPresetSelection('tutorial-potion')"><span class="tutPotion">Tutorial Potion</span> +5,000 <span class="preset-active-label" aria-hidden="true">Active</span></button>
                         </div>
                     </div>
                     <div class="preset-collection preset-collection--compact">
@@ -880,6 +832,31 @@
             <div class="cutscene-warning__actions">
                 <button type="button" class="interface-button interface-button--minor" id="cyberspaceIllusionaryConfirm">Understood</button>
                 <button type="button" class="interface-button interface-button--ghost" id="cyberspaceIllusionaryDismiss">Never show again</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="singularityMultiplierOverlay" class="cutscene-warning-overlay" hidden aria-hidden="true">
+        <div class="cutscene-warning surface surface--modal" role="dialog" aria-modal="true" aria-labelledby="singularityMultiplierTitle">
+            <p class="cutscene-warning__message">
+                <span id="singularityMultiplierTitle" class="cutscene-warning__note">Singularity notice</span>: Singularity now grants a <span class="cutscene-warning__ratio">1.1×</span> luck multiplier while it is active.
+            </p>
+            <div class="cutscene-warning__actions">
+                <button type="button" class="interface-button interface-button--minor" id="singularityMultiplierConfirm">Understood</button>
+                <button type="button" class="interface-button interface-button--ghost" id="singularityMultiplierDismiss">Never show again</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="adminAbuseChoiceOverlay" class="cutscene-warning-overlay" hidden aria-hidden="true">
+        <div class="cutscene-warning surface surface--modal" role="dialog" aria-modal="true" aria-labelledby="adminAbuseChoiceTitle">
+            <p class="cutscene-warning__message">
+                <span id="adminAbuseChoiceTitle" class="cutscene-warning__note">Admin Abuse choice</span>:
+                <span id="adminAbuseChoiceBody">Choose which Admin Abuse buff to use.</span>
+            </p>
+            <div class="cutscene-warning__actions">
+                <button type="button" class="interface-button interface-button--minor" id="adminAbuseChoiceNew">Use new buff</button>
+                <button type="button" class="interface-button interface-button--ghost" id="adminAbuseChoiceOld">Use old buff</button>
             </div>
         </div>
     </div>
@@ -1165,6 +1142,24 @@
                             <h3 class="changelog-subupdates__title" id="changelog-subupdates-v1840" data-changelog-subupdates-title></h3>
                         </div>
                         <div class="changelog-subupdates__grid">
+                            <article class="changelog-subupdate-card">
+                                <header class="changelog-subupdate-card__header">
+                                    <span class="changelog-subupdate-card__version">v1.849</span>
+                                    <span class="changelog-subupdate-card__title changelog-tab__subtitle">Potion, Singularity & Admin Abuse rework</span>
+                                    <p class="changelog-subupdate-card__meta">Updated 2026/06/10 at 2:45 AM CEST</p>
+                                </header>
+                                <ul class="changelog-modal__list changelog-modal__list--sub">
+                                    <li>Fixed <span class="pumpBloodClass">Pump King's Blood</span> and <span class="tutPotion">Tutorial Potion</span><span class="tinyClass-unmoved">(I had no idea this disabled buffs too..)</span> allowing runes. Runes are now blocked with the same warning notification used by <span class="oblivionClass">Oblivion Potion</span>.</li>
+                                        <span class="subSpace">Thanks to <a href="https://discord.com/users/1008360412632322088" class="subtitleClass" target="_blank" rel="noopener">antigodthesans</a> for pointing this out.</span>
+                                    <li><span class="sigil-outline-singularity">Singularity</span> now gives a 1.1x luck multiplier and shows a notice when selected.</li>
+                                    <li>Luck now live-updates from the active multiplier stack, including <span class="sigil-outline-singularity">Singularity</span>, VIP, Dave's Luck, Dorcelessness, We're Sorry!, Astrald's Blessing, and dev biome Admin Abuse buffs.</li>
+                                        <span class="subSpace"><span class="tinyClass-colorless">I bet Zeefir is happy about this</span></span>
+                                    <li>Removed the manual <span class="sigil-outline-xyz">Xyz</span>, <span class="sigil-outline-mastermind">Axis</span>, <span class="sigil-outline-xc">XC</span>, and <span class="sigil-outline-edict">Word</span> Admin Abuse switches so only Dorcelessness, We're Sorry!, YG Blessing, and Astrald's Blessing remain in the multiplier panel.</li>
+                                    <li>Dev biome Admin Abuse buffs now apply from their biomes: <span class="sigil-outline-xyz">Another Realm</span> uses Xyz with an old/new prompt, <span class="sigil-outline-mastermind">Mastermind</span> uses Axis with an old/new prompt, <span class="sigil-outline-xc">Unknown</span> uses XC, and <span class="sigil-outline-edict">Edict</span> uses Word.</li>
+                                    <li>Fixed Quality Preferences so only Disable button animations removes button animation effects.</li>
+                                    <li>Adjusted the active preset glows so <span class="tutPotion">Tutorial Potion</span> is more yellow and <span class="pumpBloodClass">Pump King's Blood</span> is more orange.</li>
+                                </ul>
+                            </article>
                             <article class="changelog-subupdate-card">
                                 <header class="changelog-subupdate-card__header">
                                     <span class="changelog-subupdate-card__version">v1.848</span>
