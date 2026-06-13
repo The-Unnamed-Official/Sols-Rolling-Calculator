@@ -30,6 +30,7 @@
 }
 
 .sigil-outline-empty {
+    color: #080808;
     text-shadow:
         0 0 12px rgba(16, 71, 124, 0.35),
         0 0 3px rgba(0, 12, 28, 0.85),

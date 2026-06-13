@@ -10229,6 +10229,7 @@ const SHARE_IMAGE_RARITY_STYLES = Object.freeze({
 
 const SHARE_IMAGE_OUTLINE_STYLES = Object.freeze({
     'sigil-outline-empty': {
+        fill: '#080808',
         shadows: [
             { color: 'rgba(255, 255, 255, 0.72)', blur: 0, offsetX: 1, offsetY: 0 },
             { color: 'rgba(255, 255, 255, 0.72)', blur: 0, offsetX: -1, offsetY: 0 },
