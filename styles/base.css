@@ -267,6 +267,12 @@ body.quality-no-button-animations .roll-cancel {
     transition: none !important;
 }
 
+body.quality-no-button-animations .resource-link,
+body.quality-no-button-animations .support-float *,
+body.quality-no-button-animations .donation-float * {
+    transition: none !important;
+}
+
 body.quality-no-roll-sigil-animations [class*="sigil-"],
 body.quality-no-roll-sigil-animations .feed__viewport [class*="roll"],
 body.quality-no-roll-sigil-animations .feed__viewport [class*="aura"] {
@@ -295,24 +301,16 @@ body.quality-no-shakes .luck-preset-button--shake {
 }
 
 body.performance-mode [class*="Class"]:not(.bloodIIClass):not(.oblivionClass),
-body.performance-mode .banner__emblem--spinning img,
-body.performance-mode .support-float--collapsed .support-float__toggle::before,
-body.performance-mode .support-float--collapsed .support-float__toggle::after,
-body.performance-mode .support-float--collapsed .support-float__toggle-icon--expand i,
-body.performance-mode .support-float__link:hover .support-float__icon i,
-body.performance-mode .support-float__link:focus-visible .support-float__icon i {
+body.performance-mode .banner__emblem--spinning img {
     animation: none !important;
 }
 
-body.performance-mode .interface-button,
-body.performance-mode .interface-toggle,
-body.performance-mode .roll-trigger,
-body.performance-mode .roll-cancel,
-body.performance-mode .resource-link,
-body.performance-mode .luck-preset-button,
-body.performance-mode .support-float *,
-body.performance-mode .donation-float * {
-    transition: none !important;
+body.quality-no-button-animations .support-float--collapsed .support-float__toggle::before,
+body.quality-no-button-animations .support-float--collapsed .support-float__toggle::after,
+body.quality-no-button-animations .support-float--collapsed .support-float__toggle-icon--expand i,
+body.quality-no-button-animations .support-float__link:hover .support-float__icon i,
+body.quality-no-button-animations .support-float__link:focus-visible .support-float__icon i {
+    animation: none !important;
 }
 
 body.performance-mode .interface-footer,
