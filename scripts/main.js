@@ -8229,7 +8229,7 @@ const GLITCH_BREAKTHROUGH_EXCLUSION_SET = new Set(['day', 'night', 'aurora', 'si
 const NULL_BIOME_FILTER = new Set(['null', 'limbo-null']);
 const LEVIATHAN_ALLOWED_BIOMES = new Set(['rainy', 'glitch']);
 const MONARCH_ALLOWED_BIOMES = new Set(['corruption', 'glitch']);
-const EMPTY_ALLOWED_BIOMES = new Set(['null']);
+const EMPTY_ALLOWED_BIOMES = new Set(['null', 'limbo']);
 const DREAMCATCHER_ALLOWED_BIOMES = new Set(['night']);
 const auraGlitchBreakthroughMinChanceCache = new Array(AURA_REGISTRY.length).fill(null);
 
@@ -8522,6 +8522,9 @@ function determineAuraEffectiveChance(aura, context) {
         const inAllowedBiome = EMPTY_ALLOWED_BIOMES.has(canonicalBiome);
         if (!inAllowedBiome) {
             return Infinity;
+        }
+        if (canonicalBiome === 'limbo') {
+            return Math.max(1, aura.chance);
         }
     }
     if (aura?.name === DREAMCATCHER_AURA_NAME) {
