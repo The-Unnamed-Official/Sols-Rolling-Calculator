@@ -29,6 +29,16 @@
     text-shadow: 0 0 12px rgba(16, 71, 124, 0.35), 0 0 3px rgba(0, 12, 28, 0.85);
 }
 
+.sigil-outline-empty {
+    text-shadow:
+        0 0 12px rgba(16, 71, 124, 0.35),
+        0 0 3px rgba(0, 12, 28, 0.85),
+        1px 0 0 rgba(255, 255, 255, 0.72),
+        -1px 0 0 rgba(255, 255, 255, 0.72),
+        0 1px 0 rgba(255, 255, 255, 0.62),
+        0 -1px 0 rgba(255, 255, 255, 0.62);
+}
+
 .rarity-tier-glorious {
     color: #851010;
     text-shadow: 0 0 12px rgba(133, 16, 16, 0.4), 0 0 3px rgba(26, 0, 0, 0.8);
