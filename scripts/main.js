@@ -4043,14 +4043,39 @@ function playAuraVideo(videoId, options = {}) {
             document.body.appendChild(overlay);
         }
 
+        let controls = document.getElementById('skip-cinematic-controls');
+        if (!controls) {
+            controls = document.createElement('div');
+            controls.id = 'skip-cinematic-controls';
+            controls.className = 'skip-cinematic-controls';
+            document.body.appendChild(controls);
+        }
+
         let skipButton = document.getElementById('skip-cinematic-button');
         if (!skipButton) {
-            skipButton = document.createElement('div');
+            skipButton = document.createElement('button');
+            skipButton.type = 'button';
             skipButton.id = 'skip-cinematic-button';
             skipButton.className = 'skip-cinematic-button';
             skipButton.textContent = 'Skip cutscene';
-            document.body.appendChild(skipButton);
+            controls.appendChild(skipButton);
+        } else if (skipButton.parentElement !== controls) {
+            controls.appendChild(skipButton);
         }
+
+        let skipAllButton = document.getElementById('skip-all-cinematic-button');
+        if (!skipAllButton) {
+            skipAllButton = document.createElement('button');
+            skipAllButton.type = 'button';
+            skipAllButton.id = 'skip-all-cinematic-button';
+            skipAllButton.className = 'skip-cinematic-button skip-cinematic-button--all';
+            skipAllButton.textContent = 'Skip All Cutscenes';
+            controls.appendChild(skipAllButton);
+        } else if (skipAllButton.parentElement !== controls) {
+            controls.appendChild(skipAllButton);
+        }
+        controls.appendChild(skipButton);
+        controls.appendChild(skipAllButton);
 
         const video = document.getElementById(videoId);
         if (!video) {
@@ -4079,7 +4104,9 @@ function playAuraVideo(videoId, options = {}) {
 
         overlay.style.display = 'flex';
         video.style.display = 'block';
+        controls.style.display = 'flex';
         skipButton.style.display = 'block';
+        skipAllButton.style.display = 'block';
         if (!appState.scrollLock && document.body) {
             const body = document.body;
             const previousOverflow = body.style.overflow;
@@ -4098,7 +4125,7 @@ function playAuraVideo(videoId, options = {}) {
         video.muted = !appState.audio.roll;
 
         let cleanedUp = false;
-        const cleanup = () => {
+        const cleanup = (result = 'finished') => {
             if (cleanedUp) return;
             cleanedUp = true;
             appState.videoPlaying = false;
@@ -4110,7 +4137,9 @@ function playAuraVideo(videoId, options = {}) {
             if (document.body) {
                 document.body.classList.remove('first-person-cutscene-active');
             }
+            controls.style.display = 'none';
             skipButton.style.display = 'none';
+            skipAllButton.style.display = 'none';
             if (appState.scrollLock && document.body) {
                 const body = document.body;
                 body.style.overflow = appState.scrollLock.overflow;
@@ -4123,11 +4152,19 @@ function playAuraVideo(videoId, options = {}) {
             video.onended = null;
             video.onerror = null;
             skipButton.onclick = null;
-            resolve();
+            skipAllButton.onclick = null;
+            resolve(result);
         };
 
         skipButton.onclick = () => {
-            cleanup();
+            cleanup('skipped');
+        };
+
+        skipAllButton.onclick = () => {
+            if (typeof options.onSkipAll === 'function') {
+                options.onSkipAll();
+            }
+            cleanup('skipped-all');
         };
 
         video.onended = () => {
@@ -4209,10 +4246,19 @@ async function playAuraSequence(queue) {
         enteredFullscreen = await requestFullscreen(documentElement);
     }
 
+    let skipRemainingCutscenes = false;
+    const skipAllCutscenes = () => {
+        skipRemainingCutscenes = true;
+    };
+
     try {
         for (const videoId of queue) {
-            if (!appState.cinematic) break;
-            await playAuraVideo(videoId, { manageAmbient: false });
+            if (!appState.cinematic || skipRemainingCutscenes) break;
+            const result = await playAuraVideo(videoId, {
+                manageAmbient: false,
+                onSkipAll: skipAllCutscenes
+            });
+            if (result === 'skipped-all') break;
         }
     } finally {
         if (ambientMusic && shouldResumeAmbient && appState.audio.roll) {
@@ -5151,7 +5197,7 @@ const AURA_BLUEPRINT_SOURCE = Object.freeze([
     { name: "Virtual Memory - 232,232,232", chance:  232232232, breakthroughs: nativeBreakthroughs("cyberspace"), nativeBiomes: ["cyberspace"] },
     { name: "Encase - 230,000,000", chance: 230000000, breakthroughs: nativeBreakthroughs("aurora") },
     { name: "Surfer : Shard Surfer - 225,000,000", chance: 225000000, breakthroughs: nativeBreakthroughs("snowy") },
-    { name: "HYPER-VOLT : EVER-STORM - 225,000,000", chance: 225000000 },
+    { name: "Hyper-volt : Ever-Storm - 225,000,000", chance: 225000000 },
     { name: "Lumenpool - 220,000,000", chance: 220000000, breakthroughs: nativeBreakthroughs("rainy") },
     { name: "Oppression - 220,000,000", chance: 220000000, nativeBiomes: ["glitch"], cutscene: "oppression-cutscene" },
     { name: "Impeached - 200,000,000", chance: 200000000, breakthroughs: nativeBreakthroughs("corruption") },
@@ -5255,6 +5301,7 @@ const AURA_BLUEPRINT_SOURCE = Object.freeze([
     { name: "Divinus : Guardian - 7,777,777", chance: 7777777, breakthroughs: nativeBreakthroughs("heaven") },
     { name: "Nautilus : Lost - 7,700,000", chance: 7700000 },
     { name: "Velocity - 7,630,000", chance: 7630000 },
+    { name: "Hyper-volt - 7,500,000", chance: 7500000 },
     { name: "Faith - 7,250,000", chance: 7250000, breakthroughs: nativeBreakthroughs("heaven") },
     { name: "Refraction - 7,242,000", chance: 7242000 },
     { name: "Anubis - 7,200,000", chance: 7200000, breakthroughs: nativeBreakthroughs("sandstorm") },

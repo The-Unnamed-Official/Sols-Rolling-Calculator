@@ -2044,20 +2044,34 @@ body:not(.reduce-motion):not(.quality-no-shakes) .luck-preset-button--shake.luck
     cursor: pointer;
 }
 
-.skip-cinematic-button {
+.skip-cinematic-controls {
     position: fixed;
-    top: clamp(16px, 4vw, 32px);
-    right: clamp(16px, 4vw, 32px);
+    top: clamp(8px, 2vw, 16px);
+    right: clamp(8px, 2vw, 16px);
+    display: none;
+    align-items: flex-start;
+    justify-content: flex-end;
+    gap: 8px;
+    max-width: calc(100vw - 16px);
+    z-index: 1002;
+}
+
+.skip-cinematic-button {
+    position: relative;
+    flex: 0 1 auto;
+    min-width: 0;
     padding: 12px 18px;
     --button-background: rgba(6, 12, 24, 0.9);
     color: var(--text-primary);
     --button-border-color: rgba(127, 227, 255, 0.4);
     text-transform: uppercase;
     letter-spacing: 0.18em;
+    font-family: inherit;
     font-size: 12px;
+    line-height: 1.2;
     cursor: pointer;
     display: none;
-    z-index: 1002;
+    white-space: nowrap;
     box-shadow: 0 12px 24px rgba(0, 0, 0, 0.45);
     transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease, background 0.25s ease;
 }
@@ -2077,6 +2091,19 @@ body:not(.reduce-motion):not(.quality-no-shakes) .luck-preset-button--shake.luck
 .skip-cinematic-button:active {
     --button-scale: 0.97;
     --button-raise: 0px;
+}
+
+@media (max-width: 480px) {
+    .skip-cinematic-controls {
+        gap: 6px;
+        max-width: calc(100vw - 12px);
+    }
+
+    .skip-cinematic-button {
+        padding: 9px 10px;
+        letter-spacing: 0.08em;
+        font-size: 10px;
+    }
 }
 
 .harvester-curse {
