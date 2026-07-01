@@ -352,6 +352,17 @@
     }
 }
 
+.bulletClass {
+    color: #ffffff;
+    text-shadow:
+        0 0 4px rgba(152, 255, 139, 0.85),
+        0 0 8px rgba(152, 255, 118, 0.75),
+        1px 1px 0 rgba(104, 176, 87, 0.9),
+        -1px 1px 0 rgba(101, 167, 91, 0.9),
+        1px -1px 0 rgba(87, 136, 72, 0.9),
+        -1px -1px 0 rgba(77, 159, 81, 0.9);
+}
+
 .sigil-outline-dreamspace {
     color: #ffe9ff;
     text-shadow:
