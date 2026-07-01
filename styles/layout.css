@@ -701,12 +701,43 @@
         opacity: 1;
         filter: drop-shadow(0 0 8px rgb(var(--accent-rgb) / 0.45));
     }
-    25% {
-        opacity: 0.33;
-    }
     50% {
         opacity: 0.1;
         filter: none;
+    }
+}
+
+.feed__bullet-label {
+    position: relative;
+    margin-right: 2px;
+    animation: bulletFade 5s ease infinite;
+    color: var(--accent-strong);
+}
+
+@keyframes bulletFade {
+    0%, 100% {
+        opacity: 1;
+        filter: drop-shadow(0 0 33px rgb(var(--accent-rgb) / 0.55));
+        top: 5px;
+    }
+    50% {
+        opacity: 0.5;
+        filter: drop-shadow(0 0 55px rgb(var(--surface-glow) / 0.33));
+        top: -5px;
+    }
+}
+
+.feed__bulletRest-label {
+    position: absolute;
+    animation: bulletRestRotate 5s infinite;
+}
+
+@keyframes bulletRestRotate {
+    0%, 100% {
+        rotate: -5deg;
+    }
+    50% {
+        rotate: 5deg;
     }
 }
 
