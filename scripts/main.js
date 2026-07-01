@@ -5586,7 +5586,10 @@ const EVENT_LABEL_MAP = new Map(EVENT_LIST.map(({ id, label }) => [id, label]));
 const HALLOWEEN_2024_EVENT_ID = 'halloween24';
 const HARVESTER_AURA_NAME = 'Harvester - 666,000,000';
 const HARVESTER_CURSE_LAYER_ID = 'harvester-curse-layer';
+const FLUSHED_TROLL_AURA_NAME = 'Flushed : Troll - 1,000,000';
+const FLUSHED_TROLL_SIGNATURE_LAYER_ID = 'flushed-troll-signature-layer';
 let harvesterCurseTimeoutId = null;
+let flushedTrollSignatureTimeoutId = null;
 
 const EVENT_AURA_LOOKUP = {
     valentine24: [
@@ -8980,6 +8983,57 @@ function renderHarvesterCurseLayer(count) {
     }, lifetimeMs);
 }
 
+function clearFlushedTrollSignatureLayer() {
+    if (typeof document === 'undefined') return;
+    if (flushedTrollSignatureTimeoutId !== null) {
+        clearTimeout(flushedTrollSignatureTimeoutId);
+        flushedTrollSignatureTimeoutId = null;
+    }
+    const existing = document.getElementById(FLUSHED_TROLL_SIGNATURE_LAYER_ID);
+    if (existing && existing.parentElement) {
+        existing.parentElement.removeChild(existing);
+    }
+}
+
+function renderFlushedTrollSignatureLayer(count) {
+    if (typeof document === 'undefined') return;
+    clearFlushedTrollSignatureLayer();
+
+    if (!count || count <= 0) {
+        return;
+    }
+
+    const layer = document.createElement('div');
+    layer.id = FLUSHED_TROLL_SIGNATURE_LAYER_ID;
+    layer.className = 'flushed-troll-signature';
+
+    const visibleStacks = Math.min(Math.ceil(count / 10), 24);
+    for (let i = 0; i < visibleStacks; i++) {
+        const card = document.createElement('div');
+        card.className = 'flushed-troll-signature__card';
+        card.style.setProperty('--flushed-troll-tilt', `${(Math.random() * 12 - 6).toFixed(2)}deg`);
+        card.style.setProperty('--flushed-troll-delay', `${Math.floor(Math.random() * 140)}ms`);
+        card.style.setProperty('--flushed-troll-rumble-speed', `${70 + Math.floor(Math.random() * 60)}ms`);
+        card.style.left = `${10 + Math.random() * 80}vw`;
+        card.style.top = `${10 + Math.random() * 80}vh`;
+
+        const text = document.createElement('span');
+        text.className = 'flushed-troll-signature__text sigil-effect-outline-glitch';
+        text.textContent = 'YG was here';
+        card.appendChild(text);
+
+        layer.appendChild(card);
+    }
+
+    document.body.appendChild(layer);
+
+    const lifetimeMs = Math.min(14000, 5000 + (visibleStacks * 420));
+    flushedTrollSignatureTimeoutId = setTimeout(() => {
+        flushedTrollSignatureTimeoutId = null;
+        clearFlushedTrollSignatureLayer();
+    }, lifetimeMs);
+}
+
 function requestRollCancellation() {
     if (!simulationActive || cancelRollRequested) {
         return;
@@ -9228,6 +9282,7 @@ function runRollSimulation(options = {}) {
     }
 
     clearHarvesterCurseLayer();
+    clearFlushedTrollSignatureLayer();
 
     const {
         rollTriggerButton,
@@ -9432,6 +9487,7 @@ function runRollSimulation(options = {}) {
         if (cancelled) {
             feedContainer.textContent = 'Rolling canceled.';
             clearHarvesterCurseLayer();
+            clearFlushedTrollSignatureLayer();
             return;
         }
 
@@ -9524,11 +9580,19 @@ function runRollSimulation(options = {}) {
         const halloween24Active = eventSnapshot
             ? eventSnapshot.has(HALLOWEEN_2024_EVENT_ID)
             : enabledEvents.has(HALLOWEEN_2024_EVENT_ID);
+        const flushedTrollAura = AURA_BY_NAME.get(FLUSHED_TROLL_AURA_NAME) || null;
+        const flushedTrollCount = flushedTrollAura ? readAuraWinCount(flushedTrollAura) : 0;
 
         if (halloween24Active && harvesterCount > 0) {
             renderHarvesterCurseLayer(harvesterCount);
         } else {
             clearHarvesterCurseLayer();
+        }
+
+        if (flushedTrollCount > 0) {
+            renderFlushedTrollSignatureLayer(flushedTrollCount);
+        } else {
+            clearFlushedTrollSignatureLayer();
         }
 
         const executionSeconds = Number.parseFloat(executionTime);

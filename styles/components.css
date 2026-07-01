@@ -2174,3 +2174,47 @@ body:not(.reduce-motion):not(.quality-no-shakes) .luck-preset-button--shake.luck
         transform: translate(3px, -1px) scale(1.12);
     }
 }
+
+.flushed-troll-signature {
+    position: fixed;
+    inset: 0;
+    padding: clamp(12px, 4vw, 24px);
+    overflow: hidden;
+    pointer-events: none;
+    z-index: 1110;
+}
+
+.flushed-troll-signature__card {
+    position: absolute;
+    min-width: min(260px, 78vw);
+    padding: 12px 16px;
+    background: transparent;
+    border: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: clamp(24px, 5vw, 52px);
+    transform: translate(-50%, -50%) rotate(var(--flushed-troll-tilt, 0deg));
+    animation: flushed-troll-rumble var(--flushed-troll-rumble-speed, 0.12s) infinite alternate ease-in-out;
+    animation-delay: var(--flushed-troll-delay, 0ms);
+    filter: drop-shadow(0 0 12px rgba(255, 255, 255, 0.55));
+}
+
+.flushed-troll-signature__text.sigil-effect-outline-glitch {
+    display: inline-block;
+    max-width: 100%;
+    line-height: 1.15;
+    text-align: center;
+    white-space: nowrap;
+    -webkit-text-stroke: 1px rgba(0, 0, 0, 0.85);
+}
+
+@keyframes flushed-troll-rumble {
+    from {
+        transform: translate(calc(-50% - 3px), calc(-50% - 2px)) rotate(var(--flushed-troll-tilt, 0deg));
+    }
+
+    to {
+        transform: translate(calc(-50% + 4px), calc(-50% + 3px)) rotate(calc(var(--flushed-troll-tilt, 0deg) + 1deg));
+    }
+}
