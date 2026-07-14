@@ -573,7 +573,7 @@ let lastPrimaryBiomeSelection = null;
 let singularitySummonSequenceId = 0;
 let singularitySummonTimeoutId = null;
 let singularitySummonCleanup = null;
-const DEV_BIOME_IDS = new Set(['anotherRealm', 'edict', 'mastermind', 'unknown']);
+const DEV_BIOME_IDS = new Set(['anotherRealm', 'edict', 'mastermind', 'fullMoon']);
 let devBiomesEnabled = false;
 const SINGULARITY_LUCK_MULTIPLIER = 1.1;
 const DEV_ADMIN_ABUSE_DEFAULT_VARIANT = 'new';
@@ -596,10 +596,14 @@ const DEV_ADMIN_ABUSE_CONFIGS = Object.freeze({
         }),
         defaultVariant: DEV_ADMIN_ABUSE_DEFAULT_VARIANT
     }),
-    unknown: Object.freeze({
-        biomeLabel: 'Unknown',
+    fullMoon: Object.freeze({
+        biomeLabel: 'The Red Full Moon',
         abuseLabel: 'XC',
-        multiplier: 2
+        variants: Object.freeze({
+            new: Object.freeze({ label: 'New XC Admin Abuse', multiplier: 1.5 }),
+            old: Object.freeze({ label: 'Old XC Admin Abuse', multiplier: 2 })
+        }),
+        defaultVariant: DEV_ADMIN_ABUSE_DEFAULT_VARIANT
     }),
     edict: Object.freeze({
         biomeLabel: 'Edict',
@@ -609,6 +613,7 @@ const DEV_ADMIN_ABUSE_CONFIGS = Object.freeze({
 });
 const devAdminAbuseVariantSelections = {
     anotherRealm: DEV_ADMIN_ABUSE_DEFAULT_VARIANT,
+    fullMoon: DEV_ADMIN_ABUSE_DEFAULT_VARIANT,
     mastermind: DEV_ADMIN_ABUSE_DEFAULT_VARIANT
 };
 
@@ -1724,6 +1729,7 @@ function getDevAdminAbuseMultipliers(biomeId) {
         xyz: 1,
         xyzOld: 1,
         xc: 1,
+        xcOld: 1,
         axis: 1,
         axisOld: 1,
         word: 1
@@ -1749,8 +1755,13 @@ function getDevAdminAbuseMultipliers(biomeId) {
         return multipliers;
     }
 
-    if (biomeId === 'unknown') {
-        multipliers.xc = getDevAdminAbuseMultiplier(biomeId);
+    if (biomeId === 'fullMoon') {
+        const selectedVariant = getSelectedDevAdminAbuseVariant(biomeId);
+        if (selectedVariant === 'old') {
+            multipliers.xcOld = getDevAdminAbuseMultiplier(biomeId);
+        } else {
+            multipliers.xc = getDevAdminAbuseMultiplier(biomeId);
+        }
         return multipliers;
     }
 
@@ -2966,7 +2977,7 @@ const biomeAssets = {
     anotherRealm: { image: 'files/images/backgrounds/anotherRealmBiomeImage.jpg', music: 'files/music/anotherRealmBiomeMusic.mp3' },
     mastermind: { image: 'files/images/backgrounds/mastermindBiomeImage.png', music: 'files/music/mastermindBiomeMusic.mp3' },
     edict: { image: 'files/images/backgrounds/wordBiomeImage.png', music: 'files/music/wordBiomeMusic.mp3' },
-    unknown: { image: 'files/images/backgrounds/unknownBiomeImage.png', music: 'files/music/unknownBiomeMusic.mp3' },
+    fullMoon: { image: 'files/images/backgrounds/fullMoonBiomeImage.png', music: 'files/music/fullMoonBiomeMusic.mp3' },
     graveyard: { image: 'files/images/backgrounds/graveyardBiomeImage.jpg', music: 'files/music/graveyardBiomeMusic.mp3' },
     pumpkinMoon: { image: 'files/images/backgrounds/pumpkinMoonBiomeImage.jpg', music: 'files/music/pumpkinMoonBiomeMusic.mp3' },
     bloodRain: { image: 'files/images/backgrounds/bloodRainBiomeImage.jpg', music: 'files/music/bloodRainBiomeMusic.mp3' },
@@ -3403,6 +3414,7 @@ let lastXyzOldMultiplier = 1;
 let lastSorryMultiplier = 1;
 let lastAstraldMultiplier = 1;
 let lastXcMultiplier = 1;
+let lastXcOldMultiplier = 1;
 let lastAxisMultiplier = 1;
 let lastAxisOldMultiplier = 1;
 let lastWordMultiplier = 1;
@@ -3657,6 +3669,7 @@ function getActiveLuckMultipliers() {
         sorry: controls.sorry && controls.sorry.checked ? 1.2 : 1,
         astrald: controls.astrald && controls.astrald.checked ? 1.2 : 1,
         xc: devAdminAbuseMultipliers.xc,
+        xcOld: devAdminAbuseMultipliers.xcOld,
         axis: devAdminAbuseMultipliers.axis,
         axisOld: devAdminAbuseMultipliers.axisOld,
         word: devAdminAbuseMultipliers.word,
@@ -3680,6 +3693,7 @@ function syncLastLuckMultipliers(multipliers) {
     lastSorryMultiplier = multipliers.sorry;
     lastAstraldMultiplier = multipliers.astrald;
     lastXcMultiplier = multipliers.xc;
+    lastXcOldMultiplier = multipliers.xcOld;
     lastAxisMultiplier = multipliers.axis;
     lastAxisOldMultiplier = multipliers.axisOld;
     lastWordMultiplier = multipliers.word;
@@ -4537,6 +4551,8 @@ const nativeAuraOutlineOverrides = new Map([
 const auraOutlineOverrides = new Map([
     ['Illusionary', 'sigil-outline-illusionary'],
     ['Prowler', 'sigil-outline-xyz'],
+    ['紅月を求めし者', 'sigil-outline-xc'],
+    ['紅月の観測者', 'sigil-outline-xc'],
     ['Verdict', 'sigil-outline-edict'],
     ['Attorney', 'sigil-outline-edict'],
     ['Divinus : Love', 'sigil-outline-valentine-2024'],
@@ -5131,6 +5147,8 @@ const AURA_BLUEPRINT_SOURCE = Object.freeze([
     { name: "Ascendant - 935,000,000", chance: 935000000, breakthroughs: nativeBreakthroughs("heaven") },
     { name: "Ravage - 930,000,000", chance: 930000000, nativeBiomes: ["glitch", "graveyard"] },
     { name: "Dreamscape - 850,000,000", chance: 850000000, nativeBiomes: ["limbo"] },
+    { name: "Poseidon : Atlantis - 850,000,000", chance: 850000000, breakthroughs: nativeBreakthroughs("rainy") },
+    { name: "Eisveil - 830,000,000", chance: 830000000, breakthroughs: nativeBreakthroughs("snowy") },
     { name: "Aegis - 825,000,000", chance: 825000000, breakthroughs: nativeBreakthroughs("cyberspace"), nativeBiomes: ["cyberspace"] },
     { name: "Aegis : Watergun - 825,000,000", chance: 825000000, breakthroughs: nativeBreakthroughs("blazing") },
     { name: "Apostolos : Veil - 800,000,000", chance: 800000000, nativeBiomes: ["graveyard", "pumpkinMoon"] },
@@ -5210,6 +5228,7 @@ const AURA_BLUEPRINT_SOURCE = Object.freeze([
     { name: "Glock : the glock of the sky - 170,000,000", chance: 170000000 },
     { name: "Bounded : Aichmalotos - 170,000,000", chance: 170000000 },
     { name: "Overture - 150,000,000", chance: 150000000 },
+    { name: "Sharkyn : Hammerhead - 120,000,000", chance: 120000000, breakthroughs: nativeBreakthroughs("rainy") },
     { name: "Crimson - 120,000,000", chance: 120000000, nativeBiomes: ["glitch", "bloodRain"] },
     { name: "Abominable - 120,000,000", chance: 120000000, breakthroughs: nativeBreakthroughs("snowy") },
     { name: "Lily - 112,000,000", chance: 112000000 },
@@ -5264,7 +5283,7 @@ const AURA_BLUEPRINT_SOURCE = Object.freeze([
     { name: "Apotheosis - 24,649,430", chance: 24649430 },
     { name: "Frostwood - 24,500,000", chance: 24500000, breakthroughs: nativeBreakthroughs("aurora") },
     { name: "Ruby : Brimstone - 24,000,000", chance: 24000000 },
-    { name: "Aviator - 24,000,000", chance: 24000000 },
+    { name: "Aviator - 24,000,000", chance: 24000000, breakthroughs: nativeBreakthroughs("windy") },
     { name: "Oculus - 23,333,340", chance:  23333340, breakthroughs: nativeBreakthroughs("heaven") },
     { name: "Cryptfire - 21,000,000", chance: 21000000, nativeBiomes: ["graveyard"] },
     { name: "Plasma - 20,600,000", chance: 20000000 },
@@ -5279,6 +5298,7 @@ const AURA_BLUEPRINT_SOURCE = Object.freeze([
     { name: "Stormal : Hurricane - 13,500,000", chance: 13500000, breakthroughs: nativeBreakthroughs("windy") },
     { name: "Glitch - 12,210,110", chance: 12210110, nativeBiomes: ["glitch"] },
     { name: "Imaginary - 12,200,200", chance: 12200200, nativeBiomes: ["limbo"] },
+    { name: "Graffiti - 12,000,000", chance: 12000000},
     { name: "Wonderland - 12,000,000", chance: 12000000, breakthroughs: nativeBreakthroughs("snowy") },
     { name: "Sailor - 12,000,000", chance: 12000000, breakthroughs: nativeBreakthroughs("rainy") },
     { name: "Melodic - 11,300,000", chance: 11300000 },
@@ -5296,6 +5316,7 @@ const AURA_BLUEPRINT_SOURCE = Object.freeze([
     { name: "Nihility - 9,000,000", chance: 9000000, breakthroughs: nativeBreakthroughs("null", "limbo"), nativeBiomes: ["limbo-null"] },
     { name: "Harnessed - 8,500,000", chance: 8500000 },
     { name: "Soultorn - 8,333,333", chance: 8333333 },
+    { name: "Spectre : Requiem - 8,222,000", chance: 8222000 },
     { name: "Outlaw - 8,000,000", chance: 8000000, breakthroughs: nativeBreakthroughs("sandstorm") },
     { name: "Origin : Onion - 8,000,000", chance: 8000000 },
     { name: "Divinus : Guardian - 7,777,777", chance: 7777777, breakthroughs: nativeBreakthroughs("heaven") },
@@ -5360,6 +5381,7 @@ const AURA_BLUEPRINT_SOURCE = Object.freeze([
     { name: "Kyawthuite - 850,000", chance: 850000 },
     { name: "Verdict - 700,000", chance: 700000, nativeBiomes: ["edict"], cutscene: "verdict-cutscene" },
     { name: "Burger - 676,767", chance: 676767 },
+    { name: "紅月を求めし者 - 666,666", chance: 666666, nativeBiomes: ["fullMoon"] },
     { name: "Undead : Devil - 666,666", chance: 666666, breakthroughs: nativeBreakthroughs("hell") },
     { name: "Warlock - 666,000", chance: 666000 },
     { name: "Pump : Trickster - 600,000", chance: 600000, nativeBiomes: ["glitch", "pumpkinMoon"] },
@@ -5367,6 +5389,7 @@ const AURA_BLUEPRINT_SOURCE = Object.freeze([
     { name: "Clockwork - 530,000", chance: 530000, nativeBiomes: ["mastermind"], cutscene: "clockwork-cutscene" },
     { name: "Raven - 500,000", chance: 500000, nativeBiomes: ["limbo"] },
     { name: "Hope - 488,725", chance: 488725, breakthroughs: nativeBreakthroughs("heaven") },
+    { name: "紅月の観測者 - 444,444", chance: 444444, nativeBiomes: ["fullMoon"] },
     { name: "Terror - 400,000", chance: 400000 },
     { name: "Celestial - 350,000", chance: 350000 },
     { name: "Vortex - 399,999", chance: 399999, breakthroughs: nativeBreakthroughs("windy") },
@@ -5380,6 +5403,8 @@ const AURA_BLUEPRINT_SOURCE = Object.freeze([
     { name: "Pump - 200,000", chance: 200000, nativeBiomes: ["pumpkinMoon"] },
     { name: "Bounded - 200,000", chance: 200000 },
     { name: "Aether - 180,000", chance: 180000 },
+    { name: "Jazz - 160,000", chance: 160000 },
+    { name: "Spectre - 140,000", chance: 140000 },
     { name: "Jade - 125,000", chance: 125000 },
     { name: "Divinus : Angel - 120,000", chance: 120000, breakthroughs: nativeBreakthroughs("heaven") },
     { name: "Comet - 120,000", chance: 120000, breakthroughs: nativeBreakthroughs("singularity") },
@@ -5741,7 +5766,7 @@ const EVENT_BIOME_CONDITION_MESSAGES = Object.freeze({
     bloodRain: 'Requires Halloween 2025 enabled.',
     blazing: 'Requires Summer 2025 enabled.',
     aurora: 'Requires Winter 2026 enabled.',
-    unknown: 'Requires Dev Biomes to be enabled under run parameters.',
+    fullMoon: 'Requires Dev Biomes to be enabled under run parameters.',
 });
 
 const enabledEvents = new Set();
@@ -7923,7 +7948,7 @@ function updateBiomeControlConstraints({ source = null, triggerSync = true } = {
         if (currentPrimarySelection === 'singularity' && !singularityMultiplierWarningManager.isSuppressed()) {
             singularityMultiplierWarningManager.show();
         }
-        if (currentPrimarySelection === 'anotherRealm' || currentPrimarySelection === 'mastermind') {
+        if (currentPrimarySelection === 'anotherRealm' || currentPrimarySelection === 'mastermind' || currentPrimarySelection === 'fullMoon') {
             adminAbuseChoiceManager.show(currentPrimarySelection);
         }
         const unmetRequirements = EVENT_BIOME_CONDITION_MESSAGES[currentPrimarySelection]
