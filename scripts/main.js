@@ -64,7 +64,7 @@ const backgroundRollingPreference = {
 
 const QUALITY_PREFERENCE_KEYS = Object.freeze([
     'removeParticles',
-    'disableButtonAnimations',
+    'disableUiAnimations',
     'disableShakes',
     'disableRollAndSigilAnimations',
     'reduceGlitchEffects',
@@ -73,7 +73,7 @@ const QUALITY_PREFERENCE_KEYS = Object.freeze([
 
 const PERFORMANCE_FIRST_QUALITY_DEFAULTS = Object.freeze({
     removeParticles: true,
-    disableButtonAnimations: true,
+    disableUiAnimations: true,
     disableShakes: true,
     disableRollAndSigilAnimations: true,
     reduceGlitchEffects: true
@@ -339,6 +339,12 @@ function hydrateVisualSettings() {
                     appState.qualityPreferences[key] = storedQualityPreferences[key];
                 }
             });
+            if (
+                typeof storedQualityPreferences.disableUiAnimations !== 'boolean'
+                && typeof storedQualityPreferences.disableButtonAnimations === 'boolean'
+            ) {
+                appState.qualityPreferences.disableUiAnimations = storedQualityPreferences.disableButtonAnimations;
+            }
         }
     } catch (error) {
         // Ignore malformed storage so defaults remain intact.
@@ -757,6 +763,9 @@ function showAudioSettingsOverlay() {
 
     audioOverlayState.lastFocusedElement = document.activeElement;
     revealOverlay(overlay);
+    overlay.querySelectorAll('.audio-slider__input').forEach(input => {
+        syncAudioSliderVisual(input, Number.parseFloat(input.value), { immediate: true });
+    });
 
     const firstInput = overlay.querySelector('.audio-slider__input');
     if (firstInput && typeof firstInput.focus === 'function') {
@@ -1124,6 +1133,43 @@ function initializeOptionsMenu(menuId, toggleId, panelId) {
     closeMenu();
 }
 
+const audioSliderVisualStates = new WeakMap();
+let audioSliderResizeHandlerBound = false;
+
+function applyAudioSliderVisualPosition(input, percentValue) {
+    if (!(input instanceof HTMLInputElement)) {
+        return;
+    }
+
+    const clampedPercent = Math.min(100, Math.max(0, Number.isFinite(percentValue) ? percentValue : 0));
+    input.style.setProperty('--audio-slider-progress', `${clampedPercent}%`);
+
+    const control = input.closest('.audio-slider__control');
+    if (!control) {
+        return;
+    }
+
+    const thumbSize = 26;
+    const controlWidth = control.clientWidth;
+    const thumbTravel = Math.max(0, controlWidth - thumbSize);
+    const thumbOffset = thumbTravel * clampedPercent / 100;
+    control.style.setProperty('--audio-slider-thumb-left', `${thumbOffset}px`);
+}
+
+function syncAudioSliderVisual(input, targetPercent, { immediate = false } = {}) {
+    if (!(input instanceof HTMLInputElement)) {
+        return;
+    }
+
+    const target = Math.min(100, Math.max(0, Number.isFinite(targetPercent) ? targetPercent : 0));
+    audioSliderVisualStates.set(input, {
+        current: target,
+        target,
+        immediate: Boolean(immediate || isFeatureBootMotionReduced())
+    });
+    applyAudioSliderVisualPosition(input, target);
+}
+
 function updateAudioSliderLabel(channel, percentValue) {
     const overlay = document.getElementById('audioSettingsOverlay');
     if (!overlay) return;
@@ -1136,7 +1182,7 @@ function updateAudioSliderLabel(channel, percentValue) {
     const input = overlay.querySelector(`.audio-slider__input[data-audio-channel="${channel}"]`);
     if (input) {
         const clamped = clamp01(percentValue / 100);
-        input.style.setProperty('--audio-slider-progress', `${Math.round(clamped * 100)}%`);
+        syncAudioSliderVisual(input, clamped * 100);
     }
 
     const icon = overlay.querySelector(`.audio-slider__icon[data-audio-icon="${channel}"] i`);
@@ -1234,6 +1280,7 @@ function initializeAudioSettingsPanel() {
         }
         const percent = Math.round(clamp01(defaultValue) * 100);
         input.value = percent;
+        syncAudioSliderVisual(input, percent, { immediate: true });
         setChannelVolume(channel, percent / 100);
 
         input.addEventListener('input', () => {
@@ -1980,6 +2027,22 @@ function resolveBaseGain(element, fallback = 1) {
     if (Number.isFinite(gainValue) && gainValue > 0) {
         return gainValue;
     }
+
+    const baseGainMap = appState?.audio?.baseGainMap;
+    if (element && baseGainMap instanceof WeakMap) {
+        const cachedGain = baseGainMap.get(element);
+        if (Number.isFinite(cachedGain) && cachedGain > 0) {
+            return cachedGain;
+        }
+
+        const initialGain = typeof element.volume === 'number' && element.volume > 0
+            ? element.volume
+            : fallback;
+        const stableGain = Number.isFinite(initialGain) && initialGain > 0 ? initialGain : 1;
+        baseGainMap.set(element, stableGain);
+        return stableGain;
+    }
+
     if (element && typeof element.volume === 'number' && element.volume > 0) {
         return element.volume;
     }
@@ -2016,6 +2079,7 @@ function applyMediaGain(element, { category = 'obtain', fallbackGain } = {}) {
                 appState.audio.gainMap.set(element, entry);
             }
             entry.gainNode.gain.value = resolvedGain;
+            element.volume = 1;
             return;
         } catch (error) {
             console.warn('Unable to configure media element gain', error);
@@ -2374,7 +2438,7 @@ function playSingularitySummonSequence(bgMusic, { expectedMusicSrc, onComplete }
     const playPromise = summonSound.play();
     if (playPromise && typeof playPromise.catch === 'function') {
         playPromise.catch(() => {
-            finish();
+            summonSound.pause();
         });
     }
 }
@@ -2565,6 +2629,11 @@ function applyReducedMotionState(enabled) {
         pageBody.classList.toggle('reduce-motion', enabled);
     }
 
+    if (enabled) {
+        document.querySelectorAll('.feature-boot--active').forEach(cancelFeatureBootAnimation);
+        document.querySelectorAll('.feature-shutdown--active').forEach(finishFeatureShutdownAnimation);
+    }
+
     if (reduceMotionToggleButton) {
         reduceMotionToggleButton.textContent = enabled ? 'Reduce Animations: On' : 'Reduce Animations: Off';
         reduceMotionToggleButton.setAttribute('aria-pressed', enabled ? 'true' : 'false');
@@ -2614,12 +2683,14 @@ function toggleReducedMotion() {
 
 function applyQualityPreferencesState() {
     ensureQualityPreferences();
+    const uiAnimationsDisabled = appState.qualityPreferences.disableUiAnimations;
 
     if (pageBody) {
         const performanceModeActive = Object.entries(PERFORMANCE_FIRST_QUALITY_DEFAULTS)
             .some(([key, value]) => value && appState.qualityPreferences[key]);
         pageBody.classList.toggle('quality-no-particles', appState.qualityPreferences.removeParticles);
-        pageBody.classList.toggle('quality-no-button-animations', appState.qualityPreferences.disableButtonAnimations);
+        pageBody.classList.remove('quality-no-button-animations');
+        pageBody.classList.toggle('quality-no-ui-animations', uiAnimationsDisabled);
         pageBody.classList.toggle('quality-no-shakes', appState.qualityPreferences.disableShakes);
         pageBody.classList.toggle('quality-no-roll-sigil-animations', appState.qualityPreferences.disableRollAndSigilAnimations);
         pageBody.classList.toggle('quality-reduced-glitch', appState.qualityPreferences.reduceGlitchEffects);
@@ -2634,6 +2705,14 @@ function applyQualityPreferencesState() {
     if (appState.qualityPreferences.disableShakes) {
         resetLuckPresetAnimations();
         completeActiveSingularitySummonImmediately();
+    }
+
+    if (uiAnimationsDisabled) {
+        document.querySelectorAll('.feature-boot--active').forEach(cancelFeatureBootAnimation);
+        document.querySelectorAll('.feature-shutdown--active').forEach(finishFeatureShutdownAnimation);
+        document.querySelectorAll('.audio-slider__input').forEach(input => {
+            syncAudioSliderVisual(input, Number.parseFloat(input.value), { immediate: true });
+        });
     }
 
     syncQualityPreferenceButtons();
@@ -3534,6 +3613,202 @@ const LUCK_SELECTION_SOURCE = Object.freeze({
     MANUAL: 'manual'
 });
 
+const POTION_SIMULATION_MODE = Object.freeze({
+    SINGLE: 'single',
+    MULTIPLE: 'multiple'
+});
+
+const MULTI_POTION_CONFIGS = Object.freeze([
+    Object.freeze({ id: 'heavenly', label: 'Heavenly Potion', luck: 150000 }),
+    Object.freeze({ id: 'oblivion', label: 'Oblivion Potion', luck: 600000, oblivion: true, blocksRunes: true }),
+    Object.freeze({ id: 'pump-kings-blood', label: "Pump King's Blood", luck: 700000, blocksRunes: true }),
+    Object.freeze({ id: 'godlike', label: 'Godlike Potion', luck: 400000 }),
+    Object.freeze({ id: 'blood-ii', label: 'Red Moon II', luck: 200000, bloodPreset: 'blood-ii' }),
+    Object.freeze({ id: 'candy-corn', label: 'Candy Corn', luck: 75000 }),
+    Object.freeze({ id: 'bound', label: 'Bound Potion', luck: 50000 }),
+    Object.freeze({ id: 'blood-i', label: 'Red Moon I', luck: 11000, bloodPreset: 'blood-i' }),
+    Object.freeze({ id: 'dune', label: 'Potion of the Dune', luck: 10000, dune: true }),
+    Object.freeze({ id: 'popping', label: 'Popping Potion', luck: 10000 }),
+    Object.freeze({ id: 'tutorial-potion', label: 'Tutorial Potion', luck: 5000, blocksRunes: true })
+]);
+
+const MULTI_POTION_CONFIG_BY_ID = new Map(MULTI_POTION_CONFIGS.map(config => [config.id, config]));
+let potionSimulationMode = POTION_SIMULATION_MODE.SINGLE;
+let singlePotionRollValue = 1;
+let activeMultiDeviceBuffLuckBonus = 0;
+let activeMultiDeviceBuffPresetName = null;
+const featureBootFrameIds = new WeakMap();
+const featureShutdownTimerIds = new WeakMap();
+
+function isFeatureBootMotionReduced() {
+    return Boolean(
+        appState.reduceMotion
+        || appState.qualityPreferences?.disableUiAnimations
+        || pageBody?.classList.contains('reduce-motion')
+        || pageBody?.classList.contains('quality-no-ui-animations')
+        || (reduceMotionPreferenceOverride === null && reduceMotionMediaQuery?.matches)
+    );
+}
+
+function cancelFeatureBootAnimation(element) {
+    if (!(element instanceof HTMLElement)) {
+        return;
+    }
+
+    const pendingFrameId = featureBootFrameIds.get(element);
+    if (pendingFrameId !== undefined && typeof window.cancelAnimationFrame === 'function') {
+        window.cancelAnimationFrame(pendingFrameId);
+    }
+    featureBootFrameIds.delete(element);
+    element.classList.remove('feature-boot--active');
+}
+
+function cancelFeatureShutdownAnimation(element) {
+    if (!(element instanceof HTMLElement)) {
+        return;
+    }
+
+    const pendingTimerId = featureShutdownTimerIds.get(element);
+    if (pendingTimerId !== undefined) {
+        window.clearTimeout(pendingTimerId);
+    }
+    featureShutdownTimerIds.delete(element);
+    element.classList.remove('feature-shutdown--active');
+    delete element.dataset.featureShutdownVisibility;
+}
+
+function hideFeatureContainerImmediately(element, visibilityMode = 'hidden') {
+    if (!(element instanceof HTMLElement)) {
+        return;
+    }
+
+    if (visibilityMode === 'display') {
+        element.style.display = 'none';
+    } else {
+        element.hidden = true;
+    }
+}
+
+function finishFeatureShutdownAnimation(element) {
+    if (!(element instanceof HTMLElement)) {
+        return;
+    }
+
+    const visibilityMode = element.dataset.featureShutdownVisibility || 'hidden';
+    cancelFeatureShutdownAnimation(element);
+    hideFeatureContainerImmediately(element, visibilityMode);
+}
+
+function playFeatureBootAnimation(element, { delay = 0 } = {}) {
+    if (!(element instanceof HTMLElement)) {
+        return;
+    }
+
+    cancelFeatureBootAnimation(element);
+    if (isFeatureBootMotionReduced()) {
+        return;
+    }
+
+    element.style.setProperty('--feature-boot-delay', `${Math.max(0, delay)}ms`);
+    const activate = () => {
+        featureBootFrameIds.delete(element);
+        if (isFeatureBootMotionReduced() || element.hidden || element.style.display === 'none') {
+            return;
+        }
+        element.classList.add('feature-boot--active');
+    };
+
+    if (typeof window.requestAnimationFrame === 'function') {
+        const frameId = window.requestAnimationFrame(activate);
+        featureBootFrameIds.set(element, frameId);
+        return;
+    }
+    activate();
+}
+
+function playFeatureShutdownAnimation(element, { visibilityMode = 'hidden' } = {}) {
+    if (!(element instanceof HTMLElement)) {
+        return;
+    }
+
+    cancelFeatureBootAnimation(element);
+    cancelFeatureShutdownAnimation(element);
+    if (isFeatureBootMotionReduced()) {
+        hideFeatureContainerImmediately(element, visibilityMode);
+        return;
+    }
+
+    element.dataset.featureShutdownVisibility = visibilityMode;
+    element.classList.add('feature-shutdown--active');
+
+    const durationByType = {
+        panel: 520,
+        compact: 360,
+        row: 410
+    };
+    const fallbackDuration = durationByType[element.dataset.featureBoot] || 410;
+    const timerId = window.setTimeout(() => {
+        finishFeatureShutdownAnimation(element);
+    }, fallbackDuration);
+    featureShutdownTimerIds.set(element, timerId);
+}
+
+function setFeatureContainerVisible(
+    element,
+    visible,
+    { visibilityMode = 'hidden', delay = 0 } = {}
+) {
+    if (!(element instanceof HTMLElement)) {
+        return;
+    }
+
+    const usesDisplay = visibilityMode === 'display';
+    const wasShuttingDown = element.classList.contains('feature-shutdown--active');
+    const currentlyVisible = usesDisplay
+        ? element.style.display !== 'none'
+        : !element.hidden;
+
+    if (visible) {
+        if (wasShuttingDown) {
+            cancelFeatureShutdownAnimation(element);
+            playFeatureBootAnimation(element, { delay });
+            return;
+        }
+        if (currentlyVisible) {
+            return;
+        }
+
+        cancelFeatureBootAnimation(element);
+        if (usesDisplay) {
+            element.style.display = '';
+        } else {
+            element.hidden = false;
+        }
+        playFeatureBootAnimation(element, { delay });
+        return;
+    }
+
+    if (!currentlyVisible || wasShuttingDown) {
+        return;
+    }
+
+    playFeatureShutdownAnimation(element, { visibilityMode });
+}
+
+document.addEventListener('animationend', event => {
+    if (
+        event.animationName === 'featureContainerBoot'
+        && event.target instanceof HTMLElement
+    ) {
+        cancelFeatureBootAnimation(event.target);
+    } else if (
+        event.animationName === 'featureContainerShutdown'
+        && event.target instanceof HTMLElement
+    ) {
+        finishFeatureShutdownAnimation(event.target);
+    }
+});
+
 let currentLuckSelectionSource = LUCK_SELECTION_SOURCE.CUSTOM;
 
 function setLuckSelectionSource(source) {
@@ -3684,6 +3959,329 @@ function getLuckMultiplierTotal(multipliers) {
         const numericMultiplier = Number(multiplier);
         return total * (Number.isFinite(numericMultiplier) && numericMultiplier > 0 ? numericMultiplier : 1);
     }, 1);
+}
+
+function isMultiplePotionMode() {
+    return potionSimulationMode === POTION_SIMULATION_MODE.MULTIPLE;
+}
+
+function isMultiplePotionStackingEnabled() {
+    return typeof document !== 'undefined'
+        && Boolean(document.getElementById('multiPotionStackToggle')?.checked);
+}
+
+function getMultiplePotionLuckState() {
+    const deviceLuckBonus = Number.isFinite(activeMultiDeviceBuffLuckBonus)
+        ? Math.max(0, activeMultiDeviceBuffLuckBonus)
+        : 0;
+    return {
+        deviceLuckBonus,
+        finalLuckMultiplier: getLuckMultiplierTotal(getActiveLuckMultipliers())
+    };
+}
+
+function calculateMultiplePotionLuck(basePotionLuck, luckState = getMultiplePotionLuckState()) {
+    const normalizedPotionLuck = Number.isFinite(basePotionLuck) ? Math.max(0, basePotionLuck) : 0;
+    return (normalizedPotionLuck + luckState.deviceLuckBonus) * luckState.finalLuckMultiplier;
+}
+
+function createMultiplePotionBatch(config, count, luckState) {
+    return {
+        ...config,
+        count,
+        baseLuck: config.luck,
+        luckValue: calculateMultiplePotionLuck(config.luck, luckState),
+        deviceLuckBonus: luckState.deviceLuckBonus,
+        finalLuckMultiplier: luckState.finalLuckMultiplier
+    };
+}
+
+function stackCompatiblePotionBatches(batches, luckState) {
+    let activeBatches = batches.map(batch => ({
+        ...batch,
+        remaining: batch.count
+    }));
+    const stackedBatches = [];
+
+    while (activeBatches.length > 0) {
+        const segmentCount = Math.min(...activeBatches.map(batch => batch.remaining));
+        const potionIds = activeBatches.map(batch => batch.id);
+        const potionLabels = activeBatches.map(batch => batch.label);
+        const baseLuck = activeBatches.reduce((total, batch) => total + batch.baseLuck, 0);
+        const bloodPresets = activeBatches
+            .map(batch => batch.bloodPreset)
+            .filter(Boolean);
+        const isStacked = activeBatches.length > 1;
+
+        stackedBatches.push({
+            id: isStacked ? `stacked:${potionIds.join('+')}` : potionIds[0],
+            label: isStacked ? `Stacked (${potionLabels.join(' + ')})` : potionLabels[0],
+            count: segmentCount,
+            baseLuck,
+            luckValue: calculateMultiplePotionLuck(baseLuck, luckState),
+            deviceLuckBonus: luckState.deviceLuckBonus,
+            finalLuckMultiplier: luckState.finalLuckMultiplier,
+            potionIds,
+            potionLabels,
+            stacked: isStacked,
+            dune: activeBatches.some(batch => batch.dune),
+            bloodPreset: bloodPresets[0] || null,
+            bloodPresets,
+            blocksRunes: false,
+            oblivion: false
+        });
+
+        activeBatches = activeBatches
+            .map(batch => ({
+                ...batch,
+                remaining: batch.remaining - segmentCount
+            }))
+            .filter(batch => batch.remaining > 0);
+    }
+
+    return stackedBatches;
+}
+
+function collectMultiplePotionBatches(
+    luckState = getMultiplePotionLuckState(),
+    { stackCompatiblePotions = isMultiplePotionStackingEnabled() } = {}
+) {
+    if (typeof document === 'undefined') {
+        return [];
+    }
+
+    const blockingBatches = [];
+    const compatibleBatches = [];
+    document.querySelectorAll('[data-multi-potion]').forEach(input => {
+        const config = MULTI_POTION_CONFIG_BY_ID.get(input.dataset.multiPotion);
+        if (!config) {
+            return;
+        }
+
+        const rawCount = getNumericInputValue(input, { min: 0, max: 1000000000000 });
+        const count = Number.isFinite(rawCount) ? Math.floor(rawCount) : 0;
+        if (count <= 0) {
+            return;
+        }
+
+        const batch = createMultiplePotionBatch(config, count, luckState);
+        if (batch.blocksRunes) {
+            blockingBatches.push(batch);
+        } else {
+            compatibleBatches.push(batch);
+        }
+    });
+
+    const finalCompatibleBatches = stackCompatiblePotions
+        ? stackCompatiblePotionBatches(compatibleBatches, luckState)
+        : compatibleBatches;
+    return [...blockingBatches, ...finalCompatibleBatches];
+}
+
+function getMultiPotionRuneBlockedRollCount(batches = collectMultiplePotionBatches()) {
+    if (!Array.isArray(batches)) {
+        return 0;
+    }
+    return batches.reduce((total, batch) => {
+        return total + (batch?.blocksRunes ? Math.max(0, Math.floor(batch.count || 0)) : 0);
+    }, 0);
+}
+
+function syncMultiDeviceBuffPresetButtons() {
+    document.querySelectorAll('#device-buff-preset-panel button[data-luck-value]').forEach(button => {
+        const buttonLuckBonus = Number(button.dataset.luckValue);
+        const buttonPresetName = (button.textContent || '').replace(/\s+/g, ' ').trim();
+        const active = isMultiplePotionMode()
+            && Number.isFinite(buttonLuckBonus)
+            && Math.abs(buttonLuckBonus - activeMultiDeviceBuffLuckBonus) < Number.EPSILON
+            && buttonPresetName === activeMultiDeviceBuffPresetName;
+        button.classList.remove('luck-preset-button--active');
+        button.classList.toggle('device-preset-button--selected', active);
+        button.setAttribute('aria-pressed', active ? 'true' : 'false');
+    });
+}
+
+function formatPotionBatchList(batches, { includeLuck = false } = {}) {
+    if (!Array.isArray(batches) || batches.length === 0) {
+        return 'None';
+    }
+    return batches.map(batch => {
+        const quantity = `${formatWithCommas(batch.count)} ${batch.label}`;
+        return includeLuck
+            ? `${quantity} (${formatWithCommas(batch.luckValue)} luck each)`
+            : quantity;
+    }).join(', ');
+}
+
+function syncMultiplePotionLuckPreviews(luckState = getMultiplePotionLuckState()) {
+    document.querySelectorAll('[data-multi-potion]').forEach(input => {
+        const config = MULTI_POTION_CONFIG_BY_ID.get(input.dataset.multiPotion);
+        const luckPreview = input.closest('.multi-potion-field')?.querySelector('small');
+        if (!config || !luckPreview) {
+            return;
+        }
+        const effectiveLuck = calculateMultiplePotionLuck(config.luck, luckState);
+        luckPreview.textContent = `+${formatWithCommas(effectiveLuck)} luck`;
+    });
+}
+
+function syncMultiplePotionTotal() {
+    const luckState = getMultiplePotionLuckState();
+    const batches = collectMultiplePotionBatches(luckState);
+    const total = batches.reduce((sum, batch) => sum + batch.count, 0);
+    const totalLabel = document.getElementById('multiPotionTotal');
+    if (totalLabel) {
+        totalLabel.textContent = formatWithCommas(total);
+    }
+    syncMultiplePotionLuckPreviews(luckState);
+    const stackSummary = document.getElementById('multiPotionStackSummary');
+    const stackingEnabled = isMultiplePotionStackingEnabled();
+    if (stackSummary) {
+        if (stackingEnabled) {
+            stackSummary.textContent = batches.length > 0
+                ? `Calculated batches: ${formatPotionBatchList(batches, { includeLuck: true })}`
+                : 'Add potion quantities to preview the calculated stacked batches.';
+        }
+        setFeatureContainerVisible(stackSummary, stackingEnabled);
+    }
+
+    if (isMultiplePotionMode()) {
+        const rollField = document.getElementById('roll-total');
+        if (rollField) {
+            setNumericInputValue(rollField, total, { format: true, min: 0, max: 1000000000000 });
+        }
+    }
+
+    return total;
+}
+
+function syncMultiplePotionModeAvailability(isLimboSelected) {
+    const multipleButton = document.querySelector('[data-potion-mode="multiple"]');
+    const potionModeControl = document.querySelector('.potion-mode');
+
+    if (multipleButton) {
+        multipleButton.disabled = Boolean(isLimboSelected);
+        if (isLimboSelected) {
+            multipleButton.title = 'Potion modes are unavailable in Limbo.';
+            if (isMultiplePotionMode()) {
+                setPotionSimulationMode(POTION_SIMULATION_MODE.SINGLE, { playAudio: false });
+            }
+        } else {
+            multipleButton.removeAttribute('title');
+        }
+    }
+
+    setFeatureContainerVisible(potionModeControl, !isLimboSelected);
+}
+
+function setPotionSimulationMode(mode, { playAudio = true } = {}) {
+    const normalizedMode = mode === POTION_SIMULATION_MODE.MULTIPLE
+        ? POTION_SIMULATION_MODE.MULTIPLE
+        : POTION_SIMULATION_MODE.SINGLE;
+    const multipleButton = document.querySelector('[data-potion-mode="multiple"]');
+    if (normalizedMode === POTION_SIMULATION_MODE.MULTIPLE && multipleButton?.disabled) {
+        return;
+    }
+
+    const wasMultiple = isMultiplePotionMode();
+    if (!wasMultiple && normalizedMode === POTION_SIMULATION_MODE.MULTIPLE) {
+        const rollField = document.getElementById('roll-total');
+        const currentRollValue = getNumericInputValue(rollField, { min: 1, max: 1000000000000 });
+        singlePotionRollValue = Number.isFinite(currentRollValue) ? currentRollValue : 1;
+    }
+
+    potionSimulationMode = normalizedMode;
+    const multipleModeActive = isMultiplePotionMode();
+    document.body?.classList.toggle('potion-mode--multiple', multipleModeActive);
+
+    document.querySelectorAll('[data-potion-mode]').forEach(button => {
+        const active = button.dataset.potionMode === normalizedMode;
+        button.classList.toggle('potion-mode__button--active', active);
+        button.setAttribute('aria-pressed', active ? 'true' : 'false');
+    });
+    document.querySelectorAll('.potion-single-control').forEach((control, index) => {
+        setFeatureContainerVisible(control, !multipleModeActive, {
+            delay: index * 36
+        });
+    });
+
+    if (!audioSliderResizeHandlerBound) {
+        window.addEventListener('resize', () => {
+            document.querySelectorAll('.audio-slider__input').forEach(input => {
+                const state = audioSliderVisualStates.get(input);
+                const current = state?.current ?? Number.parseFloat(input.value);
+                applyAudioSliderVisualPosition(input, current);
+            });
+        }, { passive: true });
+        audioSliderResizeHandlerBound = true;
+    }
+
+    const multiPanel = document.getElementById('multiPotionPanel');
+    setFeatureContainerVisible(multiPanel, multipleModeActive);
+    ['luck-preset-panel', 'roll-preset-panel'].forEach(id => {
+        const panel = document.getElementById(id);
+        if (panel) {
+            panel.setAttribute('aria-disabled', multipleModeActive ? 'true' : 'false');
+        }
+    });
+    const devicePresetPanel = document.getElementById('device-buff-preset-panel');
+    if (devicePresetPanel) {
+        devicePresetPanel.setAttribute('aria-disabled', 'false');
+    }
+
+    if (multipleModeActive && !wasMultiple) {
+        activeMultiDeviceBuffLuckBonus = 0;
+        activeMultiDeviceBuffPresetName = null;
+        clearActiveLuckPotionPresets({ syncBiomeConstraints: false });
+        syncMultiplePotionTotal();
+    } else if (!multipleModeActive && wasMultiple) {
+        activeMultiDeviceBuffLuckBonus = 0;
+        activeMultiDeviceBuffPresetName = null;
+        const rollField = document.getElementById('roll-total');
+        if (rollField) {
+            setNumericInputValue(rollField, singlePotionRollValue, { format: true, min: 1, max: 1000000000000 });
+        }
+    }
+    syncMultiDeviceBuffPresetButtons();
+
+    if (typeof updateBiomeControlConstraints === 'function') {
+        updateBiomeControlConstraints({ triggerSync: true });
+    }
+    if (playAudio) {
+        playSoundEffect(clickSoundEffectElement, 'ui');
+    }
+}
+
+function initializePotionSimulationMode() {
+    document.querySelectorAll('[data-potion-mode]').forEach(button => {
+        button.addEventListener('click', () => {
+            setPotionSimulationMode(button.dataset.potionMode);
+        });
+    });
+
+    document.querySelectorAll('[data-multi-potion]').forEach(input => {
+        bindNumericInputFormatting(input, { min: 0, max: 1000000000000 });
+        if (!input.dataset.rawValue) {
+            setNumericInputValue(input, 0, { format: true, min: 0, max: 1000000000000 });
+        }
+        input.addEventListener('input', () => {
+            syncMultiplePotionTotal();
+            if (typeof updateBiomeControlConstraints === 'function') {
+                updateBiomeControlConstraints({ triggerSync: true });
+            }
+        });
+    });
+
+    const stackToggle = document.getElementById('multiPotionStackToggle');
+    if (stackToggle) {
+        stackToggle.addEventListener('change', () => {
+            syncMultiplePotionTotal();
+            playSoundEffect(clickSoundEffectElement, 'ui');
+        });
+    }
+
+    setPotionSimulationMode(POTION_SIMULATION_MODE.SINGLE, { playAudio: false });
+    syncMultiplePotionTotal();
 }
 
 function syncLastLuckMultipliers(multipliers) {
@@ -3886,15 +4484,29 @@ function applyRollPreset(value) {
     playSoundEffect(clickSoundEffectElement, 'ui');
 }
 
-// Applies a high-level device/buff preset by translating a multiplier into
-// a concrete luck total while leaving seasonal toggles unchanged.
-function applyDeviceBuffPreset(multiplier) {
-    const numericMultiplier = Number(multiplier);
-    if (!Number.isFinite(numericMultiplier) || numericMultiplier <= 0) {
+// Applies a high-level device/buff preset as additive luck before final
+// multipliers while leaving seasonal toggles unchanged.
+function applyDeviceBuffPreset(luckBonus, sourceButton = null) {
+    const numericLuckBonus = Number(luckBonus);
+    if (!Number.isFinite(numericLuckBonus) || numericLuckBonus <= 0) {
         return;
     }
 
-    const targetLuck = Math.max(1, numericMultiplier);
+    if (isMultiplePotionMode()) {
+        const presetName = sourceButton instanceof Element
+            ? (sourceButton.textContent || '').replace(/\s+/g, ' ').trim()
+            : `Device/Buff Preset x${numericLuckBonus}`;
+        const samePresetSelected = Math.abs(activeMultiDeviceBuffLuckBonus - numericLuckBonus) < Number.EPSILON
+            && activeMultiDeviceBuffPresetName === presetName;
+        activeMultiDeviceBuffLuckBonus = samePresetSelected ? 0 : numericLuckBonus;
+        activeMultiDeviceBuffPresetName = samePresetSelected ? null : presetName;
+        syncMultiDeviceBuffPresetButtons();
+        syncMultiplePotionTotal();
+        playSoundEffect(clickSoundEffectElement, 'ui');
+        return;
+    }
+
+    const targetLuck = Math.max(1, numericLuckBonus);
     applyLuckValue(targetLuck, { luckSource: LUCK_SELECTION_SOURCE.DEVICE_PRESET });
 }
 
@@ -3913,6 +4525,9 @@ function recomputeLuckValue() {
     }
 
     syncLuckVisualEffects(currentLuck);
+    if (isMultiplePotionMode()) {
+        syncMultiplePotionTotal();
+    }
 }
 
 function resetLuckFields() {
@@ -4003,13 +4618,13 @@ function initializeBiomeInterface() {
     const astraldBlessingContainer = document.getElementById('astrald-blessing-wrapper');
     const luckPresets = document.getElementById('luck-preset-panel');
     if (biome === 'limbo') {
-        if (daveLuckContainer) daveLuckContainer.style.display = '';
+        setFeatureContainerVisible(daveLuckContainer, true, { visibilityMode: 'display' });
         if (sorryLuckContainer) sorryLuckContainer.style.display = '';
         if (dorcelessnessLuckContainer) dorcelessnessLuckContainer.style.display = '';
         if (ygBlessingContainer) ygBlessingContainer.style.display = '';
         if (astraldBlessingContainer) astraldBlessingContainer.style.display = '';
     } else {
-        if (daveLuckContainer) daveLuckContainer.style.display = 'none';
+        setFeatureContainerVisible(daveLuckContainer, false, { visibilityMode: 'display' });
         if (sorryLuckContainer) sorryLuckContainer.style.display = '';
         if (dorcelessnessLuckContainer) dorcelessnessLuckContainer.style.display = '';
         if (ygBlessingContainer) ygBlessingContainer.style.display = '';
@@ -4450,7 +5065,17 @@ function resolveAuraTierKey(aura, biome) {
     const rarityClass = typeof resolveRarityClass === 'function'
         ? resolveRarityClass(aura, biome)
         : '';
-    return AURA_TIER_CLASS_TO_KEY.get(rarityClass) || null;
+    const resolvedTierKey = AURA_TIER_CLASS_TO_KEY.get(rarityClass) || null;
+    if (resolvedTierKey) {
+        return resolvedTierKey;
+    }
+
+    if (rarityClass === 'rarity-tier-limbo') {
+        const baseTierClass = resolveBaseRarityClass(aura);
+        return AURA_TIER_CLASS_TO_KEY.get(baseTierClass) || null;
+    }
+
+    return null;
 }
 
 function isForcedChallengedAura(auraName) {
@@ -5242,10 +5867,10 @@ const AURA_BLUEPRINT_SOURCE = Object.freeze([
     { name: "Bloodgarden - 88,000,000", chance: 88000000, nativeBiomes: ["glitch", "bloodRain"] },
     { name: "Runic : Wilt - 87,388,744", chance: 87388744 },
     { name: "Virtual : Worldwide - 87,500,000", chance: 87500000, breakthroughs: nativeBreakthroughs("cyberspace"), nativeBiomes: ["cyberspace"] },
-    { name: "Hellbound - 85,000,000", chance: 85000000 },
+    { name: "Hellbound - 85,000,000", chance: 85000000, breakthroughs: nativeBreakthroughs("hell") },
     { name: "Harnessed : Elements - 85,000,000", chance: 85000000 },
     { name: "Accursed - 82,000,000", chance: 82000000, nativeBiomes: ["glitch", "bloodRain"] },
-    { name: "Aquaria - 80,000,000", chance: 80000000 },
+    { name: "Aquaria - 80,000,000", chance: 80000000, breakthroughs: nativeBreakthroughs("rainy") },
     { name: "Carriage - 80,000,000", chance: 80000000 },
     { name: "Emperor - 80,000,000", chance: 80000000 },
     { name: "Sailor : Flying Dutchman - 80,000,000", chance: 80000000, breakthroughs: nativeBreakthroughs("rainy") },
@@ -5284,7 +5909,7 @@ const AURA_BLUEPRINT_SOURCE = Object.freeze([
     { name: "Frostwood - 24,500,000", chance: 24500000, breakthroughs: nativeBreakthroughs("aurora") },
     { name: "Ruby : Brimstone - 24,000,000", chance: 24000000 },
     { name: "Aviator - 24,000,000", chance: 24000000, breakthroughs: nativeBreakthroughs("windy") },
-    { name: "Oculus - 23,333,340", chance:  23333340, breakthroughs: nativeBreakthroughs("heaven") },
+    { name: "Oculus - 23,233,340", chance: 23233340, breakthroughs: nativeBreakthroughs("heaven") },
     { name: "Cryptfire - 21,000,000", chance: 21000000, nativeBiomes: ["graveyard"] },
     { name: "Plasma - 20,600,000", chance: 20000000 },
     { name: "Very Small Sewage Rat That's About 3.082 Studs Long - 20,070,629", chance: 20070629 },
@@ -5302,7 +5927,7 @@ const AURA_BLUEPRINT_SOURCE = Object.freeze([
     { name: "Wonderland - 12,000,000", chance: 12000000, breakthroughs: nativeBreakthroughs("snowy") },
     { name: "Sailor - 12,000,000", chance: 12000000, breakthroughs: nativeBreakthroughs("rainy") },
     { name: "Melodic - 11,300,000", chance: 11300000 },
-    { name: EMPTY_AURA_NAME, chance: 11111111, nativeBiomes: ["null"] },
+    { name: EMPTY_AURA_NAME, chance: 11111111, nativeBiomes: ["null", "glitch"] },
     // { name: "Sapphire : Peace - 11,000,500", chance: 11000500 }, Unobtainable until further notice
     { name: "Moonflower - 10,000,000", chance: 10000000, nativeBiomes: ["pumpkinMoon"] },
     { name: "Starscourge - 10,000,000", chance: 10000000, breakthroughs: nativeBreakthroughs("starfall") },
@@ -5355,7 +5980,7 @@ const AURA_BLUEPRINT_SOURCE = Object.freeze([
     { name: "Parasite - 3,000,000", chance: 3000000, breakthroughs: nativeBreakthroughs("corruption") },
     { name: "Vega - 2,580,000", chance:  2580000, nativeBiomes: ["singularity"] },
     { name: "Virtual - 2,500,000", chance: 2500000, breakthroughs: nativeBreakthroughs("cyberspace"), nativeBiomes: ["cyberspace"] },
-    { name: "Evanescent - 2,360,000", chance: 2360000, breakthroughs: nativeBreakthroughs("rainy") },
+    { name: "Evanescent - 3,360,000", chance: 3360000, breakthroughs: nativeBreakthroughs("rainy") },
     { name: "Undefined : Defined - 2,222,000", chance: 2222000, breakthroughs: nativeBreakthroughs("null") },
     { name: "Flowed - 2,121,121", chance: 2121121, breakthroughs: nativeBreakthroughs("null", "limbo"), nativeBiomes: ["limbo-null"] },
     { name: "Lunar : Cultist - 2,000,000", chance: 2000000, nativeBiomes: ["glitch", "graveyard"] },
@@ -5369,7 +5994,7 @@ const AURA_BLUEPRINT_SOURCE = Object.freeze([
     { name: "Cosmos - 1,520,000", chance: 1520000 },
     { name: "Celestial : Wicked - 1,500,000", chance: 1500000, nativeBiomes: ["glitch", "pumpkinMoon"] },
     { name: "Astral - 1,336,000", chance: 1336000, breakthroughs: nativeBreakthroughs("starfall") },
-    { name: "Symbiosis - 1,331,201", chance: 1336000, breakthroughs: nativeBreakthroughs("corruption") },
+    { name: "Symbiosis - 1,331,201", chance: 1331201, breakthroughs: nativeBreakthroughs("corruption") },
     { name: "Rage : Brawler - 1,280,000", chance: 1280000 },
     { name: "StarRider : yourdidit - 1,234,567", chance: 1234567, breakthroughs: nativeBreakthroughs("starfall") },
     { name: "Undefined - 1,111,000", chance: 1111000, breakthroughs: nativeBreakthroughs("null", "limbo"), nativeBiomes: ["limbo-null"] },
@@ -5427,7 +6052,7 @@ const AURA_BLUEPRINT_SOURCE = Object.freeze([
     { name: "Watt - 32,768", chance: 32768 },
     { name: "Copper - 29,000", chance: 29000 },
     { name: "Marsh - 29,000", chance: 25000 },
-    { name: "Gilded : Crowned - 20,000", chance: 20000 },
+    { name: "Gilded : Crowned - 20,000", chance: 20000, breakthroughs: nativeBreakthroughs("sandstorm") },
     { name: "Powered - 16,384", chance: 16384 },
     { name: "LEAK - 14,000", chance: 14000 },
     { name: "Rage : Heated - 12,800", chance: 12800 },
@@ -5473,7 +6098,7 @@ const AURA_BLUEPRINT_SOURCE = Object.freeze([
     { name: "Ink - 700", chance: 700 },
     { name: "Gilded - 512", chance: 512, breakthroughs: nativeBreakthroughs("sandstorm") },
     { name: "Emerald - 500", chance: 500 },
-    { name: "Forbidden - 404", chance: 404, breakthroughs: nativeBreakthroughs("cyberspace"), nativeBiomes: ["cyberspace"] },
+    { name: "Forbidden - 403", chance: 403, breakthroughs: nativeBreakthroughs("cyberspace"), nativeBiomes: ["cyberspace"] },
     { name: "Ruby - 350", chance: 350 },
     { name: "Topaz - 150", chance: 150 },
     { name: "Rage - 128", chance: 128 },
@@ -6001,6 +6626,51 @@ function updateEventSummary() {
     summary.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
 }
 
+function initializeInterfaceSelectMotion(details) {
+    if (!(details instanceof HTMLDetailsElement) || details.dataset.motionInitialized === 'true') {
+        return;
+    }
+
+    details.dataset.motionInitialized = 'true';
+    const summary = details.querySelector('.interface-select__summary');
+
+    const prepareBootMotion = () => {
+        const wasBooting = details.classList.contains('interface-select--booting');
+        details.classList.remove('interface-select--booting');
+        if (isFeatureBootMotionReduced()) {
+            return;
+        }
+
+        details.dataset.motionCycle = details.dataset.motionCycle === 'primary'
+            ? 'alternate'
+            : 'primary';
+
+        if (wasBooting) {
+            void details.offsetWidth;
+        }
+        details.classList.add('interface-select--booting');
+    };
+
+    if (summary instanceof HTMLElement) {
+        summary.addEventListener('click', () => {
+            if (!details.open) {
+                prepareBootMotion();
+            }
+        });
+    }
+
+    details.addEventListener('toggle', () => {
+        if (!details.open) {
+            details.classList.remove('interface-select--booting');
+            return;
+        }
+
+        if (!details.classList.contains('interface-select--booting')) {
+            prepareBootMotion();
+        }
+    });
+}
+
 function closeOpenSelectMenus(except, options = {}) {
     const { focusSummary = false } = options;
     let hasFocused = false;
@@ -6237,6 +6907,7 @@ function initializeEventSelector() {
 
     const details = document.getElementById('event-selector');
     if (details) {
+        initializeInterfaceSelectMotion(details);
         details.addEventListener('toggle', () => {
             const summary = document.getElementById('event-selector-summary');
             if (summary) {
@@ -6473,7 +7144,7 @@ function setupChangelogTabs() {
                 const versionElement = card.querySelector('.changelog-subupdate-card__version');
                 const versionLabel = versionElement ? versionElement.textContent.trim() : 'Sub-update';
                 const detailNodes = Array.from(card.querySelectorAll(
-                    '.changelog-subupdate-card__title, .changelog-subupdate-card__meta, .changelog-modal__list--sub'
+                    '.changelog-subupdate-card__title, .changelog-subupdate-card__meta, .changelog-modal__intro, .changelog-modal__list--sub'
                 ));
                 card.dataset.subupdateInitialized = 'true';
                 card.dataset.subupdateLabel = versionLabel;
@@ -6502,7 +7173,7 @@ function setupChangelogTabs() {
                         const otherLabel = otherCard.dataset.subupdateLabel || 'Sub-update';
                         otherCard.setAttribute('aria-label', `Open ${otherLabel} sub-update`);
                         otherCard.querySelectorAll(
-                            '.changelog-subupdate-card__title, .changelog-subupdate-card__meta, .changelog-modal__list--sub'
+                            '.changelog-subupdate-card__title, .changelog-subupdate-card__meta, .changelog-modal__intro, .changelog-modal__list--sub'
                         ).forEach(node => {
                             node.setAttribute('aria-hidden', 'true');
                         });
@@ -6914,6 +7585,7 @@ function relocateResourcesPanelForMobile() {
 
 document.addEventListener('DOMContentLoaded', initializeEventSelector);
 document.addEventListener('DOMContentLoaded', initializeDevBiomeToggle);
+document.addEventListener('DOMContentLoaded', initializePotionSimulationMode);
 document.addEventListener('DOMContentLoaded', setupLuckPresetAdjustmentButtons);
 document.addEventListener('DOMContentLoaded', setupLuckPresetAnimations);
 document.addEventListener('DOMContentLoaded', setupVersionChangelogOverlay);
@@ -7587,6 +8259,7 @@ function initializeSingleSelectControl(selectId) {
     }
 
     select.addEventListener('change', updateSummary);
+    initializeInterfaceSelectMotion(details);
     details.addEventListener('toggle', () => {
         summary.setAttribute('aria-expanded', details.open ? 'true' : 'false');
     });
@@ -7770,7 +8443,9 @@ function updateBiomeControlConstraints({ source = null, triggerSync = true } = {
     let timeChanged = false;
 
     const selectedRuneConfig = resolveRuneConfiguration(otherSelect.value);
-    const specialPotionBlocksRunes = oblivionPresetEnabled || pumpKingsBloodPresetEnabled || tutorialPotionPresetEnabled;
+    const specialPotionBlocksRunes = oblivionPresetEnabled
+        || pumpKingsBloodPresetEnabled
+        || tutorialPotionPresetEnabled;
     const runeActive = selectedRuneConfig !== null && !specialPotionBlocksRunes;
 
     if (timeSelect.value === 'day' && DAY_RESTRICTED_BIOMES.has(primarySelect.value)) {
@@ -7873,6 +8548,7 @@ function updateBiomeControlConstraints({ source = null, triggerSync = true } = {
         }
     }
     syncLuckPotionPresetAvailability(limboSelected);
+    syncMultiplePotionModeAvailability(limboSelected);
 
     Array.from(otherSelect.options).forEach(option => {
         const runeOption = resolveRuneConfiguration(option.value);
@@ -8308,7 +8984,7 @@ const GLITCH_BREAKTHROUGH_EXCLUSION_SET = new Set(['day', 'night', 'aurora', 'si
 const NULL_BIOME_FILTER = new Set(['null', 'limbo-null']);
 const LEVIATHAN_ALLOWED_BIOMES = new Set(['rainy', 'glitch']);
 const MONARCH_ALLOWED_BIOMES = new Set(['corruption', 'glitch']);
-const EMPTY_ALLOWED_BIOMES = new Set(['null', 'limbo']);
+const EMPTY_ALLOWED_BIOMES = new Set(['null', 'limbo', 'glitch']);
 const DREAMCATCHER_ALLOWED_BIOMES = new Set(['night']);
 const auraGlitchBreakthroughMinChanceCache = new Array(AURA_REGISTRY.length).fill(null);
 
@@ -8359,11 +9035,13 @@ function isAstraldBlessingEnabled() {
     return Boolean(toggle && toggle.checked);
 }
 
-function createAuraEvaluationContext(selection, { eventChecker, luckValue, enabledEventsSet } = {}) {
+function createAuraEvaluationContext(selection, { eventChecker, luckValue, enabledEventsSet, ignoreRune = false } = {}) {
     const selectionState = selection || collectBiomeSelectionState();
     const biome = selectionState?.canonicalBiome || 'normal';
-    const runeConfig = selectionState?.runeConfig || resolveRuneConfiguration(selectionState?.runeValue);
-    const runeValue = selectionState?.runeValue || null;
+    const runeConfig = ignoreRune
+        ? null
+        : (selectionState?.runeConfig || resolveRuneConfiguration(selectionState?.runeValue));
+    const runeValue = ignoreRune ? 'none' : (selectionState?.runeValue || null);
     const primaryBiome = selectionState?.primaryBiome || null;
     const timeBiome = selectionState?.timeBiome || null;
     const exclusivityBiome = runeConfig?.exclusivityBiome || biome;
@@ -8411,6 +9089,11 @@ function createAuraEvaluationContext(selection, { eventChecker, luckValue, enabl
         }
         baseBreakthroughSeen.add(candidate);
         baseBreakthroughBiomes.push(candidate);
+    }
+
+    if (ignoreRune) {
+        activeBiomes = baseActiveBiomes.slice();
+        breakthroughBiomes = baseBreakthroughBiomes.slice();
     }
 
     if (!glitchExplicitlySelected && runeConfig?.exclusivityBiome === 'glitch') {
@@ -8652,7 +9335,13 @@ function buildComputedAuraEntries(registry, context, luckValue, breakthroughStat
         }
 
         const usesBreakthrough = effectiveChance !== aura.chance;
-        const breakthroughStats = usesBreakthrough ? { count: 0, btChance: effectiveChance } : null;
+        let breakthroughStats = null;
+        if (usesBreakthrough) {
+            const existingStats = breakthroughStatsMap.get(aura.name);
+            breakthroughStats = existingStats && existingStats.btChance === effectiveChance
+                ? existingStats
+                : { count: 0, btChance: effectiveChance };
+        }
         if (breakthroughStats) {
             breakthroughStatsMap.set(aura.name, breakthroughStats);
         }
@@ -8726,7 +9415,7 @@ function shouldHideSelectiveTrueChanceForAura(auraName) {
     return TRUE_CHANCE_HIDDEN_AURA_PREFIXES.some(prefix => auraName.startsWith(prefix)) || isExactMetaAuraName(auraName);
 }
 
-function buildResultEntries(registry, biome, breakthroughStatsMap, luckValue) {
+function buildResultEntries(registry, biome, breakthroughStatsMap, luckValue, { allowTrueChance = true } = {}) {
     let entries = [];
     for (const aura of registry) {
         if (isAuraTierSkipped(aura, biome) || isAuraFiltered(aura)) {
@@ -8782,7 +9471,9 @@ function buildResultEntries(registry, biome, breakthroughStatsMap, luckValue) {
         });
 
         const pushVisualEntry = (markup, shareText, priority, visualRecord, auraName, rarityForRealChance) => {
-            const realChanceValue = appState.selectiveTrueChanceDisplay && !shouldHideSelectiveTrueChanceForAura(auraName)
+            const realChanceValue = allowTrueChance
+                && appState.selectiveTrueChanceDisplay
+                && !shouldHideSelectiveTrueChanceForAura(auraName)
                 ? formatRealChanceValue(rarityForRealChance, luckValue)
                 : null;
             const realChanceMarkup = realChanceValue
@@ -9115,7 +9806,7 @@ function queueSimulationWork(callback) {
     setTimeout(callback, 16);
 }
 
-const SIMULATION_WORKER_PATH = 'scripts/simulation-worker.js';
+const SIMULATION_WORKER_PATH = 'scripts/simulation-worker.js?v=1.880.4';
 const WORKER_PROGRESS_UPDATE_INTERVAL_MS = 100;
 
 function terminateActiveSimulationWorker() {
@@ -9291,6 +9982,99 @@ function createSimulationWorker() {
     }
 }
 
+function prepareSimulationBatch(batch, selectionState, eventContext, breakthroughStatsMap, breakthroughStatsByAuraIndex) {
+    const luckValue = Number.isFinite(batch?.luckValue) ? Math.max(0, batch.luckValue) : 0;
+    const evaluationContext = createAuraEvaluationContext(selectionState, {
+        eventChecker: eventContext.eventChecker,
+        enabledEventsSet: eventContext.enabledEventsSet,
+        luckValue,
+        ignoreRune: Boolean(batch?.blocksRunes)
+    });
+    const computedAuras = buildComputedAuraEntries(
+        AURA_REGISTRY,
+        evaluationContext,
+        luckValue,
+        breakthroughStatsMap
+    );
+    const lucklessAuras = [];
+    const luckAffectedAuras = [];
+    for (const entry of computedAuras) {
+        if (!entry || !entry.aura) {
+            continue;
+        }
+        if (entry.breakthroughStats) {
+            breakthroughStatsByAuraIndex[entry.aura.index] = entry.breakthroughStats;
+        }
+        if (entry.aura.ignoreLuck) {
+            lucklessAuras.push(entry);
+        } else {
+            luckAffectedAuras.push(entry);
+        }
+    }
+
+    const activeDuneAura = batch.dune ? duneAuraData : null;
+    const activeBloodPresets = (Array.isArray(batch.bloodPresets) && batch.bloodPresets.length > 0
+        ? batch.bloodPresets
+        : [batch.bloodPreset])
+        .map(identifier => getBloodPresetConfig(identifier))
+        .filter(Boolean);
+    const activeOblivionAura = batch.oblivion ? oblivionAuraData : null;
+    const activeMemoryAura = batch.oblivion ? memoryAuraData : null;
+    const lucklessCandidateConfig = createSimulationCandidateConfig(lucklessAuras);
+    const luckAffectedCandidateConfig = createSimulationCandidateConfig(luckAffectedAuras);
+    const prerollAuraIndices = [];
+    const prerollAuraRatios = [];
+
+    if (activeDuneAura) {
+        prerollAuraIndices.push(activeDuneAura.index);
+        prerollAuraRatios.push(1 / DUNE_POTION_ODDS);
+    }
+    activeBloodPresets.forEach(activeBloodPreset => {
+        if (!bloodAuraData) {
+            return;
+        }
+        prerollAuraIndices.push(bloodAuraData.index);
+        prerollAuraRatios.push(1 / activeBloodPreset.potionOdds);
+    });
+    if (activeMemoryAura) {
+        prerollAuraIndices.push(activeMemoryAura.index);
+        prerollAuraRatios.push(1 / OBLIVION_MEMORY_ODDS);
+    }
+    if (activeOblivionAura) {
+        prerollAuraIndices.push(activeOblivionAura.index);
+        prerollAuraRatios.push(1 / OBLIVION_POTION_ODDS);
+    }
+
+    const combinedSelection = buildCombinedSimulationSelection([
+        {
+            selection: buildWeightedSelection(prerollAuraRatios),
+            auraIndices: prerollAuraIndices,
+            breakthroughIndices: null
+        },
+        {
+            selection: buildWeightedSelection(lucklessCandidateConfig.ratios),
+            auraIndices: lucklessCandidateConfig.auraIndices,
+            breakthroughIndices: lucklessCandidateConfig.breakthroughIndices
+        },
+        {
+            selection: buildWeightedSelection(luckAffectedCandidateConfig.ratios),
+            auraIndices: luckAffectedCandidateConfig.auraIndices,
+            breakthroughIndices: luckAffectedCandidateConfig.breakthroughIndices
+        }
+    ]);
+
+    return {
+        count: Math.max(0, Math.floor(batch.count || 0)),
+        luckValue,
+        label: batch.label || 'Single Potion',
+        combinedSelection,
+        prerollAuraIndices,
+        prerollAuraRatios,
+        lucklessCandidateConfig,
+        luckAffectedCandidateConfig
+    };
+}
+
 // Run the roll simulation while keeping the UI responsive
 function runRollSimulation(options = {}) {
     if (simulationActive) return;
@@ -9331,10 +10115,25 @@ function runRollSimulation(options = {}) {
         ? Number.parseInt(options.totalOverride, 10)
         : null;
 
+    const isMultiplePotionRun = isMultiplePotionMode();
+    const selectedPotionStackingEnabled = isMultiplePotionRun && isMultiplePotionStackingEnabled();
+    const selectedPotionBatches = isMultiplePotionRun
+        ? collectMultiplePotionBatches(getMultiplePotionLuckState(), {
+            stackCompatiblePotions: selectedPotionStackingEnabled
+        })
+        : [];
+    const selectedDevicePresetName = isMultiplePotionRun
+        ? (activeMultiDeviceBuffPresetName || 'None')
+        : null;
+    if (isMultiplePotionRun && selectedPotionBatches.length === 0) {
+        feedContainer.textContent = 'Add at least one potion quantity before starting a multiple potion simulation.';
+        return;
+    }
+
     const rollInputValue = getNumericInputValue(rollCountInput, { min: 1, max: 1000000000000 });
-    let total = Number.isFinite(totalOverride)
-        ? totalOverride
-        : rollInputValue;
+    let total = isMultiplePotionRun
+        ? selectedPotionBatches.reduce((sum, batch) => sum + batch.count, 0)
+        : (Number.isFinite(totalOverride) ? totalOverride : rollInputValue);
 
     if (!Number.isFinite(total) || total <= 0) {
         total = 1;
@@ -9358,7 +10157,11 @@ function runRollSimulation(options = {}) {
     }
 
     const shouldFormatRolls = document.activeElement !== rollCountInput;
-    setNumericInputValue(rollCountInput, total, { format: shouldFormatRolls, min: 1, max: 1000000000000 });
+    setNumericInputValue(rollCountInput, total, {
+        format: shouldFormatRolls,
+        min: isMultiplePotionRun ? 0 : 1,
+        max: 1000000000000
+    });
 
     simulationActive = true;
     cancelRollRequested = false;
@@ -9378,11 +10181,15 @@ function runRollSimulation(options = {}) {
         playSoundEffect(audio.explosion, 'obtain');
     }
 
-    let parsedLuck = getNumericInputValue(luckField, { min: 0 });
+    let parsedLuck = isMultiplePotionRun
+        ? Math.max(...selectedPotionBatches.map(batch => batch.luckValue))
+        : getNumericInputValue(luckField, { min: 0 });
     if (!Number.isFinite(parsedLuck)) {
         parsedLuck = 1;
-        const shouldFormatLuck = document.activeElement !== luckField;
-        setNumericInputValue(luckField, parsedLuck, { format: shouldFormatLuck, min: 0 });
+        if (!isMultiplePotionRun) {
+            const shouldFormatLuck = document.activeElement !== luckField;
+            setNumericInputValue(luckField, parsedLuck, { format: shouldFormatLuck, min: 0 });
+        }
     }
     const luckValue = Math.max(0, parsedLuck);
     const selectionState = collectBiomeSelectionState();
@@ -9407,6 +10214,21 @@ function runRollSimulation(options = {}) {
     resetAuraRollState(AURA_REGISTRY);
 
     const breakthroughStatsMap = new Map();
+    const breakthroughStatsByAuraIndex = new Array(AURA_REGISTRY.length).fill(null);
+    const activeSingleBloodPreset = getBloodPresetConfig();
+    const simulationBatchDefinitions = isMultiplePotionRun
+        ? selectedPotionBatches
+        : [{
+            count: total,
+            label: 'Single Potion',
+            baseLuck,
+            luckValue,
+            dune: Boolean(dunePresetEnabled && baseLuck >= DUNE_LUCK_TARGET),
+            bloodPreset: activeSingleBloodPreset && baseLuck >= activeSingleBloodPreset.luckTarget
+                ? activeSingleBloodPreset.identifier
+                : null,
+            oblivion: Boolean(oblivionPresetEnabled && luckValue >= OBLIVION_LUCK_TARGET)
+        }];
 
     const PROGRESS_DECIMAL_PLACES = 2;
     const PROGRESS_ROUNDING_STEP = 1 / (10 ** PROGRESS_DECIMAL_PLACES);
@@ -9430,38 +10252,16 @@ function runRollSimulation(options = {}) {
         }
     }
 
-    const evaluationContext = createAuraEvaluationContext(selectionState, {
-        eventChecker: isEventAuraEnabled,
-        enabledEventsSet: eventSnapshot || enabledEvents,
-        luckValue
-    });
-    const computedAuras = buildComputedAuraEntries(AURA_REGISTRY, evaluationContext, luckValue, breakthroughStatsMap);
-    const lucklessAuras = [];
-    const luckAffectedAuras = [];
-    const breakthroughStatsByAuraIndex = new Array(AURA_REGISTRY.length).fill(null);
-    for (const entry of computedAuras) {
-        if (!entry || !entry.aura) {
-            continue;
-        }
-        if (entry.breakthroughStats) {
-            breakthroughStatsByAuraIndex[entry.aura.index] = entry.breakthroughStats;
-        }
-        if (entry.aura.ignoreLuck) {
-            lucklessAuras.push(entry);
-        } else {
-            luckAffectedAuras.push(entry);
-        }
-    }
-
-    const activeDuneAura = (dunePresetEnabled && baseLuck >= DUNE_LUCK_TARGET) ? duneAuraData : null;
-    const activeBloodPreset = getBloodPresetConfig();
-    const activeBloodAura = (activeBloodPreset && baseLuck >= activeBloodPreset.luckTarget) ? bloodAuraData : null;
-    const activeOblivionAura = (oblivionPresetEnabled && luckValue >= OBLIVION_LUCK_TARGET) ? oblivionAuraData : null;
-    const activeMemoryAura = (oblivionPresetEnabled && luckValue >= OBLIVION_LUCK_TARGET) ? memoryAuraData : null;
-    const duneProbability = activeDuneAura ? 1 / DUNE_POTION_ODDS : 0;
-    const bloodProbability = activeBloodAura ? 1 / activeBloodPreset.potionOdds : 0;
-    const memoryProbability = activeMemoryAura ? 1 / OBLIVION_MEMORY_ODDS : 0;
-    const oblivionProbability = activeOblivionAura ? 1 / OBLIVION_POTION_ODDS : 0;
+    const simulationBatches = simulationBatchDefinitions.map(batch => prepareSimulationBatch(
+        batch,
+        selectionState,
+        {
+            eventChecker: isEventAuraEnabled,
+            enabledEventsSet: eventSnapshot || enabledEvents
+        },
+        breakthroughStatsMap,
+        breakthroughStatsByAuraIndex
+    ));
     const cutscenesEnabled = appState.cinematic === true;
 
     const queueAnimationFrame = callback => queueSimulationWork(callback);
@@ -9575,19 +10375,40 @@ function runRollSimulation(options = {}) {
         const eventLabels = usedEventIds.map(id => EVENT_LABEL_MAP.get(id) || id);
         const eventSummaryText = eventLabels.length > 0 ? eventLabels.join(', ') : EVENT_SUMMARY_EMPTY_LABEL;
         const auraFilterSummaryText = getAuraFilterSummaryText();
+        const luckSummaryText = isMultiplePotionRun ? 'Varies by potion' : formatWithCommas(luckValue);
+        const potionSummaryText = isMultiplePotionRun
+            ? formatPotionBatchList(selectedPotionBatches, { includeLuck: true })
+            : null;
+        const runeBlockedRolls = isMultiplePotionRun && runeValue !== 'none'
+            ? getMultiPotionRuneBlockedRollCount(selectedPotionBatches)
+            : 0;
+        const runeAppliedRolls = Math.max(0, completedRolls - runeBlockedRolls);
+        const runeSummaryText = runeBlockedRolls > 0
+            ? `${runeLabel} (ignored for the first ${formatWithCommas(runeBlockedRolls)} incompatible potion rolls; applied to ${formatWithCommas(runeAppliedRolls)} rolls)`
+            : runeLabel;
 
         const resultChunks = [
             `Execution time: ${executionTime} seconds.<br>`,
             `Rolls: ${formatWithCommas(completedRolls)}<br>`,
-            `Luck: ${formatWithCommas(luckValue)}<br>`,
+            `Potion Mode: ${isMultiplePotionRun ? 'Multiple' : 'Single'}<br>`,
+            ...(isMultiplePotionRun ? [`Compatible Potion Stacking: ${selectedPotionStackingEnabled ? 'Enabled' : 'Disabled'}<br>`] : []),
+            ...(isMultiplePotionRun ? [`Device Preset: ${selectedDevicePresetName}<br>`] : []),
+            ...(potionSummaryText ? [`Potions: ${potionSummaryText}<br>`] : []),
+            `Luck: ${luckSummaryText}<br>`,
             `Biome: ${biomeLabel}<br>`,
-            `Rune: ${runeLabel}<br>`,
+            `Rune: ${runeSummaryText}<br>`,
             `Time: ${timeLabel}<br>`,
             `Events: ${eventSummaryText}<br>`,
             `Included Aura Tiers: ${auraFilterSummaryText}<br><br>`
         ];
 
-        const { markupList, shareRecords, shareVisualRecords } = buildResultEntries(AURA_REGISTRY, biome, breakthroughStatsMap, luckValue);
+        const { markupList, shareRecords, shareVisualRecords } = buildResultEntries(
+            AURA_REGISTRY,
+            biome,
+            breakthroughStatsMap,
+            luckValue,
+            { allowTrueChance: !isMultiplePotionRun }
+        );
         for (const markup of markupList) {
             resultChunks.push(`${markup}<br>`);
         }
@@ -9623,13 +10444,25 @@ function runRollSimulation(options = {}) {
         const executionSeconds = Number.parseFloat(executionTime);
         lastSimulationSummary = {
             rolls: completedRolls,
-            luck: luckValue,
+            luck: isMultiplePotionRun ? null : luckValue,
+            luckLabel: luckSummaryText,
+            potionMode: isMultiplePotionRun ? POTION_SIMULATION_MODE.MULTIPLE : POTION_SIMULATION_MODE.SINGLE,
+            potionStackingEnabled: selectedPotionStackingEnabled,
+            devicePresetName: selectedDevicePresetName,
+            potionBatches: isMultiplePotionRun
+                ? selectedPotionBatches.map(batch => ({
+                    id: batch.id,
+                    label: batch.label,
+                    count: batch.count,
+                    luckValue: batch.luckValue
+                }))
+                : [],
             biomeId: biome,
             biomeLabel,
             primaryBiomeId: primaryBiome,
             primaryBiomeLabel: biomeLabel,
             runeId: runeValue,
-            runeLabel,
+            runeLabel: runeSummaryText,
             timeId: timeBiome,
             timeLabel,
             eventIds: usedEventIds,
@@ -9644,55 +10477,27 @@ function runRollSimulation(options = {}) {
         };
     };
 
-    const lucklessCandidateConfig = createSimulationCandidateConfig(lucklessAuras);
-    const luckAffectedCandidateConfig = createSimulationCandidateConfig(luckAffectedAuras);
-
-    const prerollAuraIndices = [];
-    const prerollAuraRatios = [];
-
-    if (duneProbability > 0 && activeDuneAura) {
-        prerollAuraIndices.push(activeDuneAura.index);
-        prerollAuraRatios.push(duneProbability);
-    }
-    if (bloodProbability > 0 && activeBloodAura) {
-        prerollAuraIndices.push(activeBloodAura.index);
-        prerollAuraRatios.push(bloodProbability);
-    }
-    if (memoryProbability > 0 && activeMemoryAura) {
-        prerollAuraIndices.push(activeMemoryAura.index);
-        prerollAuraRatios.push(memoryProbability);
-    }
-    if (oblivionProbability > 0 && activeOblivionAura) {
-        prerollAuraIndices.push(activeOblivionAura.index);
-        prerollAuraRatios.push(oblivionProbability);
-    }
-
-    const prerollSelection = buildWeightedSelection(prerollAuraRatios);
-    const lucklessSelection = buildWeightedSelection(lucklessCandidateConfig.ratios);
-    const luckAffectedSelection = buildWeightedSelection(luckAffectedCandidateConfig.ratios);
-    const combinedSelectionConfig = buildCombinedSimulationSelection([
-        {
-            selection: prerollSelection,
-            auraIndices: prerollAuraIndices,
-            breakthroughIndices: null
-        },
-        {
-            selection: lucklessSelection,
-            auraIndices: lucklessCandidateConfig.auraIndices,
-            breakthroughIndices: lucklessCandidateConfig.breakthroughIndices
-        },
-        {
-            selection: luckAffectedSelection,
-            auraIndices: luckAffectedCandidateConfig.auraIndices,
-            breakthroughIndices: luckAffectedCandidateConfig.breakthroughIndices
-        }
-    ]);
-
     const startMainThreadSimulation = () => {
         const localBreakthroughCounts = new Array(AURA_REGISTRY.length).fill(0);
+        let currentBatchIndex = 0;
+        let currentBatchRoll = 0;
 
         function performSingleRollCheck() {
+            while (
+                currentBatchIndex < simulationBatches.length
+                && currentBatchRoll >= simulationBatches[currentBatchIndex].count
+            ) {
+                currentBatchIndex += 1;
+                currentBatchRoll = 0;
+            }
+            const activeBatch = simulationBatches[currentBatchIndex];
+            if (!activeBatch) {
+                return;
+            }
+
+            const combinedSelectionConfig = activeBatch.combinedSelection;
             const selectedIndex = selectWeightedIndex(combinedSelectionConfig.selection, sampleEntropy());
+            currentBatchRoll += 1;
             if (selectedIndex === -1) {
                 return;
             }
@@ -9820,14 +10625,17 @@ function runRollSimulation(options = {}) {
             total,
             auraCount: AURA_REGISTRY.length,
             progressIntervalMs: WORKER_PROGRESS_UPDATE_INTERVAL_MS,
-            prerollAuraIndices,
-            prerollAuraRatios,
-            lucklessAuraIndices: lucklessCandidateConfig.auraIndices,
-            lucklessAuraRatios: lucklessCandidateConfig.ratios,
-            lucklessBreakthroughIndices: lucklessCandidateConfig.breakthroughIndices,
-            luckAffectedAuraIndices: luckAffectedCandidateConfig.auraIndices,
-            luckAffectedAuraRatios: luckAffectedCandidateConfig.ratios,
-            luckAffectedBreakthroughIndices: luckAffectedCandidateConfig.breakthroughIndices
+            batches: simulationBatches.map(batch => ({
+                total: batch.count,
+                prerollAuraIndices: batch.prerollAuraIndices,
+                prerollAuraRatios: batch.prerollAuraRatios,
+                lucklessAuraIndices: batch.lucklessCandidateConfig.auraIndices,
+                lucklessAuraRatios: batch.lucklessCandidateConfig.ratios,
+                lucklessBreakthroughIndices: batch.lucklessCandidateConfig.breakthroughIndices,
+                luckAffectedAuraIndices: batch.luckAffectedCandidateConfig.auraIndices,
+                luckAffectedAuraRatios: batch.luckAffectedCandidateConfig.ratios,
+                luckAffectedBreakthroughIndices: batch.luckAffectedCandidateConfig.breakthroughIndices
+            }))
         });
 
         return true;
@@ -10180,9 +10988,21 @@ function createDiscordShareText(summary) {
         ? summary.eventLabels.join(', ')
         : EVENT_SUMMARY_EMPTY_LABEL;
     const auraFilterSummary = summary.auraFilterSummary || getAuraFilterSummaryText();
+    const luckSummary = summary.luckLabel || formatWithCommas(summary.luck);
+    const potionSummary = Array.isArray(summary.potionBatches) && summary.potionBatches.length > 0
+        ? formatPotionBatchList(summary.potionBatches, { includeLuck: true })
+        : null;
     const details = [
         `> **Rolls:** ${formatWithCommas(summary.rolls)}`,
-        `> **Luck:** ${formatWithCommas(summary.luck)}`,
+        `> **Potion Mode:** ${summary.potionMode === POTION_SIMULATION_MODE.MULTIPLE ? 'Multiple' : 'Single'}`,
+        ...(summary.potionMode === POTION_SIMULATION_MODE.MULTIPLE
+            ? [`> **Compatible Potion Stacking:** ${summary.potionStackingEnabled ? 'Enabled' : 'Disabled'}`]
+            : []),
+        ...(summary.potionMode === POTION_SIMULATION_MODE.MULTIPLE
+            ? [`> **Device Preset:** ${summary.devicePresetName || 'None'}`]
+            : []),
+        ...(potionSummary ? [`> **Potions:** ${potionSummary}`] : []),
+        `> **Luck:** ${luckSummary}`,
         `> **Biome:** ${summary.biomeLabel}`,
         `> **Rune:** ${summary.runeLabel || 'None'}`,
         `> **Time:** ${summary.timeLabel || 'Neutral'}`,
@@ -10222,10 +11042,22 @@ function createPlainShareText(summary) {
         ? summary.eventLabels.join(', ')
         : EVENT_SUMMARY_EMPTY_LABEL;
     const auraFilterSummary = summary.auraFilterSummary || getAuraFilterSummaryText();
+    const luckSummary = summary.luckLabel || formatWithCommas(summary.luck);
+    const potionSummary = Array.isArray(summary.potionBatches) && summary.potionBatches.length > 0
+        ? formatPotionBatchList(summary.potionBatches, { includeLuck: true })
+        : null;
     const lines = [
         'Sols Roll Result',
         `Rolls: ${formatWithCommas(summary.rolls)}`,
-        `Luck: ${formatWithCommas(summary.luck)}`,
+        `Potion Mode: ${summary.potionMode === POTION_SIMULATION_MODE.MULTIPLE ? 'Multiple' : 'Single'}`,
+        ...(summary.potionMode === POTION_SIMULATION_MODE.MULTIPLE
+            ? [`Compatible Potion Stacking: ${summary.potionStackingEnabled ? 'Enabled' : 'Disabled'}`]
+            : []),
+        ...(summary.potionMode === POTION_SIMULATION_MODE.MULTIPLE
+            ? [`Device Preset: ${summary.devicePresetName || 'None'}`]
+            : []),
+        ...(potionSummary ? [`Potions: ${potionSummary}`] : []),
+        `Luck: ${luckSummary}`,
         `Biome: ${summary.biomeLabel}`,
         `Rune: ${summary.runeLabel || 'None'}`,
         `Time: ${summary.timeLabel || 'Neutral'}`,
@@ -11321,10 +12153,22 @@ async function generateShareImage(summary, mode = 'download') {
         ? summary.eventLabels.join(', ')
         : EVENT_SUMMARY_EMPTY_LABEL;
     const auraFilterSummary = summary.auraFilterSummary || getAuraFilterSummaryText();
+    const luckSummary = summary.luckLabel || formatWithCommas(summary.luck);
+    const potionSummary = Array.isArray(summary.potionBatches) && summary.potionBatches.length > 0
+        ? formatPotionBatchList(summary.potionBatches, { includeLuck: true })
+        : null;
 
     const detailEntries = [
         `Rolls: ${formatWithCommas(summary.rolls)}`,
-        `Luck: ${formatWithCommas(summary.luck)}`,
+        `Potion Mode: ${summary.potionMode === POTION_SIMULATION_MODE.MULTIPLE ? 'Multiple' : 'Single'}`,
+        ...(summary.potionMode === POTION_SIMULATION_MODE.MULTIPLE
+            ? [`Compatible Potion Stacking: ${summary.potionStackingEnabled ? 'Enabled' : 'Disabled'}`]
+            : []),
+        ...(summary.potionMode === POTION_SIMULATION_MODE.MULTIPLE
+            ? [`Device Preset: ${summary.devicePresetName || 'None'}`]
+            : []),
+        ...(potionSummary ? [`Potions: ${potionSummary}`] : []),
+        `Luck: ${luckSummary}`,
         `Biome: ${summary.biomeLabel}`,
         `Rune: ${summary.runeLabel || 'None'}`,
         `Time: ${summary.timeLabel || 'Neutral'}`,

@@ -25,10 +25,10 @@
     <link rel="icon" type="image/png" sizes="128x128" href="files/images/favicon-128.png">
     <link rel="icon" type="image/png" sizes="256x256" href="files/images/favicon-256.png">
     <link rel="icon" type="image/png" sizes="500x500" href="files/images/favicon-500.png">
-    <link rel="stylesheet" href="styles/base.css">
+    <link rel="stylesheet" href="styles/base.css?v=1.880.4">
     <link rel="stylesheet" href="styles/layout.css">
-    <link rel="stylesheet" href="styles/components.css">
-    <link rel="stylesheet" href="styles/utilities.css">
+    <link rel="stylesheet" href="styles/components.css?v=1.880.4">
+    <link rel="stylesheet" href="styles/utilities.css?v=1.880.4">
 </head>
 <body>
     <div class="interface-backdrop" aria-hidden="true">
@@ -178,11 +178,11 @@
                 <div class="banner__meta">
                     <h1 class="banner__title">Sol's RNG Rolling Simulator</h1>
                     <p class="banner__subtitle">
-                        <button type="button" class="banner__version-button" id="versionInfoButton" aria-haspopup="dialog" aria-expanded="false" data-version-id="v1870">v1.870</button>
+                        <button type="button" class="banner__version-button" id="versionInfoButton" aria-haspopup="dialog" aria-expanded="false" data-version-id="v1900">v1.900</button>
                         <span class="banner__subtitle-divider" aria-hidden="true">◉</span>
                         <span class="banner__subtitle-author">By <span class="banner__subtitle-author-name"><a href="https://discord.com/users/611204110955446301" target="_blank" rel="noopener">not.unnamed</a></span></span>
                         <span class="banner__subtitle-divider" aria-hidden="true">◉</span>
-                        <span class="banner__subtitle-updated">Updated <time datetime="2026-07-01T15:05:00+02:00">2026/07/15 at 12:30 AM CEST</time></span>
+                        <span class="banner__subtitle-updated">Updated <time datetime="2026-07-17T14:00:00+02:00">2026/07/17 at 2:00 PM CEST</time></span>
                         <span class="banner__subtitle-divider" aria-hidden="true">◉</span>
                         <span class="banner__subtitle-eon"><span class="banner__subtitle-game-version"><a href="https://www.roblox.com/games/15532962292/Sols-RNG" target="_blank" rel="noopener">Sol's RNG Eon 1-25</a></span></span>
                     </p>
@@ -316,7 +316,7 @@
                             </details>
                         </span>
                     </label>
-                    <div id="dave-luck-wrapper" class="form-field form-field--select" style="display:none;">
+                    <div id="dave-luck-wrapper" class="form-field form-field--select" data-feature-boot="row" style="display:none;">
                         <label class="form-field__label" for="dave-luck-dropdown">Dave's Luck</label>
                         <span class="form-field__select-shell form-field__select-shell--custom">
                             <select id="dave-luck-dropdown" class="form-field__input form-field__input--native">
@@ -390,20 +390,94 @@
                     </div>
                 </div>
                 <div class="control-section control-section--run-main">
-                    <label class="form-field" for="luck-total">
+                    <div class="potion-mode" role="group" aria-label="Potion simulation mode" data-feature-boot="compact">
+                        <span class="form-field__label">Potion Mode</span>
+                        <div class="potion-mode__switch">
+                            <button type="button" class="interface-button potion-mode__button potion-mode__button--active" data-potion-mode="single" aria-pressed="true">Single Potion Mode</button>
+                            <button type="button" class="interface-button potion-mode__button" data-potion-mode="multiple" aria-pressed="false">Multiple Potion Mode</button>
+                        </div>
+                    </div>
+                    <label class="form-field potion-single-control" for="luck-total" data-feature-boot="row">
                         <span class="form-field__label">Luck Total</span>
                         <div class="form-field__combo">
                             <input class="form-field__input" type="text" inputmode="numeric" pattern="[0-9]*" id="luck-total" placeholder="Total luck" required>
                             <button class="interface-button interface-button--minor" type="button" onclick="resetLuckFields()">Reset</button>
                         </div>
                     </label>
-                    <label class="form-field" for="roll-total">
+                    <label class="form-field potion-single-control" for="roll-total" data-feature-boot="row">
                         <span class="form-field__label">Roll Amount</span>
                         <div class="form-field__combo">
                             <input class="form-field__input" type="text" inputmode="numeric" pattern="[0-9]*" id="roll-total" placeholder="Roll count" required>
                             <button class="interface-button interface-button--minor" type="button" onclick="resetRollCount()">Reset</button>
                         </div>
                     </label>
+                    <section class="multi-potion-panel" id="multiPotionPanel" data-feature-boot="panel" aria-labelledby="multiPotionHeading" hidden>
+                        <div class="multi-potion-panel__header">
+                            <div>
+                                <h3 class="multi-potion-panel__title" id="multiPotionHeading">Potion Quantities</h3>
+                                <p class="multi-potion-panel__hint">Potion quantities use separate batches unless compatible-potion stacking is enabled. Device preset luck is added before VIP, final-luck, and biome multipliers; rune-incompatible potions are rolled first without the rune.</p>
+                            </div>
+                            <p class="multi-potion-panel__total">Total rolls: <strong id="multiPotionTotal">0</strong></p>
+                        </div>
+                        <div class="multi-potion-stack-option">
+                            <div>
+                                <span class="multi-potion-stack-option__label">Stack Compatible Potions</span>
+                                <small>Consumes one of each compatible potion per roll and merges their luck. Oblivion, Pump King's Blood, and Tutorial Potion always stay separate.</small>
+                            </div>
+                            <label class="toggle">
+                                <input type="checkbox" id="multiPotionStackToggle" class="toggle__input" aria-label="Stack compatible potions">
+                                <span class="toggle__track"></span>
+                                <span class="toggle__thumb"></span>
+                            </label>
+                        </div>
+                        <p class="multi-potion-stack-summary" id="multiPotionStackSummary" data-feature-boot="compact" hidden></p>
+                        <div class="multi-potion-grid">
+                            <label class="multi-potion-field">
+                                <span><span class="heavenlyClass">Heavenly Potion</span><small>+150,000 luck</small></span>
+                                <input class="form-field__input multi-potion-field__input" type="text" inputmode="numeric" pattern="[0-9]*" value="0" data-multi-potion="heavenly" aria-label="Heavenly Potion quantity">
+                            </label>
+                            <label class="multi-potion-field">
+                                <span><span class="oblivionClass">Oblivion Potion</span><small>+600,000 luck</small></span>
+                                <input class="form-field__input multi-potion-field__input" type="text" inputmode="numeric" pattern="[0-9]*" value="0" data-multi-potion="oblivion" aria-label="Oblivion Potion quantity">
+                            </label>
+                            <label class="multi-potion-field">
+                                <span><span class="pumpBloodClass">Pump King's Blood</span><small>+700,000 luck</small></span>
+                                <input class="form-field__input multi-potion-field__input" type="text" inputmode="numeric" pattern="[0-9]*" value="0" data-multi-potion="pump-kings-blood" aria-label="Pump King's Blood quantity">
+                            </label>
+                            <label class="multi-potion-field">
+                                <span><span class="godlikeClass">Godlike Potion</span><small>+400,000 luck</small></span>
+                                <input class="form-field__input multi-potion-field__input" type="text" inputmode="numeric" pattern="[0-9]*" value="0" data-multi-potion="godlike" aria-label="Godlike Potion quantity">
+                            </label>
+                            <label class="multi-potion-field">
+                                <span><span class="bloodIIClass">Red Moon II</span><small>+200,000 luck</small></span>
+                                <input class="form-field__input multi-potion-field__input" type="text" inputmode="numeric" pattern="[0-9]*" value="0" data-multi-potion="blood-ii" aria-label="Red Moon II quantity">
+                            </label>
+                            <label class="multi-potion-field">
+                                <span><span class="candyClass">Candy Corn</span><small>+75,000 luck</small></span>
+                                <input class="form-field__input multi-potion-field__input" type="text" inputmode="numeric" pattern="[0-9]*" value="0" data-multi-potion="candy-corn" aria-label="Candy Corn quantity">
+                            </label>
+                            <label class="multi-potion-field">
+                                <span><span class="boundClass">Bound Potion</span><small>+50,000 luck</small></span>
+                                <input class="form-field__input multi-potion-field__input" type="text" inputmode="numeric" pattern="[0-9]*" value="0" data-multi-potion="bound" aria-label="Bound Potion quantity">
+                            </label>
+                            <label class="multi-potion-field">
+                                <span><span class="bloodClass">Red Moon I</span><small>+11,000 luck</small></span>
+                                <input class="form-field__input multi-potion-field__input" type="text" inputmode="numeric" pattern="[0-9]*" value="0" data-multi-potion="blood-i" aria-label="Red Moon I quantity">
+                            </label>
+                            <label class="multi-potion-field">
+                                <span><span class="duneClass">Potion of the Dune</span><small>+10,000 luck</small></span>
+                                <input class="form-field__input multi-potion-field__input" type="text" inputmode="numeric" pattern="[0-9]*" value="0" data-multi-potion="dune" aria-label="Potion of the Dune quantity">
+                            </label>
+                            <label class="multi-potion-field">
+                                <span><span class="popClass">Popping Potion</span><small>+10,000 luck</small></span>
+                                <input class="form-field__input multi-potion-field__input" type="text" inputmode="numeric" pattern="[0-9]*" value="0" data-multi-potion="popping" aria-label="Popping Potion quantity">
+                            </label>
+                            <label class="multi-potion-field">
+                                <span><span class="tutPotion">Tutorial Potion</span><small>+5,000 luck</small></span>
+                                <input class="form-field__input multi-potion-field__input" type="text" inputmode="numeric" pattern="[0-9]*" value="0" data-multi-potion="tutorial-potion" aria-label="Tutorial Potion quantity">
+                            </label>
+                        </div>
+                    </section>
                     <div class="biome-selector-row">
                         <label class="form-field form-field--select" for="biome-primary-dropdown">
                             <span class="form-field__label">Biome/Dimension</span>
@@ -636,18 +710,18 @@
                             <span class="preset-collection__title-divider preset-collection__title-divider--end" aria-hidden="true"></span>
                         </h3>
                         <div class="preset-matrix preset-matrix--compact" id="device-buff-preset-panel">
-                            <button type="button" data-luck-value="23.21" onclick="applyDeviceBuffPreset(23.21)"><span class="archangelClass">Archangel Device</span> + "Godlike!" + "Soul Master's Talisman" x23.21</button>
-                            <button type="button" data-luck-value="30.41" onclick="applyDeviceBuffPreset(30.41)"><span class="archangelClass">Archangel Device</span> + Max Luck x30.41</button>
-                            <button type="button" data-luck-value="39.71" onclick="applyDeviceBuffPreset(39.71)"><span class="archangelClass">Archangel Device</span> + Max Luck + Event buffs x39.71</button>
-                            <button type="button" data-luck-value="28.21" onclick="applyDeviceBuffPreset(28.21)"><span class="archangelClass">Archangel Device</span> + <span class="plcClass">PLC Device</span> + "Godlike!" + "Soul Master's Talisman" x28.21</button>
-                            <button type="button" data-luck-value="35.41" onclick="applyDeviceBuffPreset(35.41)"><span class="archangelClass">Archangel Device</span> + <span class="plcClass">PLC Device</span> + Max Luck x35.41</button>
-                            <button type="button" data-luck-value="44.71" onclick="applyDeviceBuffPreset(44.71)"><span class="archangelClass">Archangel Device</span> + <span class="plcClass">PLC Device</span> + Max Luck + Event buffs x44.71</button>
-                            <button type="button" data-luck-value="28.21" onclick="applyDeviceBuffPreset(28.21)"><span class="singularityClass">Singularity Device</span> + "Godlike!" + "Soul Master's Talisman" x28.21</button>
-                            <button type="button" data-luck-value="35.41" onclick="applyDeviceBuffPreset(35.41)"><span class="singularityClass">Singularity Device</span> + Max Luck x35.41</button>
-                            <button type="button" data-luck-value="44.71" onclick="applyDeviceBuffPreset(44.71)"><span class="singularityClass">Singularity Device</span> + Max Luck + Event buffs x44.71</button>
-                            <button type="button" data-luck-value="33.21" onclick="applyDeviceBuffPreset(33.21)"><span class="singularityClass">Singularity Device</span> + <span class="plcClass">PLC Device</span> + "Godlike!" + "Soul Master's Talisman" x33.21</button>
-                            <button type="button" data-luck-value="40.41" onclick="applyDeviceBuffPreset(40.41)"><span class="singularityClass">Singularity Device</span> + <span class="plcClass">PLC Device</span> + Max Luck x40.41</button>
-                            <button type="button" data-luck-value="49.71" onclick="applyDeviceBuffPreset(49.71)"><span class="singularityClass">Singularity Device</span> + <span class="plcClass">PLC Device</span> + Max Luck + Event buffs x49.71</button>
+                            <button type="button" data-luck-value="23.21" onclick="applyDeviceBuffPreset(23.21, this)"><span class="archangelClass">Archangel Device</span> + "Godlike!" + "Soul Master's Talisman" x23.21</button>
+                            <button type="button" data-luck-value="30.41" onclick="applyDeviceBuffPreset(30.41, this)"><span class="archangelClass">Archangel Device</span> + Max Luck x30.41</button>
+                            <button type="button" data-luck-value="39.71" onclick="applyDeviceBuffPreset(39.71, this)"><span class="archangelClass">Archangel Device</span> + Max Luck + Event buffs x39.71</button>
+                            <button type="button" data-luck-value="28.21" onclick="applyDeviceBuffPreset(28.21, this)"><span class="archangelClass">Archangel Device</span> + <span class="plcClass">PLC Device</span> + "Godlike!" + "Soul Master's Talisman" x28.21</button>
+                            <button type="button" data-luck-value="35.41" onclick="applyDeviceBuffPreset(35.41, this)"><span class="archangelClass">Archangel Device</span> + <span class="plcClass">PLC Device</span> + Max Luck x35.41</button>
+                            <button type="button" data-luck-value="44.71" onclick="applyDeviceBuffPreset(44.71, this)"><span class="archangelClass">Archangel Device</span> + <span class="plcClass">PLC Device</span> + Max Luck + Event buffs x44.71</button>
+                            <button type="button" data-luck-value="28.21" onclick="applyDeviceBuffPreset(28.21, this)"><span class="singularityClass">Singularity Device</span> + "Godlike!" + "Soul Master's Talisman" x28.21</button>
+                            <button type="button" data-luck-value="35.41" onclick="applyDeviceBuffPreset(35.41, this)"><span class="singularityClass">Singularity Device</span> + Max Luck x35.41</button>
+                            <button type="button" data-luck-value="44.71" onclick="applyDeviceBuffPreset(44.71, this)"><span class="singularityClass">Singularity Device</span> + Max Luck + Event buffs x44.71</button>
+                            <button type="button" data-luck-value="33.21" onclick="applyDeviceBuffPreset(33.21, this)"><span class="singularityClass">Singularity Device</span> + <span class="plcClass">PLC Device</span> + "Godlike!" + "Soul Master's Talisman" x33.21</button>
+                            <button type="button" data-luck-value="40.41" onclick="applyDeviceBuffPreset(40.41, this)"><span class="singularityClass">Singularity Device</span> + <span class="plcClass">PLC Device</span> + Max Luck x40.41</button>
+                            <button type="button" data-luck-value="49.71" onclick="applyDeviceBuffPreset(49.71, this)"><span class="singularityClass">Singularity Device</span> + <span class="plcClass">PLC Device</span> + Max Luck + Event buffs x49.71</button>
                         </div>
                     </div>
                     <div class="preset-collection">
@@ -969,16 +1043,19 @@
                                     </span>
                                 </span>
                             </div>
-                            <input
-                                type="range"
-                                id="audioMusicVolume"
-                                class="audio-slider__input"
-                                min="0"
-                                max="100"
-                                value="50"
-                                step="1"
-                                data-audio-channel="music"
-                            >
+                            <div class="audio-slider__control">
+                                <input
+                                    type="range"
+                                    id="audioMusicVolume"
+                                    class="audio-slider__input"
+                                    min="0"
+                                    max="100"
+                                    value="50"
+                                    step="1"
+                                    data-audio-channel="music"
+                                >
+                                <span class="audio-slider__thumb" aria-hidden="true"></span>
+                            </div>
                         </label>
                         <label class="audio-slider" for="audioCutsceneVolume">
                             <div class="audio-slider__label-row">
@@ -990,16 +1067,19 @@
                                     </span>
                                 </span>
                             </div>
-                            <input
-                                type="range"
-                                id="audioCutsceneVolume"
-                                class="audio-slider__input"
-                                min="0"
-                                max="100"
-                                value="50"
-                                step="1"
-                                data-audio-channel="cutscene"
-                            >
+                            <div class="audio-slider__control">
+                                <input
+                                    type="range"
+                                    id="audioCutsceneVolume"
+                                    class="audio-slider__input"
+                                    min="0"
+                                    max="100"
+                                    value="50"
+                                    step="1"
+                                    data-audio-channel="cutscene"
+                                >
+                                <span class="audio-slider__thumb" aria-hidden="true"></span>
+                            </div>
                         </label>
                         <label class="audio-slider" for="audioObtainVolume">
                             <div class="audio-slider__label-row">
@@ -1011,16 +1091,19 @@
                                     </span>
                                 </span>
                             </div>
-                            <input
-                                type="range"
-                                id="audioObtainVolume"
-                                class="audio-slider__input"
-                                min="0"
-                                max="100"
-                                value="50"
-                                step="1"
-                                data-audio-channel="obtain"
-                            >
+                            <div class="audio-slider__control">
+                                <input
+                                    type="range"
+                                    id="audioObtainVolume"
+                                    class="audio-slider__input"
+                                    min="0"
+                                    max="100"
+                                    value="50"
+                                    step="1"
+                                    data-audio-channel="obtain"
+                                >
+                                <span class="audio-slider__thumb" aria-hidden="true"></span>
+                            </div>
                         </label>
                     </div>
                     <div class="audio-modal__toggles">
@@ -1048,9 +1131,9 @@
                     <span class="quality-settings__name">Remove particles</span>
                     <span class="quality-settings__description">Disables floating hearts and other particle visuals.</span>
                 </button>
-                <button class="interface-button quality-settings__item" type="button" role="menuitemcheckbox" aria-checked="false" data-quality-option="disableButtonAnimations">
-                    <span class="quality-settings__name">Disable button animations</span>
-                    <span class="quality-settings__description">Stops button hover, pulse, and motion effects, except shake-only effects.</span>
+                <button class="interface-button quality-settings__item" type="button" role="menuitemcheckbox" aria-checked="false" data-quality-option="disableUiAnimations">
+                    <span class="quality-settings__name">Disable UI Animations</span>
+                    <span class="quality-settings__description">Stops button motion, feature bootups, and interface transitions. Shake-only effects remain separate.</span>
                 </button>
                 <button class="interface-button quality-settings__item" type="button" role="menuitemcheckbox" aria-checked="false" data-quality-option="disableShakes">
                     <span class="quality-settings__name">Disable Shakes</span>
@@ -1130,13 +1213,84 @@
 
             <div class="changelog-modal__panels" data-changelog-panels>
                 <section
+                    id="changelog-panel-v1900"
+                    class="changelog-modal__panel"
+                    role="tabpanel"
+                    aria-labelledby="changelog-tab-v1900"
+                    data-changelog-panel="v1900"
+                    data-changelog-label="v1.900"
+                    tabindex="0"
+                >
+                    <header class="changelog-modal__header">
+                        <h2 class="changelog-modal__title">Version v1.900 Update Notes</h2>
+                        <span class="changelog-tab__subtitle">Accuracy, Potion Systems &amp; Adaptive Motion</span>
+                        <p class="changelog-modal__meta">Updated 2026/07/17 at 2:00 PM CEST</p>
+                    </header>
+                    <p class="changelog-modal__intro">Latest changes:</p>
+                    <ul class="changelog-modal__list changelog-modal__list--grouped">
+                        <li class="changelog-release-group">
+                            <span class="largeClass">Simulation accuracy &amp; biome fixes:</span>
+                            <ul class="changelog-release-group__list">
+                                <li>Fixed Limbo tier filtering for <span class="rarity-tier-mythic">ゴシック</span>, <span class="rarity-tier-exalted">Imaginary</span>, <span class="rarity-tier-exalted">{J u x t a p o s i t i o n}</span>, and other Limbo-exclusive auras when Skip Mythic or Skip Exalted Auras is enabled.</li>
+                                <li><span class="sigil-outline-empty">Empty</span> can now be rolled in the <span class="sigil-outline-glitch">Glitch</span> biome.</li>
+                                <li>
+                                    Corrected aura rarities:
+                                    <ul class="changelog-release-rarity-grid">
+                                        <li>Forbidden<span class="tinyClass">1 in 403</span></li>
+                                        <li>Gilded : Crowned<span class="tinyClass">1 in 5,000 inside Sandstorm/Glitched</span></li>
+                                        <li>Symbiosis<span class="tinyClass">1 in 266,240 native</span></li>
+                                        <li>Evanescent<span class="tinyClass">1 in 840,000 native</span></li>
+                                        <li>Oculus<span class="tinyClass">1 in 4,646,668 native</span></li>
+                                        <li>Aquaria<span class="tinyClass">1 in 20,000,000 inside Rainy/Glitched</span></li>
+                                        <li>Hellbound<span class="tinyClass">1 in 14,166,666 inside Hell/Glitched</span></li>
+                                    </ul>
+                                </li>
+                                <span class="subSpace credits-text">Credit goes to <a href="https://discord.com/users/1008360412632322088" class="subtitleClass" target="_blank" rel="noopener">antigodthesans</a> for sending me all of these bug reports!</span>
+                            </ul>
+                        </li>
+                        <li class="changelog-release-group">
+                            <span class="largeClass">Potion simulation &amp; device presets:</span>
+                            <ul class="changelog-release-group__list">
+                                <li>Added Single Potion and Multiple Potion modes with exact mixed quantities.</li>
+                                <li><span class="oblivionClass">Oblivion</span>, <span class="pumpBloodClass">Pump King's Blood</span>, and <span class="tutPotion">Tutorial Potion</span> run as isolated batches first. Runes remain selectable and begin applying when a compatible potion batch starts.</li>
+                                <li>Added a Stack Compatible Potions switch that merges compatible potion luck into shared rolls while keeping incompatible potions isolated.</li>
+                                <li>Device preset luck is added to every potion instead of multiplying potion luck, updates live with VIP, Final Luck, and Dev Abuse modifiers, and displays the selected preset name in the roll feed.</li>
+
+                                <span class="subSpace credits-text">Credit goes to <a href="https://discord.com/users/987426773950169089" class="subtitleClass" target="_blank" rel="noopener">qqener</a> for sharing this idea with me!</span>
+                            </ul>
+                        </li>
+                        <li class="changelog-release-group">
+                            <span class="largeClass">Interface &amp; animation overhaul:</span>
+                            <ul class="changelog-release-group__list">
+                                <li>Added adaptive boot-up and shutdown animations for feature containers. Limbo now shuts down and hides both potion-mode buttons, then boots them back up after leaving Limbo.</li>
+                                <li>Dropdown containers now replay one uninterrupted startup sequence every time they open, without a delayed animation restart or jitter.</li>
+                                <li>Reworked the event selector animation and raised its dropdown above the quick-biome controls so options remain fully readable and clickable.</li>
+                                <li>Reworked the <span class="sigil-outline-singularity">Singularity</span> summon into an irregular earthquake rumble that escalates continuously and becomes drastically more violent near the finale.</li>
+                                <li>Renamed Disable Button Animations to Disable UI Animations and extended it to the new boot, shutdown, dropdown, event, and audio-control motion.</li>
+                                <li>Gave the v1.880 update log itself a small visual cleanup for a clearer and more comfortable reading layout.</li>
+                            </ul>
+                        </li>
+                        <li class="changelog-release-group">
+                            <span class="largeClass">Audio improvements:</span>
+                            <ul class="changelog-release-group__list">
+                                <li>Rebuilt audio sliders with immediate track feedback, correctly aligned thumbs, and short compositor-driven thumb easing, removing low-frame-rate jitter and the clipped native thumb appearance.</li>
+                                <li>Fixed repeated volume adjustments compounding media volume until all sound became inaudible.</li>
+                                
+                                <span class="subSpace credits-text">I had aknowladged this bug a long time ago so apologies for the latency on this fix 🙏</span>
+                            </ul>
+                        </li>
+                    </ul>
+                    <p>If there's any bugs you encounter, please DM me here <a href="https://discord.com/users/611204110955446301" class="subtitleClass" target="_blank" rel="noopener">@not.unnamed</a></p>
+                </section>
+                <section
                     id="changelog-panel-v1870"
                     class="changelog-modal__panel"
                     role="tabpanel"
                     aria-labelledby="changelog-tab-v1870"
                     data-changelog-panel="v1870"
                     data-changelog-label="v1.870"
-                    tabindex="0"
+                    tabindex="-1"
+                    hidden
                 >
                     <header class="changelog-modal__header">
                         <h2 class="changelog-modal__title">Version v1.870 Update Notes</h2>
@@ -1170,7 +1324,7 @@
                         <ul>
                             <li>Previously known as <span class="sigil-outline-xc">Unknown</span> has now been changed to <span class="sigil-outline-xc">The Red Full Moon</span> with an option like <span class="sigil-outline-xyz">Another Realm</span> where you are given a choice to use either the old admin abuse buff or the new one, in this case the new being x1.5 and old being x2</li>
                         </ul>
-                    </ul>
+                        </ul>
                     <p>If there's any bugs you encounter, please DM me here <a href="https://discord.com/users/611204110955446301" class="subtitleClass" target="_blank" rel="noopener">@not.unnamed</a></p>
                 </section>
                 <section
@@ -1264,7 +1418,7 @@
                         </ul>
                         <li><span class="sigil-outline-dreammetric">Dreammetric</span> now appears at the top when rolled.</li>
                         <li>Added 6 new device presets which includes <span class="plcClass">PLC Device</span> for both <span class="archangelClass">Archangel Device</span> and <span class="singularityClass">Singularity Device</span></li>
-                        <li>Fixed Quality Preferences so only Disable button animations removes button animation effects.</li>
+                        <li>Fixed Quality Preferences so Disable UI Animations controls button and interface motion effects.</li>
                         <li>Luck now live-updates from the active multiplier stack, including <span class="sigil-outline-singularity">Singularity</span>, VIP, Dave's Luck, Dorcelessness, We're Sorry!, Astrald's Blessing, and dev biome Admin Abuse buffs.</li>
                             <span class="subSpace"><span class="tinyClass-colorless">I bet Zeefir is happy about this</span></span>
                         <li>Fixed add and subtract preset buttons so added or removed luck is included in the active live multiplier stack.</li>
@@ -1485,7 +1639,7 @@
                                 <ul class="changelog-modal__list changelog-modal__list--sub">
                                     <li>Added a Singularity summon "cutscene".</li>
                                     <li>Added a Disable Shakes quality preference that disables the four high-luck preset shake animations and skips the Singularity summon sound and shake.</li>
-                                    <li>Adjusted Disable button animations so the preset shake effects are controlled by Disable Shakes instead.</li>
+                                    <li>Adjusted Disable UI Animations so the preset shake effects are controlled by Disable Shakes instead.</li>
                                     <li>Updated the Cyberspace notice to mention Meta alongside Illusionary.</li>
                                     <li>Added an Eostre cutscene.</li>
                                     <li>Updated the Y.O.L.K.E.G.G. and Sky Festival cutscenes.</li>
@@ -2043,8 +2197,8 @@
     </div>
 
     <script src="scripts/utils.js" defer></script>
-    <script src="scripts/state.js" defer></script>
+    <script src="scripts/state.js?v=1.880.4" defer></script>
     <script src="scripts/overlays.js" defer></script>
-    <script src="scripts/main.js" defer></script>
+    <script src="scripts/main.js?v=1.880.4" defer></script>
 </body>
 </html>

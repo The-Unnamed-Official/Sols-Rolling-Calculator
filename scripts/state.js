@@ -39,6 +39,7 @@
             context: null,
             bufferCache: new Map(),
             bufferPromises: new Map(),
+            baseGainMap: new WeakMap(),
             gainMap: new WeakMap(),
             fallbackPlayers: new Set()
         },
@@ -47,7 +48,7 @@
         reduceMotion: false,
         qualityPreferences: {
             removeParticles: true,
-            disableButtonAnimations: true,
+            disableUiAnimations: true,
             disableShakes: true,
             disableRollAndSigilAnimations: true,
             reduceGlitchEffects: true,

@@ -258,18 +258,18 @@ body.reduce-motion .banner__emblem--spinning img {
     animation: none !important;
 }
 
-body.quality-no-button-animations button:not(.luck-preset-button--shake),
-body.quality-no-button-animations .interface-button,
-body.quality-no-button-animations .interface-toggle,
-body.quality-no-button-animations .roll-trigger,
-body.quality-no-button-animations .roll-cancel {
+body.quality-no-ui-animations button:not(.luck-preset-button--shake),
+body.quality-no-ui-animations .interface-button,
+body.quality-no-ui-animations .interface-toggle,
+body.quality-no-ui-animations .roll-trigger,
+body.quality-no-ui-animations .roll-cancel {
     animation: none !important;
     transition: none !important;
 }
 
-body.quality-no-button-animations .resource-link,
-body.quality-no-button-animations .support-float *,
-body.quality-no-button-animations .donation-float * {
+body.quality-no-ui-animations .resource-link,
+body.quality-no-ui-animations .support-float *,
+body.quality-no-ui-animations .donation-float * {
     transition: none !important;
 }
 
@@ -305,11 +305,11 @@ body.performance-mode .banner__emblem--spinning img {
     animation: none !important;
 }
 
-body.quality-no-button-animations .support-float--collapsed .support-float__toggle::before,
-body.quality-no-button-animations .support-float--collapsed .support-float__toggle::after,
-body.quality-no-button-animations .support-float--collapsed .support-float__toggle-icon--expand i,
-body.quality-no-button-animations .support-float__link:hover .support-float__icon i,
-body.quality-no-button-animations .support-float__link:focus-visible .support-float__icon i {
+body.quality-no-ui-animations .support-float--collapsed .support-float__toggle::before,
+body.quality-no-ui-animations .support-float--collapsed .support-float__toggle::after,
+body.quality-no-ui-animations .support-float--collapsed .support-float__toggle-icon--expand i,
+body.quality-no-ui-animations .support-float__link:hover .support-float__icon i,
+body.quality-no-ui-animations .support-float__link:focus-visible .support-float__icon i {
     animation: none !important;
 }
 
@@ -789,6 +789,181 @@ body.singularity-summon-active .interface-footer {
         singularity-summon-translate-jitter 0.34s ease infinite;
     transform-origin: center;
     will-change: transform;
+}
+
+@media (min-width: 1200px) {
+    @supports not (zoom: 1) {
+        body.singularity-summon-active .interface-shell,
+        body.singularity-summon-active .interface-footer {
+            --singularity-summon-shake-scale: var(--ui-scale-desktop);
+        }
+    }
+}
+
+body.quality-no-shakes.singularity-summon-active .interface-shell,
+body.quality-no-shakes.singularity-summon-active .interface-footer {
+    animation: none !important;
+}
+
+@property --singularity-quake-major {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 0px;
+}
+
+@property --singularity-quake-major-negative {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 0px;
+}
+
+@property --singularity-quake-minor {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 0px;
+}
+
+@property --singularity-quake-minor-negative {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 0px;
+}
+
+@keyframes singularity-earthquake-intensity {
+    0% {
+        --singularity-quake-major: 0px;
+        --singularity-quake-major-negative: 0px;
+        --singularity-quake-minor: 0px;
+        --singularity-quake-minor-negative: 0px;
+    }
+
+    10% {
+        --singularity-quake-major: 0.6px;
+        --singularity-quake-major-negative: -0.6px;
+        --singularity-quake-minor: 0.2px;
+        --singularity-quake-minor-negative: -0.2px;
+    }
+
+    25% {
+        --singularity-quake-major: 1.5px;
+        --singularity-quake-major-negative: -1.5px;
+        --singularity-quake-minor: 0.55px;
+        --singularity-quake-minor-negative: -0.55px;
+    }
+
+    43% {
+        --singularity-quake-major: 3px;
+        --singularity-quake-major-negative: -3px;
+        --singularity-quake-minor: 1.2px;
+        --singularity-quake-minor-negative: -1.2px;
+    }
+
+    58% {
+        --singularity-quake-major: 5.5px;
+        --singularity-quake-major-negative: -5.5px;
+        --singularity-quake-minor: 2.2px;
+        --singularity-quake-minor-negative: -2.2px;
+    }
+
+    70% {
+        --singularity-quake-major: 9px;
+        --singularity-quake-major-negative: -9px;
+        --singularity-quake-minor: 3.8px;
+        --singularity-quake-minor-negative: -3.8px;
+    }
+
+    80% {
+        --singularity-quake-major: 14px;
+        --singularity-quake-major-negative: -14px;
+        --singularity-quake-minor: 5.8px;
+        --singularity-quake-minor-negative: -5.8px;
+    }
+
+    88% {
+        --singularity-quake-major: 20px;
+        --singularity-quake-major-negative: -20px;
+        --singularity-quake-minor: 8.5px;
+        --singularity-quake-minor-negative: -8.5px;
+    }
+
+    94% {
+        --singularity-quake-major: 27px;
+        --singularity-quake-major-negative: -27px;
+        --singularity-quake-minor: 12px;
+        --singularity-quake-minor-negative: -12px;
+    }
+
+    100% {
+        --singularity-quake-major: 36px;
+        --singularity-quake-major-negative: -36px;
+        --singularity-quake-minor: 16px;
+        --singularity-quake-minor-negative: -16px;
+    }
+}
+
+@keyframes singularity-earthquake-rumble {
+    0%,
+    100% {
+        transform: translate3d(0, 0, 0) rotate(0deg) scale(var(--singularity-summon-shake-scale, 1));
+    }
+
+    7% {
+        transform: translate3d(var(--singularity-quake-minor), var(--singularity-quake-major-negative), 0) rotate(0.025deg) scale(var(--singularity-summon-shake-scale, 1));
+    }
+
+    15% {
+        transform: translate3d(var(--singularity-quake-major-negative), var(--singularity-quake-minor), 0) rotate(-0.045deg) scale(var(--singularity-summon-shake-scale, 1));
+    }
+
+    23% {
+        transform: translate3d(var(--singularity-quake-major), var(--singularity-quake-minor), 0) rotate(0.035deg) scale(var(--singularity-summon-shake-scale, 1));
+    }
+
+    31% {
+        transform: translate3d(var(--singularity-quake-minor-negative), var(--singularity-quake-major-negative), 0) rotate(-0.018deg) scale(var(--singularity-summon-shake-scale, 1));
+    }
+
+    40% {
+        transform: translate3d(var(--singularity-quake-major-negative), 0, 0) rotate(-0.06deg) scale(var(--singularity-summon-shake-scale, 1));
+    }
+
+    48% {
+        transform: translate3d(var(--singularity-quake-minor), var(--singularity-quake-major), 0) rotate(0.028deg) scale(var(--singularity-summon-shake-scale, 1));
+    }
+
+    57% {
+        transform: translate3d(var(--singularity-quake-major), var(--singularity-quake-minor-negative), 0) rotate(0.065deg) scale(var(--singularity-summon-shake-scale, 1));
+    }
+
+    65% {
+        transform: translate3d(0, var(--singularity-quake-major-negative), 0) rotate(-0.032deg) scale(var(--singularity-summon-shake-scale, 1));
+    }
+
+    74% {
+        transform: translate3d(var(--singularity-quake-major-negative), var(--singularity-quake-minor-negative), 0) rotate(-0.052deg) scale(var(--singularity-summon-shake-scale, 1));
+    }
+
+    82% {
+        transform: translate3d(var(--singularity-quake-major), var(--singularity-quake-minor), 0) rotate(0.042deg) scale(var(--singularity-summon-shake-scale, 1));
+    }
+
+    91% {
+        transform: translate3d(var(--singularity-quake-minor-negative), var(--singularity-quake-minor), 0) rotate(-0.015deg) scale(var(--singularity-summon-shake-scale, 1));
+    }
+}
+
+body.singularity-summon-active .interface-shell,
+body.singularity-summon-active .interface-footer {
+    --singularity-summon-shake-scale: 1;
+    animation:
+        singularity-earthquake-intensity 12.5s linear both,
+        singularity-earthquake-rumble 240ms linear infinite;
+    transform-origin: center;
+    will-change: transform;
+}
+
+body.singularity-summon-active .interface-footer {
+    animation-delay: 0ms, -83ms;
 }
 
 @media (min-width: 1200px) {
