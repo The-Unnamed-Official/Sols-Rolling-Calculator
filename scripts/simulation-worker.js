@@ -146,9 +146,6 @@ self.onmessage = event => {
     cancelRequested = false;
 
     try {
-        const total = Number.isFinite(message.total) && message.total > 0
-            ? Math.floor(message.total)
-            : 0;
         const auraCount = Number.isFinite(message.auraCount) && message.auraCount > 0
             ? Math.floor(message.auraCount)
             : 0;
@@ -156,46 +153,79 @@ self.onmessage = event => {
             ? message.progressIntervalMs
             : 100;
 
-        const prerollAuraIndices = Array.isArray(message.prerollAuraIndices) ? message.prerollAuraIndices : [];
-        const prerollAuraRatios = Array.isArray(message.prerollAuraRatios) ? message.prerollAuraRatios : [];
-        const lucklessAuraIndices = Array.isArray(message.lucklessAuraIndices) ? message.lucklessAuraIndices : [];
-        const lucklessAuraRatios = Array.isArray(message.lucklessAuraRatios) ? message.lucklessAuraRatios : [];
-        const lucklessBreakthroughIndices = Array.isArray(message.lucklessBreakthroughIndices) ? message.lucklessBreakthroughIndices : [];
-        const luckAffectedAuraIndices = Array.isArray(message.luckAffectedAuraIndices) ? message.luckAffectedAuraIndices : [];
-        const luckAffectedAuraRatios = Array.isArray(message.luckAffectedAuraRatios) ? message.luckAffectedAuraRatios : [];
-        const luckAffectedBreakthroughIndices = Array.isArray(message.luckAffectedBreakthroughIndices) ? message.luckAffectedBreakthroughIndices : [];
+        const legacyBatch = {
+            total: message.total,
+            prerollAuraIndices: message.prerollAuraIndices,
+            prerollAuraRatios: message.prerollAuraRatios,
+            lucklessAuraIndices: message.lucklessAuraIndices,
+            lucklessAuraRatios: message.lucklessAuraRatios,
+            lucklessBreakthroughIndices: message.lucklessBreakthroughIndices,
+            luckAffectedAuraIndices: message.luckAffectedAuraIndices,
+            luckAffectedAuraRatios: message.luckAffectedAuraRatios,
+            luckAffectedBreakthroughIndices: message.luckAffectedBreakthroughIndices
+        };
+        const batchMessages = Array.isArray(message.batches) && message.batches.length > 0
+            ? message.batches
+            : [legacyBatch];
+        const batchConfigs = batchMessages.map(batch => {
+            const prerollAuraIndices = Array.isArray(batch.prerollAuraIndices) ? batch.prerollAuraIndices : [];
+            const prerollAuraRatios = Array.isArray(batch.prerollAuraRatios) ? batch.prerollAuraRatios : [];
+            const lucklessAuraIndices = Array.isArray(batch.lucklessAuraIndices) ? batch.lucklessAuraIndices : [];
+            const lucklessAuraRatios = Array.isArray(batch.lucklessAuraRatios) ? batch.lucklessAuraRatios : [];
+            const lucklessBreakthroughIndices = Array.isArray(batch.lucklessBreakthroughIndices) ? batch.lucklessBreakthroughIndices : [];
+            const luckAffectedAuraIndices = Array.isArray(batch.luckAffectedAuraIndices) ? batch.luckAffectedAuraIndices : [];
+            const luckAffectedAuraRatios = Array.isArray(batch.luckAffectedAuraRatios) ? batch.luckAffectedAuraRatios : [];
+            const luckAffectedBreakthroughIndices = Array.isArray(batch.luckAffectedBreakthroughIndices) ? batch.luckAffectedBreakthroughIndices : [];
 
-        const prerollSelection = buildWeightedSelection(prerollAuraRatios);
-        const lucklessSelection = buildWeightedSelection(lucklessAuraRatios);
-        const luckAffectedSelection = buildWeightedSelection(luckAffectedAuraRatios);
-        const combinedSelection = buildCombinedSelection([
-            {
-                selection: prerollSelection,
-                auraIndices: prerollAuraIndices,
-                breakthroughIndices: null
-            },
-            {
-                selection: lucklessSelection,
-                auraIndices: lucklessAuraIndices,
-                breakthroughIndices: lucklessBreakthroughIndices
-            },
-            {
-                selection: luckAffectedSelection,
-                auraIndices: luckAffectedAuraIndices,
-                breakthroughIndices: luckAffectedBreakthroughIndices
-            }
-        ]);
+            return {
+                total: Number.isFinite(batch.total) && batch.total > 0 ? Math.floor(batch.total) : 0,
+                combinedSelection: buildCombinedSelection([
+                    {
+                        selection: buildWeightedSelection(prerollAuraRatios),
+                        auraIndices: prerollAuraIndices,
+                        breakthroughIndices: null
+                    },
+                    {
+                        selection: buildWeightedSelection(lucklessAuraRatios),
+                        auraIndices: lucklessAuraIndices,
+                        breakthroughIndices: lucklessBreakthroughIndices
+                    },
+                    {
+                        selection: buildWeightedSelection(luckAffectedAuraRatios),
+                        auraIndices: luckAffectedAuraIndices,
+                        breakthroughIndices: luckAffectedBreakthroughIndices
+                    }
+                ])
+            };
+        }).filter(batch => batch.total > 0);
+        const total = batchConfigs.reduce((sum, batch) => sum + batch.total, 0);
 
         const sampleEntropy = typeof drawEntropy === 'function' ? drawEntropy : Math.random;
         const winCounts = createZeroCounts(auraCount);
         const breakthroughCounts = createZeroCounts(auraCount);
 
         let currentRoll = 0;
+        let currentBatchIndex = 0;
+        let currentBatchRoll = 0;
         let lastProgressTimestamp = readNow();
         const batchSize = Math.min(5000000, Math.max(250000, Math.ceil(Math.max(total, 1) / 180)));
 
         const applySelectionHit = () => {
+            while (
+                currentBatchIndex < batchConfigs.length
+                && currentBatchRoll >= batchConfigs[currentBatchIndex].total
+            ) {
+                currentBatchIndex += 1;
+                currentBatchRoll = 0;
+            }
+            const activeBatch = batchConfigs[currentBatchIndex];
+            if (!activeBatch) {
+                return false;
+            }
+
+            const combinedSelection = activeBatch.combinedSelection;
             const selectedIndex = selectWeightedIndex(combinedSelection.selection, sampleEntropy());
+            currentBatchRoll += 1;
             if (selectedIndex === -1) {
                 return false;
             }
