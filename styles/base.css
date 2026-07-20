@@ -318,7 +318,7 @@ body.performance-mode .feed__viewport,
 body.performance-mode .resource-link,
 body.performance-mode .support-float,
 body.performance-mode .donation-float {
-    contain: layout paint style;
+    contain: layout style;
 }
 
 body.performance-mode .support-float__link::before,
@@ -1324,7 +1324,7 @@ body.is-glitching .feed__viewport::after {
     position: fixed;
     inset: 0;
     background-color: var(--bg-base);
-    background-image: var(--biome-background, url("files/images/backgrounds/normalBiomeImage.jpg"));
+    background-image: var(--biome-background, url("../files/images/backgrounds/normalBiomeImage.png"));
     background-position: center top;
     background-repeat: no-repeat;
     background-size: 100% 100%;

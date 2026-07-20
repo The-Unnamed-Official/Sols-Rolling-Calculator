@@ -19,8 +19,9 @@ let experienceStarted = false;
 let activeSimulationWorker = null;
 let activeSolLikeSimulationController = null;
 let lastSimulationSummary = null;
-let rollFeedSortMode = 'recent';
+let rollFeedSortMode = 'rarity';
 let rollFeedSortingAvailable = false;
+let rollFeedSortSupportsRecent = false;
 let shareFeedbackTimerId = null;
 let imageShareModeRequester = null;
 const versionChangelogOverlayState = {
@@ -72,6 +73,10 @@ const ROLL_FEED_SORT_MODE = Object.freeze({
 });
 const ROLL_FEED_SORT_SEQUENCE = Object.freeze([
     ROLL_FEED_SORT_MODE.RECENT,
+    ROLL_FEED_SORT_MODE.RARITY,
+    ROLL_FEED_SORT_MODE.ALPHABETICAL
+]);
+const ROLL_FEED_SORT_SEQUENCE_UNNAMED = Object.freeze([
     ROLL_FEED_SORT_MODE.RARITY,
     ROLL_FEED_SORT_MODE.ALPHABETICAL
 ]);
@@ -908,6 +913,11 @@ function syncRollingSettingsControls() {
     const speedOutput = document.getElementById('solsLikeRollingSpeedValue');
     const autoPauseRow = document.getElementById('autoPauseAfterCutsceneRow');
     const autoPauseToggle = document.getElementById('autoPauseAfterCutsceneToggle');
+    const speedEditableWhilePaused = Boolean(
+        simulationActive
+        && isSolsLikeSimulationMethod()
+        && activeSolLikeSimulationController?.isPaused?.()
+    );
 
     if (speedSlider) {
         const rollsPerSecond = normalizeSolsLikeRollsPerSecond(
@@ -919,7 +929,7 @@ function syncRollingSettingsControls() {
         ) * 100;
         speedSlider.value = String(rollsPerSecond);
         speedSlider.style.setProperty('--rolling-speed-progress', `${sliderProgress}%`);
-        speedSlider.disabled = simulationActive;
+        speedSlider.disabled = simulationActive && !speedEditableWhilePaused;
         if (speedOutput) {
             speedOutput.textContent = formatSolsLikeRollingSpeed(rollsPerSecond);
         }
@@ -1491,6 +1501,7 @@ function setChannelVolume(channel, normalized, { persist = true } = {}) {
 function initializeAudioSettingsPanel() {
     const overlay = document.getElementById('audioSettingsOverlay');
     const openButton = document.getElementById('audioSettingsButton');
+    const closeButton = document.getElementById('audioSettingsClose');
     if (!overlay || !openButton) return;
 
     const inputs = Array.from(overlay.querySelectorAll('.audio-slider__input'));
@@ -1540,6 +1551,7 @@ function initializeAudioSettingsPanel() {
         event.preventDefault();
         showAudioSettingsOverlay();
     });
+    closeButton?.addEventListener('click', hideAudioSettingsOverlay);
 
     setChannelVolume('obtain', appState.audio.obtainVolume);
     setChannelVolume('ui', appState.audio.uiVolume);
@@ -4205,6 +4217,7 @@ function syncSimulationMethodControls() {
     const solsLikeSelected = isSolsLikeSimulationMethod();
     const { rollTriggerButton, pauseRollButton, followRollFeedButton } = uiHandles;
     const splitControl = rollTriggerButton?.closest('.roll-split-control');
+    const rollConsoleStatus = document.getElementById('rollConsoleStatus');
 
     document.querySelectorAll('[data-simulation-method]').forEach(button => {
         const active = button.dataset.simulationMethod === simulationMethod;
@@ -4226,6 +4239,13 @@ function syncSimulationMethodControls() {
     }
     if (followRollFeedButton && (!solsLikeSelected || !simulationActive || !activeSolLikeSimulationController)) {
         followRollFeedButton.hidden = true;
+    }
+    if (rollConsoleStatus) {
+        const statusText = rollConsoleStatus.querySelector('.roll-console__armed-text');
+        rollConsoleStatus.dataset.state = simulationActive ? 'rolling' : 'ready';
+        if (statusText) {
+            statusText.textContent = simulationActive ? 'Rolling' : 'Ready';
+        }
     }
     syncRollingSettingsControls();
 }
@@ -4713,6 +4733,7 @@ function createLuckPresetAdjustmentButtons(button, presetValue, fallbackSource) 
     addButton.className = 'preset-button__action preset-button__action--add';
     addButton.textContent = '+';
     addButton.setAttribute('aria-label', `Add ${formattedValue} luck`);
+    addButton.title = `Add ${formattedValue} luck`;
     addButton.addEventListener('click', event => {
         event.stopPropagation();
         applyLuckDelta(presetValue, buildLuckAdjustmentOptions(button, 'add', fallbackSource));
@@ -4723,13 +4744,14 @@ function createLuckPresetAdjustmentButtons(button, presetValue, fallbackSource) 
     subtractButton.className = 'preset-button__action preset-button__action--subtract';
     subtractButton.textContent = '-';
     subtractButton.setAttribute('aria-label', `Remove ${formattedValue} luck`);
+    subtractButton.title = `Remove ${formattedValue} luck`;
     subtractButton.addEventListener('click', event => {
         event.stopPropagation();
         applyLuckDelta(-presetValue, buildLuckAdjustmentOptions(button, 'subtract', fallbackSource));
     });
 
-    wrapper.appendChild(addButton);
     wrapper.appendChild(subtractButton);
+    wrapper.appendChild(addButton);
 
     return wrapper;
 }
@@ -4765,6 +4787,13 @@ function setupLuckPresetAdjustmentButtons() {
             if (!parent) {
                 return;
             }
+
+            const label = document.createElement('span');
+            label.className = 'preset-button__label';
+            while (button.firstChild) {
+                label.appendChild(button.firstChild);
+            }
+            button.appendChild(label);
 
             parent.insertBefore(wrapper, button);
             wrapper.appendChild(button);
@@ -4809,6 +4838,76 @@ function applyDeviceBuffPreset(luckBonus, sourceButton = null) {
 
     const targetLuck = Math.max(1, numericLuckBonus);
     applyLuckValue(targetLuck, { luckSource: LUCK_SELECTION_SOURCE.DEVICE_PRESET });
+}
+
+function setPresetConsoleBank(bankName, { focusTab = false, playAudio = false } = {}) {
+    const tabs = Array.from(document.querySelectorAll('[data-preset-bank-target]'));
+    const panels = Array.from(document.querySelectorAll('[data-preset-bank]'));
+    if (!tabs.length || !panels.length) {
+        return;
+    }
+
+    const validBankNames = tabs.map(tab => tab.dataset.presetBankTarget);
+    const selectedBank = validBankNames.includes(bankName) ? bankName : validBankNames[0];
+
+    tabs.forEach(tab => {
+        const active = tab.dataset.presetBankTarget === selectedBank;
+        tab.classList.toggle('preset-console__tab--active', active);
+        tab.setAttribute('aria-selected', active ? 'true' : 'false');
+        tab.tabIndex = active ? 0 : -1;
+        if (active && focusTab) {
+            tab.focus();
+        }
+    });
+
+    panels.forEach(panel => {
+        const active = panel.dataset.presetBank === selectedBank;
+        panel.hidden = !active;
+        panel.classList.toggle('preset-console__bank--active', active);
+    });
+
+    if (playAudio) {
+        playSoundEffect(clickSoundEffectElement, 'ui');
+    }
+}
+
+function setupPresetConsoleTabs() {
+    const tabs = Array.from(document.querySelectorAll('[data-preset-bank-target]'));
+    if (!tabs.length) {
+        return;
+    }
+
+    tabs.forEach((tab, index) => {
+        tab.addEventListener('click', () => {
+            setPresetConsoleBank(tab.dataset.presetBankTarget, { playAudio: true });
+        });
+
+        tab.addEventListener('keydown', event => {
+            let nextIndex = null;
+            if (event.key === 'ArrowRight' || event.key === 'ArrowDown') {
+                nextIndex = (index + 1) % tabs.length;
+            } else if (event.key === 'ArrowLeft' || event.key === 'ArrowUp') {
+                nextIndex = (index - 1 + tabs.length) % tabs.length;
+            } else if (event.key === 'Home') {
+                nextIndex = 0;
+            } else if (event.key === 'End') {
+                nextIndex = tabs.length - 1;
+            }
+
+            if (nextIndex === null) {
+                return;
+            }
+
+            event.preventDefault();
+            setPresetConsoleBank(tabs[nextIndex].dataset.presetBankTarget, {
+                focusTab: true,
+                playAudio: true
+            });
+        });
+    });
+
+    const initiallySelectedTab = tabs.find(tab => tab.getAttribute('aria-selected') === 'true') || tabs[0];
+    setPresetConsoleBank(initiallySelectedTab.dataset.presetBankTarget);
 }
 
 function recomputeLuckValue() {
@@ -5457,8 +5556,12 @@ function isAuraTierSkipped(aura, biome) {
 
 const CHALLENGED_CUTSCENE_AURAS = new Set(['Oblivion', 'Memory', 'Neferkhaf', '赤月の破片']);
 
+function shouldHideAuraFromRollFeed(aura, biome) {
+    return isAuraTierSkipped(aura, biome) || isAuraFiltered(aura);
+}
+
 function shouldSkipAuraCutscene(aura, biome) {
-    if (isAuraTierSkipped(aura, biome) || isAuraFiltered(aura)) {
+    if (shouldHideAuraFromRollFeed(aura, biome)) {
         return true;
     }
     if (!aura || !appState || !appState.auraTierFilters) {
@@ -6698,15 +6801,15 @@ const BIOME_EVENT_CONSTRAINTS = {
 };
 
 const EVENT_BIOME_CONDITION_MESSAGES = Object.freeze({
-    anotherRealm: 'Requires Dev Biomes to be enabled under run parameters.',
-    mastermind: 'Requires Dev Biomes to be enabled under run parameters.',
-    edict: 'Requires Dev Biomes to be enabled under run parameters.',
+    anotherRealm: 'Requires Developer Biomes to be enabled under run parameters.',
+    mastermind: 'Requires Developer Biomes to be enabled under run parameters.',
+    edict: 'Requires Developer Biomes to be enabled under run parameters.',
     graveyard: 'Requires Night time with Halloween 2024 or Halloween 2025 enabled.',
     pumpkinMoon: 'Requires Night time with Halloween 2024 or Halloween 2025 enabled.',
     bloodRain: 'Requires Halloween 2025 enabled.',
     blazing: 'Requires Summer 2025 enabled.',
     aurora: 'Requires Winter 2026 enabled.',
-    fullMoon: 'Requires Dev Biomes to be enabled under run parameters.',
+    fullMoon: 'Requires Developer Biomes to be enabled under run parameters.',
 });
 
 const enabledEvents = new Set();
@@ -7079,7 +7182,7 @@ function enforceBiomeEventRestrictions() {
 
         if (DEV_BIOME_IDS.has(option.value) && !devBiomesEnabled) {
             disabled = true;
-            title = 'Enable Dev Biomes to access this biome.';
+            title = 'Enable Developer Biomes to access this biome.';
         }
 
         const requiredEvent = BIOME_EVENT_CONSTRAINTS[option.value];
@@ -7898,6 +8001,71 @@ function relocateResourcesPanelForMobile() {
     mobileQuery.addEventListener('change', syncLayout);
 }
 
+function initializeCreditsDirectory() {
+    const credits = document.querySelector('.footer-credits');
+    const searchInput = document.getElementById('creditsSearch');
+    const resultCount = document.getElementById('creditsResultCount');
+    const emptyState = document.getElementById('creditsEmpty');
+    if (!credits || !searchInput || !resultCount || !emptyState) {
+        return;
+    }
+
+    const filterButtons = Array.from(credits.querySelectorAll('[data-credit-filter]'));
+    const creditItems = Array.from(credits.querySelectorAll('.footer-credits__item'));
+    const summaryCount = credits.querySelector('.footer-credits__summary-count');
+    let activeCategory = 'all';
+
+    if (summaryCount) {
+        summaryCount.textContent = `${creditItems.length + 1} entries`;
+    }
+
+    creditItems.forEach(item => {
+        const contributionText = item.textContent.toLocaleLowerCase();
+        item.dataset.creditCategory = contributionText.includes('cutscene') ? 'cutscene' : 'media';
+        const kind = document.createElement('span');
+        kind.className = 'footer-credits__item-kind';
+        kind.textContent = item.dataset.creditCategory === 'cutscene'
+            ? 'Cutscene'
+            : (contributionText.includes('song') ? 'Audio' : 'Biome');
+        item.prepend(kind);
+    });
+
+    const applyCreditsFilter = () => {
+        const query = searchInput.value.trim().toLocaleLowerCase();
+        let visibleCount = 0;
+
+        creditItems.forEach(item => {
+            const matchesCategory = activeCategory === 'all'
+                || item.dataset.creditCategory === activeCategory;
+            const matchesQuery = query.length === 0
+                || item.textContent.toLocaleLowerCase().includes(query);
+            const visible = matchesCategory && matchesQuery;
+            item.hidden = !visible;
+            if (visible) {
+                visibleCount += 1;
+            }
+        });
+
+        resultCount.textContent = `${visibleCount} ${visibleCount === 1 ? 'contribution' : 'contributions'}`;
+        emptyState.hidden = visibleCount !== 0;
+    };
+
+    filterButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            activeCategory = button.dataset.creditFilter || 'all';
+            filterButtons.forEach(candidate => {
+                const selected = candidate === button;
+                candidate.classList.toggle('is-active', selected);
+                candidate.setAttribute('aria-pressed', String(selected));
+            });
+            applyCreditsFilter();
+        });
+    });
+
+    searchInput.addEventListener('input', applyCreditsFilter);
+    applyCreditsFilter();
+}
+
 document.addEventListener('DOMContentLoaded', initializeEventSelector);
 document.addEventListener('DOMContentLoaded', initializeDevBiomeToggle);
 document.addEventListener('DOMContentLoaded', setupSimulationMethodControls);
@@ -7906,6 +8074,7 @@ document.addEventListener('DOMContentLoaded', setupRollFeedSearch);
 document.addEventListener('DOMContentLoaded', setupRollFeedSorting);
 document.addEventListener('DOMContentLoaded', initializePotionSimulationMode);
 document.addEventListener('DOMContentLoaded', setupLuckPresetAdjustmentButtons);
+document.addEventListener('DOMContentLoaded', setupPresetConsoleTabs);
 document.addEventListener('DOMContentLoaded', setupLuckPresetAnimations);
 document.addEventListener('DOMContentLoaded', setupVersionChangelogOverlay);
 document.addEventListener('DOMContentLoaded', maybeShowChangelogOnFirstVisit);
@@ -7915,6 +8084,7 @@ document.addEventListener('DOMContentLoaded', setupRollCancellationControl);
 document.addEventListener('DOMContentLoaded', setupNodeShiftAnimation);
 document.addEventListener('DOMContentLoaded', relocateResourcesPanelForMobile);
 document.addEventListener('DOMContentLoaded', observeLayeredSigilText);
+document.addEventListener('DOMContentLoaded', initializeCreditsDirectory);
 
 
 function spawnFortePixelatedSecretMessage() {
@@ -9835,6 +10005,18 @@ function getAuraAlphabeticalSortName(auraName) {
         : '';
 }
 
+function getRollFeedSortSequence() {
+    return rollFeedSortSupportsRecent
+        ? ROLL_FEED_SORT_SEQUENCE
+        : ROLL_FEED_SORT_SEQUENCE_UNNAMED;
+}
+
+function getDefaultRollFeedSortMode() {
+    return rollFeedSortSupportsRecent
+        ? ROLL_FEED_SORT_MODE.RECENT
+        : ROLL_FEED_SORT_MODE.RARITY;
+}
+
 function syncRollFeedSortControl() {
     const button = document.getElementById('rollFeedSortButton');
     const label = document.getElementById('rollFeedSortLabel');
@@ -9842,9 +10024,10 @@ function syncRollFeedSortControl() {
         return;
     }
 
-    const normalizedMode = ROLL_FEED_SORT_SEQUENCE.includes(rollFeedSortMode)
+    const sortSequence = getRollFeedSortSequence();
+    const normalizedMode = sortSequence.includes(rollFeedSortMode)
         ? rollFeedSortMode
-        : ROLL_FEED_SORT_MODE.RECENT;
+        : getDefaultRollFeedSortMode();
     const modeLabel = ROLL_FEED_SORT_LABELS[normalizedMode];
     const icon = button.querySelector('i');
 
@@ -9862,10 +10045,14 @@ function syncRollFeedSortControl() {
     }
 }
 
-function setRollFeedSortingAvailable(available, { resetMode = false } = {}) {
+function setRollFeedSortingAvailable(
+    available,
+    { resetMode = false, supportsRecent = rollFeedSortSupportsRecent } = {}
+) {
     rollFeedSortingAvailable = Boolean(available);
+    rollFeedSortSupportsRecent = Boolean(supportsRecent);
     if (resetMode) {
-        rollFeedSortMode = ROLL_FEED_SORT_MODE.RECENT;
+        rollFeedSortMode = getDefaultRollFeedSortMode();
     }
     syncRollFeedSortControl();
 }
@@ -9875,9 +10062,10 @@ function applyRollFeedSort(mode = rollFeedSortMode) {
         return;
     }
 
-    const normalizedMode = ROLL_FEED_SORT_SEQUENCE.includes(mode)
+    const sortSequence = getRollFeedSortSequence();
+    const normalizedMode = sortSequence.includes(mode)
         ? mode
-        : ROLL_FEED_SORT_MODE.RECENT;
+        : getDefaultRollFeedSortMode();
     const liveEntries = Array.from(feedContainer.querySelectorAll('.live-roll-feed__entry'));
     const unnamedResultsList = feedContainer.querySelector('.roll-feed__results-list');
     const entryElements = liveEntries.length > 0
@@ -9941,19 +10129,20 @@ function setupRollFeedSorting() {
         if (!rollFeedSortingAvailable) {
             return;
         }
-        const currentIndex = Math.max(0, ROLL_FEED_SORT_SEQUENCE.indexOf(rollFeedSortMode));
-        const nextMode = ROLL_FEED_SORT_SEQUENCE[(currentIndex + 1) % ROLL_FEED_SORT_SEQUENCE.length];
+        const sortSequence = getRollFeedSortSequence();
+        const currentIndex = Math.max(0, sortSequence.indexOf(rollFeedSortMode));
+        const nextMode = sortSequence[(currentIndex + 1) % sortSequence.length];
         applyRollFeedSort(nextMode);
         playSoundEffect(clickSoundEffectElement, 'ui');
     });
 
-    setRollFeedSortingAvailable(false, { resetMode: true });
+    setRollFeedSortingAvailable(false, { resetMode: true, supportsRecent: false });
 }
 
 function buildResultEntries(registry, biome, breakthroughStatsMap, luckValue, { allowTrueChance = true } = {}) {
     let entries = [];
     for (const aura of registry) {
-        if (isAuraTierSkipped(aura, biome) || isAuraFiltered(aura)) {
+        if (shouldHideAuraFromRollFeed(aura, biome)) {
             continue;
         }
         const winCount = readAuraWinCount(aura);
@@ -10644,9 +10833,6 @@ function runRollSimulation(options = {}) {
 
     const isMultiplePotionRun = isMultiplePotionMode();
     const solsLikeRun = isSolsLikeSimulationMethod();
-    const selectedSolsLikeRollsPerSecond = normalizeSolsLikeRollsPerSecond(
-        rollingSettingsPreference.solsLikeRollsPerSecond
-    );
     const selectedAutoPauseAfterCutscene = Boolean(rollingSettingsPreference.autoPauseAfterCutscene);
     const selectedPotionStackingEnabled = isMultiplePotionRun && isMultiplePotionStackingEnabled();
     const selectedPotionBatches = isMultiplePotionRun
@@ -10695,7 +10881,10 @@ function runRollSimulation(options = {}) {
         max: 1000000000000
     });
 
-    setRollFeedSortingAvailable(false, { resetMode: true });
+    setRollFeedSortingAvailable(false, {
+        resetMode: true,
+        supportsRecent: solsLikeRun
+    });
     simulationActive = true;
     cancelRollRequested = false;
     rollTriggerButton.disabled = true;
@@ -10988,7 +11177,8 @@ function runRollSimulation(options = {}) {
         }
         applyRollFeedSearchFilter();
         setRollFeedSortingAvailable(
-            Boolean(feedContainer.querySelector('[data-roll-feed-entry]'))
+            Boolean(feedContainer.querySelector('[data-roll-feed-entry]')),
+            { supportsRecent: solsLikeRun }
         );
 
         const harvesterAura = AURA_BY_NAME.get(HARVESTER_AURA_NAME) || null;
@@ -11126,7 +11316,11 @@ function runRollSimulation(options = {}) {
 
     const startSolsLikeMainThreadSimulation = () => {
         const localBreakthroughCounts = new Array(AURA_REGISTRY.length).fill(0);
-        const rollIntervalMs = 1000 / selectedSolsLikeRollsPerSecond;
+        const getCurrentRollIntervalMs = () => (
+            1000 / normalizeSolsLikeRollsPerSecond(
+                rollingSettingsPreference.solsLikeRollsPerSecond
+            )
+        );
         const maxFrameDuration = shouldScheduleBackgroundWork() ? 20 : 12;
         let currentBatchIndex = 0;
         let currentBatchRoll = 0;
@@ -11166,23 +11360,35 @@ function runRollSimulation(options = {}) {
 
         const syncPausePresentation = () => {
             const rollingPaused = manualPaused || cutsceneActive;
+            const rollConsoleStatus = document.getElementById('rollConsoleStatus');
             if (brandMark) {
                 brandMark.classList.toggle('banner__emblem--simulation-paused', rollingPaused);
             }
             if (progressPanel) {
                 progressPanel.classList.toggle('loading-indicator--paused', rollingPaused);
             }
-            if (!pauseRollButton) {
-                return;
+            if (rollConsoleStatus) {
+                const statusText = rollConsoleStatus.querySelector('.roll-console__armed-text');
+                rollConsoleStatus.dataset.state = cutsceneActive
+                    ? 'cutscene'
+                    : (manualPaused ? 'paused' : 'rolling');
+                if (statusText) {
+                    statusText.textContent = cutsceneActive
+                        ? 'Cutscene'
+                        : (manualPaused ? 'Paused' : 'Rolling');
+                }
+            }
+            if (pauseRollButton) {
+                pauseRollButton.disabled = !simulationActive || cutsceneActive;
+                pauseRollButton.classList.toggle('roll-pause--paused', manualPaused);
+                pauseRollButton.setAttribute('aria-label', manualPaused ? 'Resume rolling' : 'Pause rolling');
+                pauseRollButton.setAttribute('title', manualPaused ? 'Resume rolling' : 'Pause rolling');
+                pauseRollButton.innerHTML = manualPaused
+                    ? '<i class="fa-solid fa-play" aria-hidden="true"></i>'
+                    : '<i class="fa-solid fa-pause" aria-hidden="true"></i>';
             }
 
-            pauseRollButton.disabled = !simulationActive || cutsceneActive;
-            pauseRollButton.classList.toggle('roll-pause--paused', manualPaused);
-            pauseRollButton.setAttribute('aria-label', manualPaused ? 'Resume rolling' : 'Pause rolling');
-            pauseRollButton.setAttribute('title', manualPaused ? 'Resume rolling' : 'Pause rolling');
-            pauseRollButton.innerHTML = manualPaused
-                ? '<i class="fa-solid fa-play" aria-hidden="true"></i>'
-                : '<i class="fa-solid fa-pause" aria-hidden="true"></i>';
+            syncRollingSettingsControls();
         };
 
         const performSingleLiveRoll = () => {
@@ -11284,6 +11490,7 @@ function runRollSimulation(options = {}) {
 
             processing = true;
             const frameDeadline = frameStartTime + maxFrameDuration;
+            const rollIntervalMs = getCurrentRollIntervalMs();
             const rollsDue = Math.min(
                 1000,
                 Math.max(1, Math.floor((frameStartTime - nextRollDueAt) / rollIntervalMs) + 1)
@@ -11300,23 +11507,26 @@ function runRollSimulation(options = {}) {
                 if (rollResult?.aura) {
                     const aura = rollResult.aura;
                     const breakthroughStats = breakthroughStatsByAuraIndex[aura.index];
-                    const markup = buildLiveRollMarkup(
-                        aura,
-                        currentRoll,
-                        biome,
-                        breakthroughStats,
-                        rollResult.isNativeRoll,
-                        luckValue,
-                        { allowTrueChance: !isMultiplePotionRun }
-                    );
-                    if (markup) {
-                        markupList.push(markup);
+                    if (!shouldHideAuraFromRollFeed(aura, biome)) {
+                        const markup = buildLiveRollMarkup(
+                            aura,
+                            currentRoll,
+                            biome,
+                            breakthroughStats,
+                            rollResult.isNativeRoll,
+                            luckValue,
+                            { allowTrueChance: !isMultiplePotionRun }
+                        );
+                        if (markup) {
+                            markupList.push(markup);
+                        }
                     }
 
                     if (
                         cutscenesEnabled
                         && !skipRemainingCutscenes
                         && aura.cutscene
+                        && !shouldSkipAuraCutscene(aura, biome)
                     ) {
                         pendingCutsceneId = aura.cutscene;
                         break;
@@ -11344,7 +11554,7 @@ function runRollSimulation(options = {}) {
                     }
                 });
                 cutsceneActive = false;
-                nextRollDueAt = performance.now() + rollIntervalMs;
+                nextRollDueAt = performance.now() + getCurrentRollIntervalMs();
                 if (
                     selectedAutoPauseAfterCutscene
                     && !cancelRollRequested
@@ -11371,6 +11581,9 @@ function runRollSimulation(options = {}) {
         };
 
         activeSolLikeSimulationController = {
+            isPaused() {
+                return manualPaused && !cutsceneActive && !liveRunStopped;
+            },
             followLatest() {
                 feedContainer.scrollTop = feedContainer.scrollHeight;
                 syncLiveFeedFollowControl();
