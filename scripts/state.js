@@ -5,6 +5,8 @@
 
     const uiHandles = {
         rollTriggerButton: document.querySelector('.roll-trigger'),
+        pauseRollButton: document.getElementById('rollPauseButton'),
+        followRollFeedButton: document.getElementById('rollFeedFollowButton'),
         cancelRollButton: document.getElementById('rollCancelButton'),
         brandMark: document.querySelector('.banner__emblem'),
         rollCountInput: document.getElementById('roll-total'),
@@ -47,10 +49,10 @@
         glitch: true,
         reduceMotion: false,
         qualityPreferences: {
-            removeParticles: true,
-            disableUiAnimations: true,
-            disableShakes: true,
-            disableRollAndSigilAnimations: true,
+            removeParticles: false,
+            disableUiAnimations: false,
+            disableShakes: false,
+            disableRollAndSigilAnimations: false,
             reduceGlitchEffects: true,
             removeGlitchEffects: false
         },

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sol's RNG Rolling Simulator</title>
+    <title>Sol's RNG Rolling Simulator v2</title>
     <script src="https://kit.fontawesome.com/f34561342c.js" crossorigin="anonymous"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -26,8 +26,8 @@
     <link rel="icon" type="image/png" sizes="256x256" href="files/images/favicon-256.png">
     <link rel="icon" type="image/png" sizes="500x500" href="files/images/favicon-500.png">
     <link rel="stylesheet" href="styles/base.css?v=1.880.4">
-    <link rel="stylesheet" href="styles/layout.css">
-    <link rel="stylesheet" href="styles/components.css?v=1.880.4">
+    <link rel="stylesheet" href="styles/layout.css?v=1.910.6">
+    <link rel="stylesheet" href="styles/components.css?v=1.910.5">
     <link rel="stylesheet" href="styles/utilities.css?v=1.880.4">
 </head>
 <body>
@@ -178,11 +178,11 @@
                 <div class="banner__meta">
                     <h1 class="banner__title">Sol's RNG Rolling Simulator</h1>
                     <p class="banner__subtitle">
-                        <button type="button" class="banner__version-button" id="versionInfoButton" aria-haspopup="dialog" aria-expanded="false" data-version-id="v1900">v1.900</button>
+                        <button type="button" class="banner__version-button" id="versionInfoButton" aria-haspopup="dialog" aria-expanded="false" data-version-id="v2">v2</button>
                         <span class="banner__subtitle-divider" aria-hidden="true">◉</span>
                         <span class="banner__subtitle-author">By <span class="banner__subtitle-author-name"><a href="https://discord.com/users/611204110955446301" target="_blank" rel="noopener">not.unnamed</a></span></span>
                         <span class="banner__subtitle-divider" aria-hidden="true">◉</span>
-                        <span class="banner__subtitle-updated">Updated <time datetime="2026-07-17T14:00:00+02:00">2026/07/17 at 2:00 PM CEST</time></span>
+                        <span class="banner__subtitle-updated">Updated <time datetime="2026-07-20T16:30:00+02:00">2026/07/20 at 4:30 PM CEST</time></span>
                         <span class="banner__subtitle-divider" aria-hidden="true">◉</span>
                         <span class="banner__subtitle-eon"><span class="banner__subtitle-game-version"><a href="https://www.roblox.com/games/15532962292/Sols-RNG" target="_blank" rel="noopener">Sol's RNG Eon 1-25</a></span></span>
                     </p>
@@ -190,17 +190,11 @@
             </div>
             <div class="masthead__controls">
                 <button class="interface-toggle masthead__mute" id="masterMuteToggle" type="button" aria-pressed="false">Mute</button>
-                <div class="options-menu" id="filterMenu">
-                    <button class="interface-toggle options-menu__trigger" id="filterMenuToggle" type="button" aria-haspopup="menu" aria-expanded="false" aria-controls="filterMenuPanel">Filter Settings</button>
-                    <div class="options-menu__surface" id="filterMenuPanel" aria-labelledby="filterMenuToggle">
-                        <button class="interface-toggle options-menu__item" id="filterAuraTiersButton" type="button">Filter Aura Tiers</button>
-                        <button class="interface-toggle options-menu__item" id="filterAurasButton" type="button">Filter Auras</button>
-                    </div>
-                </div>
                 <div class="options-menu" id="optionsMenu">
                     <button class="interface-toggle options-menu__trigger" id="optionsMenuToggle" type="button" aria-haspopup="menu" aria-expanded="false" aria-controls="optionsMenuPanel">Settings</button>
                     <div class="options-menu__surface" id="optionsMenuPanel" aria-labelledby="optionsMenuToggle">
                         <button class="interface-toggle options-menu__item" id="audioSettingsButton" type="button">Audio</button>
+                        <button class="interface-toggle options-menu__item" id="rollingSettingsButton" type="button">Rolling Settings</button>
                         <button class="interface-toggle options-menu__item" id="qualityPreferencesToggle" type="button">Quality Preferances</button>
                         <button class="interface-toggle options-menu__item" id="cinematicToggle" type="button" onclick="toggleCinematicMode()" aria-pressed="false">Cutscenes (Fullscreen recommended): Off</button>
                         <button class="interface-toggle options-menu__item" id="backgroundRollingButton" type="button" aria-pressed="false">Allow background rolling: Off</button>
@@ -211,49 +205,69 @@
         </header>
 
         <div class="interface-layout">
-            <aside class="surface surface--side" aria-labelledby="resources-heading">
-                <header class="surface__header">
-                    <h2 class="surface__title" id="resources-heading">Other Resources</h2>
-                    <p class="surface__subtitle">Jump into more Sols utilities, reference docs, and communities.</p>
+            <aside class="surface surface--side resource-panel" aria-labelledby="resources-heading">
+                <header class="surface__header resource-panel__header">
+                    <div class="resource-panel__heading-row">
+                        <span class="resource-panel__count">5 destinations</span>
+                    </div>
+                    <h2 class="surface__title" id="resources-heading">Resource Hub</h2>
+                    <p class="surface__subtitle">Utilities, projects, and communities selected for Sol's players.</p>
                 </header>
-                <div class="resource-board">
+                <nav class="resource-board" aria-label="External resources">
                     <a class="resource-link resource-link--discord" href="https://discord-id-hub.info" target="_blank" rel="noopener">
-                        <div class="resource-link__top">
+                        <span class="resource-link__icon" aria-hidden="true">
+                            <img class="resource-link__image resource-link__image--discord" src="files/images/icons/discord-id-hub.png" alt="" loading="lazy" decoding="async">
+                        </span>
+                        <span class="resource-link__content">
+                            <span class="resource-link__category">Utility</span>
                             <span class="resource-link__label">Discord ID Hub</span>
-                            <img class="resource-link__image resource-link__image--discord" src="files/images/icons/discord-id-hub.png" alt="Discord ID Hub logo" loading="lazy" decoding="async">
-                        </div>
-                        <span class="resource-link__meta">API search tools</span>
+                            <span class="resource-link__meta">Search Discord IDs with fast API-powered tools.</span>
+                        </span>
+                        <span class="resource-link__launch" aria-hidden="true"><i class="fa-solid fa-arrow-up-right-from-square"></i></span>
                     </a>
                     <a class="resource-link resource-link--nodeshift" href="https://the-unnamed-official.github.io/Incremental-Node-Simulator/" target="_blank" rel="noopener">
-                        <div class="resource-link__top">
-                            <span class="resource-link__label">NodeShift</span>
-                            <img class="resource-link__image resource-link__image--nodeshift" src="files/images/icons/NodeShift.png" alt="NodeShift Logo" loading="lazy" decoding="async">
-                        </div>
-                        <span class="resource-link__meta">A game I am currently in the proccess of making!</span>
-                    </a>
-                    <a class="resource-link resource-link--nolifers" href="https://www.discord.gg/m6k7Jagm3v" target="_blank" rel="noopener">
-                        <span class="resource-link__label">Unnamed's RNG Server</span>
-                        <span class="resource-link__meta">Join my community and play my RNG game!</span>
-                        <span class="resource-link__arrow-cluster" aria-hidden="true">
-                            <span class="resource-link__arrow">➜</span>
-                            <span class="resource-link__arrow">➜</span>
-                            <span class="resource-link__arrow">➜</span>
+                        <span class="resource-link__icon" aria-hidden="true">
+                            <img class="resource-link__image resource-link__image--nodeshift" src="files/images/icons/NodeShift.png" alt="" loading="lazy" decoding="async">
                         </span>
+                        <span class="resource-link__content">
+                            <span class="resource-link__category">Game project</span>
+                            <span class="resource-link__label">NodeShift</span>
+                            <span class="resource-link__meta">Explore an incremental game currently in development.</span>
+                        </span>
+                        <span class="resource-link__launch" aria-hidden="true"><i class="fa-solid fa-arrow-up-right-from-square"></i></span>
+                    </a>
+                    <a class="resource-link resource-link--community" href="https://www.discord.gg/m6k7Jagm3v" target="_blank" rel="noopener">
+                        <span class="resource-link__icon" aria-hidden="true">
+                            <img class="resource-link__image resource-link__image--unnamedrng" src="files/images/icons/unnamedRNGLogo.png" alt="" loading="lazy" decoding="async">
+                        </span>
+                        <span class="resource-link__content">
+                            <span class="resource-link__category">Community</span>
+                            <span class="resource-link__label">Unnamed's RNG Server</span>
+                            <span class="resource-link__meta">Join the community and play Unnamed's RNG game.</span>
+                        </span>
+                        <span class="resource-link__launch" aria-hidden="true"><i class="fa-solid fa-arrow-up-right-from-square"></i></span>
                     </a>
                     <a class="resource-link resource-link--nolifers" href="https://discord.gg/nolifers" target="_blank" rel="noopener">
-                        <span class="resource-link__label">Nolifers Discord</span>
-                        <span class="resource-link__meta">Join an awesome Sol's related community!</span>
-                        <span class="resource-link__arrow-cluster" aria-hidden="true">
-                            <span class="resource-link__arrow">➜</span>
-                            <span class="resource-link__arrow">➜</span>
-                            <span class="resource-link__arrow">➜</span>
+                        <span class="resource-link__icon resource-link__icon--nolifers" aria-hidden="true">
+                            <img class="resource-link__image resource-link__image--nolifers" src="files/images/icons/noLifersLogo.png" alt="" loading="lazy" decoding="async">
                         </span>
+                        <span class="resource-link__content">
+                            <span class="resource-link__category">Partner community</span>
+                            <span class="resource-link__label">NoLifers Discord</span>
+                            <span class="resource-link__meta">Meet an active community built around Sol's RNG.</span>
+                        </span>
+                        <span class="resource-link__launch" aria-hidden="true"><i class="fa-solid fa-arrow-up-right-from-square"></i></span>
                     </a>
-                    <a class="resource-link" href="https://github.com/The-Unnamed-Official/Sols-Rolling-Calculator/tree/published" target="_blank" rel="noopener">
-                        <span class="resource-link__label">Project Repository</span>
-                        <span class="resource-link__meta">Source code</span>
+                    <a class="resource-link resource-link--repository" href="https://github.com/The-Unnamed-Official/Sols-Rolling-Calculator/tree/published" target="_blank" rel="noopener">
+                        <span class="resource-link__icon" aria-hidden="true"><i class="fa-brands fa-github"></i></span>
+                        <span class="resource-link__content">
+                            <span class="resource-link__category">Source</span>
+                            <span class="resource-link__label">Project Repository</span>
+                            <span class="resource-link__meta">Browse the simulator's published source code.</span>
+                        </span>
+                        <span class="resource-link__launch" aria-hidden="true"><i class="fa-solid fa-arrow-up-right-from-square"></i></span>
                     </a>
-                </div>
+                </nav>
             </aside>
 
             <main class="surface surface--results" aria-labelledby="results-heading">
@@ -261,17 +275,35 @@
                     <h2 class="surface__title" id="results-heading">Roll Feed</h2>
                     <p class="surface__subtitle">High fidelity output with rarity cues, XP tracking, and event modifier callouts.</p>
                 </header>
-                <div class="feed-share" id="feedShareControls">
-                    <button class="interface-button interface-button--minor feed-share__trigger" type="button" id="feedShareButton" aria-haspopup="true" aria-expanded="false" aria-controls="feedShareMenu">Share Result</button>
-                    <div class="feed-share__menu" id="feedShareMenu" role="menu" hidden>
-                        <button class="feed-share__item" type="button" data-share-format="markdown" role="menuitem">Copy Discord Markdown</button>
-                        <button class="feed-share__item" type="button" data-share-format="plain" role="menuitem">Copy Plain Text</button>
-                        <button class="feed-share__item" type="button" data-share-format="image" role="menuitem">Image Options</button>
-                    </div>
-                    <div class="feed-share__menu feed-share__menu--image" id="feedShareImageMenu" role="menu" aria-labelledby="feedShareImageMenuLabel" hidden>
-                        <p class="feed-share__menu-label" id="feedShareImageMenuLabel">Share image as</p>
-                        <button class="feed-share__item" type="button" data-image-share-mode="copy" role="menuitem">Copy to Clipboard</button>
-                        <button class="feed-share__item" type="button" data-image-share-mode="download" role="menuitem">Download File</button>
+                <div class="feed-toolbar">
+                    <label class="feed-search" for="rollFeedSearch">
+                        <i class="fa-solid fa-magnifying-glass feed-search__icon" aria-hidden="true"></i>
+                        <span class="sr-only">Search rolled auras or tiers</span>
+                        <input class="feed-search__input" id="rollFeedSearch" type="search" placeholder="Search auras or tiers..." autocomplete="off" spellcheck="false">
+                    </label>
+                    <button
+                        class="interface-button interface-button--minor feed-sort"
+                        id="rollFeedSortButton"
+                        type="button"
+                        aria-label="Sort roll feed: Recent"
+                        title="Sort roll feed: Recent"
+                        hidden
+                    >
+                        <i class="fa-solid fa-arrow-down-wide-short" aria-hidden="true"></i>
+                        <span>Sort: <span id="rollFeedSortLabel">Recent</span></span>
+                    </button>
+                    <div class="feed-share" id="feedShareControls">
+                        <button class="interface-button interface-button--minor feed-share__trigger" type="button" id="feedShareButton" aria-haspopup="true" aria-expanded="false" aria-controls="feedShareMenu">Share Result</button>
+                        <div class="feed-share__menu" id="feedShareMenu" role="menu" hidden>
+                            <button class="feed-share__item" type="button" data-share-format="markdown" role="menuitem">Copy Discord Markdown</button>
+                            <button class="feed-share__item" type="button" data-share-format="plain" role="menuitem">Copy Plain Text</button>
+                            <button class="feed-share__item" type="button" data-share-format="image" role="menuitem">Image Options</button>
+                        </div>
+                        <div class="feed-share__menu feed-share__menu--image" id="feedShareImageMenu" role="menu" aria-labelledby="feedShareImageMenuLabel" hidden>
+                            <p class="feed-share__menu-label" id="feedShareImageMenuLabel">Share image as</p>
+                            <button class="feed-share__item" type="button" data-image-share-mode="copy" role="menuitem">Copy to Clipboard</button>
+                            <button class="feed-share__item" type="button" data-image-share-mode="download" role="menuitem">Download File</button>
+                        </div>
                     </div>
                 </div>
                 <div class="loading-indicator" style="display:none;">
@@ -280,8 +312,20 @@
                     </div>
                     <span class="loading-indicator__value">0%</span>
                 </div>
-                <div class="feed__viewport" id="simulation-feed" role="status" aria-live="polite">
-                    Configure your parameters and launch a simulation to see results.
+                <div class="feed__viewport-shell">
+                    <div class="feed__viewport" id="simulation-feed" role="status" aria-live="polite">
+                        Configure your parameters and launch a simulation to see results.
+                    </div>
+                    <button
+                        class="feed-follow-button"
+                        id="rollFeedFollowButton"
+                        type="button"
+                        aria-label="Follow newest rolls"
+                        title="Follow newest rolls"
+                        hidden
+                    >
+                        <i class="fa-solid fa-arrow-down" aria-hidden="true"></i>
+                    </button>
                 </div>
                 <div class="feed__meta">
                     <p class="feed__tip"><span class="feed__tip-label">[Tip] Suzy:</span> Get Lucky</p>
@@ -295,8 +339,21 @@
                     <p class="surface__subtitle">Set your luck profile, multiplier toggles, and simulation preferences.</p>
                 </header>
 
+                <div class="simulation-method" role="group" aria-label="Simulation method">
+                    <span class="form-field__label">Simulation Method</span>
+                    <div class="simulation-method__switch">
+                        <button type="button" class="interface-button simulation-method__button simulation-method__button--active" data-simulation-method="unnamed" aria-pressed="true">Unnamed's Simulation Method</button>
+                        <button type="button" class="interface-button simulation-method__button" data-simulation-method="sols-like" aria-pressed="false">Sol's-Like Simulation Method</button>
+                    </div>
+                </div>
+
                 <div class="control-section control-section--cta">
-                    <button class="roll-trigger" type="button" onclick="runRollSimulation()">Start Rolling</button>
+                    <div class="roll-split-control">
+                        <button class="roll-trigger" type="button" onclick="runRollSimulation()">Start Rolling</button>
+                        <button class="roll-pause" type="button" id="rollPauseButton" aria-label="Pause rolling" title="Pause rolling" disabled hidden>
+                            <i class="fa-solid fa-pause" aria-hidden="true"></i>
+                        </button>
+                    </div>
                     <button class="roll-cancel" type="button" id="rollCancelButton" hidden>Cancel Roll</button>
                 </div>
 
@@ -1158,6 +1215,62 @@
         </div>
     </div>
 
+    <div id="rollingSettingsOverlay" class="modal-overlay" hidden>
+        <div class="surface surface--modal filter-modal rolling-settings__modal" role="dialog" aria-modal="true" aria-labelledby="rollingSettingsTitle">
+            <div class="filter-modal__header">
+                <h2 class="filter-modal__title" id="rollingSettingsTitle">Rolling Settings</h2>
+                <p class="filter-modal__hint">Control how Sol's-Like rolls are displayed and choose which auras appear in result summaries.</p>
+            </div>
+            <div class="rolling-settings__content">
+                <div class="rolling-settings__field">
+                    <div class="rolling-settings__speed-header">
+                        <label class="rolling-settings__label" for="solsLikeRollingSpeed">Sol's-Like Rolling Speed</label>
+                        <output class="rolling-settings__speed-value" id="solsLikeRollingSpeedValue" for="solsLikeRollingSpeed">120 rolls/s · 8.3 ms/roll</output>
+                    </div>
+                    <span class="rolling-settings__description" id="solsLikeRollingSpeedDescription">Changes display throughput only. Roll chances and RNG stay unchanged.</span>
+                    <input
+                        class="rolling-settings__speed-input"
+                        id="solsLikeRollingSpeed"
+                        type="range"
+                        min="1"
+                        max="1000"
+                        step="1"
+                        value="120"
+                        aria-describedby="solsLikeRollingSpeedDescription"
+                    >
+                    <div class="rolling-settings__speed-range" aria-hidden="true">
+                        <span>1 roll/s</span>
+                        <span>1 roll/ms</span>
+                    </div>
+                </div>
+                <div class="rolling-settings__toggle-row" id="autoPauseAfterCutsceneRow">
+                    <span class="rolling-settings__toggle-copy">
+                        <span class="rolling-settings__label" id="autoPauseAfterCutsceneLabel">Automatically pause rolling after cutscene</span>
+                        <span class="rolling-settings__description">When using Sol's-Like, waits for you to press resume before processing the next roll.</span>
+                    </span>
+                    <label class="toggle" aria-labelledby="autoPauseAfterCutsceneLabel">
+                        <input type="checkbox" id="autoPauseAfterCutsceneToggle" class="toggle__input">
+                        <span class="toggle__track"></span>
+                        <span class="toggle__thumb"></span>
+                    </label>
+                </div>
+                <div class="rolling-settings__filters" aria-labelledby="rollingFilterSettingsLabel">
+                    <div class="rolling-settings__filter-copy">
+                        <span class="rolling-settings__label" id="rollingFilterSettingsLabel">Roll Feed Filters</span>
+                        <span class="rolling-settings__description">Open either filter without leaving Rolling Settings.</span>
+                    </div>
+                    <div class="rolling-settings__filter-actions">
+                        <button type="button" class="interface-button interface-button--minor" id="rollingFilterAuraTiersButton">Filter Aura Tiers</button>
+                        <button type="button" class="interface-button interface-button--minor" id="rollingFilterAurasButton">Filter Auras</button>
+                    </div>
+                </div>
+            </div>
+            <div class="filter-modal__actions">
+                <button type="button" class="interface-button interface-button--ghost filter-modal__close" id="rollingSettingsClose">Close</button>
+            </div>
+        </div>
+    </div>
+
     <div id="auraFilterOverlay" class="modal-overlay" hidden>
         <div class="surface surface--modal filter-modal" role="dialog" aria-modal="true" aria-labelledby="auraFilterTitle">
             <div class="filter-modal__header">
@@ -1213,13 +1326,80 @@
 
             <div class="changelog-modal__panels" data-changelog-panels>
                 <section
+                    id="changelog-panel-v2"
+                    class="changelog-modal__panel"
+                    role="tabpanel"
+                    aria-labelledby="changelog-tab-v2"
+                    data-changelog-panel="v2"
+                    data-changelog-label="v2"
+                    tabindex="0"
+                >
+                    <header class="changelog-modal__header">
+                        <h2 class="changelog-modal__title">Version v2 Update Notes</h2>
+                        <span class="changelog-tab__subtitle">Sol's-Like Simulation Method</span>
+                        <p class="changelog-modal__meta">Updated 2026/07/20 at 4:30 PM CEST</p>
+                    </header>
+                    <p class="changelog-modal__intro">Latest changes:</p>
+                    <ul class="changelog-modal__list changelog-modal__list--grouped">
+                        <li class="changelog-release-group">
+                            <span class="largeClass">Two simulation methods:</span>
+                            <ul class="changelog-release-group__list">
+                                <li>Added a simulation-method selector with <span class="subtitleClass">Unnamed's Simulation Method</span> remaining the default and retaining its existing end-of-run result behavior.</li>
+                                <li>Added <span class="allPotionsClass">Sol's-Like Simulation Method</span>, which displays every aura live in its exact roll order while continuously advancing progress.</li>
+                                <li>Both methods use the same luck, aura chance, potion, biome, and RNG calculations, so only processing and presentation change.</li>
+                                <li>Switching methods preserves selected potions, quantities, stacking, biome, time, luck, and other simulation settings, and method changes are locked while rolling.</li>
+                                <span class="subSpace credits-text">Credit goes to <a href="https://discord.com/users/987426773950169089" class="subtitleClass" target="_blank" rel="noopener">qqener</a> for sharing this idea with me!</span>
+                            </ul>
+                        </li>
+                        <li class="changelog-release-group">
+                            <span class="largeClass">Live rolling, pause &amp; cutscenes:</span>
+                            <ul class="changelog-release-group__list">
+                                <li><span class="allPotionsClass">Sol's-Like</span> rolls now enter the feed exactly once and in the precise order generated, in both Single Potion and Multiple Potion modes.</li>
+                                <li>Added an attached pause/resume control beside Roll, with a centered icon and safe resume from the next unprocessed roll.</li>
+                                <li>The live roll feed now keeps updating without forcing the scrollbar downward while you review earlier rolls. A fixed <span class="changelog-control-chip"><i class="fa-solid fa-arrow-down" aria-hidden="true"></i> Follow newest rolls</span> button appears only when scrolling is desynchronized, then jumps to the latest aura and restores automatic following.</li>
+                                <li>Cutscenes now interrupt rolling at the exact aura position, pause the progress bar, and resume without skipped, duplicated, or reordered results. If <span class="sigil-effect-luminosity">Luminosity</span> rolls before <span class="sigil-effect-equinox">Equinox</span>, their cutscenes play in that exact order; every cutscene aura follows this rule, including <span class="sigil-outline-monarch">Monarch</span>.</li>
+                                <li>Added an always-visible <span class="subtitleClass">Automatically pause rolling after cutscene</span> switch for manually resuming after each <span class="allPotionsClass">Sol's-Like</span> cutscene.</li>
+                                <li>Preserved the existing stacked-potion priority, including <span class="oblivionClass">Oblivion</span>, <span class="pumpBloodClass">Pump King's Blood</span>, <span class="tutPotion">Tutorial Potion</span>, and all remaining potion types.</li>
+                            </ul>
+                        </li>
+                        <li class="changelog-release-group">
+                            <span class="largeClass">Rolling Settings &amp; roll-feed tools:</span>
+                            <ul class="changelog-release-group__list">
+                                <li>Added <span class="subtitleClass">Rolling Settings</span> beneath Audio in the Settings menu and moved Filter Aura Tiers and Filter Auras into it.</li>
+                                <li>Replaced speed presets with a 1–1,000 rolls-per-second slider, ranging from one roll per second to one roll per millisecond.</li>
+                                <li>Added a roll-feed search bar that filters by either aura name or tier name, such as <span class="rarity-tier-legendary">Legendary</span>.</li>
+                                <li>Added a post-run <span class="subtitleClass">Sort</span> button beside the search bar for completed simulations in both <span class="subtitleClass">Unnamed's</span> and <span class="allPotionsClass">Sol's-Like</span> methods. It cycles between <strong>Recent</strong> for each method's original result order, <strong>Rarity</strong> for the established rarity order, and <strong>Alphabetical</strong> for aura-name order.</li>
+                                <li>Removed the separate Filter Settings header button to keep all rolling controls together.</li>
+                                <li>New users&mdash;and anyone who clears the simulator's site data&mdash;now start with <span class="subtitleClass">Reduce glitch effects</span> enabled and every other <span class="subtitleClass">Quality Preferences</span> option disabled.</li>
+                            </ul>
+                        </li>
+                        <li class="changelog-release-group">
+                            <span class="largeClass">RoE setting preservation:</span>
+                            <ul class="changelog-release-group__list">
+                                <li>Enabling <span class="allPotionsClass">Rune of Everything (RoE)</span> no longer resets the selected biome or time of day.</li>
+                            </ul>
+                        </li>
+                        <li class="changelog-release-group">
+                            <span class="largeClass">Other Resources redesign:</span>
+                            <ul class="changelog-release-group__list">
+                                <li>Rebuilt the Other Resources panel as a responsive Resource Hub with clearer categories, descriptions, destination icons, and external-link cues.</li>
+                                <li>Added the official <span class="subtitleClass">NoLifers</span> logo to its community advertisement; the logo now spins continuously while its card is hovered or keyboard-focused.</li>
+                                <li>The <span class="subtitleClass">Unnamed's RNG</span> logo now performs two Discord-style loading rotations whenever its card is hovered or keyboard-focused, with dramatic acceleration, a smooth slowdown, and a 0.75-second rest between cycles.</li>
+                                <li>The <strong>Project Repository</strong> card now transforms into a Matrix-inspired terminal display with seamlessly recycling code rain, scan lines, green glow, and digital text effects while hovered or keyboard-focused.</li>
+                            </ul>
+                        </li>
+                    </ul>
+                </section>
+
+                <section
                     id="changelog-panel-v1900"
                     class="changelog-modal__panel"
                     role="tabpanel"
                     aria-labelledby="changelog-tab-v1900"
                     data-changelog-panel="v1900"
                     data-changelog-label="v1.900"
-                    tabindex="0"
+                    hidden
+                    tabindex="-1"
                 >
                     <header class="changelog-modal__header">
                         <h2 class="changelog-modal__title">Version v1.900 Update Notes</h2>
@@ -2197,8 +2377,8 @@
     </div>
 
     <script src="scripts/utils.js" defer></script>
-    <script src="scripts/state.js?v=1.880.4" defer></script>
+    <script src="scripts/state.js?v=1.910.2" defer></script>
     <script src="scripts/overlays.js" defer></script>
-    <script src="scripts/main.js?v=1.880.4" defer></script>
+    <script src="scripts/main.js?v=1.910.5" defer></script>
 </body>
 </html>

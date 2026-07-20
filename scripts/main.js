@@ -17,7 +17,10 @@ let simulationActive = false;
 let cancelRollRequested = false;
 let experienceStarted = false;
 let activeSimulationWorker = null;
+let activeSolLikeSimulationController = null;
 let lastSimulationSummary = null;
+let rollFeedSortMode = 'recent';
+let rollFeedSortingAvailable = false;
 let shareFeedbackTimerId = null;
 let imageShareModeRequester = null;
 const versionChangelogOverlayState = {
@@ -42,6 +45,10 @@ const qualityPreferencesOverlayState = {
     lastFocusedElement: null
 };
 
+const rollingSettingsOverlayState = {
+    lastFocusedElement: null
+};
+
 const trueChanceDisplayOverlayState = {
     lastFocusedElement: null
 };
@@ -51,8 +58,39 @@ const BACKGROUND_ROLLING_STORAGE_KEY = 'solsRollingCalculator:backgroundRollingP
 const AUDIO_SETTINGS_STORAGE_KEY = 'solsRollingCalculator:audioSettings';
 const AURA_FILTERS_STORAGE_KEY = 'solsRollingCalculator:auraFilters';
 const VISUAL_SETTINGS_STORAGE_KEY = 'solsRollingCalculator:visualSettings';
-const PERFORMANCE_DEFAULTS_STORAGE_KEY = 'solsRollingCalculator:performanceDefaults:v1';
+const PERFORMANCE_DEFAULTS_STORAGE_KEY = 'solsRollingCalculator:performanceDefaults:v2';
 const AURA_TIER_FILTERS_STORAGE_KEY = 'solsRollingCalculator:auraTierFilters';
+const ROLLING_SETTINGS_STORAGE_KEY = 'solsRollingCalculator:rollingSettings:v1';
+const SOLS_LIKE_ROLLS_PER_SECOND_MIN = 1;
+const SOLS_LIKE_ROLLS_PER_SECOND_MAX = 1000;
+const SOLS_LIKE_ROLLS_PER_SECOND_DEFAULT = 120;
+const LIVE_ROLL_FEED_BOTTOM_TOLERANCE_PX = 4;
+const ROLL_FEED_SORT_MODE = Object.freeze({
+    RECENT: 'recent',
+    RARITY: 'rarity',
+    ALPHABETICAL: 'alphabetical'
+});
+const ROLL_FEED_SORT_SEQUENCE = Object.freeze([
+    ROLL_FEED_SORT_MODE.RECENT,
+    ROLL_FEED_SORT_MODE.RARITY,
+    ROLL_FEED_SORT_MODE.ALPHABETICAL
+]);
+const ROLL_FEED_SORT_LABELS = Object.freeze({
+    [ROLL_FEED_SORT_MODE.RECENT]: 'Recent',
+    [ROLL_FEED_SORT_MODE.RARITY]: 'Rarity',
+    [ROLL_FEED_SORT_MODE.ALPHABETICAL]: 'Alphabetical'
+});
+const ROLL_FEED_SORT_ICONS = Object.freeze({
+    [ROLL_FEED_SORT_MODE.RECENT]: 'fa-clock-rotate-left',
+    [ROLL_FEED_SORT_MODE.RARITY]: 'fa-gem',
+    [ROLL_FEED_SORT_MODE.ALPHABETICAL]: 'fa-arrow-down-a-z'
+});
+const LEGACY_SOLS_LIKE_SPEED_VALUES = Object.freeze({
+    slower: 60,
+    standard: SOLS_LIKE_ROLLS_PER_SECOND_DEFAULT,
+    fast: 240,
+    'very-fast': 480
+});
 // TEMPORARY CUTSCENE LOCK:
 // Set to false (or remove this block) when you want to allow turning cutscenes off again.
 const FORCE_CUTSCENES_ALWAYS_ON = false;
@@ -60,6 +98,10 @@ let reduceMotionPreferenceOverride = null;
 const backgroundRollingPreference = {
     allowed: false,
     suppressPrompt: false
+};
+const rollingSettingsPreference = {
+    solsLikeRollsPerSecond: SOLS_LIKE_ROLLS_PER_SECOND_DEFAULT,
+    autoPauseAfterCutscene: false
 };
 
 const QUALITY_PREFERENCE_KEYS = Object.freeze([
@@ -72,11 +114,12 @@ const QUALITY_PREFERENCE_KEYS = Object.freeze([
 ]);
 
 const PERFORMANCE_FIRST_QUALITY_DEFAULTS = Object.freeze({
-    removeParticles: true,
-    disableUiAnimations: true,
-    disableShakes: true,
-    disableRollAndSigilAnimations: true,
-    reduceGlitchEffects: true
+    removeParticles: false,
+    disableUiAnimations: false,
+    disableShakes: false,
+    disableRollAndSigilAnimations: false,
+    reduceGlitchEffects: true,
+    removeGlitchEffects: false
 });
 
 if (FORCE_CUTSCENES_ALWAYS_ON && typeof appState === 'object') {
@@ -300,6 +343,74 @@ function hydrateAuraTierFilters() {
         });
     } catch (error) {
         // Ignore malformed storage so defaults remain intact.
+    }
+}
+
+function hydrateRollingSettings() {
+    if (typeof window === 'undefined') {
+        return;
+    }
+
+    try {
+        const raw = window.localStorage.getItem(ROLLING_SETTINGS_STORAGE_KEY);
+        if (!raw) {
+            return;
+        }
+        const parsed = JSON.parse(raw);
+        if (!parsed || typeof parsed !== 'object') {
+            return;
+        }
+        if (Number.isFinite(Number(parsed.solsLikeRollsPerSecond))) {
+            rollingSettingsPreference.solsLikeRollsPerSecond = normalizeSolsLikeRollsPerSecond(
+                parsed.solsLikeRollsPerSecond
+            );
+        } else if (Object.prototype.hasOwnProperty.call(LEGACY_SOLS_LIKE_SPEED_VALUES, parsed.solsLikeSpeed)) {
+            rollingSettingsPreference.solsLikeRollsPerSecond = LEGACY_SOLS_LIKE_SPEED_VALUES[parsed.solsLikeSpeed];
+        }
+        if (typeof parsed.autoPauseAfterCutscene === 'boolean') {
+            rollingSettingsPreference.autoPauseAfterCutscene = parsed.autoPauseAfterCutscene;
+        }
+    } catch (error) {
+        // Ignore malformed storage so the defaults remain intact.
+    }
+}
+
+function normalizeSolsLikeRollsPerSecond(value) {
+    const numericValue = Number.parseInt(value, 10);
+    if (!Number.isFinite(numericValue)) {
+        return SOLS_LIKE_ROLLS_PER_SECOND_DEFAULT;
+    }
+    return Math.min(
+        SOLS_LIKE_ROLLS_PER_SECOND_MAX,
+        Math.max(SOLS_LIKE_ROLLS_PER_SECOND_MIN, numericValue)
+    );
+}
+
+function formatSolsLikeRollingSpeed(value) {
+    const rollsPerSecond = normalizeSolsLikeRollsPerSecond(value);
+    const millisecondsPerRoll = 1000 / rollsPerSecond;
+    const delayText = Number.isInteger(millisecondsPerRoll)
+        ? millisecondsPerRoll.toFixed(0)
+        : millisecondsPerRoll >= 100
+        ? millisecondsPerRoll.toFixed(0)
+        : millisecondsPerRoll >= 10
+            ? millisecondsPerRoll.toFixed(1)
+            : millisecondsPerRoll.toFixed(2);
+    return `${formatWithCommas(rollsPerSecond)} ${rollsPerSecond === 1 ? 'roll' : 'rolls'}/s · ${delayText} ms/roll`;
+}
+
+function persistRollingSettings() {
+    if (typeof window === 'undefined') {
+        return;
+    }
+
+    try {
+        window.localStorage.setItem(
+            ROLLING_SETTINGS_STORAGE_KEY,
+            JSON.stringify(rollingSettingsPreference)
+        );
+    } catch (error) {
+        // Ignore storage errors so rolling controls remain responsive.
     }
 }
 
@@ -792,6 +903,148 @@ function hideAudioSettingsOverlay() {
     });
 }
 
+function syncRollingSettingsControls() {
+    const speedSlider = document.getElementById('solsLikeRollingSpeed');
+    const speedOutput = document.getElementById('solsLikeRollingSpeedValue');
+    const autoPauseRow = document.getElementById('autoPauseAfterCutsceneRow');
+    const autoPauseToggle = document.getElementById('autoPauseAfterCutsceneToggle');
+
+    if (speedSlider) {
+        const rollsPerSecond = normalizeSolsLikeRollsPerSecond(
+            rollingSettingsPreference.solsLikeRollsPerSecond
+        );
+        const sliderProgress = (
+            (rollsPerSecond - SOLS_LIKE_ROLLS_PER_SECOND_MIN)
+            / (SOLS_LIKE_ROLLS_PER_SECOND_MAX - SOLS_LIKE_ROLLS_PER_SECOND_MIN)
+        ) * 100;
+        speedSlider.value = String(rollsPerSecond);
+        speedSlider.style.setProperty('--rolling-speed-progress', `${sliderProgress}%`);
+        speedSlider.disabled = simulationActive;
+        if (speedOutput) {
+            speedOutput.textContent = formatSolsLikeRollingSpeed(rollsPerSecond);
+        }
+    }
+    if (autoPauseRow) {
+        autoPauseRow.hidden = false;
+    }
+    if (autoPauseToggle) {
+        autoPauseToggle.checked = rollingSettingsPreference.autoPauseAfterCutscene;
+        autoPauseToggle.disabled = simulationActive;
+    }
+}
+
+function showRollingSettingsOverlay() {
+    const overlay = document.getElementById('rollingSettingsOverlay');
+    if (!overlay) return;
+
+    rollingSettingsOverlayState.lastFocusedElement = document.activeElement;
+    syncRollingSettingsControls();
+    revealOverlay(overlay);
+
+    const firstControl = overlay.querySelector('select:not(:disabled), input:not(:disabled), button:not(:disabled)');
+    if (firstControl && typeof firstControl.focus === 'function') {
+        try {
+            firstControl.focus({ preventScroll: true });
+        } catch (error) {
+            firstControl.focus();
+        }
+    }
+}
+
+function hideRollingSettingsOverlay() {
+    const overlay = document.getElementById('rollingSettingsOverlay');
+    if (!overlay) return;
+
+    concealOverlay(overlay, {
+        onHidden: () => {
+            const last = rollingSettingsOverlayState.lastFocusedElement;
+            if (last && typeof last.focus === 'function') {
+                last.focus({ preventScroll: true });
+            }
+            rollingSettingsOverlayState.lastFocusedElement = null;
+        }
+    });
+}
+
+function markRollingSettingsChildDialogOpen() {
+    const overlay = document.getElementById('rollingSettingsOverlay');
+    if (overlay && !overlay.hasAttribute('hidden')) {
+        overlay.setAttribute('aria-hidden', 'true');
+    }
+}
+
+function restoreRollingSettingsAfterChildDialog(lastFocusedElement) {
+    const rollingOverlay = lastFocusedElement instanceof Element
+        ? lastFocusedElement.closest('#rollingSettingsOverlay')
+        : null;
+    if (rollingOverlay && !rollingOverlay.hasAttribute('hidden')) {
+        rollingOverlay.removeAttribute('aria-hidden');
+    }
+}
+
+function initializeRollingSettingsPanel() {
+    const overlay = document.getElementById('rollingSettingsOverlay');
+    const openButton = document.getElementById('rollingSettingsButton');
+    const closeButton = document.getElementById('rollingSettingsClose');
+    const speedSlider = document.getElementById('solsLikeRollingSpeed');
+    const autoPauseToggle = document.getElementById('autoPauseAfterCutsceneToggle');
+    const tierFilterButton = document.getElementById('rollingFilterAuraTiersButton');
+    const auraFilterButton = document.getElementById('rollingFilterAurasButton');
+    if (!overlay || !openButton) return;
+
+    hydrateRollingSettings();
+    syncRollingSettingsControls();
+
+    openButton.addEventListener('click', event => {
+        event.preventDefault();
+        const optionsMenu = document.getElementById('optionsMenu');
+        const optionsMenuToggle = document.getElementById('optionsMenuToggle');
+        optionsMenu?.classList.remove('options-menu--open');
+        optionsMenuToggle?.setAttribute('aria-expanded', 'false');
+        showRollingSettingsOverlay();
+    });
+
+    closeButton?.addEventListener('click', hideRollingSettingsOverlay);
+    overlay.addEventListener('click', event => {
+        if (event.target === overlay) {
+            hideRollingSettingsOverlay();
+        }
+    });
+    overlay.addEventListener('keydown', event => {
+        if (event.key === 'Escape') {
+            hideRollingSettingsOverlay();
+        }
+    });
+
+    speedSlider?.addEventListener('input', () => {
+        rollingSettingsPreference.solsLikeRollsPerSecond = normalizeSolsLikeRollsPerSecond(
+            speedSlider.value
+        );
+        syncRollingSettingsControls();
+    });
+    speedSlider?.addEventListener('change', () => {
+        rollingSettingsPreference.solsLikeRollsPerSecond = normalizeSolsLikeRollsPerSecond(
+            speedSlider.value
+        );
+        syncRollingSettingsControls();
+        persistRollingSettings();
+    });
+
+    autoPauseToggle?.addEventListener('change', () => {
+        rollingSettingsPreference.autoPauseAfterCutscene = autoPauseToggle.checked;
+        persistRollingSettings();
+    });
+
+    tierFilterButton?.addEventListener('click', () => {
+        markRollingSettingsChildDialogOpen();
+        showAuraFilterOverlay();
+    });
+    auraFilterButton?.addEventListener('click', () => {
+        markRollingSettingsChildDialogOpen();
+        showAuraDetailFilterOverlay();
+    });
+}
+
 function showAuraFilterOverlay() {
     const overlay = document.getElementById('auraFilterOverlay');
     if (!overlay) return;
@@ -817,6 +1070,7 @@ function hideAuraFilterOverlay() {
     concealOverlay(overlay, {
         onHidden: () => {
             const last = auraFilterOverlayState.lastFocusedElement;
+            restoreRollingSettingsAfterChildDialog(last);
             if (last && typeof last.focus === 'function') {
                 last.focus({ preventScroll: true });
             }
@@ -851,6 +1105,7 @@ function hideAuraDetailFilterOverlay() {
     concealOverlay(overlay, {
         onHidden: () => {
             const last = auraDetailFilterOverlayState.lastFocusedElement;
+            restoreRollingSettingsAfterChildDialog(last);
             if (last && typeof last.focus === 'function') {
                 last.focus({ preventScroll: true });
             }
@@ -977,12 +1232,8 @@ function populateAuraFilterList() {
 
 function initializeAuraTierFilterPanel() {
     const overlay = document.getElementById('auraFilterOverlay');
-    const openButton = document.getElementById('filterAuraTiersButton');
     const closeButton = document.getElementById('auraFilterClose');
-    if (!overlay || !openButton) return;
-
-    const filterMenu = document.getElementById('filterMenu');
-    const filterMenuToggle = document.getElementById('filterMenuToggle');
+    if (!overlay) return;
 
     overlay.addEventListener('click', event => {
         if (event.target === overlay) {
@@ -1012,29 +1263,14 @@ function initializeAuraTierFilterPanel() {
         });
     });
 
-    openButton.addEventListener('click', event => {
-        event.preventDefault();
-        if (filterMenu) {
-            filterMenu.classList.remove('options-menu--open');
-        }
-        if (filterMenuToggle) {
-            filterMenuToggle.setAttribute('aria-expanded', 'false');
-        }
-        showAuraFilterOverlay();
-    });
-
     syncAuraTierFilterButtons();
 }
 
 function initializeAuraDetailFilterPanel() {
     const overlay = document.getElementById('auraDetailFilterOverlay');
-    const openButton = document.getElementById('filterAurasButton');
     const closeButton = document.getElementById('auraDetailFilterClose');
     const resetButton = document.getElementById('auraDetailFilterReset');
-    if (!overlay || !openButton) return;
-
-    const filterMenu = document.getElementById('filterMenu');
-    const filterMenuToggle = document.getElementById('filterMenuToggle');
+    if (!overlay) return;
 
     overlay.addEventListener('click', event => {
         if (event.target === overlay) {
@@ -1065,16 +1301,6 @@ function initializeAuraDetailFilterPanel() {
         });
     }
 
-    openButton.addEventListener('click', event => {
-        event.preventDefault();
-        if (filterMenu) {
-            filterMenu.classList.remove('options-menu--open');
-        }
-        if (filterMenuToggle) {
-            filterMenuToggle.setAttribute('aria-expanded', 'false');
-        }
-        showAuraDetailFilterOverlay();
-    });
 }
 
 function initializeOptionsMenu(menuId, toggleId, panelId) {
@@ -3618,6 +3844,11 @@ const POTION_SIMULATION_MODE = Object.freeze({
     MULTIPLE: 'multiple'
 });
 
+const SIMULATION_METHOD = Object.freeze({
+    UNNAMED: 'unnamed',
+    SOLS_LIKE: 'sols-like'
+});
+
 const MULTI_POTION_CONFIGS = Object.freeze([
     Object.freeze({ id: 'heavenly', label: 'Heavenly Potion', luck: 150000 }),
     Object.freeze({ id: 'oblivion', label: 'Oblivion Potion', luck: 600000, oblivion: true, blocksRunes: true }),
@@ -3634,6 +3865,7 @@ const MULTI_POTION_CONFIGS = Object.freeze([
 
 const MULTI_POTION_CONFIG_BY_ID = new Map(MULTI_POTION_CONFIGS.map(config => [config.id, config]));
 let potionSimulationMode = POTION_SIMULATION_MODE.SINGLE;
+let simulationMethod = SIMULATION_METHOD.UNNAMED;
 let singlePotionRollValue = 1;
 let activeMultiDeviceBuffLuckBonus = 0;
 let activeMultiDeviceBuffPresetName = null;
@@ -3963,6 +4195,75 @@ function getLuckMultiplierTotal(multipliers) {
 
 function isMultiplePotionMode() {
     return potionSimulationMode === POTION_SIMULATION_MODE.MULTIPLE;
+}
+
+function isSolsLikeSimulationMethod() {
+    return simulationMethod === SIMULATION_METHOD.SOLS_LIKE;
+}
+
+function syncSimulationMethodControls() {
+    const solsLikeSelected = isSolsLikeSimulationMethod();
+    const { rollTriggerButton, pauseRollButton, followRollFeedButton } = uiHandles;
+    const splitControl = rollTriggerButton?.closest('.roll-split-control');
+
+    document.querySelectorAll('[data-simulation-method]').forEach(button => {
+        const active = button.dataset.simulationMethod === simulationMethod;
+        button.classList.toggle('simulation-method__button--active', active);
+        button.setAttribute('aria-pressed', active ? 'true' : 'false');
+        button.disabled = simulationActive;
+    });
+
+    document.body?.classList.toggle('simulation-method--sols-like', solsLikeSelected);
+    if (rollTriggerButton && !simulationActive) {
+        rollTriggerButton.textContent = solsLikeSelected ? 'Roll' : 'Start Rolling';
+    }
+    if (splitControl) {
+        splitControl.classList.toggle('roll-split-control--active', solsLikeSelected);
+    }
+    if (pauseRollButton) {
+        pauseRollButton.hidden = !solsLikeSelected;
+        pauseRollButton.disabled = !solsLikeSelected || !simulationActive || !activeSolLikeSimulationController;
+    }
+    if (followRollFeedButton && (!solsLikeSelected || !simulationActive || !activeSolLikeSimulationController)) {
+        followRollFeedButton.hidden = true;
+    }
+    syncRollingSettingsControls();
+}
+
+function setSimulationMethod(method, { playAudio = true } = {}) {
+    if (simulationActive) {
+        return;
+    }
+
+    simulationMethod = method === SIMULATION_METHOD.SOLS_LIKE
+        ? SIMULATION_METHOD.SOLS_LIKE
+        : SIMULATION_METHOD.UNNAMED;
+    syncSimulationMethodControls();
+    if (playAudio) {
+        playSoundEffect(clickSoundEffectElement, 'ui');
+    }
+}
+
+function setupSimulationMethodControls() {
+    document.querySelectorAll('[data-simulation-method]').forEach(button => {
+        button.addEventListener('click', () => {
+            setSimulationMethod(button.dataset.simulationMethod);
+        });
+    });
+
+    const { pauseRollButton, followRollFeedButton } = uiHandles;
+    if (pauseRollButton) {
+        pauseRollButton.addEventListener('click', () => {
+            activeSolLikeSimulationController?.togglePause();
+        });
+    }
+    if (followRollFeedButton) {
+        followRollFeedButton.addEventListener('click', () => {
+            activeSolLikeSimulationController?.followLatest();
+        });
+    }
+
+    setSimulationMethod(SIMULATION_METHOD.UNNAMED, { playAudio: false });
 }
 
 function isMultiplePotionStackingEnabled() {
@@ -4586,8 +4887,6 @@ function setLimboPreset() {
 
 function setRoePreset() {
     setOtherBiomeSelection('roe');
-    setPrimaryBiomeSelection('normal');
-    setTimeBiomeSelection('none');
     playSoundEffect(clickSoundEffectElement, 'ui');
     updateBiomeControlConstraints({ source: BIOME_OTHER_SELECT_ID });
 }
@@ -4858,8 +5157,10 @@ async function exitFullscreen() {
     }
 }
 
-async function playAuraSequence(queue) {
-    if (!Array.isArray(queue) || queue.length === 0) return;
+async function playAuraSequence(queue, options = {}) {
+    if (!Array.isArray(queue) || queue.length === 0) {
+        return { skippedAll: false };
+    }
 
     const documentElement = typeof document !== 'undefined' ? document.documentElement : null;
     const wasFullscreen = !!getFullscreenElement();
@@ -4875,9 +5176,12 @@ async function playAuraSequence(queue) {
         enteredFullscreen = await requestFullscreen(documentElement);
     }
 
-    let skipRemainingCutscenes = false;
+    let skipRemainingCutscenes = Boolean(options.skipRemaining);
     const skipAllCutscenes = () => {
         skipRemainingCutscenes = true;
+        if (typeof options.onSkipAll === 'function') {
+            options.onSkipAll();
+        }
     };
 
     try {
@@ -4897,6 +5201,8 @@ async function playAuraSequence(queue) {
             await exitFullscreen();
         }
     }
+
+    return { skippedAll: skipRemainingCutscenes };
 }
 
 function resolveRarityClass(aura, biome) {
@@ -5006,6 +5312,15 @@ function formatAuraTierLabel(tier) {
         .replace(/^Skip\s+/i, '')
         .replace(/\s*Auras?$/i, '')
         .trim();
+}
+
+function getAuraTierSearchTerms(tierKey) {
+    if (typeof tierKey !== 'string' || !tierKey) {
+        return '';
+    }
+    const tier = AURA_TIER_FILTERS.find(candidate => candidate.key === tierKey);
+    const label = formatAuraTierLabel(tier);
+    return `${tierKey} ${label}`.trim().toLocaleLowerCase();
 }
 
 function getIncludedAuraTierLabels() {
@@ -7585,6 +7900,10 @@ function relocateResourcesPanelForMobile() {
 
 document.addEventListener('DOMContentLoaded', initializeEventSelector);
 document.addEventListener('DOMContentLoaded', initializeDevBiomeToggle);
+document.addEventListener('DOMContentLoaded', setupSimulationMethodControls);
+document.addEventListener('DOMContentLoaded', initializeRollingSettingsPanel);
+document.addEventListener('DOMContentLoaded', setupRollFeedSearch);
+document.addEventListener('DOMContentLoaded', setupRollFeedSorting);
 document.addEventListener('DOMContentLoaded', initializePotionSimulationMode);
 document.addEventListener('DOMContentLoaded', setupLuckPresetAdjustmentButtons);
 document.addEventListener('DOMContentLoaded', setupLuckPresetAnimations);
@@ -8939,7 +9258,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    initializeOptionsMenu('filterMenu', 'filterMenuToggle', 'filterMenuPanel');
     initializeOptionsMenu('optionsMenu', 'optionsMenuToggle', 'optionsMenuPanel');
     initializeAuraTierFilterPanel();
     initializeAuraDetailFilterPanel();
@@ -9415,6 +9733,223 @@ function shouldHideSelectiveTrueChanceForAura(auraName) {
     return TRUE_CHANCE_HIDDEN_AURA_PREFIXES.some(prefix => auraName.startsWith(prefix)) || isExactMetaAuraName(auraName);
 }
 
+function getRollFeedSearchQuery() {
+    const searchInput = document.getElementById('rollFeedSearch');
+    return searchInput && typeof searchInput.value === 'string'
+        ? searchInput.value.trim().toLocaleLowerCase()
+        : '';
+}
+
+function applyRollFeedSearchFilter(root = feedContainer) {
+    if (!root || typeof root.querySelectorAll !== 'function') {
+        return;
+    }
+
+    const query = getRollFeedSearchQuery();
+    root.querySelectorAll('[data-roll-feed-entry]').forEach(entry => {
+        const entryText = (entry.textContent || '').toLocaleLowerCase();
+        const tierText = getAuraTierSearchTerms(entry.dataset.auraTier || '');
+        const searchableText = `${entryText} ${tierText}`;
+        entry.hidden = Boolean(query) && !searchableText.includes(query);
+    });
+}
+
+function setupRollFeedSearch() {
+    const searchInput = document.getElementById('rollFeedSearch');
+    if (!searchInput) {
+        return;
+    }
+
+    const refreshFilter = () => applyRollFeedSearchFilter();
+    searchInput.addEventListener('input', refreshFilter);
+    searchInput.addEventListener('search', refreshFilter);
+    searchInput.addEventListener('keydown', event => {
+        if (event.key === 'Escape' && searchInput.value) {
+            event.preventDefault();
+            searchInput.value = '';
+            refreshFilter();
+        }
+    });
+}
+
+function sortEntriesInUnnamedResultOrder(sourceEntries) {
+    let entries = Array.isArray(sourceEntries) ? [...sourceEntries] : [];
+    entries.sort((a, b) => {
+        const priorityDifference = b.priority - a.priority;
+        if (!Number.isNaN(priorityDifference) && priorityDifference !== 0) {
+            return priorityDifference;
+        }
+        return (a.originalOrder || 0) - (b.originalOrder || 0);
+    });
+
+    const prependMatches = predicate => {
+        const matchingEntries = entries.filter(predicate);
+        if (matchingEntries.length === 0) {
+            return;
+        }
+        entries = [
+            ...matchingEntries,
+            ...entries.filter(entry => !predicate(entry))
+        ];
+    };
+
+    prependMatches(entry => typeof entry.auraName === 'string' && entry.auraName.startsWith('Illusionary'));
+    prependMatches(entry => isExactMetaAuraName(entry.auraName));
+
+    const cryogenicEntries = entries.filter(
+        entry => typeof entry.auraName === 'string' && entry.auraName.startsWith('Cryogenic')
+    );
+    if (cryogenicEntries.length > 0) {
+        entries = entries.filter(
+            entry => !(typeof entry.auraName === 'string' && entry.auraName.startsWith('Cryogenic'))
+        );
+        const equinoxIndex = entries.findIndex(
+            entry => typeof entry.auraName === 'string' && entry.auraName.startsWith('Equinox')
+        );
+        entries.splice(equinoxIndex >= 0 ? equinoxIndex : 0, 0, ...cryogenicEntries);
+    }
+
+    prependMatches(entry => typeof entry.auraName === 'string' && entry.auraName.startsWith('Fault'));
+    prependMatches(entry => typeof entry.auraName === 'string' && entry.auraName.startsWith('[CONTENT DELETED]'));
+    prependMatches(entry => typeof entry.auraName === 'string' && entry.auraName.startsWith('Glitch'));
+    prependMatches(entry => typeof entry.auraName === 'string' && entry.auraName.startsWith('Oppression'));
+    prependMatches(entry => typeof entry.auraName === 'string' && entry.auraName.startsWith('Dreammetric'));
+
+    return entries;
+}
+
+function decodeRollFeedSortValue(value) {
+    if (typeof value !== 'string' || value.length === 0) {
+        return '';
+    }
+    try {
+        return decodeURIComponent(value);
+    } catch (error) {
+        return value;
+    }
+}
+
+function getAuraAlphabeticalSortName(auraName) {
+    return typeof auraName === 'string'
+        ? auraName.replace(/\s+-\s+[\d,]+\s*$/, '').trim()
+        : '';
+}
+
+function syncRollFeedSortControl() {
+    const button = document.getElementById('rollFeedSortButton');
+    const label = document.getElementById('rollFeedSortLabel');
+    if (!button) {
+        return;
+    }
+
+    const normalizedMode = ROLL_FEED_SORT_SEQUENCE.includes(rollFeedSortMode)
+        ? rollFeedSortMode
+        : ROLL_FEED_SORT_MODE.RECENT;
+    const modeLabel = ROLL_FEED_SORT_LABELS[normalizedMode];
+    const icon = button.querySelector('i');
+
+    button.hidden = !rollFeedSortingAvailable;
+    button.disabled = !rollFeedSortingAvailable;
+    button.dataset.sortMode = normalizedMode;
+    button.setAttribute('aria-label', `Sort roll feed: ${modeLabel}`);
+    button.setAttribute('title', `Sort roll feed: ${modeLabel}`);
+    if (label) {
+        label.textContent = modeLabel;
+    }
+    if (icon) {
+        Object.values(ROLL_FEED_SORT_ICONS).forEach(className => icon.classList.remove(className));
+        icon.classList.add(ROLL_FEED_SORT_ICONS[normalizedMode]);
+    }
+}
+
+function setRollFeedSortingAvailable(available, { resetMode = false } = {}) {
+    rollFeedSortingAvailable = Boolean(available);
+    if (resetMode) {
+        rollFeedSortMode = ROLL_FEED_SORT_MODE.RECENT;
+    }
+    syncRollFeedSortControl();
+}
+
+function applyRollFeedSort(mode = rollFeedSortMode) {
+    if (!feedContainer || !rollFeedSortingAvailable) {
+        return;
+    }
+
+    const normalizedMode = ROLL_FEED_SORT_SEQUENCE.includes(mode)
+        ? mode
+        : ROLL_FEED_SORT_MODE.RECENT;
+    const liveEntries = Array.from(feedContainer.querySelectorAll('.live-roll-feed__entry'));
+    const unnamedResultsList = feedContainer.querySelector('.roll-feed__results-list');
+    const entryElements = liveEntries.length > 0
+        ? liveEntries
+        : Array.from(unnamedResultsList?.querySelectorAll('.roll-feed__result-entry') || []);
+    const entryRecords = entryElements.map((element, index) => {
+        const originalOrder = Number.parseInt(
+            liveEntries.length > 0 ? element.dataset.rollNumber : element.dataset.resultOrder,
+            10
+        );
+        const priority = Number(element.dataset.auraPriority);
+        return {
+            element,
+            auraName: decodeRollFeedSortValue(element.dataset.auraName),
+            alphabeticalName: decodeRollFeedSortValue(element.dataset.auraSortName),
+            priority: Number.isNaN(priority) ? 0 : priority,
+            originalOrder: Number.isFinite(originalOrder) ? originalOrder : index
+        };
+    });
+
+    let orderedRecords;
+    if (normalizedMode === ROLL_FEED_SORT_MODE.RARITY) {
+        orderedRecords = sortEntriesInUnnamedResultOrder(entryRecords);
+    } else if (normalizedMode === ROLL_FEED_SORT_MODE.ALPHABETICAL) {
+        orderedRecords = [...entryRecords].sort((a, b) => {
+            const nameDifference = a.alphabeticalName.localeCompare(
+                b.alphabeticalName,
+                undefined,
+                { sensitivity: 'base', numeric: true }
+            );
+            return nameDifference || a.originalOrder - b.originalOrder;
+        });
+    } else {
+        orderedRecords = [...entryRecords].sort((a, b) => a.originalOrder - b.originalOrder);
+    }
+
+    const fragment = document.createDocumentFragment();
+    orderedRecords.forEach(record => fragment.appendChild(record.element));
+    if (liveEntries.length > 0) {
+        const summary = Array.from(feedContainer.children).find(
+            child => child.classList?.contains('live-roll-feed__summary')
+        ) || null;
+        feedContainer.insertBefore(fragment, summary);
+        feedContainer.scrollTop = 0;
+    } else if (unnamedResultsList) {
+        unnamedResultsList.appendChild(fragment);
+    }
+
+    rollFeedSortMode = normalizedMode;
+    syncRollFeedSortControl();
+    applyRollFeedSearchFilter();
+}
+
+function setupRollFeedSorting() {
+    const button = document.getElementById('rollFeedSortButton');
+    if (!button) {
+        return;
+    }
+
+    button.addEventListener('click', () => {
+        if (!rollFeedSortingAvailable) {
+            return;
+        }
+        const currentIndex = Math.max(0, ROLL_FEED_SORT_SEQUENCE.indexOf(rollFeedSortMode));
+        const nextMode = ROLL_FEED_SORT_SEQUENCE[(currentIndex + 1) % ROLL_FEED_SORT_SEQUENCE.length];
+        applyRollFeedSort(nextMode);
+        playSoundEffect(clickSoundEffectElement, 'ui');
+    });
+
+    setRollFeedSortingAvailable(false, { resetMode: true });
+}
+
 function buildResultEntries(registry, biome, breakthroughStatsMap, luckValue, { allowTrueChance = true } = {}) {
     let entries = [];
     for (const aura of registry) {
@@ -9479,7 +10014,14 @@ function buildResultEntries(registry, biome, breakthroughStatsMap, luckValue, { 
             const realChanceMarkup = realChanceValue
                 ? `${markup} <span class="tinyClass">True Chance: 1 in ${realChanceValue}</span>`
                 : markup;
-            entries.push({ markup: realChanceMarkup, share: shareText, priority, visual: visualRecord || null, auraName: auraName || null });
+            entries.push({
+                markup: realChanceMarkup,
+                share: shareText,
+                priority,
+                visual: visualRecord || null,
+                auraName: auraName || null,
+                tierKey: resolveAuraTierKey(aura, biome) || ''
+            });
         };
 
         if (breakthroughStats && breakthroughStats.count > 0) {
@@ -9532,88 +10074,21 @@ function buildResultEntries(registry, biome, breakthroughStatsMap, luckValue, { 
         }
     }
 
-    // Primary sort by computed priority
-    entries.sort((a, b) => b.priority - a.priority);
-
-    // Ensure Illusionary entries are always at the very top
-    const illusionaryEntries = entries.filter(e => typeof e.auraName === 'string' && e.auraName.startsWith('Illusionary'));
-    if (illusionaryEntries.length > 0) {
-        // Remove all Illusionary entries from the array
-        entries = entries.filter(e => !(typeof e.auraName === 'string' && e.auraName.startsWith('Illusionary')));
-        // Prepend them in original discovered order
-        entries = [...illusionaryEntries, ...entries];
-    }
-
-    // Ensure the Meta aura entry is always at the very top.
-    const metaEntries = entries.filter(e => isExactMetaAuraName(e.auraName));
-    if (metaEntries.length > 0) {
-        entries = entries.filter(e => !isExactMetaAuraName(e.auraName));
-        // Prepend them in original discovered order
-        entries = [...metaEntries, ...entries];
-    }
-
-    // Ensure Cryogenic entries appear above Equinox entries
-    const cryogenicEntries = entries.filter(e => typeof e.auraName === 'string' && e.auraName.startsWith('Cryogenic'));
-    if (cryogenicEntries.length > 0) {
-        // Remove Cryogenic entries
-        entries = entries.filter(e => !(typeof e.auraName === 'string' && e.auraName.startsWith('Cryogenic')));
-        // Find first Equinox index
-        const equinoxIndex = entries.findIndex(e => typeof e.auraName === 'string' && e.auraName.startsWith('Equinox'));
-        const insertIndex = equinoxIndex >= 0 ? equinoxIndex : 0;
-        // Insert Cryogenic entries before Equinox (or at top if Equinox missing)
-        entries.splice(insertIndex, 0, ...cryogenicEntries);
-    }
-
-    // Ensure Fault entries are always at the very top
-    const faultEntries = entries.filter(e => typeof e.auraName === 'string' && e.auraName.startsWith('Fault'));
-    if (faultEntries.length > 0) {
-        // Remove all Fault entries from the array
-        entries = entries.filter(e => !(typeof e.auraName === 'string' && e.auraName.startsWith('Fault')));
-        // Prepend them in original discovered order
-        entries = [...faultEntries, ...entries];
-    }
-
-    // Ensure [CONTENT DELETED] entries are always at the very top
-    const contentDeletedEntries = entries.filter(e => typeof e.auraName === 'string' && e.auraName.startsWith('[CONTENT DELETED]'));
-    if (contentDeletedEntries.length > 0) {
-        // Remove all [CONTENT DELETED] entries from the array
-        entries = entries.filter(e => !(typeof e.auraName === 'string' && e.auraName.startsWith('[CONTENT DELETED]')));
-        // Prepend them in original discovered order
-        entries = [...contentDeletedEntries, ...entries];
-    }
-
-    // Ensure Glitch entries are always at the very top
-    const glitchEntries = entries.filter(e => typeof e.auraName === 'string' && e.auraName.startsWith('Glitch'));
-    if (glitchEntries.length > 0) {
-        // Remove all Glitch entries from the array
-        entries = entries.filter(e => !(typeof e.auraName === 'string' && e.auraName.startsWith('Glitch')));
-        // Prepend them in original discovered order
-        entries = [...glitchEntries, ...entries];
-    }
-
-    // Ensure Oppression entries are always at the very top
-    const oppressionEntries = entries.filter(e => typeof e.auraName === 'string' && e.auraName.startsWith('Oppression'));
-    if (oppressionEntries.length > 0) {
-        // Remove all Oppression entries from the array
-        entries = entries.filter(e => !(typeof e.auraName === 'string' && e.auraName.startsWith('Oppression')));
-        // Prepend them in original discovered order
-        entries = [...oppressionEntries, ...entries];
-    }
-
-    // Ensure Dreammetric entries are always at the very top
-    const dreammetricEntries = entries.filter(e => typeof e.auraName === 'string' && e.auraName.startsWith('Dreammetric'));
-    if (dreammetricEntries.length > 0) {
-        // Remove all Dreammetric entries from the array
-        entries = entries.filter(e => !(typeof e.auraName === 'string' && e.auraName.startsWith('Dreammetric')));
-        // Prepend them in original discovered order
-        entries = [...dreammetricEntries, ...entries];
-    }
+    entries = sortEntriesInUnnamedResultOrder(entries);
     
     const markupList = [];
+    const feedRecords = [];
     const shareRecords = [];
     const shareVisualRecords = [];
     for (const entry of entries) {
         markupList.push(entry.markup);
+        feedRecords.push({
+            markup: entry.markup,
+            tierKey: entry.tierKey || '',
+            auraName: entry.auraName || '',
+            alphabeticalName: getAuraAlphabeticalSortName(entry.auraName),
+            priority: entry.priority
+        });
         if (entry.share) {
             shareRecords.push(entry.share);
         }
@@ -9622,7 +10097,55 @@ function buildResultEntries(registry, biome, breakthroughStatsMap, luckValue, { 
         }
     }
 
-    return { markupList, shareRecords, shareVisualRecords };
+    return { markupList, feedRecords, shareRecords, shareVisualRecords };
+}
+
+function buildLiveRollMarkup(
+    aura,
+    rollNumber,
+    biome,
+    breakthroughStats,
+    isNativeRoll,
+    luckValue,
+    { allowTrueChance = true } = {}
+) {
+    if (!aura) {
+        return '';
+    }
+
+    const specialClass = typeof resolveAuraStyleClass === 'function'
+        ? resolveAuraStyleClass(aura, biome)
+        : '';
+    const rarityClass = typeof resolveRarityClass === 'function' && !shouldSuppressRarityClassForSpecialStyle(specialClass)
+        ? resolveRarityClass(aura, biome)
+        : '';
+    const eventClass = getAuraEventIds(aura).length > 0 ? 'sigil-event-text' : '';
+    const classAttr = [rarityClass, specialClass, eventClass].filter(Boolean).join(' ');
+    const nativeChance = isNativeRoll && breakthroughStats
+        ? breakthroughStats.btChance
+        : aura.chance;
+    const displayName = isNativeRoll && breakthroughStats
+        ? aura.name.replace(/-\s*[\d,]+/, `- ${formatWithCommas(breakthroughStats.btChance)}`)
+        : aura.name;
+    const prefix = isNativeRoll ? '[Native] ' : '';
+    const formattedName = formatAuraNameMarkup(aura, displayName);
+    const trueChanceValue = allowTrueChance
+        && appState.selectiveTrueChanceDisplay
+        && !shouldHideSelectiveTrueChanceForAura(aura.name)
+        ? formatRealChanceValue(nativeChance, luckValue)
+        : null;
+    const trueChanceMarkup = trueChanceValue
+        ? ` <span class="tinyClass">True Chance: 1 in ${trueChanceValue}</span>`
+        : '';
+
+    const tierKey = resolveAuraTierKey(aura, biome) || '';
+    const alphabeticalName = getAuraAlphabeticalSortName(aura.name);
+    const auraPriority = determineResultPriority(aura, nativeChance);
+    const encodedAuraName = encodeURIComponent(aura.name);
+    const encodedAlphabeticalName = encodeURIComponent(alphabeticalName);
+    return `<span class="live-roll-feed__entry" data-roll-feed-entry data-aura-tier="${tierKey}" data-roll-number="${rollNumber}" data-aura-name="${encodedAuraName}" data-aura-sort-name="${encodedAlphabeticalName}" data-aura-priority="${auraPriority}">`
+        + `<span class="${classAttr}">${prefix}${formattedName}</span>${trueChanceMarkup}`
+        + '</span>';
 }
 
 function summarizeXpRewards(registry) {
@@ -9763,6 +10286,9 @@ function requestRollCancellation() {
     if (cancelRollButton) {
         cancelRollButton.disabled = true;
         cancelRollButton.textContent = 'Cancelling...';
+    }
+    if (activeSolLikeSimulationController) {
+        activeSolLikeSimulationController.cancel();
     }
 }
 
@@ -10095,6 +10621,7 @@ function runRollSimulation(options = {}) {
 
     const {
         rollTriggerButton,
+        pauseRollButton,
         cancelRollButton,
         brandMark,
         rollCountInput,
@@ -10116,6 +10643,11 @@ function runRollSimulation(options = {}) {
         : null;
 
     const isMultiplePotionRun = isMultiplePotionMode();
+    const solsLikeRun = isSolsLikeSimulationMethod();
+    const selectedSolsLikeRollsPerSecond = normalizeSolsLikeRollsPerSecond(
+        rollingSettingsPreference.solsLikeRollsPerSecond
+    );
+    const selectedAutoPauseAfterCutscene = Boolean(rollingSettingsPreference.autoPauseAfterCutscene);
     const selectedPotionStackingEnabled = isMultiplePotionRun && isMultiplePotionStackingEnabled();
     const selectedPotionBatches = isMultiplePotionRun
         ? collectMultiplePotionBatches(getMultiplePotionLuckState(), {
@@ -10163,10 +10695,12 @@ function runRollSimulation(options = {}) {
         max: 1000000000000
     });
 
+    setRollFeedSortingAvailable(false, { resetMode: true });
     simulationActive = true;
     cancelRollRequested = false;
     rollTriggerButton.disabled = true;
     rollTriggerButton.style.opacity = '0.5';
+    syncSimulationMethodControls();
     if (cancelRollButton) {
         cancelRollButton.hidden = false;
         cancelRollButton.disabled = false;
@@ -10208,7 +10742,7 @@ function runRollSimulation(options = {}) {
         return eventIds.some(eventId => eventState.has(eventId));
     };
 
-    feedContainer.textContent = 'Rolling...';
+    feedContainer.textContent = solsLikeRun ? '' : 'Rolling...';
     const startTime = performance.now();
 
     resetAuraRollState(AURA_REGISTRY);
@@ -10286,20 +10820,32 @@ function runRollSimulation(options = {}) {
     const MAX_ROLLS_PER_CHUNK = Math.min(750000, Math.max(120000, Math.ceil(total / 72)));
     const CHECK_INTERVAL = Math.max(1024, Math.floor(MAX_ROLLS_PER_CHUNK / 28));
     let currentRoll = 0;
+    let cleanupLiveFeedFollowControl = null;
 
     const sampleEntropy = (typeof drawEntropy === 'function') ? drawEntropy : Math.random;
 
     const finalizeSimulation = (cancelled, completedRolls = total) => {
         terminateActiveSimulationWorker();
+        cleanupLiveFeedFollowControl?.();
+        cleanupLiveFeedFollowControl = null;
+        activeSolLikeSimulationController = null;
         if (progressPanel) {
             progressPanel.style.display = 'none';
             progressPanel.classList.remove('loading-indicator--active');
+            progressPanel.classList.remove('loading-indicator--paused');
             delete progressPanel.dataset.loadingIndicator;
         }
         rollTriggerButton.disabled = false;
         rollTriggerButton.style.opacity = '1';
         if (brandMark) {
             brandMark.classList.remove('banner__emblem--spinning');
+            brandMark.classList.remove('banner__emblem--simulation-paused');
+        }
+        if (pauseRollButton) {
+            pauseRollButton.classList.remove('roll-pause--paused');
+            pauseRollButton.setAttribute('aria-label', 'Pause rolling');
+            pauseRollButton.setAttribute('title', 'Pause rolling');
+            pauseRollButton.innerHTML = '<i class="fa-solid fa-pause" aria-hidden="true"></i>';
         }
         if (cancelRollButton) {
             cancelRollButton.hidden = true;
@@ -10308,9 +10854,17 @@ function runRollSimulation(options = {}) {
         }
         simulationActive = false;
         cancelRollRequested = false;
+        syncSimulationMethodControls();
 
         if (cancelled) {
-            feedContainer.textContent = 'Rolling canceled.';
+            if (solsLikeRun && completedRolls > 0) {
+                feedContainer.insertAdjacentHTML(
+                    'beforeend',
+                    `<span class="live-roll-feed__status">Rolling canceled after ${formatWithCommas(completedRolls)} rolls.</span>`
+                );
+            } else {
+                feedContainer.textContent = 'Rolling canceled.';
+            }
             clearHarvesterCurseLayer();
             clearFlushedTrollSignatureLayer();
             return;
@@ -10319,7 +10873,7 @@ function runRollSimulation(options = {}) {
         const endTime = performance.now();
         const executionTime = ((endTime - startTime) / 1000).toFixed(0);
 
-        if (cutscenesEnabled) {
+        if (cutscenesEnabled && !solsLikeRun) {
             const cutsceneQueue = [];
             for (const videoId of CUTSCENE_PRIORITY_SEQUENCE) {
                 const aura = CUTSCENE_AURA_LOOKUP.get(videoId);
@@ -10402,15 +10956,20 @@ function runRollSimulation(options = {}) {
             `Included Aura Tiers: ${auraFilterSummaryText}<br><br>`
         ];
 
-        const { markupList, shareRecords, shareVisualRecords } = buildResultEntries(
+        const { feedRecords, shareRecords, shareVisualRecords } = buildResultEntries(
             AURA_REGISTRY,
             biome,
             breakthroughStatsMap,
             luckValue,
             { allowTrueChance: !isMultiplePotionRun }
         );
-        for (const markup of markupList) {
-            resultChunks.push(`${markup}<br>`);
+        if (!solsLikeRun) {
+            const unnamedResultEntries = feedRecords.map((record, index) => {
+                const encodedAuraName = encodeURIComponent(record.auraName);
+                const encodedAlphabeticalName = encodeURIComponent(record.alphabeticalName);
+                return `<span class="roll-feed__result-entry" data-roll-feed-entry data-aura-tier="${record.tierKey}" data-result-order="${index}" data-aura-name="${encodedAuraName}" data-aura-sort-name="${encodedAlphabeticalName}" data-aura-priority="${record.priority}">${record.markup}</span>`;
+            });
+            resultChunks.push(`<span class="roll-feed__results-list">${unnamedResultEntries.join('')}</span>`);
         }
 
         const { totalXp, lines: xpLines } = summarizeXpRewards(AURA_REGISTRY);
@@ -10419,7 +10978,18 @@ function runRollSimulation(options = {}) {
             resultChunks.push(`${line}<br>`);
         }
 
-        feedContainer.innerHTML = resultChunks.join('');
+        if (solsLikeRun) {
+            feedContainer.insertAdjacentHTML(
+                'beforeend',
+                `<span class="live-roll-feed__summary">${resultChunks.join('')}</span>`
+            );
+        } else {
+            feedContainer.innerHTML = resultChunks.join('');
+        }
+        applyRollFeedSearchFilter();
+        setRollFeedSortingAvailable(
+            Boolean(feedContainer.querySelector('[data-roll-feed-entry]'))
+        );
 
         const harvesterAura = AURA_BY_NAME.get(HARVESTER_AURA_NAME) || null;
         const harvesterCount = harvesterAura ? readAuraWinCount(harvesterAura) : 0;
@@ -10554,6 +11124,283 @@ function runRollSimulation(options = {}) {
         queueAnimationFrame(processRollSequence);
     };
 
+    const startSolsLikeMainThreadSimulation = () => {
+        const localBreakthroughCounts = new Array(AURA_REGISTRY.length).fill(0);
+        const rollIntervalMs = 1000 / selectedSolsLikeRollsPerSecond;
+        const maxFrameDuration = shouldScheduleBackgroundWork() ? 20 : 12;
+        let currentBatchIndex = 0;
+        let currentBatchRoll = 0;
+        let manualPaused = false;
+        let cutsceneActive = false;
+        let processing = false;
+        let workScheduled = false;
+        let skipRemainingCutscenes = false;
+        let liveRunStopped = false;
+        let nextRollDueAt = performance.now();
+        const { followRollFeedButton } = uiHandles;
+
+        const getLiveFeedDistanceFromBottom = () => Math.max(
+            0,
+            feedContainer.scrollHeight - feedContainer.clientHeight - feedContainer.scrollTop
+        );
+
+        const syncLiveFeedFollowControl = () => {
+            if (!followRollFeedButton) {
+                return;
+            }
+            const feedDesynchronized = getLiveFeedDistanceFromBottom() > LIVE_ROLL_FEED_BOTTOM_TOLERANCE_PX;
+            followRollFeedButton.hidden = !simulationActive || liveRunStopped || !feedDesynchronized;
+        };
+
+        const handleLiveFeedScroll = () => {
+            syncLiveFeedFollowControl();
+        };
+
+        feedContainer.addEventListener('scroll', handleLiveFeedScroll, { passive: true });
+        cleanupLiveFeedFollowControl = () => {
+            feedContainer.removeEventListener('scroll', handleLiveFeedScroll);
+            if (followRollFeedButton) {
+                followRollFeedButton.hidden = true;
+            }
+        };
+
+        const syncPausePresentation = () => {
+            const rollingPaused = manualPaused || cutsceneActive;
+            if (brandMark) {
+                brandMark.classList.toggle('banner__emblem--simulation-paused', rollingPaused);
+            }
+            if (progressPanel) {
+                progressPanel.classList.toggle('loading-indicator--paused', rollingPaused);
+            }
+            if (!pauseRollButton) {
+                return;
+            }
+
+            pauseRollButton.disabled = !simulationActive || cutsceneActive;
+            pauseRollButton.classList.toggle('roll-pause--paused', manualPaused);
+            pauseRollButton.setAttribute('aria-label', manualPaused ? 'Resume rolling' : 'Pause rolling');
+            pauseRollButton.setAttribute('title', manualPaused ? 'Resume rolling' : 'Pause rolling');
+            pauseRollButton.innerHTML = manualPaused
+                ? '<i class="fa-solid fa-play" aria-hidden="true"></i>'
+                : '<i class="fa-solid fa-pause" aria-hidden="true"></i>';
+        };
+
+        const performSingleLiveRoll = () => {
+            while (
+                currentBatchIndex < simulationBatches.length
+                && currentBatchRoll >= simulationBatches[currentBatchIndex].count
+            ) {
+                currentBatchIndex += 1;
+                currentBatchRoll = 0;
+            }
+
+            const activeBatch = simulationBatches[currentBatchIndex];
+            if (!activeBatch) {
+                return null;
+            }
+
+            const combinedSelectionConfig = activeBatch.combinedSelection;
+            const selectedIndex = selectWeightedIndex(combinedSelectionConfig.selection, sampleEntropy());
+            currentBatchRoll += 1;
+            if (selectedIndex === -1) {
+                return null;
+            }
+
+            const auraIndex = combinedSelectionConfig.auraIndices[selectedIndex];
+            if (!(Number.isInteger(auraIndex) && auraIndex >= 0 && auraIndex < AURA_REGISTRY.length)) {
+                return null;
+            }
+
+            auraWinCounts[auraIndex] += 1;
+            const breakthroughIndex = combinedSelectionConfig.breakthroughIndices[selectedIndex];
+            const isNativeRoll = Number.isInteger(breakthroughIndex)
+                && breakthroughIndex >= 0
+                && breakthroughIndex < localBreakthroughCounts.length;
+            if (isNativeRoll) {
+                localBreakthroughCounts[breakthroughIndex] += 1;
+            }
+
+            return {
+                aura: AURA_REGISTRY[auraIndex],
+                isNativeRoll: isNativeRoll && breakthroughIndex === auraIndex
+            };
+        };
+
+        const appendLiveMarkup = markupList => {
+            if (!Array.isArray(markupList) || markupList.length === 0) {
+                return;
+            }
+            const shouldFollowNewRolls = getLiveFeedDistanceFromBottom() <= LIVE_ROLL_FEED_BOTTOM_TOLERANCE_PX;
+            const template = document.createElement('template');
+            template.innerHTML = markupList.join('');
+            applyRollFeedSearchFilter(template.content);
+            feedContainer.appendChild(template.content);
+            if (shouldFollowNewRolls) {
+                feedContainer.scrollTop = feedContainer.scrollHeight;
+            }
+            syncLiveFeedFollowControl();
+        };
+
+        const scheduleNextLiveFrame = () => {
+            if (
+                workScheduled
+                || liveRunStopped
+                || processing
+                || manualPaused
+                || cutsceneActive
+                || cancelRollRequested
+                || currentRoll >= total
+            ) {
+                return;
+            }
+            workScheduled = true;
+            queueAnimationFrame(() => {
+                workScheduled = false;
+                processLiveRollSequence();
+            });
+        };
+
+        const finishCancelledLiveRun = () => {
+            if (processing || cutsceneActive) {
+                return;
+            }
+            finalizeSimulation(true, currentRoll);
+        };
+
+        const processLiveRollSequence = async () => {
+            if (liveRunStopped || processing || manualPaused || cutsceneActive) {
+                return;
+            }
+            if (cancelRollRequested) {
+                finishCancelledLiveRun();
+                return;
+            }
+
+            const frameStartTime = performance.now();
+            if (frameStartTime < nextRollDueAt) {
+                scheduleNextLiveFrame();
+                return;
+            }
+
+            processing = true;
+            const frameDeadline = frameStartTime + maxFrameDuration;
+            const rollsDue = Math.min(
+                1000,
+                Math.max(1, Math.floor((frameStartTime - nextRollDueAt) / rollIntervalMs) + 1)
+            );
+            const markupList = [];
+            let processedThisFrame = 0;
+            let pendingCutsceneId = null;
+
+            while (currentRoll < total && processedThisFrame < rollsDue) {
+                const rollResult = performSingleLiveRoll();
+                currentRoll += 1;
+                processedThisFrame += 1;
+
+                if (rollResult?.aura) {
+                    const aura = rollResult.aura;
+                    const breakthroughStats = breakthroughStatsByAuraIndex[aura.index];
+                    const markup = buildLiveRollMarkup(
+                        aura,
+                        currentRoll,
+                        biome,
+                        breakthroughStats,
+                        rollResult.isNativeRoll,
+                        luckValue,
+                        { allowTrueChance: !isMultiplePotionRun }
+                    );
+                    if (markup) {
+                        markupList.push(markup);
+                    }
+
+                    if (
+                        cutscenesEnabled
+                        && !skipRemainingCutscenes
+                        && aura.cutscene
+                    ) {
+                        pendingCutsceneId = aura.cutscene;
+                        break;
+                    }
+                }
+
+                if ((processedThisFrame & 63) === 0 && performance.now() >= frameDeadline) {
+                    break;
+                }
+            }
+
+            nextRollDueAt += processedThisFrame * rollIntervalMs;
+            appendLiveMarkup(markupList);
+            if (updateProgress) {
+                updateProgress(total > 0 ? (currentRoll / total) * 100 : 100);
+            }
+
+            if (pendingCutsceneId && !cancelRollRequested) {
+                cutsceneActive = true;
+                syncPausePresentation();
+                await playAuraSequence([pendingCutsceneId], {
+                    skipRemaining: skipRemainingCutscenes,
+                    onSkipAll: () => {
+                        skipRemainingCutscenes = true;
+                    }
+                });
+                cutsceneActive = false;
+                nextRollDueAt = performance.now() + rollIntervalMs;
+                if (
+                    selectedAutoPauseAfterCutscene
+                    && !cancelRollRequested
+                    && currentRoll < total
+                ) {
+                    manualPaused = true;
+                }
+                syncPausePresentation();
+            }
+
+            processing = false;
+            if (cancelRollRequested) {
+                finishCancelledLiveRun();
+                return;
+            }
+            if (currentRoll >= total) {
+                liveRunStopped = true;
+                syncBreakthroughCounts(breakthroughStatsByAuraIndex, localBreakthroughCounts);
+                finalizeSimulation(false, currentRoll);
+                return;
+            }
+
+            scheduleNextLiveFrame();
+        };
+
+        activeSolLikeSimulationController = {
+            followLatest() {
+                feedContainer.scrollTop = feedContainer.scrollHeight;
+                syncLiveFeedFollowControl();
+            },
+            togglePause() {
+                if (!simulationActive || cutsceneActive || cancelRollRequested) {
+                    return;
+                }
+                manualPaused = !manualPaused;
+                syncPausePresentation();
+                if (!manualPaused) {
+                    nextRollDueAt = performance.now();
+                    scheduleNextLiveFrame();
+                }
+            },
+            cancel() {
+                liveRunStopped = true;
+                manualPaused = false;
+                syncPausePresentation();
+                if (!processing && !cutsceneActive) {
+                    finishCancelledLiveRun();
+                }
+            }
+        };
+
+        syncSimulationMethodControls();
+        syncPausePresentation();
+        scheduleNextLiveFrame();
+    };
+
     const startWorkerSimulation = () => {
         const worker = createSimulationWorker();
         if (!worker) {
@@ -10641,7 +11488,9 @@ function runRollSimulation(options = {}) {
         return true;
     };
 
-    if (!startWorkerSimulation()) {
+    if (solsLikeRun) {
+        startSolsLikeMainThreadSimulation();
+    } else if (!startWorkerSimulation()) {
         startMainThreadSimulation();
     }
 }
