@@ -4,17 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sol's RNG Rolling Simulator v2</title>
-    <script src="https://kit.fontawesome.com/f34561342c.js" crossorigin="anonymous"></script>
+    <script src="https://kit.fontawesome.com/f34561342c.js" crossorigin="anonymous" defer></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Sarpanch:wght@400;500;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@500;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
-    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
-    <link href="https://fonts.googleapis.com/css2?family=Jura:wght@300..700&family=Kings&family=Parisienne&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
-    <link href="https://fonts.googleapis.com/css2?family=Fondamento:ital@0;1&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
-    <link href="https://fonts.googleapis.com/css2?family=Tangerine:wght@400;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
-    <link href="https://fonts.googleapis.com/css2?family=Amatic+SC:wght@400;700&family=Cinzel:wght@400..900&family=Comic+Neue:ital,wght@0,300;0,400;0,700;1,300;1,400;1,700&family=Creepster&family=Grenze+Gotisch:wght@100..900&family=Luckiest+Guy&family=Merriweather:ital,opsz,wght@0,18..144,300..900;1,18..144,300..900&family=Michroma&family=Oswald:wght@200..700&family=Overpass:ital,wght@0,100..900;1,100..900&family=Patrick+Hand&family=Roboto+Flex:opsz,wght,XOPQ,XTRA,YOPQ,YTDE,YTFI,YTLC,YTUC@8..144,100..1000,96,468,79,-203,738,514,712&family=Roboto:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+    <link href="https://fonts.googleapis.com/css2?family=Amatic+SC:wght@400;700&family=Cinzel:wght@400..900&family=Comic+Neue:ital,wght@0,300;0,400;0,700;1,300;1,400;1,700&family=Creepster&family=Fondamento:ital@0;1&family=Grenze+Gotisch:wght@100..900&family=Jura:wght@300..700&family=Kings&family=Luckiest+Guy&family=Merriweather:ital,opsz,wght@0,18..144,300..900;1,18..144,300..900&family=Michroma&family=Noto+Serif+TC:wght@500;600;700&family=Oswald:wght@200..700&family=Overpass:ital,wght@0,100..900;1,100..900&family=Parisienne&family=Patrick+Hand&family=Playfair+Display:wght@500;600;700&family=Press+Start+2P&family=Roboto+Flex:opsz,wght,XOPQ,XTRA,YOPQ,YTDE,YTFI,YTLC,YTUC@8..144,100..1000,96,468,79,-203,738,514,712&family=Roboto:ital,wght@0,100..900;1,100..900&family=Sarpanch:wght@400;500;600;700&family=Tangerine:wght@400;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
     <noscript>
         <link href="https://fonts.googleapis.com/css2?family=Sarpanch:wght@400;500;600;700&display=swap" rel="stylesheet">
     </noscript>
@@ -25,10 +18,14 @@
     <link rel="icon" type="image/png" sizes="128x128" href="files/images/favicon-128.png">
     <link rel="icon" type="image/png" sizes="256x256" href="files/images/favicon-256.png">
     <link rel="icon" type="image/png" sizes="500x500" href="files/images/favicon-500.png">
-    <link rel="stylesheet" href="styles/base.css">
-    <link rel="stylesheet" href="styles/layout.css">
-    <link rel="stylesheet" href="styles/components.css">
-    <link rel="stylesheet" href="styles/utilities.css">
+    <link rel="stylesheet" href="styles/base.css?v=1.910.15">
+    <link rel="stylesheet" href="styles/layout.css?v=1.910.15">
+    <link rel="stylesheet" href="styles/components.css?v=1.910.19">
+    <link rel="stylesheet" href="styles/utilities.css?v=1.910.17">
+    <script src="scripts/utils.js" defer></script>
+    <script src="scripts/state.js?v=1.910.2" defer></script>
+    <script src="scripts/overlays.js?v=1.910.1" defer></script>
+    <script src="scripts/main.js?v=1.910.20" defer></script>
 </head>
 <body>
     <div class="interface-backdrop" aria-hidden="true">
@@ -196,13 +193,17 @@
                         </span>
                         <span class="masthead-console__meta-card banner__subtitle-eon">
                             <i class="fa-solid fa-gamepad" aria-hidden="true"></i>
-                            <span><small>Game build</small><span class="banner__subtitle-game-version"><a href="https://www.roblox.com/games/15532962292/Sols-RNG" target="_blank" rel="noopener">Sol's RNG Eon 1–25</a></span></span>
+                            <span><small>Game build</small><span class="banner__subtitle-game-version"><a href="https://www.roblox.com/games/15532962292/Sols-RNG" target="_blank" rel="noopener">Sol's RNG Eon 1-26 - Summer Part 1</a></span></span>
                         </span>
                     </div>
                 </div>
             </div>
             <div class="masthead__controls">
                 <button class="interface-toggle masthead__mute" id="masterMuteToggle" type="button" aria-pressed="false">Mute</button>
+                <button class="interface-toggle masthead__help" id="helpCenterToggle" type="button" aria-haspopup="dialog" aria-controls="helpCenterPanel" aria-expanded="false">
+                    <i class="fa-solid fa-circle-question" aria-hidden="true"></i>
+                    <span>Help Me</span>
+                </button>
                 <div class="options-menu" id="optionsMenu">
                     <button class="interface-toggle options-menu__trigger" id="optionsMenuToggle" type="button" aria-haspopup="menu" aria-expanded="false" aria-controls="optionsMenuPanel">Settings</button>
                     <div class="options-menu__surface" id="optionsMenuPanel" aria-labelledby="optionsMenuToggle">
@@ -305,7 +306,7 @@
                         <span class="feed-toolbar__index">01</span>
                         <span class="feed-toolbar__heading-copy">
                             <strong>Feed Controls</strong>
-                            <small>Search, sort &amp; export</small>
+                            <small>Search, sort & export</small>
                         </span>
                     </div>
                     <div class="feed-toolbar__controls">
@@ -867,12 +868,12 @@
                     <div class="preset-console__tabs" role="tablist" aria-label="Quick preset banks">
                         <button type="button" class="interface-button preset-console__tab preset-console__tab--active" id="preset-tab-luck" data-preset-bank-target="luck" role="tab" aria-selected="true" aria-controls="preset-bank-luck">
                             <span class="preset-console__tab-icon" aria-hidden="true"><i class="fa-solid fa-wand-magic-sparkles"></i></span>
-                            <span class="preset-console__tab-copy"><strong>Luck</strong><small>Potions &amp; values</small></span>
+                            <span class="preset-console__tab-copy"><strong>Luck</strong><small>Potions & values</small></span>
                             <span class="preset-console__tab-count" aria-hidden="true">22</span>
                         </button>
                         <button type="button" class="interface-button preset-console__tab" id="preset-tab-device" data-preset-bank-target="device" role="tab" aria-selected="false" aria-controls="preset-bank-device">
                             <span class="preset-console__tab-icon" aria-hidden="true"><i class="fa-solid fa-microchip"></i></span>
-                            <span class="preset-console__tab-copy"><strong>Devices</strong><small>Gear &amp; buffs</small></span>
+                            <span class="preset-console__tab-copy"><strong>Devices</strong><small>Gear & buffs</small></span>
                             <span class="preset-console__tab-count" aria-hidden="true">12</span>
                         </button>
                         <button type="button" class="interface-button preset-console__tab" id="preset-tab-roll" data-preset-bank-target="roll" role="tab" aria-selected="false" aria-controls="preset-bank-roll">
@@ -917,7 +918,7 @@
                         <header class="preset-console__bank-header">
                             <span class="preset-console__bank-icon" aria-hidden="true"><i class="fa-solid fa-microchip"></i></span>
                             <span class="preset-console__bank-copy">
-                                <h3>Device &amp; Buff Presets</h3>
+                                <h3>Device & Buff Presets</h3>
                                 <span>Combine devices with common maximum-luck profiles.</span>
                             </span>
                             <span class="preset-console__bank-badge">VIP Not Included</span>
@@ -982,6 +983,258 @@
 
     </div>
 
+    <div class="help-center__backdrop" id="helpCenterBackdrop" hidden></div>
+    <section class="help-center" id="helpCenterPanel" role="dialog" aria-modal="true" aria-labelledby="helpCenterTitle" aria-describedby="helpCenterDescription" aria-hidden="true" hidden>
+        <header class="help-center__header">
+            <span class="help-center__header-icon" aria-hidden="true"><i class="fa-solid fa-compass"></i></span>
+            <span class="help-center__header-copy">
+                <span class="help-center__eyebrow">Guidance Console // Complete Manual</span>
+                <h2 id="helpCenterTitle">How can I help?</h2>
+                <p id="helpCenterDescription">Search the manual or choose a topic to understand every simulator control.</p>
+            </span>
+            <button type="button" class="interface-button interface-button--ghost help-center__close" id="helpCenterClose" aria-label="Close Help Center">
+                <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+                <span>Close</span>
+            </button>
+        </header>
+        <div class="help-center__layout">
+            <aside class="help-center__sidebar" aria-label="Help topics">
+                <label class="help-center__search" for="helpCenterSearch">
+                    <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+                    <span class="sr-only">Search the Help Center</span>
+                    <input id="helpCenterSearch" type="search" placeholder="Search help topics..." autocomplete="off" spellcheck="false">
+                </label>
+                <nav class="help-center__nav" id="helpCenterNav" aria-label="Help topic navigation">
+                    <button type="button" data-help-target="help-start" aria-current="true"><i class="fa-solid fa-play" aria-hidden="true"></i><span>Start Here</span></button>
+                    <button type="button" data-help-target="help-luck"><i class="fa-solid fa-clover" aria-hidden="true"></i><span>Luck & Rolls</span></button>
+                    <button type="button" data-help-target="help-presets"><i class="fa-solid fa-bolt" aria-hidden="true"></i><span>Quick Presets</span></button>
+                    <button type="button" data-help-target="help-items"><i class="fa-solid fa-flask-vial" aria-hidden="true"></i><span>Potions & Items</span></button>
+                    <button type="button" data-help-target="help-biomes"><i class="fa-solid fa-mountain-sun" aria-hidden="true"></i><span>Biomes & Runes</span></button>
+                    <button type="button" data-help-target="help-rules"><i class="fa-solid fa-scale-balanced" aria-hidden="true"></i><span>Biome Rules</span></button>
+                    <button type="button" data-help-target="help-methods"><i class="fa-solid fa-dice" aria-hidden="true"></i><span>Rolling Methods</span></button>
+                    <button type="button" data-help-target="help-filters"><i class="fa-solid fa-filter" aria-hidden="true"></i><span>Aura Filters</span></button>
+                    <button type="button" data-help-target="help-cutscenes"><i class="fa-solid fa-film" aria-hidden="true"></i><span>Cutscenes</span></button>
+                    <button type="button" data-help-target="help-results"><i class="fa-solid fa-list-ol" aria-hidden="true"></i><span>Results & Sharing</span></button>
+                    <button type="button" data-help-target="help-settings"><i class="fa-solid fa-sliders" aria-hidden="true"></i><span>Settings</span></button>
+                </nav>
+                <p class="help-center__sidebar-note"><i class="fa-solid fa-shield-halved" aria-hidden="true"></i> Help actions never change simulation settings unless you use the linked control yourself.</p>
+            </aside>
+            <main class="help-center__content" id="helpCenterContent" tabindex="0">
+                <section class="help-tour" id="helpGuidedTour" aria-labelledby="helpTourTitle">
+                    <header class="help-tour__header">
+                        <span class="help-tour__identity">
+                            <span class="help-tour__icon" aria-hidden="true"><i class="fa-solid fa-route"></i></span>
+                            <span>
+                                <span class="help-tour__eyebrow">Interactive training // Learn by doing</span>
+                                <h3 id="helpTourTitle">Guided Practice</h3>
+                            </span>
+                        </span>
+                        <button type="button" class="help-tour__start" id="helpTourStart">
+                            <i class="fa-solid fa-play" aria-hidden="true"></i>
+                            <span>Start guided tour</span>
+                        </button>
+                    </header>
+                    <div class="help-tour__progress-row">
+                        <span id="helpTourStepCount">Step 1 of 9</span>
+                        <span id="helpTourCompletion">0 completed</span>
+                    </div>
+                    <div class="help-tour__progress" role="progressbar" aria-label="Guided practice progress" aria-valuemin="0" aria-valuemax="9" aria-valuenow="0">
+                        <span id="helpTourProgressFill"></span>
+                    </div>
+                    <div class="help-tour__lesson" id="helpTourLesson" aria-live="polite">
+                        <span class="help-tour__lesson-icon" id="helpTourLessonIcon" aria-hidden="true"><i class="fa-solid fa-clover"></i></span>
+                        <span class="help-tour__lesson-copy">
+                            <span class="help-tour__lesson-number" id="helpTourLessonNumber">Task 01</span>
+                            <strong id="helpTourLessonTitle">Set your luck and roll amount</strong>
+                            <span id="helpTourLessonDescription">Start with the two values that define a basic simulation.</span>
+                            <span class="help-tour__task" id="helpTourLessonTask"><i class="fa-solid fa-circle-check" aria-hidden="true"></i> Change Luck Total and Roll Amount, then return here.</span>
+                        </span>
+                    </div>
+                    <div class="help-tour__actions">
+                        <button type="button" class="help-tour__button help-tour__button--quiet" id="helpTourPrevious" disabled>
+                            <i class="fa-solid fa-arrow-left" aria-hidden="true"></i>
+                            <span>Previous</span>
+                        </button>
+                        <button type="button" class="help-tour__button help-tour__button--try" id="helpTourTry">
+                            <i class="fa-solid fa-location-arrow" aria-hidden="true"></i>
+                            <span>Try this step</span>
+                        </button>
+                        <button type="button" class="help-tour__button help-tour__button--complete" id="helpTourComplete">
+                            <span>Done, next</span>
+                            <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
+                        </button>
+                    </div>
+                    <div class="help-tour__steps" id="helpTourSteps" aria-label="Guided practice steps"></div>
+                </section>
+                <article class="help-card help-card--featured" id="help-start" data-help-card data-help-keywords="start beginner setup first simulation roll guide">
+                    <span class="help-card__index">01</span>
+                    <div class="help-card__body">
+                        <span class="help-card__kicker">Recommended path</span>
+                        <h3>Start your first simulation</h3>
+                        <ol>
+                            <li>Enter your <strong>Luck Total</strong> and <strong>Roll Amount</strong>, or load both from Quick Presets.</li>
+                            <li>Choose the biome, rune, time, and any events that should be active.</li>
+                            <li>Select Unnamed's or Sol's-Like processing in the Simulation Console, then press Roll.</li>
+                            <li>Review, search, sort, or share the completed results in the Sequence Monitor.</li>
+                        </ol>
+                        <button type="button" class="help-card__jump" data-help-jump=".surface--parameters">Go to Run Parameters <i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i></button>
+                    </div>
+                </article>
+                <article class="help-card" id="help-luck" data-help-card data-help-keywords="luck total roll amount vip multiplier dorceless blessing">
+                    <span class="help-card__index">02</span>
+                    <div class="help-card__body">
+                        <span class="help-card__kicker">Core inputs</span>
+                        <h3>Luck, rolls, and multipliers</h3>
+                        <p><strong>Luck Total</strong> is the base luck used for the run. <strong>Roll Amount</strong> is how many RNG attempts are processed in Single Potion Mode.</p>
+                        <ul>
+                            <li>VIP, Dorcelessness, We're Sorry, YG Blessing, and Astrald's Blessing are optional final multipliers in the Simulation Console.</li>
+                            <li>The reset buttons return the related field to its default value.</li>
+                            <li>True Chance Display can add a calculated “1 in X” line to eligible results without changing the roll.</li>
+                        </ul>
+                        <button type="button" class="help-card__jump" data-help-jump="#luck-total">Go to Luck Total <i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i></button>
+                    </div>
+                </article>
+                <article class="help-card" id="help-presets" data-help-card data-help-keywords="quick presets luck potion device buff roll count plus minus banks">
+                    <span class="help-card__index">03</span>
+                    <div class="help-card__body">
+                        <span class="help-card__kicker">Faster setup</span>
+                        <h3>Quick Presets</h3>
+                        <p>The preset banks provide ready-made values for <strong>Luck</strong>, <strong>Devices</strong>, and <strong>Roll Counts</strong>.</p>
+                        <ul>
+                            <li>Click a preset card to apply it immediately.</li>
+                            <li>Hover or keyboard-focus supported luck presets to reveal the &minus;/+ controls for removing or adding that exact value.</li>
+                            <li>Device presets represent combined gear and buffs; roll presets only replace the roll amount.</li>
+                        </ul>
+                        <button type="button" class="help-card__jump" data-help-jump=".surface--presets">Go to Quick Presets <i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i></button>
+                    </div>
+                </article>
+                <article class="help-card" id="help-items" data-help-card data-help-keywords="potion item rules single multiple stacking quantity oblivion pumpkin blood tutorial priority device rune incompatible">
+                    <span class="help-card__index">04</span>
+                    <div class="help-card__body">
+                        <span class="help-card__kicker">Item rules</span>
+                        <h3>Potions and Multiple Potion Mode</h3>
+                        <p><strong>Single Potion Mode</strong> uses one luck value and roll amount. <strong>Multiple Potion Mode</strong> processes the quantity entered for each potion as ordered batches.</p>
+                        <ul>
+                            <li>With compatible stacking off, each potion keeps its own batch. With stacking on, compatible potion luck is merged per roll.</li>
+                            <li>The existing priority is preserved: Oblivion, Pump King's Blood, Tutorial Potion, then the remaining potion types.</li>
+                            <li>Oblivion, Pump King's Blood, and Tutorial Potion always remain separate. Rune-incompatible potion rolls are processed without the rune before compatible rolls.</li>
+                            <li>Device preset luck is applied before VIP, final-luck, and biome multipliers.</li>
+                        </ul>
+                        <button type="button" class="help-card__jump" data-help-jump=".surface--parameters">Go to Potion Loadout <i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i></button>
+                    </div>
+                </article>
+                <article class="help-card" id="help-biomes" data-help-card data-help-keywords="biome rune time day night roe environment shortcut glitch singularity cyberspace dreamspace limbo reset">
+                    <span class="help-card__index">05</span>
+                    <div class="help-card__body">
+                        <span class="help-card__kicker">Environment</span>
+                        <h3>Biomes, runes, and time</h3>
+                        <p>The Environment module combines a primary biome or dimension, an optional rune, and Day or Night.</p>
+                        <ul>
+                            <li>Biome shortcuts quickly load Glitch, Singularity, Cyberspace, Dreamspace, or Limbo combinations.</li>
+                            <li>Use RoE enables Rune of Everything without resetting your selected biome or time.</li>
+                            <li>Reset Biome returns the environment selection to its normal state.</li>
+                            <li>Developer Biomes unlocks the simulator's developer-only environments.</li>
+                        </ul>
+                        <button type="button" class="help-card__jump" data-help-jump=".parameter-console__module--environment">Go to Environment <i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i></button>
+                    </div>
+                </article>
+                <article class="help-card" id="help-rules" data-help-card data-help-keywords="biome rules native breakthrough event requirements admin abuse time availability rune conditions">
+                    <span class="help-card__index">06</span>
+                    <div class="help-card__body">
+                        <span class="help-card__kicker">Availability rules</span>
+                        <h3>How biome and event rules work</h3>
+                        <ul>
+                            <li>Native-biome and breakthrough rules use the selected biome, rune, and time to choose the correct aura chance.</li>
+                            <li>Event auras are available only when their matching event is enabled. The Events menu supports multiple compatible event selections.</li>
+                            <li>Some blessings, Admin Abuse choices, and developer biomes have extra availability rules; the simulator warns you when a required condition conflicts.</li>
+                            <li>Glitch and Rune of Everything follow their own supported availability lists rather than blindly enabling every aura.</li>
+                        </ul>
+                        <p class="help-card__note">Changing the display method never changes these rules or their probability calculations.</p>
+                    </div>
+                </article>
+                <article class="help-card" id="help-methods" data-help-card data-help-keywords="unnamed sols like method live rolling pause resume speed progress cancel follow">
+                    <span class="help-card__index">07</span>
+                    <div class="help-card__body">
+                        <span class="help-card__kicker">Processing & display</span>
+                        <h3>Simulation methods and live controls</h3>
+                        <ul>
+                            <li><strong>Unnamed's</strong> is the default: it processes the run, completes the progress bar, then shows the result totals.</li>
+                            <li><strong>Sol's-Like</strong> uses the same RNG and rules but displays every visible aura in exact roll order while progress advances.</li>
+                            <li>The attached pause button safely stops after the current roll. Resume continues from the next unprocessed roll, and speed can be changed while paused.</li>
+                            <li>Cancel safely ends the active run. Simulation methods cannot be changed during an active run.</li>
+                        </ul>
+                        <button type="button" class="help-card__jump" data-help-jump=".surface--controls">Go to Simulation Console <i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i></button>
+                    </div>
+                </article>
+                <article class="help-card" id="help-filters" data-help-card data-help-keywords="filter skip aura tiers basic epic unique legendary mythic exalted glorious transcendent challenged search">
+                    <span class="help-card__index">08</span>
+                    <div class="help-card__body">
+                        <span class="help-card__kicker">Result visibility</span>
+                        <h3>Filter Aura Tiers and individual auras</h3>
+                        <p>Open <strong>Settings → Rolling Settings</strong> to access both filter menus.</p>
+                        <ul>
+                            <li>Filter Aura Tiers hides whole rarity bands such as Legendary or Mythic.</li>
+                            <li>Filter Auras hides only the exact auras you toggle. Reset Selection turns every individual aura filter off.</li>
+                            <li>Filters apply to Unnamed's results, Sol's-Like live entries, sharing, and filtered cutscene presentation.</li>
+                            <li>Filtering is display-only: RNG calls, potion processing, progress, totals, and statistics are unchanged.</li>
+                        </ul>
+                        <button type="button" class="help-card__jump" data-help-action="rolling-settings">Open Rolling Settings <i class="fa-solid fa-sliders" aria-hidden="true"></i></button>
+                    </div>
+                </article>
+                <article class="help-card" id="help-cutscenes" data-help-card data-help-keywords="cutscene cinematic fullscreen order monarch auto pause skip resume">
+                    <span class="help-card__index">09</span>
+                    <div class="help-card__body">
+                        <span class="help-card__kicker">Cinematic playback</span>
+                        <h3>Cutscenes</h3>
+                        <ul>
+                            <li>Enable Cutscenes from Settings; fullscreen is recommended for the intended presentation.</li>
+                            <li>During Sol's-Like rolling, a cutscene pauses rolling and progress at that exact aura, then resumes at the next roll in sequence.</li>
+                            <li>Automatically pause rolling after cutscene leaves the run paused until you press Resume yourself.</li>
+                            <li>Cutscene controls can skip the current cinematic or all remaining cinematics without restarting the roll sequence.</li>
+                        </ul>
+                        <button type="button" class="help-card__jump" data-help-action="rolling-settings">Open Rolling Settings <i class="fa-solid fa-sliders" aria-hidden="true"></i></button>
+                    </div>
+                </article>
+                <article class="help-card" id="help-results" data-help-card data-help-keywords="roll feed sequence monitor search tier sort recent rarity alphabetical share image text follow newest xp statistics true chance">
+                    <span class="help-card__index">10</span>
+                    <div class="help-card__body">
+                        <span class="help-card__kicker">After rolling</span>
+                        <h3>Sequence Monitor, sorting, and sharing</h3>
+                        <ul>
+                            <li>Search accepts either an aura name or a tier name such as Legendary.</li>
+                            <li>Unnamed's results can sort by Rarity or Alphabetical. Sol's-Like also offers Recent to restore exact roll order.</li>
+                            <li>Share Result exports the currently available summary through the supported text and image options.</li>
+                            <li>While live rolling, scrolling upward disables automatic following. Use the down-arrow button to follow the newest rolls again.</li>
+                            <li>The summary includes run parameters, XP milestones, totals, and statistics after completion.</li>
+                        </ul>
+                        <button type="button" class="help-card__jump" data-help-jump=".surface--results">Go to Sequence Monitor <i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i></button>
+                    </div>
+                </article>
+                <article class="help-card" id="help-settings" data-help-card data-help-keywords="settings audio mute volume quality performance background rolling true chance reduce glitch animations particles">
+                    <span class="help-card__index">11</span>
+                    <div class="help-card__body">
+                        <span class="help-card__kicker">Preferences</span>
+                        <h3>Audio, quality, and advanced settings</h3>
+                        <ul>
+                            <li>Mute controls all sound. Audio Settings separately adjust music, cutscenes, obtain sounds, and UI sounds.</li>
+                            <li>Quality Preferences can remove particles, UI animations, shake effects, roll/sigil animation, or reduce/remove glitch effects.</li>
+                            <li>Allow Background Rolling keeps active simulations processing when the tab is not focused, which may use more CPU or battery.</li>
+                            <li>True Chance Display adds eligible real-chance context to the feed without modifying results.</li>
+                        </ul>
+                    </div>
+                </article>
+                <p class="help-center__empty" id="helpCenterEmpty" hidden>No help topics match that search.</p>
+            </main>
+        </div>
+    </section>
+    <button type="button" class="help-tour-resume" id="helpTourResume" hidden>
+        <i class="fa-solid fa-route" aria-hidden="true"></i>
+        <span>
+            <small>Guided practice</small>
+            <strong id="helpTourResumeLabel">Continue step 1</strong>
+        </span>
+    </button>
+
     <footer class="surface interface-footer" role="contentinfo">
         <div class="site-footer__identity">
             <span class="site-footer__mark" aria-hidden="true"><i class="fa-solid fa-code-branch"></i></span>
@@ -1017,7 +1270,7 @@
                     <div class="footer-credits__filters" role="group" aria-label="Filter credits by contribution type">
                         <button type="button" class="footer-credits__filter is-active" data-credit-filter="all" aria-pressed="true">All</button>
                         <button type="button" class="footer-credits__filter" data-credit-filter="cutscene" aria-pressed="false">Cutscenes</button>
-                        <button type="button" class="footer-credits__filter" data-credit-filter="media" aria-pressed="false">Audio &amp; Biomes</button>
+                        <button type="button" class="footer-credits__filter" data-credit-filter="media" aria-pressed="false">Audio & Biomes</button>
                     </div>
                     <span class="footer-credits__result-count" id="creditsResultCount" role="status" aria-live="polite">23 contributions</span>
                 </div>
@@ -1421,6 +1674,28 @@
                         <output class="rolling-settings__speed-value" id="solsLikeRollingSpeedValue" for="solsLikeRollingSpeed">120 rolls/s · 8.3 ms/roll</output>
                     </div>
                     <span class="rolling-settings__description" id="solsLikeRollingSpeedDescription">Changes display throughput only. Roll chances and RNG stay unchanged. You can adjust this while a Sol's-Like run is paused; the new speed applies on resume.</span>
+                    <div class="rolling-settings__speed-presets" role="group" aria-label="Sol's-Like rolling speed shortcuts">
+                        <button type="button" class="rolling-settings__speed-preset" data-sols-like-speed="5" aria-pressed="false">
+                            <span>Average</span>
+                            <small>5 rolls/s</small>
+                        </button>
+                        <button type="button" class="rolling-settings__speed-preset" data-sols-like-speed="15" aria-pressed="false">
+                            <span>Skip+</span>
+                            <small>15 rolls/s</small>
+                        </button>
+                        <button type="button" class="rolling-settings__speed-preset" data-sols-like-speed="100" aria-pressed="false">
+                            <span>Recommended</span>
+                            <small>100 rolls/s</small>
+                        </button>
+                        <button type="button" class="rolling-settings__speed-preset" data-sols-like-speed="120" aria-pressed="false">
+                            <span>Default</span>
+                            <small>120 rolls/s</small>
+                        </button>
+                        <button type="button" class="rolling-settings__speed-preset" data-sols-like-speed="500" aria-pressed="false">
+                            <span>Sonic Speed</span>
+                            <small>500 rolls/s</small>
+                        </button>
+                    </div>
                     <input
                         class="rolling-settings__speed-input"
                         id="solsLikeRollingSpeed"
@@ -1529,8 +1804,8 @@
                 >
                     <header class="changelog-modal__header">
                         <h2 class="changelog-modal__title">Version v2 Update Notes</h2>
-                        <span class="changelog-tab__subtitle">UI Rework &amp; New Simulation Method</span>
-                        <p class="changelog-modal__meta">Updated 2026/07/20 at 4:30 PM CEST</p>
+                        <span class="changelog-tab__subtitle">UI Rework, New Simulation Method & Summer Update</span>
+                        <p class="changelog-modal__meta">Updated 2026/08/01 at 6:00 PM CEST</p>
                     </header>
                     <p class="changelog-modal__intro">Latest changes:</p>
                     <ul class="changelog-modal__list changelog-modal__list--grouped">
@@ -1544,16 +1819,25 @@
                                 <span class="changelog-featured-ui__badge">V2 UI</span>
                             </div>
                             <ul class="changelog-featured-ui__grid">
-                                <li><i class="fa-solid fa-window-maximize" aria-hidden="true"></i><span><strong>Masthead &amp; navigation</strong>Rebuilt the title bar into a clearer simulation header with a dedicated build control, creator, deployment, game-coverage, and system-status readouts.</span></li>
+                                <li><i class="fa-solid fa-window-maximize" aria-hidden="true"></i><span><strong>Masthead & navigation</strong>Rebuilt the title bar into a clearer simulation header with a dedicated build control, creator, deployment, game-coverage, and system-status readouts.</span></li>
                                 <li><i class="fa-solid fa-list-ol" aria-hidden="true"></i><span><strong>Roll Feed</strong>Reworked the fixed-height feed, live-follow control, search, tier-aware lookup, sorting, sharing layers, result styling, and exact-sequence presentation.</span></li>
                                 <li><i class="fa-solid fa-sliders" aria-hidden="true"></i><span><strong>Simulation Console</strong>Rebuilt Roll Controls, method cards, split pause control, status feedback, multiplier rows, and centered the Bullet message.</span></li>
                                 <li><i class="fa-solid fa-flask-vial" aria-hidden="true"></i><span><strong>Run Parameters</strong>Reorganized potion loadouts, environment controls, and Environment Shortcuts into systematic, overflow-safe command modules.</span></li>
                                 <li><i class="fa-solid fa-bolt" aria-hidden="true"></i><span><strong>Quick Presets</strong>Added bank navigation and cleaner preset cards, with hover/focus-only &minus;/+ steppers and safe wrapping for long potion combinations.</span></li>
-                                <li><i class="fa-solid fa-layer-group" aria-hidden="true"></i><span><strong>Settings &amp; popups</strong>Unified Audio, Rolling Settings, quality preferences, aura filters, notices, confirmations, and the update archive into one responsive popup system.</span></li>
-                                <li><i class="fa-solid fa-compass" aria-hidden="true"></i><span><strong>Resources &amp; support</strong>Rebuilt the Resource Hub, added animated NoLifers and Unnamed's RNG cards, Matrix repository effects, and fixed clipped support cards.</span></li>
+                                <li><i class="fa-solid fa-layer-group" aria-hidden="true"></i><span><strong>Settings & popups</strong>Unified Audio, Rolling Settings, quality preferences, aura filters, notices, confirmations, and the update archive into one responsive popup system.</span></li>
+                                <li><i class="fa-solid fa-compass" aria-hidden="true"></i><span><strong>Resources & support</strong>Rebuilt the Resource Hub, added animated NoLifers and Unnamed's RNG cards, Matrix repository effects, and fixed clipped support cards.</span></li>
                                 <li><i class="fa-solid fa-people-group" aria-hidden="true"></i><span><strong>Credits directory</strong>Replaced the long credits list with an expandable, searchable directory and instant contribution-type filters.</span></li>
-                                <li><i class="fa-solid fa-mobile-screen-button" aria-hidden="true"></i><span><strong>Phone &amp; tablet polish</strong>Hardened every major UI for narrow screens with adaptive grids, contained controls, compact forms, and safer popup and menu layering.</span></li>
+                                <li><i class="fa-solid fa-mobile-screen-button" aria-hidden="true"></i><span><strong>Phone & tablet polish</strong>Hardened every major UI for narrow screens with adaptive grids, contained controls, compact forms, and safer popup and menu layering.</span></li>
                                 <li><i class="fa-solid fa-gauge-high" aria-hidden="true"></i><span><strong>Quality defaults</strong>New and cleared-data users start with reduced glitch effects enabled while the remaining optional quality preferences stay disabled.</span></li>
+                            </ul>
+                        </li>
+                        <li class="changelog-release-group">
+                            <span class="largeClass">Help Center & performance:</span>
+                            <ul class="changelog-release-group__list">
+                                <li>Added a dedicated <span class="changelog-control-chip"><i class="fa-solid fa-circle-question" aria-hidden="true"></i> Help Me</span> control between Mute and Settings. It opens a searchable bottom-screen guide covering luck, roll amounts, Quick Presets, potion and item rules, biomes, runes, biome rules, simulation methods, tier and aura filters, cutscenes, results, sharing, and quality settings.</li>
+                                <li>Help topics include direct shortcuts to the relevant simulator controls, keyboard-safe navigation, focus handling, and an adaptive phone and tablet layout with independently scrollable guidance.</li>
+                                <li>Optimized repeated aura-filter rendering, feed search and sorting metadata, rarity-style lookups, layered text effects, result-state resets, and credits filtering to reduce unnecessary browser work during large simulations.</li>
+                                <li>The probability engine, RNG sequence, aura chances, luck mathematics, potion processing, biome rules, and final totals were left unchanged; the performance pass only removes repeated lookup and interface work around the existing simulation.</li>
                             </ul>
                         </li>
                         <li class="changelog-release-group">
@@ -1567,7 +1851,7 @@
                             </ul>
                         </li>
                         <li class="changelog-release-group">
-                            <span class="largeClass">Live rolling, pause &amp; cutscenes:</span>
+                            <span class="largeClass">Live rolling, pause & cutscenes:</span>
                             <ul class="changelog-release-group__list">
                                 <li><span class="allPotionsClass">Sol's-Like</span> rolls now enter the feed exactly once and in the precise order generated, in both Single Potion and Multiple Potion modes.</li>
                                 <li>Added an attached pause/resume control beside Roll, with a centered icon and safe resume from the next unprocessed roll.</li>
@@ -1586,9 +1870,9 @@
                             </ul>
                         </li>
                         <li class="changelog-release-group">
-                            <span class="largeClass">Rolling behavior &amp; feed tools:</span>
+                            <span class="largeClass">Rolling behavior & feed tools:</span>
                             <ul class="changelog-release-group__list">
-                                <li>Replaced speed presets with a 1–1,000 rolls-per-second slider, ranging from one roll per second to one roll per millisecond.</li>
+                                <li>Added a 1-1,000 rolls-per-second slider, ranging from one roll per second to one roll per millisecond, plus linked speed shortcuts for <strong>Average</strong> (5), <strong>Skip+</strong> (15), <strong>Recommended</strong> (100), <strong>Default</strong> (120), and <strong>Sonic Speed</strong> (500 rolls per second).</li>
                                 <li>Added a roll-feed search bar that filters by either aura name or tier name, such as <span class="rarity-tier-legendary">Legendary</span>.</li>
                                 <li>Added a post-run <span class="subtitleClass">Sort</span> button beside the search bar for completed simulations in both <span class="subtitleClass">Unnamed's</span> and <span class="allPotionsClass">Sol's-Like</span> methods. <span class="subtitleClass">Unnamed's</span> cycles between <strong>Rarity</strong> and <strong>Alphabetical</strong>, while <span class="allPotionsClass">Sol's-Like</span> also includes <strong>Recent</strong> for its original live roll order.</li>
                             </ul>
@@ -1614,13 +1898,13 @@
                 >
                     <header class="changelog-modal__header">
                         <h2 class="changelog-modal__title">Version v1.900 Update Notes</h2>
-                        <span class="changelog-tab__subtitle">Accuracy, Potion Systems &amp; Adaptive Motion</span>
+                        <span class="changelog-tab__subtitle">Accuracy, Potion Systems & Adaptive Motion</span>
                         <p class="changelog-modal__meta">Updated 2026/07/17 at 2:00 PM CEST</p>
                     </header>
                     <p class="changelog-modal__intro">Latest changes:</p>
                     <ul class="changelog-modal__list changelog-modal__list--grouped">
                         <li class="changelog-release-group">
-                            <span class="largeClass">Simulation accuracy &amp; biome fixes:</span>
+                            <span class="largeClass">Simulation accuracy & biome fixes:</span>
                             <ul class="changelog-release-group__list">
                                 <li>Fixed Limbo tier filtering for <span class="rarity-tier-mythic">ゴシック</span>, <span class="rarity-tier-exalted">Imaginary</span>, <span class="rarity-tier-exalted">{J u x t a p o s i t i o n}</span>, and other Limbo-exclusive auras when Skip Mythic or Skip Exalted Auras is enabled.</li>
                                 <li><span class="sigil-outline-empty">Empty</span> can now be rolled in the <span class="sigil-outline-glitch">Glitch</span> biome.</li>
@@ -1640,7 +1924,7 @@
                             </ul>
                         </li>
                         <li class="changelog-release-group">
-                            <span class="largeClass">Potion simulation &amp; device presets:</span>
+                            <span class="largeClass">Potion simulation & device presets:</span>
                             <ul class="changelog-release-group__list">
                                 <li>Added Single Potion and Multiple Potion modes with exact mixed quantities.</li>
                                 <li><span class="oblivionClass">Oblivion</span>, <span class="pumpBloodClass">Pump King's Blood</span>, and <span class="tutPotion">Tutorial Potion</span> run as isolated batches first. Runes remain selectable and begin applying when a compatible potion batch starts.</li>
@@ -1651,7 +1935,7 @@
                             </ul>
                         </li>
                         <li class="changelog-release-group">
-                            <span class="largeClass">Interface &amp; animation overhaul:</span>
+                            <span class="largeClass">Interface & animation overhaul:</span>
                             <ul class="changelog-release-group__list">
                                 <li>Added adaptive boot-up and shutdown animations for feature containers. Limbo now shuts down and hides both potion-mode buttons, then boots them back up after leaving Limbo.</li>
                                 <li>Dropdown containers now replay one uninterrupted startup sequence every time they open, without a delayed animation restart or jitter.</li>
@@ -2587,9 +2871,5 @@
         </div>
     </div>
 
-    <script src="scripts/utils.js" defer></script>
-    <script src="scripts/state.js?v=1.910.2" defer></script>
-    <script src="scripts/overlays.js?v=1.910.1" defer></script>
-    <script src="scripts/main.js?v=1.910.13" defer></script>
 </body>
 </html>

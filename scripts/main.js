@@ -22,6 +22,8 @@ let lastSimulationSummary = null;
 let rollFeedSortMode = 'rarity';
 let rollFeedSortingAvailable = false;
 let rollFeedSortSupportsRecent = false;
+let activeAuraFilterCount = 0;
+let activeAuraTierFilterCount = 0;
 let shareFeedbackTimerId = null;
 let imageShareModeRequester = null;
 const versionChangelogOverlayState = {
@@ -171,16 +173,17 @@ function applyLatestUpdateBadgeToChangelogTabs(tabs) {
 }
 
 function getCurrentChangelogVersionId() {
-    if (!versionInfoButton) {
+    const trigger = versionInfoButton || document.getElementById('versionInfoButton');
+    if (!trigger) {
         return null;
     }
 
-    const explicitId = versionInfoButton.getAttribute('data-version-id');
+    const explicitId = trigger.getAttribute('data-version-id');
     if (explicitId) {
         return explicitId;
     }
 
-    const label = versionInfoButton.textContent;
+    const label = trigger.textContent;
     return label ? label.trim() : null;
 }
 
@@ -349,6 +352,25 @@ function hydrateAuraTierFilters() {
     } catch (error) {
         // Ignore malformed storage so defaults remain intact.
     }
+}
+
+function countEnabledAuraFilters(filters) {
+    if (!filters || typeof filters !== 'object') {
+        return 0;
+    }
+
+    let enabledCount = 0;
+    Object.values(filters).forEach(value => {
+        if (value) {
+            enabledCount += 1;
+        }
+    });
+    return enabledCount;
+}
+
+function refreshActiveAuraFilterCounts() {
+    activeAuraFilterCount = countEnabledAuraFilters(appState?.auraFilters);
+    activeAuraTierFilterCount = countEnabledAuraFilters(appState?.auraTierFilters);
 }
 
 function hydrateRollingSettings() {
@@ -856,6 +878,17 @@ function applyChannelVolumeToElements(channel) {
     } else if (channel === 'music') {
         category = 'music';
     }
+
+    if (!experienceStarted) {
+        if (channel === 'music') {
+            const bgMusic = document.getElementById('ambientMusic');
+            if (bgMusic) {
+                bgMusic.volume = computeEffectiveBackgroundVolume(bgMusic);
+            }
+        }
+        return;
+    }
+
     const selector = `[data-audio-channel="${channel}"]`;
     document.querySelectorAll(selector).forEach(element => {
         if (channel === 'music' && element.id === 'ambientMusic') {
@@ -880,7 +913,7 @@ function showAudioSettingsOverlay() {
     audioOverlayState.lastFocusedElement = document.activeElement;
     revealOverlay(overlay);
     overlay.querySelectorAll('.audio-slider__input').forEach(input => {
-        syncAudioSliderVisual(input, Number.parseFloat(input.value), { immediate: true });
+        syncAudioSliderVisual(input, Number.parseFloat(input.value));
     });
 
     const firstInput = overlay.querySelector('.audio-slider__input');
@@ -911,6 +944,7 @@ function hideAudioSettingsOverlay() {
 function syncRollingSettingsControls() {
     const speedSlider = document.getElementById('solsLikeRollingSpeed');
     const speedOutput = document.getElementById('solsLikeRollingSpeedValue');
+    const speedPresetButtons = document.querySelectorAll('[data-sols-like-speed]');
     const autoPauseRow = document.getElementById('autoPauseAfterCutsceneRow');
     const autoPauseToggle = document.getElementById('autoPauseAfterCutsceneToggle');
     const speedEditableWhilePaused = Boolean(
@@ -933,6 +967,12 @@ function syncRollingSettingsControls() {
         if (speedOutput) {
             speedOutput.textContent = formatSolsLikeRollingSpeed(rollsPerSecond);
         }
+        speedPresetButtons.forEach(button => {
+            const presetSpeed = normalizeSolsLikeRollsPerSecond(button.dataset.solsLikeSpeed);
+            const selected = presetSpeed === rollsPerSecond;
+            button.setAttribute('aria-pressed', selected ? 'true' : 'false');
+            button.disabled = speedSlider.disabled;
+        });
     }
     if (autoPauseRow) {
         autoPauseRow.hidden = false;
@@ -997,6 +1037,7 @@ function initializeRollingSettingsPanel() {
     const openButton = document.getElementById('rollingSettingsButton');
     const closeButton = document.getElementById('rollingSettingsClose');
     const speedSlider = document.getElementById('solsLikeRollingSpeed');
+    const speedPresetButtons = document.querySelectorAll('[data-sols-like-speed]');
     const autoPauseToggle = document.getElementById('autoPauseAfterCutsceneToggle');
     const tierFilterButton = document.getElementById('rollingFilterAuraTiersButton');
     const auraFilterButton = document.getElementById('rollingFilterAurasButton');
@@ -1038,6 +1079,16 @@ function initializeRollingSettingsPanel() {
         );
         syncRollingSettingsControls();
         persistRollingSettings();
+    });
+    speedPresetButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            if (button.disabled) return;
+            rollingSettingsPreference.solsLikeRollsPerSecond = normalizeSolsLikeRollsPerSecond(
+                button.dataset.solsLikeSpeed
+            );
+            syncRollingSettingsControls();
+            persistRollingSettings();
+        });
     });
 
     autoPauseToggle?.addEventListener('change', () => {
@@ -1219,6 +1270,7 @@ function populateAuraFilterList() {
         ]
         : [...filteredAuras, ...orderedAuras];
 
+    const fragment = document.createDocumentFragment();
     displayAuras.forEach(aura => {
         const button = document.createElement('button');
         button.type = 'button';
@@ -1226,16 +1278,9 @@ function populateAuraFilterList() {
         button.dataset.auraName = aura.name;
         button.setAttribute('aria-pressed', 'false');
         renderAuraFilterButtonLabel(button, aura.name, false);
-        button.addEventListener('click', () => {
-            if (!appState || !appState.auraFilters) {
-                return;
-            }
-            appState.auraFilters[aura.name] = !appState.auraFilters[aura.name];
-            syncAuraFilterButtons();
-            persistAuraFilters();
-        });
-        list.appendChild(button);
+        fragment.appendChild(button);
     });
+    list.appendChild(fragment);
 
     list.dataset.populated = 'true';
 }
@@ -1268,6 +1313,7 @@ function initializeAuraTierFilterPanel() {
                 return;
             }
             appState.auraTierFilters[tierKey] = !appState.auraTierFilters[tierKey];
+            refreshActiveAuraFilterCounts();
             syncAuraTierFilterButtons();
             persistAuraTierFilters();
         });
@@ -1280,6 +1326,7 @@ function initializeAuraDetailFilterPanel() {
     const overlay = document.getElementById('auraDetailFilterOverlay');
     const closeButton = document.getElementById('auraDetailFilterClose');
     const resetButton = document.getElementById('auraDetailFilterReset');
+    const list = overlay?.querySelector('[data-aura-filter-list]');
     if (!overlay) return;
 
     overlay.addEventListener('click', event => {
@@ -1306,7 +1353,27 @@ function initializeAuraDetailFilterPanel() {
             Object.keys(appState.auraFilters).forEach(name => {
                 appState.auraFilters[name] = false;
             });
+            refreshActiveAuraFilterCounts();
             syncAuraFilterButtons();
+            persistAuraFilters();
+        });
+    }
+
+    if (list) {
+        list.addEventListener('click', event => {
+            const button = event.target.closest('.filter-aura-toggle');
+            if (!button || !list.contains(button) || !appState || !appState.auraFilters) {
+                return;
+            }
+            const auraName = button.dataset.auraName;
+            if (!auraName) {
+                return;
+            }
+            const enabled = !appState.auraFilters[auraName];
+            appState.auraFilters[auraName] = enabled;
+            refreshActiveAuraFilterCounts();
+            button.setAttribute('aria-pressed', enabled ? 'true' : 'false');
+            renderAuraFilterButtonLabel(button, auraName, enabled);
             persistAuraFilters();
         });
     }
@@ -1369,9 +1436,6 @@ function initializeOptionsMenu(menuId, toggleId, panelId) {
     closeMenu();
 }
 
-const audioSliderVisualStates = new WeakMap();
-let audioSliderResizeHandlerBound = false;
-
 function applyAudioSliderVisualPosition(input, percentValue) {
     if (!(input instanceof HTMLInputElement)) {
         return;
@@ -1385,24 +1449,15 @@ function applyAudioSliderVisualPosition(input, percentValue) {
         return;
     }
 
-    const thumbSize = 26;
-    const controlWidth = control.clientWidth;
-    const thumbTravel = Math.max(0, controlWidth - thumbSize);
-    const thumbOffset = thumbTravel * clampedPercent / 100;
-    control.style.setProperty('--audio-slider-thumb-left', `${thumbOffset}px`);
+    control.style.setProperty('--audio-slider-thumb-progress', `${clampedPercent}%`);
 }
 
-function syncAudioSliderVisual(input, targetPercent, { immediate = false } = {}) {
+function syncAudioSliderVisual(input, targetPercent) {
     if (!(input instanceof HTMLInputElement)) {
         return;
     }
 
     const target = Math.min(100, Math.max(0, Number.isFinite(targetPercent) ? targetPercent : 0));
-    audioSliderVisualStates.set(input, {
-        current: target,
-        target,
-        immediate: Boolean(immediate || isFeatureBootMotionReduced())
-    });
     applyAudioSliderVisualPosition(input, target);
 }
 
@@ -1472,7 +1527,7 @@ function setChannelVolume(channel, normalized, { persist = true } = {}) {
     updateAudioSliderLabel(channel, value * 100);
     applyChannelVolumeToElements(channel);
 
-    if (channel === 'music' || channel === 'cutscene' || channel === 'obtain') {
+    if (experienceStarted && (channel === 'music' || channel === 'cutscene' || channel === 'obtain')) {
         resumeAudioEngine();
         const selector = `[data-audio-channel="${channel}"]`;
         document.querySelectorAll(selector).forEach(element => {
@@ -1483,7 +1538,7 @@ function setChannelVolume(channel, normalized, { persist = true } = {}) {
         });
     }
 
-    if (channel === 'ui') {
+    if (experienceStarted && channel === 'ui') {
         resumeAudioEngine();
         document.querySelectorAll('[data-audio-channel="ui"]').forEach(element => {
             element.muted = false;
@@ -1517,8 +1572,8 @@ function initializeAudioSettingsPanel() {
         }
         const percent = Math.round(clamp01(defaultValue) * 100);
         input.value = percent;
-        syncAudioSliderVisual(input, percent, { immediate: true });
-        setChannelVolume(channel, percent / 100);
+        syncAudioSliderVisual(input, percent);
+        setChannelVolume(channel, percent / 100, { persist: false });
 
         input.addEventListener('input', () => {
             const normalized = clamp01(Number.parseFloat(input.value) / 100);
@@ -1553,8 +1608,7 @@ function initializeAudioSettingsPanel() {
     });
     closeButton?.addEventListener('click', hideAudioSettingsOverlay);
 
-    setChannelVolume('obtain', appState.audio.obtainVolume);
-    setChannelVolume('ui', appState.audio.uiVolume);
+    setChannelVolume('ui', appState.audio.uiVolume, { persist: false });
 }
 
 function initializeRollTriggerFloating() {
@@ -2305,7 +2359,9 @@ function applyMediaGain(element, { category = 'obtain', fallbackGain } = {}) {
     }
 
     const channelEnabled = isSoundChannelActive(category);
-    const context = channelEnabled && canUseMediaElementSource(element) ? resumeAudioEngine() : null;
+    const context = experienceStarted && channelEnabled && canUseMediaElementSource(element)
+        ? resumeAudioEngine()
+        : null;
     if (context) {
         try {
             let entry = appState.audio.gainMap.get(element);
@@ -2949,7 +3005,7 @@ function applyQualityPreferencesState() {
         document.querySelectorAll('.feature-boot--active').forEach(cancelFeatureBootAnimation);
         document.querySelectorAll('.feature-shutdown--active').forEach(finishFeatureShutdownAnimation);
         document.querySelectorAll('.audio-slider__input').forEach(input => {
-            syncAudioSliderVisual(input, Number.parseFloat(input.value), { immediate: true });
+            syncAudioSliderVisual(input, Number.parseFloat(input.value));
         });
     }
 
@@ -4526,17 +4582,6 @@ function setPotionSimulationMode(mode, { playAudio = true } = {}) {
         });
     });
 
-    if (!audioSliderResizeHandlerBound) {
-        window.addEventListener('resize', () => {
-            document.querySelectorAll('.audio-slider__input').forEach(input => {
-                const state = audioSliderVisualStates.get(input);
-                const current = state?.current ?? Number.parseFloat(input.value);
-                applyAudioSliderVisualPosition(input, current);
-            });
-        }, { passive: true });
-        audioSliderResizeHandlerBound = true;
-    }
-
     const multiPanel = document.getElementById('multiPotionPanel');
     setFeatureContainerVisible(multiPanel, multipleModeActive);
     ['luck-preset-panel', 'roll-preset-panel'].forEach(id => {
@@ -5304,7 +5349,7 @@ async function playAuraSequence(queue, options = {}) {
     return { skippedAll: skipRemainingCutscenes };
 }
 
-function resolveRarityClass(aura, biome) {
+function computeRarityClass(aura, biome) {
     if (!aura) return '';
     const auraName = aura.name || '';
     const skipNativeChallengedClass = isForcedChallengedAura(auraName);
@@ -5340,7 +5385,25 @@ function resolveRarityClass(aura, biome) {
     return 'rarity-tier-basic';
 }
 
-function resolveBaseRarityClass(aura) {
+const rarityClassCache = new WeakMap();
+
+function resolveRarityClass(aura, biome) {
+    if (!aura || typeof aura !== 'object') {
+        return computeRarityClass(aura, biome);
+    }
+    let biomeCache = rarityClassCache.get(aura);
+    if (!biomeCache) {
+        biomeCache = new Map();
+        rarityClassCache.set(aura, biomeCache);
+    }
+    const cacheKey = typeof biome === 'string' ? biome : '';
+    if (!biomeCache.has(cacheKey)) {
+        biomeCache.set(cacheKey, computeRarityClass(aura, biome));
+    }
+    return biomeCache.get(cacheKey);
+}
+
+function computeBaseRarityClass(aura) {
     if (!aura) return '';
     const auraName = aura.name || '';
     if (auraName.startsWith('Pixelation')) return 'rarity-tier-transcendent';
@@ -5417,10 +5480,13 @@ function getAuraTierSearchTerms(tierKey) {
     if (typeof tierKey !== 'string' || !tierKey) {
         return '';
     }
-    const tier = AURA_TIER_FILTERS.find(candidate => candidate.key === tierKey);
-    const label = formatAuraTierLabel(tier);
-    return `${tierKey} ${label}`.trim().toLocaleLowerCase();
+    return AURA_TIER_SEARCH_TERMS.get(tierKey) || tierKey.toLocaleLowerCase();
 }
+
+const AURA_TIER_SEARCH_TERMS = new Map(AURA_TIER_FILTERS.map(tier => [
+    tier.key,
+    `${tier.key} ${formatAuraTierLabel(tier)}`.trim().toLocaleLowerCase()
+]));
 
 function getIncludedAuraTierLabels() {
     if (!appState || !appState.auraTierFilters) {
@@ -5557,7 +5623,20 @@ function isAuraTierSkipped(aura, biome) {
 const CHALLENGED_CUTSCENE_AURAS = new Set(['Oblivion', 'Memory', 'Neferkhaf', '赤月の破片']);
 
 function shouldHideAuraFromRollFeed(aura, biome) {
-    return isAuraTierSkipped(aura, biome) || isAuraFiltered(aura);
+    return (activeAuraTierFilterCount > 0 && isAuraTierSkipped(aura, biome))
+        || (activeAuraFilterCount > 0 && isAuraFiltered(aura));
+}
+
+const baseRarityClassCache = new WeakMap();
+
+function resolveBaseRarityClass(aura) {
+    if (!aura || typeof aura !== 'object') {
+        return computeBaseRarityClass(aura);
+    }
+    if (!baseRarityClassCache.has(aura)) {
+        baseRarityClassCache.set(aura, computeBaseRarityClass(aura));
+    }
+    return baseRarityClassCache.get(aura);
 }
 
 function shouldSkipAuraCutscene(aura, biome) {
@@ -6067,6 +6146,7 @@ function formatAuraNameText(aura, overrideName) {
 }
 
 const layeredTextSigilClasses = ['sigil-outline-lamenthyr', 'sigil-outline-edict', 'sigil-effect-clockwork'];
+const layeredTextSigilSelector = layeredTextSigilClasses.map(className => `.${className}`).join(',');
 
 function syncLayeredSigilText(element) {
     if (!element) return;
@@ -6078,33 +6158,42 @@ function syncLayeredSigilText(element) {
 }
 
 function updateLayeredSigilText(container = document) {
-    if (!container) return;
-    layeredTextSigilClasses.forEach(className => {
-        container.querySelectorAll(`.${className}`).forEach(syncLayeredSigilText);
-    });
+    if (!container || typeof container.querySelectorAll !== 'function') return;
+    if (container.nodeType === Node.ELEMENT_NODE && container.matches(layeredTextSigilSelector)) {
+        syncLayeredSigilText(container);
+    }
+    container.querySelectorAll(layeredTextSigilSelector).forEach(syncLayeredSigilText);
 }
 
 function observeLayeredSigilText() {
     updateLayeredSigilText();
     if (!document.body) return;
+    const pendingRoots = new Set();
+    let flushScheduled = false;
+    const flushPendingRoots = () => {
+        flushScheduled = false;
+        pendingRoots.forEach(updateLayeredSigilText);
+        pendingRoots.clear();
+    };
+    const scheduleRoot = root => {
+        if (!root || typeof root.querySelectorAll !== 'function') return;
+        pendingRoots.add(root);
+        if (!flushScheduled) {
+            flushScheduled = true;
+            queueMicrotask(flushPendingRoots);
+        }
+    };
     const observer = new MutationObserver(mutations => {
         mutations.forEach(mutation => {
             if (mutation.type === 'childList') {
                 mutation.addedNodes.forEach(node => {
-                    if (node.nodeType !== Node.ELEMENT_NODE) return;
-                    const element = node;
-                    layeredTextSigilClasses.forEach(className => {
-                        if (element.classList.contains(className)) {
-                            syncLayeredSigilText(element);
-                        }
-                        if (typeof element.querySelectorAll === 'function') {
-                            element.querySelectorAll(`.${className}`).forEach(syncLayeredSigilText);
-                        }
-                    });
+                    if (node.nodeType === Node.ELEMENT_NODE) {
+                        scheduleRoot(node);
+                    }
                 });
             } else if (mutation.type === 'characterData') {
                 const parent = mutation.target.parentElement;
-                if (parent && layeredTextSigilClasses.some(className => parent.classList.contains(className))) {
+                if (parent && parent.matches(layeredTextSigilSelector)) {
                     syncLayeredSigilText(parent);
                 }
             }
@@ -6594,14 +6683,8 @@ function getAuraIndex(aura) {
     return aura && Number.isInteger(aura.index) ? aura.index : -1;
 }
 
-function resetAuraRollState(registry) {
-    for (const aura of registry) {
-        const index = getAuraIndex(aura);
-        if (index === -1) {
-            continue;
-        }
-        auraWinCounts[index] = 0;
-    }
+function resetAuraRollState() {
+    auraWinCounts.fill(0);
 }
 
 function readAuraWinCount(aura) {
@@ -7401,8 +7484,9 @@ function setupLuckPresetAnimations() {
 }
 
 function setVersionButtonExpanded(state) {
-    if (versionInfoButton) {
-        versionInfoButton.setAttribute('aria-expanded', state ? 'true' : 'false');
+    const trigger = versionInfoButton || document.getElementById('versionInfoButton');
+    if (trigger) {
+        trigger.setAttribute('aria-expanded', state ? 'true' : 'false');
     }
 }
 
@@ -7473,8 +7557,9 @@ function hideVersionChangelogOverlay({ focusTrigger = true } = {}) {
                 focusTarget.focus();
                 return;
             }
-            if (versionInfoButton && typeof versionInfoButton.focus === 'function') {
-                versionInfoButton.focus();
+            const trigger = versionInfoButton || document.getElementById('versionInfoButton');
+            if (trigger && typeof trigger.focus === 'function') {
+                trigger.focus();
             }
         }
     });
@@ -7911,12 +7996,16 @@ function ensureChangelogTabsReady() {
 
 function setupVersionChangelogOverlay() {
     const overlay = document.getElementById('versionChangelogOverlay');
-    const trigger = versionInfoButton;
+    const trigger = versionInfoButton || document.getElementById('versionInfoButton');
     const closeButton = document.getElementById('versionChangelogClose');
 
     if (!overlay || !trigger) {
         return;
     }
+    if (trigger.dataset.changelogOverlayBound === 'true') {
+        return;
+    }
+    trigger.dataset.changelogOverlayBound = 'true';
 
     trigger.addEventListener('click', () => {
         if (overlay.hasAttribute('hidden')) {
@@ -8001,6 +8090,484 @@ function relocateResourcesPanelForMobile() {
     mobileQuery.addEventListener('change', syncLayout);
 }
 
+function initializeHelpCenter() {
+    const toggle = document.getElementById('helpCenterToggle');
+    const panel = document.getElementById('helpCenterPanel');
+    const backdrop = document.getElementById('helpCenterBackdrop');
+    const closeButton = document.getElementById('helpCenterClose');
+    const searchInput = document.getElementById('helpCenterSearch');
+    const content = document.getElementById('helpCenterContent');
+    const emptyState = document.getElementById('helpCenterEmpty');
+    const guidedTour = document.getElementById('helpGuidedTour');
+    const tourStartButton = document.getElementById('helpTourStart');
+    const tourPreviousButton = document.getElementById('helpTourPrevious');
+    const tourTryButton = document.getElementById('helpTourTry');
+    const tourCompleteButton = document.getElementById('helpTourComplete');
+    const tourSteps = document.getElementById('helpTourSteps');
+    const tourStepCount = document.getElementById('helpTourStepCount');
+    const tourCompletion = document.getElementById('helpTourCompletion');
+    const tourProgress = guidedTour?.querySelector('[role="progressbar"]');
+    const tourProgressFill = document.getElementById('helpTourProgressFill');
+    const tourLesson = document.getElementById('helpTourLesson');
+    const tourLessonIcon = document.getElementById('helpTourLessonIcon');
+    const tourLessonNumber = document.getElementById('helpTourLessonNumber');
+    const tourLessonTitle = document.getElementById('helpTourLessonTitle');
+    const tourLessonDescription = document.getElementById('helpTourLessonDescription');
+    const tourLessonTask = document.getElementById('helpTourLessonTask');
+    const tourResumeButton = document.getElementById('helpTourResume');
+    const tourResumeLabel = document.getElementById('helpTourResumeLabel');
+    if (
+        !toggle || !panel || !backdrop || !closeButton || !searchInput || !content || !emptyState
+        || !guidedTour || !tourStartButton || !tourPreviousButton || !tourTryButton
+        || !tourCompleteButton || !tourSteps || !tourStepCount || !tourCompletion
+        || !tourProgress || !tourProgressFill || !tourLesson || !tourLessonIcon
+        || !tourLessonNumber || !tourLessonTitle || !tourLessonDescription
+        || !tourLessonTask || !tourResumeButton || !tourResumeLabel
+    ) {
+        return;
+    }
+
+    const cards = Array.from(content.querySelectorAll('[data-help-card]'));
+    const navButtons = Array.from(panel.querySelectorAll('[data-help-target]'));
+    const searchableText = new Map(cards.map(card => [
+        card.id,
+        `${card.dataset.helpKeywords || ''} ${card.textContent || ''}`.toLocaleLowerCase()
+    ]));
+    const tourLessons = Object.freeze([
+        {
+            icon: 'fa-clover',
+            title: 'Set luck and roll amount',
+            description: 'Start with the two values that define a basic simulation.',
+            task: 'Change Luck Total and Roll Amount, then return to the guide.',
+            target: '.parameter-console__module--loadout'
+        },
+        {
+            icon: 'fa-flask-vial',
+            title: 'Explore potion and item rules',
+            description: 'Single Potion Mode is direct; Multiple Potion Mode exposes ordered potion batches and stacking.',
+            task: 'Switch between potion modes and inspect quantities, stacking, and the potion priority note.',
+            target: '.parameter-console__module--loadout'
+        },
+        {
+            icon: 'fa-bolt',
+            title: 'Try a Quick Preset',
+            description: 'Preset banks provide fast starting points for luck, devices, buffs, and roll counts.',
+            task: 'Open a preset bank and apply one preset. Use its minus or plus control if available.',
+            target: '.surface--presets'
+        },
+        {
+            icon: 'fa-mountain-sun',
+            title: 'Build an environment',
+            description: 'Biome, rune, time, and events determine which environment rules are active.',
+            task: 'Choose a biome, rune, and time of day, then inspect the Events control.',
+            target: '.parameter-console__module--environment'
+        },
+        {
+            icon: 'fa-infinity',
+            title: 'Test biome shortcuts and RoE',
+            description: 'Environment Shortcuts apply common combinations without changing unrelated run settings.',
+            task: 'Try a shortcut, then enable RoE and confirm your biome and time remain selected.',
+            target: '.parameter-console__module--actions'
+        },
+        {
+            icon: 'fa-dice',
+            title: 'Compare simulation methods',
+            description: 'Unnamed’s reveals results at the end; Sol’s-Like shows the same RNG sequence live.',
+            task: 'Switch between the two method cards and inspect the Sol’s-Like pause control.',
+            target: '.roll-console__module--method'
+        },
+        {
+            icon: 'fa-gauge-high',
+            title: 'Tune rolling speed and filters',
+            description: 'Rolling Settings controls live display speed and which tiers or auras are shown.',
+            task: 'Try a speed shortcut, move the slider, and open either aura filter.',
+            action: 'rolling-settings',
+            target: '.rolling-settings__field'
+        },
+        {
+            icon: 'fa-film',
+            title: 'Configure cutscenes and preferences',
+            description: 'Settings contains audio, quality, cutscene, background-rolling, and true-chance controls.',
+            task: 'Inspect the Cutscenes switch, then open Audio or Quality Preferences.',
+            action: 'settings-menu',
+            target: '#cinematicToggle'
+        },
+        {
+            icon: 'fa-list-ol',
+            title: 'Read and refine results',
+            description: 'The Sequence Monitor contains the live feed, tier-aware search, sorting, sharing, XP, and totals.',
+            task: 'Run a small simulation, search an aura or tier, and try the available sorting and sharing controls.',
+            target: '.surface--results'
+        }
+    ]);
+    const completedTourLessons = new Set();
+    let currentTourLesson = 0;
+    let tourActive = false;
+    let highlightedTourTarget = null;
+    let open = false;
+    let lastFocusedElement = null;
+    let closeTimer = null;
+
+    const prefersReducedMotion = () => Boolean(
+        appState?.reduceMotion
+        || window.matchMedia('(prefers-reduced-motion: reduce)').matches
+        || document.body.classList.contains('quality-no-ui-animations')
+    );
+
+    const clearHighlightedTourTarget = () => {
+        if (highlightedTourTarget) {
+            highlightedTourTarget.classList.remove('help-tour-target');
+            highlightedTourTarget = null;
+        }
+    };
+
+    const renderTour = () => {
+        const lesson = tourLessons[currentTourLesson];
+        const completedCount = completedTourLessons.size;
+        const finished = completedCount === tourLessons.length;
+        const stepNumber = currentTourLesson + 1;
+
+        tourStepCount.textContent = finished
+            ? 'Tour complete'
+            : `Step ${stepNumber} of ${tourLessons.length}`;
+        tourCompletion.textContent = `${completedCount} completed`;
+        tourProgress.setAttribute('aria-valuemax', String(tourLessons.length));
+        tourProgress.setAttribute('aria-valuenow', String(completedCount));
+        tourProgressFill.style.width = `${(completedCount / tourLessons.length) * 100}%`;
+        tourLesson.classList.toggle('help-tour__lesson--complete', finished);
+
+        if (finished) {
+            tourLessonIcon.innerHTML = '<i class="fa-solid fa-trophy"></i>';
+            tourLessonNumber.textContent = 'Training complete';
+            tourLessonTitle.textContent = 'You are ready to build accurate simulations';
+            tourLessonDescription.textContent = 'You have visited every major workflow and practiced the controls in the live interface.';
+            tourLessonTask.innerHTML = '<i class="fa-solid fa-circle-check" aria-hidden="true"></i> Restart whenever you want a quick refresher.';
+            tourTryButton.disabled = true;
+            tourCompleteButton.innerHTML = '<span>Restart tour</span><i class="fa-solid fa-rotate-right" aria-hidden="true"></i>';
+        } else {
+            tourLessonIcon.innerHTML = `<i class="fa-solid ${lesson.icon}"></i>`;
+            tourLessonNumber.textContent = `Task ${String(stepNumber).padStart(2, '0')}`;
+            tourLessonTitle.textContent = lesson.title;
+            tourLessonDescription.textContent = lesson.description;
+            tourLessonTask.innerHTML = `<i class="fa-solid fa-circle-check" aria-hidden="true"></i> ${lesson.task}`;
+            tourTryButton.disabled = false;
+            tourCompleteButton.innerHTML = currentTourLesson === tourLessons.length - 1
+                ? '<span>Finish tour</span><i class="fa-solid fa-flag-checkered" aria-hidden="true"></i>'
+                : '<span>Done, next</span><i class="fa-solid fa-arrow-right" aria-hidden="true"></i>';
+        }
+
+        tourPreviousButton.disabled = finished || currentTourLesson === 0;
+        tourStartButton.innerHTML = tourActive || completedCount > 0
+            ? '<i class="fa-solid fa-rotate-right" aria-hidden="true"></i><span>Restart guided tour</span>'
+            : '<i class="fa-solid fa-play" aria-hidden="true"></i><span>Start guided tour</span>';
+        tourResumeLabel.textContent = `Continue step ${stepNumber}`;
+
+        const fragment = document.createDocumentFragment();
+        tourLessons.forEach((item, index) => {
+            const stepButton = document.createElement('button');
+            stepButton.type = 'button';
+            stepButton.dataset.helpTourStep = String(index);
+            stepButton.setAttribute('aria-label', `Open guided practice step ${index + 1}: ${item.title}`);
+            if (index === currentTourLesson && !finished) {
+                stepButton.setAttribute('aria-current', 'step');
+            }
+            if (completedTourLessons.has(index)) {
+                stepButton.classList.add('help-tour__step--complete');
+            }
+            stepButton.textContent = String(index + 1);
+            fragment.appendChild(stepButton);
+        });
+        tourSteps.replaceChildren(fragment);
+    };
+
+    const startTour = () => {
+        tourActive = true;
+        currentTourLesson = 0;
+        completedTourLessons.clear();
+        tourResumeButton.hidden = true;
+        clearHighlightedTourTarget();
+        renderTour();
+        guidedTour.scrollIntoView({
+            behavior: prefersReducedMotion() ? 'auto' : 'smooth',
+            block: 'start'
+        });
+    };
+
+    const setActiveTopic = topicId => {
+        navButtons.forEach(button => {
+            if (button.dataset.helpTarget === topicId) {
+                button.setAttribute('aria-current', 'true');
+            } else {
+                button.removeAttribute('aria-current');
+            }
+        });
+    };
+
+    const closeHelpCenter = ({ restoreFocus = true } = {}) => {
+        if (!open) return;
+        open = false;
+        panel.classList.remove('help-center--open');
+        backdrop.classList.remove('help-center__backdrop--open');
+        panel.setAttribute('aria-hidden', 'true');
+        toggle.setAttribute('aria-expanded', 'false');
+        document.body.classList.remove('help-center-open');
+        tourResumeButton.hidden = !tourActive || completedTourLessons.size === tourLessons.length;
+        window.clearTimeout(closeTimer);
+        const finishClose = () => {
+            panel.hidden = true;
+            backdrop.hidden = true;
+            if (restoreFocus && lastFocusedElement && typeof lastFocusedElement.focus === 'function') {
+                lastFocusedElement.focus({ preventScroll: true });
+            }
+        };
+        if (prefersReducedMotion()) {
+            finishClose();
+        } else {
+            closeTimer = window.setTimeout(finishClose, 240);
+        }
+    };
+
+    const openHelpCenter = () => {
+        if (open) return;
+        window.clearTimeout(closeTimer);
+        open = true;
+        lastFocusedElement = document.activeElement;
+        panel.hidden = false;
+        backdrop.hidden = false;
+        panel.setAttribute('aria-hidden', 'false');
+        toggle.setAttribute('aria-expanded', 'true');
+        document.body.classList.add('help-center-open');
+        tourResumeButton.hidden = true;
+        clearHighlightedTourTarget();
+        const optionsMenu = document.getElementById('optionsMenu');
+        const optionsMenuToggle = document.getElementById('optionsMenuToggle');
+        optionsMenu?.classList.remove('options-menu--open');
+        optionsMenuToggle?.setAttribute('aria-expanded', 'false');
+        requestAnimationFrame(() => {
+            panel.classList.add('help-center--open');
+            backdrop.classList.add('help-center__backdrop--open');
+            searchInput.focus({ preventScroll: true });
+        });
+    };
+
+    const focusTourTarget = () => {
+        const lesson = tourLessons[currentTourLesson];
+        const target = lesson.target ? document.querySelector(lesson.target) : null;
+        if (!target) return;
+        clearHighlightedTourTarget();
+        highlightedTourTarget = target;
+        target.classList.add('help-tour-target');
+        target.scrollIntoView({
+            behavior: prefersReducedMotion() ? 'auto' : 'smooth',
+            block: 'center'
+        });
+        if (typeof target.focus === 'function') {
+            window.setTimeout(() => {
+                try {
+                    target.focus({ preventScroll: true });
+                } catch (error) {
+                    target.focus();
+                }
+            }, prefersReducedMotion() ? 0 : 320);
+        }
+    };
+
+    const launchTourLesson = () => {
+        const lesson = tourLessons[currentTourLesson];
+        tourActive = true;
+        renderTour();
+        closeHelpCenter({ restoreFocus: false });
+        const delay = prefersReducedMotion() ? 0 : 250;
+        window.setTimeout(() => {
+            if (lesson.action === 'rolling-settings') {
+                showRollingSettingsOverlay();
+                window.setTimeout(focusTourTarget, prefersReducedMotion() ? 0 : 80);
+            } else if (lesson.action === 'settings-menu') {
+                const optionsMenu = document.getElementById('optionsMenu');
+                const optionsMenuToggle = document.getElementById('optionsMenuToggle');
+                optionsMenu?.classList.add('options-menu--open');
+                optionsMenuToggle?.setAttribute('aria-expanded', 'true');
+                focusTourTarget();
+            } else {
+                focusTourTarget();
+            }
+            tourResumeButton.hidden = false;
+        }, delay);
+    };
+
+    const resumeTour = () => {
+        clearHighlightedTourTarget();
+        tourResumeButton.hidden = true;
+        const overlays = [
+            document.getElementById('auraDetailFilterOverlay'),
+            document.getElementById('auraFilterOverlay'),
+            document.getElementById('rollingSettingsOverlay')
+        ];
+        let overlayWasOpen = false;
+        overlays.forEach(overlay => {
+            if (overlay && !overlay.hasAttribute('hidden')) {
+                overlayWasOpen = true;
+                concealOverlay(overlay);
+            }
+        });
+        const optionsMenu = document.getElementById('optionsMenu');
+        const optionsMenuToggle = document.getElementById('optionsMenuToggle');
+        optionsMenu?.classList.remove('options-menu--open');
+        optionsMenuToggle?.setAttribute('aria-expanded', 'false');
+        window.setTimeout(() => {
+            openHelpCenter();
+            renderTour();
+            guidedTour.scrollIntoView({
+                behavior: prefersReducedMotion() ? 'auto' : 'smooth',
+                block: 'start'
+            });
+        }, overlayWasOpen && !prefersReducedMotion() ? 220 : 0);
+    };
+
+    const applySearch = () => {
+        const query = searchInput.value.trim().toLocaleLowerCase();
+        let visibleCount = 0;
+        let firstVisibleId = null;
+        cards.forEach(card => {
+            const visible = !query || searchableText.get(card.id).includes(query);
+            card.hidden = !visible;
+            if (visible) {
+                visibleCount += 1;
+                firstVisibleId ||= card.id;
+            }
+        });
+        navButtons.forEach(button => {
+            const target = document.getElementById(button.dataset.helpTarget || '');
+            button.hidden = Boolean(target?.hidden);
+        });
+        guidedTour.hidden = Boolean(query);
+        emptyState.hidden = visibleCount !== 0;
+        if (firstVisibleId) {
+            setActiveTopic(firstVisibleId);
+            content.scrollTop = 0;
+        }
+    };
+
+    toggle.addEventListener('click', () => {
+        if (open) {
+            closeHelpCenter();
+        } else {
+            openHelpCenter();
+        }
+    });
+    closeButton.addEventListener('click', () => closeHelpCenter());
+    backdrop.addEventListener('click', () => closeHelpCenter());
+    tourStartButton.addEventListener('click', startTour);
+    tourPreviousButton.addEventListener('click', () => {
+        if (currentTourLesson === 0) return;
+        tourActive = true;
+        currentTourLesson -= 1;
+        renderTour();
+    });
+    tourTryButton.addEventListener('click', launchTourLesson);
+    tourCompleteButton.addEventListener('click', () => {
+        if (completedTourLessons.size === tourLessons.length) {
+            startTour();
+            return;
+        }
+        tourActive = true;
+        completedTourLessons.add(currentTourLesson);
+        if (completedTourLessons.size === tourLessons.length) {
+            tourActive = false;
+            tourResumeButton.hidden = true;
+        } else if (currentTourLesson < tourLessons.length - 1) {
+            currentTourLesson += 1;
+        } else {
+            const nextIncompleteLesson = tourLessons.findIndex((lesson, index) => (
+                !completedTourLessons.has(index)
+            ));
+            if (nextIncompleteLesson !== -1) {
+                currentTourLesson = nextIncompleteLesson;
+            }
+        }
+        renderTour();
+    });
+    tourSteps.addEventListener('click', event => {
+        const stepButton = event.target.closest('[data-help-tour-step]');
+        if (!stepButton || !tourSteps.contains(stepButton)) return;
+        const nextLesson = Number.parseInt(stepButton.dataset.helpTourStep, 10);
+        if (!Number.isInteger(nextLesson) || nextLesson < 0 || nextLesson >= tourLessons.length) {
+            return;
+        }
+        tourActive = true;
+        currentTourLesson = nextLesson;
+        renderTour();
+    });
+    tourResumeButton.addEventListener('click', resumeTour);
+    searchInput.addEventListener('input', applySearch);
+    searchInput.addEventListener('keydown', event => {
+        if (event.key === 'Escape' && searchInput.value) {
+            event.stopPropagation();
+            searchInput.value = '';
+            applySearch();
+        }
+    });
+
+    navButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            const topicId = button.dataset.helpTarget;
+            const card = topicId ? document.getElementById(topicId) : null;
+            if (!card || card.hidden) return;
+            setActiveTopic(topicId);
+            card.scrollIntoView({
+                behavior: prefersReducedMotion() ? 'auto' : 'smooth',
+                block: 'start'
+            });
+        });
+    });
+
+    panel.addEventListener('click', event => {
+        const jumpButton = event.target.closest('[data-help-jump]');
+        if (jumpButton) {
+            const selector = jumpButton.dataset.helpJump;
+            const target = selector ? document.querySelector(selector) : null;
+            closeHelpCenter({ restoreFocus: false });
+            if (target) {
+                window.setTimeout(() => target.scrollIntoView({
+                    behavior: prefersReducedMotion() ? 'auto' : 'smooth',
+                    block: 'center'
+                }), prefersReducedMotion() ? 0 : 250);
+            }
+            return;
+        }
+
+        const actionButton = event.target.closest('[data-help-action]');
+        if (actionButton?.dataset.helpAction === 'rolling-settings') {
+            closeHelpCenter({ restoreFocus: false });
+            window.setTimeout(showRollingSettingsOverlay, prefersReducedMotion() ? 0 : 250);
+        }
+    });
+
+    document.addEventListener('keydown', event => {
+        if (!open) return;
+        if (event.key === 'Escape') {
+            event.preventDefault();
+            closeHelpCenter();
+            return;
+        }
+        if (event.key !== 'Tab') return;
+        const focusable = Array.from(panel.querySelectorAll(
+            'button:not([disabled]):not([hidden]), input:not([disabled]), [tabindex]:not([tabindex="-1"])'
+        )).filter(element => !element.closest('[hidden]'));
+        if (focusable.length === 0) return;
+        const first = focusable[0];
+        const last = focusable[focusable.length - 1];
+        if (event.shiftKey && document.activeElement === first) {
+            event.preventDefault();
+            last.focus();
+        } else if (!event.shiftKey && document.activeElement === last) {
+            event.preventDefault();
+            first.focus();
+        }
+    });
+    renderTour();
+}
+
 function initializeCreditsDirectory() {
     const credits = document.querySelector('.footer-credits');
     const searchInput = document.getElementById('creditsSearch');
@@ -8021,6 +8588,7 @@ function initializeCreditsDirectory() {
 
     creditItems.forEach(item => {
         const contributionText = item.textContent.toLocaleLowerCase();
+        item.dataset.creditSearchText = contributionText;
         item.dataset.creditCategory = contributionText.includes('cutscene') ? 'cutscene' : 'media';
         const kind = document.createElement('span');
         kind.className = 'footer-credits__item-kind';
@@ -8038,7 +8606,7 @@ function initializeCreditsDirectory() {
             const matchesCategory = activeCategory === 'all'
                 || item.dataset.creditCategory === activeCategory;
             const matchesQuery = query.length === 0
-                || item.textContent.toLocaleLowerCase().includes(query);
+                || item.dataset.creditSearchText.includes(query);
             const visible = matchesCategory && matchesQuery;
             item.hidden = !visible;
             if (visible) {
@@ -8085,6 +8653,7 @@ document.addEventListener('DOMContentLoaded', setupNodeShiftAnimation);
 document.addEventListener('DOMContentLoaded', relocateResourcesPanelForMobile);
 document.addEventListener('DOMContentLoaded', observeLayeredSigilText);
 document.addEventListener('DOMContentLoaded', initializeCreditsDirectory);
+document.addEventListener('DOMContentLoaded', initializeHelpCenter);
 
 
 function spawnFortePixelatedSecretMessage() {
@@ -8588,7 +9157,7 @@ function getBiomeIconSource(value) {
     return `files/images/icons/${value}BiomeIcon.png`;
 }
 
-function populateBiomeOptionElement(target, option) {
+function populateBiomeOptionElement(target, option, { deferImage = false } = {}) {
     if (!target || !option) {
         return '';
     }
@@ -8600,7 +9169,11 @@ function populateBiomeOptionElement(target, option) {
     if (iconSource) {
         const icon = document.createElement('img');
         icon.className = 'biome-option__icon';
-        icon.src = iconSource;
+        if (deferImage) {
+            icon.dataset.src = iconSource;
+        } else {
+            icon.src = iconSource;
+        }
         icon.alt = '';
         icon.loading = 'lazy';
         icon.decoding = 'async';
@@ -8640,7 +9213,7 @@ function initializeSingleSelectControl(selectId) {
         || selectId === BIOME_OTHER_SELECT_ID
         || selectId === BIOME_TIME_SELECT_ID;
 
-    const setElementContent = (element, option) => {
+    const setElementContent = (element, option, { deferImage = false } = {}) => {
         if (!option) {
             element.textContent = '';
             element.removeAttribute('title');
@@ -8648,7 +9221,7 @@ function initializeSingleSelectControl(selectId) {
         }
 
         if (isBiomeSelect) {
-            populateBiomeOptionElement(element, option);
+            populateBiomeOptionElement(element, option, { deferImage });
         } else {
             const label = option.textContent.trim();
             element.textContent = label;
@@ -8661,7 +9234,7 @@ function initializeSingleSelectControl(selectId) {
         button.type = 'button';
         button.className = 'interface-select__option-button';
         button.dataset.value = option.value;
-        setElementContent(button, option);
+        setElementContent(button, option, { deferImage: isBiomeSelect });
         button.setAttribute('role', 'option');
         const getConditionMessage = () => {
             const biomeCondition = isBiomeSelect && option.disabled
@@ -8708,20 +9281,50 @@ function initializeSingleSelectControl(selectId) {
         return { button, option };
     });
 
+    let optionIconsHydrated = !isBiomeSelect;
+    const hydrateOptionIcons = () => {
+        if (optionIconsHydrated) {
+            return;
+        }
+        optionIconsHydrated = true;
+        optionButtons.forEach(({ button }) => {
+            const icon = button.querySelector('img[data-src]');
+            if (!icon || !icon.dataset.src) {
+                return;
+            }
+            icon.src = icon.dataset.src;
+            delete icon.dataset.src;
+        });
+    };
+
+    if (isBiomeSelect) {
+        summary.addEventListener('pointerenter', hydrateOptionIcons, { once: true, passive: true });
+        summary.addEventListener('focus', hydrateOptionIcons, { once: true });
+        summary.addEventListener('click', hydrateOptionIcons, { once: true });
+    }
+
     if (!menu.hasAttribute('role')) {
         menu.setAttribute('role', 'listbox');
     }
+
+    let summaryContentKey = '';
 
     function updateSummary() {
         const selectedOption = select.options[select.selectedIndex];
         const label = selectedOption ? selectedOption.textContent.trim() : placeholder;
         const normalizedLabel = label ? label.trim() : '';
+        const nextSummaryContentKey = selectedOption
+            ? `${selectedOption.value}\u0000${normalizedLabel}`
+            : `\u0000${normalizedLabel}`;
 
-        if (selectedOption) {
-            setElementContent(summary, selectedOption);
-        } else {
-            summary.textContent = normalizedLabel;
-            summary.title = normalizedLabel;
+        if (summaryContentKey !== nextSummaryContentKey) {
+            summaryContentKey = nextSummaryContentKey;
+            if (selectedOption) {
+                setElementContent(summary, selectedOption);
+            } else {
+                summary.textContent = normalizedLabel;
+                summary.title = normalizedLabel;
+            }
         }
 
         summary.classList.toggle('form-field__input--placeholder', !selectedOption);
@@ -8733,7 +9336,6 @@ function initializeSingleSelectControl(selectId) {
                 || (isBiomeSelect && option.disabled ? EVENT_BIOME_CONDITION_MESSAGES[option.value] : '');
             const hasConditionHelp = !!conditionMessage;
 
-            setElementContent(button, option);
             button.classList.toggle('interface-select__option-button--active', isActive);
             button.classList.toggle('interface-select__option-button--disabled', option.disabled);
             button.classList.toggle('interface-select__option-button--condition', hasConditionHelp);
@@ -8751,6 +9353,9 @@ function initializeSingleSelectControl(selectId) {
     initializeInterfaceSelectMotion(details);
     details.addEventListener('toggle', () => {
         summary.setAttribute('aria-expanded', details.open ? 'true' : 'false');
+        if (details.open) {
+            hydrateOptionIcons();
+        }
     });
 
     selectWidgetRegistry.set(selectId, { update: updateSummary });
@@ -9398,6 +10003,7 @@ document.addEventListener('DOMContentLoaded', () => {
     setSelectiveTrueChanceDisplayEnabled(Boolean(appState.selectiveTrueChanceDisplay), { persistPreference: false });
     hydrateAuraFilters();
     hydrateAuraTierFilters();
+    refreshActiveAuraFilterCounts();
 
     const backgroundRollingButton = document.getElementById('backgroundRollingButton');
     if (backgroundRollingButton) {
@@ -9903,8 +10509,55 @@ function shouldHideSelectiveTrueChanceForAura(auraName) {
     return TRUE_CHANCE_HIDDEN_AURA_PREFIXES.some(prefix => auraName.startsWith(prefix)) || isExactMetaAuraName(auraName);
 }
 
+let rollFeedSearchInput = null;
+let rollFeedVisibilityObserver = null;
+
+function ensureRollFeedVisibilityObserver() {
+    if (
+        rollFeedVisibilityObserver
+        || !feedContainer
+        || typeof IntersectionObserver !== 'function'
+    ) {
+        return rollFeedVisibilityObserver;
+    }
+
+    rollFeedVisibilityObserver = new IntersectionObserver(entries => {
+        entries.forEach(entry => {
+            entry.target.classList.toggle('roll-feed-entry--offscreen', !entry.isIntersecting);
+        });
+    }, {
+        root: feedContainer,
+        rootMargin: '180px 0px'
+    });
+
+    return rollFeedVisibilityObserver;
+}
+
+function resetRollFeedVisibilityObserver() {
+    if (rollFeedVisibilityObserver) {
+        rollFeedVisibilityObserver.disconnect();
+    }
+}
+
+function observeRollFeedEntries(root = feedContainer) {
+    if (!root || typeof root.querySelectorAll !== 'function') {
+        return;
+    }
+
+    const observer = ensureRollFeedVisibilityObserver();
+    if (!observer) {
+        return;
+    }
+
+    root.querySelectorAll('[data-roll-feed-entry]').forEach(entry => {
+        entry.classList.add('roll-feed-entry--offscreen');
+        observer.observe(entry);
+    });
+}
+
 function getRollFeedSearchQuery() {
-    const searchInput = document.getElementById('rollFeedSearch');
+    const searchInput = rollFeedSearchInput || document.getElementById('rollFeedSearch');
+    rollFeedSearchInput = searchInput;
     return searchInput && typeof searchInput.value === 'string'
         ? searchInput.value.trim().toLocaleLowerCase()
         : '';
@@ -9916,11 +10569,22 @@ function applyRollFeedSearchFilter(root = feedContainer) {
     }
 
     const query = getRollFeedSearchQuery();
-    root.querySelectorAll('[data-roll-feed-entry]').forEach(entry => {
-        const entryText = (entry.textContent || '').toLocaleLowerCase();
-        const tierText = getAuraTierSearchTerms(entry.dataset.auraTier || '');
-        const searchableText = `${entryText} ${tierText}`;
-        entry.hidden = Boolean(query) && !searchableText.includes(query);
+    const entrySelector = query
+        ? '[data-roll-feed-entry]'
+        : '[data-roll-feed-entry][hidden]';
+    root.querySelectorAll(entrySelector).forEach(entry => {
+        if (!query) {
+            entry.hidden = false;
+            return;
+        }
+        let searchableText = entry.dataset.rollFeedSearchText;
+        if (typeof searchableText !== 'string') {
+            const entryText = (entry.textContent || '').toLocaleLowerCase();
+            const tierText = getAuraTierSearchTerms(entry.dataset.auraTier || '');
+            searchableText = `${entryText} ${tierText}`;
+            entry.dataset.rollFeedSearchText = searchableText;
+        }
+        entry.hidden = !searchableText.includes(query);
     });
 }
 
@@ -9930,7 +10594,22 @@ function setupRollFeedSearch() {
         return;
     }
 
-    const refreshFilter = () => applyRollFeedSearchFilter();
+    rollFeedSearchInput = searchInput;
+    let pendingFrameId = null;
+    const refreshFilter = () => {
+        if (pendingFrameId !== null) {
+            return;
+        }
+        const applyFilter = () => {
+            pendingFrameId = null;
+            applyRollFeedSearchFilter();
+        };
+        if (typeof window.requestAnimationFrame === 'function') {
+            pendingFrameId = window.requestAnimationFrame(applyFilter);
+        } else {
+            pendingFrameId = window.setTimeout(applyFilter, 0);
+        }
+    };
     searchInput.addEventListener('input', refreshFilter);
     searchInput.addEventListener('search', refreshFilter);
     searchInput.addEventListener('keydown', event => {
@@ -10000,10 +10679,20 @@ function decodeRollFeedSortValue(value) {
 }
 
 function getAuraAlphabeticalSortName(auraName) {
-    return typeof auraName === 'string'
-        ? auraName.replace(/\s+-\s+[\d,]+\s*$/, '').trim()
-        : '';
+    if (typeof auraName !== 'string') {
+        return '';
+    }
+    if (!auraAlphabeticalNameCache.has(auraName)) {
+        auraAlphabeticalNameCache.set(auraName, auraName.replace(/\s+-\s+[\d,]+\s*$/, '').trim());
+    }
+    return auraAlphabeticalNameCache.get(auraName);
 }
+
+const auraAlphabeticalNameCache = new Map();
+const rollFeedAlphabeticalCollator = new Intl.Collator(undefined, {
+    sensitivity: 'base',
+    numeric: true
+});
 
 function getRollFeedSortSequence() {
     return rollFeedSortSupportsRecent
@@ -10091,10 +10780,9 @@ function applyRollFeedSort(mode = rollFeedSortMode) {
         orderedRecords = sortEntriesInUnnamedResultOrder(entryRecords);
     } else if (normalizedMode === ROLL_FEED_SORT_MODE.ALPHABETICAL) {
         orderedRecords = [...entryRecords].sort((a, b) => {
-            const nameDifference = a.alphabeticalName.localeCompare(
-                b.alphabeticalName,
-                undefined,
-                { sensitivity: 'base', numeric: true }
+            const nameDifference = rollFeedAlphabeticalCollator.compare(
+                a.alphabeticalName,
+                b.alphabeticalName
             );
             return nameDifference || a.originalOrder - b.originalOrder;
         });
@@ -10931,6 +11619,7 @@ function runRollSimulation(options = {}) {
         return eventIds.some(eventId => eventState.has(eventId));
     };
 
+    resetRollFeedVisibilityObserver();
     feedContainer.textContent = solsLikeRun ? '' : 'Rolling...';
     const startTime = performance.now();
 
@@ -11175,6 +11864,7 @@ function runRollSimulation(options = {}) {
         } else {
             feedContainer.innerHTML = resultChunks.join('');
         }
+        observeRollFeedEntries(feedContainer);
         applyRollFeedSearchFilter();
         setRollFeedSortingAvailable(
             Boolean(feedContainer.querySelector('[data-roll-feed-entry]')),
@@ -11330,8 +12020,10 @@ function runRollSimulation(options = {}) {
         let workScheduled = false;
         let skipRemainingCutscenes = false;
         let liveRunStopped = false;
+        let liveFeedFollowing = true;
         let nextRollDueAt = performance.now();
         const { followRollFeedButton } = uiHandles;
+        const liveMarkupTemplate = document.createElement('template');
 
         const getLiveFeedDistanceFromBottom = () => Math.max(
             0,
@@ -11342,11 +12034,11 @@ function runRollSimulation(options = {}) {
             if (!followRollFeedButton) {
                 return;
             }
-            const feedDesynchronized = getLiveFeedDistanceFromBottom() > LIVE_ROLL_FEED_BOTTOM_TOLERANCE_PX;
-            followRollFeedButton.hidden = !simulationActive || liveRunStopped || !feedDesynchronized;
+            followRollFeedButton.hidden = !simulationActive || liveRunStopped || liveFeedFollowing;
         };
 
         const handleLiveFeedScroll = () => {
+            liveFeedFollowing = getLiveFeedDistanceFromBottom() <= LIVE_ROLL_FEED_BOTTOM_TOLERANCE_PX;
             syncLiveFeedFollowControl();
         };
 
@@ -11436,12 +12128,11 @@ function runRollSimulation(options = {}) {
             if (!Array.isArray(markupList) || markupList.length === 0) {
                 return;
             }
-            const shouldFollowNewRolls = getLiveFeedDistanceFromBottom() <= LIVE_ROLL_FEED_BOTTOM_TOLERANCE_PX;
-            const template = document.createElement('template');
-            template.innerHTML = markupList.join('');
-            applyRollFeedSearchFilter(template.content);
-            feedContainer.appendChild(template.content);
-            if (shouldFollowNewRolls) {
+            liveMarkupTemplate.innerHTML = markupList.join('');
+            applyRollFeedSearchFilter(liveMarkupTemplate.content);
+            observeRollFeedEntries(liveMarkupTemplate.content);
+            feedContainer.appendChild(liveMarkupTemplate.content);
+            if (liveFeedFollowing) {
                 feedContainer.scrollTop = feedContainer.scrollHeight;
             }
             syncLiveFeedFollowControl();
@@ -11460,10 +12151,16 @@ function runRollSimulation(options = {}) {
                 return;
             }
             workScheduled = true;
-            queueAnimationFrame(() => {
+            const runScheduledWork = () => {
                 workScheduled = false;
                 processLiveRollSequence();
-            });
+            };
+            const waitUntilNextRoll = nextRollDueAt - performance.now();
+            if (waitUntilNextRoll > 20 && typeof window.setTimeout === 'function') {
+                window.setTimeout(runScheduledWork, waitUntilNextRoll);
+            } else {
+                queueAnimationFrame(runScheduledWork);
+            }
         };
 
         const finishCancelledLiveRun = () => {
@@ -11585,6 +12282,7 @@ function runRollSimulation(options = {}) {
                 return manualPaused && !cutsceneActive && !liveRunStopped;
             },
             followLatest() {
+                liveFeedFollowing = true;
                 feedContainer.scrollTop = feedContainer.scrollHeight;
                 syncLiveFeedFollowControl();
             },
