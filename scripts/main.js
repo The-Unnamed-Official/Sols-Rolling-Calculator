@@ -3230,20 +3230,66 @@ const snowEffectState = {
     mode: 'none'
 };
 
-function createParticleNode(mode) {
-    const particle = document.createElement('span');
-    particle.className = mode === 'snow' ? 'snow-particle' : 'heart-particle';
+const HALLOWEEN_LIGHT_COLORS = Object.freeze([
+    '255 151 57',
+    '193 119 255',
+    '174 255 113'
+]);
 
-    const size = randomDecimalBetween(mode === 'snow' ? 0.8 : 1.35, mode === 'snow' ? 1.7 : 2.1);
-    const opacity = randomDecimalBetween(mode === 'snow' ? 0.5 : 0.44, mode === 'snow' ? 0.92 : 0.88);
+function createHalloweenLightParticleNode() {
+    const particle = document.createElement('span');
+    particle.className = 'halloween-light-particle';
+
+    const size = randomDecimalBetween(0.72, 1.65);
+    const opacity = randomDecimalBetween(0.38, 0.82);
+    const drift = randomDecimalBetween(-54, 54);
+    const duration = randomDecimalBetween(11, 21);
+    const delay = randomDecimalBetween(0, 22);
+    const x = randomDecimalBetween(2, 98);
+    const swayDistance = randomDecimalBetween(16, 44);
+    const swayDuration = randomDecimalBetween(4.5, 8.5);
+    const color = HALLOWEEN_LIGHT_COLORS[Math.floor(Math.random() * HALLOWEEN_LIGHT_COLORS.length)];
+
+    particle.style.setProperty('--size', size.toFixed(2));
+    particle.style.setProperty('--opacity', opacity.toFixed(2));
+    particle.style.setProperty('--drift', `${drift.toFixed(2)}px`);
+    particle.style.setProperty('--float-duration', `${duration.toFixed(2)}s`);
+    particle.style.setProperty('--float-delay', `${delay.toFixed(2)}s`);
+    particle.style.setProperty('--x', `${x.toFixed(2)}%`);
+    particle.style.setProperty('--sway-distance', `${swayDistance.toFixed(2)}px`);
+    particle.style.setProperty('--sway-duration', `${swayDuration.toFixed(2)}s`);
+    particle.style.setProperty('--light-rgb', color);
+
+    const sway = document.createElement('span');
+    sway.className = 'halloween-light-particle__sway';
+
+    const glow = document.createElement('span');
+    glow.className = 'halloween-light-particle__glow';
+
+    sway.appendChild(glow);
+    particle.appendChild(sway);
+    return particle;
+}
+
+function createParticleNode(mode) {
+    if (mode === 'halloween-lights') {
+        return createHalloweenLightParticleNode();
+    }
+
+    const isSnow = mode === 'snow';
+    const particle = document.createElement('span');
+    particle.className = isSnow ? 'snow-particle' : 'heart-particle';
+
+    const size = randomDecimalBetween(isSnow ? 0.8 : 1.35, isSnow ? 1.7 : 2.1);
+    const opacity = randomDecimalBetween(isSnow ? 0.5 : 0.44, isSnow ? 0.92 : 0.88);
     const drift = randomDecimalBetween(-32, 32);
-    const duration = randomDecimalBetween(mode === 'snow' ? 9 : 8, mode === 'snow' ? 17 : 16);
+    const duration = randomDecimalBetween(isSnow ? 9 : 8, isSnow ? 17 : 16);
     const delay = randomDecimalBetween(0, 20);
     const x = randomDecimalBetween(0, 100);
-    const swayDistance = randomDecimalBetween(8, 24);
-    const swayDuration = randomDecimalBetween(3.8, 7.4);
+    const swayDistance = randomDecimalBetween(isSnow ? 6 : 8, isSnow ? 18 : 24);
+    const swayDuration = randomDecimalBetween(isSnow ? 4.8 : 3.8, isSnow ? 8.4 : 7.4);
     const popHeight = randomDecimalBetween(42, 142);
-    const glow = randomDecimalBetween(mode === 'snow' ? 0.24 : 0.42, mode === 'snow' ? 0.6 : 0.8);
+    const glow = randomDecimalBetween(isSnow ? 0.24 : 0.42, isSnow ? 0.6 : 0.8);
 
     particle.style.setProperty('--size', size.toFixed(2));
     particle.style.setProperty('--opacity', opacity.toFixed(2));
@@ -3257,12 +3303,12 @@ function createParticleNode(mode) {
     particle.style.setProperty('--glow-strength', glow.toFixed(2));
 
     const sway = document.createElement('span');
-    sway.className = mode === 'snow' ? 'snow-particle__sway' : 'heart-particle__sway';
+    sway.className = isSnow ? 'snow-particle__sway' : 'heart-particle__sway';
 
     const icon = document.createElement('i');
-    icon.className = mode === 'snow'
+    icon.className = isSnow
         ? 'fa-solid fa-snowflake snow-particle__icon'
-        : 'fa-solid fa-heart heart-particle__icon'
+        : 'fa-solid fa-heart heart-particle__icon';
     icon.setAttribute('aria-hidden', 'true');
 
     sway.appendChild(icon);
@@ -3292,8 +3338,10 @@ function renderSnowField() {
         viewportHeight = window.innerHeight || viewportHeight;
     }
 
-    const baseDensity = Math.floor((viewportWidth * viewportHeight) / 90000);
-    const particleTotal = Math.min(48, Math.max(12, baseDensity));
+    const viewportArea = viewportWidth * viewportHeight;
+    const particleTotal = mode === 'halloween-lights'
+        ? Math.min(28, Math.max(9, Math.floor(viewportArea / 140000)))
+        : Math.min(48, Math.max(12, Math.floor(viewportArea / 90000)));
 
     container.dataset.active = 'true';
     container.replaceChildren();
@@ -6725,13 +6773,84 @@ const EVENT_LIST = [
     { id: "valentine26", label: "Valentine 2026" },
     { id: "easter26", label: "Easter 2026" },
     { id: "aprilFools26", label: "April Fools 2026" },
+    { id: "summer26", label: "Summer 2026" },
 ];
 
 const VALENTINE_EVENT_IDS = Object.freeze(['valentine24', 'valentine26']);
+const APRIL_FOOLS_EVENT_IDS = Object.freeze(['aprilFools24', 'aprilFools25', 'aprilFools26']);
 const EASTER_EVENT_IDS = Object.freeze(['easter26']);
 const HALLOWEEN_EVENT_IDS = Object.freeze(['halloween24', 'halloween25']);
-const SUMMER_EVENT_IDS = Object.freeze(['summer24', 'summer25']);
+const SUMMER_EVENT_IDS = Object.freeze(['summer24', 'summer25', 'summer26']);
 const WINTER_EVENT_IDS = Object.freeze(['winter25', 'winter26']);
+
+const APRIL_FOOLS_COPY_TARGETS = Object.freeze([
+    {
+        selector: '.masthead-console__rail > span:first-child',
+        variants: Object.freeze([
+            'Certified Serious Simulator',
+            'Probability Department (Unsupervised)',
+            'Definitely Not Rigged'
+        ])
+    },
+    {
+        selector: '#resources-heading + .surface__subtitle',
+        variants: Object.freeze([
+            'Useful links, suspiciously organized.',
+            'Resources approved by at least one raccoon.',
+            'External links. Internal confidence sold separately.'
+        ])
+    },
+    {
+        selector: '#results-heading + .surface__subtitle',
+        variants: Object.freeze([
+            'Results inspected by three raccoons.',
+            'High fidelity output, low fidelity life choices.',
+            'Every number is wearing a tiny disguise.'
+        ])
+    },
+    {
+        selector: '#controls-heading + .surface__subtitle',
+        variants: Object.freeze([
+            'Press responsibly; the buttons remember.',
+            'Choose how the numbers hurt your feelings.',
+            'Controls calibrated entirely by vibes.'
+        ])
+    },
+    {
+        selector: '#parameters-heading + .surface__subtitle',
+        variants: Object.freeze([
+            'Configure your luck. Reality remains non-refundable.',
+            'Add ingredients until probability gets nervous.',
+            'Scientific settings, emotionally approximate.'
+        ])
+    },
+    {
+        selector: '#presets-heading + .surface__subtitle',
+        variants: Object.freeze([
+            'Prepackaged confidence for statistically bold decisions.',
+            'One-click luck, batteries not included.',
+            'Curated settings from the Department of Guessing.'
+        ])
+    },
+    {
+        selector: '.feed-toolbar__heading-copy > small',
+        variants: Object.freeze([
+            'Search, sort & pretend',
+            'Find your emotional support aura',
+            'Organize the chaos alphabetically'
+        ])
+    },
+    {
+        selector: '.feed-console__stream-header small',
+        variants: Object.freeze([
+            'Exact sequence preserved, somehow',
+            'Chronology is more of a suggestion',
+            'Freshly rolled and lightly confused'
+        ])
+    }
+]);
+
+let aprilFoolsCopyActive = false;
 
 const EVENT_LABEL_MAP = new Map(EVENT_LIST.map(({ id, label }) => [id, label]));
 const HALLOWEEN_2024_EVENT_ID = 'halloween24';
@@ -6870,9 +6989,7 @@ const EVENT_AURA_LOOKUP = {
         "P.U.K.E.K.O.G.O.D. - 1,000,000,000",
         "A Fool's Experience - 1,000,000,000"
     ],
-    summer26: [
-        ""
-    ]
+    summer26: []
 };
 
 const BIOME_EVENT_CONSTRAINTS = {
@@ -6895,7 +7012,7 @@ const EVENT_BIOME_CONDITION_MESSAGES = Object.freeze({
     fullMoon: 'Requires Developer Biomes to be enabled under run parameters.',
 });
 
-const enabledEvents = new Set();
+const enabledEvents = new Set(['summer26']);
 const auraEventIndex = new Map();
 
 function hasAnyEnabledEvent(eventIds) {
@@ -6906,9 +7023,44 @@ function hasCombinedEventsEnabled() {
     return enabledEvents.size > 1;
 }
 
+function syncAprilFoolsCopy(active) {
+    if (active === aprilFoolsCopyActive || typeof document === 'undefined') {
+        return;
+    }
+
+    aprilFoolsCopyActive = active;
+    APRIL_FOOLS_COPY_TARGETS.forEach(({ selector, variants }) => {
+        const node = document.querySelector(selector);
+        if (!node) {
+            return;
+        }
+
+        if (!Object.prototype.hasOwnProperty.call(node.dataset, 'eventBaseText')) {
+            node.dataset.eventBaseText = node.textContent.trim();
+        }
+
+        if (!active) {
+            node.textContent = node.dataset.eventBaseText;
+            node.classList.remove('april-fools-copy');
+            return;
+        }
+
+        const previousIndex = Number.parseInt(node.dataset.aprilFoolsCopyIndex, 10);
+        let nextIndex = Math.floor(Math.random() * variants.length);
+        if (Number.isInteger(previousIndex) && variants.length > 1 && nextIndex === previousIndex) {
+            nextIndex = (nextIndex + 1 + Math.floor(Math.random() * (variants.length - 1))) % variants.length;
+        }
+
+        node.dataset.aprilFoolsCopyIndex = String(nextIndex);
+        node.textContent = variants[nextIndex];
+        node.classList.add('april-fools-copy');
+    });
+}
+
 function resolveEventThemeVariant() {
     if (hasCombinedEventsEnabled()) return 'default';
     if (hasAnyEnabledEvent(VALENTINE_EVENT_IDS)) return 'valentine';
+    if (hasAnyEnabledEvent(APRIL_FOOLS_EVENT_IDS)) return 'april-fools';
     if (hasAnyEnabledEvent(EASTER_EVENT_IDS)) return 'easter';
     if (hasAnyEnabledEvent(WINTER_EVENT_IDS)) return 'winter';
     if (hasAnyEnabledEvent(HALLOWEEN_EVENT_IDS)) return 'halloween';
@@ -6920,6 +7072,7 @@ function resolveParticleMode() {
     if (hasCombinedEventsEnabled()) return 'none';
     if (hasAnyEnabledEvent(VALENTINE_EVENT_IDS)) return 'hearts';
     if (hasAnyEnabledEvent(WINTER_EVENT_IDS)) return 'snow';
+    if (hasAnyEnabledEvent(HALLOWEEN_EVENT_IDS)) return 'halloween-lights';
     return 'none';
 }
 
@@ -6934,9 +7087,11 @@ function syncEventVisualPresentation() {
     pageBody.classList.toggle('theme-event-halloween', variant === 'halloween');
     pageBody.classList.toggle('theme-event-summer', variant === 'summer');
     pageBody.classList.toggle('theme-event-easter', variant === 'easter');
+    pageBody.classList.toggle('theme-event-april-fools', variant === 'april-fools');
 
     snowEffectState.mode = resolveParticleMode();
     syncSnowEffect();
+    syncAprilFoolsCopy(variant === 'april-fools');
 }
 
 function biomeEventRequirementsMet(biomeId) {

@@ -18,21 +18,37 @@
     <link rel="icon" type="image/png" sizes="128x128" href="files/images/favicon-128.png">
     <link rel="icon" type="image/png" sizes="256x256" href="files/images/favicon-256.png">
     <link rel="icon" type="image/png" sizes="500x500" href="files/images/favicon-500.png">
-    <link rel="stylesheet" href="styles/base.css?v=1.910.15">
+    <link rel="stylesheet" href="styles/base.css?v=1.910.16">
     <link rel="stylesheet" href="styles/layout.css?v=1.910.15">
     <link rel="stylesheet" href="styles/components.css?v=1.910.19">
-    <link rel="stylesheet" href="styles/utilities.css?v=1.910.17">
+    <link rel="stylesheet" href="styles/utilities.css?v=1.910.19">
     <script src="scripts/utils.js" defer></script>
     <script src="scripts/state.js?v=1.910.2" defer></script>
     <script src="scripts/overlays.js?v=1.910.1" defer></script>
-    <script src="scripts/main.js?v=1.910.20" defer></script>
+    <script src="scripts/main.js?v=1.910.22" defer></script>
 </head>
 <body>
     <div class="interface-backdrop" aria-hidden="true">
         <video class="interface-backdrop__video" autoplay loop muted playsinline preload="none" aria-hidden="true"></video>
-        <div class="snow-field" id="snowField" aria-hidden="true"></div>
         <div class="interface-backdrop__veil"></div>
     </div>
+    <div class="event-atmosphere" aria-hidden="true">
+        <div class="event-sun">
+            <span class="event-sun__core"></span>
+        </div>
+        <div class="halloween-scene">
+            <span class="event-cobweb event-cobweb--top-left"></span>
+            <span class="event-cobweb event-cobweb--top-right"></span>
+            <span class="event-cobweb event-cobweb--side-left"></span>
+            <span class="event-cobweb event-cobweb--side-right"></span>
+            <div class="halloween-ground">
+                <span class="event-pumpkin event-pumpkin--small"><span class="event-pumpkin__face"></span></span>
+                <span class="event-pumpkin event-pumpkin--large"><span class="event-pumpkin__face"></span></span>
+                <span class="event-pumpkin event-pumpkin--medium"><span class="event-pumpkin__face"></span></span>
+            </div>
+        </div>
+    </div>
+    <div class="snow-field" id="snowField" aria-hidden="true"></div>
 
     <audio id="ambientMusic" loop muted preload="none" data-src="files/music/normalBiomeMusic.mp3" type="audio/mpeg" data-volume="0.10" data-audio-channel="music"></audio>
     <audio id="singularitySummonSound" muted preload="none" data-src="files/sounds/other/singularitySummon.mp3" type="audio/mpeg" data-volume="1" data-audio-channel="music"></audio>
@@ -193,13 +209,20 @@
                         </span>
                         <span class="masthead-console__meta-card banner__subtitle-eon">
                             <i class="fa-solid fa-gamepad" aria-hidden="true"></i>
-                            <span><small>Game build</small><span class="banner__subtitle-game-version"><a href="https://www.roblox.com/games/15532962292/Sols-RNG" target="_blank" rel="noopener">Sol's RNG Eon 1-26 - Summer Part 1</a></span></span>
+                            <span>
+                                <small>Game build</small>
+                                <span class="banner__subtitle-game-version">
+                                    <a href="https://www.roblox.com/games/15532962292/Sols-RNG" target="_blank" rel="noopener">
+                                        <span class="banner__game-version-name">Sol's RNG Eon 1-26</span>
+                                        <span class="banner__game-season-pill"><span class="sigil-outline-summer">Summer</span> Part 1</span>
+                                    </a>
+                                </span>
+                            </span>
                         </span>
                     </div>
                 </div>
             </div>
             <div class="masthead__controls">
-                <button class="interface-toggle masthead__mute" id="masterMuteToggle" type="button" aria-pressed="false">Mute</button>
                 <button class="interface-toggle masthead__help" id="helpCenterToggle" type="button" aria-haspopup="dialog" aria-controls="helpCenterPanel" aria-expanded="false">
                     <i class="fa-solid fa-circle-question" aria-hidden="true"></i>
                     <span>Help Me</span>
@@ -818,6 +841,10 @@
                                     <label class="interface-select__option  interface-select__option--checkbox">
                                         <input type="checkbox" value="aprilFools26" data-event-id="aprilFools26">
                                         <span class="interface-select__option-label"><span class="sigil-outline-april">April Fools</span> 2026</span>
+                                    </label>
+                                    <label class="interface-select__option interface-select__option--checkbox">
+                                        <input type="checkbox" value="summer26" data-event-id="summer26" checked>
+                                        <span class="interface-select__option-label"><span class="sigil-outline-summer">Summer</span> 2026</span>
                                     </label>
                                 </div>
                             </details>
@@ -1607,6 +1634,13 @@
                         </label>
                     </div>
                     <div class="audio-modal__toggles">
+                        <div class="audio-modal__toggle audio-modal__toggle--master">
+                            <span class="audio-modal__toggle-copy">
+                                <span class="audio-modal__toggle-label">Master Audio</span>
+                                <span class="audio-modal__toggle-description">Mute or restore every audio channel.</span>
+                            </span>
+                            <button class="interface-toggle audio-modal__master-mute" id="masterMuteToggle" type="button" aria-pressed="false">Mute</button>
+                        </div>
                         <div class="audio-modal__toggle">
                             <span class="audio-modal__toggle-label" id="audioUiToggleLabel">UI Sounds</span>
                             <label class="toggle" aria-labelledby="audioUiToggleLabel">
@@ -1831,10 +1865,69 @@
                                 <li><i class="fa-solid fa-gauge-high" aria-hidden="true"></i><span><strong>Quality defaults</strong>New and cleared-data users start with reduced glitch effects enabled while the remaining optional quality preferences stay disabled.</span></li>
                             </ul>
                         </li>
+                        <li class="changelog-release-group changelog-release-group--summer">
+                            <div class="changelog-featured-ui__header changelog-summer__header">
+                                <span class="changelog-featured-ui__icon changelog-summer__icon" aria-hidden="true"><i class="fa-solid fa-sun"></i></span>
+                                <span class="changelog-featured-ui__heading">
+                                    <span class="largeClass"><span class="sigil-outline-summer">Summer</span> Part 1</span>
+                                    <span>The first wave of Summer 2026 content is being prepared.</span>
+                                </span>
+                                <span class="changelog-featured-ui__badge changelog-summer__badge">Summer 2026</span>
+                            </div>
+                            <p class="changelog-summer__intro">Added 10 new auras:</p>
+                            <ul class="changelog-release-rarity-grid changelog-release-rarity-grid--summer">
+                                <li>x<span class="tinyClass">1 in x</span></li>
+                                <li>x<span class="tinyClass">1 in x</span></li>
+                                <li>x<span class="tinyClass">1 in x</span></li>
+                                <li>x<span class="tinyClass">1 in x</span></li>
+                                <li>x<span class="tinyClass">1 in x</span></li>
+                                <li>x<span class="tinyClass">1 in x</span></li>
+                                <li>x<span class="tinyClass">1 in x</span></li>
+                                <li>x<span class="tinyClass">1 in x</span></li>
+                                <li>x<span class="tinyClass">1 in x</span></li>
+                                <li>x<span class="tinyClass">1 in x</span></li>
+                            </ul>
+                            <ul class="changelog-release-group__list changelog-summer__notes">
+                                <li>Added a <span class="sigil-outline-summer">Summer 2026</span> event option and enabled it by default.</li>
+                            </ul>
+                        </li>
+                        <li class="changelog-release-group changelog-release-group--events">
+                            <div class="changelog-featured-ui__header changelog-events__header">
+                                <span class="changelog-featured-ui__icon changelog-events__icon" aria-hidden="true"><i class="fa-solid fa-wand-magic-sparkles"></i></span>
+                                <span class="changelog-featured-ui__heading">
+                                    <span class="largeClass">Event interface themes</span>
+                                    <span>Event colors and atmosphere now extend across the complete V2 interface.</span>
+                                </span>
+                                <span class="changelog-featured-ui__badge changelog-events__badge">5 themes</span>
+                            </div>
+                            <ul class="changelog-event-grid">
+                                <li class="changelog-event-card changelog-event-card--summer">
+                                    <i class="fa-solid fa-sun" aria-hidden="true"></i>
+                                    <span><strong><span class="sigil-outline-summer">Summer</span></strong>A radiant sun now shines from the top-right and rotates slowly in an infinite loop.</span>
+                                </li>
+                                <li class="changelog-event-card changelog-event-card--winter">
+                                    <i class="fa-solid fa-snowflake" aria-hidden="true"></i>
+                                    <span><strong><span class="sigil-outline-winter">Winter</span></strong>Falling snow now follows a softer, irregular sway for more natural movement.</span>
+                                </li>
+                                <li class="changelog-event-card changelog-event-card--valentine">
+                                    <i class="fa-solid fa-heart" aria-hidden="true"></i>
+                                    <span><strong><span class="sigil-outline-valentine-2026">Valentine</span></strong>The existing floating-heart presentation remains unchanged.</span>
+                                </li>
+                                <li class="changelog-event-card changelog-event-card--april">
+                                    <i class="fa-solid fa-face-grin-squint" aria-hidden="true"></i>
+                                    <span><strong><span class="sigil-outline-april">April Fools</span></strong>Harmless interface subtitles are replaced with randomized jokes and restored when the event is disabled.</span>
+                                </li>
+                                <li class="changelog-event-card changelog-event-card--halloween">
+                                    <i class="fa-solid fa-ghost" aria-hidden="true"></i>
+                                    <span><strong><span class="sigil-outline-halloween">Halloween</span></strong>Pumpkins line the ground while floating lights and cobwebs haunt the screen edges.</span>
+                                </li>
+                            </ul>
+                            <p class="changelog-events__note">The active event palette now reaches the masthead, Roll Feed, popups, Help Center, controls, startup screen, Resource Hub frame, and credits. Reduced-motion and particle-quality preferences continue to be respected.</p>
+                        </li>
                         <li class="changelog-release-group">
                             <span class="largeClass">Help Center & performance:</span>
                             <ul class="changelog-release-group__list">
-                                <li>Added a dedicated <span class="changelog-control-chip"><i class="fa-solid fa-circle-question" aria-hidden="true"></i> Help Me</span> control between Mute and Settings. It opens a searchable bottom-screen guide covering luck, roll amounts, Quick Presets, potion and item rules, biomes, runes, biome rules, simulation methods, tier and aura filters, cutscenes, results, sharing, and quality settings.</li>
+                                <li>Added a dedicated <span class="changelog-control-chip"><i class="fa-solid fa-circle-question" aria-hidden="true"></i> Help Me</span> control beside Settings. It opens a searchable bottom-screen guide covering luck, roll amounts, Quick Presets, potion and item rules, biomes, runes, biome rules, simulation methods, tier and aura filters, cutscenes, results, sharing, and quality settings.</li>
                                 <li>Help topics include direct shortcuts to the relevant simulator controls, keyboard-safe navigation, focus handling, and an adaptive phone and tablet layout with independently scrollable guidance.</li>
                                 <li>Optimized repeated aura-filter rendering, feed search and sorting metadata, rarity-style lookups, layered text effects, result-state resets, and credits filtering to reduce unnecessary browser work during large simulations.</li>
                                 <li>The probability engine, RNG sequence, aura chances, luck mathematics, potion processing, biome rules, and final totals were left unchanged; the performance pass only removes repeated lookup and interface work around the existing simulation.</li>
@@ -1862,25 +1955,36 @@
                                 <li>Preserved the existing stacked-potion priority, including <span class="oblivionClass">Oblivion</span>, <span class="pumpBloodClass">Pump King's Blood</span>, <span class="tutPotion">Tutorial Potion</span>, and all remaining potion types.</li>
                             </ul>
                         </li>
-                        <li class="changelog-release-group">
+                        <li class="changelog-release-group changelog-release-group--featured-ui">
+                            <div class="changelog-featured-ui__header">
+                                <span class="changelog-featured-ui__icon" aria-hidden="true"><i class="fa-solid fa-screwdriver-wrench"></i></span>
+                                <span class="changelog-featured-ui__heading">
+                                    <span class="largeClass">Other Changes</span>
+                                    <span>Some QoL enhancements and improvements.</span>
+                                </span>
+                            </div>
+                            <br>
                             <span class="largeClass">Filter consistency:</span>
                             <ul class="changelog-release-group__list">
                                 <li><span class="allPotionsClass">Sol's-Like Simulation Method</span> now obeys both Filter Aura Tiers and Filter Auras while entries are rolling live.</li>
                                 <li>Filtered auras are removed only from feed and cutscene presentation; rolls, RNG calls, potion processing, progress, totals, and statistics remain mathematically unchanged.</li>
                             </ul>
-                        </li>
-                        <li class="changelog-release-group">
+                            <br>
                             <span class="largeClass">Rolling behavior & feed tools:</span>
                             <ul class="changelog-release-group__list">
                                 <li>Added a 1-1,000 rolls-per-second slider, ranging from one roll per second to one roll per millisecond, plus linked speed shortcuts for <strong>Average</strong> (5), <strong>Skip+</strong> (15), <strong>Recommended</strong> (100), <strong>Default</strong> (120), and <strong>Sonic Speed</strong> (500 rolls per second).</li>
                                 <li>Added a roll-feed search bar that filters by either aura name or tier name, such as <span class="rarity-tier-legendary">Legendary</span>.</li>
                                 <li>Added a post-run <span class="subtitleClass">Sort</span> button beside the search bar for completed simulations in both <span class="subtitleClass">Unnamed's</span> and <span class="allPotionsClass">Sol's-Like</span> methods. <span class="subtitleClass">Unnamed's</span> cycles between <strong>Rarity</strong> and <strong>Alphabetical</strong>, while <span class="allPotionsClass">Sol's-Like</span> also includes <strong>Recent</strong> for its original live roll order.</li>
                             </ul>
-                        </li>
-                        <li class="changelog-release-group">
+                            <br>
                             <span class="largeClass">RoE setting preservation:</span>
                             <ul class="changelog-release-group__list">
                                 <li>Enabling <span class="allPotionsClass">Rune of Everything (RoE)</span> no longer resets the selected biome or time of day.</li>
+                            </ul>
+                            <br>
+                            <span class="largeClass">Music Mute Moved:</span>
+                            <ul class="changelog-release-group__list">
+                                <li>Moved the global Mute/Unmute control from the masthead into Audio Settings, beside the individual audio controls.</li>
                             </ul>
                         </li>
                     </ul>

@@ -4,6 +4,8 @@
     --bg-overlay: rgba(1, 5, 12, 0.5);
     --surface-bg: rgba(7, 12, 24, 0.92);
     --surface-gradient: linear-gradient(155deg, rgba(10, 16, 32, 0.96), rgba(2, 6, 14, 0.98));
+    --surface-overlay-gradient: linear-gradient(160deg, rgba(8, 15, 30, 0.94), rgba(2, 6, 14, 0.98));
+    --surface-overlay-highlight: rgba(127, 227, 255, 0.08);
     --surface-border: rgba(120, 188, 255, 0.5);
     --surface-glow: rgba(46, 116, 196, 0.42);
     --accent: #7fe3ff;
@@ -11,6 +13,8 @@
     --accent-soft: rgba(112, 216, 255, 0.14);
     --accent-muted: rgba(46, 116, 196, 0.35);
     --accent-rgb: 127 227 255;
+    --event-secondary-rgb: 139 123 255;
+    --event-tertiary-rgb: 118 255 196;
     --scrollbar-track: rgba(4, 10, 22, 0.82);
     --scrollbar-track-outline: rgba(127, 227, 255, 0.12);
     --scrollbar-thumb: rgb(var(--accent-rgb) / 0.5);
@@ -1046,43 +1050,89 @@ body.theme-event-valentine {
     --accent-muted: rgba(201, 72, 128, 0.36);
     --accent-rgb: 255 157 198;
     --accent-rgb-feed: 155 57 98;
+    --event-secondary-rgb: 255 101 153;
+    --event-tertiary-rgb: 255 209 229;
     --scrollbar-track-outline: rgba(255, 165, 208, 0.16);
 }
 
+body.theme-event-april-fools {
+    --bg-base: #100817;
+    --bg-overlay: rgba(15, 6, 22, 0.54);
+    --surface-bg: rgba(25, 12, 34, 0.92);
+    --surface-gradient: linear-gradient(155deg, rgba(37, 21, 48, 0.96), rgba(12, 6, 18, 0.99));
+    --surface-overlay-gradient: linear-gradient(160deg, rgba(31, 16, 42, 0.95), rgba(10, 5, 16, 0.99));
+    --surface-overlay-highlight: rgba(220, 255, 114, 0.1);
+    --surface-border: rgba(220, 255, 114, 0.5);
+    --surface-glow: rgba(192, 255, 78, 0.28);
+    --accent: #dcff72;
+    --accent-strong: #f1ffbd;
+    --accent-soft: rgba(220, 255, 114, 0.15);
+    --accent-muted: rgba(157, 196, 60, 0.3);
+    --accent-rgb: 220 255 114;
+    --accent-rgb-feed: 120 155 37;
+    --event-secondary-rgb: 255 103 226;
+    --event-tertiary-rgb: 126 230 255;
+    --scrollbar-track-outline: rgba(220, 255, 114, 0.17);
+}
+
 body.theme-event-halloween {
-    --surface-gradient: linear-gradient(155deg, rgba(58, 25, 12, 0.95), rgba(24, 10, 4, 0.98));
-    --surface-overlay-gradient: linear-gradient(160deg, rgba(46, 18, 8, 0.94), rgba(16, 6, 2, 0.98));
-    --surface-overlay-highlight: rgba(255, 154, 120, 0.1);
-    --accent: #ff8d86;
-    --accent-strong: #ffc0bc;
-    --accent-soft: rgba(255, 116, 110, 0.16);
-    --accent-muted: rgba(189, 66, 60, 0.34);
-    --accent-rgb: 255 128 122;
-    --accent-rgb-feed: 155 28 22;
+    --bg-base: #110703;
+    --bg-overlay: rgba(17, 7, 3, 0.55);
+    --surface-bg: rgba(31, 13, 7, 0.92);
+    --surface-gradient: linear-gradient(155deg, rgba(57, 25, 12, 0.96), rgba(22, 8, 4, 0.99));
+    --surface-overlay-gradient: linear-gradient(160deg, rgba(46, 18, 8, 0.95), rgba(15, 5, 2, 0.99));
+    --surface-overlay-highlight: rgba(255, 170, 91, 0.1);
+    --surface-border: rgba(255, 155, 69, 0.52);
+    --surface-glow: rgba(234, 104, 28, 0.34);
+    --accent: #ff9b45;
+    --accent-strong: #ffd1a0;
+    --accent-soft: rgba(255, 155, 69, 0.16);
+    --accent-muted: rgba(196, 86, 28, 0.34);
+    --accent-rgb: 255 155 69;
+    --accent-rgb-feed: 155 72 25;
+    --event-secondary-rgb: 190 111 255;
+    --event-tertiary-rgb: 174 255 113;
+    --scrollbar-track-outline: rgba(255, 155, 69, 0.17);
 }
 
 body.theme-event-summer {
+    --bg-base: #151104;
+    --bg-overlay: rgba(18, 15, 4, 0.52);
+    --surface-bg: rgba(31, 26, 8, 0.92);
     --surface-gradient: linear-gradient(155deg, rgba(55, 45, 14, 0.95), rgba(24, 18, 4, 0.98));
     --surface-overlay-gradient: linear-gradient(160deg, rgba(42, 35, 10, 0.94), rgba(14, 10, 2, 0.98));
     --surface-overlay-highlight: rgba(255, 229, 143, 0.1);
+    --surface-border: rgba(255, 226, 126, 0.52);
+    --surface-glow: rgba(230, 188, 54, 0.32);
     --accent: #ffe58f;
     --accent-strong: #fff3be;
     --accent-soft: rgba(255, 231, 130, 0.16);
     --accent-muted: rgba(201, 165, 56, 0.3);
     --accent-rgb: 255 226 126;
     --accent-rgb-feed: 155 126 26;
+    --event-secondary-rgb: 91 211 235;
+    --event-tertiary-rgb: 104 239 178;
+    --scrollbar-track-outline: rgba(255, 226, 126, 0.17);
 }
 
 body.theme-event-easter {
+    --bg-base: #04150a;
+    --bg-overlay: rgba(3, 18, 8, 0.52);
+    --surface-bg: rgba(7, 31, 15, 0.92);
     --surface-gradient: linear-gradient(155deg, rgba(14, 55, 25, 0.95), rgba(4, 24, 12, 0.98));
     --surface-overlay-gradient: linear-gradient(160deg, rgba(10, 42, 26, 0.94), rgba(2, 14, 6, 0.98));
     --surface-overlay-highlight: rgba(143, 255, 182, 0.1);
+    --surface-border: rgba(143, 255, 205, 0.5);
+    --surface-glow: rgba(72, 211, 137, 0.3);
     --accent: #8fffcd;
     --accent-strong: #68ffa9;
     --accent-soft: rgba(130, 255, 215, 0.16);
     --accent-muted: rgba(56, 201, 165, 0.3);
-    --accent-rgb: 255 226 126;
-    --accent-rgb-feed: 130, 255, 215;
+    --accent-rgb: 143 255 205;
+    --accent-rgb-feed: 61 155 113;
+    --event-secondary-rgb: 255 218 126;
+    --event-tertiary-rgb: 198 153 255;
+    --scrollbar-track-outline: rgba(143, 255, 205, 0.17);
 }
 
 body.theme-event-winter {
@@ -1100,6 +1150,8 @@ body.theme-event-winter {
     --accent-muted: rgba(66, 136, 199, 0.34);
     --accent-rgb: 148 221 255;
     --accent-rgb-feed: 48 121 155;
+    --event-secondary-rgb: 168 184 255;
+    --event-tertiary-rgb: 220 247 255;
     --scrollbar-track-outline: rgba(148, 221, 255, 0.18);
 }
 
@@ -1360,13 +1412,251 @@ body.is-glitching .feed__viewport::after {
     z-index: 1;
 }
 
-.snow-field {
+body:is(
+    .theme-event-valentine,
+    .theme-event-april-fools,
+    .theme-event-halloween,
+    .theme-event-summer,
+    .theme-event-easter,
+    .theme-event-winter
+) .interface-backdrop__veil {
+    background:
+        radial-gradient(circle at 18% 18%, rgb(var(--accent-rgb) / 0.24), transparent 42%),
+        radial-gradient(circle at 82% 14%, rgb(var(--event-secondary-rgb) / 0.2), transparent 34%),
+        linear-gradient(135deg, rgb(var(--accent-rgb) / 0.08), rgb(var(--event-secondary-rgb) / 0.1));
+}
+
+.event-atmosphere {
+    position: fixed;
+    inset: 0;
+    z-index: 18;
+    overflow: hidden;
+    pointer-events: none;
+}
+
+.event-sun {
     position: absolute;
+    top: clamp(-42px, -3vw, -22px);
+    right: clamp(-42px, -3vw, -22px);
+    display: none;
+    width: clamp(110px, 12vw, 168px);
+    aspect-ratio: 1;
+    isolation: isolate;
+    opacity: 0.72;
+    filter: drop-shadow(0 0 26px rgba(255, 222, 91, 0.54));
+    animation: event-sun-rotate 38s linear infinite;
+}
+
+body.theme-event-summer .event-sun {
+    display: block;
+}
+
+.event-sun::before,
+.event-sun::after,
+.event-sun__core {
+    content: "";
+    position: absolute;
+    border-radius: 50%;
+}
+
+.event-sun::before {
+    z-index: -2;
+    inset: -58%;
+    background: repeating-conic-gradient(
+        from 0deg,
+        rgba(255, 231, 123, 0.68) 0deg 2deg,
+        rgba(255, 205, 63, 0.12) 2deg 5deg,
+        transparent 5deg 15deg
+    );
+    -webkit-mask: radial-gradient(circle, transparent 0 31%, #000 34% 69%, transparent 72%);
+    mask: radial-gradient(circle, transparent 0 31%, #000 34% 69%, transparent 72%);
+    opacity: 0.78;
+}
+
+.event-sun::after {
+    z-index: -1;
+    inset: -38%;
+    border: 1px solid rgba(255, 238, 153, 0.2);
+    background: radial-gradient(circle, rgba(255, 223, 101, 0.22), rgba(255, 207, 56, 0.05) 45%, transparent 70%);
+    box-shadow:
+        0 0 48px rgba(255, 218, 81, 0.32),
+        inset 0 0 36px rgba(255, 238, 161, 0.12);
+}
+
+.event-sun__core {
+    inset: 18%;
+    background:
+        radial-gradient(circle at 36% 31%, #fff8cb 0 7%, transparent 8%),
+        radial-gradient(circle at 42% 38%, #fff0a2 0 15%, #ffd967 42%, #ffb92f 76%, #e9921d 100%);
+    border: 1px solid rgba(255, 244, 180, 0.68);
+    box-shadow:
+        0 0 24px rgba(255, 224, 105, 0.76),
+        0 0 54px rgba(255, 190, 48, 0.34),
+        inset -10px -12px 20px rgba(216, 121, 16, 0.18);
+    animation: event-sun-shine 4.8s ease-in-out infinite;
+}
+
+@keyframes event-sun-rotate {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@keyframes event-sun-shine {
+    0%,
+    100% {
+        filter: brightness(0.95);
+        transform: scale(0.98);
+    }
+    50% {
+        filter: brightness(1.12);
+        transform: scale(1.04);
+    }
+}
+
+.halloween-scene {
+    position: absolute;
+    inset: 0;
+    display: none;
+}
+
+body.theme-event-halloween .halloween-scene {
+    display: block;
+}
+
+.event-cobweb {
+    position: absolute;
+    width: clamp(118px, 15vw, 220px);
+    aspect-ratio: 1;
+    background:
+        repeating-radial-gradient(circle at 0 0, transparent 0 15px, rgba(225, 214, 239, 0.25) 16px 17px, transparent 18px 31px),
+        repeating-conic-gradient(from 0deg at 0 0, rgba(225, 214, 239, 0.26) 0deg 1deg, transparent 1deg 18deg);
+    -webkit-mask: radial-gradient(circle at 0 0, #000 0 73%, transparent 75%);
+    mask: radial-gradient(circle at 0 0, #000 0 73%, transparent 75%);
+    filter: drop-shadow(0 0 8px rgba(193, 119, 255, 0.16));
+    opacity: 0.72;
+}
+
+.event-cobweb--top-left {
+    top: 0;
+    left: 0;
+}
+
+.event-cobweb--top-right {
+    top: 0;
+    right: 0;
+    transform: scaleX(-1);
+}
+
+.event-cobweb--side-left {
+    top: 42%;
+    left: -32px;
+    transform: rotate(-28deg) scale(0.72);
+}
+
+.event-cobweb--side-right {
+    top: 34%;
+    right: -32px;
+    transform: rotate(206deg) scale(0.68);
+}
+
+.halloween-ground {
+    position: absolute;
+    right: clamp(96px, 10vw, 150px);
+    bottom: -30px;
+    display: flex;
+    align-items: flex-end;
+    gap: clamp(4px, 0.8vw, 12px);
+    min-width: clamp(176px, 24vw, 330px);
+    height: clamp(62px, 10vw, 118px);
+    padding: 0 clamp(10px, 2vw, 24px) 8px;
+    border-bottom: 10px solid rgba(20, 8, 3, 0.86);
+    background: radial-gradient(ellipse at 50% 100%, rgba(255, 124, 36, 0.17), transparent 66%);
+    filter: drop-shadow(0 -8px 20px rgba(255, 125, 39, 0.08));
+    opacity: 0.88;
+    transform: scale(0.82);
+    transform-origin: right bottom;
+}
+
+.event-pumpkin {
+    position: relative;
+    display: block;
+    flex: 0 0 auto;
+    border: 1px solid rgba(255, 188, 99, 0.46);
+    border-radius: 48% 48% 42% 42%;
+    background:
+        linear-gradient(90deg, transparent 19%, rgba(86, 32, 5, 0.22) 20% 22%, transparent 23% 47%, rgba(86, 32, 5, 0.24) 48% 51%, transparent 52% 76%, rgba(86, 32, 5, 0.22) 77% 79%, transparent 80%),
+        radial-gradient(ellipse at 45% 30%, #ffb34f, #ef761b 62%, #9e3508 100%);
+    box-shadow:
+        0 0 22px rgba(255, 125, 39, 0.2),
+        inset 0 -8px 12px rgba(92, 25, 3, 0.3);
+}
+
+.event-pumpkin::before {
+    content: "";
+    position: absolute;
+    bottom: 92%;
+    left: 48%;
+    width: 15%;
+    height: 25%;
+    border: 1px solid rgba(177, 218, 101, 0.25);
+    background: linear-gradient(135deg, #7e8735, #394315);
+    transform: translateX(-50%) skewX(-12deg);
+}
+
+.event-pumpkin--small {
+    width: clamp(36px, 4.2vw, 58px);
+    height: clamp(29px, 3.5vw, 45px);
+    transform: rotate(-5deg);
+}
+
+.event-pumpkin--large {
+    width: clamp(54px, 6.2vw, 86px);
+    height: clamp(42px, 4.9vw, 65px);
+}
+
+.event-pumpkin--medium {
+    width: clamp(44px, 5.2vw, 72px);
+    height: clamp(35px, 4.1vw, 54px);
+    transform: rotate(4deg);
+}
+
+.event-pumpkin__face {
+    position: absolute;
+    bottom: 21%;
+    left: 50%;
+    width: 34%;
+    height: 18%;
+    border-bottom: clamp(2px, 0.25vw, 4px) solid rgba(45, 13, 3, 0.9);
+    transform: translateX(-50%);
+}
+
+.event-pumpkin__face::before,
+.event-pumpkin__face::after {
+    content: "";
+    position: absolute;
+    bottom: 88%;
+    width: 28%;
+    aspect-ratio: 1;
+    background: rgba(45, 13, 3, 0.92);
+    clip-path: polygon(50% 0, 100% 100%, 0 100%);
+}
+
+.event-pumpkin__face::before {
+    left: 2%;
+}
+
+.event-pumpkin__face::after {
+    right: 2%;
+}
+
+.snow-field {
+    position: fixed;
     inset: 0;
     pointer-events: none;
     overflow: hidden;
     display: none;
-    z-index: 2;
+    z-index: 19;
 }
 
 .snow-field[data-active="true"] {
@@ -1459,7 +1749,7 @@ body.biome--glitch .heart-particle__icon {
 
 .snow-particle__sway {
     display: block;
-    animation: snow-sway var(--sway-duration, 5s) ease-in-out infinite alternate;
+    animation: snow-sway var(--sway-duration, 5s) ease-in-out infinite;
     transform-origin: center;
 }
 
@@ -1488,10 +1778,19 @@ body.biome--glitch .heart-particle__icon {
 
 @keyframes snow-sway {
     0% {
-        transform: translateX(calc(-1 * var(--sway-distance, 16px)));
+        transform: translateX(calc(-0.72 * var(--sway-distance, 16px))) rotate(-3deg);
+    }
+    24% {
+        transform: translateX(calc(0.42 * var(--sway-distance, 16px))) rotate(1deg);
+    }
+    51% {
+        transform: translateX(var(--sway-distance, 16px)) rotate(4deg);
+    }
+    77% {
+        transform: translateX(calc(-0.28 * var(--sway-distance, 16px))) rotate(-1deg);
     }
     100% {
-        transform: translateX(var(--sway-distance, 16px));
+        transform: translateX(calc(-0.72 * var(--sway-distance, 16px))) rotate(-3deg);
     }
 }
 
@@ -1507,6 +1806,111 @@ body.biome--glitch .heart-particle__icon {
 
 body.reduce-motion .snow-field {
     display: none;
+}
+
+.halloween-light-particle {
+    position: absolute;
+    bottom: -12vh;
+    left: var(--x, 50%);
+    opacity: var(--opacity, 0.68);
+    transform: translate3d(calc(-50% + var(--drift, 0px)), 0, 0);
+    animation: halloween-light-float var(--float-duration, 16s) linear infinite;
+    animation-delay: calc(-1 * var(--float-delay, 0s));
+    will-change: transform, opacity;
+}
+
+.halloween-light-particle__sway {
+    display: block;
+    animation: halloween-light-sway var(--sway-duration, 6s) ease-in-out infinite alternate;
+}
+
+.halloween-light-particle__glow {
+    display: block;
+    width: calc(7px * var(--size, 1));
+    aspect-ratio: 1;
+    border: 1px solid rgb(var(--light-rgb, 255 151 57) / 0.72);
+    border-radius: 50%;
+    background: radial-gradient(circle, #fff 0 8%, rgb(var(--light-rgb, 255 151 57)) 28%, rgb(var(--light-rgb, 255 151 57) / 0.24) 58%, transparent 72%);
+    box-shadow:
+        0 0 calc(12px * var(--size, 1)) rgb(var(--light-rgb, 255 151 57) / 0.8),
+        0 0 calc(26px * var(--size, 1)) rgb(var(--light-rgb, 255 151 57) / 0.42);
+    animation: halloween-light-pulse 2.8s ease-in-out infinite;
+}
+
+@keyframes halloween-light-float {
+    0% {
+        transform: translate3d(calc(-50% + var(--drift, 0px)), 0, 0) scale(0.72);
+        opacity: 0;
+    }
+    12% {
+        opacity: var(--opacity, 0.68);
+    }
+    82% {
+        opacity: var(--opacity, 0.68);
+    }
+    100% {
+        transform: translate3d(calc(-50% - var(--drift, 0px)), -118vh, 0) scale(1.08);
+        opacity: 0;
+    }
+}
+
+@keyframes halloween-light-sway {
+    from {
+        transform: translateX(calc(-1 * var(--sway-distance, 24px)));
+    }
+    to {
+        transform: translateX(var(--sway-distance, 24px));
+    }
+}
+
+@keyframes halloween-light-pulse {
+    0%,
+    100% {
+        filter: brightness(0.78);
+        transform: scale(0.82);
+    }
+    50% {
+        filter: brightness(1.28);
+        transform: scale(1.18);
+    }
+}
+
+body.reduce-motion .event-sun,
+body.reduce-motion .event-sun__core {
+    animation: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .event-sun,
+    .event-sun__core {
+        animation: none;
+    }
+}
+
+@media (max-width: 680px) {
+    .event-sun {
+        top: -26px;
+        right: -24px;
+        width: clamp(96px, 28vw, 126px);
+        opacity: 0.72;
+    }
+
+    .event-cobweb {
+        width: clamp(96px, 33vw, 144px);
+    }
+
+    .event-cobweb--side-left,
+    .event-cobweb--side-right {
+        opacity: 0.42;
+    }
+
+    .halloween-ground {
+        right: 68px;
+        bottom: -28px;
+        min-width: 170px;
+        opacity: 0.82;
+        transform: scale(0.72);
+    }
 }
 
 .forte {

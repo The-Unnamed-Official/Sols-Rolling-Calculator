@@ -2982,7 +2982,7 @@ body.quality-no-ui-animations .audio-slider__input::-moz-range-thumb {
         linear-gradient(var(--popup-accent), var(--popup-accent)) bottom right / var(--corner-thickness) var(--corner-size) no-repeat,
         linear-gradient(90deg, rgb(var(--popup-accent-rgb) / 0.028) 1px, transparent 1px) 0 0 / 18px 18px,
         linear-gradient(0deg, rgb(var(--popup-accent-rgb) / 0.024) 1px, transparent 1px) 0 0 / 18px 18px,
-        linear-gradient(155deg, rgba(9, 20, 39, 0.985), rgba(3, 8, 18, 0.995));
+        var(--surface-overlay-gradient);
     border: 1px solid rgb(var(--popup-accent-rgb) / 0.34);
     border-radius: 0;
     box-shadow:
@@ -3403,7 +3403,7 @@ body.quality-no-ui-animations .cutscene-warning-overlay[data-closing] .surface--
         linear-gradient(var(--feed-console-accent), var(--feed-console-accent)) bottom right / var(--corner-thickness) var(--corner-size) no-repeat,
         linear-gradient(90deg, rgb(var(--feed-console-accent-rgb) / 0.025) 1px, transparent 1px) 0 0 / 20px 20px,
         linear-gradient(0deg, rgb(var(--feed-console-accent-rgb) / 0.022) 1px, transparent 1px) 0 0 / 20px 20px,
-        linear-gradient(155deg, rgba(8, 19, 37, 0.97), rgba(3, 9, 20, 0.99));
+        var(--surface-gradient);
 }
 
 .feed-console::after {
@@ -4738,6 +4738,9 @@ body.quality-no-ui-animations .help-center__backdrop {
     align-items: center;
     gap: 6px;
     color: #80efc0;
+    font-size: 9px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
     white-space: nowrap;
 }
 
@@ -4848,7 +4851,52 @@ body.quality-no-ui-animations .help-center__backdrop {
     font-size: inherit;
     letter-spacing: inherit;
     text-underline-offset: 0.25em;
+}
+
+.masthead-console .banner__subtitle-author-name {
     white-space: nowrap;
+}
+
+.masthead-console .banner__subtitle-game-version,
+.masthead-console .banner__subtitle-game-version > a {
+    min-width: 0;
+    max-width: 100%;
+}
+
+.masthead-console .banner__subtitle-game-version > a {
+    display: grid;
+    justify-items: start;
+    gap: 5px;
+    color: inherit;
+    text-decoration: none;
+}
+
+.masthead-console .banner__game-version-name {
+    max-width: 100%;
+    overflow-wrap: anywhere;
+    text-decoration: underline;
+    text-decoration-thickness: 0.01em;
+    text-underline-offset: 0.25em;
+}
+
+.masthead-console .banner__game-season-pill {
+    display: inline-flex;
+    flex-wrap: wrap;
+    gap: 0.35em;
+    max-width: 100%;
+    padding: 3px 7px;
+    border: 1px solid rgba(237, 231, 91, 0.4);
+    border-radius: 0;
+    color: #e9ef93;
+    background:
+        linear-gradient(90deg, rgba(237, 218, 64, 0.12), rgba(61, 177, 209, 0.08)),
+        rgba(4, 13, 25, 0.68);
+    box-shadow: inset 2px 0 0 rgba(244, 231, 91, 0.22);
+    font-size: 0.78em;
+    line-height: 1.3;
+    letter-spacing: 0.08em;
+    text-decoration: none;
+    white-space: normal;
 }
 
 .masthead-console .masthead__controls {
@@ -5275,6 +5323,67 @@ body.quality-no-ui-animations .help-center__backdrop {
     letter-spacing: 0.05em;
 }
 
+.changelog-release-group--summer {
+    overflow: hidden;
+    border-color: rgba(235, 224, 91, 0.34);
+    border-left-color: #efe168;
+    background:
+        radial-gradient(circle at 0 0, rgba(242, 218, 68, 0.16), transparent 36%),
+        radial-gradient(circle at 100% 0, rgba(70, 194, 220, 0.13), transparent 42%),
+        repeating-linear-gradient(90deg, transparent 0 44px, rgba(237, 224, 91, 0.022) 44px 45px),
+        rgba(5, 13, 25, 0.82);
+    box-shadow:
+        inset 3px 0 0 rgba(239, 225, 104, 0.24),
+        inset 0 1px 0 rgba(255, 255, 255, 0.045);
+}
+
+.changelog-summer__header {
+    border-bottom-color: rgba(235, 224, 91, 0.18);
+}
+
+.changelog-summer__icon {
+    border-color: rgba(235, 224, 91, 0.38);
+    color: #f2e878;
+    background: rgba(226, 203, 62, 0.1);
+    box-shadow: inset 0 0 16px rgba(235, 224, 91, 0.1);
+}
+
+.changelog-summer__badge {
+    border-color: rgba(235, 224, 91, 0.38);
+    color: #f0e99b;
+    background: rgba(226, 203, 62, 0.08);
+}
+
+.changelog-summer__intro {
+    margin: 0 0 8px;
+    color: #dce9ec;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.07em;
+}
+
+.changelog-release-rarity-grid--summer {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.changelog-release-rarity-grid--summer > li {
+    min-width: 0;
+    padding: 8px 10px;
+    border: 1px solid rgba(235, 224, 91, 0.11);
+    background: rgba(4, 12, 24, 0.5);
+    color: #dce9ec;
+}
+
+.changelog-release-rarity-grid--summer .tinyClass {
+    color: #91a8b1;
+}
+
+.changelog-summer__notes {
+    margin-top: 12px;
+}
+
 @media (max-width: 1100px) {
     .masthead-console {
         align-items: stretch;
@@ -5522,10 +5631,10 @@ body.quality-no-ui-animations .help-center__backdrop {
 /* Guided practice, masthead sizing, and modal action alignment */
 .masthead-console .masthead__controls {
     display: grid;
-    grid-template-columns: minmax(74px, 0.74fr) minmax(94px, 0.92fr) minmax(124px, 1.18fr);
+    grid-template-columns: minmax(94px, 0.9fr) minmax(124px, 1.1fr);
     align-items: stretch;
     gap: 8px;
-    width: clamp(330px, 31vw, 430px);
+    width: clamp(236px, 23vw, 320px);
     max-width: 100%;
     min-width: 0;
     margin-right: clamp(0px, 0.8vw, 10px);
@@ -5540,7 +5649,6 @@ body.quality-no-ui-animations .help-center__backdrop {
     min-width: 0;
 }
 
-.masthead-console .masthead__mute,
 .masthead-console .masthead__help,
 .masthead-console .options-menu__trigger {
     height: 48px;
@@ -5573,6 +5681,39 @@ body.quality-no-ui-animations .help-center__backdrop {
     right: 15px;
     width: 10px;
     height: 10px;
+}
+
+.audio-modal__toggle {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    min-width: 0;
+    min-height: 76px;
+}
+
+.audio-modal__toggle-copy {
+    display: grid;
+    gap: 3px;
+    min-width: 0;
+}
+
+.audio-modal__toggle-description {
+    color: var(--text-secondary);
+    font-size: 10px;
+    line-height: 1.4;
+}
+
+.audio-modal__master-mute {
+    flex: 0 0 auto;
+    width: auto;
+    min-width: 108px;
+    padding-inline: 14px;
+}
+
+.audio-modal__master-mute[aria-pressed="true"] {
+    --button-accent: #ffb37a;
+    --button-border-color: rgba(255, 158, 96, 0.72);
+    color: #ffd1ad;
 }
 
 .filter-modal__actions {
@@ -5933,7 +6074,7 @@ body.quality-no-ui-animations .help-center__backdrop {
 
 @media (max-width: 680px) {
     .masthead-console .masthead__controls {
-        grid-template-columns: minmax(0, 0.72fr) minmax(0, 0.9fr) minmax(0, 1.18fr);
+        grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
         align-self: stretch;
         width: 100%;
     }
@@ -5958,12 +6099,11 @@ body.quality-no-ui-animations .help-center__backdrop {
 
 @media (max-width: 420px) {
     .masthead-console .masthead__controls {
-        grid-template-columns: minmax(0, 0.68fr) minmax(0, 0.88fr) minmax(0, 1.2fr);
+        grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
         gap: 6px;
         padding: 4px;
     }
 
-    .masthead-console .masthead__mute,
     .masthead-console .masthead__help,
     .masthead-console .options-menu__trigger {
         height: 44px;
@@ -5983,6 +6123,15 @@ body.quality-no-ui-animations .help-center__backdrop {
 
     .masthead-console .options-menu__trigger {
         padding-right: 28px;
+    }
+
+    .audio-modal__toggle--master {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .audio-modal__master-mute {
+        width: 100%;
     }
 
     .masthead-console .options-menu__trigger::after {
@@ -6039,4 +6188,765 @@ body.quality-no-ui-animations .help-tour__progress > span,
 body.quality-no-ui-animations .help-tour-target {
     animation: none;
     transition: none;
+}
+
+/* Event palettes across the complete V2 interface */
+body:is(
+    .theme-event-valentine,
+    .theme-event-april-fools,
+    .theme-event-halloween,
+    .theme-event-summer,
+    .theme-event-easter,
+    .theme-event-winter
+) .feed-console {
+    --feed-console-accent-rgb: var(--accent-rgb);
+}
+
+body:is(
+    .theme-event-valentine,
+    .theme-event-april-fools,
+    .theme-event-halloween,
+    .theme-event-summer,
+    .theme-event-easter,
+    .theme-event-winter
+) .surface--modal,
+body:is(
+    .theme-event-valentine,
+    .theme-event-april-fools,
+    .theme-event-halloween,
+    .theme-event-summer,
+    .theme-event-easter,
+    .theme-event-winter
+) .surface--modal[data-popup-kind] {
+    --popup-accent-rgb: var(--accent-rgb);
+}
+
+body:is(
+    .theme-event-valentine,
+    .theme-event-april-fools,
+    .theme-event-halloween,
+    .theme-event-summer,
+    .theme-event-easter,
+    .theme-event-winter
+) .surface--modal[data-popup-kind="archive"] {
+    --popup-accent-rgb: var(--event-secondary-rgb);
+}
+
+body:is(
+    .theme-event-valentine,
+    .theme-event-april-fools,
+    .theme-event-halloween,
+    .theme-event-summer,
+    .theme-event-easter,
+    .theme-event-winter
+) .surface--modal[data-popup-kind="notice"] {
+    --popup-accent-rgb: var(--event-tertiary-rgb);
+}
+
+body:is(
+    .theme-event-valentine,
+    .theme-event-april-fools,
+    .theme-event-halloween,
+    .theme-event-summer,
+    .theme-event-easter,
+    .theme-event-winter
+) .cutscene-warning-overlay,
+body:is(
+    .theme-event-valentine,
+    .theme-event-april-fools,
+    .theme-event-halloween,
+    .theme-event-summer,
+    .theme-event-easter,
+    .theme-event-winter
+) .modal-overlay {
+    background:
+        linear-gradient(90deg, rgb(var(--accent-rgb) / 0.03) 1px, transparent 1px) 0 0 / 32px 32px,
+        linear-gradient(0deg, rgb(var(--accent-rgb) / 0.025) 1px, transparent 1px) 0 0 / 32px 32px,
+        radial-gradient(circle at 50% 12%, rgb(var(--event-secondary-rgb) / 0.14), transparent 42%),
+        rgba(1, 5, 13, 0.9);
+}
+
+body:is(
+    .theme-event-valentine,
+    .theme-event-april-fools,
+    .theme-event-halloween,
+    .theme-event-summer,
+    .theme-event-easter,
+    .theme-event-winter
+) .resource-panel {
+    --surface-edge-accent: var(--accent);
+}
+
+body:is(
+    .theme-event-valentine,
+    .theme-event-april-fools,
+    .theme-event-halloween,
+    .theme-event-summer,
+    .theme-event-easter,
+    .theme-event-winter
+) .intro-overlay {
+    background:
+        radial-gradient(circle at 28% 18%, rgb(var(--accent-rgb) / 0.14), transparent 48%),
+        radial-gradient(circle at 78% 24%, rgb(var(--event-secondary-rgb) / 0.11), transparent 42%),
+        linear-gradient(180deg, rgba(2, 6, 14, 0.91), rgba(2, 4, 10, 0.97));
+}
+
+body:is(
+    .theme-event-valentine,
+    .theme-event-april-fools,
+    .theme-event-halloween,
+    .theme-event-summer,
+    .theme-event-easter,
+    .theme-event-winter
+) .intro-overlay__panel {
+    border-color: rgb(var(--accent-rgb) / 0.4);
+    background:
+        radial-gradient(circle at 100% 0, rgb(var(--event-secondary-rgb) / 0.1), transparent 34%),
+        var(--surface-overlay-gradient);
+    box-shadow:
+        0 24px 60px rgba(0, 0, 0, 0.58),
+        0 0 34px rgb(var(--accent-rgb) / 0.16);
+}
+
+body:is(
+    .theme-event-valentine,
+    .theme-event-april-fools,
+    .theme-event-halloween,
+    .theme-event-summer,
+    .theme-event-easter,
+    .theme-event-winter
+) .intro-overlay__start-button {
+    border-color: rgb(var(--accent-rgb) / 0.72);
+    color: var(--bg-base);
+    background: linear-gradient(135deg, var(--accent-strong), var(--accent));
+    box-shadow:
+        0 12px 30px rgba(0, 0, 0, 0.56),
+        0 0 18px rgb(var(--accent-rgb) / 0.13),
+        inset 0 1px 0 rgba(255, 255, 255, 0.38);
+}
+
+body:is(
+    .theme-event-valentine,
+    .theme-event-april-fools,
+    .theme-event-halloween,
+    .theme-event-summer,
+    .theme-event-easter,
+    .theme-event-winter
+) .intro-overlay__start-button:hover {
+    background: linear-gradient(135deg, #fff, var(--accent));
+    box-shadow:
+        0 14px 36px rgba(0, 0, 0, 0.62),
+        0 0 20px rgb(var(--accent-rgb) / 0.38);
+}
+
+body:is(
+    .theme-event-valentine,
+    .theme-event-april-fools,
+    .theme-event-halloween,
+    .theme-event-summer,
+    .theme-event-easter,
+    .theme-event-winter
+) .masthead-console {
+    background:
+        linear-gradient(90deg, rgb(var(--accent-rgb) / 0.1), transparent 28%, transparent 70%, rgb(var(--event-secondary-rgb) / 0.11)),
+        repeating-linear-gradient(90deg, transparent 0 47px, rgb(var(--accent-rgb) / 0.028) 47px 48px),
+        var(--surface-gradient);
+}
+
+body:is(
+    .theme-event-valentine,
+    .theme-event-april-fools,
+    .theme-event-halloween,
+    .theme-event-summer,
+    .theme-event-easter,
+    .theme-event-winter
+) .masthead-console::before {
+    border-block-color: rgb(var(--accent-rgb) / 0.09);
+}
+
+body:is(
+    .theme-event-valentine,
+    .theme-event-april-fools,
+    .theme-event-halloween,
+    .theme-event-summer,
+    .theme-event-easter,
+    .theme-event-winter
+) :is(
+    .masthead-console__rail,
+    .masthead-console__version,
+    .site-footer__mark,
+    .site-footer__eyebrow,
+    .footer-credits__summary-icon,
+    .footer-credits__summary-chevron
+) {
+    color: var(--accent);
+}
+
+body:is(
+    .theme-event-valentine,
+    .theme-event-april-fools,
+    .theme-event-halloween,
+    .theme-event-summer,
+    .theme-event-easter,
+    .theme-event-winter
+) .masthead-console__rail::after {
+    background: linear-gradient(90deg, rgb(var(--accent-rgb) / 0.46), transparent);
+}
+
+body:is(
+    .theme-event-valentine,
+    .theme-event-april-fools,
+    .theme-event-halloween,
+    .theme-event-summer,
+    .theme-event-easter,
+    .theme-event-winter
+) .masthead-console .banner__title {
+    color: var(--accent-strong);
+    text-shadow: 0 0 18px rgb(var(--accent-rgb) / 0.24);
+}
+
+body:is(
+    .theme-event-valentine,
+    .theme-event-april-fools,
+    .theme-event-halloween,
+    .theme-event-summer,
+    .theme-event-easter,
+    .theme-event-winter
+) :is(
+    .masthead-console__version,
+    .masthead-console__meta-card,
+    .masthead-console .masthead__controls,
+    .footer-credits,
+    .footer-credits__item
+) {
+    border-color: rgb(var(--accent-rgb) / 0.2);
+    background-color: rgb(var(--accent-rgb) / 0.035);
+}
+
+body:is(
+    .theme-event-valentine,
+    .theme-event-april-fools,
+    .theme-event-halloween,
+    .theme-event-summer,
+    .theme-event-easter,
+    .theme-event-winter
+) :is(
+    .masthead-console__version:hover,
+    .masthead-console__version:focus-visible,
+    .footer-credits__summary:hover,
+    .footer-credits__summary:focus-visible,
+    .footer-credits__filter:hover,
+    .footer-credits__filter:focus-visible,
+    .footer-credits__filter.is-active
+) {
+    border-color: rgb(var(--accent-rgb) / 0.7);
+    color: var(--accent-strong);
+    background: rgb(var(--accent-rgb) / 0.12);
+}
+
+body:is(
+    .theme-event-valentine,
+    .theme-event-april-fools,
+    .theme-event-halloween,
+    .theme-event-summer,
+    .theme-event-easter,
+    .theme-event-winter
+) .masthead__help {
+    --button-accent: var(--accent);
+    --button-border-color: rgb(var(--accent-rgb) / 0.52);
+}
+
+body:is(
+    .theme-event-valentine,
+    .theme-event-april-fools,
+    .theme-event-halloween,
+    .theme-event-summer,
+    .theme-event-easter,
+    .theme-event-winter
+) :is(
+    .interface-select__option--checkbox,
+    .interface-select__option-button,
+    .toggle
+) {
+    --button-accent: rgb(var(--accent-rgb) / 0.48);
+    --button-border-color: rgb(var(--accent-rgb) / 0.3);
+}
+
+body:is(
+    .theme-event-valentine,
+    .theme-event-april-fools,
+    .theme-event-halloween,
+    .theme-event-summer,
+    .theme-event-easter,
+    .theme-event-winter
+) .interface-select__option--checkbox::before {
+    background:
+        radial-gradient(circle at 15% 20%, rgb(var(--accent-rgb) / 0.2), transparent 48%),
+        radial-gradient(circle at 80% 80%, rgb(var(--event-secondary-rgb) / 0.13), transparent 55%);
+}
+
+body:is(
+    .theme-event-valentine,
+    .theme-event-april-fools,
+    .theme-event-halloween,
+    .theme-event-summer,
+    .theme-event-easter,
+    .theme-event-winter
+) :is(
+    .interface-select__option--checkbox:hover,
+    .interface-select__option--checkbox:focus-within,
+    .interface-select__option--checkbox.interface-select__option--active
+) {
+    border-color: rgb(var(--accent-rgb) / 0.68);
+    box-shadow:
+        inset 0 0 0 1px rgb(var(--accent-rgb) / 0.28),
+        inset 0 0 22px rgb(var(--accent-rgb) / 0.1),
+        0 12px 26px rgba(4, 10, 24, 0.48);
+}
+
+body:is(
+    .theme-event-valentine,
+    .theme-event-april-fools,
+    .theme-event-halloween,
+    .theme-event-summer,
+    .theme-event-easter,
+    .theme-event-winter
+) .interface-select__option--checkbox.interface-select__option--active .interface-select__option-label {
+    text-shadow: 0 0 8px rgb(var(--accent-rgb) / 0.3);
+}
+
+body:is(
+    .theme-event-valentine,
+    .theme-event-april-fools,
+    .theme-event-halloween,
+    .theme-event-summer,
+    .theme-event-easter,
+    .theme-event-winter
+) .interface-select__option--checkbox input[type="checkbox"]:checked {
+    border-color: rgb(var(--accent-rgb) / 0.82);
+    background: rgb(var(--accent-rgb) / 0.13);
+    box-shadow: 0 0 14px rgb(var(--accent-rgb) / 0.28);
+}
+
+body:is(
+    .theme-event-valentine,
+    .theme-event-april-fools,
+    .theme-event-halloween,
+    .theme-event-summer,
+    .theme-event-easter,
+    .theme-event-winter
+) :is(
+    .form-field__input:focus,
+    .toggle:hover,
+    .toggle:focus-within
+) {
+    box-shadow:
+        0 0 0 2px rgb(var(--accent-rgb) / 0.22),
+        inset 0 0 16px rgb(var(--accent-rgb) / 0.13);
+}
+
+body:is(
+    .theme-event-valentine,
+    .theme-event-april-fools,
+    .theme-event-halloween,
+    .theme-event-summer,
+    .theme-event-easter,
+    .theme-event-winter
+) .toggle__track {
+    border-color: rgb(var(--accent-rgb) / 0.3);
+    box-shadow: inset 0 0 12px rgb(var(--accent-rgb) / 0.16);
+}
+
+body:is(
+    .theme-event-valentine,
+    .theme-event-april-fools,
+    .theme-event-halloween,
+    .theme-event-summer,
+    .theme-event-easter,
+    .theme-event-winter
+) .toggle__thumb,
+body:is(
+    .theme-event-valentine,
+    .theme-event-april-fools,
+    .theme-event-halloween,
+    .theme-event-summer,
+    .theme-event-easter,
+    .theme-event-winter
+) .toggle__input:checked + .toggle__track + .toggle__thumb {
+    background: linear-gradient(160deg, var(--accent-strong), var(--accent));
+}
+
+body:is(
+    .theme-event-valentine,
+    .theme-event-april-fools,
+    .theme-event-halloween,
+    .theme-event-summer,
+    .theme-event-easter,
+    .theme-event-winter
+) .help-center {
+    border-top-color: rgb(var(--accent-rgb) / 0.58);
+    background:
+        linear-gradient(90deg, rgb(var(--accent-rgb) / 0.1), transparent 28%, transparent 70%, rgb(var(--event-secondary-rgb) / 0.11)),
+        repeating-linear-gradient(90deg, transparent 0 52px, rgb(var(--accent-rgb) / 0.025) 52px 53px),
+        var(--surface-overlay-gradient);
+}
+
+body:is(
+    .theme-event-valentine,
+    .theme-event-april-fools,
+    .theme-event-halloween,
+    .theme-event-summer,
+    .theme-event-easter,
+    .theme-event-winter
+) .help-center::before {
+    background: linear-gradient(90deg, var(--accent), transparent);
+    box-shadow: 0 0 16px rgb(var(--accent-rgb) / 0.44);
+}
+
+body:is(
+    .theme-event-valentine,
+    .theme-event-april-fools,
+    .theme-event-halloween,
+    .theme-event-summer,
+    .theme-event-easter,
+    .theme-event-winter
+) :is(
+    .help-center__header,
+    .help-center__sidebar,
+    .help-center__search,
+    .help-card,
+    .help-tour,
+    .help-tour__lesson
+) {
+    border-color: rgb(var(--accent-rgb) / 0.2);
+}
+
+body:is(
+    .theme-event-valentine,
+    .theme-event-april-fools,
+    .theme-event-halloween,
+    .theme-event-summer,
+    .theme-event-easter,
+    .theme-event-winter
+) :is(
+    .help-center__header-icon,
+    .help-card__index,
+    .help-tour__icon,
+    .help-tour__lesson-icon
+) {
+    border-color: rgb(var(--accent-rgb) / 0.38);
+    color: var(--accent);
+    background: rgb(var(--accent-rgb) / 0.11);
+    box-shadow: inset 0 0 16px rgb(var(--accent-rgb) / 0.1);
+}
+
+body:is(
+    .theme-event-valentine,
+    .theme-event-april-fools,
+    .theme-event-halloween,
+    .theme-event-summer,
+    .theme-event-easter,
+    .theme-event-winter
+) :is(
+    .help-center__eyebrow,
+    .help-card__kicker,
+    .help-tour__eyebrow,
+    .help-tour__lesson-number
+) {
+    color: var(--accent);
+}
+
+body:is(
+    .theme-event-valentine,
+    .theme-event-april-fools,
+    .theme-event-halloween,
+    .theme-event-summer,
+    .theme-event-easter,
+    .theme-event-winter
+) .help-card li::marker {
+    color: var(--accent);
+}
+
+body:is(
+    .theme-event-valentine,
+    .theme-event-april-fools,
+    .theme-event-halloween,
+    .theme-event-summer,
+    .theme-event-easter,
+    .theme-event-winter
+) .help-card--featured {
+    border-color: rgb(var(--accent-rgb) / 0.4);
+    background:
+        radial-gradient(circle at 0 0, rgb(var(--accent-rgb) / 0.15), transparent 40%),
+        linear-gradient(110deg, rgb(var(--event-secondary-rgb) / 0.08), transparent 52%),
+        rgba(5, 14, 27, 0.78);
+}
+
+body:is(
+    .theme-event-valentine,
+    .theme-event-april-fools,
+    .theme-event-halloween,
+    .theme-event-summer,
+    .theme-event-easter,
+    .theme-event-winter
+) :is(
+    .help-center__nav button:hover,
+    .help-center__nav button:focus-visible,
+    .help-center__nav button[aria-current="true"],
+    .help-card__jump:hover,
+    .help-card__jump:focus-visible,
+    .help-tour__start:hover,
+    .help-tour__start:focus-visible,
+    .help-tour__button:hover,
+    .help-tour__button:focus-visible
+) {
+    border-color: rgb(var(--accent-rgb) / 0.58);
+    color: var(--accent-strong);
+    background: linear-gradient(90deg, rgb(var(--accent-rgb) / 0.16), transparent);
+}
+
+body:is(
+    .theme-event-valentine,
+    .theme-event-april-fools,
+    .theme-event-halloween,
+    .theme-event-summer,
+    .theme-event-easter,
+    .theme-event-winter
+) :is(
+    .help-card__note,
+    .help-card__jump,
+    .help-tour__start,
+    .help-tour__button,
+    .help-tour__steps button,
+    .help-tour-resume
+) {
+    border-color: rgb(var(--accent-rgb) / 0.3);
+}
+
+body:is(
+    .theme-event-valentine,
+    .theme-event-april-fools,
+    .theme-event-halloween,
+    .theme-event-summer,
+    .theme-event-easter,
+    .theme-event-winter
+) .help-tour__progress > span {
+    background: linear-gradient(90deg, var(--accent), rgb(var(--event-tertiary-rgb)));
+    box-shadow: 0 0 10px rgb(var(--accent-rgb) / 0.5);
+}
+
+body:is(
+    .theme-event-valentine,
+    .theme-event-april-fools,
+    .theme-event-halloween,
+    .theme-event-summer,
+    .theme-event-easter,
+    .theme-event-winter
+) .help-tour-resume {
+    color: var(--accent-strong);
+    background:
+        linear-gradient(110deg, rgb(var(--accent-rgb) / 0.24), rgba(3, 13, 27, 0.98)),
+        var(--bg-base);
+    box-shadow:
+        0 16px 34px rgba(0, 0, 0, 0.52),
+        inset 0 0 18px rgb(var(--accent-rgb) / 0.1);
+}
+
+body:is(
+    .theme-event-valentine,
+    .theme-event-april-fools,
+    .theme-event-halloween,
+    .theme-event-summer,
+    .theme-event-easter,
+    .theme-event-winter
+) .help-tour-target {
+    outline-color: rgb(var(--accent-rgb) / 0.92);
+    box-shadow:
+        0 0 0 8px rgb(var(--accent-rgb) / 0.1),
+        0 0 28px rgb(var(--accent-rgb) / 0.34) !important;
+}
+
+body:is(
+    .theme-event-valentine,
+    .theme-event-april-fools,
+    .theme-event-halloween,
+    .theme-event-summer,
+    .theme-event-easter,
+    .theme-event-winter
+) .interface-footer {
+    border-color: rgb(var(--accent-rgb) / 0.32);
+    background:
+        radial-gradient(circle at 0 0, rgb(var(--accent-rgb) / 0.08), transparent 32%),
+        linear-gradient(110deg, rgb(var(--event-secondary-rgb) / 0.06), transparent 56%),
+        var(--surface-gradient);
+}
+
+body:is(
+    .theme-event-valentine,
+    .theme-event-april-fools,
+    .theme-event-halloween,
+    .theme-event-summer,
+    .theme-event-easter,
+    .theme-event-winter
+) :is(
+    .site-footer__mark,
+    .footer-credits,
+    .footer-credits__summary-icon,
+    .footer-credits__summary-count,
+    .footer-credits__panel,
+    .footer-credits__search,
+    .footer-credits__filter,
+    .footer-credits__item,
+    .footer-credits__item-kind,
+    .footer-credits__empty
+) {
+    border-color: rgb(var(--accent-rgb) / 0.24);
+}
+
+body:is(
+    .theme-event-valentine,
+    .theme-event-april-fools,
+    .theme-event-halloween,
+    .theme-event-summer,
+    .theme-event-easter,
+    .theme-event-winter
+) :is(
+    .footer-credits__featured a,
+    .footer-credits__item a,
+    .footer-credits__item-kind
+) {
+    color: var(--accent);
+    text-decoration-color: rgb(var(--accent-rgb) / 0.44);
+}
+
+body.theme-event-april-fools .april-fools-copy {
+    color: var(--accent-strong);
+    text-decoration: underline dashed rgb(var(--event-secondary-rgb) / 0.65);
+    text-decoration-thickness: 1px;
+    text-underline-offset: 0.28em;
+    text-shadow:
+        1px 0 rgb(var(--event-secondary-rgb) / 0.26),
+        -1px 0 rgb(var(--event-tertiary-rgb) / 0.18);
+}
+
+/* V2 changelog event overview */
+.changelog-release-group--events {
+    overflow: hidden;
+    border-color: rgba(171, 157, 255, 0.35);
+    border-left-color: #ae9dff;
+    background:
+        radial-gradient(circle at 0 0, rgba(255, 221, 110, 0.1), transparent 32%),
+        radial-gradient(circle at 100% 0, rgba(168, 119, 255, 0.13), transparent 38%),
+        repeating-linear-gradient(90deg, transparent 0 44px, rgba(160, 218, 255, 0.02) 44px 45px),
+        rgba(5, 12, 24, 0.84);
+    box-shadow:
+        inset 3px 0 0 rgba(174, 157, 255, 0.24),
+        inset 0 1px 0 rgba(255, 255, 255, 0.045);
+}
+
+.changelog-events__header {
+    border-bottom-color: rgba(174, 157, 255, 0.2);
+}
+
+.changelog-events__icon {
+    border-color: rgba(174, 157, 255, 0.4);
+    color: #c3b7ff;
+    background: rgba(141, 112, 255, 0.11);
+    box-shadow: inset 0 0 16px rgba(174, 157, 255, 0.1);
+}
+
+.changelog-events__badge {
+    border-color: rgba(174, 157, 255, 0.4);
+    color: #d5ccff;
+    background: rgba(141, 112, 255, 0.09);
+}
+
+.changelog-event-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.changelog-event-card {
+    --event-card-rgb: 127 227 255;
+    display: grid;
+    grid-template-columns: 28px minmax(0, 1fr);
+    align-items: start;
+    gap: 9px;
+    min-width: 0;
+    padding: 10px;
+    border: 1px solid rgb(var(--event-card-rgb) / 0.2);
+    background:
+        linear-gradient(110deg, rgb(var(--event-card-rgb) / 0.09), transparent 48%),
+        rgba(4, 11, 22, 0.6);
+    color: #8fa7b6;
+    font-size: 9px;
+    line-height: 1.5;
+}
+
+.changelog-event-card > i {
+    display: grid;
+    place-items: center;
+    width: 28px;
+    aspect-ratio: 1;
+    border: 1px solid rgb(var(--event-card-rgb) / 0.3);
+    color: rgb(var(--event-card-rgb));
+    background: rgb(var(--event-card-rgb) / 0.08);
+    filter: drop-shadow(0 0 7px rgb(var(--event-card-rgb) / 0.28));
+}
+
+.changelog-event-card > span {
+    min-width: 0;
+}
+
+.changelog-event-card strong {
+    display: block;
+    margin-bottom: 2px;
+    color: #e7f1f5;
+    font-size: 10px;
+    letter-spacing: 0.07em;
+}
+
+.changelog-event-card--summer {
+    --event-card-rgb: 255 226 126;
+}
+
+.changelog-event-card--winter {
+    --event-card-rgb: 148 221 255;
+}
+
+.changelog-event-card--valentine {
+    --event-card-rgb: 255 157 198;
+}
+
+.changelog-event-card--april {
+    --event-card-rgb: 220 255 114;
+}
+
+.changelog-event-card--halloween {
+    --event-card-rgb: 255 155 69;
+    grid-column: 1 / -1;
+}
+
+.changelog-events__note {
+    margin: 11px 0 0;
+    padding: 9px 10px;
+    border-left: 2px solid rgba(174, 157, 255, 0.55);
+    color: #91a8b7;
+    background: rgba(139, 112, 255, 0.06);
+    font-size: 9px;
+    line-height: 1.55;
+}
+
+@media (max-width: 680px) {
+    .changelog-event-grid {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .changelog-event-card--halloween {
+        grid-column: auto;
+    }
 }
