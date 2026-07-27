@@ -4,7 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sol's RNG Rolling Simulator v2</title>
-    <script src="https://kit.fontawesome.com/0b0c748c56.js" crossorigin="anonymous"></script>
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@7.1.0/css/all.min.css" crossorigin="anonymous">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Amatic+SC:wght@400;700&family=Cinzel:wght@400..900&family=Comic+Neue:ital,wght@0,300;0,400;0,700;1,300;1,400;1,700&family=Creepster&family=Fondamento:ital@0;1&family=Grenze+Gotisch:wght@100..900&family=Jura:wght@300..700&family=Kings&family=Luckiest+Guy&family=Merriweather:ital,opsz,wght@0,18..144,300..900;1,18..144,300..900&family=Michroma&family=Noto+Serif+TC:wght@500;600;700&family=Oswald:wght@200..700&family=Overpass:ital,wght@0,100..900;1,100..900&family=Parisienne&family=Patrick+Hand&family=Playfair+Display:wght@500;600;700&family=Press+Start+2P&family=Roboto+Flex:opsz,wght,XOPQ,XTRA,YOPQ,YTDE,YTFI,YTLC,YTUC@8..144,100..1000,96,468,79,-203,738,514,712&family=Roboto:ital,wght@0,100..900;1,100..900&family=Sarpanch:wght@400;500;600;700&family=Tangerine:wght@400;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
@@ -18,19 +19,79 @@
     <link rel="icon" type="image/png" sizes="128x128" href="files/images/favicon-128.png">
     <link rel="icon" type="image/png" sizes="256x256" href="files/images/favicon-256.png">
     <link rel="icon" type="image/png" sizes="500x500" href="files/images/favicon-500.png">
-    <link rel="stylesheet" href="styles/base.css?v=1.910.16">
-    <link rel="stylesheet" href="styles/layout.css?v=1.910.15">
-    <link rel="stylesheet" href="styles/components.css?v=1.910.19">
-    <link rel="stylesheet" href="styles/utilities.css?v=1.910.19">
+    <link rel="stylesheet" href="styles/base.css">
+    <link rel="stylesheet" href="styles/layout.css">
+    <link rel="stylesheet" href="styles/components.css">
+    <link rel="stylesheet" href="styles/utilities.css">
     <script src="scripts/utils.js" defer></script>
-    <script src="scripts/state.js?v=1.910.2" defer></script>
-    <script src="scripts/overlays.js?v=1.910.1" defer></script>
-    <script src="scripts/main.js?v=1.910.22" defer></script>
+    <script src="scripts/state.js" defer></script>
+    <script src="scripts/overlays.js" defer></script>
+    <script src="scripts/main.js" defer></script>
 </head>
 <body>
     <div class="interface-backdrop" aria-hidden="true">
         <video class="interface-backdrop__video" autoplay loop muted playsinline preload="none" aria-hidden="true"></video>
         <div class="interface-backdrop__veil"></div>
+    </div>
+    <div class="glitch-signal" id="glitchSignalOverlay" aria-hidden="true">
+        <span class="glitch-signal__scanlines"></span>
+        <span class="glitch-signal__static"></span>
+        <span class="glitch-signal__rgb glitch-signal__rgb--magenta"></span>
+        <span class="glitch-signal__rgb glitch-signal__rgb--cyan"></span>
+        <span class="glitch-signal__tear glitch-signal__tear--a"></span>
+        <span class="glitch-signal__tear glitch-signal__tear--b"></span>
+        <span class="glitch-signal__tear glitch-signal__tear--c"></span>
+        <span class="glitch-signal__tear glitch-signal__tear--d"></span>
+        <span class="glitch-signal__fragment glitch-signal__fragment--reduced"></span>
+        <span class="glitch-signal__fragment glitch-signal__fragment--reduced"></span>
+        <span class="glitch-signal__fragment glitch-signal__fragment--reduced"></span>
+        <span class="glitch-signal__fragment"></span>
+        <span class="glitch-signal__fragment"></span>
+        <span class="glitch-signal__fragment"></span>
+        <span class="glitch-signal__fragment"></span>
+        <span class="glitch-signal__fragment"></span>
+        <span class="glitch-signal__fragment"></span>
+        <span class="glitch-signal__fragment"></span>
+        <span class="glitch-signal__fragment"></span>
+        <span class="glitch-signal__fragment"></span>
+        <span class="glitch-signal__dropout"></span>
+        <span class="glitch-signal__readout">SIGNAL_DESYNC // 0xF7</span>
+    </div>
+    <div class="glitch-entry-errors" id="glitchEntryErrors" aria-hidden="true" hidden>
+        <div class="glitch-entry-errors__stack">
+            <section class="glitch-entry-error" data-glitch-entry-error>
+                <span class="glitch-entry-error__warning" aria-hidden="true"><i class="fa-solid fa-triangle-exclamation"></i></span>
+                <span class="glitch-entry-error__copy">
+                    <strong data-glitch-entry-title>&lt;&lt; SERVER INFO &gt;&gt;</strong>
+                    <small data-glitch-entry-code>0xF7A2://BIOME_HANDSHAKE</small>
+                    <small data-glitch-entry-message>UNSTABLE REALITY BUFFER DETECTED</small>
+                </span>
+            </section>
+            <section class="glitch-entry-error" data-glitch-entry-error>
+                <span class="glitch-entry-error__warning" aria-hidden="true"><i class="fa-solid fa-triangle-exclamation"></i></span>
+                <span class="glitch-entry-error__copy">
+                    <strong data-glitch-entry-title>&lt;&lt; CLIENT ERROR &gt;&gt;</strong>
+                    <small data-glitch-entry-code>GLITCH_UI::MOUNT_FAILURE</small>
+                    <small data-glitch-entry-message>AURA INDEX DESYNCHRONIZED</small>
+                </span>
+            </section>
+            <section class="glitch-entry-error glitch-entry-error--corrupted" data-glitch-entry-error>
+                <span class="glitch-entry-error__warning" aria-hidden="true"><i class="fa-solid fa-triangle-exclamation"></i></span>
+                <span class="glitch-entry-error__copy">
+                    <strong data-glitch-entry-title>&lt;&lt; ROLL ENGINE &gt;&gt;</strong>
+                    <small data-glitch-entry-code>LUCK_BUFFER = NaN</small>
+                    <small data-glitch-entry-message>PLEASE DO NOT FEED THE NULL POINTER</small>
+                </span>
+            </section>
+            <section class="glitch-entry-error glitch-entry-error--corrupted" data-glitch-entry-error>
+                <span class="glitch-entry-error__warning" aria-hidden="true"><i class="fa-solid fa-triangle-exclamation"></i></span>
+                <span class="glitch-entry-error__copy">
+                    <strong data-glitch-entry-title>&lt;&lt; VERY NORMAL ERROR &gt;&gt;</strong>
+                    <small data-glitch-entry-code>ERROR 418://REALITY_IS_TEA</small>
+                    <small data-glitch-entry-message>THIS MESSAGE IS PROBABLY FINE</small>
+                </span>
+            </section>
+        </div>
     </div>
     <div class="event-atmosphere" aria-hidden="true">
         <div class="event-sun">
@@ -197,7 +258,7 @@
                     <div class="banner__subtitle masthead-console__metadata">
                         <button type="button" class="banner__version-button masthead-console__meta-card masthead-console__meta-card--version masthead-console__version" id="versionInfoButton" aria-haspopup="dialog" aria-expanded="false" data-version-id="v2">
                             <i class="fa-solid fa-code-branch" aria-hidden="true"></i>
-                            <span><small>Current build</small><strong>Version v2</strong></span>
+                            <span><small>Current build</small><strong>Version 2</strong></span>
                         </button>
                         <span class="masthead-console__meta-card banner__subtitle-author">
                             <img class="masthead-console__creator-avatar" src="files/images/other/theUnnamed.jpg" alt="" aria-hidden="true" decoding="async">
@@ -1682,11 +1743,11 @@
                 </button>
                 <button class="interface-button quality-settings__item" type="button" role="menuitemcheckbox" aria-checked="false" data-quality-option="reduceGlitchEffects">
                     <span class="quality-settings__name">Reduce glitch effects</span>
-                    <span class="quality-settings__description">Keeps glitch visuals but tones them down significantly.</span>
+                    <span class="quality-settings__description">Uses occasional, subtle signal tears instead of the full Glitch biome distortion.</span>
                 </button>
                 <button class="interface-button quality-settings__item" type="button" role="menuitemcheckbox" aria-checked="false" data-quality-option="removeGlitchEffects">
                     <span class="quality-settings__name">Remove glitch effects</span>
-                    <span class="quality-settings__description">Completely disables glitch visuals and glitch audio behavior.</span>
+                    <span class="quality-settings__description">Disables all glitch motion, signal overlays, and glitch audio while preserving the biome theme.</span>
                 </button>
             </div>
             <div class="filter-modal__actions">
@@ -1837,7 +1898,7 @@
                     tabindex="0"
                 >
                     <header class="changelog-modal__header">
-                        <h2 class="changelog-modal__title">Version v2 Update Notes</h2>
+                        <h2 class="changelog-modal__title">Version 2 Update Notes</h2>
                         <span class="changelog-tab__subtitle">UI Rework, New Simulation Method & Summer Update</span>
                         <p class="changelog-modal__meta">Updated 2026/08/01 at 6:00 PM CEST</p>
                     </header>
@@ -1975,11 +2036,24 @@
                                 <li>Added a 1-1,000 rolls-per-second slider, ranging from one roll per second to one roll per millisecond, plus linked speed shortcuts for <strong>Average</strong> (5), <strong>Skip+</strong> (15), <strong>Recommended</strong> (100), <strong>Default</strong> (120), and <strong>Sonic Speed</strong> (500 rolls per second).</li>
                                 <li>Added a roll-feed search bar that filters by either aura name or tier name, such as <span class="rarity-tier-legendary">Legendary</span>.</li>
                                 <li>Added a post-run <span class="subtitleClass">Sort</span> button beside the search bar for completed simulations in both <span class="subtitleClass">Unnamed's</span> and <span class="allPotionsClass">Sol's-Like</span> methods. <span class="subtitleClass">Unnamed's</span> cycles between <strong>Rarity</strong> and <strong>Alphabetical</strong>, while <span class="allPotionsClass">Sol's-Like</span> also includes <strong>Recent</strong> for its original live roll order.</li>
+                                <li>Multiple Potion Mode now always labels every result with the potion batch and its effective luck in place of True Chance, such as <span class="tinyClass">With <span class="heavenlyClass">Heavenly</span> (150,000 Luck)</span>. Each potion name keeps its matching visual style, and stacked results list every potion used.</li>
                             </ul>
                             <br>
                             <span class="largeClass">RoE setting preservation:</span>
                             <ul class="changelog-release-group__list">
                                 <li>Enabling <span class="allPotionsClass">Rune of Everything (RoE)</span> no longer resets the selected biome or time of day.</li>
+                            </ul>
+                            <br>
+                            <span class="largeClass">Limbo time & aura fix:</span>
+                            <ul class="changelog-release-group__list">
+                                <li><span class="sigil-outline-limbo">Limbo</span> now locks the time setting to Day and disables both time options while active, matching its rune restrictions. <span class="rarity-tier-challenged">DreamCatcher</span> can no longer be rolled in Limbo through a previously active Night selection.</li>
+                                <span class="subSpace credits-text">Credit goes to <a href="https://discord.com/users/1001560164635258900" class="subtitleClass" target="_blank" rel="noopener">zeefir_</a> for finding out this bug!</span>
+                            </ul>
+                            <br>
+                            <span class="largeClass">Glitch biome presentation:</span>
+                            <ul class="changelog-release-group__list">
+                                <li>Rebuilt the <span class="sigil-outline-glitch">Glitch</span> biome interface with an extremely vibrant purple, black, and cyan palette, randomized signal tears, RGB channel separation, scanline corruption, frame dropouts, scrambled diagnostics, and independently desynchronized interface panels.</li>
+                                <li>The Glitch Effect now adds flashing square and rectangular corruption groups with thick clutter to its intense glitch sequences, which trigger after randomized 7–13 second pauses witho- No one cares about the details. It's cool and neat O-O</li>
                             </ul>
                             <br>
                             <span class="largeClass">Music Mute Moved:</span>
@@ -2918,10 +2992,10 @@
                     <ul class="changelog-modal__list">
                         <li>Fixed aura naming typo from <span class="sigil-outline-pythios">Pythos</span> to <span class="sigil-outline-pythios">Pythios</span>.</li>
                         <li>Updated filtering so <span class="sigil-outline-borealis">Borealis</span> is treated as a <span class="rarity-tier-challenged">Challenged</span> aura.</li>
-                        <li>Updated filtering so <span class="sigil-effect-outline-glitch">Glitch</span> is treated as a <span class="rarity-tier-challenged">Challenged</span> aura.</li>
+                        <li>Updated filtering so <span class="sigil-effect-glitch"><span class="sigil-effect-glitch__title">GLITCH</span></span> is treated as a <span class="rarity-tier-challenged">Challenged</span> aura.</li>
                         <p>Thanks to <a href="https://discord.com/users/1234359746153418826" class="subtitleClass" target="_blank" rel="noopener">aksiz.dos_33995</a> for reporting these bugs.</p>
                         
-                        <li><span class="sigil-effect-outline-glitch">Glitch</span> will now display as it does in-game.</li>
+                        <li><span class="sigil-effect-glitch"><span class="sigil-effect-glitch__title">GLITCH</span></span> will now display as it does in-game.</li>
                         <li><span class="sigil-outline-borealis">Borealis</span> will now display as it does in-game.</li>
                         <li><span class="sigil-outline-oppression">Oppression</span> will now display as it does in-game.</li>
                         <li><span class="sigil-outline-dreammetric">Dreammetric</span> will now display as it does in-game.</li>

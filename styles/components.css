@@ -2123,6 +2123,36 @@ body.potion-mode--multiple #device-buff-preset-panel .preset-button__actions {
     font-size: 9px;
 }
 
+.parameter-console__module--environment details[data-select="biome-other-dropdown"] .interface-select__summary {
+    min-width: 0;
+    gap: 6px;
+    padding: 10px 8px;
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    overflow: hidden;
+}
+
+.parameter-console__module--environment details[data-select="biome-other-dropdown"] .interface-select__summary .biome-option__icon {
+    width: 20px;
+    height: 20px;
+    flex-basis: 20px;
+}
+
+.parameter-console__module--environment details[data-select="biome-other-dropdown"] .interface-select__summary .biome-option__label {
+    flex: 1 1 0;
+    min-width: 0;
+    justify-content: center;
+    text-align: center;
+    white-space: normal;
+    overflow-wrap: anywhere;
+}
+
+.parameter-console__module--environment details[data-select="biome-other-dropdown"] .interface-select__summary::after {
+    width: 9px;
+    height: 9px;
+    margin-left: 0;
+}
+
 .parameter-console .multi-potion-panel {
     background:
         linear-gradient(145deg, rgb(var(--accent-rgb) / 0.08), transparent 46%),

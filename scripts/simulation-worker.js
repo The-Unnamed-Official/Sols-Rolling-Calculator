@@ -179,6 +179,8 @@ self.onmessage = event => {
 
             return {
                 total: Number.isFinite(batch.total) && batch.total > 0 ? Math.floor(batch.total) : 0,
+                winCounts: createZeroCounts(auraCount),
+                breakthroughCounts: createZeroCounts(auraCount),
                 combinedSelection: buildCombinedSelection([
                     {
                         selection: buildWeightedSelection(prerollAuraRatios),
@@ -233,11 +235,13 @@ self.onmessage = event => {
             const auraIndex = combinedSelection.auraIndices[selectedIndex];
             if (Number.isInteger(auraIndex) && auraIndex >= 0 && auraIndex < auraCount) {
                 winCounts[auraIndex] += 1;
+                activeBatch.winCounts[auraIndex] += 1;
             }
 
             const breakthroughIndex = combinedSelection.breakthroughIndices[selectedIndex];
             if (Number.isInteger(breakthroughIndex) && breakthroughIndex >= 0 && breakthroughIndex < auraCount) {
                 breakthroughCounts[breakthroughIndex] += 1;
+                activeBatch.breakthroughCounts[breakthroughIndex] += 1;
             }
 
             return true;
@@ -281,12 +285,22 @@ self.onmessage = event => {
             }
 
             postProgressIfNeeded(true);
+            const batchWinCounts = batchConfigs.map(batch => batch.winCounts);
+            const batchBreakthroughCounts = batchConfigs.map(batch => batch.breakthroughCounts);
+            const transferBuffers = [
+                winCounts.buffer,
+                breakthroughCounts.buffer,
+                ...batchWinCounts.map(counts => counts.buffer),
+                ...batchBreakthroughCounts.map(counts => counts.buffer)
+            ];
             self.postMessage({
                 type: 'complete',
                 currentRoll,
                 winCounts,
-                breakthroughCounts
-            }, [winCounts.buffer, breakthroughCounts.buffer]);
+                breakthroughCounts,
+                batchWinCounts,
+                batchBreakthroughCounts
+            }, transferBuffers);
         };
 
         processBatch();

@@ -1222,7 +1222,7 @@ function renderAuraFilterButtonLabel(button, auraName, enabled) {
         : '';
     const nameClasses = [rarityClass, specialClass].filter(Boolean).join(' ');
     const nameSpan = document.createElement('span');
-    if (aura && auraName.startsWith('Breakthrough')) {
+    if (aura && (auraName.startsWith('Breakthrough') || auraName.startsWith('Glitch - '))) {
         nameSpan.innerHTML = formatAuraNameMarkup(aura);
     } else {
         nameSpan.textContent = auraName;
@@ -1629,8 +1629,8 @@ function beginSimulationExperience() {
         startButton.blur();
     }
 
-    resumeAudioEngine();
     experienceStarted = true;
+    resumeAudioEngine();
     if (bgMusic) {
         primeBackgroundMusic(bgMusic);
         startBackgroundMusic(bgMusic);
@@ -1641,6 +1641,10 @@ function beginSimulationExperience() {
     if (overlay) {
         overlay.setAttribute('hidden', '');
         overlay.setAttribute('aria-hidden', 'true');
+    }
+
+    if (glitchPresentationEnabled && isGlitchBiomeSelected()) {
+        triggerGlitchEntryErrors();
     }
 }
 
@@ -2195,20 +2199,30 @@ const adminAbuseChoiceManager = (() => {
 
 const glitchUiState = {
     loopTimeoutId: null,
-    activeTimeoutId: null,
+    burstTimeoutId: null,
+    warbleTimeoutId: null,
+    entryErrorTimeoutId: null,
+    entryErrorFrameId: null,
     distortionNode: null,
     waveShaper: null,
+    stereoPannerNode: null,
+    ditherSourceNode: null,
+    ditherGainNode: null,
     gainNode: null,
     sourceNode: null,
     sourceElement: null,
+    mediaPlaybackSnapshot: null,
+    audioCorruptionProfile: null,
     isUiGlitching: false,
-    audioPipelineMode: null
+    audioPipelineMode: null,
+    presentationMode: 'disabled'
 };
 
 let glitchPresentationEnabled = false;
 
 function getAudioContextHandle() {
     if (typeof window === 'undefined') return null;
+    if (!experienceStarted && !appState.audio.context) return null;
     if (!appState.audio.context) {
         const AudioContextClass = window.AudioContext || window.webkitAudioContext;
         if (!AudioContextClass) return null;
@@ -2218,6 +2232,7 @@ function getAudioContextHandle() {
 }
 
 function resumeAudioEngine() {
+    if (!experienceStarted) return null;
     const context = getAudioContextHandle();
     if (context && context.state === 'suspended') {
         context.resume().catch(() => {});
@@ -2902,7 +2917,7 @@ function updateGlitchPresentation() {
     const glitchBiomeActive = isGlitchBiomeSelected();
     const removeGlitchEffects = appState.qualityPreferences.removeGlitchEffects;
     const enableGlitch = appState.glitch && glitchBiomeActive && !appState.reduceMotion && !removeGlitchEffects;
-    applyGlitchVisuals(enableGlitch, { forceTheme: glitchBiomeActive && !removeGlitchEffects });
+    applyGlitchVisuals(enableGlitch, { forceTheme: glitchBiomeActive });
 }
 
 function toggleGlitchEffects() {
@@ -3432,64 +3447,193 @@ function resetGlitchRuinTimer() {
 }
 
 function resetGlitchWarbleTimer() {
-    if (glitchUiState.activeTimeoutId !== null) {
-        window.clearTimeout(glitchUiState.activeTimeoutId);
-        glitchUiState.activeTimeoutId = null;
+    if (glitchUiState.warbleTimeoutId !== null) {
+        window.clearTimeout(glitchUiState.warbleTimeoutId);
+        glitchUiState.warbleTimeoutId = null;
     }
 }
 
+function captureGlitchMediaPlayback(audioElement) {
+    if (!audioElement || glitchUiState.mediaPlaybackSnapshot) return;
+
+    glitchUiState.mediaPlaybackSnapshot = {
+        element: audioElement,
+        playbackRate: Number.isFinite(audioElement.playbackRate) ? audioElement.playbackRate : 1,
+        preservesPitch: 'preservesPitch' in audioElement ? audioElement.preservesPitch : undefined,
+        webkitPreservesPitch: 'webkitPreservesPitch' in audioElement ? audioElement.webkitPreservesPitch : undefined,
+        mozPreservesPitch: 'mozPreservesPitch' in audioElement ? audioElement.mozPreservesPitch : undefined
+    };
+}
+
+function setGlitchPitchPreservation(audioElement, enabled) {
+    if (!audioElement) return;
+    if ('preservesPitch' in audioElement) {
+        audioElement.preservesPitch = enabled;
+    }
+    if ('webkitPreservesPitch' in audioElement) {
+        audioElement.webkitPreservesPitch = enabled;
+    }
+    if ('mozPreservesPitch' in audioElement) {
+        audioElement.mozPreservesPitch = enabled;
+    }
+}
+
+function restoreGlitchMediaPlayback(audioElement, fallbackVolume) {
+    const snapshot = glitchUiState.mediaPlaybackSnapshot;
+    const targetElement = snapshot?.element || audioElement;
+    if (!targetElement) {
+        glitchUiState.mediaPlaybackSnapshot = null;
+        return;
+    }
+
+    targetElement.playbackRate = snapshot?.playbackRate ?? 1;
+    if (snapshot?.preservesPitch !== undefined && 'preservesPitch' in targetElement) {
+        targetElement.preservesPitch = snapshot.preservesPitch;
+    }
+    if (snapshot?.webkitPreservesPitch !== undefined && 'webkitPreservesPitch' in targetElement) {
+        targetElement.webkitPreservesPitch = snapshot.webkitPreservesPitch;
+    }
+    if (snapshot?.mozPreservesPitch !== undefined && 'mozPreservesPitch' in targetElement) {
+        targetElement.mozPreservesPitch = snapshot.mozPreservesPitch;
+    }
+
+    if (Number.isFinite(fallbackVolume)) {
+        targetElement.volume = clamp01(fallbackVolume);
+    }
+    glitchUiState.mediaPlaybackSnapshot = null;
+}
+
 function scheduleGlitchWarbleCycle(bgMusic, chain) {
-    if (!bgMusic || !chain || !chain.context) return;
+    if (!bgMusic || !glitchUiState.isUiGlitching) return;
 
     resetGlitchWarbleTimer();
 
-    const baseGain = chain.baseGain ?? computeEffectiveBackgroundVolume(bgMusic);
-    const context = chain.context;
     const reducedGlitch = Boolean(appState.qualityPreferences?.reduceGlitchEffects);
-    const duration = reducedGlitch ? randomDecimalBetween(0.26, 0.62) : randomDecimalBetween(0.18, 0.45);
-    const wobble = reducedGlitch ? randomDecimalBetween(0.03, 0.08) : randomDecimalBetween(0.08, 0.18);
-    const target = Math.max(0, baseGain - wobble);
+    const baseGain = chain?.baseGain ?? computeEffectiveBackgroundVolume(bgMusic);
+    const playbackRates = reducedGlitch
+        ? [0.9, 0.96, 1.04, 1.1]
+        : [0.58, 0.72, 0.86, 1.08, 1.24, 1.48];
+    const nextPlaybackRate = playbackRates[Math.floor(Math.random() * playbackRates.length)];
 
-    if (typeof chain.gainNode.gain.setValueAtTime === 'function') {
-        chain.gainNode.gain.setValueAtTime(baseGain, context.currentTime);
-        chain.gainNode.gain.linearRampToValueAtTime(target, context.currentTime + duration);
-        chain.gainNode.gain.linearRampToValueAtTime(baseGain, context.currentTime + duration + 0.12);
-    } else {
-        chain.gainNode.gain.value = baseGain;
+    captureGlitchMediaPlayback(bgMusic);
+    setGlitchPitchPreservation(bgMusic, false);
+    bgMusic.playbackRate = nextPlaybackRate;
+
+    if (!reducedGlitch && !bgMusic.paused && bgMusic.readyState >= 1 && Math.random() < 0.38) {
+        try {
+            bgMusic.currentTime = Math.max(0, bgMusic.currentTime - randomDecimalBetween(0.025, 0.11));
+        } catch (error) {}
     }
 
-    glitchUiState.activeTimeoutId = window.setTimeout(() => {
-        glitchUiState.activeTimeoutId = null;
+    if (chain?.context && chain.gainNode) {
+        const context = chain.context;
+        const now = context.currentTime;
+        const cutDuration = reducedGlitch
+            ? randomDecimalBetween(0.12, 0.28)
+            : randomDecimalBetween(0.035, 0.14);
+        const cutMultiplier = reducedGlitch
+            ? randomDecimalBetween(0.64, 0.88)
+            : randomDecimalBetween(0.06, 0.52);
+        const gainParam = chain.gainNode.gain;
+
+        if (typeof gainParam.cancelScheduledValues === 'function') {
+            gainParam.cancelScheduledValues(now);
+        }
+        if (typeof gainParam.setValueAtTime === 'function') {
+            gainParam.setValueAtTime(baseGain, now);
+            gainParam.linearRampToValueAtTime(baseGain * cutMultiplier, now + cutDuration);
+            gainParam.linearRampToValueAtTime(baseGain, now + cutDuration + (reducedGlitch ? 0.16 : 0.055));
+        } else {
+            gainParam.value = baseGain * cutMultiplier;
+        }
+
+        const filter = glitchUiState.distortionNode;
+        if (filter) {
+            const targetFrequency = reducedGlitch
+                ? randomDecimalBetween(180, 620)
+                : randomDecimalBetween(220, 1900);
+            const targetQ = reducedGlitch
+                ? randomDecimalBetween(0.7, 2.6)
+                : randomDecimalBetween(2.5, 10);
+            filter.frequency.setValueAtTime(targetFrequency, now);
+            filter.Q.setValueAtTime(targetQ, now);
+        }
+
+        const panner = glitchUiState.stereoPannerNode;
+        if (panner?.pan) {
+            const panRange = reducedGlitch ? 0.24 : 0.88;
+            panner.pan.setValueAtTime(randomDecimalBetween(-panRange, panRange), now);
+        }
+
+        const ditherGain = glitchUiState.ditherGainNode?.gain;
+        if (ditherGain) {
+            const ditherLevel = reducedGlitch
+                ? randomDecimalBetween(0.006, 0.018)
+                : randomDecimalBetween(0.035, 0.12);
+            ditherGain.cancelScheduledValues(now);
+            ditherGain.setTargetAtTime(ditherLevel, now, reducedGlitch ? 0.08 : 0.012);
+        }
+    } else {
+        const fallbackCut = reducedGlitch
+            ? randomDecimalBetween(0.7, 0.92)
+            : randomDecimalBetween(0.22, 0.76);
+        bgMusic.volume = clamp01(baseGain * fallbackCut);
+    }
+
+    glitchUiState.warbleTimeoutId = window.setTimeout(() => {
+        glitchUiState.warbleTimeoutId = null;
         scheduleGlitchWarbleCycle(bgMusic, chain);
-    }, Math.floor(reducedGlitch ? randomDecimalBetween(1200, 2100) : randomDecimalBetween(650, 1080)));
+    }, Math.floor(reducedGlitch ? randomDecimalBetween(420, 760) : randomDecimalBetween(90, 250)));
 }
 
 const GLITCH_BURST_TRIGGER_CHANCE = 0.99;
 
 function computeGlitchRestDelay() {
     if (appState.qualityPreferences?.reduceGlitchEffects) {
-        return Math.floor(randomDecimalBetween(12000, 22000));
+        return Math.floor(randomDecimalBetween(9000, 15000));
     }
-    return Math.floor(randomDecimalBetween(5000, 11000));
+    return Math.floor(randomDecimalBetween(7000, 13000));
 }
 
 function computeGlitchBurstDuration() {
     if (appState.qualityPreferences?.reduceGlitchEffects) {
-        return Math.floor(randomDecimalBetween(900, 1500));
+        return Math.floor(randomDecimalBetween(1200, 1800));
     }
-    return Math.floor(randomDecimalBetween(2400, 3400));
+    return Math.floor(randomDecimalBetween(1200, 2400));
 }
 
-function createDistortionCurve(amount = 0) {
-    const k = Number(amount) || 50;
-    const samples = 44100;
+const glitchAudioCurveCache = new Map();
+
+function createDigitalCorruptionCurve({ bits, drive, dither }) {
+    const samples = 32768;
+    const levels = Math.max(4, 2 ** bits);
     const curve = new Float32Array(samples);
-    const deg = Math.PI / 180;
-    for (let i = 0; i < samples; ++i) {
+
+    for (let i = 0; i < samples; i += 1) {
         const x = (i * 2) / samples - 1;
-        curve[i] = ((3 + k) * x * 20 * deg) / (Math.PI + k * Math.abs(x));
+        const driven = Math.tanh(x * drive);
+        const noiseSeed = Math.sin((i + 1) * 12.9898) * 43758.5453;
+        const ditherNoise = ((noiseSeed - Math.floor(noiseSeed)) * 2 - 1) * dither;
+        const quantized = Math.round((driven + ditherNoise) * levels) / levels;
+        curve[i] = Math.max(-1, Math.min(1, quantized));
     }
+
     return curve;
+}
+
+function getDigitalCorruptionCurve(reducedGlitch) {
+    const profile = reducedGlitch ? 'reduced' : 'full';
+    if (!glitchAudioCurveCache.has(profile)) {
+        glitchAudioCurveCache.set(
+            profile,
+            createDigitalCorruptionCurve(
+                reducedGlitch
+                    ? { bits: 8, drive: 1.35, dither: 0.0035 }
+                    : { bits: 4, drive: 3.2, dither: 0.026 }
+            )
+        );
+    }
+    return glitchAudioCurveCache.get(profile);
 }
 
 function ensureGlitchAudioChain(audioElement) {
@@ -3520,8 +3664,8 @@ function ensureGlitchAudioChain(audioElement) {
 
     if (!glitchUiState.waveShaper) {
         glitchUiState.waveShaper = context.createWaveShaper();
-        glitchUiState.waveShaper.curve = createDistortionCurve(120);
-        glitchUiState.waveShaper.oversample = '4x';
+        glitchUiState.waveShaper.curve = getDigitalCorruptionCurve(false);
+        glitchUiState.waveShaper.oversample = 'none';
     }
 
     if (!glitchUiState.distortionNode) {
@@ -3530,12 +3674,33 @@ function ensureGlitchAudioChain(audioElement) {
         glitchUiState.distortionNode.frequency.value = 240;
     }
 
+    if (!glitchUiState.stereoPannerNode && typeof context.createStereoPanner === 'function') {
+        glitchUiState.stereoPannerNode = context.createStereoPanner();
+        glitchUiState.stereoPannerNode.pan.value = 0;
+    }
+
+    const desiredPipeline = shouldUseGlitchBaseEffect() ? 'glitch' : 'clean';
+
+    if (desiredPipeline === 'glitch' && (!glitchUiState.ditherSourceNode || !glitchUiState.ditherGainNode)) {
+        const ditherBuffer = context.createBuffer(1, Math.floor(context.sampleRate * 0.75), context.sampleRate);
+        const ditherSamples = ditherBuffer.getChannelData(0);
+        for (let i = 0; i < ditherSamples.length; i += 1) {
+            ditherSamples[i] = Math.random() * 2 - 1;
+        }
+
+        glitchUiState.ditherSourceNode = context.createBufferSource();
+        glitchUiState.ditherSourceNode.buffer = ditherBuffer;
+        glitchUiState.ditherSourceNode.loop = true;
+        glitchUiState.ditherGainNode = context.createGain();
+        glitchUiState.ditherGainNode.gain.value = 0;
+        glitchUiState.ditherSourceNode.connect(glitchUiState.ditherGainNode);
+        glitchUiState.ditherSourceNode.start();
+    }
+
     if (!glitchUiState.gainNode) {
         glitchUiState.gainNode = context.createGain();
         glitchUiState.gainNode.gain.value = computeEffectiveBackgroundVolume(audioElement);
     }
-
-    const desiredPipeline = shouldUseGlitchBaseEffect() ? 'glitch' : 'clean';
 
     if (glitchUiState.audioPipelineMode !== desiredPipeline) {
         if (glitchUiState.sourceNode) {
@@ -3547,6 +3712,12 @@ function ensureGlitchAudioChain(audioElement) {
         if (glitchUiState.distortionNode) {
             try { glitchUiState.distortionNode.disconnect(); } catch (error) {}
         }
+        if (glitchUiState.stereoPannerNode) {
+            try { glitchUiState.stereoPannerNode.disconnect(); } catch (error) {}
+        }
+        if (glitchUiState.ditherGainNode) {
+            try { glitchUiState.ditherGainNode.disconnect(); } catch (error) {}
+        }
         if (glitchUiState.gainNode) {
             try { glitchUiState.gainNode.disconnect(); } catch (error) {}
         }
@@ -3554,9 +3725,16 @@ function ensureGlitchAudioChain(audioElement) {
         if (desiredPipeline === 'glitch') {
             glitchUiState.sourceNode
                 .connect(glitchUiState.waveShaper)
-                .connect(glitchUiState.distortionNode)
-                .connect(glitchUiState.gainNode)
-                .connect(context.destination);
+                .connect(glitchUiState.distortionNode);
+            glitchUiState.ditherGainNode.connect(glitchUiState.distortionNode);
+            if (glitchUiState.stereoPannerNode) {
+                glitchUiState.distortionNode
+                    .connect(glitchUiState.stereoPannerNode)
+                    .connect(glitchUiState.gainNode);
+            } else {
+                glitchUiState.distortionNode.connect(glitchUiState.gainNode);
+            }
+            glitchUiState.gainNode.connect(context.destination);
         } else {
             glitchUiState.sourceNode
                 .connect(glitchUiState.gainNode)
@@ -3577,24 +3755,242 @@ function updateGlitchAudioControls(enabled) {
     const bgMusic = document.getElementById('ambientMusic');
     if (!bgMusic) return;
 
-    const { chain } = synchronizeBackgroundRouting(bgMusic);
-    if (!chain) {
-        if (!enabled) {
-            resetGlitchWarbleTimer();
-        }
-        return;
-    }
+    const { baseVolume, chain } = synchronizeBackgroundRouting(bgMusic);
 
     if (enabled) {
+        const reducedGlitch = Boolean(appState.qualityPreferences?.reduceGlitchEffects);
+        const profile = reducedGlitch ? 'reduced' : 'full';
+        if (glitchUiState.waveShaper && glitchUiState.audioCorruptionProfile !== profile) {
+            glitchUiState.waveShaper.curve = getDigitalCorruptionCurve(reducedGlitch);
+            glitchUiState.audioCorruptionProfile = profile;
+        }
         scheduleGlitchWarbleCycle(bgMusic, chain);
     } else {
         resetGlitchWarbleTimer();
-        const baseVolume = chain.baseGain ?? computeEffectiveBackgroundVolume(bgMusic);
-        if (typeof chain.gainNode.gain.setTargetAtTime === 'function') {
-            chain.gainNode.gain.setTargetAtTime(baseVolume, chain.context.currentTime, 0.1);
-        } else {
-            chain.gainNode.gain.value = baseVolume;
+        glitchUiState.audioCorruptionProfile = null;
+        restoreGlitchMediaPlayback(bgMusic, chain ? 1 : baseVolume);
+        if (chain?.gainNode) {
+            const now = chain.context.currentTime;
+            if (typeof chain.gainNode.gain.cancelScheduledValues === 'function') {
+                chain.gainNode.gain.cancelScheduledValues(now);
+            }
+            if (typeof chain.gainNode.gain.setTargetAtTime === 'function') {
+                chain.gainNode.gain.setTargetAtTime(baseVolume, now, 0.025);
+            } else {
+                chain.gainNode.gain.value = baseVolume;
+            }
         }
+        if (glitchUiState.stereoPannerNode?.pan && chain?.context) {
+            glitchUiState.stereoPannerNode.pan.setValueAtTime(0, chain.context.currentTime);
+        }
+        if (glitchUiState.ditherGainNode?.gain && chain?.context) {
+            const now = chain.context.currentTime;
+            glitchUiState.ditherGainNode.gain.cancelScheduledValues(now);
+            glitchUiState.ditherGainNode.gain.setValueAtTime(0, now);
+        }
+    }
+}
+
+const GLITCH_SIGNAL_READOUTS = Object.freeze([
+    'SIGNAL_DESYNC // 0xF7',
+    'FRAME_LOSS // MEMORY_ERR',
+    'UI_THREAD // CORRUPTED',
+    'PACKET_GHOST // NULL',
+    'REALITY_OFFSET // +13',
+    'NO_CARRIER // RETRY_LOOP'
+]);
+
+const GLITCH_CONSOLE_ERRORS = Object.freeze([
+    'RealityBuffer overflowed while rendering purple.',
+    'AuraRegistryError: GLITCH attempted to roll the developer.',
+    'ServerInfoException: Luck escaped containment and refuses to come back.',
+    'NullPointerException: The null pointer is pointing at another null pointer.',
+    'DreamCatcher.dll tried to enter Limbo and was politely removed.',
+    'ConsoleInspectionError: The console noticed you noticing it.',
+    'PacketLossError: Lost three packets and one sandwich.',
+    'BiomeIntegrityError: Cyan and purple are arguing over the z-index.'
+]);
+
+const GLITCH_ENTRY_ERROR_MESSAGES = Object.freeze([
+    Object.freeze({ title: '<< SERVER INFO >>', code: '0xF7A2://BIOME_HANDSHAKE', message: 'UNSTABLE REALITY BUFFER DETECTED' }),
+    Object.freeze({ title: '<< CLIENT ERROR >>', code: 'GLITCH_UI::MOUNT_FAILURE', message: 'AURA INDEX DESYNCHRONIZED' }),
+    Object.freeze({ title: '<< ROLL ENGINE >>', code: 'LUCK_BUFFER = NaN', message: 'PLEASE DO NOT FEED THE NULL POINTER' }),
+    Object.freeze({ title: '<< VERY NORMAL ERROR >>', code: 'ERROR 418://REALITY_IS_TEA', message: 'THIS MESSAGE IS PROBABLY FINE' }),
+    Object.freeze({ title: '<< PACKET FAILURE >>', code: '0x0000F7::NO_CARRIER', message: 'THREE PACKETS AND A SANDWICH ARE MISSING' }),
+    Object.freeze({ title: '<< AURA SERVICE >>', code: 'REGISTRY://PURPLE_OVERFLOW', message: 'CYAN HAS FILED A FORMAL COMPLAINT' }),
+    Object.freeze({ title: '<< REALITY DRIVER >>', code: 'DIMENSION_INDEX = -13', message: 'CURRENT BIOME MAY BE SLIGHTLY SIDEWAYS' }),
+    Object.freeze({ title: '<< CONSOLE WATCH >>', code: 'INSPECTOR_AWARENESS = TRUE', message: 'THE CONSOLE KNOWS THAT YOU ARE LOOKING' })
+]);
+
+function createGlitchErrorCode() {
+    return Math.floor(Math.random() * 0xFFFFFF)
+        .toString(16)
+        .toUpperCase()
+        .padStart(6, '0');
+}
+
+function emitGlitchConsoleErrors() {
+    if (!experienceStarted || typeof console === 'undefined' || typeof console.error !== 'function') return;
+
+    const shuffledErrors = [...GLITCH_CONSOLE_ERRORS];
+    for (let index = shuffledErrors.length - 1; index > 0; index -= 1) {
+        const swapIndex = Math.floor(Math.random() * (index + 1));
+        [shuffledErrors[index], shuffledErrors[swapIndex]] = [shuffledErrors[swapIndex], shuffledErrors[index]];
+    }
+
+    shuffledErrors.slice(0, 4).forEach((message, index) => {
+        console.error(`[GLITCH://FAKE_ERROR 0x${createGlitchErrorCode()}.${index}] ${message}`);
+    });
+}
+
+function concealGlitchEntryErrors() {
+    const overlay = document.getElementById('glitchEntryErrors');
+    const body = document.body;
+
+    if (glitchUiState.entryErrorTimeoutId !== null) {
+        window.clearTimeout(glitchUiState.entryErrorTimeoutId);
+        glitchUiState.entryErrorTimeoutId = null;
+    }
+    if (glitchUiState.entryErrorFrameId !== null) {
+        window.cancelAnimationFrame(glitchUiState.entryErrorFrameId);
+        glitchUiState.entryErrorFrameId = null;
+    }
+
+    body?.classList.remove('glitch-entry-errors-active');
+    if (overlay) {
+        overlay.hidden = true;
+    }
+}
+
+function triggerGlitchEntryErrors() {
+    if (!experienceStarted || appState.qualityPreferences?.removeGlitchEffects) return;
+
+    const overlay = document.getElementById('glitchEntryErrors');
+    const body = document.body;
+    if (!overlay || !body) return;
+
+    concealGlitchEntryErrors();
+    const messages = [...GLITCH_ENTRY_ERROR_MESSAGES];
+    for (let index = messages.length - 1; index > 0; index -= 1) {
+        const swapIndex = Math.floor(Math.random() * (index + 1));
+        [messages[index], messages[swapIndex]] = [messages[swapIndex], messages[index]];
+    }
+
+    overlay.querySelectorAll('[data-glitch-entry-error]').forEach((card, index) => {
+        const error = messages[index];
+        card.style.setProperty('--glitch-entry-delay', `${index * 95}ms`);
+        const title = card.querySelector('[data-glitch-entry-title]');
+        const code = card.querySelector('[data-glitch-entry-code]');
+        const message = card.querySelector('[data-glitch-entry-message]');
+        if (title) title.textContent = error.title;
+        if (code) code.textContent = `${error.code} // ${createGlitchErrorCode()}`;
+        if (message) message.textContent = error.message;
+    });
+
+    overlay.hidden = false;
+    glitchUiState.entryErrorFrameId = window.requestAnimationFrame(() => {
+        glitchUiState.entryErrorFrameId = null;
+        body.classList.add('glitch-entry-errors-active');
+    });
+    glitchUiState.entryErrorTimeoutId = window.setTimeout(() => {
+        glitchUiState.entryErrorTimeoutId = null;
+        body.classList.remove('glitch-entry-errors-active');
+        overlay.hidden = true;
+    }, 4300);
+}
+
+const GLITCH_FRAGMENT_PALETTES = Object.freeze([
+    Object.freeze({
+        fill: 'rgba(0, 236, 255, 0.9)',
+        line: 'rgba(224, 253, 255, 0.98)',
+        accent: 'rgba(0, 246, 255, 0.96)',
+        border: 'rgba(105, 251, 255, 0.98)',
+        glow: 'rgba(0, 229, 255, 0.82)',
+        shadow: 'rgba(127, 29, 255, 0.76)'
+    }),
+    Object.freeze({
+        fill: 'rgba(126, 25, 255, 0.92)',
+        line: 'rgba(216, 176, 255, 0.96)',
+        accent: 'rgba(170, 43, 255, 0.98)',
+        border: 'rgba(185, 77, 255, 0.98)',
+        glow: 'rgba(126, 25, 255, 0.86)',
+        shadow: 'rgba(0, 246, 255, 0.78)'
+    }),
+    Object.freeze({
+        fill: 'rgba(1, 0, 8, 0.98)',
+        line: 'rgba(0, 240, 255, 0.76)',
+        accent: 'rgba(133, 30, 255, 0.9)',
+        border: 'rgba(8, 4, 16, 1)',
+        glow: 'rgba(0, 0, 0, 0.96)',
+        shadow: 'rgba(0, 238, 255, 0.68)'
+    })
+]);
+
+function randomizeGlitchSignal() {
+    const signalLayer = document.getElementById('glitchSignalOverlay');
+    if (!signalLayer) return;
+
+    const tears = signalLayer.querySelectorAll('.glitch-signal__tear');
+    tears.forEach((tear, index) => {
+        const direction = index % 2 === 0 ? 1 : -1;
+        const tearY = randomDecimalBetween(5, 92);
+        const tearX = direction * randomDecimalBetween(4.5, 14);
+        const tearEndX = -direction * randomDecimalBetween(3.5, 11);
+        tear.style.setProperty('--glitch-tear-y', `${tearY.toFixed(2)}vh`);
+        tear.style.setProperty('--glitch-tear-x', `${tearX.toFixed(2)}vw`);
+        tear.style.setProperty('--glitch-tear-end-x', `${tearEndX.toFixed(2)}vw`);
+        tear.style.setProperty('--glitch-tear-height', `${Math.floor(randomDecimalBetween(5, 18))}px`);
+        tear.style.setProperty('--glitch-tear-delay', `${Math.floor(randomDecimalBetween(0, 120))}ms`);
+    });
+
+    const fragments = signalLayer.querySelectorAll('.glitch-signal__fragment');
+    fragments.forEach((fragment, index) => {
+        const palette = GLITCH_FRAGMENT_PALETTES[Math.floor(Math.random() * GLITCH_FRAGMENT_PALETTES.length)];
+        const isSquare = index % 3 === 0;
+        const fragmentWidth = isSquare
+            ? randomDecimalBetween(22, 70)
+            : randomDecimalBetween(52, 188);
+        const fragmentHeight = isSquare
+            ? fragmentWidth * randomDecimalBetween(0.74, 1.16)
+            : randomDecimalBetween(9, 46);
+        const shiftX = randomDecimalBetween(-30, 30);
+        const shiftY = randomDecimalBetween(-13, 13);
+
+        fragment.style.setProperty('--glitch-fragment-left', `${randomDecimalBetween(2, 92).toFixed(2)}vw`);
+        fragment.style.setProperty('--glitch-fragment-top', `${randomDecimalBetween(4, 91).toFixed(2)}vh`);
+        fragment.style.setProperty('--glitch-fragment-width', `${fragmentWidth.toFixed(1)}px`);
+        fragment.style.setProperty('--glitch-fragment-height', `${fragmentHeight.toFixed(1)}px`);
+        fragment.style.setProperty('--glitch-fragment-shift-x', `${shiftX.toFixed(1)}px`);
+        fragment.style.setProperty('--glitch-fragment-shift-y', `${shiftY.toFixed(1)}px`);
+        fragment.style.setProperty('--glitch-fragment-return-x', `${(-shiftX * randomDecimalBetween(0.32, 0.72)).toFixed(1)}px`);
+        fragment.style.setProperty('--glitch-fragment-return-y', `${(-shiftY * randomDecimalBetween(0.24, 0.66)).toFixed(1)}px`);
+        fragment.style.setProperty('--glitch-fragment-scale-x', randomDecimalBetween(0.78, 1.34).toFixed(2));
+        fragment.style.setProperty('--glitch-fragment-line-step', `${Math.floor(randomDecimalBetween(3, 8))}px`);
+        fragment.style.setProperty('--glitch-fragment-shadow-x', `${randomDecimalBetween(-13, 13).toFixed(1)}px`);
+        fragment.style.setProperty('--glitch-fragment-delay', `${Math.floor(randomDecimalBetween(0, 260))}ms`);
+        fragment.style.setProperty('--glitch-fragment-duration', `${Math.floor(randomDecimalBetween(220, 580))}ms`);
+        fragment.style.setProperty('--glitch-fragment-ambient-duration', `${Math.floor(randomDecimalBetween(3800, 7200))}ms`);
+        fragment.style.setProperty('--glitch-fragment-ambient-delay', `${-Math.floor(randomDecimalBetween(0, 7200))}ms`);
+        fragment.style.setProperty('--glitch-fragment-reduced-duration', `${Math.floor(randomDecimalBetween(8200, 12800))}ms`);
+        fragment.style.setProperty('--glitch-fragment-reduced-delay', `${-Math.floor(randomDecimalBetween(0, 12800))}ms`);
+        fragment.style.setProperty('--glitch-fragment-reduced-burst-duration', `${Math.floor(randomDecimalBetween(3800, 6200))}ms`);
+        fragment.style.setProperty('--glitch-fragment-fill', palette.fill);
+        fragment.style.setProperty('--glitch-fragment-line', palette.line);
+        fragment.style.setProperty('--glitch-fragment-accent', palette.accent);
+        fragment.style.setProperty('--glitch-fragment-border', palette.border);
+        fragment.style.setProperty('--glitch-fragment-glow', palette.glow);
+        fragment.style.setProperty('--glitch-fragment-shadow', palette.shadow);
+    });
+
+    const shellShiftX = randomDecimalBetween(4.2, 9.2);
+    const shellShiftY = randomDecimalBetween(2.2, 5.8);
+    document.body.style.setProperty('--glitch-shell-shift-x', `${shellShiftX.toFixed(2)}px`);
+    document.body.style.setProperty('--glitch-shell-shift-y', `${shellShiftY.toFixed(2)}px`);
+
+    const readout = signalLayer.querySelector('.glitch-signal__readout');
+    if (readout) {
+        const messageIndex = Math.floor(Math.random() * GLITCH_SIGNAL_READOUTS.length);
+        readout.textContent = GLITCH_SIGNAL_READOUTS[messageIndex];
     }
 }
 
@@ -3602,6 +3998,8 @@ function triggerGlitchBurst() {
     const body = document.body;
     if (!body) return;
 
+    randomizeGlitchSignal();
+    emitGlitchConsoleErrors();
     body.classList.add('is-glitching');
     glitchUiState.isUiGlitching = true;
     updateGlitchAudioControls(true);
@@ -3640,8 +4038,8 @@ function executeGlitchBurstSequence() {
 
     const activeDuration = computeGlitchBurstDuration();
 
-    glitchUiState.activeTimeoutId = window.setTimeout(() => {
-        glitchUiState.activeTimeoutId = null;
+    glitchUiState.burstTimeoutId = window.setTimeout(() => {
+        glitchUiState.burstTimeoutId = null;
         completeGlitchBurst();
         const nextDelay = computeGlitchRestDelay();
         queueGlitchBurstCycle(nextDelay);
@@ -3659,7 +4057,7 @@ function startGlitchLoop(forceImmediate = false) {
 }
 
 function isGlitchLoopScheduled() {
-    return glitchUiState.loopTimeoutId !== null;
+    return glitchUiState.loopTimeoutId !== null || glitchUiState.burstTimeoutId !== null;
 }
 
 function stopGlitchLoop(options = {}) {
@@ -3669,10 +4067,11 @@ function stopGlitchLoop(options = {}) {
         window.clearTimeout(glitchUiState.loopTimeoutId);
         glitchUiState.loopTimeoutId = null;
     }
-    if (glitchUiState.activeTimeoutId !== null) {
-        window.clearTimeout(glitchUiState.activeTimeoutId);
-        glitchUiState.activeTimeoutId = null;
+    if (glitchUiState.burstTimeoutId !== null) {
+        window.clearTimeout(glitchUiState.burstTimeoutId);
+        glitchUiState.burstTimeoutId = null;
     }
+    resetGlitchWarbleTimer();
     glitchUiState.isUiGlitching = false;
     if (!body || !root) return;
 
@@ -3699,18 +4098,35 @@ function applyGlitchVisuals(enabled, options = {}) {
     if (!body || !root) return;
 
     const { forceTheme = false } = options;
+    const nextPresentationMode = enabled
+        ? (appState.qualityPreferences?.reduceGlitchEffects ? 'reduced' : 'full')
+        : 'disabled';
+    const presentationModeChanged = glitchUiState.presentationMode !== nextPresentationMode;
+    glitchUiState.presentationMode = nextPresentationMode;
+    body.classList.toggle('glitch-effects-enabled', enabled);
+    root.classList.toggle('glitch-effects-enabled', enabled);
 
     if (enabled) {
         body.classList.add('biome--glitch');
         root.classList.add('biome--glitch');
         if (!glitchPresentationEnabled) {
+            triggerGlitchEntryErrors();
             glitchPresentationEnabled = true;
-            startGlitchLoop();
+            startGlitchLoop(true);
+        } else if (presentationModeChanged) {
+            resetGlitchRuinTimer();
+            if (glitchUiState.burstTimeoutId !== null) {
+                window.clearTimeout(glitchUiState.burstTimeoutId);
+                glitchUiState.burstTimeoutId = null;
+            }
+            completeGlitchBurst();
+            startGlitchLoop(true);
         } else if (!isGlitchLoopScheduled()) {
             startGlitchLoop();
         }
         updateGlitchAudioControls(shouldUseGlitchBaseEffect());
     } else {
+        concealGlitchEntryErrors();
         if (glitchPresentationEnabled) {
             glitchPresentationEnabled = false;
             stopGlitchLoop({ forceClear: !forceTheme });
@@ -3966,17 +4382,17 @@ const SIMULATION_METHOD = Object.freeze({
 });
 
 const MULTI_POTION_CONFIGS = Object.freeze([
-    Object.freeze({ id: 'heavenly', label: 'Heavenly Potion', luck: 150000 }),
-    Object.freeze({ id: 'oblivion', label: 'Oblivion Potion', luck: 600000, oblivion: true, blocksRunes: true }),
-    Object.freeze({ id: 'pump-kings-blood', label: "Pump King's Blood", luck: 700000, blocksRunes: true }),
-    Object.freeze({ id: 'godlike', label: 'Godlike Potion', luck: 400000 }),
-    Object.freeze({ id: 'blood-ii', label: 'Red Moon II', luck: 200000, bloodPreset: 'blood-ii' }),
-    Object.freeze({ id: 'candy-corn', label: 'Candy Corn', luck: 75000 }),
-    Object.freeze({ id: 'bound', label: 'Bound Potion', luck: 50000 }),
-    Object.freeze({ id: 'blood-i', label: 'Red Moon I', luck: 11000, bloodPreset: 'blood-i' }),
-    Object.freeze({ id: 'dune', label: 'Potion of the Dune', luck: 10000, dune: true }),
-    Object.freeze({ id: 'popping', label: 'Popping Potion', luck: 10000 }),
-    Object.freeze({ id: 'tutorial-potion', label: 'Tutorial Potion', luck: 5000, blocksRunes: true })
+    Object.freeze({ id: 'heavenly', label: 'Heavenly Potion', resultLabel: 'Heavenly', resultClass: 'heavenlyClass', luck: 150000 }),
+    Object.freeze({ id: 'oblivion', label: 'Oblivion Potion', resultLabel: 'Oblivion', resultClass: 'oblivionClass', luck: 600000, oblivion: true, blocksRunes: true }),
+    Object.freeze({ id: 'pump-kings-blood', label: "Pump King's Blood", resultLabel: "Pump King's Blood", resultClass: 'pumpBloodClass', luck: 700000, blocksRunes: true }),
+    Object.freeze({ id: 'godlike', label: 'Godlike Potion', resultLabel: 'Godlike', resultClass: 'godlikeClass', luck: 400000 }),
+    Object.freeze({ id: 'blood-ii', label: 'Red Moon II', resultLabel: 'Red Moon II', resultClass: 'bloodIIClass', luck: 200000, bloodPreset: 'blood-ii' }),
+    Object.freeze({ id: 'candy-corn', label: 'Candy Corn', resultLabel: 'Candy Corn', resultClass: 'candyClass', luck: 75000 }),
+    Object.freeze({ id: 'bound', label: 'Bound Potion', resultLabel: 'Bound', resultClass: 'boundClass', luck: 50000 }),
+    Object.freeze({ id: 'blood-i', label: 'Red Moon I', resultLabel: 'Red Moon I', resultClass: 'bloodClass', luck: 11000, bloodPreset: 'blood-i' }),
+    Object.freeze({ id: 'dune', label: 'Potion of the Dune', resultLabel: 'Potion of the Dune', resultClass: 'duneClass', luck: 10000, dune: true }),
+    Object.freeze({ id: 'popping', label: 'Popping Potion', resultLabel: 'Popping', resultClass: 'popClass', luck: 10000 }),
+    Object.freeze({ id: 'tutorial-potion', label: 'Tutorial Potion', resultLabel: 'Tutorial Potion', resultClass: 'tutPotion', luck: 5000, blocksRunes: true })
 ]);
 
 const MULTI_POTION_CONFIG_BY_ID = new Map(MULTI_POTION_CONFIGS.map(config => [config.id, config]));
@@ -4419,6 +4835,35 @@ function createMultiplePotionBatch(config, count, luckState) {
         deviceLuckBonus: luckState.deviceLuckBonus,
         finalLuckMultiplier: luckState.finalLuckMultiplier
     };
+}
+
+function getMultiplePotionBatchResultConfigs(batch) {
+    const potionIds = Array.isArray(batch?.potionIds) && batch.potionIds.length > 0
+        ? batch.potionIds
+        : [batch?.id];
+    return potionIds
+        .map(id => MULTI_POTION_CONFIG_BY_ID.get(id))
+        .filter(Boolean);
+}
+
+function formatMultiplePotionBatchResultText(batch) {
+    const potionConfigs = getMultiplePotionBatchResultConfigs(batch);
+    const potionNames = potionConfigs.length > 0
+        ? potionConfigs.map(config => config.resultLabel || config.label).join(' + ')
+        : 'Potion';
+    const luckValue = Number.isFinite(batch?.luckValue) ? Math.max(0, batch.luckValue) : 0;
+    return `With ${potionNames} (${formatWithCommas(luckValue)} Luck)`;
+}
+
+function formatMultiplePotionBatchResultMarkup(batch) {
+    const potionConfigs = getMultiplePotionBatchResultConfigs(batch);
+    const potionMarkup = potionConfigs.length > 0
+        ? potionConfigs.map(config => (
+            `<span class="${config.resultClass}">${config.resultLabel || config.label}</span>`
+        )).join(' + ')
+        : 'Potion';
+    const luckValue = Number.isFinite(batch?.luckValue) ? Math.max(0, batch.luckValue) : 0;
+    return `<span class="tinyClass">With ${potionMarkup} (${formatWithCommas(luckValue)} Luck)</span>`;
 }
 
 function stackCompatiblePotionBatches(batches, luckState) {
@@ -5072,7 +5517,7 @@ function setSingularityPreset() {
 function setLimboPreset() {
     setPrimaryBiomeSelection('limbo');
     setOtherBiomeSelection('none');
-    setTimeBiomeSelection('none');
+    setTimeBiomeSelection('day');
     playSoundEffect(clickSoundEffectElement, 'ui');
     updateBiomeControlConstraints({ source: BIOME_PRIMARY_SELECT_ID });
 }
@@ -5808,7 +6253,7 @@ const auraOutlineOverrides = new Map([
     ['Dreammetric', 'sigil-outline-dreammetric'],
     ['Borealis', 'sigil-outline-borealis'],
     ['Empty', 'sigil-outline-empty'],
-    ['Glitch', 'sigil-effect-outline-glitch'],
+    ['Glitch', 'sigil-effect-glitch'],
     ['Fault', 'sigil-outline-glitch'],
     ['[CONTENT DELETED]', 'sigil-outline-glitch'],
     ['Hatchwarden', 'sigil-outline-easter-2026'],
@@ -6162,6 +6607,15 @@ function clearActiveLuckPotionPresets({ syncBiomeConstraints = true } = {}) {
 function formatAuraNameMarkup(aura, overrideName) {
     if (!aura) return overrideName || '';
     const baseName = typeof overrideName === 'string' && overrideName.length > 0 ? overrideName : aura.name;
+    if (baseName === 'Glitch' || baseName.startsWith('Glitch - ')) {
+        const [namePart, ...restParts] = baseName.split(' - ');
+        const suffix = restParts.length > 0 ? ` - ${restParts.join(' - ')}` : '';
+        const glitchMarkup = `<span class="sigil-effect-glitch__title">${namePart.toUpperCase()}</span>${suffix}`;
+        if (aura.subtitle) {
+            return `${glitchMarkup} <span class="sigil-subtitle">${aura.subtitle}</span>`;
+        }
+        return glitchMarkup;
+    }
     if (baseName.startsWith('Breakthrough')) {
         const [namePart, ...restParts] = baseName.split(' - ');
         const suffix = restParts.length > 0 ? ` - ${restParts.join(' - ')}` : '';
@@ -8376,6 +8830,54 @@ function initializeHelpCenter() {
         }
     };
 
+    const launchTourCompletionConfetti = () => {
+        guidedTour.querySelector('.help-tour-confetti')?.remove();
+        if (
+            prefersReducedMotion()
+            || document.body.classList.contains('quality-no-particles')
+        ) {
+            return;
+        }
+
+        const confettiLayer = document.createElement('div');
+        confettiLayer.className = 'help-tour-confetti';
+        confettiLayer.setAttribute('aria-hidden', 'true');
+        const colors = ['#77d9ff', '#7af0bd', '#ffe47a', '#ff8eae', '#bb8cff', '#f4fbff'];
+        const pieceCount = 42;
+        const fragment = document.createDocumentFragment();
+
+        for (let index = 0; index < pieceCount; index += 1) {
+            const progress = pieceCount === 1 ? 0.5 : index / (pieceCount - 1);
+            const horizontalDistance = ((progress * 2) - 1) * (135 + (Math.random() * 95));
+            const endHorizontalDistance = horizontalDistance * (1.08 + (Math.random() * 0.18));
+            const riseDistance = -(75 + (Math.random() * 125));
+            const fallDistance = 75 + (Math.random() * 105);
+            const rotation = (Math.random() < 0.5 ? -1 : 1) * (280 + (Math.random() * 620));
+            const piece = document.createElement('span');
+
+            piece.className = 'help-tour-confetti__piece';
+            piece.style.setProperty('--confetti-color', colors[index % colors.length]);
+            piece.style.setProperty('--confetti-x', `${horizontalDistance.toFixed(1)}px`);
+            piece.style.setProperty('--confetti-end-x', `${endHorizontalDistance.toFixed(1)}px`);
+            piece.style.setProperty('--confetti-rise', `${riseDistance.toFixed(1)}px`);
+            piece.style.setProperty('--confetti-fall', `${fallDistance.toFixed(1)}px`);
+            piece.style.setProperty('--confetti-half-rotation', `${(rotation * 0.55).toFixed(1)}deg`);
+            piece.style.setProperty('--confetti-rotation', `${rotation.toFixed(1)}deg`);
+            piece.style.setProperty('--confetti-delay', `${Math.floor(Math.random() * 110)}ms`);
+            piece.style.setProperty('--confetti-duration', `${1150 + Math.floor(Math.random() * 450)}ms`);
+            piece.style.setProperty('--confetti-width', `${5 + Math.floor(Math.random() * 4)}px`);
+            piece.style.setProperty('--confetti-height', `${8 + Math.floor(Math.random() * 7)}px`);
+            if (index % 4 === 0) {
+                piece.classList.add('help-tour-confetti__piece--round');
+            }
+            fragment.appendChild(piece);
+        }
+
+        confettiLayer.appendChild(fragment);
+        guidedTour.appendChild(confettiLayer);
+        window.setTimeout(() => confettiLayer.remove(), 1800);
+    };
+
     const renderTour = () => {
         const lesson = tourLessons[currentTourLesson];
         const completedCount = completedTourLessons.size;
@@ -8439,6 +8941,7 @@ function initializeHelpCenter() {
         tourActive = true;
         currentTourLesson = 0;
         completedTourLessons.clear();
+        guidedTour.querySelector('.help-tour-confetti')?.remove();
         tourResumeButton.hidden = true;
         clearHighlightedTourTarget();
         renderTour();
@@ -8641,6 +9144,9 @@ function initializeHelpCenter() {
             }
         }
         renderTour();
+        if (completedTourLessons.size === tourLessons.length) {
+            launchTourCompletionConfetti();
+        }
     });
     tourSteps.addEventListener('click', event => {
         const stepButton = event.target.closest('[data-help-tour-step]');
@@ -9780,6 +10286,10 @@ function updateBiomeControlConstraints({ source = null, triggerSync = true } = {
 
     const limboSelected = primarySelect.value === 'limbo';
     if (limboSelected) {
+        if (timeSelect.value !== 'day') {
+            timeSelect.value = 'day';
+            timeChanged = true;
+        }
         if (oblivionPresetEnabled) {
             applyOblivionPresetOptions({ activateOblivionPreset: false });
         }
@@ -9843,9 +10353,19 @@ function updateBiomeControlConstraints({ source = null, triggerSync = true } = {
     Array.from(timeSelect.options).forEach(option => {
         let disabled = false;
         let title = '';
-        if (option.value === 'day' && DAY_RESTRICTED_BIOMES.has(primarySelect.value)) {
+        if (limboSelected) {
+            disabled = true;
+            title = 'Time is locked to Day while Limbo is selected.';
+            option.dataset.conditionMessage = title;
+            option.dataset.conditionLabel = option.textContent?.trim() || 'Time';
+        } else if (option.value === 'day' && DAY_RESTRICTED_BIOMES.has(primarySelect.value)) {
             disabled = true;
             title = 'Unavailable while Pumpkin Moon, Graveyard, or Blood Rain is selected.';
+            option.removeAttribute('data-condition-message');
+            option.removeAttribute('data-condition-label');
+        } else {
+            option.removeAttribute('data-condition-message');
+            option.removeAttribute('data-condition-label');
         }
         option.disabled = disabled;
         if (title) {
@@ -9855,7 +10375,7 @@ function updateBiomeControlConstraints({ source = null, triggerSync = true } = {
         }
     });
 
-    if (timeSelect.options[timeSelect.selectedIndex]?.disabled) {
+    if (!limboSelected && timeSelect.options[timeSelect.selectedIndex]?.disabled) {
         const fallback = findFirstEnabledOption(timeSelect, option => !option.disabled && option.value !== 'none');
         if (fallback) {
             timeSelect.value = fallback.value;
@@ -10540,6 +11060,12 @@ function determineAuraEffectiveChance(aura, context) {
     }
     if (aura?.name === DREAMCATCHER_AURA_NAME) {
         const activeBiomes = Array.isArray(context?.activeBiomes) ? context.activeBiomes : [];
+        const limboIsActive = context?.biome === 'limbo'
+            || context?.primaryBiome === 'limbo'
+            || activeBiomes.includes('limbo');
+        if (limboIsActive) {
+            return Infinity;
+        }
         const nightIsActive = activeBiomes.some(biomeId => DREAMCATCHER_ALLOWED_BIOMES.has(biomeId))
             || DREAMCATCHER_ALLOWED_BIOMES.has(context?.timeBiome)
             || DREAMCATCHER_ALLOWED_BIOMES.has(context?.biome);
@@ -10982,13 +11508,31 @@ function setupRollFeedSorting() {
     setRollFeedSortingAvailable(false, { resetMode: true, supportsRecent: false });
 }
 
-function buildResultEntries(registry, biome, breakthroughStatsMap, luckValue, { allowTrueChance = true } = {}) {
+function buildResultEntries(
+    registry,
+    biome,
+    breakthroughStatsMap,
+    luckValue,
+    { allowTrueChance = true, potionBatch = null, winCounts = null } = {}
+) {
     let entries = [];
+    const safeWinCounts = Array.isArray(winCounts) || ArrayBuffer.isView(winCounts)
+        ? winCounts
+        : null;
+    const potionSourceMarkup = potionBatch
+        ? formatMultiplePotionBatchResultMarkup(potionBatch)
+        : '';
+    const potionSourceText = potionBatch
+        ? formatMultiplePotionBatchResultText(potionBatch)
+        : '';
     for (const aura of registry) {
         if (shouldHideAuraFromRollFeed(aura, biome)) {
             continue;
         }
-        const winCount = readAuraWinCount(aura);
+        const auraIndex = getAuraIndex(aura);
+        const winCount = safeWinCounts && auraIndex >= 0
+            ? (Number.isFinite(safeWinCounts[auraIndex]) ? safeWinCounts[auraIndex] : 0)
+            : readAuraWinCount(aura);
         if (winCount <= 0) continue;
 
         const specialClass = typeof resolveAuraStyleClass === 'function' ? resolveAuraStyleClass(aura, biome) : '';
@@ -11038,19 +11582,22 @@ function buildResultEntries(registry, biome, breakthroughStatsMap, luckValue, { 
         });
 
         const pushVisualEntry = (markup, shareText, priority, visualRecord, auraName, rarityForRealChance) => {
-            const realChanceValue = allowTrueChance
+            const realChanceValue = !potionBatch
+                && allowTrueChance
                 && appState.selectiveTrueChanceDisplay
                 && !shouldHideSelectiveTrueChanceForAura(auraName)
                 ? formatRealChanceValue(rarityForRealChance, luckValue)
                 : null;
-            const realChanceMarkup = realChanceValue
-                ? `${markup} <span class="tinyClass">True Chance: 1 in ${realChanceValue}</span>`
-                : markup;
+            const resultSuffixMarkup = potionSourceMarkup
+                ? ` ${potionSourceMarkup}`
+                : (realChanceValue ? ` <span class="tinyClass">True Chance: 1 in ${realChanceValue}</span>` : '');
             entries.push({
-                markup: realChanceMarkup,
-                share: shareText,
+                markup: `${markup}${resultSuffixMarkup}`,
+                share: potionSourceText ? `${shareText} | ${potionSourceText}` : shareText,
                 priority,
-                visual: visualRecord || null,
+                visual: visualRecord
+                    ? { ...visualRecord, potionSource: potionSourceText || null }
+                    : null,
                 auraName: auraName || null,
                 tierKey: resolveAuraTierKey(aura, biome) || ''
             });
@@ -11139,7 +11686,7 @@ function buildLiveRollMarkup(
     breakthroughStats,
     isNativeRoll,
     luckValue,
-    { allowTrueChance = true } = {}
+    { allowTrueChance = true, potionBatch = null } = {}
 ) {
     if (!aura) {
         return '';
@@ -11161,14 +11708,15 @@ function buildLiveRollMarkup(
         : aura.name;
     const prefix = isNativeRoll ? '[Native] ' : '';
     const formattedName = formatAuraNameMarkup(aura, displayName);
-    const trueChanceValue = allowTrueChance
+    const trueChanceValue = !potionBatch
+        && allowTrueChance
         && appState.selectiveTrueChanceDisplay
         && !shouldHideSelectiveTrueChanceForAura(aura.name)
         ? formatRealChanceValue(nativeChance, luckValue)
         : null;
-    const trueChanceMarkup = trueChanceValue
-        ? ` <span class="tinyClass">True Chance: 1 in ${trueChanceValue}</span>`
-        : '';
+    const trueChanceMarkup = potionBatch
+        ? ` ${formatMultiplePotionBatchResultMarkup(potionBatch)}`
+        : (trueChanceValue ? ` <span class="tinyClass">True Chance: 1 in ${trueChanceValue}</span>` : '');
 
     const tierKey = resolveAuraTierKey(aura, biome) || '';
     const alphabeticalName = getAuraAlphabeticalSortName(aura.name);
@@ -11364,7 +11912,7 @@ function queueSimulationWork(callback) {
     setTimeout(callback, 16);
 }
 
-const SIMULATION_WORKER_PATH = 'scripts/simulation-worker.js?v=1.880.4';
+const SIMULATION_WORKER_PATH = 'scripts/simulation-worker.js?v=1.910.1';
 const WORKER_PROGRESS_UPDATE_INTERVAL_MS = 100;
 
 function terminateActiveSimulationWorker() {
@@ -11511,6 +12059,32 @@ function applySimulationWinCounts(winCounts) {
     }
 }
 
+function copySimulationCounts(targetCounts, sourceCounts) {
+    if (!ArrayBuffer.isView(targetCounts)) {
+        return;
+    }
+    targetCounts.fill(0);
+    const safeCounts = Array.isArray(sourceCounts) || ArrayBuffer.isView(sourceCounts)
+        ? sourceCounts
+        : [];
+    const limit = Math.min(targetCounts.length, safeCounts.length);
+    for (let index = 0; index < limit; index++) {
+        const value = safeCounts[index];
+        targetCounts[index] = Number.isFinite(value) ? value : 0;
+    }
+}
+
+function applySimulationBatchCounts(simulationBatches, winCountsByBatch, breakthroughCountsByBatch) {
+    if (!Array.isArray(simulationBatches)) {
+        return;
+    }
+    simulationBatches.forEach((batch, index) => {
+        copySimulationCounts(batch.winCounts, winCountsByBatch?.[index]);
+        copySimulationCounts(batch.breakthroughCounts, breakthroughCountsByBatch?.[index]);
+        syncBreakthroughCounts(batch.breakthroughStatsByAuraIndex, batch.breakthroughCounts);
+    });
+}
+
 function syncBreakthroughCounts(statsByAuraIndex, breakthroughCounts) {
     if (!Array.isArray(statsByAuraIndex)) {
         return;
@@ -11540,8 +12114,10 @@ function createSimulationWorker() {
     }
 }
 
-function prepareSimulationBatch(batch, selectionState, eventContext, breakthroughStatsMap, breakthroughStatsByAuraIndex) {
+function prepareSimulationBatch(batch, selectionState, eventContext) {
     const luckValue = Number.isFinite(batch?.luckValue) ? Math.max(0, batch.luckValue) : 0;
+    const breakthroughStatsMap = new Map();
+    const breakthroughStatsByAuraIndex = new Array(AURA_REGISTRY.length).fill(null);
     const evaluationContext = createAuraEvaluationContext(selectionState, {
         eventChecker: eventContext.eventChecker,
         enabledEventsSet: eventContext.enabledEventsSet,
@@ -11622,9 +12198,15 @@ function prepareSimulationBatch(batch, selectionState, eventContext, breakthroug
     ]);
 
     return {
+        id: batch.id || null,
+        potionIds: Array.isArray(batch.potionIds) ? batch.potionIds.slice() : null,
         count: Math.max(0, Math.floor(batch.count || 0)),
         luckValue,
         label: batch.label || 'Single Potion',
+        winCounts: new Float64Array(AURA_REGISTRY.length),
+        breakthroughCounts: new Float64Array(AURA_REGISTRY.length),
+        breakthroughStatsMap,
+        breakthroughStatsByAuraIndex,
         combinedSelection,
         prerollAuraIndices,
         prerollAuraRatios,
@@ -11780,8 +12362,6 @@ function runRollSimulation(options = {}) {
 
     resetAuraRollState(AURA_REGISTRY);
 
-    const breakthroughStatsMap = new Map();
-    const breakthroughStatsByAuraIndex = new Array(AURA_REGISTRY.length).fill(null);
     const activeSingleBloodPreset = getBloodPresetConfig();
     const simulationBatchDefinitions = isMultiplePotionRun
         ? selectedPotionBatches
@@ -11825,9 +12405,7 @@ function runRollSimulation(options = {}) {
         {
             eventChecker: isEventAuraEnabled,
             enabledEventsSet: eventSnapshot || enabledEvents
-        },
-        breakthroughStatsMap,
-        breakthroughStatsByAuraIndex
+        }
     ));
     const cutscenesEnabled = appState.cinematic === true;
 
@@ -11989,13 +12567,25 @@ function runRollSimulation(options = {}) {
             `Included Aura Tiers: ${auraFilterSummaryText}<br><br>`
         ];
 
-        const { feedRecords, shareRecords, shareVisualRecords } = buildResultEntries(
+        const resultCollections = simulationBatches.map(batch => buildResultEntries(
             AURA_REGISTRY,
             biome,
-            breakthroughStatsMap,
-            luckValue,
-            { allowTrueChance: !isMultiplePotionRun }
-        );
+            batch.breakthroughStatsMap,
+            batch.luckValue,
+            {
+                allowTrueChance: !isMultiplePotionRun,
+                potionBatch: isMultiplePotionRun ? batch : null,
+                winCounts: batch.winCounts
+            }
+        ));
+        let feedRecords = resultCollections.flatMap(collection => collection.feedRecords);
+        if (isMultiplePotionRun) {
+            feedRecords = sortEntriesInUnnamedResultOrder(
+                feedRecords.map((record, originalOrder) => ({ ...record, originalOrder }))
+            );
+        }
+        const shareRecords = resultCollections.flatMap(collection => collection.shareRecords);
+        const shareVisualRecords = resultCollections.flatMap(collection => collection.shareVisualRecords);
         if (!solsLikeRun) {
             const unnamedResultEntries = feedRecords.map((record, index) => {
                 const encodedAuraName = encodeURIComponent(record.auraName);
@@ -12083,7 +12673,6 @@ function runRollSimulation(options = {}) {
     };
 
     const startMainThreadSimulation = () => {
-        const localBreakthroughCounts = new Array(AURA_REGISTRY.length).fill(0);
         let currentBatchIndex = 0;
         let currentBatchRoll = 0;
 
@@ -12110,11 +12699,12 @@ function runRollSimulation(options = {}) {
             const auraIndex = combinedSelectionConfig.auraIndices[selectedIndex];
             if (Number.isInteger(auraIndex) && auraIndex >= 0 && auraIndex < AURA_REGISTRY.length) {
                 auraWinCounts[auraIndex] += 1;
+                activeBatch.winCounts[auraIndex] += 1;
             }
 
             const breakthroughIndex = combinedSelectionConfig.breakthroughIndices[selectedIndex];
-            if (Number.isInteger(breakthroughIndex) && breakthroughIndex >= 0 && breakthroughIndex < localBreakthroughCounts.length) {
-                localBreakthroughCounts[breakthroughIndex] += 1;
+            if (Number.isInteger(breakthroughIndex) && breakthroughIndex >= 0 && breakthroughIndex < activeBatch.breakthroughCounts.length) {
+                activeBatch.breakthroughCounts[breakthroughIndex] += 1;
             }
         }
 
@@ -12152,7 +12742,9 @@ function runRollSimulation(options = {}) {
                 return;
             }
 
-            syncBreakthroughCounts(breakthroughStatsByAuraIndex, localBreakthroughCounts);
+            simulationBatches.forEach(batch => {
+                syncBreakthroughCounts(batch.breakthroughStatsByAuraIndex, batch.breakthroughCounts);
+            });
             finalizeSimulation(false, currentRoll);
         }
 
@@ -12160,7 +12752,6 @@ function runRollSimulation(options = {}) {
     };
 
     const startSolsLikeMainThreadSimulation = () => {
-        const localBreakthroughCounts = new Array(AURA_REGISTRY.length).fill(0);
         const getCurrentRollIntervalMs = () => (
             1000 / normalizeSolsLikeRollsPerSecond(
                 rollingSettingsPreference.solsLikeRollsPerSecond
@@ -12265,17 +12856,19 @@ function runRollSimulation(options = {}) {
             }
 
             auraWinCounts[auraIndex] += 1;
+            activeBatch.winCounts[auraIndex] += 1;
             const breakthroughIndex = combinedSelectionConfig.breakthroughIndices[selectedIndex];
             const isNativeRoll = Number.isInteger(breakthroughIndex)
                 && breakthroughIndex >= 0
-                && breakthroughIndex < localBreakthroughCounts.length;
+                && breakthroughIndex < activeBatch.breakthroughCounts.length;
             if (isNativeRoll) {
-                localBreakthroughCounts[breakthroughIndex] += 1;
+                activeBatch.breakthroughCounts[breakthroughIndex] += 1;
             }
 
             return {
                 aura: AURA_REGISTRY[auraIndex],
-                isNativeRoll: isNativeRoll && breakthroughIndex === auraIndex
+                isNativeRoll: isNativeRoll && breakthroughIndex === auraIndex,
+                potionBatch: activeBatch
             };
         };
 
@@ -12358,7 +12951,7 @@ function runRollSimulation(options = {}) {
 
                 if (rollResult?.aura) {
                     const aura = rollResult.aura;
-                    const breakthroughStats = breakthroughStatsByAuraIndex[aura.index];
+                    const breakthroughStats = rollResult.potionBatch.breakthroughStatsByAuraIndex[aura.index];
                     if (!shouldHideAuraFromRollFeed(aura, biome)) {
                         const markup = buildLiveRollMarkup(
                             aura,
@@ -12366,8 +12959,11 @@ function runRollSimulation(options = {}) {
                             biome,
                             breakthroughStats,
                             rollResult.isNativeRoll,
-                            luckValue,
-                            { allowTrueChance: !isMultiplePotionRun }
+                            rollResult.potionBatch.luckValue,
+                            {
+                                allowTrueChance: !isMultiplePotionRun,
+                                potionBatch: isMultiplePotionRun ? rollResult.potionBatch : null
+                            }
                         );
                         if (markup) {
                             markupList.push(markup);
@@ -12424,7 +13020,9 @@ function runRollSimulation(options = {}) {
             }
             if (currentRoll >= total) {
                 liveRunStopped = true;
-                syncBreakthroughCounts(breakthroughStatsByAuraIndex, localBreakthroughCounts);
+                simulationBatches.forEach(batch => {
+                    syncBreakthroughCounts(batch.breakthroughStatsByAuraIndex, batch.breakthroughCounts);
+                });
                 finalizeSimulation(false, currentRoll);
                 return;
             }
@@ -12494,7 +13092,11 @@ function runRollSimulation(options = {}) {
             if (message.type === 'complete') {
                 currentRoll = Number.isFinite(message.currentRoll) ? message.currentRoll : total;
                 applySimulationWinCounts(message.winCounts);
-                syncBreakthroughCounts(breakthroughStatsByAuraIndex, message.breakthroughCounts);
+                applySimulationBatchCounts(
+                    simulationBatches,
+                    message.batchWinCounts,
+                    message.batchBreakthroughCounts
+                );
                 if (updateProgress) {
                     queueAnimationFrame(() => updateProgress(100));
                 }

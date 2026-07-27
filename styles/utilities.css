@@ -830,6 +830,126 @@
     }
 }
 
+.sigil-effect-glitch__title {
+    position: relative;
+    display: inline-block;
+    min-width: 12em;
+    color: transparent;
+    font-family: 'Press Start 2P', monospace;
+    letter-spacing: .4em;
+    line-height: 1.25;
+    text-transform: uppercase;
+    white-space: nowrap;
+    -webkit-text-fill-color: transparent;
+}
+
+.sigil-effect-glitch__title::after {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: max-content;
+    content: "GLITCH";
+    background-image: linear-gradient(to bottom, #131323 41%, #4f3d91 42%, #1b0f47 45%, #4a3e7a 50%, #040b22 55%, #21135c 60%, #02011a 62%, #422d8e 75%);
+    background-clip: text !important;
+    font: inherit;
+    letter-spacing: .2em;
+    line-height: inherit;
+    pointer-events: none;
+    filter: saturate(2);
+    -webkit-background-clip: text !important;
+    -webkit-text-fill-color: #000;
+    -webkit-text-stroke: 2px transparent;
+    animation:
+        glitch-title-stroke 3s steps(1, end) infinite,
+        glitch-title-content 3s steps(1, end) infinite;
+}
+
+@keyframes glitch-title-stroke {
+    0%,
+    25%,
+    50%,
+    75%,
+    100% {
+        background-image: linear-gradient(to bottom, #131323 41%, #4f3d91 42%, #1b0f47 45%, #4a3e7a 50%, #040b22 55%, #21135c 60%, #02011a 62%, #422d8e 75%);
+    }
+
+    5%,
+    30%,
+    55%,
+    80% {
+        background-image: linear-gradient(to bottom, #173424 25%, #030a03 41%, #2e5540 42%, #030a03 45%, #23372d 50%, #030a03 55%, #204c35 60%, #091106 62%, #204c35 75%);
+    }
+
+    10%,
+    35%,
+    60%,
+    85% {
+        background-image: linear-gradient(to bottom, #662b39 25%, #1b030a 41%, #905062 42%, #220002 45%, #7a4c57 50%, #220002 55%, #773c4a 60%, #220002 62%, #762c3c 75%);
+    }
+
+    15%,
+    40%,
+    65%,
+    90% {
+        background-image: linear-gradient(to bottom, #1b0b1c 25%, #050a09 41%, #6d3479 42%, #30083a 45%, #5c3966 50%, #1c0223 55%, #53265a 60%, #0b0b12 62%, #6e2d8c 75%);
+    }
+
+    20%,
+    45%,
+    70%,
+    95% {
+        background-image: linear-gradient(to bottom, #3a3c3e 25%, #050a09 41%, #787c7a 42%, #232323 45%, #6d7175 50%, #050a09 55%, #5e625c 60%, #010202 62%, #6d7175 75%);
+    }
+}
+
+@keyframes glitch-title-content {
+    0% { content: "glI/T_C&h-"; }
+    4.3% { content: "GL4ITCH"; }
+    8.6% { content: "GLIt.ch"; }
+    12.9% { content: "GLi(Tc-H"; }
+    17.2% { content: "glitCh"; }
+    21.5% { content: "G''liTcH}"; }
+    25.8% { content: "GL'it+'CH"; }
+    30.1% { content: "GL,IT(cH"; }
+    34.4% { content: "gLit^CH"; }
+    38.7% { content: "GLitC%h#"; }
+    43% { content: "G<(litch''"; }
+    47.3% { content: "gLi@TCH'"; }
+    51.6% { content: "GLi(Tc-H"; }
+    55.9% { content: "glitch"; }
+    60.2% { content: "g}L>I*tc/H"; }
+    64.5% { content: "gLIt=CH"; }
+    68.8% { content: "GLi(Tc-H"; }
+    73.1% { content: "g?liTc'h|"; }
+    77.4% { content: "G''lItC[h/"; }
+    81.7% { content: "g#LiT/cH"; }
+    86% { content: "g.lIT|cH&"; }
+    90.3% { content: "gliTCH"; }
+    94.6% { content: "g*Lit%CH"; }
+    98.9% { content: "GLITch^"; }
+    100% { content: "g;lI*TC_H"; }
+}
+
+body.quality-no-ui-animations .sigil-effect-glitch__title::after {
+    content: "GLITCH";
+    animation: none;
+}
+
+body.quality-no-ui-animations .sigil-effect-glitch__title {
+    min-width: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .sigil-effect-glitch__title {
+        min-width: 0;
+    }
+
+    .sigil-effect-glitch__title::after {
+        content: "GLITCH";
+        animation: none;
+    }
+}
+
 .sigil-outline-pythios {
     font-family: Kings;
     text-transform: uppercase;
@@ -4182,7 +4302,7 @@ body.help-center-open {
 
 .help-center__eyebrow {
     color: #69b9d7;
-    font-size: 8px;
+    font-size: 10px;
     font-weight: 700;
     letter-spacing: 0.2em;
     text-transform: uppercase;
@@ -4199,7 +4319,7 @@ body.help-center-open {
 .help-center__header p {
     margin: 0;
     color: #7895a7;
-    font-size: 10px;
+    font-size: 12px;
     letter-spacing: 0.04em;
 }
 
@@ -4256,7 +4376,7 @@ body.help-center-open {
     color: #e1f3fa;
     background: transparent;
     font: inherit;
-    font-size: 11px;
+    font-size: 13px;
     letter-spacing: 0.04em;
 }
 
@@ -4285,7 +4405,7 @@ body.help-center-open {
     color: #7895a7;
     background: transparent;
     font: inherit;
-    font-size: 9px;
+    font-size: 11px;
     font-weight: 700;
     letter-spacing: 0.08em;
     text-align: left;
@@ -4318,7 +4438,7 @@ body.help-center-open {
     padding: 9px;
     border-top: 1px solid rgba(112, 207, 244, 0.12);
     color: #5f7d8e;
-    font-size: 8px;
+    font-size: 10px;
     line-height: 1.5;
 }
 
@@ -4378,7 +4498,7 @@ body.help-center-open {
     border: 1px solid rgba(112, 207, 244, 0.22);
     color: #75bed9;
     background: rgba(53, 143, 184, 0.08);
-    font-size: 8px;
+    font-size: 10px;
     font-weight: 700;
     letter-spacing: 0.08em;
 }
@@ -4391,7 +4511,7 @@ body.help-center-open {
     display: block;
     margin-bottom: 3px;
     color: #67b4d1;
-    font-size: 8px;
+    font-size: 10px;
     font-weight: 700;
     letter-spacing: 0.14em;
     text-transform: uppercase;
@@ -4400,15 +4520,15 @@ body.help-center-open {
 .help-card h3 {
     margin: 0 0 7px;
     color: #e3f4fb;
-    font-size: 14px;
+    font-size: 16px;
     letter-spacing: 0.055em;
 }
 
 .help-card p,
 .help-card li {
     color: #8ea7b6;
-    font-size: 10px;
-    line-height: 1.55;
+    font-size: 13px;
+    line-height: 1.6;
 }
 
 .help-card p {
@@ -4448,7 +4568,7 @@ body.help-center-open {
     color: #9bdcf4;
     background: rgba(47, 135, 177, 0.09);
     font: inherit;
-    font-size: 8px;
+    font-size: 10px;
     font-weight: 700;
     letter-spacing: 0.08em;
     text-transform: uppercase;
@@ -4473,7 +4593,7 @@ body.help-center-open {
     padding: 28px;
     border: 1px dashed rgba(112, 207, 244, 0.22);
     color: #6b899a;
-    font-size: 10px;
+    font-size: 12px;
     letter-spacing: 0.1em;
     text-align: center;
     text-transform: uppercase;
@@ -4549,7 +4669,7 @@ body.quality-no-ui-animations .help-center__backdrop {
     }
 
     .help-center__eyebrow {
-        font-size: 7px;
+        font-size: 9px;
         letter-spacing: 0.12em;
     }
 
@@ -4636,13 +4756,13 @@ body.quality-no-ui-animations .help-center__backdrop {
     }
 
     .help-card h3 {
-        font-size: 13px;
+        font-size: 15px;
     }
 
     .help-card p,
     .help-card li {
-        font-size: 10px;
-        line-height: 1.5;
+        font-size: 12px;
+        line-height: 1.6;
     }
 }
 
@@ -5775,6 +5895,8 @@ body.quality-no-ui-animations .help-center__backdrop {
 }
 
 .help-tour {
+    position: relative;
+    isolation: isolate;
     grid-column: 1 / -1;
     display: grid;
     gap: 10px;
@@ -5787,6 +5909,74 @@ body.quality-no-ui-animations .help-center__backdrop {
         rgba(3, 12, 25, 0.9);
     box-shadow: inset 0 0 28px rgba(64, 179, 228, 0.05);
     scroll-margin-top: 14px;
+}
+
+.help-tour-confetti {
+    position: absolute;
+    z-index: 5;
+    inset: 0;
+    overflow: hidden;
+    pointer-events: none;
+}
+
+.help-tour-confetti__piece {
+    position: absolute;
+    top: 52%;
+    left: 50%;
+    width: var(--confetti-width, 7px);
+    height: var(--confetti-height, 12px);
+    border-radius: 1px;
+    opacity: 0;
+    color: var(--confetti-color, #77d9ff);
+    background: currentColor;
+    box-shadow: 0 0 7px currentColor;
+    will-change: transform, opacity;
+    animation: help-tour-confetti-burst var(--confetti-duration, 1400ms) cubic-bezier(.16, .72, .28, 1) var(--confetti-delay, 0ms) forwards;
+}
+
+.help-tour-confetti__piece--round {
+    aspect-ratio: 1;
+    height: auto;
+    border-radius: 50%;
+}
+
+@keyframes help-tour-confetti-burst {
+    0% {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(.3) rotate(0);
+    }
+
+    8% {
+        opacity: 1;
+    }
+
+    52% {
+        opacity: 1;
+        transform:
+            translate(
+                calc(-50% + var(--confetti-x, 0px)),
+                calc(-50% + var(--confetti-rise, -100px))
+            )
+            scale(1)
+            rotate(var(--confetti-half-rotation, 180deg));
+    }
+
+    100% {
+        opacity: 0;
+        transform:
+            translate(
+                calc(-50% + var(--confetti-end-x, 0px)),
+                calc(-50% + var(--confetti-fall, 120px))
+            )
+            scale(.82)
+            rotate(var(--confetti-rotation, 540deg));
+    }
+}
+
+body.quality-no-particles .help-tour-confetti,
+body.quality-no-ui-animations .help-tour-confetti,
+body.reduce-motion .help-tour-confetti {
+    display: none;
 }
 
 .help-tour[hidden] {
@@ -5824,7 +6014,7 @@ body.quality-no-ui-animations .help-center__backdrop {
 .help-tour__lesson-number {
     display: block;
     color: #65b9d8;
-    font-size: 7px;
+    font-size: 9px;
     font-weight: 700;
     letter-spacing: 0.16em;
     text-transform: uppercase;
@@ -5833,7 +6023,7 @@ body.quality-no-ui-animations .help-center__backdrop {
 .help-tour__header h3 {
     margin: 2px 0 0;
     color: #e8f8ff;
-    font-size: 15px;
+    font-size: 17px;
     letter-spacing: 0.07em;
     text-transform: uppercase;
 }
@@ -5850,7 +6040,7 @@ body.quality-no-ui-animations .help-center__backdrop {
     color: #9edcf2;
     background: rgba(46, 137, 178, 0.1);
     font: inherit;
-    font-size: 8px;
+    font-size: 10px;
     font-weight: 700;
     letter-spacing: 0.08em;
     text-transform: uppercase;
@@ -5884,7 +6074,7 @@ body.quality-no-ui-animations .help-center__backdrop {
     justify-content: space-between;
     gap: 12px;
     color: #718f9f;
-    font-size: 8px;
+    font-size: 10px;
     font-weight: 700;
     letter-spacing: 0.1em;
     text-transform: uppercase;
@@ -5925,13 +6115,13 @@ body.quality-no-ui-animations .help-center__backdrop {
     gap: 3px;
     min-width: 0;
     color: #829cab;
-    font-size: 9px;
-    line-height: 1.45;
+    font-size: 12px;
+    line-height: 1.55;
 }
 
 .help-tour__lesson-copy > strong {
     color: #dff4fc;
-    font-size: 12px;
+    font-size: 14px;
     letter-spacing: 0.045em;
 }
 
@@ -5979,7 +6169,7 @@ body.quality-no-ui-animations .help-center__backdrop {
     color: #658394;
     background: rgba(27, 83, 111, 0.08);
     font: inherit;
-    font-size: 7px;
+    font-size: 9px;
     font-weight: 700;
     cursor: pointer;
 }
@@ -6035,13 +6225,13 @@ body.quality-no-ui-animations .help-center__backdrop {
 
 .help-tour-resume small {
     color: #6fa8be;
-    font-size: 7px;
+    font-size: 9px;
     letter-spacing: 0.13em;
     text-transform: uppercase;
 }
 
 .help-tour-resume strong {
-    font-size: 9px;
+    font-size: 11px;
     letter-spacing: 0.07em;
     text-transform: uppercase;
 }
