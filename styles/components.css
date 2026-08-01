@@ -136,6 +136,18 @@
     z-index: 120;
 }
 
+details[data-select="biome-time-dropdown"] .interface-select__menu {
+    right: 0;
+    left: auto;
+    width: min(233px, calc(100vw - 32px));
+    transform-origin: top right;
+}
+
+.parameter-console__module--environment .biome-selector-row > .form-field:has(.interface-select[open]) {
+    position: relative;
+    z-index: 150;
+}
+
 .interface-select__summary {
     display: flex;
     align-items: center;
@@ -1454,7 +1466,6 @@ body.quality-no-ui-animations .roll-console__armed-dot {
     }
 }
 
-/* Shutdown motion mirrors the boot sequence while keeping layout stable until the visual has faded. */
 [data-feature-boot].feature-shutdown--active {
     overflow: clip;
     pointer-events: none;
@@ -2162,34 +2173,40 @@ body.potion-mode--multiple #device-buff-preset-panel .preset-button__actions {
 }
 
 .parameter-console__module--actions .quick-action-group {
-    grid-template-columns: repeat(12, minmax(0, 1fr));
+    grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
 .parameter-console__module--actions .quick-action-group .interface-button {
     display: flex;
-    grid-column: span 3;
+    grid-column: auto;
     align-items: center;
     justify-content: center;
     gap: 10px;
-    min-height: 48px;
-    padding: 9px 11px;
+    min-height: 60px;
+    padding: 10px 12px;
+    font-size: 14px;
+    letter-spacing: 0.1em;
     text-align: center;
 }
 
 .parameter-console__module--actions .quick-action-group .interface-button:nth-child(n + 5) {
-    grid-column: span 4;
+    grid-column: auto;
+}
+
+.parameter-console__module--actions .quick-action-group .interface-button:last-child {
+    grid-column: 1 / -1;
 }
 
 .parameter-console__module--actions .quick-action-group .interface-button > i {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 24px;
-    height: 24px;
+    width: 26px;
+    height: 26px;
     color: rgb(var(--accent-rgb) / 0.76);
     background: rgb(var(--accent-rgb) / 0.08);
     border: 1px solid rgb(var(--accent-rgb) / 0.2);
-    flex: 0 0 24px;
+    flex: 0 0 26px;
 }
 
 .parameter-console__module--actions .quick-action-group .interface-button > span {
@@ -2197,6 +2214,16 @@ body.potion-mode--multiple #device-buff-preset-panel .preset-button__actions {
     min-width: 0;
     line-height: 1.35;
     text-align: center;
+}
+
+.parameter-console__module--actions .quick-action-group .interface-button > span > [class*="sigil-outline-"] {
+    display: inline-block;
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: 0.015em;
+    line-height: 1.2;
+    -webkit-text-stroke-width: 1.35px;
+    white-space: nowrap;
 }
 
 .parameter-console__module--actions .parameter-console__action--roe {

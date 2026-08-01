@@ -3,7 +3,6 @@
 try {
     importScripts('utils.js');
 } catch (error) {
-    // Fall back to Math.random if the shared entropy helper is unavailable.
 }
 
 let cancelRequested = false;

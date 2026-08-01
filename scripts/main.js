@@ -1,4 +1,3 @@
-// Reference frequently accessed UI elements at module load
 let feedContainer = document.getElementById('simulation-feed');
 let luckField = document.getElementById('luck-total');
 const pageBody = document.body;
@@ -98,8 +97,6 @@ const LEGACY_SOLS_LIKE_SPEED_VALUES = Object.freeze({
     fast: 240,
     'very-fast': 480
 });
-// TEMPORARY CUTSCENE LOCK:
-// Set to false (or remove this block) when you want to allow turning cutscenes off again.
 const FORCE_CUTSCENES_ALWAYS_ON = false;
 let reduceMotionPreferenceOverride = null;
 const backgroundRollingPreference = {
@@ -214,7 +211,6 @@ function maybeShowChangelogOnFirstVisit() {
     try {
         storage.setItem(CHANGELOG_VERSION_STORAGE_KEY, versionId);
     } catch (error) {
-        // Ignore storage write failures so the overlay logic can continue normally.
     }
 }
 
@@ -234,7 +230,6 @@ function hydrateBackgroundRollingPreference() {
             backgroundRollingPreference.suppressPrompt = Boolean(parsed.suppressPrompt);
         }
     } catch (error) {
-        // Ignore malformed storage so the defaults remain intact.
     }
 }
 
@@ -249,7 +244,6 @@ function persistBackgroundRollingPreference() {
             JSON.stringify(backgroundRollingPreference)
         );
     } catch (error) {
-        // Ignore write failures to avoid interrupting UI flow.
     }
 }
 
@@ -296,7 +290,6 @@ function hydrateAudioSettings() {
             || (appState.audio.musicVolume ?? 0) > 0
             || (appState.audio.cutsceneVolume ?? 0) > 0;
     } catch (error) {
-        // Ignore storage errors so the app can continue with defaults.
     }
 }
 
@@ -323,7 +316,6 @@ function hydrateAuraFilters() {
             }
         });
     } catch (error) {
-        // Ignore malformed storage so defaults remain intact.
     }
 }
 
@@ -350,7 +342,6 @@ function hydrateAuraTierFilters() {
             }
         });
     } catch (error) {
-        // Ignore malformed storage so defaults remain intact.
     }
 }
 
@@ -398,7 +389,6 @@ function hydrateRollingSettings() {
             rollingSettingsPreference.autoPauseAfterCutscene = parsed.autoPauseAfterCutscene;
         }
     } catch (error) {
-        // Ignore malformed storage so the defaults remain intact.
     }
 }
 
@@ -437,7 +427,6 @@ function persistRollingSettings() {
             JSON.stringify(rollingSettingsPreference)
         );
     } catch (error) {
-        // Ignore storage errors so rolling controls remain responsive.
     }
 }
 
@@ -485,7 +474,6 @@ function hydrateVisualSettings() {
             }
         }
     } catch (error) {
-        // Ignore malformed storage so defaults remain intact.
     } finally {
         if (FORCE_CUTSCENES_ALWAYS_ON) {
             appState.cinematic = true;
@@ -504,7 +492,6 @@ function persistAuraFilters() {
             JSON.stringify(appState.auraFilters)
         );
     } catch (error) {
-        // Ignore storage errors so the UI remains responsive.
     }
 }
 
@@ -519,7 +506,6 @@ function persistAuraTierFilters() {
             JSON.stringify(appState.auraTierFilters)
         );
     } catch (error) {
-        // Ignore storage errors so the UI remains responsive.
     }
 }
 
@@ -542,7 +528,6 @@ function persistAudioSettings() {
             })
         );
     } catch (error) {
-        // Ignore write failures to avoid interrupting audio controls.
     }
 }
 
@@ -563,7 +548,6 @@ function persistVisualSettings() {
             })
         );
     } catch (error) {
-        // Ignore storage errors so the UI remains responsive.
     }
 }
 
@@ -597,7 +581,6 @@ function applyPerformanceFirstDefaults() {
     try {
         storage?.setItem(PERFORMANCE_DEFAULTS_STORAGE_KEY, '1');
     } catch (error) {
-        // Ignore storage errors so visual settings can still be applied for this page load.
     }
 }
 
@@ -709,6 +692,7 @@ const BIOME_PRIMARY_SELECT_ID = 'biome-primary-dropdown';
 const BIOME_OTHER_SELECT_ID = 'biome-other-dropdown';
 const BIOME_TIME_SELECT_ID = 'biome-time-dropdown';
 const DAY_RESTRICTED_BIOMES = new Set(['pumpkinMoon', 'graveyard']);
+const DAY_ONLY_BIOMES = new Set(['blazing']);
 const CYBERSPACE_ILLUSIONARY_WARNING_STORAGE_KEY = 'solsRollingCalculator:hideCyberspaceIllusionaryWarning';
 const SINGULARITY_MULTIPLIER_WARNING_STORAGE_KEY = 'solsRollingCalculator:hideSingularityMultiplierWarning';
 const SINGULARITY_SUMMON_SOUND_ID = 'singularitySummonSound';
@@ -1729,7 +1713,6 @@ const cutsceneWarningManager = (() => {
             try {
                 window.localStorage.setItem(storageKey, 'true');
             } catch (error) {
-                // Ignore storage errors
             }
         }
     };
@@ -1939,7 +1922,6 @@ const cyberspaceIllusionaryWarningManager = (() => {
                 try {
                     window.localStorage.setItem(CYBERSPACE_ILLUSIONARY_WARNING_STORAGE_KEY, 'true');
                 } catch (error) {
-                    // Ignore storage issues so the overlay can still be hidden.
                 }
             }
             this.hide();
@@ -2019,7 +2001,6 @@ const singularityMultiplierWarningManager = (() => {
                 try {
                     window.localStorage.setItem(SINGULARITY_MULTIPLIER_WARNING_STORAGE_KEY, 'true');
                 } catch (error) {
-                    // Ignore storage issues so the overlay can still be hidden.
                 }
             }
             this.hide();
@@ -5352,8 +5333,6 @@ function applyRollPreset(value) {
     playSoundEffect(clickSoundEffectElement, 'ui');
 }
 
-// Applies a high-level device/buff preset as additive luck before final
-// multipliers while leaving seasonal toggles unchanged.
 function applyDeviceBuffPreset(luckBonus, sourceButton = null) {
     const numericLuckBonus = Number(luckBonus);
     if (!Number.isFinite(numericLuckBonus) || numericLuckBonus <= 0) {
@@ -6265,6 +6244,13 @@ const auraOutlineOverrides = new Map([
     ['Aegis : Eggis', 'sigil-outline-easter-2026'],
     ['Y.O.L.K.E.G.G.', 'sigil-outline-easter-2026'],
     ['Sky Festival', 'sigil-outline-easter-2026'],
+    ['Floaty', 'sigil-outline-summer'],
+    ['Beach Ball', 'sigil-outline-summer'],
+    ['Nostalgia', 'sigil-outline-summer'],
+    ['Goose Rave', 'sigil-outline-summer'],
+    ['Vacation', 'sigil-outline-summer'],
+    ['Bayview', 'sigil-outline-summer'],
+    ['Pool Party', 'sigil-outline-summer'],
 ]);
 
 const glitchOutlineNames = new Set(['Fault', '[CONTENT DELETED']);
@@ -6704,6 +6690,141 @@ function observeLayeredSigilText() {
     observer.observe(document.body, { childList: true, subtree: true, characterData: true });
 }
 
+const GLITCH_SIGIL_SELECTOR = '.sigil-outline-glitch, .sigil-effect-glitch__title';
+const GLITCH_SIGIL_SYMBOLS = Object.freeze(['@', '#', '$', '%', '&', '*', '!', '?', '+', '=']);
+const GLITCH_SIGIL_REPLACEABLE_CHARACTER_PATTERN = /[\p{L}\p{N}]/u;
+let glitchSigilFlickerTimeoutId = null;
+let glitchSigilRestoreTimeoutId = null;
+
+function canFlickerGlitchSigils() {
+    return typeof document !== 'undefined'
+        && !document.hidden
+        && !appState.reduceMotion
+        && !appState.qualityPreferences?.removeGlitchEffects;
+}
+
+function createGlitchSigilFlickerText(text) {
+    const characters = Array.from(text);
+    const replaceableIndexes = [];
+    characters.forEach((character, index) => {
+        if (GLITCH_SIGIL_REPLACEABLE_CHARACTER_PATTERN.test(character)) {
+            replaceableIndexes.push(index);
+        }
+    });
+    if (replaceableIndexes.length === 0) {
+        return text;
+    }
+
+    const characterIndex = replaceableIndexes[Math.floor(Math.random() * replaceableIndexes.length)];
+    characters[characterIndex] = GLITCH_SIGIL_SYMBOLS[Math.floor(Math.random() * GLITCH_SIGIL_SYMBOLS.length)];
+    return characters.join('');
+}
+
+function isGlitchSigilVisible(element) {
+    if (!element || element.getClientRects().length === 0) {
+        return false;
+    }
+    const bounds = element.getBoundingClientRect();
+    if (
+        bounds.width <= 0
+        || bounds.height <= 0
+        || bounds.right <= 0
+        || bounds.bottom <= 0
+        || bounds.left >= window.innerWidth
+        || bounds.top >= window.innerHeight
+    ) {
+        return false;
+    }
+    let current = element;
+    while (current && current !== document.documentElement) {
+        const style = window.getComputedStyle(current);
+        if (style.display === 'none' || style.visibility === 'hidden' || Number.parseFloat(style.opacity) === 0) {
+            return false;
+        }
+        current = current.parentElement;
+    }
+    const centerX = Math.min(window.innerWidth - 1, Math.max(0, bounds.left + bounds.width / 2));
+    const centerY = Math.min(window.innerHeight - 1, Math.max(0, bounds.top + bounds.height / 2));
+    const topElement = document.elementFromPoint(centerX, centerY);
+    return !!topElement && (
+        topElement === element
+        || element.contains(topElement)
+        || topElement.contains(element)
+    );
+}
+
+function getGlitchSigilTextNodes(element) {
+    if (!element || typeof document === 'undefined') {
+        return [];
+    }
+    const textNodes = [];
+    const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT);
+    let node = walker.nextNode();
+    while (node) {
+        const parent = node.parentElement;
+        const belongsToTarget = parent?.closest(GLITCH_SIGIL_SELECTOR) === element;
+        if (
+            belongsToTarget
+            && isGlitchSigilVisible(parent)
+            && GLITCH_SIGIL_REPLACEABLE_CHARACTER_PATTERN.test(node.nodeValue || '')
+        ) {
+            textNodes.push(node);
+        }
+        node = walker.nextNode();
+    }
+    return textNodes;
+}
+
+function scheduleGlitchSigilFlicker(delay = 450 + Math.random() * 750) {
+    if (glitchSigilFlickerTimeoutId !== null) {
+        clearTimeout(glitchSigilFlickerTimeoutId);
+    }
+    glitchSigilFlickerTimeoutId = window.setTimeout(() => {
+        glitchSigilFlickerTimeoutId = null;
+        if (!canFlickerGlitchSigils()) {
+            scheduleGlitchSigilFlicker(700);
+            return;
+        }
+
+        const targets = Array.from(document.querySelectorAll(GLITCH_SIGIL_SELECTOR))
+            .filter(isGlitchSigilVisible)
+            .map(element => ({ element, textNodes: getGlitchSigilTextNodes(element) }))
+            .filter(target => target.textNodes.length > 0);
+        if (targets.length === 0) {
+            scheduleGlitchSigilFlicker(700);
+            return;
+        }
+
+        const target = targets[Math.floor(Math.random() * targets.length)];
+        const textNode = target.textNodes[Math.floor(Math.random() * target.textNodes.length)];
+        const sourceText = textNode.nodeValue;
+        const flickerText = createGlitchSigilFlickerText(sourceText);
+        if (flickerText === sourceText) {
+            scheduleGlitchSigilFlicker();
+            return;
+        }
+
+        textNode.nodeValue = flickerText;
+        target.element.classList.add('sigil-glitch-flicker');
+        glitchSigilRestoreTimeoutId = window.setTimeout(() => {
+            glitchSigilRestoreTimeoutId = null;
+            if (textNode.isConnected && textNode.nodeValue === flickerText) {
+                textNode.nodeValue = sourceText;
+            }
+            target.element.classList.remove('sigil-glitch-flicker');
+            scheduleGlitchSigilFlicker();
+        }, 80 + Math.random() * 70);
+    }, delay);
+}
+
+function startGlitchSigilFlicker() {
+    if (glitchSigilRestoreTimeoutId !== null) {
+        clearTimeout(glitchSigilRestoreTimeoutId);
+        glitchSigilRestoreTimeoutId = null;
+    }
+    scheduleGlitchSigilFlicker(180 + Math.random() * 320);
+}
+
 function determineResultPriority(aura, baseChance) {
     if (!aura) return baseChance;
     if (aura.name === OBLIVION_AURA_LABEL) return Number.POSITIVE_INFINITY;
@@ -6777,6 +6898,7 @@ const AURA_BLUEPRINT_SOURCE = Object.freeze([
     { name: "P.U.K.E.K.O.G.O.D. - 1,000,000,000", chance: 1000000000, cutscene: "pukekoGod-cutscene" },
     { name: "Eostre - 1,000,000,000", chance: 1000000000, cutscene: "eostre-cutscene" },
     { name: "Sovereign : Frostveil - 1,000,000,000", chance: 1000000000, breakthroughs: nativeBreakthroughs("aurora"), cutscene: "frostveil-cutscene" },
+    { name: "Pool Party - 972,000,000", chance: 972000000 },
     { name: "Arachnophobia - 940,000,000", chance: 940000000, nativeBiomes: ["glitch", "pumpkinMoon"] },
     { name: "Ascendant - 935,000,000", chance: 935000000, breakthroughs: nativeBreakthroughs("heaven") },
     { name: "Ravage - 930,000,000", chance: 930000000, nativeBiomes: ["glitch", "graveyard"] },
@@ -6893,7 +7015,10 @@ const AURA_BLUEPRINT_SOURCE = Object.freeze([
     { name: "Antivirus - 62,500,000", chance: 62500000, breakthroughs: nativeBreakthroughs("cyberspace"), nativeBiomes: ["cyberspace"] },
     { name: "Skyburst - 60,000,000", chance: 60000000, breakthroughs: nativeBreakthroughs("aurora") },
     { name: "SENTINEL - 60,000,000", chance: 60000000 },
+    { name: "Bayview - 60,000,000", chance: 60000000 },
     { name: "Twilight : Iridescent Memory - 60,000,000", chance: 60000000, breakthroughs: nativeBreakthroughs("night") },
+    { name: "Vacation - 58,620,000", chance: 58620000 },
+    { name: "Goose Rave - 50,000,000", chance: 50000000 },
     { name: "Matrix - 50,000,000", chance: 50000000, breakthroughs: nativeBreakthroughs("cyberspace"), nativeBiomes: ["cyberspace"] },
     { name: "Runic - 50,000,000", chance: 50000000 },
     { name: "Exotic : APEX - 49,999,500", chance: 49999500 },
@@ -6921,6 +7046,7 @@ const AURA_BLUEPRINT_SOURCE = Object.freeze([
     { name: "Oculus - 23,233,340", chance: 23233340, breakthroughs: nativeBreakthroughs("heaven") },
     { name: "Cryptfire - 21,000,000", chance: 21000000, nativeBiomes: ["graveyard"] },
     { name: "Plasma - 20,600,000", chance: 20000000 },
+    { name: "Nostalgia - 20,270,000", chance: 20270000 },
     { name: "Very Small Sewage Rat That's About 3.082 Studs Long - 20,070,629", chance: 20070629 },
     { name: "Chromatic - 20,000,000", chance: 20000000 },
     { name: "Lullaby - 17,000,000", chance: 17000000, breakthroughs: nativeBreakthroughs("night") },
@@ -6998,6 +7124,7 @@ const AURA_BLUEPRINT_SOURCE = Object.freeze([
     { name: "Gravitational - 2,000,000", chance: 2000000 },
     { name: "Flutter : Buggify - 2,000,000", chance: 2000000 },
     { name: "Player : Respawn - 1,999,999", chance: 1999999, breakthroughs: nativeBreakthroughs("cyberspace"), nativeBiomes: ["cyberspace"] },
+    { name: "Beach Ball - 1,938,000", chance: 1938000 },
     { name: "Archmage - 1,766,000", chance: 1766000 },
     { name: "Obsidian - 1,750,000", chance: 1750000 },
     { name: "Cosmos - 1,520,000", chance: 1520000 },
@@ -7018,6 +7145,7 @@ const AURA_BLUEPRINT_SOURCE = Object.freeze([
     { name: "紅月を求めし者 - 666,666", chance: 666666, nativeBiomes: ["fullMoon"] },
     { name: "Undead : Devil - 666,666", chance: 666666, breakthroughs: nativeBreakthroughs("hell") },
     { name: "Warlock - 666,000", chance: 666000 },
+    { name: "Floaty - 600,000", chance: 600000 },
     { name: "Pump : Trickster - 600,000", chance: 600000, nativeBiomes: ["glitch", "pumpkinMoon"] },
     { name: "Prowler - 540,000", chance: 540000, nativeBiomes: ["anotherRealm"], cutscene: "prowler-cutscene" },
     { name: "Clockwork - 530,000", chance: 530000, nativeBiomes: ["mastermind"], cutscene: "clockwork-cutscene" },
@@ -7443,14 +7571,22 @@ const EVENT_AURA_LOOKUP = {
         "P.U.K.E.K.O.G.O.D. - 1,000,000,000",
         "A Fool's Experience - 1,000,000,000"
     ],
-    summer26: []
+    summer26: [
+        "Floaty - 600,000",
+        "Beach Ball - 1,938,000",
+        "Nostalgia - 20,270,000",
+        "Goose Rave - 50,000,000",
+        "Vacation - 58,620,000",
+        "Bayview - 60,000,000",
+        "Pool Party - 972,000,000",
+    ]
 };
 
 const BIOME_EVENT_CONSTRAINTS = {
     graveyard: ["halloween24", "halloween25"],
     pumpkinMoon: ["halloween24", "halloween25"],
     bloodRain: ["halloween25"],
-    blazing: ["summer25"],
+    blazing: ["summer25", "summer26"],
     aurora: ["winter26"],
 };
 
@@ -7461,7 +7597,7 @@ const EVENT_BIOME_CONDITION_MESSAGES = Object.freeze({
     graveyard: 'Requires Night time with Halloween 2024 or Halloween 2025 enabled.',
     pumpkinMoon: 'Requires Night time with Halloween 2024 or Halloween 2025 enabled.',
     bloodRain: 'Requires Halloween 2025 enabled.',
-    blazing: 'Requires Summer 2025 enabled.',
+    blazing: 'Requires Summer 2025 or Summer 2026 enabled.',
     aurora: 'Requires Winter 2026 enabled.',
     fullMoon: 'Requires Developer Biomes to be enabled under run parameters.',
 });
@@ -7570,6 +7706,45 @@ const GLITCH_EVENT_WHITELIST = new Set([
     "halloween24",
     "halloween25",
 ]);
+
+const EVENT_AURA_BIOME_CONSTRAINTS = Object.freeze({
+    summer26: Object.freeze(['blazing', 'glitch'])
+});
+
+function eventAuraBiomeRequirementsMet(eventIds, context) {
+    if (!Array.isArray(eventIds) || eventIds.length === 0) {
+        return true;
+    }
+
+    const eventState = context?.enabledEventsSet instanceof Set
+        ? context.enabledEventsSet
+        : enabledEvents;
+    const directBiomes = new Set([
+        context?.biome,
+        context?.primaryBiome,
+        context?.timeBiome
+    ].filter(Boolean));
+
+    for (const eventId of eventIds) {
+        if (!eventState.has(eventId)) {
+            continue;
+        }
+
+        const allowedBiomes = EVENT_AURA_BIOME_CONSTRAINTS[eventId];
+        if (!allowedBiomes) {
+            return true;
+        }
+
+        const allowed = allowedBiomes.some(biomeId => biomeId === 'glitch'
+            ? context?.glitchLikeBiome === true
+            : directBiomes.has(biomeId));
+        if (allowed) {
+            return true;
+        }
+    }
+
+    return false;
+}
 
 for (const [eventId, auraNames] of Object.entries(EVENT_AURA_LOOKUP)) {
     auraNames.forEach(name => {
@@ -8053,7 +8228,6 @@ function triggerLuckPresetButtonAnimation(button, className) {
     }
 
     button.classList.remove('luck-preset-button--pop', 'luck-preset-button--mega-pop', 'luck-preset-button--master-pop');
-    // Force reflow so the animation can retrigger
     void button.offsetWidth;
     button.classList.add(className);
 }
@@ -9313,6 +9487,7 @@ document.addEventListener('DOMContentLoaded', setupRollCancellationControl);
 document.addEventListener('DOMContentLoaded', setupNodeShiftAnimation);
 document.addEventListener('DOMContentLoaded', relocateResourcesPanelForMobile);
 document.addEventListener('DOMContentLoaded', observeLayeredSigilText);
+document.addEventListener('DOMContentLoaded', startGlitchSigilFlicker);
 document.addEventListener('DOMContentLoaded', initializeCreditsDirectory);
 document.addEventListener('DOMContentLoaded', initializeHelpCenter);
 
@@ -9803,6 +9978,32 @@ const BIOME_ICON_OVERRIDES = {
     edict: 'files/images/icons/heavenBiomeIcon.png'
 };
 
+const BIOME_SIGIL_CLASS_OVERRIDES = Object.freeze({
+    day: 'sigil-outline-day',
+    night: 'sigil-outline-night',
+    windy: 'sigil-outline-windy',
+    snowy: 'sigil-outline-snowy',
+    rainy: 'sigil-outline-rainy',
+    sandstorm: 'sigil-outline-sandstorm',
+    starfall: 'sigil-outline-starfall',
+    hell: 'sigil-outline-hell',
+    heaven: 'sigil-outline-heaven',
+    corruption: 'sigil-outline-corruption',
+    null: 'sigil-outline-null',
+    singularity: 'sigil-outline-singularity',
+    cyberspace: 'sigil-outline-cyberspace',
+    dreamspace: 'sigil-outline-dreamspace',
+    glitch: 'sigil-outline-glitch',
+    limbo: 'sigil-outline-limbo',
+    pumpkinMoon: 'sigil-outline-halloween',
+    graveyard: 'sigil-outline-halloween',
+    bloodRain: 'sigil-outline-blood',
+    blazing: 'sigil-outline-summer',
+    aurora: 'sigil-outline-winter',
+    mastermind: 'sigil-outline-mastermind',
+    edict: 'sigil-outline-edict'
+});
+
 function getBiomeIconSource(value) {
     if (!value) {
         return null;
@@ -9850,6 +10051,10 @@ function populateBiomeOptionElement(target, option, { deferImage = false } = {})
 
     const labelSpan = document.createElement('span');
     labelSpan.className = 'biome-option__label';
+    const sigilClass = BIOME_SIGIL_CLASS_OVERRIDES[option.value];
+    if (sigilClass) {
+        labelSpan.classList.add(sigilClass);
+    }
     labelSpan.textContent = label;
     target.appendChild(labelSpan);
 
@@ -10216,6 +10421,19 @@ function updateBiomeControlConstraints({ source = null, triggerSync = true } = {
         }
     }
 
+    if (timeSelect.value === 'night' && DAY_ONLY_BIOMES.has(primarySelect.value)) {
+        if (source === BIOME_TIME_SELECT_ID) {
+            const fallback = findFirstEnabledOption(primarySelect, option => !DAY_ONLY_BIOMES.has(option.value));
+            if (fallback) {
+                primarySelect.value = fallback.value;
+                primaryChanged = true;
+            }
+        } else {
+            timeSelect.value = 'day';
+            timeChanged = true;
+        }
+    }
+
     if (primarySelect.value === 'limbo' && runeActive) {
         if (source === BIOME_PRIMARY_SELECT_ID) {
             otherSelect.value = 'none';
@@ -10240,6 +10458,7 @@ function updateBiomeControlConstraints({ source = null, triggerSync = true } = {
     });
 
     const daySelected = timeSelect.value === 'day';
+    const nightSelected = timeSelect.value === 'night';
     Array.from(primarySelect.options).forEach(option => {
         const disabledByEvent = eventDisabledMap.get(option.value) || false;
         let disabledByConflict = false;
@@ -10248,6 +10467,9 @@ function updateBiomeControlConstraints({ source = null, triggerSync = true } = {
         if (daySelected && DAY_RESTRICTED_BIOMES.has(option.value)) {
             disabledByConflict = true;
             conflictTitle = 'Unavailable while Day is selected.';
+        } else if (nightSelected && DAY_ONLY_BIOMES.has(option.value)) {
+            disabledByConflict = true;
+            conflictTitle = 'Unavailable while Night is selected.';
         }
         if (runeActive && option.value === 'limbo') {
             disabledByConflict = true;
@@ -10360,9 +10582,14 @@ function updateBiomeControlConstraints({ source = null, triggerSync = true } = {
             option.dataset.conditionLabel = option.textContent?.trim() || 'Time';
         } else if (option.value === 'day' && DAY_RESTRICTED_BIOMES.has(primarySelect.value)) {
             disabled = true;
-            title = 'Unavailable while Pumpkin Moon, Graveyard, or Blood Rain is selected.';
+            title = 'Unavailable while Pumpkin Moon or Graveyard is selected.';
             option.removeAttribute('data-condition-message');
             option.removeAttribute('data-condition-label');
+        } else if (option.value === 'night' && DAY_ONLY_BIOMES.has(primarySelect.value)) {
+            disabled = true;
+            title = 'Blazing Sun is only available during Day.';
+            option.dataset.conditionMessage = title;
+            option.dataset.conditionLabel = option.textContent?.trim() || 'Time';
         } else {
             option.removeAttribute('data-condition-message');
             option.removeAttribute('data-condition-label');
@@ -10719,8 +10946,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-// XP is awarded once per rarity tier. Landing any aura within an inclusive tier range grants that tier's XP
-// a single time per simulation run, regardless of how many qualifying entries in AURA_REGISTRY were rolled in that band.
 const XP_RARITY_ROWS = Object.freeze([
     ['tier-9k', 9999, 99998, 1000, '1 in 9,999 – 99,998'],
     ['tier-99k', 99999, 999998, 2500, '1 in 99,999 – 999,998'],
@@ -10926,6 +11151,7 @@ function computeStandardEffectiveChance(aura, context) {
     const eventIds = getAuraEventIds(aura);
     const eventEnabled = context.eventChecker(aura);
     if (!eventEnabled) return Infinity;
+    if (!eventAuraBiomeRequirementsMet(eventIds, context)) return Infinity;
 
     if (isRoe && ROE_EXCLUSION_SET.has(aura.name)) {
         const matchesActive = Array.isArray(activeBiomes) && activeBiomes.length > 0
@@ -11884,11 +12110,6 @@ function setupRollCancellationControl() {
 }
 
 function shouldScheduleBackgroundWork() {
-    // Always prefer timer-based scheduling when background rolling is enabled.
-    // Using requestAnimationFrame will pause entirely once the tab becomes
-    // hidden, which prevents long simulations from continuing in the
-    // background. Timers continue to fire (even if throttled), so they keep
-    // work progressing when the page is inactive.
     return Boolean(appState && appState.backgroundRolling);
 }
 
@@ -12215,7 +12436,6 @@ function prepareSimulationBatch(batch, selectionState, eventContext) {
     };
 }
 
-// Run the roll simulation while keeping the UI responsive
 function runRollSimulation(options = {}) {
     if (simulationActive) return;
 
@@ -13719,6 +13939,38 @@ const SHARE_IMAGE_RARITY_STYLES = Object.freeze({
     }
 });
 
+function createShareEventOutlineStyle({ fill = '#ffffff', outline, accent, depth }) {
+    return {
+        fill,
+        stroke: { color: accent, width: 3.4 },
+        shadowLayers: [
+            { color: outline, blur: 0, offsetX: 2, offsetY: 0 },
+            { color: outline, blur: 0, offsetX: -2, offsetY: 0 },
+            { color: outline, blur: 0, offsetX: 0, offsetY: 2 },
+            { color: outline, blur: 0, offsetX: 0, offsetY: -2 },
+            { color: accent, blur: 5 },
+            { color: depth, blur: 2, offsetX: 0, offsetY: 3 }
+        ],
+        replaceShadows: true
+    };
+}
+
+function createShareBiomeOutlineStyle({ fill, outline, accent, depth, glow = accent }) {
+    return {
+        fill,
+        stroke: { color: accent, width: 3.2 },
+        shadowLayers: [
+            { color: outline, blur: 0, offsetX: 2, offsetY: 0 },
+            { color: outline, blur: 0, offsetX: -2, offsetY: 0 },
+            { color: outline, blur: 0, offsetX: 0, offsetY: 2 },
+            { color: outline, blur: 0, offsetX: 0, offsetY: -2 },
+            { color: glow, blur: 5 },
+            { color: depth, blur: 2, offsetX: 0, offsetY: 3 }
+        ],
+        replaceShadows: true
+    };
+}
+
 const SHARE_IMAGE_OUTLINE_STYLES = Object.freeze({
     'sigil-outline-empty': {
         fill: '#080808',
@@ -13729,16 +13981,12 @@ const SHARE_IMAGE_OUTLINE_STYLES = Object.freeze({
             { color: 'rgba(255, 255, 255, 0.62)', blur: 0, offsetX: 0, offsetY: -1 }
         ]
     },
-    'sigil-outline-halloween': {
-        shadows: [
-            { color: 'rgba(255, 140, 0, 0.85)', blur: 4 },
-            { color: 'rgba(255, 90, 0, 0.7)', blur: 8 },
-            { color: 'rgba(60, 20, 0, 0.95)', blur: 0, offsetX: 1, offsetY: 1 },
-            { color: 'rgba(60, 20, 0, 0.95)', blur: 0, offsetX: -1, offsetY: 1 },
-            { color: 'rgba(60, 20, 0, 0.95)', blur: 0, offsetX: 1, offsetY: -1 },
-            { color: 'rgba(60, 20, 0, 0.95)', blur: 0, offsetX: -1, offsetY: -1 }
-        ]
-    },
+    'sigil-outline-halloween': createShareEventOutlineStyle({
+        fill: '#fff0dc',
+        outline: '#7a2d00',
+        accent: '#ff8b24',
+        depth: 'rgba(60, 20, 0, 0.84)'
+    }),
     'sigil-outline-xyz': {
         shadows: [
             { color: 'rgba(80, 170, 255, 0.85)', blur: 4 },
@@ -13749,78 +13997,54 @@ const SHARE_IMAGE_OUTLINE_STYLES = Object.freeze({
             { color: 'rgba(5, 40, 120, 0.9)', blur: 0, offsetX: -1, offsetY: -1 }
         ]
     },
-    'sigil-outline-valentine-2024': {
-        shadows: [
-            { color: 'rgba(255, 140, 200, 0.85)', blur: 4 },
-            { color: 'rgba(255, 95, 170, 0.75)', blur: 8 },
-            { color: 'rgba(115, 20, 80, 0.9)', blur: 0, offsetX: 1, offsetY: 1 },
-            { color: 'rgba(115, 20, 80, 0.9)', blur: 0, offsetX: -1, offsetY: 1 },
-            { color: 'rgba(115, 20, 80, 0.9)', blur: 0, offsetX: 1, offsetY: -1 },
-            { color: 'rgba(115, 20, 80, 0.9)', blur: 0, offsetX: -1, offsetY: -1 }
-        ]
-    },
-    'sigil-outline-valentine-2026': {
-        shadows: [
-            { color: 'rgba(255, 140, 200, 0.85)', blur: 4 },
-            { color: 'rgba(248, 127, 184, 0.75)', blur: 8 },
-            { color: 'rgba(140, 45, 105, 0.9)', blur: 0, offsetX: 1, offsetY: 1 },
-            { color: 'rgba(141, 49, 108, 0.9)', blur: 0, offsetX: -1, offsetY: 1 },
-            { color: 'rgba(146, 44, 109, 0.9)', blur: 0, offsetX: 1, offsetY: -1 },
-            { color: 'rgba(126, 13, 85, 0.9)', blur: 0, offsetX: -1, offsetY: -1 }
-        ]
-    },
-    'sigil-outline-april': {
-        shadows: [
-            { color: 'rgba(190, 190, 190, 0.85)', blur: 4 },
-            { color: 'rgba(140, 140, 140, 0.75)', blur: 8 },
-            { color: 'rgba(80, 80, 80, 0.9)', blur: 0, offsetX: 1, offsetY: 1 },
-            { color: 'rgba(80, 80, 80, 0.9)', blur: 0, offsetX: -1, offsetY: 1 },
-            { color: 'rgba(80, 80, 80, 0.9)', blur: 0, offsetX: 1, offsetY: -1 },
-            { color: 'rgba(80, 80, 80, 0.9)', blur: 0, offsetX: -1, offsetY: -1 }
-        ]
-    },
-    'sigil-outline-summer': {
-        shadows: [
-            { color: 'rgba(255, 255, 140, 0.9)', blur: 4 },
-            { color: 'rgba(234, 240, 70, 0.75)', blur: 8 },
-            { color: 'rgba(145, 155, 10, 0.85)', blur: 0, offsetX: 1, offsetY: 1 },
-            { color: 'rgba(155, 155, 10, 0.85)', blur: 0, offsetX: -1, offsetY: 1 },
-            { color: 'rgba(150, 155, 10, 0.85)', blur: 0, offsetX: 1, offsetY: -1 },
-            { color: 'rgba(155, 155, 10, 0.85)', blur: 0, offsetX: -1, offsetY: -1 }
-        ]
-    },
-    'sigil-outline-innovator': {
-        fill: '#f1e6ff',
-        shadows: [
-            { color: 'rgba(200, 140, 255, 0.9)', blur: 4 },
-            { color: 'rgba(150, 90, 235, 0.75)', blur: 8 },
-            { color: 'rgba(70, 20, 120, 0.9)', blur: 0, offsetX: 1, offsetY: 1 },
-            { color: 'rgba(70, 20, 120, 0.9)', blur: 0, offsetX: -1, offsetY: 1 },
-            { color: 'rgba(70, 20, 120, 0.9)', blur: 0, offsetX: 1, offsetY: -1 },
-            { color: 'rgba(70, 20, 120, 0.9)', blur: 0, offsetX: -1, offsetY: -1 }
-        ]
-    },
-    'sigil-outline-winter': {
-        shadows: [
-            { color: 'rgba(210, 240, 255, 0.9)', blur: 4 },
-            { color: 'rgba(140, 200, 255, 0.75)', blur: 8 },
-            { color: 'rgba(40, 90, 140, 0.85)', blur: 0, offsetX: 1, offsetY: 1 },
-            { color: 'rgba(40, 90, 140, 0.85)', blur: 0, offsetX: -1, offsetY: 1 },
-            { color: 'rgba(40, 90, 140, 0.85)', blur: 0, offsetX: 1, offsetY: -1 },
-            { color: 'rgba(40, 90, 140, 0.85)', blur: 0, offsetX: -1, offsetY: -1 }
-        ]
-    },
-    'sigil-outline-winter-2026': {
-        fill: '#eafcff',
-        shadows: [
-            { color: 'rgba(210, 246, 255, 0.95)', blur: 5 },
-            { color: 'rgba(125, 208, 255, 0.85)', blur: 12 },
-            { color: 'rgba(40, 120, 170, 0.92)', blur: 0, offsetX: 1, offsetY: 1 },
-            { color: 'rgba(40, 120, 170, 0.92)', blur: 0, offsetX: -1, offsetY: 1 },
-            { color: 'rgba(40, 120, 170, 0.92)', blur: 0, offsetX: 1, offsetY: -1 },
-            { color: 'rgba(40, 120, 170, 0.92)', blur: 0, offsetX: -1, offsetY: -1 }
-        ]
-    },
+    'sigil-outline-valentine-2024': createShareEventOutlineStyle({
+        fill: '#fff0f9',
+        outline: '#731450',
+        accent: '#ff6fbd',
+        depth: 'rgba(70, 8, 45, 0.84)'
+    }),
+    'sigil-outline-valentine-2026': createShareEventOutlineStyle({
+        fill: '#ffe9f7',
+        outline: '#85195f',
+        accent: '#ff58b4',
+        depth: 'rgba(90, 10, 58, 0.84)'
+    }),
+    'sigil-outline-easter-2026': createShareEventOutlineStyle({
+        fill: '#effff9',
+        outline: '#0b6a50',
+        accent: '#52e8b6',
+        depth: 'rgba(5, 75, 58, 0.82)'
+    }),
+    'sigil-outline-april': createShareEventOutlineStyle({
+        fill: '#ffffff',
+        outline: '#444444',
+        accent: '#b9c0ca',
+        depth: 'rgba(35, 35, 35, 0.84)'
+    }),
+    'sigil-outline-summer': createShareEventOutlineStyle({
+        fill: '#fffed4',
+        outline: '#777c00',
+        accent: '#f2ef3d',
+        depth: 'rgba(77, 82, 0, 0.84)'
+    }),
+    'sigil-outline-innovator': createShareEventOutlineStyle({
+        fill: '#f4e8ff',
+        outline: '#461478',
+        accent: '#bc73ff',
+        depth: 'rgba(45, 8, 80, 0.84)'
+    }),
+    'sigil-outline-winter': createShareEventOutlineStyle({
+        fill: '#edf9ff',
+        outline: '#285a8c',
+        accent: '#79cfff',
+        depth: 'rgba(15, 55, 95, 0.84)'
+    }),
+    'sigil-outline-winter-2026': createShareEventOutlineStyle({
+        fill: '#eaffff',
+        outline: '#196b98',
+        accent: '#46d9ff',
+        depth: 'rgba(15, 70, 105, 0.84)'
+    }),
     'sigil-outline-winter-garden': {
         font: '600 35px "Parisienne", "Sarpanch", cursive',
         letterSpacing: 0.25,
@@ -13895,16 +14119,12 @@ const SHARE_IMAGE_OUTLINE_STYLES = Object.freeze({
             { color: 'rgba(20, 110, 160, 0.95)', blur: 0, offsetX: -2, offsetY: -2 }
         ]
     },
-    'sigil-outline-blood': {
-        shadows: [
-            { color: 'rgba(200, 20, 20, 0.9)', blur: 4 },
-            { color: 'rgba(150, 0, 0, 0.75)', blur: 8 },
-            { color: 'rgba(60, 0, 0, 0.95)', blur: 0, offsetX: 1, offsetY: 1 },
-            { color: 'rgba(60, 0, 0, 0.95)', blur: 0, offsetX: -1, offsetY: 1 },
-            { color: 'rgba(60, 0, 0, 0.95)', blur: 0, offsetX: 1, offsetY: -1 },
-            { color: 'rgba(60, 0, 0, 0.95)', blur: 0, offsetX: -1, offsetY: -1 }
-        ]
-    },
+    'sigil-outline-blood': createShareEventOutlineStyle({
+        fill: '#ffe8e8',
+        outline: '#730707',
+        accent: '#ff4651',
+        depth: 'rgba(45, 0, 0, 0.86)'
+    }),
     'sigil-outline-illusionary': {
         fill: '#f7fbff',
         shadows: [
@@ -13918,84 +14138,103 @@ const SHARE_IMAGE_OUTLINE_STYLES = Object.freeze({
             { color: 'rgba(176, 216, 255, 0.82)', blur: 0, offsetX: -6, offsetY: -2 }
         ]
     },
-    'sigil-outline-glitch': {
-        fill: '#0f0018',
-        shadows: [
-            { color: 'rgba(255, 255, 255, 0.95)', blur: 6 },
-            { color: 'rgba(255, 255, 255, 0.85)', blur: 14 },
-            { color: 'rgba(255, 255, 255, 0.98)', blur: 0, offsetX: 2, offsetY: 0 },
-            { color: 'rgba(255, 255, 255, 0.98)', blur: 0, offsetX: -2, offsetY: 0 },
-            { color: 'rgba(255, 255, 255, 0.98)', blur: 0, offsetX: 0, offsetY: 2 },
-            { color: 'rgba(255, 255, 255, 0.98)', blur: 0, offsetX: 0, offsetY: -2 }
-        ]
-    },
-    'sigil-outline-dreamspace': {
-        fill: '#ffe9ff',
-        shadows: [
-            { color: 'rgba(255, 140, 220, 0.95)', blur: 10 },
-            { color: 'rgba(255, 90, 210, 0.85)', blur: 18 },
-            { color: 'rgba(255, 110, 220, 0.96)', blur: 0, offsetX: 3, offsetY: 0 },
-            { color: 'rgba(255, 110, 220, 0.96)', blur: 0, offsetX: -3, offsetY: 0 },
-            { color: 'rgba(255, 110, 220, 0.96)', blur: 0, offsetX: 0, offsetY: 3 },
-            { color: 'rgba(255, 110, 220, 0.96)', blur: 0, offsetX: 0, offsetY: -3 }
-        ]
-    },
-    'sigil-outline-cyberspace': {
-        fill: '#e1edff',
-        shadows: [
-            { color: 'rgba(60, 120, 200, 0.95)', blur: 10 },
-            { color: 'rgba(40, 90, 170, 0.85)', blur: 18 },
-            { color: 'rgba(35, 90, 175, 0.96)', blur: 0, offsetX: 3, offsetY: 0 },
-            { color: 'rgba(35, 90, 175, 0.96)', blur: 0, offsetX: -3, offsetY: 0 },
-            { color: 'rgba(35, 90, 175, 0.96)', blur: 0, offsetX: 0, offsetY: 3 },
-            { color: 'rgba(35, 70, 135, 0.96)', blur: 0, offsetX: 0, offsetY: -3 }
-        ]
-    },
-    'sigil-outline-day': {
-        fill: '#ffe9ff',
-        shadows: [
-            { color: 'rgba(95, 90, 58, 0.85)', blur: 10 },
-            { color: 'rgba(106, 109, 73, 0.7)', blur: 18 },
-            { color: 'rgba(162, 170, 76, 0.7)', blur: 0, offsetX: 3, offsetY: 0 },
-            { color: 'rgba(53, 54, 38, 0.7)', blur: 0, offsetX: -3, offsetY: 0 },
-            { color: 'rgba(94, 97, 57, 0.7)', blur: 0, offsetX: 0, offsetY: 3 },
-            { color: 'rgba(66, 68, 39, 0.7)', blur: 0, offsetX: 0, offsetY: -3 }
-        ]
-    },
-    'sigil-outline-night': {
-        fill: '#e1edff',
-        shadows: [
-            { color: 'rgba(71, 28, 100, 0.95)', blur: 10 },
-            { color: 'rgba(65, 26, 97, 0.85)', blur: 18 },
-            { color: 'rgba(67, 27, 90, 0.96)', blur: 0, offsetX: 3, offsetY: 0 },
-            { color: 'rgba(39, 2, 48, 0.96)', blur: 0, offsetX: -3, offsetY: 0 },
-            { color: 'rgba(31, 3, 77, 0.96)', blur: 0, offsetX: 0, offsetY: 3 },
-            { color: 'rgba(43, 5, 68, 0.96)', blur: 0, offsetX: 0, offsetY: -3 }
-        ]
-    },
-    'sigil-outline-heaven': {
-        fill: '#ffffffff',
-        shadows: [
-            { color: 'rgba(190, 180, 102, 0.95)', blur: 10 },
-            { color: 'rgba(216, 184, 22, 0.85)', blur: 18 },
-            { color: 'rgba(173, 144, 29, 0.96)', blur: 0, offsetX: 3, offsetY: 0 },
-            { color: 'rgba(172, 158, 65, 0.96)', blur: 0, offsetX: -3, offsetY: 0 },
-            { color: 'rgba(204, 177, 43, 0.96)', blur: 0, offsetX: 0, offsetY: 3 },
-            { color: 'rgba(167, 181, 38, 0.96)', blur: 0, offsetX: 0, offsetY: -3 }
-        ]
-    },
-    'sigil-outline-limbo': {
-        fill: '#000000',
-        shadows: [
-            { color: 'rgba(172, 172, 172, 0.95)', blur: 10 },
-            { color: 'rgba(175, 175, 175, 0.88)', blur: 18 },
-            { color: 'rgba(176, 176, 176, 0.8)', blur: 32 },
-            { color: 'rgba(136, 136, 136, 0.96)', blur: 0, offsetX: 1, offsetY: 0 },
-            { color: 'rgba(83, 83, 83, 0.96)', blur: 0, offsetX: -1, offsetY: 0 },
-            { color: 'rgba(64, 64, 64, 0.96)', blur: 0, offsetX: 0, offsetY: 1 },
-            { color: 'rgba(55, 55, 55, 0.94)', blur: 0, offsetX: -1, offsetY: -1 }
-        ]
-    },
+    'sigil-outline-glitch': createShareBiomeOutlineStyle({
+        fill: '#d7c2ff',
+        outline: '#6e2bb6',
+        accent: '#190d25',
+        glow: 'rgba(151, 75, 255, 0.92)',
+        depth: 'rgba(0, 0, 0, 0.92)'
+    }),
+    'sigil-outline-dreamspace': createShareBiomeOutlineStyle({
+        fill: '#fff0fc',
+        outline: '#710650',
+        accent: '#ff5ecb',
+        depth: 'rgba(85, 4, 62, 0.86)'
+    }),
+    'sigil-outline-cyberspace': createShareBiomeOutlineStyle({
+        fill: '#eaf5ff',
+        outline: '#073d7a',
+        accent: '#58a8ff',
+        depth: 'rgba(5, 27, 68, 0.86)'
+    }),
+    'sigil-outline-singularity': createShareBiomeOutlineStyle({
+        fill: '#fff0df',
+        outline: '#6d1906',
+        accent: '#ff7b32',
+        depth: 'rgba(54, 9, 13, 0.88)'
+    }),
+    'sigil-outline-windy': createShareBiomeOutlineStyle({
+        fill: '#e8f9ff',
+        outline: '#075c96',
+        accent: '#43b9ff',
+        depth: 'rgba(0, 48, 86, 0.84)'
+    }),
+    'sigil-outline-snowy': createShareBiomeOutlineStyle({
+        fill: '#ffffff',
+        outline: '#3a8b99',
+        accent: '#aaf7ff',
+        depth: 'rgba(35, 91, 103, 0.8)'
+    }),
+    'sigil-outline-rainy': createShareBiomeOutlineStyle({
+        fill: '#eaf2ff',
+        outline: '#153a78',
+        accent: '#4d8dff',
+        depth: 'rgba(8, 37, 85, 0.84)'
+    }),
+    'sigil-outline-sandstorm': createShareBiomeOutlineStyle({
+        fill: '#fff0bd',
+        outline: '#64370e',
+        accent: '#e9a43a',
+        depth: 'rgba(73, 36, 4, 0.84)'
+    }),
+    'sigil-outline-starfall': createShareBiomeOutlineStyle({
+        fill: '#f6ecff',
+        outline: '#3a1679',
+        accent: '#a875ff',
+        depth: 'rgba(28, 5, 70, 0.86)'
+    }),
+    'sigil-outline-hell': createShareBiomeOutlineStyle({
+        fill: '#ffe3d7',
+        outline: '#6f0c02',
+        accent: '#ff4d2e',
+        depth: 'rgba(79, 5, 0, 0.88)'
+    }),
+    'sigil-outline-corruption': createShareBiomeOutlineStyle({
+        fill: '#f7e8ff',
+        outline: '#51006e',
+        accent: '#ce4dff',
+        depth: 'rgba(55, 0, 77, 0.88)'
+    }),
+    'sigil-outline-null': createShareBiomeOutlineStyle({
+        fill: '#f2f5f5',
+        outline: '#1b252a',
+        accent: '#93a6ae',
+        depth: 'rgba(7, 12, 15, 0.9)'
+    }),
+    'sigil-outline-day': createShareBiomeOutlineStyle({
+        fill: '#fff8bf',
+        outline: '#6f5c00',
+        accent: '#ffe35a',
+        depth: 'rgba(55, 43, 0, 0.82)'
+    }),
+    'sigil-outline-night': createShareBiomeOutlineStyle({
+        fill: '#f1eaff',
+        outline: '#32105e',
+        accent: '#a86cff',
+        depth: 'rgba(18, 0, 42, 0.86)'
+    }),
+    'sigil-outline-heaven': createShareBiomeOutlineStyle({
+        fill: '#fff8ce',
+        outline: '#725600',
+        accent: '#ffd65a',
+        depth: 'rgba(78, 50, 0, 0.82)'
+    }),
+    'sigil-outline-limbo': createShareBiomeOutlineStyle({
+        fill: '#070707',
+        outline: '#555555',
+        accent: '#f0f0f0',
+        depth: 'rgba(0, 0, 0, 0.92)'
+    }),
     'sigil-outline-leviathan': {
         fill: '#000000',
         shadows: [
@@ -14036,6 +14275,7 @@ function cloneShareStyle(style) {
         ...style,
         shadowLayers: style.shadowLayers ? style.shadowLayers.map(cloneShareShadowLayer) : [],
         baseShadow: style.baseShadow ? { ...style.baseShadow } : null,
+        stroke: style.stroke ? { ...style.stroke } : null,
         decorations: style.decorations ? { ...style.decorations } : null
     };
 }
@@ -14059,6 +14299,9 @@ function applyRarityStyle(style, className) {
     if (config.fill) {
         style.fill = config.fill;
     }
+    if (config.stroke) {
+        style.stroke = { ...config.stroke };
+    }
     if (Array.isArray(config.shadows)) {
         style.shadowLayers.push(...config.shadows.map(cloneShareShadowLayer));
     }
@@ -14081,6 +14324,9 @@ function applyOutlineStyle(style, className) {
     }
     if (config.fill) {
         style.fill = config.fill;
+    }
+    if (config.stroke) {
+        style.stroke = { ...config.stroke };
     }
     if (Array.isArray(config.shadows)) {
         style.shadowLayers.push(...config.shadows.map(cloneShareShadowLayer));
@@ -14281,8 +14527,9 @@ function applyEffectStyle(styleSet, effectClass) {
 function applyEventStyle(styleSet) {
     if (!styleSet || !styleSet.name) return;
     styleSet.name.fill = '#ffffff';
+    styleSet.name.stroke = { color: 'rgba(0, 0, 0, 0.82)', width: 2.2 };
     styleSet.name.shadowLayers = [
-        { color: 'rgba(0, 0, 0, 0.9)', blur: 2, offsetX: 1, offsetY: 1 }
+        { color: 'rgba(0, 0, 0, 0.58)', blur: 1, offsetX: 0, offsetY: 2 }
     ];
 }
 
@@ -14420,6 +14667,23 @@ function drawTextWithSpacing(context, text, x, y, letterSpacing) {
     }
 }
 
+function strokeTextWithSpacing(context, text, x, y, letterSpacing) {
+    if (!text) return;
+    if (!letterSpacing) {
+        context.strokeText(text, x, y);
+        return;
+    }
+    let cursor = x;
+    for (let i = 0; i < text.length; i++) {
+        const char = text[i];
+        context.strokeText(char, cursor, y);
+        cursor += context.measureText(char).width;
+        if (i < text.length - 1) {
+            cursor += letterSpacing;
+        }
+    }
+}
+
 function resolveFillStyle(style, context, x, y, width, height) {
     if (typeof style.fill === 'function') {
         return style.fill(context, x, y, width, height);
@@ -14444,6 +14708,18 @@ function renderStyledSegment(context, text, x, y, style) {
             context.fillStyle = layer.fill || fill;
             drawTextWithSpacing(context, text, x, y, letterSpacing);
         }
+    }
+
+    if (style.stroke && typeof style.stroke.color === 'string' && Number.isFinite(style.stroke.width)) {
+        context.shadowColor = 'rgba(0, 0, 0, 0)';
+        context.shadowBlur = 0;
+        context.shadowOffsetX = 0;
+        context.shadowOffsetY = 0;
+        context.strokeStyle = style.stroke.color;
+        context.lineWidth = style.stroke.width;
+        context.lineJoin = 'round';
+        context.miterLimit = 2;
+        strokeTextWithSpacing(context, text, x, y, letterSpacing);
     }
 
     if (style.baseShadow) {
