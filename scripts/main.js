@@ -1,4 +1,3 @@
-// Reference frequently accessed UI elements at module load
 let feedContainer = document.getElementById('simulation-feed');
 let luckField = document.getElementById('luck-total');
 const pageBody = document.body;
@@ -17,7 +16,13 @@ let simulationActive = false;
 let cancelRollRequested = false;
 let experienceStarted = false;
 let activeSimulationWorker = null;
+let activeSolLikeSimulationController = null;
 let lastSimulationSummary = null;
+let rollFeedSortMode = 'rarity';
+let rollFeedSortingAvailable = false;
+let rollFeedSortSupportsRecent = false;
+let activeAuraFilterCount = 0;
+let activeAuraTierFilterCount = 0;
 let shareFeedbackTimerId = null;
 let imageShareModeRequester = null;
 const versionChangelogOverlayState = {
@@ -42,6 +47,10 @@ const qualityPreferencesOverlayState = {
     lastFocusedElement: null
 };
 
+const rollingSettingsOverlayState = {
+    lastFocusedElement: null
+};
+
 const trueChanceDisplayOverlayState = {
     lastFocusedElement: null
 };
@@ -51,15 +60,52 @@ const BACKGROUND_ROLLING_STORAGE_KEY = 'solsRollingCalculator:backgroundRollingP
 const AUDIO_SETTINGS_STORAGE_KEY = 'solsRollingCalculator:audioSettings';
 const AURA_FILTERS_STORAGE_KEY = 'solsRollingCalculator:auraFilters';
 const VISUAL_SETTINGS_STORAGE_KEY = 'solsRollingCalculator:visualSettings';
-const PERFORMANCE_DEFAULTS_STORAGE_KEY = 'solsRollingCalculator:performanceDefaults:v1';
+const PERFORMANCE_DEFAULTS_STORAGE_KEY = 'solsRollingCalculator:performanceDefaults:v2';
 const AURA_TIER_FILTERS_STORAGE_KEY = 'solsRollingCalculator:auraTierFilters';
-// TEMPORARY CUTSCENE LOCK:
-// Set to false (or remove this block) when you want to allow turning cutscenes off again.
+const ROLLING_SETTINGS_STORAGE_KEY = 'solsRollingCalculator:rollingSettings:v1';
+const SOLS_LIKE_ROLLS_PER_SECOND_MIN = 1;
+const SOLS_LIKE_ROLLS_PER_SECOND_MAX = 1000;
+const SOLS_LIKE_ROLLS_PER_SECOND_DEFAULT = 120;
+const LIVE_ROLL_FEED_BOTTOM_TOLERANCE_PX = 4;
+const ROLL_FEED_SORT_MODE = Object.freeze({
+    RECENT: 'recent',
+    RARITY: 'rarity',
+    ALPHABETICAL: 'alphabetical'
+});
+const ROLL_FEED_SORT_SEQUENCE = Object.freeze([
+    ROLL_FEED_SORT_MODE.RECENT,
+    ROLL_FEED_SORT_MODE.RARITY,
+    ROLL_FEED_SORT_MODE.ALPHABETICAL
+]);
+const ROLL_FEED_SORT_SEQUENCE_UNNAMED = Object.freeze([
+    ROLL_FEED_SORT_MODE.RARITY,
+    ROLL_FEED_SORT_MODE.ALPHABETICAL
+]);
+const ROLL_FEED_SORT_LABELS = Object.freeze({
+    [ROLL_FEED_SORT_MODE.RECENT]: 'Recent',
+    [ROLL_FEED_SORT_MODE.RARITY]: 'Rarity',
+    [ROLL_FEED_SORT_MODE.ALPHABETICAL]: 'Alphabetical'
+});
+const ROLL_FEED_SORT_ICONS = Object.freeze({
+    [ROLL_FEED_SORT_MODE.RECENT]: 'fa-clock-rotate-left',
+    [ROLL_FEED_SORT_MODE.RARITY]: 'fa-gem',
+    [ROLL_FEED_SORT_MODE.ALPHABETICAL]: 'fa-arrow-down-a-z'
+});
+const LEGACY_SOLS_LIKE_SPEED_VALUES = Object.freeze({
+    slower: 60,
+    standard: SOLS_LIKE_ROLLS_PER_SECOND_DEFAULT,
+    fast: 240,
+    'very-fast': 480
+});
 const FORCE_CUTSCENES_ALWAYS_ON = false;
 let reduceMotionPreferenceOverride = null;
 const backgroundRollingPreference = {
     allowed: false,
     suppressPrompt: false
+};
+const rollingSettingsPreference = {
+    solsLikeRollsPerSecond: SOLS_LIKE_ROLLS_PER_SECOND_DEFAULT,
+    autoPauseAfterCutscene: false
 };
 
 const QUALITY_PREFERENCE_KEYS = Object.freeze([
@@ -72,11 +118,12 @@ const QUALITY_PREFERENCE_KEYS = Object.freeze([
 ]);
 
 const PERFORMANCE_FIRST_QUALITY_DEFAULTS = Object.freeze({
-    removeParticles: true,
-    disableUiAnimations: true,
-    disableShakes: true,
-    disableRollAndSigilAnimations: true,
-    reduceGlitchEffects: true
+    removeParticles: false,
+    disableUiAnimations: false,
+    disableShakes: false,
+    disableRollAndSigilAnimations: false,
+    reduceGlitchEffects: true,
+    removeGlitchEffects: false
 });
 
 if (FORCE_CUTSCENES_ALWAYS_ON && typeof appState === 'object') {
@@ -123,16 +170,17 @@ function applyLatestUpdateBadgeToChangelogTabs(tabs) {
 }
 
 function getCurrentChangelogVersionId() {
-    if (!versionInfoButton) {
+    const trigger = versionInfoButton || document.getElementById('versionInfoButton');
+    if (!trigger) {
         return null;
     }
 
-    const explicitId = versionInfoButton.getAttribute('data-version-id');
+    const explicitId = trigger.getAttribute('data-version-id');
     if (explicitId) {
         return explicitId;
     }
 
-    const label = versionInfoButton.textContent;
+    const label = trigger.textContent;
     return label ? label.trim() : null;
 }
 
@@ -163,7 +211,6 @@ function maybeShowChangelogOnFirstVisit() {
     try {
         storage.setItem(CHANGELOG_VERSION_STORAGE_KEY, versionId);
     } catch (error) {
-        // Ignore storage write failures so the overlay logic can continue normally.
     }
 }
 
@@ -183,7 +230,6 @@ function hydrateBackgroundRollingPreference() {
             backgroundRollingPreference.suppressPrompt = Boolean(parsed.suppressPrompt);
         }
     } catch (error) {
-        // Ignore malformed storage so the defaults remain intact.
     }
 }
 
@@ -198,7 +244,6 @@ function persistBackgroundRollingPreference() {
             JSON.stringify(backgroundRollingPreference)
         );
     } catch (error) {
-        // Ignore write failures to avoid interrupting UI flow.
     }
 }
 
@@ -245,7 +290,6 @@ function hydrateAudioSettings() {
             || (appState.audio.musicVolume ?? 0) > 0
             || (appState.audio.cutsceneVolume ?? 0) > 0;
     } catch (error) {
-        // Ignore storage errors so the app can continue with defaults.
     }
 }
 
@@ -272,7 +316,6 @@ function hydrateAuraFilters() {
             }
         });
     } catch (error) {
-        // Ignore malformed storage so defaults remain intact.
     }
 }
 
@@ -299,7 +342,91 @@ function hydrateAuraTierFilters() {
             }
         });
     } catch (error) {
-        // Ignore malformed storage so defaults remain intact.
+    }
+}
+
+function countEnabledAuraFilters(filters) {
+    if (!filters || typeof filters !== 'object') {
+        return 0;
+    }
+
+    let enabledCount = 0;
+    Object.values(filters).forEach(value => {
+        if (value) {
+            enabledCount += 1;
+        }
+    });
+    return enabledCount;
+}
+
+function refreshActiveAuraFilterCounts() {
+    activeAuraFilterCount = countEnabledAuraFilters(appState?.auraFilters);
+    activeAuraTierFilterCount = countEnabledAuraFilters(appState?.auraTierFilters);
+}
+
+function hydrateRollingSettings() {
+    if (typeof window === 'undefined') {
+        return;
+    }
+
+    try {
+        const raw = window.localStorage.getItem(ROLLING_SETTINGS_STORAGE_KEY);
+        if (!raw) {
+            return;
+        }
+        const parsed = JSON.parse(raw);
+        if (!parsed || typeof parsed !== 'object') {
+            return;
+        }
+        if (Number.isFinite(Number(parsed.solsLikeRollsPerSecond))) {
+            rollingSettingsPreference.solsLikeRollsPerSecond = normalizeSolsLikeRollsPerSecond(
+                parsed.solsLikeRollsPerSecond
+            );
+        } else if (Object.prototype.hasOwnProperty.call(LEGACY_SOLS_LIKE_SPEED_VALUES, parsed.solsLikeSpeed)) {
+            rollingSettingsPreference.solsLikeRollsPerSecond = LEGACY_SOLS_LIKE_SPEED_VALUES[parsed.solsLikeSpeed];
+        }
+        if (typeof parsed.autoPauseAfterCutscene === 'boolean') {
+            rollingSettingsPreference.autoPauseAfterCutscene = parsed.autoPauseAfterCutscene;
+        }
+    } catch (error) {
+    }
+}
+
+function normalizeSolsLikeRollsPerSecond(value) {
+    const numericValue = Number.parseInt(value, 10);
+    if (!Number.isFinite(numericValue)) {
+        return SOLS_LIKE_ROLLS_PER_SECOND_DEFAULT;
+    }
+    return Math.min(
+        SOLS_LIKE_ROLLS_PER_SECOND_MAX,
+        Math.max(SOLS_LIKE_ROLLS_PER_SECOND_MIN, numericValue)
+    );
+}
+
+function formatSolsLikeRollingSpeed(value) {
+    const rollsPerSecond = normalizeSolsLikeRollsPerSecond(value);
+    const millisecondsPerRoll = 1000 / rollsPerSecond;
+    const delayText = Number.isInteger(millisecondsPerRoll)
+        ? millisecondsPerRoll.toFixed(0)
+        : millisecondsPerRoll >= 100
+        ? millisecondsPerRoll.toFixed(0)
+        : millisecondsPerRoll >= 10
+            ? millisecondsPerRoll.toFixed(1)
+            : millisecondsPerRoll.toFixed(2);
+    return `${formatWithCommas(rollsPerSecond)} ${rollsPerSecond === 1 ? 'roll' : 'rolls'}/s · ${delayText} ms/roll`;
+}
+
+function persistRollingSettings() {
+    if (typeof window === 'undefined') {
+        return;
+    }
+
+    try {
+        window.localStorage.setItem(
+            ROLLING_SETTINGS_STORAGE_KEY,
+            JSON.stringify(rollingSettingsPreference)
+        );
+    } catch (error) {
     }
 }
 
@@ -347,7 +474,6 @@ function hydrateVisualSettings() {
             }
         }
     } catch (error) {
-        // Ignore malformed storage so defaults remain intact.
     } finally {
         if (FORCE_CUTSCENES_ALWAYS_ON) {
             appState.cinematic = true;
@@ -366,7 +492,6 @@ function persistAuraFilters() {
             JSON.stringify(appState.auraFilters)
         );
     } catch (error) {
-        // Ignore storage errors so the UI remains responsive.
     }
 }
 
@@ -381,7 +506,6 @@ function persistAuraTierFilters() {
             JSON.stringify(appState.auraTierFilters)
         );
     } catch (error) {
-        // Ignore storage errors so the UI remains responsive.
     }
 }
 
@@ -404,7 +528,6 @@ function persistAudioSettings() {
             })
         );
     } catch (error) {
-        // Ignore write failures to avoid interrupting audio controls.
     }
 }
 
@@ -425,7 +548,6 @@ function persistVisualSettings() {
             })
         );
     } catch (error) {
-        // Ignore storage errors so the UI remains responsive.
     }
 }
 
@@ -459,7 +581,6 @@ function applyPerformanceFirstDefaults() {
     try {
         storage?.setItem(PERFORMANCE_DEFAULTS_STORAGE_KEY, '1');
     } catch (error) {
-        // Ignore storage errors so visual settings can still be applied for this page load.
     }
 }
 
@@ -571,6 +692,7 @@ const BIOME_PRIMARY_SELECT_ID = 'biome-primary-dropdown';
 const BIOME_OTHER_SELECT_ID = 'biome-other-dropdown';
 const BIOME_TIME_SELECT_ID = 'biome-time-dropdown';
 const DAY_RESTRICTED_BIOMES = new Set(['pumpkinMoon', 'graveyard']);
+const DAY_ONLY_BIOMES = new Set(['blazing']);
 const CYBERSPACE_ILLUSIONARY_WARNING_STORAGE_KEY = 'solsRollingCalculator:hideCyberspaceIllusionaryWarning';
 const SINGULARITY_MULTIPLIER_WARNING_STORAGE_KEY = 'solsRollingCalculator:hideSingularityMultiplierWarning';
 const SINGULARITY_SUMMON_SOUND_ID = 'singularitySummonSound';
@@ -740,6 +862,17 @@ function applyChannelVolumeToElements(channel) {
     } else if (channel === 'music') {
         category = 'music';
     }
+
+    if (!experienceStarted) {
+        if (channel === 'music') {
+            const bgMusic = document.getElementById('ambientMusic');
+            if (bgMusic) {
+                bgMusic.volume = computeEffectiveBackgroundVolume(bgMusic);
+            }
+        }
+        return;
+    }
+
     const selector = `[data-audio-channel="${channel}"]`;
     document.querySelectorAll(selector).forEach(element => {
         if (channel === 'music' && element.id === 'ambientMusic') {
@@ -764,7 +897,7 @@ function showAudioSettingsOverlay() {
     audioOverlayState.lastFocusedElement = document.activeElement;
     revealOverlay(overlay);
     overlay.querySelectorAll('.audio-slider__input').forEach(input => {
-        syncAudioSliderVisual(input, Number.parseFloat(input.value), { immediate: true });
+        syncAudioSliderVisual(input, Number.parseFloat(input.value));
     });
 
     const firstInput = overlay.querySelector('.audio-slider__input');
@@ -789,6 +922,171 @@ function hideAudioSettingsOverlay() {
             }
             audioOverlayState.lastFocusedElement = null;
         }
+    });
+}
+
+function syncRollingSettingsControls() {
+    const speedSlider = document.getElementById('solsLikeRollingSpeed');
+    const speedOutput = document.getElementById('solsLikeRollingSpeedValue');
+    const speedPresetButtons = document.querySelectorAll('[data-sols-like-speed]');
+    const autoPauseRow = document.getElementById('autoPauseAfterCutsceneRow');
+    const autoPauseToggle = document.getElementById('autoPauseAfterCutsceneToggle');
+    const speedEditableWhilePaused = Boolean(
+        simulationActive
+        && isSolsLikeSimulationMethod()
+        && activeSolLikeSimulationController?.isPaused?.()
+    );
+
+    if (speedSlider) {
+        const rollsPerSecond = normalizeSolsLikeRollsPerSecond(
+            rollingSettingsPreference.solsLikeRollsPerSecond
+        );
+        const sliderProgress = (
+            (rollsPerSecond - SOLS_LIKE_ROLLS_PER_SECOND_MIN)
+            / (SOLS_LIKE_ROLLS_PER_SECOND_MAX - SOLS_LIKE_ROLLS_PER_SECOND_MIN)
+        ) * 100;
+        speedSlider.value = String(rollsPerSecond);
+        speedSlider.style.setProperty('--rolling-speed-progress', `${sliderProgress}%`);
+        speedSlider.disabled = simulationActive && !speedEditableWhilePaused;
+        if (speedOutput) {
+            speedOutput.textContent = formatSolsLikeRollingSpeed(rollsPerSecond);
+        }
+        speedPresetButtons.forEach(button => {
+            const presetSpeed = normalizeSolsLikeRollsPerSecond(button.dataset.solsLikeSpeed);
+            const selected = presetSpeed === rollsPerSecond;
+            button.setAttribute('aria-pressed', selected ? 'true' : 'false');
+            button.disabled = speedSlider.disabled;
+        });
+    }
+    if (autoPauseRow) {
+        autoPauseRow.hidden = false;
+    }
+    if (autoPauseToggle) {
+        autoPauseToggle.checked = rollingSettingsPreference.autoPauseAfterCutscene;
+        autoPauseToggle.disabled = simulationActive;
+    }
+}
+
+function showRollingSettingsOverlay() {
+    const overlay = document.getElementById('rollingSettingsOverlay');
+    if (!overlay) return;
+
+    rollingSettingsOverlayState.lastFocusedElement = document.activeElement;
+    syncRollingSettingsControls();
+    revealOverlay(overlay);
+
+    const firstControl = overlay.querySelector('select:not(:disabled), input:not(:disabled), button:not(:disabled)');
+    if (firstControl && typeof firstControl.focus === 'function') {
+        try {
+            firstControl.focus({ preventScroll: true });
+        } catch (error) {
+            firstControl.focus();
+        }
+    }
+}
+
+function hideRollingSettingsOverlay() {
+    const overlay = document.getElementById('rollingSettingsOverlay');
+    if (!overlay) return;
+
+    concealOverlay(overlay, {
+        onHidden: () => {
+            const last = rollingSettingsOverlayState.lastFocusedElement;
+            if (last && typeof last.focus === 'function') {
+                last.focus({ preventScroll: true });
+            }
+            rollingSettingsOverlayState.lastFocusedElement = null;
+        }
+    });
+}
+
+function markRollingSettingsChildDialogOpen() {
+    const overlay = document.getElementById('rollingSettingsOverlay');
+    if (overlay && !overlay.hasAttribute('hidden')) {
+        overlay.setAttribute('aria-hidden', 'true');
+    }
+}
+
+function restoreRollingSettingsAfterChildDialog(lastFocusedElement) {
+    const rollingOverlay = lastFocusedElement instanceof Element
+        ? lastFocusedElement.closest('#rollingSettingsOverlay')
+        : null;
+    if (rollingOverlay && !rollingOverlay.hasAttribute('hidden')) {
+        rollingOverlay.removeAttribute('aria-hidden');
+    }
+}
+
+function initializeRollingSettingsPanel() {
+    const overlay = document.getElementById('rollingSettingsOverlay');
+    const openButton = document.getElementById('rollingSettingsButton');
+    const closeButton = document.getElementById('rollingSettingsClose');
+    const speedSlider = document.getElementById('solsLikeRollingSpeed');
+    const speedPresetButtons = document.querySelectorAll('[data-sols-like-speed]');
+    const autoPauseToggle = document.getElementById('autoPauseAfterCutsceneToggle');
+    const tierFilterButton = document.getElementById('rollingFilterAuraTiersButton');
+    const auraFilterButton = document.getElementById('rollingFilterAurasButton');
+    if (!overlay || !openButton) return;
+
+    hydrateRollingSettings();
+    syncRollingSettingsControls();
+
+    openButton.addEventListener('click', event => {
+        event.preventDefault();
+        const optionsMenu = document.getElementById('optionsMenu');
+        const optionsMenuToggle = document.getElementById('optionsMenuToggle');
+        optionsMenu?.classList.remove('options-menu--open');
+        optionsMenuToggle?.setAttribute('aria-expanded', 'false');
+        showRollingSettingsOverlay();
+    });
+
+    closeButton?.addEventListener('click', hideRollingSettingsOverlay);
+    overlay.addEventListener('click', event => {
+        if (event.target === overlay) {
+            hideRollingSettingsOverlay();
+        }
+    });
+    overlay.addEventListener('keydown', event => {
+        if (event.key === 'Escape') {
+            hideRollingSettingsOverlay();
+        }
+    });
+
+    speedSlider?.addEventListener('input', () => {
+        rollingSettingsPreference.solsLikeRollsPerSecond = normalizeSolsLikeRollsPerSecond(
+            speedSlider.value
+        );
+        syncRollingSettingsControls();
+    });
+    speedSlider?.addEventListener('change', () => {
+        rollingSettingsPreference.solsLikeRollsPerSecond = normalizeSolsLikeRollsPerSecond(
+            speedSlider.value
+        );
+        syncRollingSettingsControls();
+        persistRollingSettings();
+    });
+    speedPresetButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            if (button.disabled) return;
+            rollingSettingsPreference.solsLikeRollsPerSecond = normalizeSolsLikeRollsPerSecond(
+                button.dataset.solsLikeSpeed
+            );
+            syncRollingSettingsControls();
+            persistRollingSettings();
+        });
+    });
+
+    autoPauseToggle?.addEventListener('change', () => {
+        rollingSettingsPreference.autoPauseAfterCutscene = autoPauseToggle.checked;
+        persistRollingSettings();
+    });
+
+    tierFilterButton?.addEventListener('click', () => {
+        markRollingSettingsChildDialogOpen();
+        showAuraFilterOverlay();
+    });
+    auraFilterButton?.addEventListener('click', () => {
+        markRollingSettingsChildDialogOpen();
+        showAuraDetailFilterOverlay();
     });
 }
 
@@ -817,6 +1115,7 @@ function hideAuraFilterOverlay() {
     concealOverlay(overlay, {
         onHidden: () => {
             const last = auraFilterOverlayState.lastFocusedElement;
+            restoreRollingSettingsAfterChildDialog(last);
             if (last && typeof last.focus === 'function') {
                 last.focus({ preventScroll: true });
             }
@@ -851,6 +1150,7 @@ function hideAuraDetailFilterOverlay() {
     concealOverlay(overlay, {
         onHidden: () => {
             const last = auraDetailFilterOverlayState.lastFocusedElement;
+            restoreRollingSettingsAfterChildDialog(last);
             if (last && typeof last.focus === 'function') {
                 last.focus({ preventScroll: true });
             }
@@ -906,7 +1206,7 @@ function renderAuraFilterButtonLabel(button, auraName, enabled) {
         : '';
     const nameClasses = [rarityClass, specialClass].filter(Boolean).join(' ');
     const nameSpan = document.createElement('span');
-    if (aura && auraName.startsWith('Breakthrough')) {
+    if (aura && (auraName.startsWith('Breakthrough') || auraName.startsWith('Glitch - '))) {
         nameSpan.innerHTML = formatAuraNameMarkup(aura);
     } else {
         nameSpan.textContent = auraName;
@@ -954,6 +1254,7 @@ function populateAuraFilterList() {
         ]
         : [...filteredAuras, ...orderedAuras];
 
+    const fragment = document.createDocumentFragment();
     displayAuras.forEach(aura => {
         const button = document.createElement('button');
         button.type = 'button';
@@ -961,28 +1262,17 @@ function populateAuraFilterList() {
         button.dataset.auraName = aura.name;
         button.setAttribute('aria-pressed', 'false');
         renderAuraFilterButtonLabel(button, aura.name, false);
-        button.addEventListener('click', () => {
-            if (!appState || !appState.auraFilters) {
-                return;
-            }
-            appState.auraFilters[aura.name] = !appState.auraFilters[aura.name];
-            syncAuraFilterButtons();
-            persistAuraFilters();
-        });
-        list.appendChild(button);
+        fragment.appendChild(button);
     });
+    list.appendChild(fragment);
 
     list.dataset.populated = 'true';
 }
 
 function initializeAuraTierFilterPanel() {
     const overlay = document.getElementById('auraFilterOverlay');
-    const openButton = document.getElementById('filterAuraTiersButton');
     const closeButton = document.getElementById('auraFilterClose');
-    if (!overlay || !openButton) return;
-
-    const filterMenu = document.getElementById('filterMenu');
-    const filterMenuToggle = document.getElementById('filterMenuToggle');
+    if (!overlay) return;
 
     overlay.addEventListener('click', event => {
         if (event.target === overlay) {
@@ -1007,20 +1297,10 @@ function initializeAuraTierFilterPanel() {
                 return;
             }
             appState.auraTierFilters[tierKey] = !appState.auraTierFilters[tierKey];
+            refreshActiveAuraFilterCounts();
             syncAuraTierFilterButtons();
             persistAuraTierFilters();
         });
-    });
-
-    openButton.addEventListener('click', event => {
-        event.preventDefault();
-        if (filterMenu) {
-            filterMenu.classList.remove('options-menu--open');
-        }
-        if (filterMenuToggle) {
-            filterMenuToggle.setAttribute('aria-expanded', 'false');
-        }
-        showAuraFilterOverlay();
     });
 
     syncAuraTierFilterButtons();
@@ -1028,13 +1308,10 @@ function initializeAuraTierFilterPanel() {
 
 function initializeAuraDetailFilterPanel() {
     const overlay = document.getElementById('auraDetailFilterOverlay');
-    const openButton = document.getElementById('filterAurasButton');
     const closeButton = document.getElementById('auraDetailFilterClose');
     const resetButton = document.getElementById('auraDetailFilterReset');
-    if (!overlay || !openButton) return;
-
-    const filterMenu = document.getElementById('filterMenu');
-    const filterMenuToggle = document.getElementById('filterMenuToggle');
+    const list = overlay?.querySelector('[data-aura-filter-list]');
+    if (!overlay) return;
 
     overlay.addEventListener('click', event => {
         if (event.target === overlay) {
@@ -1060,21 +1337,31 @@ function initializeAuraDetailFilterPanel() {
             Object.keys(appState.auraFilters).forEach(name => {
                 appState.auraFilters[name] = false;
             });
+            refreshActiveAuraFilterCounts();
             syncAuraFilterButtons();
             persistAuraFilters();
         });
     }
 
-    openButton.addEventListener('click', event => {
-        event.preventDefault();
-        if (filterMenu) {
-            filterMenu.classList.remove('options-menu--open');
-        }
-        if (filterMenuToggle) {
-            filterMenuToggle.setAttribute('aria-expanded', 'false');
-        }
-        showAuraDetailFilterOverlay();
-    });
+    if (list) {
+        list.addEventListener('click', event => {
+            const button = event.target.closest('.filter-aura-toggle');
+            if (!button || !list.contains(button) || !appState || !appState.auraFilters) {
+                return;
+            }
+            const auraName = button.dataset.auraName;
+            if (!auraName) {
+                return;
+            }
+            const enabled = !appState.auraFilters[auraName];
+            appState.auraFilters[auraName] = enabled;
+            refreshActiveAuraFilterCounts();
+            button.setAttribute('aria-pressed', enabled ? 'true' : 'false');
+            renderAuraFilterButtonLabel(button, auraName, enabled);
+            persistAuraFilters();
+        });
+    }
+
 }
 
 function initializeOptionsMenu(menuId, toggleId, panelId) {
@@ -1133,9 +1420,6 @@ function initializeOptionsMenu(menuId, toggleId, panelId) {
     closeMenu();
 }
 
-const audioSliderVisualStates = new WeakMap();
-let audioSliderResizeHandlerBound = false;
-
 function applyAudioSliderVisualPosition(input, percentValue) {
     if (!(input instanceof HTMLInputElement)) {
         return;
@@ -1149,24 +1433,15 @@ function applyAudioSliderVisualPosition(input, percentValue) {
         return;
     }
 
-    const thumbSize = 26;
-    const controlWidth = control.clientWidth;
-    const thumbTravel = Math.max(0, controlWidth - thumbSize);
-    const thumbOffset = thumbTravel * clampedPercent / 100;
-    control.style.setProperty('--audio-slider-thumb-left', `${thumbOffset}px`);
+    control.style.setProperty('--audio-slider-thumb-progress', `${clampedPercent}%`);
 }
 
-function syncAudioSliderVisual(input, targetPercent, { immediate = false } = {}) {
+function syncAudioSliderVisual(input, targetPercent) {
     if (!(input instanceof HTMLInputElement)) {
         return;
     }
 
     const target = Math.min(100, Math.max(0, Number.isFinite(targetPercent) ? targetPercent : 0));
-    audioSliderVisualStates.set(input, {
-        current: target,
-        target,
-        immediate: Boolean(immediate || isFeatureBootMotionReduced())
-    });
     applyAudioSliderVisualPosition(input, target);
 }
 
@@ -1236,7 +1511,7 @@ function setChannelVolume(channel, normalized, { persist = true } = {}) {
     updateAudioSliderLabel(channel, value * 100);
     applyChannelVolumeToElements(channel);
 
-    if (channel === 'music' || channel === 'cutscene' || channel === 'obtain') {
+    if (experienceStarted && (channel === 'music' || channel === 'cutscene' || channel === 'obtain')) {
         resumeAudioEngine();
         const selector = `[data-audio-channel="${channel}"]`;
         document.querySelectorAll(selector).forEach(element => {
@@ -1247,7 +1522,7 @@ function setChannelVolume(channel, normalized, { persist = true } = {}) {
         });
     }
 
-    if (channel === 'ui') {
+    if (experienceStarted && channel === 'ui') {
         resumeAudioEngine();
         document.querySelectorAll('[data-audio-channel="ui"]').forEach(element => {
             element.muted = false;
@@ -1265,6 +1540,7 @@ function setChannelVolume(channel, normalized, { persist = true } = {}) {
 function initializeAudioSettingsPanel() {
     const overlay = document.getElementById('audioSettingsOverlay');
     const openButton = document.getElementById('audioSettingsButton');
+    const closeButton = document.getElementById('audioSettingsClose');
     if (!overlay || !openButton) return;
 
     const inputs = Array.from(overlay.querySelectorAll('.audio-slider__input'));
@@ -1280,8 +1556,8 @@ function initializeAudioSettingsPanel() {
         }
         const percent = Math.round(clamp01(defaultValue) * 100);
         input.value = percent;
-        syncAudioSliderVisual(input, percent, { immediate: true });
-        setChannelVolume(channel, percent / 100);
+        syncAudioSliderVisual(input, percent);
+        setChannelVolume(channel, percent / 100, { persist: false });
 
         input.addEventListener('input', () => {
             const normalized = clamp01(Number.parseFloat(input.value) / 100);
@@ -1314,9 +1590,9 @@ function initializeAudioSettingsPanel() {
         event.preventDefault();
         showAudioSettingsOverlay();
     });
+    closeButton?.addEventListener('click', hideAudioSettingsOverlay);
 
-    setChannelVolume('obtain', appState.audio.obtainVolume);
-    setChannelVolume('ui', appState.audio.uiVolume);
+    setChannelVolume('ui', appState.audio.uiVolume, { persist: false });
 }
 
 function initializeRollTriggerFloating() {
@@ -1337,8 +1613,8 @@ function beginSimulationExperience() {
         startButton.blur();
     }
 
-    resumeAudioEngine();
     experienceStarted = true;
+    resumeAudioEngine();
     if (bgMusic) {
         primeBackgroundMusic(bgMusic);
         startBackgroundMusic(bgMusic);
@@ -1349,6 +1625,10 @@ function beginSimulationExperience() {
     if (overlay) {
         overlay.setAttribute('hidden', '');
         overlay.setAttribute('aria-hidden', 'true');
+    }
+
+    if (glitchPresentationEnabled && isGlitchBiomeSelected()) {
+        triggerGlitchEntryErrors();
     }
 }
 
@@ -1433,7 +1713,6 @@ const cutsceneWarningManager = (() => {
             try {
                 window.localStorage.setItem(storageKey, 'true');
             } catch (error) {
-                // Ignore storage errors
             }
         }
     };
@@ -1643,7 +1922,6 @@ const cyberspaceIllusionaryWarningManager = (() => {
                 try {
                     window.localStorage.setItem(CYBERSPACE_ILLUSIONARY_WARNING_STORAGE_KEY, 'true');
                 } catch (error) {
-                    // Ignore storage issues so the overlay can still be hidden.
                 }
             }
             this.hide();
@@ -1723,7 +2001,6 @@ const singularityMultiplierWarningManager = (() => {
                 try {
                     window.localStorage.setItem(SINGULARITY_MULTIPLIER_WARNING_STORAGE_KEY, 'true');
                 } catch (error) {
-                    // Ignore storage issues so the overlay can still be hidden.
                 }
             }
             this.hide();
@@ -1903,20 +2180,30 @@ const adminAbuseChoiceManager = (() => {
 
 const glitchUiState = {
     loopTimeoutId: null,
-    activeTimeoutId: null,
+    burstTimeoutId: null,
+    warbleTimeoutId: null,
+    entryErrorTimeoutId: null,
+    entryErrorFrameId: null,
     distortionNode: null,
     waveShaper: null,
+    stereoPannerNode: null,
+    ditherSourceNode: null,
+    ditherGainNode: null,
     gainNode: null,
     sourceNode: null,
     sourceElement: null,
+    mediaPlaybackSnapshot: null,
+    audioCorruptionProfile: null,
     isUiGlitching: false,
-    audioPipelineMode: null
+    audioPipelineMode: null,
+    presentationMode: 'disabled'
 };
 
 let glitchPresentationEnabled = false;
 
 function getAudioContextHandle() {
     if (typeof window === 'undefined') return null;
+    if (!experienceStarted && !appState.audio.context) return null;
     if (!appState.audio.context) {
         const AudioContextClass = window.AudioContext || window.webkitAudioContext;
         if (!AudioContextClass) return null;
@@ -1926,6 +2213,7 @@ function getAudioContextHandle() {
 }
 
 function resumeAudioEngine() {
+    if (!experienceStarted) return null;
     const context = getAudioContextHandle();
     if (context && context.state === 'suspended') {
         context.resume().catch(() => {});
@@ -2067,7 +2355,9 @@ function applyMediaGain(element, { category = 'obtain', fallbackGain } = {}) {
     }
 
     const channelEnabled = isSoundChannelActive(category);
-    const context = channelEnabled && canUseMediaElementSource(element) ? resumeAudioEngine() : null;
+    const context = experienceStarted && channelEnabled && canUseMediaElementSource(element)
+        ? resumeAudioEngine()
+        : null;
     if (context) {
         try {
             let entry = appState.audio.gainMap.get(element);
@@ -2608,7 +2898,7 @@ function updateGlitchPresentation() {
     const glitchBiomeActive = isGlitchBiomeSelected();
     const removeGlitchEffects = appState.qualityPreferences.removeGlitchEffects;
     const enableGlitch = appState.glitch && glitchBiomeActive && !appState.reduceMotion && !removeGlitchEffects;
-    applyGlitchVisuals(enableGlitch, { forceTheme: glitchBiomeActive && !removeGlitchEffects });
+    applyGlitchVisuals(enableGlitch, { forceTheme: glitchBiomeActive });
 }
 
 function toggleGlitchEffects() {
@@ -2711,7 +3001,7 @@ function applyQualityPreferencesState() {
         document.querySelectorAll('.feature-boot--active').forEach(cancelFeatureBootAnimation);
         document.querySelectorAll('.feature-shutdown--active').forEach(finishFeatureShutdownAnimation);
         document.querySelectorAll('.audio-slider__input').forEach(input => {
-            syncAudioSliderVisual(input, Number.parseFloat(input.value), { immediate: true });
+            syncAudioSliderVisual(input, Number.parseFloat(input.value));
         });
     }
 
@@ -2936,20 +3226,66 @@ const snowEffectState = {
     mode: 'none'
 };
 
-function createParticleNode(mode) {
-    const particle = document.createElement('span');
-    particle.className = mode === 'snow' ? 'snow-particle' : 'heart-particle';
+const HALLOWEEN_LIGHT_COLORS = Object.freeze([
+    '255 151 57',
+    '193 119 255',
+    '174 255 113'
+]);
 
-    const size = randomDecimalBetween(mode === 'snow' ? 0.8 : 1.35, mode === 'snow' ? 1.7 : 2.1);
-    const opacity = randomDecimalBetween(mode === 'snow' ? 0.5 : 0.44, mode === 'snow' ? 0.92 : 0.88);
+function createHalloweenLightParticleNode() {
+    const particle = document.createElement('span');
+    particle.className = 'halloween-light-particle';
+
+    const size = randomDecimalBetween(0.72, 1.65);
+    const opacity = randomDecimalBetween(0.38, 0.82);
+    const drift = randomDecimalBetween(-54, 54);
+    const duration = randomDecimalBetween(11, 21);
+    const delay = randomDecimalBetween(0, 22);
+    const x = randomDecimalBetween(2, 98);
+    const swayDistance = randomDecimalBetween(16, 44);
+    const swayDuration = randomDecimalBetween(4.5, 8.5);
+    const color = HALLOWEEN_LIGHT_COLORS[Math.floor(Math.random() * HALLOWEEN_LIGHT_COLORS.length)];
+
+    particle.style.setProperty('--size', size.toFixed(2));
+    particle.style.setProperty('--opacity', opacity.toFixed(2));
+    particle.style.setProperty('--drift', `${drift.toFixed(2)}px`);
+    particle.style.setProperty('--float-duration', `${duration.toFixed(2)}s`);
+    particle.style.setProperty('--float-delay', `${delay.toFixed(2)}s`);
+    particle.style.setProperty('--x', `${x.toFixed(2)}%`);
+    particle.style.setProperty('--sway-distance', `${swayDistance.toFixed(2)}px`);
+    particle.style.setProperty('--sway-duration', `${swayDuration.toFixed(2)}s`);
+    particle.style.setProperty('--light-rgb', color);
+
+    const sway = document.createElement('span');
+    sway.className = 'halloween-light-particle__sway';
+
+    const glow = document.createElement('span');
+    glow.className = 'halloween-light-particle__glow';
+
+    sway.appendChild(glow);
+    particle.appendChild(sway);
+    return particle;
+}
+
+function createParticleNode(mode) {
+    if (mode === 'halloween-lights') {
+        return createHalloweenLightParticleNode();
+    }
+
+    const isSnow = mode === 'snow';
+    const particle = document.createElement('span');
+    particle.className = isSnow ? 'snow-particle' : 'heart-particle';
+
+    const size = randomDecimalBetween(isSnow ? 0.8 : 1.35, isSnow ? 1.7 : 2.1);
+    const opacity = randomDecimalBetween(isSnow ? 0.5 : 0.44, isSnow ? 0.92 : 0.88);
     const drift = randomDecimalBetween(-32, 32);
-    const duration = randomDecimalBetween(mode === 'snow' ? 9 : 8, mode === 'snow' ? 17 : 16);
+    const duration = randomDecimalBetween(isSnow ? 9 : 8, isSnow ? 17 : 16);
     const delay = randomDecimalBetween(0, 20);
     const x = randomDecimalBetween(0, 100);
-    const swayDistance = randomDecimalBetween(8, 24);
-    const swayDuration = randomDecimalBetween(3.8, 7.4);
+    const swayDistance = randomDecimalBetween(isSnow ? 6 : 8, isSnow ? 18 : 24);
+    const swayDuration = randomDecimalBetween(isSnow ? 4.8 : 3.8, isSnow ? 8.4 : 7.4);
     const popHeight = randomDecimalBetween(42, 142);
-    const glow = randomDecimalBetween(mode === 'snow' ? 0.24 : 0.42, mode === 'snow' ? 0.6 : 0.8);
+    const glow = randomDecimalBetween(isSnow ? 0.24 : 0.42, isSnow ? 0.6 : 0.8);
 
     particle.style.setProperty('--size', size.toFixed(2));
     particle.style.setProperty('--opacity', opacity.toFixed(2));
@@ -2963,12 +3299,12 @@ function createParticleNode(mode) {
     particle.style.setProperty('--glow-strength', glow.toFixed(2));
 
     const sway = document.createElement('span');
-    sway.className = mode === 'snow' ? 'snow-particle__sway' : 'heart-particle__sway';
+    sway.className = isSnow ? 'snow-particle__sway' : 'heart-particle__sway';
 
     const icon = document.createElement('i');
-    icon.className = mode === 'snow'
+    icon.className = isSnow
         ? 'fa-solid fa-snowflake snow-particle__icon'
-        : 'fa-solid fa-heart heart-particle__icon'
+        : 'fa-solid fa-heart heart-particle__icon';
     icon.setAttribute('aria-hidden', 'true');
 
     sway.appendChild(icon);
@@ -2998,8 +3334,10 @@ function renderSnowField() {
         viewportHeight = window.innerHeight || viewportHeight;
     }
 
-    const baseDensity = Math.floor((viewportWidth * viewportHeight) / 90000);
-    const particleTotal = Math.min(48, Math.max(12, baseDensity));
+    const viewportArea = viewportWidth * viewportHeight;
+    const particleTotal = mode === 'halloween-lights'
+        ? Math.min(28, Math.max(9, Math.floor(viewportArea / 140000)))
+        : Math.min(48, Math.max(12, Math.floor(viewportArea / 90000)));
 
     container.dataset.active = 'true';
     container.replaceChildren();
@@ -3090,64 +3428,193 @@ function resetGlitchRuinTimer() {
 }
 
 function resetGlitchWarbleTimer() {
-    if (glitchUiState.activeTimeoutId !== null) {
-        window.clearTimeout(glitchUiState.activeTimeoutId);
-        glitchUiState.activeTimeoutId = null;
+    if (glitchUiState.warbleTimeoutId !== null) {
+        window.clearTimeout(glitchUiState.warbleTimeoutId);
+        glitchUiState.warbleTimeoutId = null;
     }
 }
 
+function captureGlitchMediaPlayback(audioElement) {
+    if (!audioElement || glitchUiState.mediaPlaybackSnapshot) return;
+
+    glitchUiState.mediaPlaybackSnapshot = {
+        element: audioElement,
+        playbackRate: Number.isFinite(audioElement.playbackRate) ? audioElement.playbackRate : 1,
+        preservesPitch: 'preservesPitch' in audioElement ? audioElement.preservesPitch : undefined,
+        webkitPreservesPitch: 'webkitPreservesPitch' in audioElement ? audioElement.webkitPreservesPitch : undefined,
+        mozPreservesPitch: 'mozPreservesPitch' in audioElement ? audioElement.mozPreservesPitch : undefined
+    };
+}
+
+function setGlitchPitchPreservation(audioElement, enabled) {
+    if (!audioElement) return;
+    if ('preservesPitch' in audioElement) {
+        audioElement.preservesPitch = enabled;
+    }
+    if ('webkitPreservesPitch' in audioElement) {
+        audioElement.webkitPreservesPitch = enabled;
+    }
+    if ('mozPreservesPitch' in audioElement) {
+        audioElement.mozPreservesPitch = enabled;
+    }
+}
+
+function restoreGlitchMediaPlayback(audioElement, fallbackVolume) {
+    const snapshot = glitchUiState.mediaPlaybackSnapshot;
+    const targetElement = snapshot?.element || audioElement;
+    if (!targetElement) {
+        glitchUiState.mediaPlaybackSnapshot = null;
+        return;
+    }
+
+    targetElement.playbackRate = snapshot?.playbackRate ?? 1;
+    if (snapshot?.preservesPitch !== undefined && 'preservesPitch' in targetElement) {
+        targetElement.preservesPitch = snapshot.preservesPitch;
+    }
+    if (snapshot?.webkitPreservesPitch !== undefined && 'webkitPreservesPitch' in targetElement) {
+        targetElement.webkitPreservesPitch = snapshot.webkitPreservesPitch;
+    }
+    if (snapshot?.mozPreservesPitch !== undefined && 'mozPreservesPitch' in targetElement) {
+        targetElement.mozPreservesPitch = snapshot.mozPreservesPitch;
+    }
+
+    if (Number.isFinite(fallbackVolume)) {
+        targetElement.volume = clamp01(fallbackVolume);
+    }
+    glitchUiState.mediaPlaybackSnapshot = null;
+}
+
 function scheduleGlitchWarbleCycle(bgMusic, chain) {
-    if (!bgMusic || !chain || !chain.context) return;
+    if (!bgMusic || !glitchUiState.isUiGlitching) return;
 
     resetGlitchWarbleTimer();
 
-    const baseGain = chain.baseGain ?? computeEffectiveBackgroundVolume(bgMusic);
-    const context = chain.context;
     const reducedGlitch = Boolean(appState.qualityPreferences?.reduceGlitchEffects);
-    const duration = reducedGlitch ? randomDecimalBetween(0.26, 0.62) : randomDecimalBetween(0.18, 0.45);
-    const wobble = reducedGlitch ? randomDecimalBetween(0.03, 0.08) : randomDecimalBetween(0.08, 0.18);
-    const target = Math.max(0, baseGain - wobble);
+    const baseGain = chain?.baseGain ?? computeEffectiveBackgroundVolume(bgMusic);
+    const playbackRates = reducedGlitch
+        ? [0.9, 0.96, 1.04, 1.1]
+        : [0.58, 0.72, 0.86, 1.08, 1.24, 1.48];
+    const nextPlaybackRate = playbackRates[Math.floor(Math.random() * playbackRates.length)];
 
-    if (typeof chain.gainNode.gain.setValueAtTime === 'function') {
-        chain.gainNode.gain.setValueAtTime(baseGain, context.currentTime);
-        chain.gainNode.gain.linearRampToValueAtTime(target, context.currentTime + duration);
-        chain.gainNode.gain.linearRampToValueAtTime(baseGain, context.currentTime + duration + 0.12);
-    } else {
-        chain.gainNode.gain.value = baseGain;
+    captureGlitchMediaPlayback(bgMusic);
+    setGlitchPitchPreservation(bgMusic, false);
+    bgMusic.playbackRate = nextPlaybackRate;
+
+    if (!reducedGlitch && !bgMusic.paused && bgMusic.readyState >= 1 && Math.random() < 0.38) {
+        try {
+            bgMusic.currentTime = Math.max(0, bgMusic.currentTime - randomDecimalBetween(0.025, 0.11));
+        } catch (error) {}
     }
 
-    glitchUiState.activeTimeoutId = window.setTimeout(() => {
-        glitchUiState.activeTimeoutId = null;
+    if (chain?.context && chain.gainNode) {
+        const context = chain.context;
+        const now = context.currentTime;
+        const cutDuration = reducedGlitch
+            ? randomDecimalBetween(0.12, 0.28)
+            : randomDecimalBetween(0.035, 0.14);
+        const cutMultiplier = reducedGlitch
+            ? randomDecimalBetween(0.64, 0.88)
+            : randomDecimalBetween(0.06, 0.52);
+        const gainParam = chain.gainNode.gain;
+
+        if (typeof gainParam.cancelScheduledValues === 'function') {
+            gainParam.cancelScheduledValues(now);
+        }
+        if (typeof gainParam.setValueAtTime === 'function') {
+            gainParam.setValueAtTime(baseGain, now);
+            gainParam.linearRampToValueAtTime(baseGain * cutMultiplier, now + cutDuration);
+            gainParam.linearRampToValueAtTime(baseGain, now + cutDuration + (reducedGlitch ? 0.16 : 0.055));
+        } else {
+            gainParam.value = baseGain * cutMultiplier;
+        }
+
+        const filter = glitchUiState.distortionNode;
+        if (filter) {
+            const targetFrequency = reducedGlitch
+                ? randomDecimalBetween(180, 620)
+                : randomDecimalBetween(220, 1900);
+            const targetQ = reducedGlitch
+                ? randomDecimalBetween(0.7, 2.6)
+                : randomDecimalBetween(2.5, 10);
+            filter.frequency.setValueAtTime(targetFrequency, now);
+            filter.Q.setValueAtTime(targetQ, now);
+        }
+
+        const panner = glitchUiState.stereoPannerNode;
+        if (panner?.pan) {
+            const panRange = reducedGlitch ? 0.24 : 0.88;
+            panner.pan.setValueAtTime(randomDecimalBetween(-panRange, panRange), now);
+        }
+
+        const ditherGain = glitchUiState.ditherGainNode?.gain;
+        if (ditherGain) {
+            const ditherLevel = reducedGlitch
+                ? randomDecimalBetween(0.006, 0.018)
+                : randomDecimalBetween(0.035, 0.12);
+            ditherGain.cancelScheduledValues(now);
+            ditherGain.setTargetAtTime(ditherLevel, now, reducedGlitch ? 0.08 : 0.012);
+        }
+    } else {
+        const fallbackCut = reducedGlitch
+            ? randomDecimalBetween(0.7, 0.92)
+            : randomDecimalBetween(0.22, 0.76);
+        bgMusic.volume = clamp01(baseGain * fallbackCut);
+    }
+
+    glitchUiState.warbleTimeoutId = window.setTimeout(() => {
+        glitchUiState.warbleTimeoutId = null;
         scheduleGlitchWarbleCycle(bgMusic, chain);
-    }, Math.floor(reducedGlitch ? randomDecimalBetween(1200, 2100) : randomDecimalBetween(650, 1080)));
+    }, Math.floor(reducedGlitch ? randomDecimalBetween(420, 760) : randomDecimalBetween(90, 250)));
 }
 
 const GLITCH_BURST_TRIGGER_CHANCE = 0.99;
 
 function computeGlitchRestDelay() {
     if (appState.qualityPreferences?.reduceGlitchEffects) {
-        return Math.floor(randomDecimalBetween(12000, 22000));
+        return Math.floor(randomDecimalBetween(9000, 15000));
     }
-    return Math.floor(randomDecimalBetween(5000, 11000));
+    return Math.floor(randomDecimalBetween(7000, 13000));
 }
 
 function computeGlitchBurstDuration() {
     if (appState.qualityPreferences?.reduceGlitchEffects) {
-        return Math.floor(randomDecimalBetween(900, 1500));
+        return Math.floor(randomDecimalBetween(1200, 1800));
     }
-    return Math.floor(randomDecimalBetween(2400, 3400));
+    return Math.floor(randomDecimalBetween(1200, 2400));
 }
 
-function createDistortionCurve(amount = 0) {
-    const k = Number(amount) || 50;
-    const samples = 44100;
+const glitchAudioCurveCache = new Map();
+
+function createDigitalCorruptionCurve({ bits, drive, dither }) {
+    const samples = 32768;
+    const levels = Math.max(4, 2 ** bits);
     const curve = new Float32Array(samples);
-    const deg = Math.PI / 180;
-    for (let i = 0; i < samples; ++i) {
+
+    for (let i = 0; i < samples; i += 1) {
         const x = (i * 2) / samples - 1;
-        curve[i] = ((3 + k) * x * 20 * deg) / (Math.PI + k * Math.abs(x));
+        const driven = Math.tanh(x * drive);
+        const noiseSeed = Math.sin((i + 1) * 12.9898) * 43758.5453;
+        const ditherNoise = ((noiseSeed - Math.floor(noiseSeed)) * 2 - 1) * dither;
+        const quantized = Math.round((driven + ditherNoise) * levels) / levels;
+        curve[i] = Math.max(-1, Math.min(1, quantized));
     }
+
     return curve;
+}
+
+function getDigitalCorruptionCurve(reducedGlitch) {
+    const profile = reducedGlitch ? 'reduced' : 'full';
+    if (!glitchAudioCurveCache.has(profile)) {
+        glitchAudioCurveCache.set(
+            profile,
+            createDigitalCorruptionCurve(
+                reducedGlitch
+                    ? { bits: 8, drive: 1.35, dither: 0.0035 }
+                    : { bits: 4, drive: 3.2, dither: 0.026 }
+            )
+        );
+    }
+    return glitchAudioCurveCache.get(profile);
 }
 
 function ensureGlitchAudioChain(audioElement) {
@@ -3178,8 +3645,8 @@ function ensureGlitchAudioChain(audioElement) {
 
     if (!glitchUiState.waveShaper) {
         glitchUiState.waveShaper = context.createWaveShaper();
-        glitchUiState.waveShaper.curve = createDistortionCurve(120);
-        glitchUiState.waveShaper.oversample = '4x';
+        glitchUiState.waveShaper.curve = getDigitalCorruptionCurve(false);
+        glitchUiState.waveShaper.oversample = 'none';
     }
 
     if (!glitchUiState.distortionNode) {
@@ -3188,12 +3655,33 @@ function ensureGlitchAudioChain(audioElement) {
         glitchUiState.distortionNode.frequency.value = 240;
     }
 
+    if (!glitchUiState.stereoPannerNode && typeof context.createStereoPanner === 'function') {
+        glitchUiState.stereoPannerNode = context.createStereoPanner();
+        glitchUiState.stereoPannerNode.pan.value = 0;
+    }
+
+    const desiredPipeline = shouldUseGlitchBaseEffect() ? 'glitch' : 'clean';
+
+    if (desiredPipeline === 'glitch' && (!glitchUiState.ditherSourceNode || !glitchUiState.ditherGainNode)) {
+        const ditherBuffer = context.createBuffer(1, Math.floor(context.sampleRate * 0.75), context.sampleRate);
+        const ditherSamples = ditherBuffer.getChannelData(0);
+        for (let i = 0; i < ditherSamples.length; i += 1) {
+            ditherSamples[i] = Math.random() * 2 - 1;
+        }
+
+        glitchUiState.ditherSourceNode = context.createBufferSource();
+        glitchUiState.ditherSourceNode.buffer = ditherBuffer;
+        glitchUiState.ditherSourceNode.loop = true;
+        glitchUiState.ditherGainNode = context.createGain();
+        glitchUiState.ditherGainNode.gain.value = 0;
+        glitchUiState.ditherSourceNode.connect(glitchUiState.ditherGainNode);
+        glitchUiState.ditherSourceNode.start();
+    }
+
     if (!glitchUiState.gainNode) {
         glitchUiState.gainNode = context.createGain();
         glitchUiState.gainNode.gain.value = computeEffectiveBackgroundVolume(audioElement);
     }
-
-    const desiredPipeline = shouldUseGlitchBaseEffect() ? 'glitch' : 'clean';
 
     if (glitchUiState.audioPipelineMode !== desiredPipeline) {
         if (glitchUiState.sourceNode) {
@@ -3205,6 +3693,12 @@ function ensureGlitchAudioChain(audioElement) {
         if (glitchUiState.distortionNode) {
             try { glitchUiState.distortionNode.disconnect(); } catch (error) {}
         }
+        if (glitchUiState.stereoPannerNode) {
+            try { glitchUiState.stereoPannerNode.disconnect(); } catch (error) {}
+        }
+        if (glitchUiState.ditherGainNode) {
+            try { glitchUiState.ditherGainNode.disconnect(); } catch (error) {}
+        }
         if (glitchUiState.gainNode) {
             try { glitchUiState.gainNode.disconnect(); } catch (error) {}
         }
@@ -3212,9 +3706,16 @@ function ensureGlitchAudioChain(audioElement) {
         if (desiredPipeline === 'glitch') {
             glitchUiState.sourceNode
                 .connect(glitchUiState.waveShaper)
-                .connect(glitchUiState.distortionNode)
-                .connect(glitchUiState.gainNode)
-                .connect(context.destination);
+                .connect(glitchUiState.distortionNode);
+            glitchUiState.ditherGainNode.connect(glitchUiState.distortionNode);
+            if (glitchUiState.stereoPannerNode) {
+                glitchUiState.distortionNode
+                    .connect(glitchUiState.stereoPannerNode)
+                    .connect(glitchUiState.gainNode);
+            } else {
+                glitchUiState.distortionNode.connect(glitchUiState.gainNode);
+            }
+            glitchUiState.gainNode.connect(context.destination);
         } else {
             glitchUiState.sourceNode
                 .connect(glitchUiState.gainNode)
@@ -3235,24 +3736,242 @@ function updateGlitchAudioControls(enabled) {
     const bgMusic = document.getElementById('ambientMusic');
     if (!bgMusic) return;
 
-    const { chain } = synchronizeBackgroundRouting(bgMusic);
-    if (!chain) {
-        if (!enabled) {
-            resetGlitchWarbleTimer();
-        }
-        return;
-    }
+    const { baseVolume, chain } = synchronizeBackgroundRouting(bgMusic);
 
     if (enabled) {
+        const reducedGlitch = Boolean(appState.qualityPreferences?.reduceGlitchEffects);
+        const profile = reducedGlitch ? 'reduced' : 'full';
+        if (glitchUiState.waveShaper && glitchUiState.audioCorruptionProfile !== profile) {
+            glitchUiState.waveShaper.curve = getDigitalCorruptionCurve(reducedGlitch);
+            glitchUiState.audioCorruptionProfile = profile;
+        }
         scheduleGlitchWarbleCycle(bgMusic, chain);
     } else {
         resetGlitchWarbleTimer();
-        const baseVolume = chain.baseGain ?? computeEffectiveBackgroundVolume(bgMusic);
-        if (typeof chain.gainNode.gain.setTargetAtTime === 'function') {
-            chain.gainNode.gain.setTargetAtTime(baseVolume, chain.context.currentTime, 0.1);
-        } else {
-            chain.gainNode.gain.value = baseVolume;
+        glitchUiState.audioCorruptionProfile = null;
+        restoreGlitchMediaPlayback(bgMusic, chain ? 1 : baseVolume);
+        if (chain?.gainNode) {
+            const now = chain.context.currentTime;
+            if (typeof chain.gainNode.gain.cancelScheduledValues === 'function') {
+                chain.gainNode.gain.cancelScheduledValues(now);
+            }
+            if (typeof chain.gainNode.gain.setTargetAtTime === 'function') {
+                chain.gainNode.gain.setTargetAtTime(baseVolume, now, 0.025);
+            } else {
+                chain.gainNode.gain.value = baseVolume;
+            }
         }
+        if (glitchUiState.stereoPannerNode?.pan && chain?.context) {
+            glitchUiState.stereoPannerNode.pan.setValueAtTime(0, chain.context.currentTime);
+        }
+        if (glitchUiState.ditherGainNode?.gain && chain?.context) {
+            const now = chain.context.currentTime;
+            glitchUiState.ditherGainNode.gain.cancelScheduledValues(now);
+            glitchUiState.ditherGainNode.gain.setValueAtTime(0, now);
+        }
+    }
+}
+
+const GLITCH_SIGNAL_READOUTS = Object.freeze([
+    'SIGNAL_DESYNC // 0xF7',
+    'FRAME_LOSS // MEMORY_ERR',
+    'UI_THREAD // CORRUPTED',
+    'PACKET_GHOST // NULL',
+    'REALITY_OFFSET // +13',
+    'NO_CARRIER // RETRY_LOOP'
+]);
+
+const GLITCH_CONSOLE_ERRORS = Object.freeze([
+    'RealityBuffer overflowed while rendering purple.',
+    'AuraRegistryError: GLITCH attempted to roll the developer.',
+    'ServerInfoException: Luck escaped containment and refuses to come back.',
+    'NullPointerException: The null pointer is pointing at another null pointer.',
+    'DreamCatcher.dll tried to enter Limbo and was politely removed.',
+    'ConsoleInspectionError: The console noticed you noticing it.',
+    'PacketLossError: Lost three packets and one sandwich.',
+    'BiomeIntegrityError: Cyan and purple are arguing over the z-index.'
+]);
+
+const GLITCH_ENTRY_ERROR_MESSAGES = Object.freeze([
+    Object.freeze({ title: '<< SERVER INFO >>', code: '0xF7A2://BIOME_HANDSHAKE', message: 'UNSTABLE REALITY BUFFER DETECTED' }),
+    Object.freeze({ title: '<< CLIENT ERROR >>', code: 'GLITCH_UI::MOUNT_FAILURE', message: 'AURA INDEX DESYNCHRONIZED' }),
+    Object.freeze({ title: '<< ROLL ENGINE >>', code: 'LUCK_BUFFER = NaN', message: 'PLEASE DO NOT FEED THE NULL POINTER' }),
+    Object.freeze({ title: '<< VERY NORMAL ERROR >>', code: 'ERROR 418://REALITY_IS_TEA', message: 'THIS MESSAGE IS PROBABLY FINE' }),
+    Object.freeze({ title: '<< PACKET FAILURE >>', code: '0x0000F7::NO_CARRIER', message: 'THREE PACKETS AND A SANDWICH ARE MISSING' }),
+    Object.freeze({ title: '<< AURA SERVICE >>', code: 'REGISTRY://PURPLE_OVERFLOW', message: 'CYAN HAS FILED A FORMAL COMPLAINT' }),
+    Object.freeze({ title: '<< REALITY DRIVER >>', code: 'DIMENSION_INDEX = -13', message: 'CURRENT BIOME MAY BE SLIGHTLY SIDEWAYS' }),
+    Object.freeze({ title: '<< CONSOLE WATCH >>', code: 'INSPECTOR_AWARENESS = TRUE', message: 'THE CONSOLE KNOWS THAT YOU ARE LOOKING' })
+]);
+
+function createGlitchErrorCode() {
+    return Math.floor(Math.random() * 0xFFFFFF)
+        .toString(16)
+        .toUpperCase()
+        .padStart(6, '0');
+}
+
+function emitGlitchConsoleErrors() {
+    if (!experienceStarted || typeof console === 'undefined' || typeof console.error !== 'function') return;
+
+    const shuffledErrors = [...GLITCH_CONSOLE_ERRORS];
+    for (let index = shuffledErrors.length - 1; index > 0; index -= 1) {
+        const swapIndex = Math.floor(Math.random() * (index + 1));
+        [shuffledErrors[index], shuffledErrors[swapIndex]] = [shuffledErrors[swapIndex], shuffledErrors[index]];
+    }
+
+    shuffledErrors.slice(0, 4).forEach((message, index) => {
+        console.error(`[GLITCH://FAKE_ERROR 0x${createGlitchErrorCode()}.${index}] ${message}`);
+    });
+}
+
+function concealGlitchEntryErrors() {
+    const overlay = document.getElementById('glitchEntryErrors');
+    const body = document.body;
+
+    if (glitchUiState.entryErrorTimeoutId !== null) {
+        window.clearTimeout(glitchUiState.entryErrorTimeoutId);
+        glitchUiState.entryErrorTimeoutId = null;
+    }
+    if (glitchUiState.entryErrorFrameId !== null) {
+        window.cancelAnimationFrame(glitchUiState.entryErrorFrameId);
+        glitchUiState.entryErrorFrameId = null;
+    }
+
+    body?.classList.remove('glitch-entry-errors-active');
+    if (overlay) {
+        overlay.hidden = true;
+    }
+}
+
+function triggerGlitchEntryErrors() {
+    if (!experienceStarted || appState.qualityPreferences?.removeGlitchEffects) return;
+
+    const overlay = document.getElementById('glitchEntryErrors');
+    const body = document.body;
+    if (!overlay || !body) return;
+
+    concealGlitchEntryErrors();
+    const messages = [...GLITCH_ENTRY_ERROR_MESSAGES];
+    for (let index = messages.length - 1; index > 0; index -= 1) {
+        const swapIndex = Math.floor(Math.random() * (index + 1));
+        [messages[index], messages[swapIndex]] = [messages[swapIndex], messages[index]];
+    }
+
+    overlay.querySelectorAll('[data-glitch-entry-error]').forEach((card, index) => {
+        const error = messages[index];
+        card.style.setProperty('--glitch-entry-delay', `${index * 95}ms`);
+        const title = card.querySelector('[data-glitch-entry-title]');
+        const code = card.querySelector('[data-glitch-entry-code]');
+        const message = card.querySelector('[data-glitch-entry-message]');
+        if (title) title.textContent = error.title;
+        if (code) code.textContent = `${error.code} // ${createGlitchErrorCode()}`;
+        if (message) message.textContent = error.message;
+    });
+
+    overlay.hidden = false;
+    glitchUiState.entryErrorFrameId = window.requestAnimationFrame(() => {
+        glitchUiState.entryErrorFrameId = null;
+        body.classList.add('glitch-entry-errors-active');
+    });
+    glitchUiState.entryErrorTimeoutId = window.setTimeout(() => {
+        glitchUiState.entryErrorTimeoutId = null;
+        body.classList.remove('glitch-entry-errors-active');
+        overlay.hidden = true;
+    }, 4300);
+}
+
+const GLITCH_FRAGMENT_PALETTES = Object.freeze([
+    Object.freeze({
+        fill: 'rgba(0, 236, 255, 0.9)',
+        line: 'rgba(224, 253, 255, 0.98)',
+        accent: 'rgba(0, 246, 255, 0.96)',
+        border: 'rgba(105, 251, 255, 0.98)',
+        glow: 'rgba(0, 229, 255, 0.82)',
+        shadow: 'rgba(127, 29, 255, 0.76)'
+    }),
+    Object.freeze({
+        fill: 'rgba(126, 25, 255, 0.92)',
+        line: 'rgba(216, 176, 255, 0.96)',
+        accent: 'rgba(170, 43, 255, 0.98)',
+        border: 'rgba(185, 77, 255, 0.98)',
+        glow: 'rgba(126, 25, 255, 0.86)',
+        shadow: 'rgba(0, 246, 255, 0.78)'
+    }),
+    Object.freeze({
+        fill: 'rgba(1, 0, 8, 0.98)',
+        line: 'rgba(0, 240, 255, 0.76)',
+        accent: 'rgba(133, 30, 255, 0.9)',
+        border: 'rgba(8, 4, 16, 1)',
+        glow: 'rgba(0, 0, 0, 0.96)',
+        shadow: 'rgba(0, 238, 255, 0.68)'
+    })
+]);
+
+function randomizeGlitchSignal() {
+    const signalLayer = document.getElementById('glitchSignalOverlay');
+    if (!signalLayer) return;
+
+    const tears = signalLayer.querySelectorAll('.glitch-signal__tear');
+    tears.forEach((tear, index) => {
+        const direction = index % 2 === 0 ? 1 : -1;
+        const tearY = randomDecimalBetween(5, 92);
+        const tearX = direction * randomDecimalBetween(4.5, 14);
+        const tearEndX = -direction * randomDecimalBetween(3.5, 11);
+        tear.style.setProperty('--glitch-tear-y', `${tearY.toFixed(2)}vh`);
+        tear.style.setProperty('--glitch-tear-x', `${tearX.toFixed(2)}vw`);
+        tear.style.setProperty('--glitch-tear-end-x', `${tearEndX.toFixed(2)}vw`);
+        tear.style.setProperty('--glitch-tear-height', `${Math.floor(randomDecimalBetween(5, 18))}px`);
+        tear.style.setProperty('--glitch-tear-delay', `${Math.floor(randomDecimalBetween(0, 120))}ms`);
+    });
+
+    const fragments = signalLayer.querySelectorAll('.glitch-signal__fragment');
+    fragments.forEach((fragment, index) => {
+        const palette = GLITCH_FRAGMENT_PALETTES[Math.floor(Math.random() * GLITCH_FRAGMENT_PALETTES.length)];
+        const isSquare = index % 3 === 0;
+        const fragmentWidth = isSquare
+            ? randomDecimalBetween(22, 70)
+            : randomDecimalBetween(52, 188);
+        const fragmentHeight = isSquare
+            ? fragmentWidth * randomDecimalBetween(0.74, 1.16)
+            : randomDecimalBetween(9, 46);
+        const shiftX = randomDecimalBetween(-30, 30);
+        const shiftY = randomDecimalBetween(-13, 13);
+
+        fragment.style.setProperty('--glitch-fragment-left', `${randomDecimalBetween(2, 92).toFixed(2)}vw`);
+        fragment.style.setProperty('--glitch-fragment-top', `${randomDecimalBetween(4, 91).toFixed(2)}vh`);
+        fragment.style.setProperty('--glitch-fragment-width', `${fragmentWidth.toFixed(1)}px`);
+        fragment.style.setProperty('--glitch-fragment-height', `${fragmentHeight.toFixed(1)}px`);
+        fragment.style.setProperty('--glitch-fragment-shift-x', `${shiftX.toFixed(1)}px`);
+        fragment.style.setProperty('--glitch-fragment-shift-y', `${shiftY.toFixed(1)}px`);
+        fragment.style.setProperty('--glitch-fragment-return-x', `${(-shiftX * randomDecimalBetween(0.32, 0.72)).toFixed(1)}px`);
+        fragment.style.setProperty('--glitch-fragment-return-y', `${(-shiftY * randomDecimalBetween(0.24, 0.66)).toFixed(1)}px`);
+        fragment.style.setProperty('--glitch-fragment-scale-x', randomDecimalBetween(0.78, 1.34).toFixed(2));
+        fragment.style.setProperty('--glitch-fragment-line-step', `${Math.floor(randomDecimalBetween(3, 8))}px`);
+        fragment.style.setProperty('--glitch-fragment-shadow-x', `${randomDecimalBetween(-13, 13).toFixed(1)}px`);
+        fragment.style.setProperty('--glitch-fragment-delay', `${Math.floor(randomDecimalBetween(0, 260))}ms`);
+        fragment.style.setProperty('--glitch-fragment-duration', `${Math.floor(randomDecimalBetween(220, 580))}ms`);
+        fragment.style.setProperty('--glitch-fragment-ambient-duration', `${Math.floor(randomDecimalBetween(3800, 7200))}ms`);
+        fragment.style.setProperty('--glitch-fragment-ambient-delay', `${-Math.floor(randomDecimalBetween(0, 7200))}ms`);
+        fragment.style.setProperty('--glitch-fragment-reduced-duration', `${Math.floor(randomDecimalBetween(8200, 12800))}ms`);
+        fragment.style.setProperty('--glitch-fragment-reduced-delay', `${-Math.floor(randomDecimalBetween(0, 12800))}ms`);
+        fragment.style.setProperty('--glitch-fragment-reduced-burst-duration', `${Math.floor(randomDecimalBetween(3800, 6200))}ms`);
+        fragment.style.setProperty('--glitch-fragment-fill', palette.fill);
+        fragment.style.setProperty('--glitch-fragment-line', palette.line);
+        fragment.style.setProperty('--glitch-fragment-accent', palette.accent);
+        fragment.style.setProperty('--glitch-fragment-border', palette.border);
+        fragment.style.setProperty('--glitch-fragment-glow', palette.glow);
+        fragment.style.setProperty('--glitch-fragment-shadow', palette.shadow);
+    });
+
+    const shellShiftX = randomDecimalBetween(4.2, 9.2);
+    const shellShiftY = randomDecimalBetween(2.2, 5.8);
+    document.body.style.setProperty('--glitch-shell-shift-x', `${shellShiftX.toFixed(2)}px`);
+    document.body.style.setProperty('--glitch-shell-shift-y', `${shellShiftY.toFixed(2)}px`);
+
+    const readout = signalLayer.querySelector('.glitch-signal__readout');
+    if (readout) {
+        const messageIndex = Math.floor(Math.random() * GLITCH_SIGNAL_READOUTS.length);
+        readout.textContent = GLITCH_SIGNAL_READOUTS[messageIndex];
     }
 }
 
@@ -3260,6 +3979,8 @@ function triggerGlitchBurst() {
     const body = document.body;
     if (!body) return;
 
+    randomizeGlitchSignal();
+    emitGlitchConsoleErrors();
     body.classList.add('is-glitching');
     glitchUiState.isUiGlitching = true;
     updateGlitchAudioControls(true);
@@ -3298,8 +4019,8 @@ function executeGlitchBurstSequence() {
 
     const activeDuration = computeGlitchBurstDuration();
 
-    glitchUiState.activeTimeoutId = window.setTimeout(() => {
-        glitchUiState.activeTimeoutId = null;
+    glitchUiState.burstTimeoutId = window.setTimeout(() => {
+        glitchUiState.burstTimeoutId = null;
         completeGlitchBurst();
         const nextDelay = computeGlitchRestDelay();
         queueGlitchBurstCycle(nextDelay);
@@ -3317,7 +4038,7 @@ function startGlitchLoop(forceImmediate = false) {
 }
 
 function isGlitchLoopScheduled() {
-    return glitchUiState.loopTimeoutId !== null;
+    return glitchUiState.loopTimeoutId !== null || glitchUiState.burstTimeoutId !== null;
 }
 
 function stopGlitchLoop(options = {}) {
@@ -3327,10 +4048,11 @@ function stopGlitchLoop(options = {}) {
         window.clearTimeout(glitchUiState.loopTimeoutId);
         glitchUiState.loopTimeoutId = null;
     }
-    if (glitchUiState.activeTimeoutId !== null) {
-        window.clearTimeout(glitchUiState.activeTimeoutId);
-        glitchUiState.activeTimeoutId = null;
+    if (glitchUiState.burstTimeoutId !== null) {
+        window.clearTimeout(glitchUiState.burstTimeoutId);
+        glitchUiState.burstTimeoutId = null;
     }
+    resetGlitchWarbleTimer();
     glitchUiState.isUiGlitching = false;
     if (!body || !root) return;
 
@@ -3357,18 +4079,35 @@ function applyGlitchVisuals(enabled, options = {}) {
     if (!body || !root) return;
 
     const { forceTheme = false } = options;
+    const nextPresentationMode = enabled
+        ? (appState.qualityPreferences?.reduceGlitchEffects ? 'reduced' : 'full')
+        : 'disabled';
+    const presentationModeChanged = glitchUiState.presentationMode !== nextPresentationMode;
+    glitchUiState.presentationMode = nextPresentationMode;
+    body.classList.toggle('glitch-effects-enabled', enabled);
+    root.classList.toggle('glitch-effects-enabled', enabled);
 
     if (enabled) {
         body.classList.add('biome--glitch');
         root.classList.add('biome--glitch');
         if (!glitchPresentationEnabled) {
+            triggerGlitchEntryErrors();
             glitchPresentationEnabled = true;
-            startGlitchLoop();
+            startGlitchLoop(true);
+        } else if (presentationModeChanged) {
+            resetGlitchRuinTimer();
+            if (glitchUiState.burstTimeoutId !== null) {
+                window.clearTimeout(glitchUiState.burstTimeoutId);
+                glitchUiState.burstTimeoutId = null;
+            }
+            completeGlitchBurst();
+            startGlitchLoop(true);
         } else if (!isGlitchLoopScheduled()) {
             startGlitchLoop();
         }
         updateGlitchAudioControls(shouldUseGlitchBaseEffect());
     } else {
+        concealGlitchEntryErrors();
         if (glitchPresentationEnabled) {
             glitchPresentationEnabled = false;
             stopGlitchLoop({ forceClear: !forceTheme });
@@ -3618,22 +4357,28 @@ const POTION_SIMULATION_MODE = Object.freeze({
     MULTIPLE: 'multiple'
 });
 
+const SIMULATION_METHOD = Object.freeze({
+    UNNAMED: 'unnamed',
+    SOLS_LIKE: 'sols-like'
+});
+
 const MULTI_POTION_CONFIGS = Object.freeze([
-    Object.freeze({ id: 'heavenly', label: 'Heavenly Potion', luck: 150000 }),
-    Object.freeze({ id: 'oblivion', label: 'Oblivion Potion', luck: 600000, oblivion: true, blocksRunes: true }),
-    Object.freeze({ id: 'pump-kings-blood', label: "Pump King's Blood", luck: 700000, blocksRunes: true }),
-    Object.freeze({ id: 'godlike', label: 'Godlike Potion', luck: 400000 }),
-    Object.freeze({ id: 'blood-ii', label: 'Red Moon II', luck: 200000, bloodPreset: 'blood-ii' }),
-    Object.freeze({ id: 'candy-corn', label: 'Candy Corn', luck: 75000 }),
-    Object.freeze({ id: 'bound', label: 'Bound Potion', luck: 50000 }),
-    Object.freeze({ id: 'blood-i', label: 'Red Moon I', luck: 11000, bloodPreset: 'blood-i' }),
-    Object.freeze({ id: 'dune', label: 'Potion of the Dune', luck: 10000, dune: true }),
-    Object.freeze({ id: 'popping', label: 'Popping Potion', luck: 10000 }),
-    Object.freeze({ id: 'tutorial-potion', label: 'Tutorial Potion', luck: 5000, blocksRunes: true })
+    Object.freeze({ id: 'heavenly', label: 'Heavenly Potion', resultLabel: 'Heavenly', resultClass: 'heavenlyClass', luck: 150000 }),
+    Object.freeze({ id: 'oblivion', label: 'Oblivion Potion', resultLabel: 'Oblivion', resultClass: 'oblivionClass', luck: 600000, oblivion: true, blocksRunes: true }),
+    Object.freeze({ id: 'pump-kings-blood', label: "Pump King's Blood", resultLabel: "Pump King's Blood", resultClass: 'pumpBloodClass', luck: 700000, blocksRunes: true }),
+    Object.freeze({ id: 'godlike', label: 'Godlike Potion', resultLabel: 'Godlike', resultClass: 'godlikeClass', luck: 400000 }),
+    Object.freeze({ id: 'blood-ii', label: 'Red Moon II', resultLabel: 'Red Moon II', resultClass: 'bloodIIClass', luck: 200000, bloodPreset: 'blood-ii' }),
+    Object.freeze({ id: 'candy-corn', label: 'Candy Corn', resultLabel: 'Candy Corn', resultClass: 'candyClass', luck: 75000 }),
+    Object.freeze({ id: 'bound', label: 'Bound Potion', resultLabel: 'Bound', resultClass: 'boundClass', luck: 50000 }),
+    Object.freeze({ id: 'blood-i', label: 'Red Moon I', resultLabel: 'Red Moon I', resultClass: 'bloodClass', luck: 11000, bloodPreset: 'blood-i' }),
+    Object.freeze({ id: 'dune', label: 'Potion of the Dune', resultLabel: 'Potion of the Dune', resultClass: 'duneClass', luck: 10000, dune: true }),
+    Object.freeze({ id: 'popping', label: 'Popping Potion', resultLabel: 'Popping', resultClass: 'popClass', luck: 10000 }),
+    Object.freeze({ id: 'tutorial-potion', label: 'Tutorial Potion', resultLabel: 'Tutorial Potion', resultClass: 'tutPotion', luck: 5000, blocksRunes: true })
 ]);
 
 const MULTI_POTION_CONFIG_BY_ID = new Map(MULTI_POTION_CONFIGS.map(config => [config.id, config]));
 let potionSimulationMode = POTION_SIMULATION_MODE.SINGLE;
+let simulationMethod = SIMULATION_METHOD.UNNAMED;
 let singlePotionRollValue = 1;
 let activeMultiDeviceBuffLuckBonus = 0;
 let activeMultiDeviceBuffPresetName = null;
@@ -3965,6 +4710,83 @@ function isMultiplePotionMode() {
     return potionSimulationMode === POTION_SIMULATION_MODE.MULTIPLE;
 }
 
+function isSolsLikeSimulationMethod() {
+    return simulationMethod === SIMULATION_METHOD.SOLS_LIKE;
+}
+
+function syncSimulationMethodControls() {
+    const solsLikeSelected = isSolsLikeSimulationMethod();
+    const { rollTriggerButton, pauseRollButton, followRollFeedButton } = uiHandles;
+    const splitControl = rollTriggerButton?.closest('.roll-split-control');
+    const rollConsoleStatus = document.getElementById('rollConsoleStatus');
+
+    document.querySelectorAll('[data-simulation-method]').forEach(button => {
+        const active = button.dataset.simulationMethod === simulationMethod;
+        button.classList.toggle('simulation-method__button--active', active);
+        button.setAttribute('aria-pressed', active ? 'true' : 'false');
+        button.disabled = simulationActive;
+    });
+
+    document.body?.classList.toggle('simulation-method--sols-like', solsLikeSelected);
+    if (rollTriggerButton && !simulationActive) {
+        rollTriggerButton.textContent = solsLikeSelected ? 'Roll' : 'Start Rolling';
+    }
+    if (splitControl) {
+        splitControl.classList.toggle('roll-split-control--active', solsLikeSelected);
+    }
+    if (pauseRollButton) {
+        pauseRollButton.hidden = !solsLikeSelected;
+        pauseRollButton.disabled = !solsLikeSelected || !simulationActive || !activeSolLikeSimulationController;
+    }
+    if (followRollFeedButton && (!solsLikeSelected || !simulationActive || !activeSolLikeSimulationController)) {
+        followRollFeedButton.hidden = true;
+    }
+    if (rollConsoleStatus) {
+        const statusText = rollConsoleStatus.querySelector('.roll-console__armed-text');
+        rollConsoleStatus.dataset.state = simulationActive ? 'rolling' : 'ready';
+        if (statusText) {
+            statusText.textContent = simulationActive ? 'Rolling' : 'Ready';
+        }
+    }
+    syncRollingSettingsControls();
+}
+
+function setSimulationMethod(method, { playAudio = true } = {}) {
+    if (simulationActive) {
+        return;
+    }
+
+    simulationMethod = method === SIMULATION_METHOD.SOLS_LIKE
+        ? SIMULATION_METHOD.SOLS_LIKE
+        : SIMULATION_METHOD.UNNAMED;
+    syncSimulationMethodControls();
+    if (playAudio) {
+        playSoundEffect(clickSoundEffectElement, 'ui');
+    }
+}
+
+function setupSimulationMethodControls() {
+    document.querySelectorAll('[data-simulation-method]').forEach(button => {
+        button.addEventListener('click', () => {
+            setSimulationMethod(button.dataset.simulationMethod);
+        });
+    });
+
+    const { pauseRollButton, followRollFeedButton } = uiHandles;
+    if (pauseRollButton) {
+        pauseRollButton.addEventListener('click', () => {
+            activeSolLikeSimulationController?.togglePause();
+        });
+    }
+    if (followRollFeedButton) {
+        followRollFeedButton.addEventListener('click', () => {
+            activeSolLikeSimulationController?.followLatest();
+        });
+    }
+
+    setSimulationMethod(SIMULATION_METHOD.UNNAMED, { playAudio: false });
+}
+
 function isMultiplePotionStackingEnabled() {
     return typeof document !== 'undefined'
         && Boolean(document.getElementById('multiPotionStackToggle')?.checked);
@@ -3994,6 +4816,35 @@ function createMultiplePotionBatch(config, count, luckState) {
         deviceLuckBonus: luckState.deviceLuckBonus,
         finalLuckMultiplier: luckState.finalLuckMultiplier
     };
+}
+
+function getMultiplePotionBatchResultConfigs(batch) {
+    const potionIds = Array.isArray(batch?.potionIds) && batch.potionIds.length > 0
+        ? batch.potionIds
+        : [batch?.id];
+    return potionIds
+        .map(id => MULTI_POTION_CONFIG_BY_ID.get(id))
+        .filter(Boolean);
+}
+
+function formatMultiplePotionBatchResultText(batch) {
+    const potionConfigs = getMultiplePotionBatchResultConfigs(batch);
+    const potionNames = potionConfigs.length > 0
+        ? potionConfigs.map(config => config.resultLabel || config.label).join(' + ')
+        : 'Potion';
+    const luckValue = Number.isFinite(batch?.luckValue) ? Math.max(0, batch.luckValue) : 0;
+    return `With ${potionNames} (${formatWithCommas(luckValue)} Luck)`;
+}
+
+function formatMultiplePotionBatchResultMarkup(batch) {
+    const potionConfigs = getMultiplePotionBatchResultConfigs(batch);
+    const potionMarkup = potionConfigs.length > 0
+        ? potionConfigs.map(config => (
+            `<span class="${config.resultClass}">${config.resultLabel || config.label}</span>`
+        )).join(' + ')
+        : 'Potion';
+    const luckValue = Number.isFinite(batch?.luckValue) ? Math.max(0, batch.luckValue) : 0;
+    return `<span class="tinyClass">With ${potionMarkup} (${formatWithCommas(luckValue)} Luck)</span>`;
 }
 
 function stackCompatiblePotionBatches(batches, luckState) {
@@ -4205,17 +5056,6 @@ function setPotionSimulationMode(mode, { playAudio = true } = {}) {
         });
     });
 
-    if (!audioSliderResizeHandlerBound) {
-        window.addEventListener('resize', () => {
-            document.querySelectorAll('.audio-slider__input').forEach(input => {
-                const state = audioSliderVisualStates.get(input);
-                const current = state?.current ?? Number.parseFloat(input.value);
-                applyAudioSliderVisualPosition(input, current);
-            });
-        }, { passive: true });
-        audioSliderResizeHandlerBound = true;
-    }
-
     const multiPanel = document.getElementById('multiPotionPanel');
     setFeatureContainerVisible(multiPanel, multipleModeActive);
     ['luck-preset-panel', 'roll-preset-panel'].forEach(id => {
@@ -4412,6 +5252,7 @@ function createLuckPresetAdjustmentButtons(button, presetValue, fallbackSource) 
     addButton.className = 'preset-button__action preset-button__action--add';
     addButton.textContent = '+';
     addButton.setAttribute('aria-label', `Add ${formattedValue} luck`);
+    addButton.title = `Add ${formattedValue} luck`;
     addButton.addEventListener('click', event => {
         event.stopPropagation();
         applyLuckDelta(presetValue, buildLuckAdjustmentOptions(button, 'add', fallbackSource));
@@ -4422,13 +5263,14 @@ function createLuckPresetAdjustmentButtons(button, presetValue, fallbackSource) 
     subtractButton.className = 'preset-button__action preset-button__action--subtract';
     subtractButton.textContent = '-';
     subtractButton.setAttribute('aria-label', `Remove ${formattedValue} luck`);
+    subtractButton.title = `Remove ${formattedValue} luck`;
     subtractButton.addEventListener('click', event => {
         event.stopPropagation();
         applyLuckDelta(-presetValue, buildLuckAdjustmentOptions(button, 'subtract', fallbackSource));
     });
 
-    wrapper.appendChild(addButton);
     wrapper.appendChild(subtractButton);
+    wrapper.appendChild(addButton);
 
     return wrapper;
 }
@@ -4465,6 +5307,13 @@ function setupLuckPresetAdjustmentButtons() {
                 return;
             }
 
+            const label = document.createElement('span');
+            label.className = 'preset-button__label';
+            while (button.firstChild) {
+                label.appendChild(button.firstChild);
+            }
+            button.appendChild(label);
+
             parent.insertBefore(wrapper, button);
             wrapper.appendChild(button);
 
@@ -4484,8 +5333,6 @@ function applyRollPreset(value) {
     playSoundEffect(clickSoundEffectElement, 'ui');
 }
 
-// Applies a high-level device/buff preset as additive luck before final
-// multipliers while leaving seasonal toggles unchanged.
 function applyDeviceBuffPreset(luckBonus, sourceButton = null) {
     const numericLuckBonus = Number(luckBonus);
     if (!Number.isFinite(numericLuckBonus) || numericLuckBonus <= 0) {
@@ -4508,6 +5355,76 @@ function applyDeviceBuffPreset(luckBonus, sourceButton = null) {
 
     const targetLuck = Math.max(1, numericLuckBonus);
     applyLuckValue(targetLuck, { luckSource: LUCK_SELECTION_SOURCE.DEVICE_PRESET });
+}
+
+function setPresetConsoleBank(bankName, { focusTab = false, playAudio = false } = {}) {
+    const tabs = Array.from(document.querySelectorAll('[data-preset-bank-target]'));
+    const panels = Array.from(document.querySelectorAll('[data-preset-bank]'));
+    if (!tabs.length || !panels.length) {
+        return;
+    }
+
+    const validBankNames = tabs.map(tab => tab.dataset.presetBankTarget);
+    const selectedBank = validBankNames.includes(bankName) ? bankName : validBankNames[0];
+
+    tabs.forEach(tab => {
+        const active = tab.dataset.presetBankTarget === selectedBank;
+        tab.classList.toggle('preset-console__tab--active', active);
+        tab.setAttribute('aria-selected', active ? 'true' : 'false');
+        tab.tabIndex = active ? 0 : -1;
+        if (active && focusTab) {
+            tab.focus();
+        }
+    });
+
+    panels.forEach(panel => {
+        const active = panel.dataset.presetBank === selectedBank;
+        panel.hidden = !active;
+        panel.classList.toggle('preset-console__bank--active', active);
+    });
+
+    if (playAudio) {
+        playSoundEffect(clickSoundEffectElement, 'ui');
+    }
+}
+
+function setupPresetConsoleTabs() {
+    const tabs = Array.from(document.querySelectorAll('[data-preset-bank-target]'));
+    if (!tabs.length) {
+        return;
+    }
+
+    tabs.forEach((tab, index) => {
+        tab.addEventListener('click', () => {
+            setPresetConsoleBank(tab.dataset.presetBankTarget, { playAudio: true });
+        });
+
+        tab.addEventListener('keydown', event => {
+            let nextIndex = null;
+            if (event.key === 'ArrowRight' || event.key === 'ArrowDown') {
+                nextIndex = (index + 1) % tabs.length;
+            } else if (event.key === 'ArrowLeft' || event.key === 'ArrowUp') {
+                nextIndex = (index - 1 + tabs.length) % tabs.length;
+            } else if (event.key === 'Home') {
+                nextIndex = 0;
+            } else if (event.key === 'End') {
+                nextIndex = tabs.length - 1;
+            }
+
+            if (nextIndex === null) {
+                return;
+            }
+
+            event.preventDefault();
+            setPresetConsoleBank(tabs[nextIndex].dataset.presetBankTarget, {
+                focusTab: true,
+                playAudio: true
+            });
+        });
+    });
+
+    const initiallySelectedTab = tabs.find(tab => tab.getAttribute('aria-selected') === 'true') || tabs[0];
+    setPresetConsoleBank(initiallySelectedTab.dataset.presetBankTarget);
 }
 
 function recomputeLuckValue() {
@@ -4579,15 +5496,13 @@ function setSingularityPreset() {
 function setLimboPreset() {
     setPrimaryBiomeSelection('limbo');
     setOtherBiomeSelection('none');
-    setTimeBiomeSelection('none');
+    setTimeBiomeSelection('day');
     playSoundEffect(clickSoundEffectElement, 'ui');
     updateBiomeControlConstraints({ source: BIOME_PRIMARY_SELECT_ID });
 }
 
 function setRoePreset() {
     setOtherBiomeSelection('roe');
-    setPrimaryBiomeSelection('normal');
-    setTimeBiomeSelection('none');
     playSoundEffect(clickSoundEffectElement, 'ui');
     updateBiomeControlConstraints({ source: BIOME_OTHER_SELECT_ID });
 }
@@ -4858,8 +5773,10 @@ async function exitFullscreen() {
     }
 }
 
-async function playAuraSequence(queue) {
-    if (!Array.isArray(queue) || queue.length === 0) return;
+async function playAuraSequence(queue, options = {}) {
+    if (!Array.isArray(queue) || queue.length === 0) {
+        return { skippedAll: false };
+    }
 
     const documentElement = typeof document !== 'undefined' ? document.documentElement : null;
     const wasFullscreen = !!getFullscreenElement();
@@ -4875,9 +5792,12 @@ async function playAuraSequence(queue) {
         enteredFullscreen = await requestFullscreen(documentElement);
     }
 
-    let skipRemainingCutscenes = false;
+    let skipRemainingCutscenes = Boolean(options.skipRemaining);
     const skipAllCutscenes = () => {
         skipRemainingCutscenes = true;
+        if (typeof options.onSkipAll === 'function') {
+            options.onSkipAll();
+        }
     };
 
     try {
@@ -4897,9 +5817,11 @@ async function playAuraSequence(queue) {
             await exitFullscreen();
         }
     }
+
+    return { skippedAll: skipRemainingCutscenes };
 }
 
-function resolveRarityClass(aura, biome) {
+function computeRarityClass(aura, biome) {
     if (!aura) return '';
     const auraName = aura.name || '';
     const skipNativeChallengedClass = isForcedChallengedAura(auraName);
@@ -4935,7 +5857,25 @@ function resolveRarityClass(aura, biome) {
     return 'rarity-tier-basic';
 }
 
-function resolveBaseRarityClass(aura) {
+const rarityClassCache = new WeakMap();
+
+function resolveRarityClass(aura, biome) {
+    if (!aura || typeof aura !== 'object') {
+        return computeRarityClass(aura, biome);
+    }
+    let biomeCache = rarityClassCache.get(aura);
+    if (!biomeCache) {
+        biomeCache = new Map();
+        rarityClassCache.set(aura, biomeCache);
+    }
+    const cacheKey = typeof biome === 'string' ? biome : '';
+    if (!biomeCache.has(cacheKey)) {
+        biomeCache.set(cacheKey, computeRarityClass(aura, biome));
+    }
+    return biomeCache.get(cacheKey);
+}
+
+function computeBaseRarityClass(aura) {
     if (!aura) return '';
     const auraName = aura.name || '';
     if (auraName.startsWith('Pixelation')) return 'rarity-tier-transcendent';
@@ -5007,6 +5947,18 @@ function formatAuraTierLabel(tier) {
         .replace(/\s*Auras?$/i, '')
         .trim();
 }
+
+function getAuraTierSearchTerms(tierKey) {
+    if (typeof tierKey !== 'string' || !tierKey) {
+        return '';
+    }
+    return AURA_TIER_SEARCH_TERMS.get(tierKey) || tierKey.toLocaleLowerCase();
+}
+
+const AURA_TIER_SEARCH_TERMS = new Map(AURA_TIER_FILTERS.map(tier => [
+    tier.key,
+    `${tier.key} ${formatAuraTierLabel(tier)}`.trim().toLocaleLowerCase()
+]));
 
 function getIncludedAuraTierLabels() {
     if (!appState || !appState.auraTierFilters) {
@@ -5142,8 +6094,25 @@ function isAuraTierSkipped(aura, biome) {
 
 const CHALLENGED_CUTSCENE_AURAS = new Set(['Oblivion', 'Memory', 'Neferkhaf', '赤月の破片']);
 
+function shouldHideAuraFromRollFeed(aura, biome) {
+    return (activeAuraTierFilterCount > 0 && isAuraTierSkipped(aura, biome))
+        || (activeAuraFilterCount > 0 && isAuraFiltered(aura));
+}
+
+const baseRarityClassCache = new WeakMap();
+
+function resolveBaseRarityClass(aura) {
+    if (!aura || typeof aura !== 'object') {
+        return computeBaseRarityClass(aura);
+    }
+    if (!baseRarityClassCache.has(aura)) {
+        baseRarityClassCache.set(aura, computeBaseRarityClass(aura));
+    }
+    return baseRarityClassCache.get(aura);
+}
+
 function shouldSkipAuraCutscene(aura, biome) {
-    if (isAuraTierSkipped(aura, biome) || isAuraFiltered(aura)) {
+    if (shouldHideAuraFromRollFeed(aura, biome)) {
         return true;
     }
     if (!aura || !appState || !appState.auraTierFilters) {
@@ -5263,7 +6232,7 @@ const auraOutlineOverrides = new Map([
     ['Dreammetric', 'sigil-outline-dreammetric'],
     ['Borealis', 'sigil-outline-borealis'],
     ['Empty', 'sigil-outline-empty'],
-    ['Glitch', 'sigil-effect-outline-glitch'],
+    ['Glitch', 'sigil-effect-glitch'],
     ['Fault', 'sigil-outline-glitch'],
     ['[CONTENT DELETED]', 'sigil-outline-glitch'],
     ['Hatchwarden', 'sigil-outline-easter-2026'],
@@ -5275,6 +6244,13 @@ const auraOutlineOverrides = new Map([
     ['Aegis : Eggis', 'sigil-outline-easter-2026'],
     ['Y.O.L.K.E.G.G.', 'sigil-outline-easter-2026'],
     ['Sky Festival', 'sigil-outline-easter-2026'],
+    ['Floaty', 'sigil-outline-summer'],
+    ['Beach Ball', 'sigil-outline-summer'],
+    ['Nostalgia', 'sigil-outline-summer'],
+    ['Goose Rave', 'sigil-outline-summer'],
+    ['Vacation', 'sigil-outline-summer'],
+    ['Bayview', 'sigil-outline-summer'],
+    ['Pool Party', 'sigil-outline-summer'],
 ]);
 
 const glitchOutlineNames = new Set(['Fault', '[CONTENT DELETED']);
@@ -5617,6 +6593,15 @@ function clearActiveLuckPotionPresets({ syncBiomeConstraints = true } = {}) {
 function formatAuraNameMarkup(aura, overrideName) {
     if (!aura) return overrideName || '';
     const baseName = typeof overrideName === 'string' && overrideName.length > 0 ? overrideName : aura.name;
+    if (baseName === 'Glitch' || baseName.startsWith('Glitch - ')) {
+        const [namePart, ...restParts] = baseName.split(' - ');
+        const suffix = restParts.length > 0 ? ` - ${restParts.join(' - ')}` : '';
+        const glitchMarkup = `<span class="sigil-effect-glitch__title">${namePart.toUpperCase()}</span>${suffix}`;
+        if (aura.subtitle) {
+            return `${glitchMarkup} <span class="sigil-subtitle">${aura.subtitle}</span>`;
+        }
+        return glitchMarkup;
+    }
     if (baseName.startsWith('Breakthrough')) {
         const [namePart, ...restParts] = baseName.split(' - ');
         const suffix = restParts.length > 0 ? ` - ${restParts.join(' - ')}` : '';
@@ -5649,6 +6634,7 @@ function formatAuraNameText(aura, overrideName) {
 }
 
 const layeredTextSigilClasses = ['sigil-outline-lamenthyr', 'sigil-outline-edict', 'sigil-effect-clockwork'];
+const layeredTextSigilSelector = layeredTextSigilClasses.map(className => `.${className}`).join(',');
 
 function syncLayeredSigilText(element) {
     if (!element) return;
@@ -5660,39 +6646,183 @@ function syncLayeredSigilText(element) {
 }
 
 function updateLayeredSigilText(container = document) {
-    if (!container) return;
-    layeredTextSigilClasses.forEach(className => {
-        container.querySelectorAll(`.${className}`).forEach(syncLayeredSigilText);
-    });
+    if (!container || typeof container.querySelectorAll !== 'function') return;
+    if (container.nodeType === Node.ELEMENT_NODE && container.matches(layeredTextSigilSelector)) {
+        syncLayeredSigilText(container);
+    }
+    container.querySelectorAll(layeredTextSigilSelector).forEach(syncLayeredSigilText);
 }
 
 function observeLayeredSigilText() {
     updateLayeredSigilText();
     if (!document.body) return;
+    const pendingRoots = new Set();
+    let flushScheduled = false;
+    const flushPendingRoots = () => {
+        flushScheduled = false;
+        pendingRoots.forEach(updateLayeredSigilText);
+        pendingRoots.clear();
+    };
+    const scheduleRoot = root => {
+        if (!root || typeof root.querySelectorAll !== 'function') return;
+        pendingRoots.add(root);
+        if (!flushScheduled) {
+            flushScheduled = true;
+            queueMicrotask(flushPendingRoots);
+        }
+    };
     const observer = new MutationObserver(mutations => {
         mutations.forEach(mutation => {
             if (mutation.type === 'childList') {
                 mutation.addedNodes.forEach(node => {
-                    if (node.nodeType !== Node.ELEMENT_NODE) return;
-                    const element = node;
-                    layeredTextSigilClasses.forEach(className => {
-                        if (element.classList.contains(className)) {
-                            syncLayeredSigilText(element);
-                        }
-                        if (typeof element.querySelectorAll === 'function') {
-                            element.querySelectorAll(`.${className}`).forEach(syncLayeredSigilText);
-                        }
-                    });
+                    if (node.nodeType === Node.ELEMENT_NODE) {
+                        scheduleRoot(node);
+                    }
                 });
             } else if (mutation.type === 'characterData') {
                 const parent = mutation.target.parentElement;
-                if (parent && layeredTextSigilClasses.some(className => parent.classList.contains(className))) {
+                if (parent && parent.matches(layeredTextSigilSelector)) {
                     syncLayeredSigilText(parent);
                 }
             }
         });
     });
     observer.observe(document.body, { childList: true, subtree: true, characterData: true });
+}
+
+const GLITCH_SIGIL_SELECTOR = '.sigil-outline-glitch, .sigil-effect-glitch__title';
+const GLITCH_SIGIL_SYMBOLS = Object.freeze(['@', '#', '$', '%', '&', '*', '!', '?', '+', '=']);
+const GLITCH_SIGIL_REPLACEABLE_CHARACTER_PATTERN = /[\p{L}\p{N}]/u;
+let glitchSigilFlickerTimeoutId = null;
+let glitchSigilRestoreTimeoutId = null;
+
+function canFlickerGlitchSigils() {
+    return typeof document !== 'undefined'
+        && !document.hidden
+        && !appState.reduceMotion
+        && !appState.qualityPreferences?.removeGlitchEffects;
+}
+
+function createGlitchSigilFlickerText(text) {
+    const characters = Array.from(text);
+    const replaceableIndexes = [];
+    characters.forEach((character, index) => {
+        if (GLITCH_SIGIL_REPLACEABLE_CHARACTER_PATTERN.test(character)) {
+            replaceableIndexes.push(index);
+        }
+    });
+    if (replaceableIndexes.length === 0) {
+        return text;
+    }
+
+    const characterIndex = replaceableIndexes[Math.floor(Math.random() * replaceableIndexes.length)];
+    characters[characterIndex] = GLITCH_SIGIL_SYMBOLS[Math.floor(Math.random() * GLITCH_SIGIL_SYMBOLS.length)];
+    return characters.join('');
+}
+
+function isGlitchSigilVisible(element) {
+    if (!element || element.getClientRects().length === 0) {
+        return false;
+    }
+    const bounds = element.getBoundingClientRect();
+    if (
+        bounds.width <= 0
+        || bounds.height <= 0
+        || bounds.right <= 0
+        || bounds.bottom <= 0
+        || bounds.left >= window.innerWidth
+        || bounds.top >= window.innerHeight
+    ) {
+        return false;
+    }
+    let current = element;
+    while (current && current !== document.documentElement) {
+        const style = window.getComputedStyle(current);
+        if (style.display === 'none' || style.visibility === 'hidden' || Number.parseFloat(style.opacity) === 0) {
+            return false;
+        }
+        current = current.parentElement;
+    }
+    const centerX = Math.min(window.innerWidth - 1, Math.max(0, bounds.left + bounds.width / 2));
+    const centerY = Math.min(window.innerHeight - 1, Math.max(0, bounds.top + bounds.height / 2));
+    const topElement = document.elementFromPoint(centerX, centerY);
+    return !!topElement && (
+        topElement === element
+        || element.contains(topElement)
+        || topElement.contains(element)
+    );
+}
+
+function getGlitchSigilTextNodes(element) {
+    if (!element || typeof document === 'undefined') {
+        return [];
+    }
+    const textNodes = [];
+    const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT);
+    let node = walker.nextNode();
+    while (node) {
+        const parent = node.parentElement;
+        const belongsToTarget = parent?.closest(GLITCH_SIGIL_SELECTOR) === element;
+        if (
+            belongsToTarget
+            && isGlitchSigilVisible(parent)
+            && GLITCH_SIGIL_REPLACEABLE_CHARACTER_PATTERN.test(node.nodeValue || '')
+        ) {
+            textNodes.push(node);
+        }
+        node = walker.nextNode();
+    }
+    return textNodes;
+}
+
+function scheduleGlitchSigilFlicker(delay = 450 + Math.random() * 750) {
+    if (glitchSigilFlickerTimeoutId !== null) {
+        clearTimeout(glitchSigilFlickerTimeoutId);
+    }
+    glitchSigilFlickerTimeoutId = window.setTimeout(() => {
+        glitchSigilFlickerTimeoutId = null;
+        if (!canFlickerGlitchSigils()) {
+            scheduleGlitchSigilFlicker(700);
+            return;
+        }
+
+        const targets = Array.from(document.querySelectorAll(GLITCH_SIGIL_SELECTOR))
+            .filter(isGlitchSigilVisible)
+            .map(element => ({ element, textNodes: getGlitchSigilTextNodes(element) }))
+            .filter(target => target.textNodes.length > 0);
+        if (targets.length === 0) {
+            scheduleGlitchSigilFlicker(700);
+            return;
+        }
+
+        const target = targets[Math.floor(Math.random() * targets.length)];
+        const textNode = target.textNodes[Math.floor(Math.random() * target.textNodes.length)];
+        const sourceText = textNode.nodeValue;
+        const flickerText = createGlitchSigilFlickerText(sourceText);
+        if (flickerText === sourceText) {
+            scheduleGlitchSigilFlicker();
+            return;
+        }
+
+        textNode.nodeValue = flickerText;
+        target.element.classList.add('sigil-glitch-flicker');
+        glitchSigilRestoreTimeoutId = window.setTimeout(() => {
+            glitchSigilRestoreTimeoutId = null;
+            if (textNode.isConnected && textNode.nodeValue === flickerText) {
+                textNode.nodeValue = sourceText;
+            }
+            target.element.classList.remove('sigil-glitch-flicker');
+            scheduleGlitchSigilFlicker();
+        }, 80 + Math.random() * 70);
+    }, delay);
+}
+
+function startGlitchSigilFlicker() {
+    if (glitchSigilRestoreTimeoutId !== null) {
+        clearTimeout(glitchSigilRestoreTimeoutId);
+        glitchSigilRestoreTimeoutId = null;
+    }
+    scheduleGlitchSigilFlicker(180 + Math.random() * 320);
 }
 
 function determineResultPriority(aura, baseChance) {
@@ -5768,6 +6898,7 @@ const AURA_BLUEPRINT_SOURCE = Object.freeze([
     { name: "P.U.K.E.K.O.G.O.D. - 1,000,000,000", chance: 1000000000, cutscene: "pukekoGod-cutscene" },
     { name: "Eostre - 1,000,000,000", chance: 1000000000, cutscene: "eostre-cutscene" },
     { name: "Sovereign : Frostveil - 1,000,000,000", chance: 1000000000, breakthroughs: nativeBreakthroughs("aurora"), cutscene: "frostveil-cutscene" },
+    { name: "Pool Party - 972,000,000", chance: 972000000 },
     { name: "Arachnophobia - 940,000,000", chance: 940000000, nativeBiomes: ["glitch", "pumpkinMoon"] },
     { name: "Ascendant - 935,000,000", chance: 935000000, breakthroughs: nativeBreakthroughs("heaven") },
     { name: "Ravage - 930,000,000", chance: 930000000, nativeBiomes: ["glitch", "graveyard"] },
@@ -5884,7 +7015,10 @@ const AURA_BLUEPRINT_SOURCE = Object.freeze([
     { name: "Antivirus - 62,500,000", chance: 62500000, breakthroughs: nativeBreakthroughs("cyberspace"), nativeBiomes: ["cyberspace"] },
     { name: "Skyburst - 60,000,000", chance: 60000000, breakthroughs: nativeBreakthroughs("aurora") },
     { name: "SENTINEL - 60,000,000", chance: 60000000 },
+    { name: "Bayview - 60,000,000", chance: 60000000 },
     { name: "Twilight : Iridescent Memory - 60,000,000", chance: 60000000, breakthroughs: nativeBreakthroughs("night") },
+    { name: "Vacation - 58,620,000", chance: 58620000 },
+    { name: "Goose Rave - 50,000,000", chance: 50000000 },
     { name: "Matrix - 50,000,000", chance: 50000000, breakthroughs: nativeBreakthroughs("cyberspace"), nativeBiomes: ["cyberspace"] },
     { name: "Runic - 50,000,000", chance: 50000000 },
     { name: "Exotic : APEX - 49,999,500", chance: 49999500 },
@@ -5912,6 +7046,7 @@ const AURA_BLUEPRINT_SOURCE = Object.freeze([
     { name: "Oculus - 23,233,340", chance: 23233340, breakthroughs: nativeBreakthroughs("heaven") },
     { name: "Cryptfire - 21,000,000", chance: 21000000, nativeBiomes: ["graveyard"] },
     { name: "Plasma - 20,600,000", chance: 20000000 },
+    { name: "Nostalgia - 20,270,000", chance: 20270000 },
     { name: "Very Small Sewage Rat That's About 3.082 Studs Long - 20,070,629", chance: 20070629 },
     { name: "Chromatic - 20,000,000", chance: 20000000 },
     { name: "Lullaby - 17,000,000", chance: 17000000, breakthroughs: nativeBreakthroughs("night") },
@@ -5989,6 +7124,7 @@ const AURA_BLUEPRINT_SOURCE = Object.freeze([
     { name: "Gravitational - 2,000,000", chance: 2000000 },
     { name: "Flutter : Buggify - 2,000,000", chance: 2000000 },
     { name: "Player : Respawn - 1,999,999", chance: 1999999, breakthroughs: nativeBreakthroughs("cyberspace"), nativeBiomes: ["cyberspace"] },
+    { name: "Beach Ball - 1,938,000", chance: 1938000 },
     { name: "Archmage - 1,766,000", chance: 1766000 },
     { name: "Obsidian - 1,750,000", chance: 1750000 },
     { name: "Cosmos - 1,520,000", chance: 1520000 },
@@ -6009,6 +7145,7 @@ const AURA_BLUEPRINT_SOURCE = Object.freeze([
     { name: "紅月を求めし者 - 666,666", chance: 666666, nativeBiomes: ["fullMoon"] },
     { name: "Undead : Devil - 666,666", chance: 666666, breakthroughs: nativeBreakthroughs("hell") },
     { name: "Warlock - 666,000", chance: 666000 },
+    { name: "Floaty - 600,000", chance: 600000 },
     { name: "Pump : Trickster - 600,000", chance: 600000, nativeBiomes: ["glitch", "pumpkinMoon"] },
     { name: "Prowler - 540,000", chance: 540000, nativeBiomes: ["anotherRealm"], cutscene: "prowler-cutscene" },
     { name: "Clockwork - 530,000", chance: 530000, nativeBiomes: ["mastermind"], cutscene: "clockwork-cutscene" },
@@ -6176,14 +7313,8 @@ function getAuraIndex(aura) {
     return aura && Number.isInteger(aura.index) ? aura.index : -1;
 }
 
-function resetAuraRollState(registry) {
-    for (const aura of registry) {
-        const index = getAuraIndex(aura);
-        if (index === -1) {
-            continue;
-        }
-        auraWinCounts[index] = 0;
-    }
+function resetAuraRollState() {
+    auraWinCounts.fill(0);
 }
 
 function readAuraWinCount(aura) {
@@ -6224,13 +7355,84 @@ const EVENT_LIST = [
     { id: "valentine26", label: "Valentine 2026" },
     { id: "easter26", label: "Easter 2026" },
     { id: "aprilFools26", label: "April Fools 2026" },
+    { id: "summer26", label: "Summer 2026" },
 ];
 
 const VALENTINE_EVENT_IDS = Object.freeze(['valentine24', 'valentine26']);
+const APRIL_FOOLS_EVENT_IDS = Object.freeze(['aprilFools24', 'aprilFools25', 'aprilFools26']);
 const EASTER_EVENT_IDS = Object.freeze(['easter26']);
 const HALLOWEEN_EVENT_IDS = Object.freeze(['halloween24', 'halloween25']);
-const SUMMER_EVENT_IDS = Object.freeze(['summer24', 'summer25']);
+const SUMMER_EVENT_IDS = Object.freeze(['summer24', 'summer25', 'summer26']);
 const WINTER_EVENT_IDS = Object.freeze(['winter25', 'winter26']);
+
+const APRIL_FOOLS_COPY_TARGETS = Object.freeze([
+    {
+        selector: '.masthead-console__rail > span:first-child',
+        variants: Object.freeze([
+            'Certified Serious Simulator',
+            'Probability Department (Unsupervised)',
+            'Definitely Not Rigged'
+        ])
+    },
+    {
+        selector: '#resources-heading + .surface__subtitle',
+        variants: Object.freeze([
+            'Useful links, suspiciously organized.',
+            'Resources approved by at least one raccoon.',
+            'External links. Internal confidence sold separately.'
+        ])
+    },
+    {
+        selector: '#results-heading + .surface__subtitle',
+        variants: Object.freeze([
+            'Results inspected by three raccoons.',
+            'High fidelity output, low fidelity life choices.',
+            'Every number is wearing a tiny disguise.'
+        ])
+    },
+    {
+        selector: '#controls-heading + .surface__subtitle',
+        variants: Object.freeze([
+            'Press responsibly; the buttons remember.',
+            'Choose how the numbers hurt your feelings.',
+            'Controls calibrated entirely by vibes.'
+        ])
+    },
+    {
+        selector: '#parameters-heading + .surface__subtitle',
+        variants: Object.freeze([
+            'Configure your luck. Reality remains non-refundable.',
+            'Add ingredients until probability gets nervous.',
+            'Scientific settings, emotionally approximate.'
+        ])
+    },
+    {
+        selector: '#presets-heading + .surface__subtitle',
+        variants: Object.freeze([
+            'Prepackaged confidence for statistically bold decisions.',
+            'One-click luck, batteries not included.',
+            'Curated settings from the Department of Guessing.'
+        ])
+    },
+    {
+        selector: '.feed-toolbar__heading-copy > small',
+        variants: Object.freeze([
+            'Search, sort & pretend',
+            'Find your emotional support aura',
+            'Organize the chaos alphabetically'
+        ])
+    },
+    {
+        selector: '.feed-console__stream-header small',
+        variants: Object.freeze([
+            'Exact sequence preserved, somehow',
+            'Chronology is more of a suggestion',
+            'Freshly rolled and lightly confused'
+        ])
+    }
+]);
+
+let aprilFoolsCopyActive = false;
 
 const EVENT_LABEL_MAP = new Map(EVENT_LIST.map(({ id, label }) => [id, label]));
 const HALLOWEEN_2024_EVENT_ID = 'halloween24';
@@ -6370,7 +7572,13 @@ const EVENT_AURA_LOOKUP = {
         "A Fool's Experience - 1,000,000,000"
     ],
     summer26: [
-        ""
+        "Floaty - 600,000",
+        "Beach Ball - 1,938,000",
+        "Nostalgia - 20,270,000",
+        "Goose Rave - 50,000,000",
+        "Vacation - 58,620,000",
+        "Bayview - 60,000,000",
+        "Pool Party - 972,000,000",
     ]
 };
 
@@ -6378,23 +7586,23 @@ const BIOME_EVENT_CONSTRAINTS = {
     graveyard: ["halloween24", "halloween25"],
     pumpkinMoon: ["halloween24", "halloween25"],
     bloodRain: ["halloween25"],
-    blazing: ["summer25"],
+    blazing: ["summer25", "summer26"],
     aurora: ["winter26"],
 };
 
 const EVENT_BIOME_CONDITION_MESSAGES = Object.freeze({
-    anotherRealm: 'Requires Dev Biomes to be enabled under run parameters.',
-    mastermind: 'Requires Dev Biomes to be enabled under run parameters.',
-    edict: 'Requires Dev Biomes to be enabled under run parameters.',
+    anotherRealm: 'Requires Developer Biomes to be enabled under run parameters.',
+    mastermind: 'Requires Developer Biomes to be enabled under run parameters.',
+    edict: 'Requires Developer Biomes to be enabled under run parameters.',
     graveyard: 'Requires Night time with Halloween 2024 or Halloween 2025 enabled.',
     pumpkinMoon: 'Requires Night time with Halloween 2024 or Halloween 2025 enabled.',
     bloodRain: 'Requires Halloween 2025 enabled.',
-    blazing: 'Requires Summer 2025 enabled.',
+    blazing: 'Requires Summer 2025 or Summer 2026 enabled.',
     aurora: 'Requires Winter 2026 enabled.',
-    fullMoon: 'Requires Dev Biomes to be enabled under run parameters.',
+    fullMoon: 'Requires Developer Biomes to be enabled under run parameters.',
 });
 
-const enabledEvents = new Set();
+const enabledEvents = new Set(['summer26']);
 const auraEventIndex = new Map();
 
 function hasAnyEnabledEvent(eventIds) {
@@ -6405,9 +7613,44 @@ function hasCombinedEventsEnabled() {
     return enabledEvents.size > 1;
 }
 
+function syncAprilFoolsCopy(active) {
+    if (active === aprilFoolsCopyActive || typeof document === 'undefined') {
+        return;
+    }
+
+    aprilFoolsCopyActive = active;
+    APRIL_FOOLS_COPY_TARGETS.forEach(({ selector, variants }) => {
+        const node = document.querySelector(selector);
+        if (!node) {
+            return;
+        }
+
+        if (!Object.prototype.hasOwnProperty.call(node.dataset, 'eventBaseText')) {
+            node.dataset.eventBaseText = node.textContent.trim();
+        }
+
+        if (!active) {
+            node.textContent = node.dataset.eventBaseText;
+            node.classList.remove('april-fools-copy');
+            return;
+        }
+
+        const previousIndex = Number.parseInt(node.dataset.aprilFoolsCopyIndex, 10);
+        let nextIndex = Math.floor(Math.random() * variants.length);
+        if (Number.isInteger(previousIndex) && variants.length > 1 && nextIndex === previousIndex) {
+            nextIndex = (nextIndex + 1 + Math.floor(Math.random() * (variants.length - 1))) % variants.length;
+        }
+
+        node.dataset.aprilFoolsCopyIndex = String(nextIndex);
+        node.textContent = variants[nextIndex];
+        node.classList.add('april-fools-copy');
+    });
+}
+
 function resolveEventThemeVariant() {
     if (hasCombinedEventsEnabled()) return 'default';
     if (hasAnyEnabledEvent(VALENTINE_EVENT_IDS)) return 'valentine';
+    if (hasAnyEnabledEvent(APRIL_FOOLS_EVENT_IDS)) return 'april-fools';
     if (hasAnyEnabledEvent(EASTER_EVENT_IDS)) return 'easter';
     if (hasAnyEnabledEvent(WINTER_EVENT_IDS)) return 'winter';
     if (hasAnyEnabledEvent(HALLOWEEN_EVENT_IDS)) return 'halloween';
@@ -6419,6 +7662,7 @@ function resolveParticleMode() {
     if (hasCombinedEventsEnabled()) return 'none';
     if (hasAnyEnabledEvent(VALENTINE_EVENT_IDS)) return 'hearts';
     if (hasAnyEnabledEvent(WINTER_EVENT_IDS)) return 'snow';
+    if (hasAnyEnabledEvent(HALLOWEEN_EVENT_IDS)) return 'halloween-lights';
     return 'none';
 }
 
@@ -6433,9 +7677,11 @@ function syncEventVisualPresentation() {
     pageBody.classList.toggle('theme-event-halloween', variant === 'halloween');
     pageBody.classList.toggle('theme-event-summer', variant === 'summer');
     pageBody.classList.toggle('theme-event-easter', variant === 'easter');
+    pageBody.classList.toggle('theme-event-april-fools', variant === 'april-fools');
 
     snowEffectState.mode = resolveParticleMode();
     syncSnowEffect();
+    syncAprilFoolsCopy(variant === 'april-fools');
 }
 
 function biomeEventRequirementsMet(biomeId) {
@@ -6460,6 +7706,45 @@ const GLITCH_EVENT_WHITELIST = new Set([
     "halloween24",
     "halloween25",
 ]);
+
+const EVENT_AURA_BIOME_CONSTRAINTS = Object.freeze({
+    summer26: Object.freeze(['blazing', 'glitch'])
+});
+
+function eventAuraBiomeRequirementsMet(eventIds, context) {
+    if (!Array.isArray(eventIds) || eventIds.length === 0) {
+        return true;
+    }
+
+    const eventState = context?.enabledEventsSet instanceof Set
+        ? context.enabledEventsSet
+        : enabledEvents;
+    const directBiomes = new Set([
+        context?.biome,
+        context?.primaryBiome,
+        context?.timeBiome
+    ].filter(Boolean));
+
+    for (const eventId of eventIds) {
+        if (!eventState.has(eventId)) {
+            continue;
+        }
+
+        const allowedBiomes = EVENT_AURA_BIOME_CONSTRAINTS[eventId];
+        if (!allowedBiomes) {
+            return true;
+        }
+
+        const allowed = allowedBiomes.some(biomeId => biomeId === 'glitch'
+            ? context?.glitchLikeBiome === true
+            : directBiomes.has(biomeId));
+        if (allowed) {
+            return true;
+        }
+    }
+
+    return false;
+}
 
 for (const [eventId, auraNames] of Object.entries(EVENT_AURA_LOOKUP)) {
     auraNames.forEach(name => {
@@ -6764,7 +8049,7 @@ function enforceBiomeEventRestrictions() {
 
         if (DEV_BIOME_IDS.has(option.value) && !devBiomesEnabled) {
             disabled = true;
-            title = 'Enable Dev Biomes to access this biome.';
+            title = 'Enable Developer Biomes to access this biome.';
         }
 
         const requiredEvent = BIOME_EVENT_CONSTRAINTS[option.value];
@@ -6943,7 +8228,6 @@ function triggerLuckPresetButtonAnimation(button, className) {
     }
 
     button.classList.remove('luck-preset-button--pop', 'luck-preset-button--mega-pop', 'luck-preset-button--master-pop');
-    // Force reflow so the animation can retrigger
     void button.offsetWidth;
     button.classList.add(className);
 }
@@ -6983,8 +8267,9 @@ function setupLuckPresetAnimations() {
 }
 
 function setVersionButtonExpanded(state) {
-    if (versionInfoButton) {
-        versionInfoButton.setAttribute('aria-expanded', state ? 'true' : 'false');
+    const trigger = versionInfoButton || document.getElementById('versionInfoButton');
+    if (trigger) {
+        trigger.setAttribute('aria-expanded', state ? 'true' : 'false');
     }
 }
 
@@ -7055,8 +8340,9 @@ function hideVersionChangelogOverlay({ focusTrigger = true } = {}) {
                 focusTarget.focus();
                 return;
             }
-            if (versionInfoButton && typeof versionInfoButton.focus === 'function') {
-                versionInfoButton.focus();
+            const trigger = versionInfoButton || document.getElementById('versionInfoButton');
+            if (trigger && typeof trigger.focus === 'function') {
+                trigger.focus();
             }
         }
     });
@@ -7493,12 +8779,16 @@ function ensureChangelogTabsReady() {
 
 function setupVersionChangelogOverlay() {
     const overlay = document.getElementById('versionChangelogOverlay');
-    const trigger = versionInfoButton;
+    const trigger = versionInfoButton || document.getElementById('versionInfoButton');
     const closeButton = document.getElementById('versionChangelogClose');
 
     if (!overlay || !trigger) {
         return;
     }
+    if (trigger.dataset.changelogOverlayBound === 'true') {
+        return;
+    }
+    trigger.dataset.changelogOverlayBound = 'true';
 
     trigger.addEventListener('click', () => {
         if (overlay.hasAttribute('hidden')) {
@@ -7583,10 +8873,611 @@ function relocateResourcesPanelForMobile() {
     mobileQuery.addEventListener('change', syncLayout);
 }
 
+function initializeHelpCenter() {
+    const toggle = document.getElementById('helpCenterToggle');
+    const panel = document.getElementById('helpCenterPanel');
+    const backdrop = document.getElementById('helpCenterBackdrop');
+    const closeButton = document.getElementById('helpCenterClose');
+    const searchInput = document.getElementById('helpCenterSearch');
+    const content = document.getElementById('helpCenterContent');
+    const emptyState = document.getElementById('helpCenterEmpty');
+    const guidedTour = document.getElementById('helpGuidedTour');
+    const tourStartButton = document.getElementById('helpTourStart');
+    const tourPreviousButton = document.getElementById('helpTourPrevious');
+    const tourTryButton = document.getElementById('helpTourTry');
+    const tourCompleteButton = document.getElementById('helpTourComplete');
+    const tourSteps = document.getElementById('helpTourSteps');
+    const tourStepCount = document.getElementById('helpTourStepCount');
+    const tourCompletion = document.getElementById('helpTourCompletion');
+    const tourProgress = guidedTour?.querySelector('[role="progressbar"]');
+    const tourProgressFill = document.getElementById('helpTourProgressFill');
+    const tourLesson = document.getElementById('helpTourLesson');
+    const tourLessonIcon = document.getElementById('helpTourLessonIcon');
+    const tourLessonNumber = document.getElementById('helpTourLessonNumber');
+    const tourLessonTitle = document.getElementById('helpTourLessonTitle');
+    const tourLessonDescription = document.getElementById('helpTourLessonDescription');
+    const tourLessonTask = document.getElementById('helpTourLessonTask');
+    const tourResumeButton = document.getElementById('helpTourResume');
+    const tourResumeLabel = document.getElementById('helpTourResumeLabel');
+    if (
+        !toggle || !panel || !backdrop || !closeButton || !searchInput || !content || !emptyState
+        || !guidedTour || !tourStartButton || !tourPreviousButton || !tourTryButton
+        || !tourCompleteButton || !tourSteps || !tourStepCount || !tourCompletion
+        || !tourProgress || !tourProgressFill || !tourLesson || !tourLessonIcon
+        || !tourLessonNumber || !tourLessonTitle || !tourLessonDescription
+        || !tourLessonTask || !tourResumeButton || !tourResumeLabel
+    ) {
+        return;
+    }
+
+    const cards = Array.from(content.querySelectorAll('[data-help-card]'));
+    const navButtons = Array.from(panel.querySelectorAll('[data-help-target]'));
+    const searchableText = new Map(cards.map(card => [
+        card.id,
+        `${card.dataset.helpKeywords || ''} ${card.textContent || ''}`.toLocaleLowerCase()
+    ]));
+    const tourLessons = Object.freeze([
+        {
+            icon: 'fa-clover',
+            title: 'Set luck and roll amount',
+            description: 'Start with the two values that define a basic simulation.',
+            task: 'Change Luck Total and Roll Amount, then return to the guide.',
+            target: '.parameter-console__module--loadout'
+        },
+        {
+            icon: 'fa-flask-vial',
+            title: 'Explore potion and item rules',
+            description: 'Single Potion Mode is direct; Multiple Potion Mode exposes ordered potion batches and stacking.',
+            task: 'Switch between potion modes and inspect quantities, stacking, and the potion priority note.',
+            target: '.parameter-console__module--loadout'
+        },
+        {
+            icon: 'fa-bolt',
+            title: 'Try a Quick Preset',
+            description: 'Preset banks provide fast starting points for luck, devices, buffs, and roll counts.',
+            task: 'Open a preset bank and apply one preset. Use its minus or plus control if available.',
+            target: '.surface--presets'
+        },
+        {
+            icon: 'fa-mountain-sun',
+            title: 'Build an environment',
+            description: 'Biome, rune, time, and events determine which environment rules are active.',
+            task: 'Choose a biome, rune, and time of day, then inspect the Events control.',
+            target: '.parameter-console__module--environment'
+        },
+        {
+            icon: 'fa-infinity',
+            title: 'Test biome shortcuts and RoE',
+            description: 'Environment Shortcuts apply common combinations without changing unrelated run settings.',
+            task: 'Try a shortcut, then enable RoE and confirm your biome and time remain selected.',
+            target: '.parameter-console__module--actions'
+        },
+        {
+            icon: 'fa-dice',
+            title: 'Compare simulation methods',
+            description: 'Unnamed’s reveals results at the end; Sol’s-Like shows the same RNG sequence live.',
+            task: 'Switch between the two method cards and inspect the Sol’s-Like pause control.',
+            target: '.roll-console__module--method'
+        },
+        {
+            icon: 'fa-gauge-high',
+            title: 'Tune rolling speed and filters',
+            description: 'Rolling Settings controls live display speed and which tiers or auras are shown.',
+            task: 'Try a speed shortcut, move the slider, and open either aura filter.',
+            action: 'rolling-settings',
+            target: '.rolling-settings__field'
+        },
+        {
+            icon: 'fa-film',
+            title: 'Configure cutscenes and preferences',
+            description: 'Settings contains audio, quality, cutscene, background-rolling, and true-chance controls.',
+            task: 'Inspect the Cutscenes switch, then open Audio or Quality Preferences.',
+            action: 'settings-menu',
+            target: '#cinematicToggle'
+        },
+        {
+            icon: 'fa-list-ol',
+            title: 'Read and refine results',
+            description: 'The Sequence Monitor contains the live feed, tier-aware search, sorting, sharing, XP, and totals.',
+            task: 'Run a small simulation, search an aura or tier, and try the available sorting and sharing controls.',
+            target: '.surface--results'
+        }
+    ]);
+    const completedTourLessons = new Set();
+    let currentTourLesson = 0;
+    let tourActive = false;
+    let highlightedTourTarget = null;
+    let open = false;
+    let lastFocusedElement = null;
+    let closeTimer = null;
+
+    const prefersReducedMotion = () => Boolean(
+        appState?.reduceMotion
+        || window.matchMedia('(prefers-reduced-motion: reduce)').matches
+        || document.body.classList.contains('quality-no-ui-animations')
+    );
+
+    const clearHighlightedTourTarget = () => {
+        if (highlightedTourTarget) {
+            highlightedTourTarget.classList.remove('help-tour-target');
+            highlightedTourTarget = null;
+        }
+    };
+
+    const launchTourCompletionConfetti = () => {
+        guidedTour.querySelector('.help-tour-confetti')?.remove();
+        if (
+            prefersReducedMotion()
+            || document.body.classList.contains('quality-no-particles')
+        ) {
+            return;
+        }
+
+        const confettiLayer = document.createElement('div');
+        confettiLayer.className = 'help-tour-confetti';
+        confettiLayer.setAttribute('aria-hidden', 'true');
+        const colors = ['#77d9ff', '#7af0bd', '#ffe47a', '#ff8eae', '#bb8cff', '#f4fbff'];
+        const pieceCount = 42;
+        const fragment = document.createDocumentFragment();
+
+        for (let index = 0; index < pieceCount; index += 1) {
+            const progress = pieceCount === 1 ? 0.5 : index / (pieceCount - 1);
+            const horizontalDistance = ((progress * 2) - 1) * (135 + (Math.random() * 95));
+            const endHorizontalDistance = horizontalDistance * (1.08 + (Math.random() * 0.18));
+            const riseDistance = -(75 + (Math.random() * 125));
+            const fallDistance = 75 + (Math.random() * 105);
+            const rotation = (Math.random() < 0.5 ? -1 : 1) * (280 + (Math.random() * 620));
+            const piece = document.createElement('span');
+
+            piece.className = 'help-tour-confetti__piece';
+            piece.style.setProperty('--confetti-color', colors[index % colors.length]);
+            piece.style.setProperty('--confetti-x', `${horizontalDistance.toFixed(1)}px`);
+            piece.style.setProperty('--confetti-end-x', `${endHorizontalDistance.toFixed(1)}px`);
+            piece.style.setProperty('--confetti-rise', `${riseDistance.toFixed(1)}px`);
+            piece.style.setProperty('--confetti-fall', `${fallDistance.toFixed(1)}px`);
+            piece.style.setProperty('--confetti-half-rotation', `${(rotation * 0.55).toFixed(1)}deg`);
+            piece.style.setProperty('--confetti-rotation', `${rotation.toFixed(1)}deg`);
+            piece.style.setProperty('--confetti-delay', `${Math.floor(Math.random() * 110)}ms`);
+            piece.style.setProperty('--confetti-duration', `${1150 + Math.floor(Math.random() * 450)}ms`);
+            piece.style.setProperty('--confetti-width', `${5 + Math.floor(Math.random() * 4)}px`);
+            piece.style.setProperty('--confetti-height', `${8 + Math.floor(Math.random() * 7)}px`);
+            if (index % 4 === 0) {
+                piece.classList.add('help-tour-confetti__piece--round');
+            }
+            fragment.appendChild(piece);
+        }
+
+        confettiLayer.appendChild(fragment);
+        guidedTour.appendChild(confettiLayer);
+        window.setTimeout(() => confettiLayer.remove(), 1800);
+    };
+
+    const renderTour = () => {
+        const lesson = tourLessons[currentTourLesson];
+        const completedCount = completedTourLessons.size;
+        const finished = completedCount === tourLessons.length;
+        const stepNumber = currentTourLesson + 1;
+
+        tourStepCount.textContent = finished
+            ? 'Tour complete'
+            : `Step ${stepNumber} of ${tourLessons.length}`;
+        tourCompletion.textContent = `${completedCount} completed`;
+        tourProgress.setAttribute('aria-valuemax', String(tourLessons.length));
+        tourProgress.setAttribute('aria-valuenow', String(completedCount));
+        tourProgressFill.style.width = `${(completedCount / tourLessons.length) * 100}%`;
+        tourLesson.classList.toggle('help-tour__lesson--complete', finished);
+
+        if (finished) {
+            tourLessonIcon.innerHTML = '<i class="fa-solid fa-trophy"></i>';
+            tourLessonNumber.textContent = 'Training complete';
+            tourLessonTitle.textContent = 'You are ready to build accurate simulations';
+            tourLessonDescription.textContent = 'You have visited every major workflow and practiced the controls in the live interface.';
+            tourLessonTask.innerHTML = '<i class="fa-solid fa-circle-check" aria-hidden="true"></i> Restart whenever you want a quick refresher.';
+            tourTryButton.disabled = true;
+            tourCompleteButton.innerHTML = '<span>Restart tour</span><i class="fa-solid fa-rotate-right" aria-hidden="true"></i>';
+        } else {
+            tourLessonIcon.innerHTML = `<i class="fa-solid ${lesson.icon}"></i>`;
+            tourLessonNumber.textContent = `Task ${String(stepNumber).padStart(2, '0')}`;
+            tourLessonTitle.textContent = lesson.title;
+            tourLessonDescription.textContent = lesson.description;
+            tourLessonTask.innerHTML = `<i class="fa-solid fa-circle-check" aria-hidden="true"></i> ${lesson.task}`;
+            tourTryButton.disabled = false;
+            tourCompleteButton.innerHTML = currentTourLesson === tourLessons.length - 1
+                ? '<span>Finish tour</span><i class="fa-solid fa-flag-checkered" aria-hidden="true"></i>'
+                : '<span>Done, next</span><i class="fa-solid fa-arrow-right" aria-hidden="true"></i>';
+        }
+
+        tourPreviousButton.disabled = finished || currentTourLesson === 0;
+        tourStartButton.innerHTML = tourActive || completedCount > 0
+            ? '<i class="fa-solid fa-rotate-right" aria-hidden="true"></i><span>Restart guided tour</span>'
+            : '<i class="fa-solid fa-play" aria-hidden="true"></i><span>Start guided tour</span>';
+        tourResumeLabel.textContent = `Continue step ${stepNumber}`;
+
+        const fragment = document.createDocumentFragment();
+        tourLessons.forEach((item, index) => {
+            const stepButton = document.createElement('button');
+            stepButton.type = 'button';
+            stepButton.dataset.helpTourStep = String(index);
+            stepButton.setAttribute('aria-label', `Open guided practice step ${index + 1}: ${item.title}`);
+            if (index === currentTourLesson && !finished) {
+                stepButton.setAttribute('aria-current', 'step');
+            }
+            if (completedTourLessons.has(index)) {
+                stepButton.classList.add('help-tour__step--complete');
+            }
+            stepButton.textContent = String(index + 1);
+            fragment.appendChild(stepButton);
+        });
+        tourSteps.replaceChildren(fragment);
+    };
+
+    const startTour = () => {
+        tourActive = true;
+        currentTourLesson = 0;
+        completedTourLessons.clear();
+        guidedTour.querySelector('.help-tour-confetti')?.remove();
+        tourResumeButton.hidden = true;
+        clearHighlightedTourTarget();
+        renderTour();
+        guidedTour.scrollIntoView({
+            behavior: prefersReducedMotion() ? 'auto' : 'smooth',
+            block: 'start'
+        });
+    };
+
+    const setActiveTopic = topicId => {
+        navButtons.forEach(button => {
+            if (button.dataset.helpTarget === topicId) {
+                button.setAttribute('aria-current', 'true');
+            } else {
+                button.removeAttribute('aria-current');
+            }
+        });
+    };
+
+    const closeHelpCenter = ({ restoreFocus = true } = {}) => {
+        if (!open) return;
+        open = false;
+        panel.classList.remove('help-center--open');
+        backdrop.classList.remove('help-center__backdrop--open');
+        panel.setAttribute('aria-hidden', 'true');
+        toggle.setAttribute('aria-expanded', 'false');
+        document.body.classList.remove('help-center-open');
+        tourResumeButton.hidden = !tourActive || completedTourLessons.size === tourLessons.length;
+        window.clearTimeout(closeTimer);
+        const finishClose = () => {
+            panel.hidden = true;
+            backdrop.hidden = true;
+            if (restoreFocus && lastFocusedElement && typeof lastFocusedElement.focus === 'function') {
+                lastFocusedElement.focus({ preventScroll: true });
+            }
+        };
+        if (prefersReducedMotion()) {
+            finishClose();
+        } else {
+            closeTimer = window.setTimeout(finishClose, 240);
+        }
+    };
+
+    const openHelpCenter = () => {
+        if (open) return;
+        window.clearTimeout(closeTimer);
+        open = true;
+        lastFocusedElement = document.activeElement;
+        panel.hidden = false;
+        backdrop.hidden = false;
+        panel.setAttribute('aria-hidden', 'false');
+        toggle.setAttribute('aria-expanded', 'true');
+        document.body.classList.add('help-center-open');
+        tourResumeButton.hidden = true;
+        clearHighlightedTourTarget();
+        const optionsMenu = document.getElementById('optionsMenu');
+        const optionsMenuToggle = document.getElementById('optionsMenuToggle');
+        optionsMenu?.classList.remove('options-menu--open');
+        optionsMenuToggle?.setAttribute('aria-expanded', 'false');
+        requestAnimationFrame(() => {
+            panel.classList.add('help-center--open');
+            backdrop.classList.add('help-center__backdrop--open');
+            searchInput.focus({ preventScroll: true });
+        });
+    };
+
+    const focusTourTarget = () => {
+        const lesson = tourLessons[currentTourLesson];
+        const target = lesson.target ? document.querySelector(lesson.target) : null;
+        if (!target) return;
+        clearHighlightedTourTarget();
+        highlightedTourTarget = target;
+        target.classList.add('help-tour-target');
+        target.scrollIntoView({
+            behavior: prefersReducedMotion() ? 'auto' : 'smooth',
+            block: 'center'
+        });
+        if (typeof target.focus === 'function') {
+            window.setTimeout(() => {
+                try {
+                    target.focus({ preventScroll: true });
+                } catch (error) {
+                    target.focus();
+                }
+            }, prefersReducedMotion() ? 0 : 320);
+        }
+    };
+
+    const launchTourLesson = () => {
+        const lesson = tourLessons[currentTourLesson];
+        tourActive = true;
+        renderTour();
+        closeHelpCenter({ restoreFocus: false });
+        const delay = prefersReducedMotion() ? 0 : 250;
+        window.setTimeout(() => {
+            if (lesson.action === 'rolling-settings') {
+                showRollingSettingsOverlay();
+                window.setTimeout(focusTourTarget, prefersReducedMotion() ? 0 : 80);
+            } else if (lesson.action === 'settings-menu') {
+                const optionsMenu = document.getElementById('optionsMenu');
+                const optionsMenuToggle = document.getElementById('optionsMenuToggle');
+                optionsMenu?.classList.add('options-menu--open');
+                optionsMenuToggle?.setAttribute('aria-expanded', 'true');
+                focusTourTarget();
+            } else {
+                focusTourTarget();
+            }
+            tourResumeButton.hidden = false;
+        }, delay);
+    };
+
+    const resumeTour = () => {
+        clearHighlightedTourTarget();
+        tourResumeButton.hidden = true;
+        const overlays = [
+            document.getElementById('auraDetailFilterOverlay'),
+            document.getElementById('auraFilterOverlay'),
+            document.getElementById('rollingSettingsOverlay')
+        ];
+        let overlayWasOpen = false;
+        overlays.forEach(overlay => {
+            if (overlay && !overlay.hasAttribute('hidden')) {
+                overlayWasOpen = true;
+                concealOverlay(overlay);
+            }
+        });
+        const optionsMenu = document.getElementById('optionsMenu');
+        const optionsMenuToggle = document.getElementById('optionsMenuToggle');
+        optionsMenu?.classList.remove('options-menu--open');
+        optionsMenuToggle?.setAttribute('aria-expanded', 'false');
+        window.setTimeout(() => {
+            openHelpCenter();
+            renderTour();
+            guidedTour.scrollIntoView({
+                behavior: prefersReducedMotion() ? 'auto' : 'smooth',
+                block: 'start'
+            });
+        }, overlayWasOpen && !prefersReducedMotion() ? 220 : 0);
+    };
+
+    const applySearch = () => {
+        const query = searchInput.value.trim().toLocaleLowerCase();
+        let visibleCount = 0;
+        let firstVisibleId = null;
+        cards.forEach(card => {
+            const visible = !query || searchableText.get(card.id).includes(query);
+            card.hidden = !visible;
+            if (visible) {
+                visibleCount += 1;
+                firstVisibleId ||= card.id;
+            }
+        });
+        navButtons.forEach(button => {
+            const target = document.getElementById(button.dataset.helpTarget || '');
+            button.hidden = Boolean(target?.hidden);
+        });
+        guidedTour.hidden = Boolean(query);
+        emptyState.hidden = visibleCount !== 0;
+        if (firstVisibleId) {
+            setActiveTopic(firstVisibleId);
+            content.scrollTop = 0;
+        }
+    };
+
+    toggle.addEventListener('click', () => {
+        if (open) {
+            closeHelpCenter();
+        } else {
+            openHelpCenter();
+        }
+    });
+    closeButton.addEventListener('click', () => closeHelpCenter());
+    backdrop.addEventListener('click', () => closeHelpCenter());
+    tourStartButton.addEventListener('click', startTour);
+    tourPreviousButton.addEventListener('click', () => {
+        if (currentTourLesson === 0) return;
+        tourActive = true;
+        currentTourLesson -= 1;
+        renderTour();
+    });
+    tourTryButton.addEventListener('click', launchTourLesson);
+    tourCompleteButton.addEventListener('click', () => {
+        if (completedTourLessons.size === tourLessons.length) {
+            startTour();
+            return;
+        }
+        tourActive = true;
+        completedTourLessons.add(currentTourLesson);
+        if (completedTourLessons.size === tourLessons.length) {
+            tourActive = false;
+            tourResumeButton.hidden = true;
+        } else if (currentTourLesson < tourLessons.length - 1) {
+            currentTourLesson += 1;
+        } else {
+            const nextIncompleteLesson = tourLessons.findIndex((lesson, index) => (
+                !completedTourLessons.has(index)
+            ));
+            if (nextIncompleteLesson !== -1) {
+                currentTourLesson = nextIncompleteLesson;
+            }
+        }
+        renderTour();
+        if (completedTourLessons.size === tourLessons.length) {
+            launchTourCompletionConfetti();
+        }
+    });
+    tourSteps.addEventListener('click', event => {
+        const stepButton = event.target.closest('[data-help-tour-step]');
+        if (!stepButton || !tourSteps.contains(stepButton)) return;
+        const nextLesson = Number.parseInt(stepButton.dataset.helpTourStep, 10);
+        if (!Number.isInteger(nextLesson) || nextLesson < 0 || nextLesson >= tourLessons.length) {
+            return;
+        }
+        tourActive = true;
+        currentTourLesson = nextLesson;
+        renderTour();
+    });
+    tourResumeButton.addEventListener('click', resumeTour);
+    searchInput.addEventListener('input', applySearch);
+    searchInput.addEventListener('keydown', event => {
+        if (event.key === 'Escape' && searchInput.value) {
+            event.stopPropagation();
+            searchInput.value = '';
+            applySearch();
+        }
+    });
+
+    navButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            const topicId = button.dataset.helpTarget;
+            const card = topicId ? document.getElementById(topicId) : null;
+            if (!card || card.hidden) return;
+            setActiveTopic(topicId);
+            card.scrollIntoView({
+                behavior: prefersReducedMotion() ? 'auto' : 'smooth',
+                block: 'start'
+            });
+        });
+    });
+
+    panel.addEventListener('click', event => {
+        const jumpButton = event.target.closest('[data-help-jump]');
+        if (jumpButton) {
+            const selector = jumpButton.dataset.helpJump;
+            const target = selector ? document.querySelector(selector) : null;
+            closeHelpCenter({ restoreFocus: false });
+            if (target) {
+                window.setTimeout(() => target.scrollIntoView({
+                    behavior: prefersReducedMotion() ? 'auto' : 'smooth',
+                    block: 'center'
+                }), prefersReducedMotion() ? 0 : 250);
+            }
+            return;
+        }
+
+        const actionButton = event.target.closest('[data-help-action]');
+        if (actionButton?.dataset.helpAction === 'rolling-settings') {
+            closeHelpCenter({ restoreFocus: false });
+            window.setTimeout(showRollingSettingsOverlay, prefersReducedMotion() ? 0 : 250);
+        }
+    });
+
+    document.addEventListener('keydown', event => {
+        if (!open) return;
+        if (event.key === 'Escape') {
+            event.preventDefault();
+            closeHelpCenter();
+            return;
+        }
+        if (event.key !== 'Tab') return;
+        const focusable = Array.from(panel.querySelectorAll(
+            'button:not([disabled]):not([hidden]), input:not([disabled]), [tabindex]:not([tabindex="-1"])'
+        )).filter(element => !element.closest('[hidden]'));
+        if (focusable.length === 0) return;
+        const first = focusable[0];
+        const last = focusable[focusable.length - 1];
+        if (event.shiftKey && document.activeElement === first) {
+            event.preventDefault();
+            last.focus();
+        } else if (!event.shiftKey && document.activeElement === last) {
+            event.preventDefault();
+            first.focus();
+        }
+    });
+    renderTour();
+}
+
+function initializeCreditsDirectory() {
+    const credits = document.querySelector('.footer-credits');
+    const searchInput = document.getElementById('creditsSearch');
+    const resultCount = document.getElementById('creditsResultCount');
+    const emptyState = document.getElementById('creditsEmpty');
+    if (!credits || !searchInput || !resultCount || !emptyState) {
+        return;
+    }
+
+    const filterButtons = Array.from(credits.querySelectorAll('[data-credit-filter]'));
+    const creditItems = Array.from(credits.querySelectorAll('.footer-credits__item'));
+    const summaryCount = credits.querySelector('.footer-credits__summary-count');
+    let activeCategory = 'all';
+
+    if (summaryCount) {
+        summaryCount.textContent = `${creditItems.length + 1} entries`;
+    }
+
+    creditItems.forEach(item => {
+        const contributionText = item.textContent.toLocaleLowerCase();
+        item.dataset.creditSearchText = contributionText;
+        item.dataset.creditCategory = contributionText.includes('cutscene') ? 'cutscene' : 'media';
+        const kind = document.createElement('span');
+        kind.className = 'footer-credits__item-kind';
+        kind.textContent = item.dataset.creditCategory === 'cutscene'
+            ? 'Cutscene'
+            : (contributionText.includes('song') ? 'Audio' : 'Biome');
+        item.prepend(kind);
+    });
+
+    const applyCreditsFilter = () => {
+        const query = searchInput.value.trim().toLocaleLowerCase();
+        let visibleCount = 0;
+
+        creditItems.forEach(item => {
+            const matchesCategory = activeCategory === 'all'
+                || item.dataset.creditCategory === activeCategory;
+            const matchesQuery = query.length === 0
+                || item.dataset.creditSearchText.includes(query);
+            const visible = matchesCategory && matchesQuery;
+            item.hidden = !visible;
+            if (visible) {
+                visibleCount += 1;
+            }
+        });
+
+        resultCount.textContent = `${visibleCount} ${visibleCount === 1 ? 'contribution' : 'contributions'}`;
+        emptyState.hidden = visibleCount !== 0;
+    };
+
+    filterButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            activeCategory = button.dataset.creditFilter || 'all';
+            filterButtons.forEach(candidate => {
+                const selected = candidate === button;
+                candidate.classList.toggle('is-active', selected);
+                candidate.setAttribute('aria-pressed', String(selected));
+            });
+            applyCreditsFilter();
+        });
+    });
+
+    searchInput.addEventListener('input', applyCreditsFilter);
+    applyCreditsFilter();
+}
+
 document.addEventListener('DOMContentLoaded', initializeEventSelector);
 document.addEventListener('DOMContentLoaded', initializeDevBiomeToggle);
+document.addEventListener('DOMContentLoaded', setupSimulationMethodControls);
+document.addEventListener('DOMContentLoaded', initializeRollingSettingsPanel);
+document.addEventListener('DOMContentLoaded', setupRollFeedSearch);
+document.addEventListener('DOMContentLoaded', setupRollFeedSorting);
 document.addEventListener('DOMContentLoaded', initializePotionSimulationMode);
 document.addEventListener('DOMContentLoaded', setupLuckPresetAdjustmentButtons);
+document.addEventListener('DOMContentLoaded', setupPresetConsoleTabs);
 document.addEventListener('DOMContentLoaded', setupLuckPresetAnimations);
 document.addEventListener('DOMContentLoaded', setupVersionChangelogOverlay);
 document.addEventListener('DOMContentLoaded', maybeShowChangelogOnFirstVisit);
@@ -7596,6 +9487,9 @@ document.addEventListener('DOMContentLoaded', setupRollCancellationControl);
 document.addEventListener('DOMContentLoaded', setupNodeShiftAnimation);
 document.addEventListener('DOMContentLoaded', relocateResourcesPanelForMobile);
 document.addEventListener('DOMContentLoaded', observeLayeredSigilText);
+document.addEventListener('DOMContentLoaded', startGlitchSigilFlicker);
+document.addEventListener('DOMContentLoaded', initializeCreditsDirectory);
+document.addEventListener('DOMContentLoaded', initializeHelpCenter);
 
 
 function spawnFortePixelatedSecretMessage() {
@@ -8084,6 +9978,32 @@ const BIOME_ICON_OVERRIDES = {
     edict: 'files/images/icons/heavenBiomeIcon.png'
 };
 
+const BIOME_SIGIL_CLASS_OVERRIDES = Object.freeze({
+    day: 'sigil-outline-day',
+    night: 'sigil-outline-night',
+    windy: 'sigil-outline-windy',
+    snowy: 'sigil-outline-snowy',
+    rainy: 'sigil-outline-rainy',
+    sandstorm: 'sigil-outline-sandstorm',
+    starfall: 'sigil-outline-starfall',
+    hell: 'sigil-outline-hell',
+    heaven: 'sigil-outline-heaven',
+    corruption: 'sigil-outline-corruption',
+    null: 'sigil-outline-null',
+    singularity: 'sigil-outline-singularity',
+    cyberspace: 'sigil-outline-cyberspace',
+    dreamspace: 'sigil-outline-dreamspace',
+    glitch: 'sigil-outline-glitch',
+    limbo: 'sigil-outline-limbo',
+    pumpkinMoon: 'sigil-outline-halloween',
+    graveyard: 'sigil-outline-halloween',
+    bloodRain: 'sigil-outline-blood',
+    blazing: 'sigil-outline-summer',
+    aurora: 'sigil-outline-winter',
+    mastermind: 'sigil-outline-mastermind',
+    edict: 'sigil-outline-edict'
+});
+
 function getBiomeIconSource(value) {
     if (!value) {
         return null;
@@ -8099,7 +10019,7 @@ function getBiomeIconSource(value) {
     return `files/images/icons/${value}BiomeIcon.png`;
 }
 
-function populateBiomeOptionElement(target, option) {
+function populateBiomeOptionElement(target, option, { deferImage = false } = {}) {
     if (!target || !option) {
         return '';
     }
@@ -8111,7 +10031,11 @@ function populateBiomeOptionElement(target, option) {
     if (iconSource) {
         const icon = document.createElement('img');
         icon.className = 'biome-option__icon';
-        icon.src = iconSource;
+        if (deferImage) {
+            icon.dataset.src = iconSource;
+        } else {
+            icon.src = iconSource;
+        }
         icon.alt = '';
         icon.loading = 'lazy';
         icon.decoding = 'async';
@@ -8127,6 +10051,10 @@ function populateBiomeOptionElement(target, option) {
 
     const labelSpan = document.createElement('span');
     labelSpan.className = 'biome-option__label';
+    const sigilClass = BIOME_SIGIL_CLASS_OVERRIDES[option.value];
+    if (sigilClass) {
+        labelSpan.classList.add(sigilClass);
+    }
     labelSpan.textContent = label;
     target.appendChild(labelSpan);
 
@@ -8151,7 +10079,7 @@ function initializeSingleSelectControl(selectId) {
         || selectId === BIOME_OTHER_SELECT_ID
         || selectId === BIOME_TIME_SELECT_ID;
 
-    const setElementContent = (element, option) => {
+    const setElementContent = (element, option, { deferImage = false } = {}) => {
         if (!option) {
             element.textContent = '';
             element.removeAttribute('title');
@@ -8159,7 +10087,7 @@ function initializeSingleSelectControl(selectId) {
         }
 
         if (isBiomeSelect) {
-            populateBiomeOptionElement(element, option);
+            populateBiomeOptionElement(element, option, { deferImage });
         } else {
             const label = option.textContent.trim();
             element.textContent = label;
@@ -8172,7 +10100,7 @@ function initializeSingleSelectControl(selectId) {
         button.type = 'button';
         button.className = 'interface-select__option-button';
         button.dataset.value = option.value;
-        setElementContent(button, option);
+        setElementContent(button, option, { deferImage: isBiomeSelect });
         button.setAttribute('role', 'option');
         const getConditionMessage = () => {
             const biomeCondition = isBiomeSelect && option.disabled
@@ -8219,20 +10147,50 @@ function initializeSingleSelectControl(selectId) {
         return { button, option };
     });
 
+    let optionIconsHydrated = !isBiomeSelect;
+    const hydrateOptionIcons = () => {
+        if (optionIconsHydrated) {
+            return;
+        }
+        optionIconsHydrated = true;
+        optionButtons.forEach(({ button }) => {
+            const icon = button.querySelector('img[data-src]');
+            if (!icon || !icon.dataset.src) {
+                return;
+            }
+            icon.src = icon.dataset.src;
+            delete icon.dataset.src;
+        });
+    };
+
+    if (isBiomeSelect) {
+        summary.addEventListener('pointerenter', hydrateOptionIcons, { once: true, passive: true });
+        summary.addEventListener('focus', hydrateOptionIcons, { once: true });
+        summary.addEventListener('click', hydrateOptionIcons, { once: true });
+    }
+
     if (!menu.hasAttribute('role')) {
         menu.setAttribute('role', 'listbox');
     }
+
+    let summaryContentKey = '';
 
     function updateSummary() {
         const selectedOption = select.options[select.selectedIndex];
         const label = selectedOption ? selectedOption.textContent.trim() : placeholder;
         const normalizedLabel = label ? label.trim() : '';
+        const nextSummaryContentKey = selectedOption
+            ? `${selectedOption.value}\u0000${normalizedLabel}`
+            : `\u0000${normalizedLabel}`;
 
-        if (selectedOption) {
-            setElementContent(summary, selectedOption);
-        } else {
-            summary.textContent = normalizedLabel;
-            summary.title = normalizedLabel;
+        if (summaryContentKey !== nextSummaryContentKey) {
+            summaryContentKey = nextSummaryContentKey;
+            if (selectedOption) {
+                setElementContent(summary, selectedOption);
+            } else {
+                summary.textContent = normalizedLabel;
+                summary.title = normalizedLabel;
+            }
         }
 
         summary.classList.toggle('form-field__input--placeholder', !selectedOption);
@@ -8244,7 +10202,6 @@ function initializeSingleSelectControl(selectId) {
                 || (isBiomeSelect && option.disabled ? EVENT_BIOME_CONDITION_MESSAGES[option.value] : '');
             const hasConditionHelp = !!conditionMessage;
 
-            setElementContent(button, option);
             button.classList.toggle('interface-select__option-button--active', isActive);
             button.classList.toggle('interface-select__option-button--disabled', option.disabled);
             button.classList.toggle('interface-select__option-button--condition', hasConditionHelp);
@@ -8262,6 +10219,9 @@ function initializeSingleSelectControl(selectId) {
     initializeInterfaceSelectMotion(details);
     details.addEventListener('toggle', () => {
         summary.setAttribute('aria-expanded', details.open ? 'true' : 'false');
+        if (details.open) {
+            hydrateOptionIcons();
+        }
     });
 
     selectWidgetRegistry.set(selectId, { update: updateSummary });
@@ -8461,6 +10421,19 @@ function updateBiomeControlConstraints({ source = null, triggerSync = true } = {
         }
     }
 
+    if (timeSelect.value === 'night' && DAY_ONLY_BIOMES.has(primarySelect.value)) {
+        if (source === BIOME_TIME_SELECT_ID) {
+            const fallback = findFirstEnabledOption(primarySelect, option => !DAY_ONLY_BIOMES.has(option.value));
+            if (fallback) {
+                primarySelect.value = fallback.value;
+                primaryChanged = true;
+            }
+        } else {
+            timeSelect.value = 'day';
+            timeChanged = true;
+        }
+    }
+
     if (primarySelect.value === 'limbo' && runeActive) {
         if (source === BIOME_PRIMARY_SELECT_ID) {
             otherSelect.value = 'none';
@@ -8485,6 +10458,7 @@ function updateBiomeControlConstraints({ source = null, triggerSync = true } = {
     });
 
     const daySelected = timeSelect.value === 'day';
+    const nightSelected = timeSelect.value === 'night';
     Array.from(primarySelect.options).forEach(option => {
         const disabledByEvent = eventDisabledMap.get(option.value) || false;
         let disabledByConflict = false;
@@ -8493,6 +10467,9 @@ function updateBiomeControlConstraints({ source = null, triggerSync = true } = {
         if (daySelected && DAY_RESTRICTED_BIOMES.has(option.value)) {
             disabledByConflict = true;
             conflictTitle = 'Unavailable while Day is selected.';
+        } else if (nightSelected && DAY_ONLY_BIOMES.has(option.value)) {
+            disabledByConflict = true;
+            conflictTitle = 'Unavailable while Night is selected.';
         }
         if (runeActive && option.value === 'limbo') {
             disabledByConflict = true;
@@ -8531,6 +10508,10 @@ function updateBiomeControlConstraints({ source = null, triggerSync = true } = {
 
     const limboSelected = primarySelect.value === 'limbo';
     if (limboSelected) {
+        if (timeSelect.value !== 'day') {
+            timeSelect.value = 'day';
+            timeChanged = true;
+        }
         if (oblivionPresetEnabled) {
             applyOblivionPresetOptions({ activateOblivionPreset: false });
         }
@@ -8594,9 +10575,24 @@ function updateBiomeControlConstraints({ source = null, triggerSync = true } = {
     Array.from(timeSelect.options).forEach(option => {
         let disabled = false;
         let title = '';
-        if (option.value === 'day' && DAY_RESTRICTED_BIOMES.has(primarySelect.value)) {
+        if (limboSelected) {
             disabled = true;
-            title = 'Unavailable while Pumpkin Moon, Graveyard, or Blood Rain is selected.';
+            title = 'Time is locked to Day while Limbo is selected.';
+            option.dataset.conditionMessage = title;
+            option.dataset.conditionLabel = option.textContent?.trim() || 'Time';
+        } else if (option.value === 'day' && DAY_RESTRICTED_BIOMES.has(primarySelect.value)) {
+            disabled = true;
+            title = 'Unavailable while Pumpkin Moon or Graveyard is selected.';
+            option.removeAttribute('data-condition-message');
+            option.removeAttribute('data-condition-label');
+        } else if (option.value === 'night' && DAY_ONLY_BIOMES.has(primarySelect.value)) {
+            disabled = true;
+            title = 'Blazing Sun is only available during Day.';
+            option.dataset.conditionMessage = title;
+            option.dataset.conditionLabel = option.textContent?.trim() || 'Time';
+        } else {
+            option.removeAttribute('data-condition-message');
+            option.removeAttribute('data-condition-label');
         }
         option.disabled = disabled;
         if (title) {
@@ -8606,7 +10602,7 @@ function updateBiomeControlConstraints({ source = null, triggerSync = true } = {
         }
     });
 
-    if (timeSelect.options[timeSelect.selectedIndex]?.disabled) {
+    if (!limboSelected && timeSelect.options[timeSelect.selectedIndex]?.disabled) {
         const fallback = findFirstEnabledOption(timeSelect, option => !option.disabled && option.value !== 'none');
         if (fallback) {
             timeSelect.value = fallback.value;
@@ -8909,6 +10905,7 @@ document.addEventListener('DOMContentLoaded', () => {
     setSelectiveTrueChanceDisplayEnabled(Boolean(appState.selectiveTrueChanceDisplay), { persistPreference: false });
     hydrateAuraFilters();
     hydrateAuraTierFilters();
+    refreshActiveAuraFilterCounts();
 
     const backgroundRollingButton = document.getElementById('backgroundRollingButton');
     if (backgroundRollingButton) {
@@ -8939,7 +10936,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    initializeOptionsMenu('filterMenu', 'filterMenuToggle', 'filterMenuPanel');
     initializeOptionsMenu('optionsMenu', 'optionsMenuToggle', 'optionsMenuPanel');
     initializeAuraTierFilterPanel();
     initializeAuraDetailFilterPanel();
@@ -8950,8 +10946,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-// XP is awarded once per rarity tier. Landing any aura within an inclusive tier range grants that tier's XP
-// a single time per simulation run, regardless of how many qualifying entries in AURA_REGISTRY were rolled in that band.
 const XP_RARITY_ROWS = Object.freeze([
     ['tier-9k', 9999, 99998, 1000, '1 in 9,999 – 99,998'],
     ['tier-99k', 99999, 999998, 2500, '1 in 99,999 – 999,998'],
@@ -9157,6 +11151,7 @@ function computeStandardEffectiveChance(aura, context) {
     const eventIds = getAuraEventIds(aura);
     const eventEnabled = context.eventChecker(aura);
     if (!eventEnabled) return Infinity;
+    if (!eventAuraBiomeRequirementsMet(eventIds, context)) return Infinity;
 
     if (isRoe && ROE_EXCLUSION_SET.has(aura.name)) {
         const matchesActive = Array.isArray(activeBiomes) && activeBiomes.length > 0
@@ -9291,6 +11286,12 @@ function determineAuraEffectiveChance(aura, context) {
     }
     if (aura?.name === DREAMCATCHER_AURA_NAME) {
         const activeBiomes = Array.isArray(context?.activeBiomes) ? context.activeBiomes : [];
+        const limboIsActive = context?.biome === 'limbo'
+            || context?.primaryBiome === 'limbo'
+            || activeBiomes.includes('limbo');
+        if (limboIsActive) {
+            return Infinity;
+        }
         const nightIsActive = activeBiomes.some(biomeId => DREAMCATCHER_ALLOWED_BIOMES.has(biomeId))
             || DREAMCATCHER_ALLOWED_BIOMES.has(context?.timeBiome)
             || DREAMCATCHER_ALLOWED_BIOMES.has(context?.biome);
@@ -9415,13 +11416,349 @@ function shouldHideSelectiveTrueChanceForAura(auraName) {
     return TRUE_CHANCE_HIDDEN_AURA_PREFIXES.some(prefix => auraName.startsWith(prefix)) || isExactMetaAuraName(auraName);
 }
 
-function buildResultEntries(registry, biome, breakthroughStatsMap, luckValue, { allowTrueChance = true } = {}) {
+let rollFeedSearchInput = null;
+let rollFeedVisibilityObserver = null;
+
+function ensureRollFeedVisibilityObserver() {
+    if (
+        rollFeedVisibilityObserver
+        || !feedContainer
+        || typeof IntersectionObserver !== 'function'
+    ) {
+        return rollFeedVisibilityObserver;
+    }
+
+    rollFeedVisibilityObserver = new IntersectionObserver(entries => {
+        entries.forEach(entry => {
+            entry.target.classList.toggle('roll-feed-entry--offscreen', !entry.isIntersecting);
+        });
+    }, {
+        root: feedContainer,
+        rootMargin: '180px 0px'
+    });
+
+    return rollFeedVisibilityObserver;
+}
+
+function resetRollFeedVisibilityObserver() {
+    if (rollFeedVisibilityObserver) {
+        rollFeedVisibilityObserver.disconnect();
+    }
+}
+
+function observeRollFeedEntries(root = feedContainer) {
+    if (!root || typeof root.querySelectorAll !== 'function') {
+        return;
+    }
+
+    const observer = ensureRollFeedVisibilityObserver();
+    if (!observer) {
+        return;
+    }
+
+    root.querySelectorAll('[data-roll-feed-entry]').forEach(entry => {
+        entry.classList.add('roll-feed-entry--offscreen');
+        observer.observe(entry);
+    });
+}
+
+function getRollFeedSearchQuery() {
+    const searchInput = rollFeedSearchInput || document.getElementById('rollFeedSearch');
+    rollFeedSearchInput = searchInput;
+    return searchInput && typeof searchInput.value === 'string'
+        ? searchInput.value.trim().toLocaleLowerCase()
+        : '';
+}
+
+function applyRollFeedSearchFilter(root = feedContainer) {
+    if (!root || typeof root.querySelectorAll !== 'function') {
+        return;
+    }
+
+    const query = getRollFeedSearchQuery();
+    const entrySelector = query
+        ? '[data-roll-feed-entry]'
+        : '[data-roll-feed-entry][hidden]';
+    root.querySelectorAll(entrySelector).forEach(entry => {
+        if (!query) {
+            entry.hidden = false;
+            return;
+        }
+        let searchableText = entry.dataset.rollFeedSearchText;
+        if (typeof searchableText !== 'string') {
+            const entryText = (entry.textContent || '').toLocaleLowerCase();
+            const tierText = getAuraTierSearchTerms(entry.dataset.auraTier || '');
+            searchableText = `${entryText} ${tierText}`;
+            entry.dataset.rollFeedSearchText = searchableText;
+        }
+        entry.hidden = !searchableText.includes(query);
+    });
+}
+
+function setupRollFeedSearch() {
+    const searchInput = document.getElementById('rollFeedSearch');
+    if (!searchInput) {
+        return;
+    }
+
+    rollFeedSearchInput = searchInput;
+    let pendingFrameId = null;
+    const refreshFilter = () => {
+        if (pendingFrameId !== null) {
+            return;
+        }
+        const applyFilter = () => {
+            pendingFrameId = null;
+            applyRollFeedSearchFilter();
+        };
+        if (typeof window.requestAnimationFrame === 'function') {
+            pendingFrameId = window.requestAnimationFrame(applyFilter);
+        } else {
+            pendingFrameId = window.setTimeout(applyFilter, 0);
+        }
+    };
+    searchInput.addEventListener('input', refreshFilter);
+    searchInput.addEventListener('search', refreshFilter);
+    searchInput.addEventListener('keydown', event => {
+        if (event.key === 'Escape' && searchInput.value) {
+            event.preventDefault();
+            searchInput.value = '';
+            refreshFilter();
+        }
+    });
+}
+
+function sortEntriesInUnnamedResultOrder(sourceEntries) {
+    let entries = Array.isArray(sourceEntries) ? [...sourceEntries] : [];
+    entries.sort((a, b) => {
+        const priorityDifference = b.priority - a.priority;
+        if (!Number.isNaN(priorityDifference) && priorityDifference !== 0) {
+            return priorityDifference;
+        }
+        return (a.originalOrder || 0) - (b.originalOrder || 0);
+    });
+
+    const prependMatches = predicate => {
+        const matchingEntries = entries.filter(predicate);
+        if (matchingEntries.length === 0) {
+            return;
+        }
+        entries = [
+            ...matchingEntries,
+            ...entries.filter(entry => !predicate(entry))
+        ];
+    };
+
+    prependMatches(entry => typeof entry.auraName === 'string' && entry.auraName.startsWith('Illusionary'));
+    prependMatches(entry => isExactMetaAuraName(entry.auraName));
+
+    const cryogenicEntries = entries.filter(
+        entry => typeof entry.auraName === 'string' && entry.auraName.startsWith('Cryogenic')
+    );
+    if (cryogenicEntries.length > 0) {
+        entries = entries.filter(
+            entry => !(typeof entry.auraName === 'string' && entry.auraName.startsWith('Cryogenic'))
+        );
+        const equinoxIndex = entries.findIndex(
+            entry => typeof entry.auraName === 'string' && entry.auraName.startsWith('Equinox')
+        );
+        entries.splice(equinoxIndex >= 0 ? equinoxIndex : 0, 0, ...cryogenicEntries);
+    }
+
+    prependMatches(entry => typeof entry.auraName === 'string' && entry.auraName.startsWith('Fault'));
+    prependMatches(entry => typeof entry.auraName === 'string' && entry.auraName.startsWith('[CONTENT DELETED]'));
+    prependMatches(entry => typeof entry.auraName === 'string' && entry.auraName.startsWith('Glitch'));
+    prependMatches(entry => typeof entry.auraName === 'string' && entry.auraName.startsWith('Oppression'));
+    prependMatches(entry => typeof entry.auraName === 'string' && entry.auraName.startsWith('Dreammetric'));
+
+    return entries;
+}
+
+function decodeRollFeedSortValue(value) {
+    if (typeof value !== 'string' || value.length === 0) {
+        return '';
+    }
+    try {
+        return decodeURIComponent(value);
+    } catch (error) {
+        return value;
+    }
+}
+
+function getAuraAlphabeticalSortName(auraName) {
+    if (typeof auraName !== 'string') {
+        return '';
+    }
+    if (!auraAlphabeticalNameCache.has(auraName)) {
+        auraAlphabeticalNameCache.set(auraName, auraName.replace(/\s+-\s+[\d,]+\s*$/, '').trim());
+    }
+    return auraAlphabeticalNameCache.get(auraName);
+}
+
+const auraAlphabeticalNameCache = new Map();
+const rollFeedAlphabeticalCollator = new Intl.Collator(undefined, {
+    sensitivity: 'base',
+    numeric: true
+});
+
+function getRollFeedSortSequence() {
+    return rollFeedSortSupportsRecent
+        ? ROLL_FEED_SORT_SEQUENCE
+        : ROLL_FEED_SORT_SEQUENCE_UNNAMED;
+}
+
+function getDefaultRollFeedSortMode() {
+    return rollFeedSortSupportsRecent
+        ? ROLL_FEED_SORT_MODE.RECENT
+        : ROLL_FEED_SORT_MODE.RARITY;
+}
+
+function syncRollFeedSortControl() {
+    const button = document.getElementById('rollFeedSortButton');
+    const label = document.getElementById('rollFeedSortLabel');
+    if (!button) {
+        return;
+    }
+
+    const sortSequence = getRollFeedSortSequence();
+    const normalizedMode = sortSequence.includes(rollFeedSortMode)
+        ? rollFeedSortMode
+        : getDefaultRollFeedSortMode();
+    const modeLabel = ROLL_FEED_SORT_LABELS[normalizedMode];
+    const icon = button.querySelector('i');
+
+    button.hidden = !rollFeedSortingAvailable;
+    button.disabled = !rollFeedSortingAvailable;
+    button.dataset.sortMode = normalizedMode;
+    button.setAttribute('aria-label', `Sort roll feed: ${modeLabel}`);
+    button.setAttribute('title', `Sort roll feed: ${modeLabel}`);
+    if (label) {
+        label.textContent = modeLabel;
+    }
+    if (icon) {
+        Object.values(ROLL_FEED_SORT_ICONS).forEach(className => icon.classList.remove(className));
+        icon.classList.add(ROLL_FEED_SORT_ICONS[normalizedMode]);
+    }
+}
+
+function setRollFeedSortingAvailable(
+    available,
+    { resetMode = false, supportsRecent = rollFeedSortSupportsRecent } = {}
+) {
+    rollFeedSortingAvailable = Boolean(available);
+    rollFeedSortSupportsRecent = Boolean(supportsRecent);
+    if (resetMode) {
+        rollFeedSortMode = getDefaultRollFeedSortMode();
+    }
+    syncRollFeedSortControl();
+}
+
+function applyRollFeedSort(mode = rollFeedSortMode) {
+    if (!feedContainer || !rollFeedSortingAvailable) {
+        return;
+    }
+
+    const sortSequence = getRollFeedSortSequence();
+    const normalizedMode = sortSequence.includes(mode)
+        ? mode
+        : getDefaultRollFeedSortMode();
+    const liveEntries = Array.from(feedContainer.querySelectorAll('.live-roll-feed__entry'));
+    const unnamedResultsList = feedContainer.querySelector('.roll-feed__results-list');
+    const entryElements = liveEntries.length > 0
+        ? liveEntries
+        : Array.from(unnamedResultsList?.querySelectorAll('.roll-feed__result-entry') || []);
+    const entryRecords = entryElements.map((element, index) => {
+        const originalOrder = Number.parseInt(
+            liveEntries.length > 0 ? element.dataset.rollNumber : element.dataset.resultOrder,
+            10
+        );
+        const priority = Number(element.dataset.auraPriority);
+        return {
+            element,
+            auraName: decodeRollFeedSortValue(element.dataset.auraName),
+            alphabeticalName: decodeRollFeedSortValue(element.dataset.auraSortName),
+            priority: Number.isNaN(priority) ? 0 : priority,
+            originalOrder: Number.isFinite(originalOrder) ? originalOrder : index
+        };
+    });
+
+    let orderedRecords;
+    if (normalizedMode === ROLL_FEED_SORT_MODE.RARITY) {
+        orderedRecords = sortEntriesInUnnamedResultOrder(entryRecords);
+    } else if (normalizedMode === ROLL_FEED_SORT_MODE.ALPHABETICAL) {
+        orderedRecords = [...entryRecords].sort((a, b) => {
+            const nameDifference = rollFeedAlphabeticalCollator.compare(
+                a.alphabeticalName,
+                b.alphabeticalName
+            );
+            return nameDifference || a.originalOrder - b.originalOrder;
+        });
+    } else {
+        orderedRecords = [...entryRecords].sort((a, b) => a.originalOrder - b.originalOrder);
+    }
+
+    const fragment = document.createDocumentFragment();
+    orderedRecords.forEach(record => fragment.appendChild(record.element));
+    if (liveEntries.length > 0) {
+        const summary = Array.from(feedContainer.children).find(
+            child => child.classList?.contains('live-roll-feed__summary')
+        ) || null;
+        feedContainer.insertBefore(fragment, summary);
+        feedContainer.scrollTop = 0;
+    } else if (unnamedResultsList) {
+        unnamedResultsList.appendChild(fragment);
+    }
+
+    rollFeedSortMode = normalizedMode;
+    syncRollFeedSortControl();
+    applyRollFeedSearchFilter();
+}
+
+function setupRollFeedSorting() {
+    const button = document.getElementById('rollFeedSortButton');
+    if (!button) {
+        return;
+    }
+
+    button.addEventListener('click', () => {
+        if (!rollFeedSortingAvailable) {
+            return;
+        }
+        const sortSequence = getRollFeedSortSequence();
+        const currentIndex = Math.max(0, sortSequence.indexOf(rollFeedSortMode));
+        const nextMode = sortSequence[(currentIndex + 1) % sortSequence.length];
+        applyRollFeedSort(nextMode);
+        playSoundEffect(clickSoundEffectElement, 'ui');
+    });
+
+    setRollFeedSortingAvailable(false, { resetMode: true, supportsRecent: false });
+}
+
+function buildResultEntries(
+    registry,
+    biome,
+    breakthroughStatsMap,
+    luckValue,
+    { allowTrueChance = true, potionBatch = null, winCounts = null } = {}
+) {
     let entries = [];
+    const safeWinCounts = Array.isArray(winCounts) || ArrayBuffer.isView(winCounts)
+        ? winCounts
+        : null;
+    const potionSourceMarkup = potionBatch
+        ? formatMultiplePotionBatchResultMarkup(potionBatch)
+        : '';
+    const potionSourceText = potionBatch
+        ? formatMultiplePotionBatchResultText(potionBatch)
+        : '';
     for (const aura of registry) {
-        if (isAuraTierSkipped(aura, biome) || isAuraFiltered(aura)) {
+        if (shouldHideAuraFromRollFeed(aura, biome)) {
             continue;
         }
-        const winCount = readAuraWinCount(aura);
+        const auraIndex = getAuraIndex(aura);
+        const winCount = safeWinCounts && auraIndex >= 0
+            ? (Number.isFinite(safeWinCounts[auraIndex]) ? safeWinCounts[auraIndex] : 0)
+            : readAuraWinCount(aura);
         if (winCount <= 0) continue;
 
         const specialClass = typeof resolveAuraStyleClass === 'function' ? resolveAuraStyleClass(aura, biome) : '';
@@ -9471,15 +11808,25 @@ function buildResultEntries(registry, biome, breakthroughStatsMap, luckValue, { 
         });
 
         const pushVisualEntry = (markup, shareText, priority, visualRecord, auraName, rarityForRealChance) => {
-            const realChanceValue = allowTrueChance
+            const realChanceValue = !potionBatch
+                && allowTrueChance
                 && appState.selectiveTrueChanceDisplay
                 && !shouldHideSelectiveTrueChanceForAura(auraName)
                 ? formatRealChanceValue(rarityForRealChance, luckValue)
                 : null;
-            const realChanceMarkup = realChanceValue
-                ? `${markup} <span class="tinyClass">True Chance: 1 in ${realChanceValue}</span>`
-                : markup;
-            entries.push({ markup: realChanceMarkup, share: shareText, priority, visual: visualRecord || null, auraName: auraName || null });
+            const resultSuffixMarkup = potionSourceMarkup
+                ? ` ${potionSourceMarkup}`
+                : (realChanceValue ? ` <span class="tinyClass">True Chance: 1 in ${realChanceValue}</span>` : '');
+            entries.push({
+                markup: `${markup}${resultSuffixMarkup}`,
+                share: potionSourceText ? `${shareText} | ${potionSourceText}` : shareText,
+                priority,
+                visual: visualRecord
+                    ? { ...visualRecord, potionSource: potionSourceText || null }
+                    : null,
+                auraName: auraName || null,
+                tierKey: resolveAuraTierKey(aura, biome) || ''
+            });
         };
 
         if (breakthroughStats && breakthroughStats.count > 0) {
@@ -9532,88 +11879,21 @@ function buildResultEntries(registry, biome, breakthroughStatsMap, luckValue, { 
         }
     }
 
-    // Primary sort by computed priority
-    entries.sort((a, b) => b.priority - a.priority);
-
-    // Ensure Illusionary entries are always at the very top
-    const illusionaryEntries = entries.filter(e => typeof e.auraName === 'string' && e.auraName.startsWith('Illusionary'));
-    if (illusionaryEntries.length > 0) {
-        // Remove all Illusionary entries from the array
-        entries = entries.filter(e => !(typeof e.auraName === 'string' && e.auraName.startsWith('Illusionary')));
-        // Prepend them in original discovered order
-        entries = [...illusionaryEntries, ...entries];
-    }
-
-    // Ensure the Meta aura entry is always at the very top.
-    const metaEntries = entries.filter(e => isExactMetaAuraName(e.auraName));
-    if (metaEntries.length > 0) {
-        entries = entries.filter(e => !isExactMetaAuraName(e.auraName));
-        // Prepend them in original discovered order
-        entries = [...metaEntries, ...entries];
-    }
-
-    // Ensure Cryogenic entries appear above Equinox entries
-    const cryogenicEntries = entries.filter(e => typeof e.auraName === 'string' && e.auraName.startsWith('Cryogenic'));
-    if (cryogenicEntries.length > 0) {
-        // Remove Cryogenic entries
-        entries = entries.filter(e => !(typeof e.auraName === 'string' && e.auraName.startsWith('Cryogenic')));
-        // Find first Equinox index
-        const equinoxIndex = entries.findIndex(e => typeof e.auraName === 'string' && e.auraName.startsWith('Equinox'));
-        const insertIndex = equinoxIndex >= 0 ? equinoxIndex : 0;
-        // Insert Cryogenic entries before Equinox (or at top if Equinox missing)
-        entries.splice(insertIndex, 0, ...cryogenicEntries);
-    }
-
-    // Ensure Fault entries are always at the very top
-    const faultEntries = entries.filter(e => typeof e.auraName === 'string' && e.auraName.startsWith('Fault'));
-    if (faultEntries.length > 0) {
-        // Remove all Fault entries from the array
-        entries = entries.filter(e => !(typeof e.auraName === 'string' && e.auraName.startsWith('Fault')));
-        // Prepend them in original discovered order
-        entries = [...faultEntries, ...entries];
-    }
-
-    // Ensure [CONTENT DELETED] entries are always at the very top
-    const contentDeletedEntries = entries.filter(e => typeof e.auraName === 'string' && e.auraName.startsWith('[CONTENT DELETED]'));
-    if (contentDeletedEntries.length > 0) {
-        // Remove all [CONTENT DELETED] entries from the array
-        entries = entries.filter(e => !(typeof e.auraName === 'string' && e.auraName.startsWith('[CONTENT DELETED]')));
-        // Prepend them in original discovered order
-        entries = [...contentDeletedEntries, ...entries];
-    }
-
-    // Ensure Glitch entries are always at the very top
-    const glitchEntries = entries.filter(e => typeof e.auraName === 'string' && e.auraName.startsWith('Glitch'));
-    if (glitchEntries.length > 0) {
-        // Remove all Glitch entries from the array
-        entries = entries.filter(e => !(typeof e.auraName === 'string' && e.auraName.startsWith('Glitch')));
-        // Prepend them in original discovered order
-        entries = [...glitchEntries, ...entries];
-    }
-
-    // Ensure Oppression entries are always at the very top
-    const oppressionEntries = entries.filter(e => typeof e.auraName === 'string' && e.auraName.startsWith('Oppression'));
-    if (oppressionEntries.length > 0) {
-        // Remove all Oppression entries from the array
-        entries = entries.filter(e => !(typeof e.auraName === 'string' && e.auraName.startsWith('Oppression')));
-        // Prepend them in original discovered order
-        entries = [...oppressionEntries, ...entries];
-    }
-
-    // Ensure Dreammetric entries are always at the very top
-    const dreammetricEntries = entries.filter(e => typeof e.auraName === 'string' && e.auraName.startsWith('Dreammetric'));
-    if (dreammetricEntries.length > 0) {
-        // Remove all Dreammetric entries from the array
-        entries = entries.filter(e => !(typeof e.auraName === 'string' && e.auraName.startsWith('Dreammetric')));
-        // Prepend them in original discovered order
-        entries = [...dreammetricEntries, ...entries];
-    }
+    entries = sortEntriesInUnnamedResultOrder(entries);
     
     const markupList = [];
+    const feedRecords = [];
     const shareRecords = [];
     const shareVisualRecords = [];
     for (const entry of entries) {
         markupList.push(entry.markup);
+        feedRecords.push({
+            markup: entry.markup,
+            tierKey: entry.tierKey || '',
+            auraName: entry.auraName || '',
+            alphabeticalName: getAuraAlphabeticalSortName(entry.auraName),
+            priority: entry.priority
+        });
         if (entry.share) {
             shareRecords.push(entry.share);
         }
@@ -9622,7 +11902,56 @@ function buildResultEntries(registry, biome, breakthroughStatsMap, luckValue, { 
         }
     }
 
-    return { markupList, shareRecords, shareVisualRecords };
+    return { markupList, feedRecords, shareRecords, shareVisualRecords };
+}
+
+function buildLiveRollMarkup(
+    aura,
+    rollNumber,
+    biome,
+    breakthroughStats,
+    isNativeRoll,
+    luckValue,
+    { allowTrueChance = true, potionBatch = null } = {}
+) {
+    if (!aura) {
+        return '';
+    }
+
+    const specialClass = typeof resolveAuraStyleClass === 'function'
+        ? resolveAuraStyleClass(aura, biome)
+        : '';
+    const rarityClass = typeof resolveRarityClass === 'function' && !shouldSuppressRarityClassForSpecialStyle(specialClass)
+        ? resolveRarityClass(aura, biome)
+        : '';
+    const eventClass = getAuraEventIds(aura).length > 0 ? 'sigil-event-text' : '';
+    const classAttr = [rarityClass, specialClass, eventClass].filter(Boolean).join(' ');
+    const nativeChance = isNativeRoll && breakthroughStats
+        ? breakthroughStats.btChance
+        : aura.chance;
+    const displayName = isNativeRoll && breakthroughStats
+        ? aura.name.replace(/-\s*[\d,]+/, `- ${formatWithCommas(breakthroughStats.btChance)}`)
+        : aura.name;
+    const prefix = isNativeRoll ? '[Native] ' : '';
+    const formattedName = formatAuraNameMarkup(aura, displayName);
+    const trueChanceValue = !potionBatch
+        && allowTrueChance
+        && appState.selectiveTrueChanceDisplay
+        && !shouldHideSelectiveTrueChanceForAura(aura.name)
+        ? formatRealChanceValue(nativeChance, luckValue)
+        : null;
+    const trueChanceMarkup = potionBatch
+        ? ` ${formatMultiplePotionBatchResultMarkup(potionBatch)}`
+        : (trueChanceValue ? ` <span class="tinyClass">True Chance: 1 in ${trueChanceValue}</span>` : '');
+
+    const tierKey = resolveAuraTierKey(aura, biome) || '';
+    const alphabeticalName = getAuraAlphabeticalSortName(aura.name);
+    const auraPriority = determineResultPriority(aura, nativeChance);
+    const encodedAuraName = encodeURIComponent(aura.name);
+    const encodedAlphabeticalName = encodeURIComponent(alphabeticalName);
+    return `<span class="live-roll-feed__entry" data-roll-feed-entry data-aura-tier="${tierKey}" data-roll-number="${rollNumber}" data-aura-name="${encodedAuraName}" data-aura-sort-name="${encodedAlphabeticalName}" data-aura-priority="${auraPriority}">`
+        + `<span class="${classAttr}">${prefix}${formattedName}</span>${trueChanceMarkup}`
+        + '</span>';
 }
 
 function summarizeXpRewards(registry) {
@@ -9764,6 +12093,9 @@ function requestRollCancellation() {
         cancelRollButton.disabled = true;
         cancelRollButton.textContent = 'Cancelling...';
     }
+    if (activeSolLikeSimulationController) {
+        activeSolLikeSimulationController.cancel();
+    }
 }
 
 function setupRollCancellationControl() {
@@ -9778,11 +12110,6 @@ function setupRollCancellationControl() {
 }
 
 function shouldScheduleBackgroundWork() {
-    // Always prefer timer-based scheduling when background rolling is enabled.
-    // Using requestAnimationFrame will pause entirely once the tab becomes
-    // hidden, which prevents long simulations from continuing in the
-    // background. Timers continue to fire (even if throttled), so they keep
-    // work progressing when the page is inactive.
     return Boolean(appState && appState.backgroundRolling);
 }
 
@@ -9806,7 +12133,7 @@ function queueSimulationWork(callback) {
     setTimeout(callback, 16);
 }
 
-const SIMULATION_WORKER_PATH = 'scripts/simulation-worker.js?v=1.880.4';
+const SIMULATION_WORKER_PATH = 'scripts/simulation-worker.js?v=1.910.1';
 const WORKER_PROGRESS_UPDATE_INTERVAL_MS = 100;
 
 function terminateActiveSimulationWorker() {
@@ -9953,6 +12280,32 @@ function applySimulationWinCounts(winCounts) {
     }
 }
 
+function copySimulationCounts(targetCounts, sourceCounts) {
+    if (!ArrayBuffer.isView(targetCounts)) {
+        return;
+    }
+    targetCounts.fill(0);
+    const safeCounts = Array.isArray(sourceCounts) || ArrayBuffer.isView(sourceCounts)
+        ? sourceCounts
+        : [];
+    const limit = Math.min(targetCounts.length, safeCounts.length);
+    for (let index = 0; index < limit; index++) {
+        const value = safeCounts[index];
+        targetCounts[index] = Number.isFinite(value) ? value : 0;
+    }
+}
+
+function applySimulationBatchCounts(simulationBatches, winCountsByBatch, breakthroughCountsByBatch) {
+    if (!Array.isArray(simulationBatches)) {
+        return;
+    }
+    simulationBatches.forEach((batch, index) => {
+        copySimulationCounts(batch.winCounts, winCountsByBatch?.[index]);
+        copySimulationCounts(batch.breakthroughCounts, breakthroughCountsByBatch?.[index]);
+        syncBreakthroughCounts(batch.breakthroughStatsByAuraIndex, batch.breakthroughCounts);
+    });
+}
+
 function syncBreakthroughCounts(statsByAuraIndex, breakthroughCounts) {
     if (!Array.isArray(statsByAuraIndex)) {
         return;
@@ -9982,8 +12335,10 @@ function createSimulationWorker() {
     }
 }
 
-function prepareSimulationBatch(batch, selectionState, eventContext, breakthroughStatsMap, breakthroughStatsByAuraIndex) {
+function prepareSimulationBatch(batch, selectionState, eventContext) {
     const luckValue = Number.isFinite(batch?.luckValue) ? Math.max(0, batch.luckValue) : 0;
+    const breakthroughStatsMap = new Map();
+    const breakthroughStatsByAuraIndex = new Array(AURA_REGISTRY.length).fill(null);
     const evaluationContext = createAuraEvaluationContext(selectionState, {
         eventChecker: eventContext.eventChecker,
         enabledEventsSet: eventContext.enabledEventsSet,
@@ -10064,9 +12419,15 @@ function prepareSimulationBatch(batch, selectionState, eventContext, breakthroug
     ]);
 
     return {
+        id: batch.id || null,
+        potionIds: Array.isArray(batch.potionIds) ? batch.potionIds.slice() : null,
         count: Math.max(0, Math.floor(batch.count || 0)),
         luckValue,
         label: batch.label || 'Single Potion',
+        winCounts: new Float64Array(AURA_REGISTRY.length),
+        breakthroughCounts: new Float64Array(AURA_REGISTRY.length),
+        breakthroughStatsMap,
+        breakthroughStatsByAuraIndex,
         combinedSelection,
         prerollAuraIndices,
         prerollAuraRatios,
@@ -10075,7 +12436,6 @@ function prepareSimulationBatch(batch, selectionState, eventContext, breakthroug
     };
 }
 
-// Run the roll simulation while keeping the UI responsive
 function runRollSimulation(options = {}) {
     if (simulationActive) return;
 
@@ -10095,6 +12455,7 @@ function runRollSimulation(options = {}) {
 
     const {
         rollTriggerButton,
+        pauseRollButton,
         cancelRollButton,
         brandMark,
         rollCountInput,
@@ -10116,6 +12477,8 @@ function runRollSimulation(options = {}) {
         : null;
 
     const isMultiplePotionRun = isMultiplePotionMode();
+    const solsLikeRun = isSolsLikeSimulationMethod();
+    const selectedAutoPauseAfterCutscene = Boolean(rollingSettingsPreference.autoPauseAfterCutscene);
     const selectedPotionStackingEnabled = isMultiplePotionRun && isMultiplePotionStackingEnabled();
     const selectedPotionBatches = isMultiplePotionRun
         ? collectMultiplePotionBatches(getMultiplePotionLuckState(), {
@@ -10163,10 +12526,15 @@ function runRollSimulation(options = {}) {
         max: 1000000000000
     });
 
+    setRollFeedSortingAvailable(false, {
+        resetMode: true,
+        supportsRecent: solsLikeRun
+    });
     simulationActive = true;
     cancelRollRequested = false;
     rollTriggerButton.disabled = true;
     rollTriggerButton.style.opacity = '0.5';
+    syncSimulationMethodControls();
     if (cancelRollButton) {
         cancelRollButton.hidden = false;
         cancelRollButton.disabled = false;
@@ -10208,13 +12576,12 @@ function runRollSimulation(options = {}) {
         return eventIds.some(eventId => eventState.has(eventId));
     };
 
-    feedContainer.textContent = 'Rolling...';
+    resetRollFeedVisibilityObserver();
+    feedContainer.textContent = solsLikeRun ? '' : 'Rolling...';
     const startTime = performance.now();
 
     resetAuraRollState(AURA_REGISTRY);
 
-    const breakthroughStatsMap = new Map();
-    const breakthroughStatsByAuraIndex = new Array(AURA_REGISTRY.length).fill(null);
     const activeSingleBloodPreset = getBloodPresetConfig();
     const simulationBatchDefinitions = isMultiplePotionRun
         ? selectedPotionBatches
@@ -10258,9 +12625,7 @@ function runRollSimulation(options = {}) {
         {
             eventChecker: isEventAuraEnabled,
             enabledEventsSet: eventSnapshot || enabledEvents
-        },
-        breakthroughStatsMap,
-        breakthroughStatsByAuraIndex
+        }
     ));
     const cutscenesEnabled = appState.cinematic === true;
 
@@ -10286,20 +12651,32 @@ function runRollSimulation(options = {}) {
     const MAX_ROLLS_PER_CHUNK = Math.min(750000, Math.max(120000, Math.ceil(total / 72)));
     const CHECK_INTERVAL = Math.max(1024, Math.floor(MAX_ROLLS_PER_CHUNK / 28));
     let currentRoll = 0;
+    let cleanupLiveFeedFollowControl = null;
 
     const sampleEntropy = (typeof drawEntropy === 'function') ? drawEntropy : Math.random;
 
     const finalizeSimulation = (cancelled, completedRolls = total) => {
         terminateActiveSimulationWorker();
+        cleanupLiveFeedFollowControl?.();
+        cleanupLiveFeedFollowControl = null;
+        activeSolLikeSimulationController = null;
         if (progressPanel) {
             progressPanel.style.display = 'none';
             progressPanel.classList.remove('loading-indicator--active');
+            progressPanel.classList.remove('loading-indicator--paused');
             delete progressPanel.dataset.loadingIndicator;
         }
         rollTriggerButton.disabled = false;
         rollTriggerButton.style.opacity = '1';
         if (brandMark) {
             brandMark.classList.remove('banner__emblem--spinning');
+            brandMark.classList.remove('banner__emblem--simulation-paused');
+        }
+        if (pauseRollButton) {
+            pauseRollButton.classList.remove('roll-pause--paused');
+            pauseRollButton.setAttribute('aria-label', 'Pause rolling');
+            pauseRollButton.setAttribute('title', 'Pause rolling');
+            pauseRollButton.innerHTML = '<i class="fa-solid fa-pause" aria-hidden="true"></i>';
         }
         if (cancelRollButton) {
             cancelRollButton.hidden = true;
@@ -10308,9 +12685,17 @@ function runRollSimulation(options = {}) {
         }
         simulationActive = false;
         cancelRollRequested = false;
+        syncSimulationMethodControls();
 
         if (cancelled) {
-            feedContainer.textContent = 'Rolling canceled.';
+            if (solsLikeRun && completedRolls > 0) {
+                feedContainer.insertAdjacentHTML(
+                    'beforeend',
+                    `<span class="live-roll-feed__status">Rolling canceled after ${formatWithCommas(completedRolls)} rolls.</span>`
+                );
+            } else {
+                feedContainer.textContent = 'Rolling canceled.';
+            }
             clearHarvesterCurseLayer();
             clearFlushedTrollSignatureLayer();
             return;
@@ -10319,7 +12704,7 @@ function runRollSimulation(options = {}) {
         const endTime = performance.now();
         const executionTime = ((endTime - startTime) / 1000).toFixed(0);
 
-        if (cutscenesEnabled) {
+        if (cutscenesEnabled && !solsLikeRun) {
             const cutsceneQueue = [];
             for (const videoId of CUTSCENE_PRIORITY_SEQUENCE) {
                 const aura = CUTSCENE_AURA_LOOKUP.get(videoId);
@@ -10402,15 +12787,32 @@ function runRollSimulation(options = {}) {
             `Included Aura Tiers: ${auraFilterSummaryText}<br><br>`
         ];
 
-        const { markupList, shareRecords, shareVisualRecords } = buildResultEntries(
+        const resultCollections = simulationBatches.map(batch => buildResultEntries(
             AURA_REGISTRY,
             biome,
-            breakthroughStatsMap,
-            luckValue,
-            { allowTrueChance: !isMultiplePotionRun }
-        );
-        for (const markup of markupList) {
-            resultChunks.push(`${markup}<br>`);
+            batch.breakthroughStatsMap,
+            batch.luckValue,
+            {
+                allowTrueChance: !isMultiplePotionRun,
+                potionBatch: isMultiplePotionRun ? batch : null,
+                winCounts: batch.winCounts
+            }
+        ));
+        let feedRecords = resultCollections.flatMap(collection => collection.feedRecords);
+        if (isMultiplePotionRun) {
+            feedRecords = sortEntriesInUnnamedResultOrder(
+                feedRecords.map((record, originalOrder) => ({ ...record, originalOrder }))
+            );
+        }
+        const shareRecords = resultCollections.flatMap(collection => collection.shareRecords);
+        const shareVisualRecords = resultCollections.flatMap(collection => collection.shareVisualRecords);
+        if (!solsLikeRun) {
+            const unnamedResultEntries = feedRecords.map((record, index) => {
+                const encodedAuraName = encodeURIComponent(record.auraName);
+                const encodedAlphabeticalName = encodeURIComponent(record.alphabeticalName);
+                return `<span class="roll-feed__result-entry" data-roll-feed-entry data-aura-tier="${record.tierKey}" data-result-order="${index}" data-aura-name="${encodedAuraName}" data-aura-sort-name="${encodedAlphabeticalName}" data-aura-priority="${record.priority}">${record.markup}</span>`;
+            });
+            resultChunks.push(`<span class="roll-feed__results-list">${unnamedResultEntries.join('')}</span>`);
         }
 
         const { totalXp, lines: xpLines } = summarizeXpRewards(AURA_REGISTRY);
@@ -10419,7 +12821,20 @@ function runRollSimulation(options = {}) {
             resultChunks.push(`${line}<br>`);
         }
 
-        feedContainer.innerHTML = resultChunks.join('');
+        if (solsLikeRun) {
+            feedContainer.insertAdjacentHTML(
+                'beforeend',
+                `<span class="live-roll-feed__summary">${resultChunks.join('')}</span>`
+            );
+        } else {
+            feedContainer.innerHTML = resultChunks.join('');
+        }
+        observeRollFeedEntries(feedContainer);
+        applyRollFeedSearchFilter();
+        setRollFeedSortingAvailable(
+            Boolean(feedContainer.querySelector('[data-roll-feed-entry]')),
+            { supportsRecent: solsLikeRun }
+        );
 
         const harvesterAura = AURA_BY_NAME.get(HARVESTER_AURA_NAME) || null;
         const harvesterCount = harvesterAura ? readAuraWinCount(harvesterAura) : 0;
@@ -10478,7 +12893,6 @@ function runRollSimulation(options = {}) {
     };
 
     const startMainThreadSimulation = () => {
-        const localBreakthroughCounts = new Array(AURA_REGISTRY.length).fill(0);
         let currentBatchIndex = 0;
         let currentBatchRoll = 0;
 
@@ -10505,11 +12919,12 @@ function runRollSimulation(options = {}) {
             const auraIndex = combinedSelectionConfig.auraIndices[selectedIndex];
             if (Number.isInteger(auraIndex) && auraIndex >= 0 && auraIndex < AURA_REGISTRY.length) {
                 auraWinCounts[auraIndex] += 1;
+                activeBatch.winCounts[auraIndex] += 1;
             }
 
             const breakthroughIndex = combinedSelectionConfig.breakthroughIndices[selectedIndex];
-            if (Number.isInteger(breakthroughIndex) && breakthroughIndex >= 0 && breakthroughIndex < localBreakthroughCounts.length) {
-                localBreakthroughCounts[breakthroughIndex] += 1;
+            if (Number.isInteger(breakthroughIndex) && breakthroughIndex >= 0 && breakthroughIndex < activeBatch.breakthroughCounts.length) {
+                activeBatch.breakthroughCounts[breakthroughIndex] += 1;
             }
         }
 
@@ -10547,11 +12962,327 @@ function runRollSimulation(options = {}) {
                 return;
             }
 
-            syncBreakthroughCounts(breakthroughStatsByAuraIndex, localBreakthroughCounts);
+            simulationBatches.forEach(batch => {
+                syncBreakthroughCounts(batch.breakthroughStatsByAuraIndex, batch.breakthroughCounts);
+            });
             finalizeSimulation(false, currentRoll);
         }
 
         queueAnimationFrame(processRollSequence);
+    };
+
+    const startSolsLikeMainThreadSimulation = () => {
+        const getCurrentRollIntervalMs = () => (
+            1000 / normalizeSolsLikeRollsPerSecond(
+                rollingSettingsPreference.solsLikeRollsPerSecond
+            )
+        );
+        const maxFrameDuration = shouldScheduleBackgroundWork() ? 20 : 12;
+        let currentBatchIndex = 0;
+        let currentBatchRoll = 0;
+        let manualPaused = false;
+        let cutsceneActive = false;
+        let processing = false;
+        let workScheduled = false;
+        let skipRemainingCutscenes = false;
+        let liveRunStopped = false;
+        let liveFeedFollowing = true;
+        let nextRollDueAt = performance.now();
+        const { followRollFeedButton } = uiHandles;
+        const liveMarkupTemplate = document.createElement('template');
+
+        const getLiveFeedDistanceFromBottom = () => Math.max(
+            0,
+            feedContainer.scrollHeight - feedContainer.clientHeight - feedContainer.scrollTop
+        );
+
+        const syncLiveFeedFollowControl = () => {
+            if (!followRollFeedButton) {
+                return;
+            }
+            followRollFeedButton.hidden = !simulationActive || liveRunStopped || liveFeedFollowing;
+        };
+
+        const handleLiveFeedScroll = () => {
+            liveFeedFollowing = getLiveFeedDistanceFromBottom() <= LIVE_ROLL_FEED_BOTTOM_TOLERANCE_PX;
+            syncLiveFeedFollowControl();
+        };
+
+        feedContainer.addEventListener('scroll', handleLiveFeedScroll, { passive: true });
+        cleanupLiveFeedFollowControl = () => {
+            feedContainer.removeEventListener('scroll', handleLiveFeedScroll);
+            if (followRollFeedButton) {
+                followRollFeedButton.hidden = true;
+            }
+        };
+
+        const syncPausePresentation = () => {
+            const rollingPaused = manualPaused || cutsceneActive;
+            const rollConsoleStatus = document.getElementById('rollConsoleStatus');
+            if (brandMark) {
+                brandMark.classList.toggle('banner__emblem--simulation-paused', rollingPaused);
+            }
+            if (progressPanel) {
+                progressPanel.classList.toggle('loading-indicator--paused', rollingPaused);
+            }
+            if (rollConsoleStatus) {
+                const statusText = rollConsoleStatus.querySelector('.roll-console__armed-text');
+                rollConsoleStatus.dataset.state = cutsceneActive
+                    ? 'cutscene'
+                    : (manualPaused ? 'paused' : 'rolling');
+                if (statusText) {
+                    statusText.textContent = cutsceneActive
+                        ? 'Cutscene'
+                        : (manualPaused ? 'Paused' : 'Rolling');
+                }
+            }
+            if (pauseRollButton) {
+                pauseRollButton.disabled = !simulationActive || cutsceneActive;
+                pauseRollButton.classList.toggle('roll-pause--paused', manualPaused);
+                pauseRollButton.setAttribute('aria-label', manualPaused ? 'Resume rolling' : 'Pause rolling');
+                pauseRollButton.setAttribute('title', manualPaused ? 'Resume rolling' : 'Pause rolling');
+                pauseRollButton.innerHTML = manualPaused
+                    ? '<i class="fa-solid fa-play" aria-hidden="true"></i>'
+                    : '<i class="fa-solid fa-pause" aria-hidden="true"></i>';
+            }
+
+            syncRollingSettingsControls();
+        };
+
+        const performSingleLiveRoll = () => {
+            while (
+                currentBatchIndex < simulationBatches.length
+                && currentBatchRoll >= simulationBatches[currentBatchIndex].count
+            ) {
+                currentBatchIndex += 1;
+                currentBatchRoll = 0;
+            }
+
+            const activeBatch = simulationBatches[currentBatchIndex];
+            if (!activeBatch) {
+                return null;
+            }
+
+            const combinedSelectionConfig = activeBatch.combinedSelection;
+            const selectedIndex = selectWeightedIndex(combinedSelectionConfig.selection, sampleEntropy());
+            currentBatchRoll += 1;
+            if (selectedIndex === -1) {
+                return null;
+            }
+
+            const auraIndex = combinedSelectionConfig.auraIndices[selectedIndex];
+            if (!(Number.isInteger(auraIndex) && auraIndex >= 0 && auraIndex < AURA_REGISTRY.length)) {
+                return null;
+            }
+
+            auraWinCounts[auraIndex] += 1;
+            activeBatch.winCounts[auraIndex] += 1;
+            const breakthroughIndex = combinedSelectionConfig.breakthroughIndices[selectedIndex];
+            const isNativeRoll = Number.isInteger(breakthroughIndex)
+                && breakthroughIndex >= 0
+                && breakthroughIndex < activeBatch.breakthroughCounts.length;
+            if (isNativeRoll) {
+                activeBatch.breakthroughCounts[breakthroughIndex] += 1;
+            }
+
+            return {
+                aura: AURA_REGISTRY[auraIndex],
+                isNativeRoll: isNativeRoll && breakthroughIndex === auraIndex,
+                potionBatch: activeBatch
+            };
+        };
+
+        const appendLiveMarkup = markupList => {
+            if (!Array.isArray(markupList) || markupList.length === 0) {
+                return;
+            }
+            liveMarkupTemplate.innerHTML = markupList.join('');
+            applyRollFeedSearchFilter(liveMarkupTemplate.content);
+            observeRollFeedEntries(liveMarkupTemplate.content);
+            feedContainer.appendChild(liveMarkupTemplate.content);
+            if (liveFeedFollowing) {
+                feedContainer.scrollTop = feedContainer.scrollHeight;
+            }
+            syncLiveFeedFollowControl();
+        };
+
+        const scheduleNextLiveFrame = () => {
+            if (
+                workScheduled
+                || liveRunStopped
+                || processing
+                || manualPaused
+                || cutsceneActive
+                || cancelRollRequested
+                || currentRoll >= total
+            ) {
+                return;
+            }
+            workScheduled = true;
+            const runScheduledWork = () => {
+                workScheduled = false;
+                processLiveRollSequence();
+            };
+            const waitUntilNextRoll = nextRollDueAt - performance.now();
+            if (waitUntilNextRoll > 20 && typeof window.setTimeout === 'function') {
+                window.setTimeout(runScheduledWork, waitUntilNextRoll);
+            } else {
+                queueAnimationFrame(runScheduledWork);
+            }
+        };
+
+        const finishCancelledLiveRun = () => {
+            if (processing || cutsceneActive) {
+                return;
+            }
+            finalizeSimulation(true, currentRoll);
+        };
+
+        const processLiveRollSequence = async () => {
+            if (liveRunStopped || processing || manualPaused || cutsceneActive) {
+                return;
+            }
+            if (cancelRollRequested) {
+                finishCancelledLiveRun();
+                return;
+            }
+
+            const frameStartTime = performance.now();
+            if (frameStartTime < nextRollDueAt) {
+                scheduleNextLiveFrame();
+                return;
+            }
+
+            processing = true;
+            const frameDeadline = frameStartTime + maxFrameDuration;
+            const rollIntervalMs = getCurrentRollIntervalMs();
+            const rollsDue = Math.min(
+                1000,
+                Math.max(1, Math.floor((frameStartTime - nextRollDueAt) / rollIntervalMs) + 1)
+            );
+            const markupList = [];
+            let processedThisFrame = 0;
+            let pendingCutsceneId = null;
+
+            while (currentRoll < total && processedThisFrame < rollsDue) {
+                const rollResult = performSingleLiveRoll();
+                currentRoll += 1;
+                processedThisFrame += 1;
+
+                if (rollResult?.aura) {
+                    const aura = rollResult.aura;
+                    const breakthroughStats = rollResult.potionBatch.breakthroughStatsByAuraIndex[aura.index];
+                    if (!shouldHideAuraFromRollFeed(aura, biome)) {
+                        const markup = buildLiveRollMarkup(
+                            aura,
+                            currentRoll,
+                            biome,
+                            breakthroughStats,
+                            rollResult.isNativeRoll,
+                            rollResult.potionBatch.luckValue,
+                            {
+                                allowTrueChance: !isMultiplePotionRun,
+                                potionBatch: isMultiplePotionRun ? rollResult.potionBatch : null
+                            }
+                        );
+                        if (markup) {
+                            markupList.push(markup);
+                        }
+                    }
+
+                    if (
+                        cutscenesEnabled
+                        && !skipRemainingCutscenes
+                        && aura.cutscene
+                        && !shouldSkipAuraCutscene(aura, biome)
+                    ) {
+                        pendingCutsceneId = aura.cutscene;
+                        break;
+                    }
+                }
+
+                if ((processedThisFrame & 63) === 0 && performance.now() >= frameDeadline) {
+                    break;
+                }
+            }
+
+            nextRollDueAt += processedThisFrame * rollIntervalMs;
+            appendLiveMarkup(markupList);
+            if (updateProgress) {
+                updateProgress(total > 0 ? (currentRoll / total) * 100 : 100);
+            }
+
+            if (pendingCutsceneId && !cancelRollRequested) {
+                cutsceneActive = true;
+                syncPausePresentation();
+                await playAuraSequence([pendingCutsceneId], {
+                    skipRemaining: skipRemainingCutscenes,
+                    onSkipAll: () => {
+                        skipRemainingCutscenes = true;
+                    }
+                });
+                cutsceneActive = false;
+                nextRollDueAt = performance.now() + getCurrentRollIntervalMs();
+                if (
+                    selectedAutoPauseAfterCutscene
+                    && !cancelRollRequested
+                    && currentRoll < total
+                ) {
+                    manualPaused = true;
+                }
+                syncPausePresentation();
+            }
+
+            processing = false;
+            if (cancelRollRequested) {
+                finishCancelledLiveRun();
+                return;
+            }
+            if (currentRoll >= total) {
+                liveRunStopped = true;
+                simulationBatches.forEach(batch => {
+                    syncBreakthroughCounts(batch.breakthroughStatsByAuraIndex, batch.breakthroughCounts);
+                });
+                finalizeSimulation(false, currentRoll);
+                return;
+            }
+
+            scheduleNextLiveFrame();
+        };
+
+        activeSolLikeSimulationController = {
+            isPaused() {
+                return manualPaused && !cutsceneActive && !liveRunStopped;
+            },
+            followLatest() {
+                liveFeedFollowing = true;
+                feedContainer.scrollTop = feedContainer.scrollHeight;
+                syncLiveFeedFollowControl();
+            },
+            togglePause() {
+                if (!simulationActive || cutsceneActive || cancelRollRequested) {
+                    return;
+                }
+                manualPaused = !manualPaused;
+                syncPausePresentation();
+                if (!manualPaused) {
+                    nextRollDueAt = performance.now();
+                    scheduleNextLiveFrame();
+                }
+            },
+            cancel() {
+                liveRunStopped = true;
+                manualPaused = false;
+                syncPausePresentation();
+                if (!processing && !cutsceneActive) {
+                    finishCancelledLiveRun();
+                }
+            }
+        };
+
+        syncSimulationMethodControls();
+        syncPausePresentation();
+        scheduleNextLiveFrame();
     };
 
     const startWorkerSimulation = () => {
@@ -10581,7 +13312,11 @@ function runRollSimulation(options = {}) {
             if (message.type === 'complete') {
                 currentRoll = Number.isFinite(message.currentRoll) ? message.currentRoll : total;
                 applySimulationWinCounts(message.winCounts);
-                syncBreakthroughCounts(breakthroughStatsByAuraIndex, message.breakthroughCounts);
+                applySimulationBatchCounts(
+                    simulationBatches,
+                    message.batchWinCounts,
+                    message.batchBreakthroughCounts
+                );
                 if (updateProgress) {
                     queueAnimationFrame(() => updateProgress(100));
                 }
@@ -10641,7 +13376,9 @@ function runRollSimulation(options = {}) {
         return true;
     };
 
-    if (!startWorkerSimulation()) {
+    if (solsLikeRun) {
+        startSolsLikeMainThreadSimulation();
+    } else if (!startWorkerSimulation()) {
         startMainThreadSimulation();
     }
 }
@@ -11202,6 +13939,38 @@ const SHARE_IMAGE_RARITY_STYLES = Object.freeze({
     }
 });
 
+function createShareEventOutlineStyle({ fill = '#ffffff', outline, accent, depth }) {
+    return {
+        fill,
+        stroke: { color: accent, width: 3.4 },
+        shadowLayers: [
+            { color: outline, blur: 0, offsetX: 2, offsetY: 0 },
+            { color: outline, blur: 0, offsetX: -2, offsetY: 0 },
+            { color: outline, blur: 0, offsetX: 0, offsetY: 2 },
+            { color: outline, blur: 0, offsetX: 0, offsetY: -2 },
+            { color: accent, blur: 5 },
+            { color: depth, blur: 2, offsetX: 0, offsetY: 3 }
+        ],
+        replaceShadows: true
+    };
+}
+
+function createShareBiomeOutlineStyle({ fill, outline, accent, depth, glow = accent }) {
+    return {
+        fill,
+        stroke: { color: accent, width: 3.2 },
+        shadowLayers: [
+            { color: outline, blur: 0, offsetX: 2, offsetY: 0 },
+            { color: outline, blur: 0, offsetX: -2, offsetY: 0 },
+            { color: outline, blur: 0, offsetX: 0, offsetY: 2 },
+            { color: outline, blur: 0, offsetX: 0, offsetY: -2 },
+            { color: glow, blur: 5 },
+            { color: depth, blur: 2, offsetX: 0, offsetY: 3 }
+        ],
+        replaceShadows: true
+    };
+}
+
 const SHARE_IMAGE_OUTLINE_STYLES = Object.freeze({
     'sigil-outline-empty': {
         fill: '#080808',
@@ -11212,16 +13981,12 @@ const SHARE_IMAGE_OUTLINE_STYLES = Object.freeze({
             { color: 'rgba(255, 255, 255, 0.62)', blur: 0, offsetX: 0, offsetY: -1 }
         ]
     },
-    'sigil-outline-halloween': {
-        shadows: [
-            { color: 'rgba(255, 140, 0, 0.85)', blur: 4 },
-            { color: 'rgba(255, 90, 0, 0.7)', blur: 8 },
-            { color: 'rgba(60, 20, 0, 0.95)', blur: 0, offsetX: 1, offsetY: 1 },
-            { color: 'rgba(60, 20, 0, 0.95)', blur: 0, offsetX: -1, offsetY: 1 },
-            { color: 'rgba(60, 20, 0, 0.95)', blur: 0, offsetX: 1, offsetY: -1 },
-            { color: 'rgba(60, 20, 0, 0.95)', blur: 0, offsetX: -1, offsetY: -1 }
-        ]
-    },
+    'sigil-outline-halloween': createShareEventOutlineStyle({
+        fill: '#fff0dc',
+        outline: '#7a2d00',
+        accent: '#ff8b24',
+        depth: 'rgba(60, 20, 0, 0.84)'
+    }),
     'sigil-outline-xyz': {
         shadows: [
             { color: 'rgba(80, 170, 255, 0.85)', blur: 4 },
@@ -11232,78 +13997,54 @@ const SHARE_IMAGE_OUTLINE_STYLES = Object.freeze({
             { color: 'rgba(5, 40, 120, 0.9)', blur: 0, offsetX: -1, offsetY: -1 }
         ]
     },
-    'sigil-outline-valentine-2024': {
-        shadows: [
-            { color: 'rgba(255, 140, 200, 0.85)', blur: 4 },
-            { color: 'rgba(255, 95, 170, 0.75)', blur: 8 },
-            { color: 'rgba(115, 20, 80, 0.9)', blur: 0, offsetX: 1, offsetY: 1 },
-            { color: 'rgba(115, 20, 80, 0.9)', blur: 0, offsetX: -1, offsetY: 1 },
-            { color: 'rgba(115, 20, 80, 0.9)', blur: 0, offsetX: 1, offsetY: -1 },
-            { color: 'rgba(115, 20, 80, 0.9)', blur: 0, offsetX: -1, offsetY: -1 }
-        ]
-    },
-    'sigil-outline-valentine-2026': {
-        shadows: [
-            { color: 'rgba(255, 140, 200, 0.85)', blur: 4 },
-            { color: 'rgba(248, 127, 184, 0.75)', blur: 8 },
-            { color: 'rgba(140, 45, 105, 0.9)', blur: 0, offsetX: 1, offsetY: 1 },
-            { color: 'rgba(141, 49, 108, 0.9)', blur: 0, offsetX: -1, offsetY: 1 },
-            { color: 'rgba(146, 44, 109, 0.9)', blur: 0, offsetX: 1, offsetY: -1 },
-            { color: 'rgba(126, 13, 85, 0.9)', blur: 0, offsetX: -1, offsetY: -1 }
-        ]
-    },
-    'sigil-outline-april': {
-        shadows: [
-            { color: 'rgba(190, 190, 190, 0.85)', blur: 4 },
-            { color: 'rgba(140, 140, 140, 0.75)', blur: 8 },
-            { color: 'rgba(80, 80, 80, 0.9)', blur: 0, offsetX: 1, offsetY: 1 },
-            { color: 'rgba(80, 80, 80, 0.9)', blur: 0, offsetX: -1, offsetY: 1 },
-            { color: 'rgba(80, 80, 80, 0.9)', blur: 0, offsetX: 1, offsetY: -1 },
-            { color: 'rgba(80, 80, 80, 0.9)', blur: 0, offsetX: -1, offsetY: -1 }
-        ]
-    },
-    'sigil-outline-summer': {
-        shadows: [
-            { color: 'rgba(255, 255, 140, 0.9)', blur: 4 },
-            { color: 'rgba(234, 240, 70, 0.75)', blur: 8 },
-            { color: 'rgba(145, 155, 10, 0.85)', blur: 0, offsetX: 1, offsetY: 1 },
-            { color: 'rgba(155, 155, 10, 0.85)', blur: 0, offsetX: -1, offsetY: 1 },
-            { color: 'rgba(150, 155, 10, 0.85)', blur: 0, offsetX: 1, offsetY: -1 },
-            { color: 'rgba(155, 155, 10, 0.85)', blur: 0, offsetX: -1, offsetY: -1 }
-        ]
-    },
-    'sigil-outline-innovator': {
-        fill: '#f1e6ff',
-        shadows: [
-            { color: 'rgba(200, 140, 255, 0.9)', blur: 4 },
-            { color: 'rgba(150, 90, 235, 0.75)', blur: 8 },
-            { color: 'rgba(70, 20, 120, 0.9)', blur: 0, offsetX: 1, offsetY: 1 },
-            { color: 'rgba(70, 20, 120, 0.9)', blur: 0, offsetX: -1, offsetY: 1 },
-            { color: 'rgba(70, 20, 120, 0.9)', blur: 0, offsetX: 1, offsetY: -1 },
-            { color: 'rgba(70, 20, 120, 0.9)', blur: 0, offsetX: -1, offsetY: -1 }
-        ]
-    },
-    'sigil-outline-winter': {
-        shadows: [
-            { color: 'rgba(210, 240, 255, 0.9)', blur: 4 },
-            { color: 'rgba(140, 200, 255, 0.75)', blur: 8 },
-            { color: 'rgba(40, 90, 140, 0.85)', blur: 0, offsetX: 1, offsetY: 1 },
-            { color: 'rgba(40, 90, 140, 0.85)', blur: 0, offsetX: -1, offsetY: 1 },
-            { color: 'rgba(40, 90, 140, 0.85)', blur: 0, offsetX: 1, offsetY: -1 },
-            { color: 'rgba(40, 90, 140, 0.85)', blur: 0, offsetX: -1, offsetY: -1 }
-        ]
-    },
-    'sigil-outline-winter-2026': {
-        fill: '#eafcff',
-        shadows: [
-            { color: 'rgba(210, 246, 255, 0.95)', blur: 5 },
-            { color: 'rgba(125, 208, 255, 0.85)', blur: 12 },
-            { color: 'rgba(40, 120, 170, 0.92)', blur: 0, offsetX: 1, offsetY: 1 },
-            { color: 'rgba(40, 120, 170, 0.92)', blur: 0, offsetX: -1, offsetY: 1 },
-            { color: 'rgba(40, 120, 170, 0.92)', blur: 0, offsetX: 1, offsetY: -1 },
-            { color: 'rgba(40, 120, 170, 0.92)', blur: 0, offsetX: -1, offsetY: -1 }
-        ]
-    },
+    'sigil-outline-valentine-2024': createShareEventOutlineStyle({
+        fill: '#fff0f9',
+        outline: '#731450',
+        accent: '#ff6fbd',
+        depth: 'rgba(70, 8, 45, 0.84)'
+    }),
+    'sigil-outline-valentine-2026': createShareEventOutlineStyle({
+        fill: '#ffe9f7',
+        outline: '#85195f',
+        accent: '#ff58b4',
+        depth: 'rgba(90, 10, 58, 0.84)'
+    }),
+    'sigil-outline-easter-2026': createShareEventOutlineStyle({
+        fill: '#effff9',
+        outline: '#0b6a50',
+        accent: '#52e8b6',
+        depth: 'rgba(5, 75, 58, 0.82)'
+    }),
+    'sigil-outline-april': createShareEventOutlineStyle({
+        fill: '#ffffff',
+        outline: '#444444',
+        accent: '#b9c0ca',
+        depth: 'rgba(35, 35, 35, 0.84)'
+    }),
+    'sigil-outline-summer': createShareEventOutlineStyle({
+        fill: '#fffed4',
+        outline: '#777c00',
+        accent: '#f2ef3d',
+        depth: 'rgba(77, 82, 0, 0.84)'
+    }),
+    'sigil-outline-innovator': createShareEventOutlineStyle({
+        fill: '#f4e8ff',
+        outline: '#461478',
+        accent: '#bc73ff',
+        depth: 'rgba(45, 8, 80, 0.84)'
+    }),
+    'sigil-outline-winter': createShareEventOutlineStyle({
+        fill: '#edf9ff',
+        outline: '#285a8c',
+        accent: '#79cfff',
+        depth: 'rgba(15, 55, 95, 0.84)'
+    }),
+    'sigil-outline-winter-2026': createShareEventOutlineStyle({
+        fill: '#eaffff',
+        outline: '#196b98',
+        accent: '#46d9ff',
+        depth: 'rgba(15, 70, 105, 0.84)'
+    }),
     'sigil-outline-winter-garden': {
         font: '600 35px "Parisienne", "Sarpanch", cursive',
         letterSpacing: 0.25,
@@ -11378,16 +14119,12 @@ const SHARE_IMAGE_OUTLINE_STYLES = Object.freeze({
             { color: 'rgba(20, 110, 160, 0.95)', blur: 0, offsetX: -2, offsetY: -2 }
         ]
     },
-    'sigil-outline-blood': {
-        shadows: [
-            { color: 'rgba(200, 20, 20, 0.9)', blur: 4 },
-            { color: 'rgba(150, 0, 0, 0.75)', blur: 8 },
-            { color: 'rgba(60, 0, 0, 0.95)', blur: 0, offsetX: 1, offsetY: 1 },
-            { color: 'rgba(60, 0, 0, 0.95)', blur: 0, offsetX: -1, offsetY: 1 },
-            { color: 'rgba(60, 0, 0, 0.95)', blur: 0, offsetX: 1, offsetY: -1 },
-            { color: 'rgba(60, 0, 0, 0.95)', blur: 0, offsetX: -1, offsetY: -1 }
-        ]
-    },
+    'sigil-outline-blood': createShareEventOutlineStyle({
+        fill: '#ffe8e8',
+        outline: '#730707',
+        accent: '#ff4651',
+        depth: 'rgba(45, 0, 0, 0.86)'
+    }),
     'sigil-outline-illusionary': {
         fill: '#f7fbff',
         shadows: [
@@ -11401,84 +14138,103 @@ const SHARE_IMAGE_OUTLINE_STYLES = Object.freeze({
             { color: 'rgba(176, 216, 255, 0.82)', blur: 0, offsetX: -6, offsetY: -2 }
         ]
     },
-    'sigil-outline-glitch': {
-        fill: '#0f0018',
-        shadows: [
-            { color: 'rgba(255, 255, 255, 0.95)', blur: 6 },
-            { color: 'rgba(255, 255, 255, 0.85)', blur: 14 },
-            { color: 'rgba(255, 255, 255, 0.98)', blur: 0, offsetX: 2, offsetY: 0 },
-            { color: 'rgba(255, 255, 255, 0.98)', blur: 0, offsetX: -2, offsetY: 0 },
-            { color: 'rgba(255, 255, 255, 0.98)', blur: 0, offsetX: 0, offsetY: 2 },
-            { color: 'rgba(255, 255, 255, 0.98)', blur: 0, offsetX: 0, offsetY: -2 }
-        ]
-    },
-    'sigil-outline-dreamspace': {
-        fill: '#ffe9ff',
-        shadows: [
-            { color: 'rgba(255, 140, 220, 0.95)', blur: 10 },
-            { color: 'rgba(255, 90, 210, 0.85)', blur: 18 },
-            { color: 'rgba(255, 110, 220, 0.96)', blur: 0, offsetX: 3, offsetY: 0 },
-            { color: 'rgba(255, 110, 220, 0.96)', blur: 0, offsetX: -3, offsetY: 0 },
-            { color: 'rgba(255, 110, 220, 0.96)', blur: 0, offsetX: 0, offsetY: 3 },
-            { color: 'rgba(255, 110, 220, 0.96)', blur: 0, offsetX: 0, offsetY: -3 }
-        ]
-    },
-    'sigil-outline-cyberspace': {
-        fill: '#e1edff',
-        shadows: [
-            { color: 'rgba(60, 120, 200, 0.95)', blur: 10 },
-            { color: 'rgba(40, 90, 170, 0.85)', blur: 18 },
-            { color: 'rgba(35, 90, 175, 0.96)', blur: 0, offsetX: 3, offsetY: 0 },
-            { color: 'rgba(35, 90, 175, 0.96)', blur: 0, offsetX: -3, offsetY: 0 },
-            { color: 'rgba(35, 90, 175, 0.96)', blur: 0, offsetX: 0, offsetY: 3 },
-            { color: 'rgba(35, 70, 135, 0.96)', blur: 0, offsetX: 0, offsetY: -3 }
-        ]
-    },
-    'sigil-outline-day': {
-        fill: '#ffe9ff',
-        shadows: [
-            { color: 'rgba(95, 90, 58, 0.85)', blur: 10 },
-            { color: 'rgba(106, 109, 73, 0.7)', blur: 18 },
-            { color: 'rgba(162, 170, 76, 0.7)', blur: 0, offsetX: 3, offsetY: 0 },
-            { color: 'rgba(53, 54, 38, 0.7)', blur: 0, offsetX: -3, offsetY: 0 },
-            { color: 'rgba(94, 97, 57, 0.7)', blur: 0, offsetX: 0, offsetY: 3 },
-            { color: 'rgba(66, 68, 39, 0.7)', blur: 0, offsetX: 0, offsetY: -3 }
-        ]
-    },
-    'sigil-outline-night': {
-        fill: '#e1edff',
-        shadows: [
-            { color: 'rgba(71, 28, 100, 0.95)', blur: 10 },
-            { color: 'rgba(65, 26, 97, 0.85)', blur: 18 },
-            { color: 'rgba(67, 27, 90, 0.96)', blur: 0, offsetX: 3, offsetY: 0 },
-            { color: 'rgba(39, 2, 48, 0.96)', blur: 0, offsetX: -3, offsetY: 0 },
-            { color: 'rgba(31, 3, 77, 0.96)', blur: 0, offsetX: 0, offsetY: 3 },
-            { color: 'rgba(43, 5, 68, 0.96)', blur: 0, offsetX: 0, offsetY: -3 }
-        ]
-    },
-    'sigil-outline-heaven': {
-        fill: '#ffffffff',
-        shadows: [
-            { color: 'rgba(190, 180, 102, 0.95)', blur: 10 },
-            { color: 'rgba(216, 184, 22, 0.85)', blur: 18 },
-            { color: 'rgba(173, 144, 29, 0.96)', blur: 0, offsetX: 3, offsetY: 0 },
-            { color: 'rgba(172, 158, 65, 0.96)', blur: 0, offsetX: -3, offsetY: 0 },
-            { color: 'rgba(204, 177, 43, 0.96)', blur: 0, offsetX: 0, offsetY: 3 },
-            { color: 'rgba(167, 181, 38, 0.96)', blur: 0, offsetX: 0, offsetY: -3 }
-        ]
-    },
-    'sigil-outline-limbo': {
-        fill: '#000000',
-        shadows: [
-            { color: 'rgba(172, 172, 172, 0.95)', blur: 10 },
-            { color: 'rgba(175, 175, 175, 0.88)', blur: 18 },
-            { color: 'rgba(176, 176, 176, 0.8)', blur: 32 },
-            { color: 'rgba(136, 136, 136, 0.96)', blur: 0, offsetX: 1, offsetY: 0 },
-            { color: 'rgba(83, 83, 83, 0.96)', blur: 0, offsetX: -1, offsetY: 0 },
-            { color: 'rgba(64, 64, 64, 0.96)', blur: 0, offsetX: 0, offsetY: 1 },
-            { color: 'rgba(55, 55, 55, 0.94)', blur: 0, offsetX: -1, offsetY: -1 }
-        ]
-    },
+    'sigil-outline-glitch': createShareBiomeOutlineStyle({
+        fill: '#d7c2ff',
+        outline: '#6e2bb6',
+        accent: '#190d25',
+        glow: 'rgba(151, 75, 255, 0.92)',
+        depth: 'rgba(0, 0, 0, 0.92)'
+    }),
+    'sigil-outline-dreamspace': createShareBiomeOutlineStyle({
+        fill: '#fff0fc',
+        outline: '#710650',
+        accent: '#ff5ecb',
+        depth: 'rgba(85, 4, 62, 0.86)'
+    }),
+    'sigil-outline-cyberspace': createShareBiomeOutlineStyle({
+        fill: '#eaf5ff',
+        outline: '#073d7a',
+        accent: '#58a8ff',
+        depth: 'rgba(5, 27, 68, 0.86)'
+    }),
+    'sigil-outline-singularity': createShareBiomeOutlineStyle({
+        fill: '#fff0df',
+        outline: '#6d1906',
+        accent: '#ff7b32',
+        depth: 'rgba(54, 9, 13, 0.88)'
+    }),
+    'sigil-outline-windy': createShareBiomeOutlineStyle({
+        fill: '#e8f9ff',
+        outline: '#075c96',
+        accent: '#43b9ff',
+        depth: 'rgba(0, 48, 86, 0.84)'
+    }),
+    'sigil-outline-snowy': createShareBiomeOutlineStyle({
+        fill: '#ffffff',
+        outline: '#3a8b99',
+        accent: '#aaf7ff',
+        depth: 'rgba(35, 91, 103, 0.8)'
+    }),
+    'sigil-outline-rainy': createShareBiomeOutlineStyle({
+        fill: '#eaf2ff',
+        outline: '#153a78',
+        accent: '#4d8dff',
+        depth: 'rgba(8, 37, 85, 0.84)'
+    }),
+    'sigil-outline-sandstorm': createShareBiomeOutlineStyle({
+        fill: '#fff0bd',
+        outline: '#64370e',
+        accent: '#e9a43a',
+        depth: 'rgba(73, 36, 4, 0.84)'
+    }),
+    'sigil-outline-starfall': createShareBiomeOutlineStyle({
+        fill: '#f6ecff',
+        outline: '#3a1679',
+        accent: '#a875ff',
+        depth: 'rgba(28, 5, 70, 0.86)'
+    }),
+    'sigil-outline-hell': createShareBiomeOutlineStyle({
+        fill: '#ffe3d7',
+        outline: '#6f0c02',
+        accent: '#ff4d2e',
+        depth: 'rgba(79, 5, 0, 0.88)'
+    }),
+    'sigil-outline-corruption': createShareBiomeOutlineStyle({
+        fill: '#f7e8ff',
+        outline: '#51006e',
+        accent: '#ce4dff',
+        depth: 'rgba(55, 0, 77, 0.88)'
+    }),
+    'sigil-outline-null': createShareBiomeOutlineStyle({
+        fill: '#f2f5f5',
+        outline: '#1b252a',
+        accent: '#93a6ae',
+        depth: 'rgba(7, 12, 15, 0.9)'
+    }),
+    'sigil-outline-day': createShareBiomeOutlineStyle({
+        fill: '#fff8bf',
+        outline: '#6f5c00',
+        accent: '#ffe35a',
+        depth: 'rgba(55, 43, 0, 0.82)'
+    }),
+    'sigil-outline-night': createShareBiomeOutlineStyle({
+        fill: '#f1eaff',
+        outline: '#32105e',
+        accent: '#a86cff',
+        depth: 'rgba(18, 0, 42, 0.86)'
+    }),
+    'sigil-outline-heaven': createShareBiomeOutlineStyle({
+        fill: '#fff8ce',
+        outline: '#725600',
+        accent: '#ffd65a',
+        depth: 'rgba(78, 50, 0, 0.82)'
+    }),
+    'sigil-outline-limbo': createShareBiomeOutlineStyle({
+        fill: '#070707',
+        outline: '#555555',
+        accent: '#f0f0f0',
+        depth: 'rgba(0, 0, 0, 0.92)'
+    }),
     'sigil-outline-leviathan': {
         fill: '#000000',
         shadows: [
@@ -11519,6 +14275,7 @@ function cloneShareStyle(style) {
         ...style,
         shadowLayers: style.shadowLayers ? style.shadowLayers.map(cloneShareShadowLayer) : [],
         baseShadow: style.baseShadow ? { ...style.baseShadow } : null,
+        stroke: style.stroke ? { ...style.stroke } : null,
         decorations: style.decorations ? { ...style.decorations } : null
     };
 }
@@ -11542,6 +14299,9 @@ function applyRarityStyle(style, className) {
     if (config.fill) {
         style.fill = config.fill;
     }
+    if (config.stroke) {
+        style.stroke = { ...config.stroke };
+    }
     if (Array.isArray(config.shadows)) {
         style.shadowLayers.push(...config.shadows.map(cloneShareShadowLayer));
     }
@@ -11564,6 +14324,9 @@ function applyOutlineStyle(style, className) {
     }
     if (config.fill) {
         style.fill = config.fill;
+    }
+    if (config.stroke) {
+        style.stroke = { ...config.stroke };
     }
     if (Array.isArray(config.shadows)) {
         style.shadowLayers.push(...config.shadows.map(cloneShareShadowLayer));
@@ -11764,8 +14527,9 @@ function applyEffectStyle(styleSet, effectClass) {
 function applyEventStyle(styleSet) {
     if (!styleSet || !styleSet.name) return;
     styleSet.name.fill = '#ffffff';
+    styleSet.name.stroke = { color: 'rgba(0, 0, 0, 0.82)', width: 2.2 };
     styleSet.name.shadowLayers = [
-        { color: 'rgba(0, 0, 0, 0.9)', blur: 2, offsetX: 1, offsetY: 1 }
+        { color: 'rgba(0, 0, 0, 0.58)', blur: 1, offsetX: 0, offsetY: 2 }
     ];
 }
 
@@ -11903,6 +14667,23 @@ function drawTextWithSpacing(context, text, x, y, letterSpacing) {
     }
 }
 
+function strokeTextWithSpacing(context, text, x, y, letterSpacing) {
+    if (!text) return;
+    if (!letterSpacing) {
+        context.strokeText(text, x, y);
+        return;
+    }
+    let cursor = x;
+    for (let i = 0; i < text.length; i++) {
+        const char = text[i];
+        context.strokeText(char, cursor, y);
+        cursor += context.measureText(char).width;
+        if (i < text.length - 1) {
+            cursor += letterSpacing;
+        }
+    }
+}
+
 function resolveFillStyle(style, context, x, y, width, height) {
     if (typeof style.fill === 'function') {
         return style.fill(context, x, y, width, height);
@@ -11927,6 +14708,18 @@ function renderStyledSegment(context, text, x, y, style) {
             context.fillStyle = layer.fill || fill;
             drawTextWithSpacing(context, text, x, y, letterSpacing);
         }
+    }
+
+    if (style.stroke && typeof style.stroke.color === 'string' && Number.isFinite(style.stroke.width)) {
+        context.shadowColor = 'rgba(0, 0, 0, 0)';
+        context.shadowBlur = 0;
+        context.shadowOffsetX = 0;
+        context.shadowOffsetY = 0;
+        context.strokeStyle = style.stroke.color;
+        context.lineWidth = style.stroke.width;
+        context.lineJoin = 'round';
+        context.miterLimit = 2;
+        strokeTextWithSpacing(context, text, x, y, letterSpacing);
     }
 
     if (style.baseShadow) {

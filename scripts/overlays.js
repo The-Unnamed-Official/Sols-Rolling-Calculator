@@ -4,6 +4,53 @@
     const LARGE_ROLL_WARNING_THRESHOLD = 999999999;
     const OVERLAY_TRANSITION_FALLBACK_MS = 320;
 
+    function initializePopupConsoleChrome(root = document) {
+        if (!root || typeof root.querySelectorAll !== 'function') {
+            return;
+        }
+
+        const popupConfigs = {
+            settings: { code: 'CONFIG', label: 'Settings interface', icon: 'fa-sliders' },
+            filter: { code: 'FILTER', label: 'Result controls', icon: 'fa-filter' },
+            archive: { code: 'ARCHIVE', label: 'Update records', icon: 'fa-clock-rotate-left' },
+            notice: { code: 'NOTICE', label: 'System prompt', icon: 'fa-triangle-exclamation' }
+        };
+
+        root.querySelectorAll('.surface--modal').forEach((modal, index) => {
+            if (modal.querySelector(':scope > .popup-console__rail')) {
+                return;
+            }
+
+            const overlayId = modal.closest('.modal-overlay, .cutscene-warning-overlay')?.id || '';
+            let kind = 'notice';
+            if (modal.classList.contains('changelog-modal')) {
+                kind = 'archive';
+            } else if (/audioSettings|qualityPreferences|rollingSettings/i.test(overlayId)) {
+                kind = 'settings';
+            } else if (/Filter/i.test(overlayId)) {
+                kind = 'filter';
+            }
+
+            const config = popupConfigs[kind];
+            const rail = document.createElement('div');
+            const railCode = document.createElement('span');
+            const railState = document.createElement('span');
+            const railIcon = document.createElement('i');
+
+            modal.dataset.popupKind = kind;
+            rail.className = 'popup-console__rail';
+            rail.setAttribute('aria-hidden', 'true');
+            railCode.className = 'popup-console__rail-code';
+            railCode.textContent = `${config.code} // ${String(index + 1).padStart(2, '0')}`;
+            railState.className = 'popup-console__rail-state';
+            railIcon.className = `fa-solid ${config.icon}`;
+            railState.appendChild(railIcon);
+            railState.append(` ${config.label}`);
+            rail.append(railCode, railState);
+            modal.prepend(rail);
+        });
+    }
+
     function revealOverlay(overlay) {
         if (!overlay) {
             return;
@@ -168,4 +215,13 @@
     global.revealOverlay = revealOverlay;
     global.concealOverlay = concealOverlay;
     global.largeRollWarningManager = largeRollWarningManager;
+    global.initializePopupConsoleChrome = initializePopupConsoleChrome;
+
+    if (typeof document !== 'undefined') {
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', () => initializePopupConsoleChrome(), { once: true });
+        } else {
+            initializePopupConsoleChrome();
+        }
+    }
 })(typeof window !== 'undefined' ? window : globalThis);
