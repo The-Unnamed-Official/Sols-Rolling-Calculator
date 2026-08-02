@@ -1376,6 +1376,10 @@
     --resource-rgb: 65 226 255;
 }
 
+.resource-link--button-clicker {
+    --resource-rgb: 210 255 83;
+}
+
 .resource-link--community {
     --resource-rgb: 150 255 164;
 }
@@ -1496,6 +1500,69 @@
     width: 46px;
     height: 46px;
     filter: drop-shadow(0 0 7px rgb(var(--resource-rgb) / 0.55));
+}
+
+.resource-link--button-clicker .brand-glyph {
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: 36px;
+    height: 36px;
+    border: 1px solid rgb(74, 81, 89);
+    border-radius: 50%;
+    background: rgba(7, 12, 17, 0.78);
+    box-shadow:
+        inset 0 -3px 0 rgba(0, 0, 0, 0.48),
+        0 3px 0 rgba(0, 0, 0, 0.35),
+        0 0 14px rgb(var(--resource-rgb) / 0.08);
+    transform-origin: 50% 78%;
+}
+
+.resource-link--button-clicker .brand-glyph::before,
+.resource-link--button-clicker .brand-glyph::after {
+    content: '';
+    position: absolute;
+    border-radius: 50%;
+}
+
+.resource-link--button-clicker .brand-glyph::before {
+    width: 26px;
+    height: 26px;
+    border: 1px solid rgb(38, 43, 48);
+}
+
+.resource-link--button-clicker .brand-glyph::after {
+    width: 10px;
+    height: 10px;
+    background: rgb(var(--resource-rgb));
+    box-shadow: 0 0 16px rgb(var(--resource-rgb) / 0.8);
+}
+
+.resource-link--button-clicker .brand-glyph i {
+    position: absolute;
+    top: 2px;
+    z-index: 1;
+    width: 2px;
+    height: 6px;
+    background: rgb(var(--resource-rgb));
+}
+
+.resource-link__click-value {
+    position: absolute;
+    top: 6px;
+    left: 50%;
+    z-index: 2;
+    color: rgb(var(--resource-rgb));
+    font-family: "Press Start 2P", monospace;
+    font-size: 8px;
+    font-weight: 700;
+    line-height: 1;
+    pointer-events: none;
+    opacity: 0;
+    text-shadow:
+        0 1px 0 rgba(0, 0, 0, 0.9),
+        0 0 8px rgb(var(--resource-rgb) / 0.82);
+    transform: translate(-50%, 5px) scale(0.72);
 }
 
 .support-float {
@@ -2316,6 +2383,16 @@
     animation: hurt-burst 0.7s ease;
 }
 
+.resource-link--button-clicker:hover .brand-glyph,
+.resource-link--button-clicker:focus-visible .brand-glyph {
+    animation: resource-button-clicker-press 0.9s ease-in-out infinite;
+}
+
+.resource-link--button-clicker:hover .resource-link__click-value,
+.resource-link--button-clicker:focus-visible .resource-link__click-value {
+    animation: resource-button-clicker-value 0.9s ease-out infinite;
+}
+
 .resource-link--nolifers:hover .resource-link__image--nolifers,
 .resource-link--nolifers:focus-visible .resource-link__image--nolifers {
     animation: resource-nolifers-spin 1.25s linear infinite;
@@ -2404,7 +2481,11 @@ body.quality-no-ui-animations .resource-link--repository,
 body.quality-no-ui-animations .resource-link--repository::after,
 body.quality-no-ui-animations .resource-link--repository .resource-link__label,
 body.reduce-motion .resource-link__image,
-body.quality-no-ui-animations .resource-link__image {
+body.quality-no-ui-animations .resource-link__image,
+body.reduce-motion .resource-link--button-clicker .brand-glyph,
+body.reduce-motion .resource-link__click-value,
+body.quality-no-ui-animations .resource-link--button-clicker .brand-glyph,
+body.quality-no-ui-animations .resource-link__click-value {
     animation: none !important;
 }
 
@@ -2428,6 +2509,41 @@ body.quality-no-ui-animations .resource-link__image {
 @keyframes resource-nolifers-spin {
     from { transform: rotate(0deg); }
     to { transform: rotate(360deg); }
+}
+
+@keyframes resource-button-clicker-press {
+    0%, 16%, 100% {
+        transform: translateY(0) scale(1);
+        box-shadow:
+            inset 0 -3px 0 rgba(0, 0, 0, 0.48),
+            0 3px 0 rgba(0, 0, 0, 0.35),
+            0 0 14px rgb(var(--resource-rgb) / 0.08);
+    }
+    28%, 42% {
+        transform: translateY(3px) scale(0.92);
+        box-shadow:
+            inset 0 -1px 0 rgba(0, 0, 0, 0.42),
+            0 0 0 rgba(0, 0, 0, 0),
+            0 0 22px rgb(var(--resource-rgb) / 0.32);
+    }
+    58% {
+        transform: translateY(-1px) scale(1.03);
+    }
+}
+
+@keyframes resource-button-clicker-value {
+    0%, 28% {
+        opacity: 0;
+        transform: translate(-50%, 5px) scale(0.72);
+    }
+    38% {
+        opacity: 1;
+        transform: translate(-50%, 0) scale(1);
+    }
+    82%, 100% {
+        opacity: 0;
+        transform: translate(-50%, -25px) scale(1.08);
+    }
 }
 
 @keyframes resource-matrix-scan {
