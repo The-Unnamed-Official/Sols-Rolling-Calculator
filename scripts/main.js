@@ -109,55 +109,17 @@ const rollingSettingsPreference = {
     autoPauseAfterCutscene: false
 };
 
-const GITHUB_PAGES_DEPLOYMENTS_API_URL = 'https://api.github.com/repos/The-Unnamed-Official/Sols-Rolling-Calculator/deployments?ref=published&environment=github-pages&per_page=30';
-const GITHUB_PAGES_DEPLOYMENT_API_BASE_URL = 'https://api.github.com/repos/The-Unnamed-Official/Sols-Rolling-Calculator/deployments';
-
-async function requestGitHubDeploymentData(url) {
-    const response = await fetch(url, {
-        cache: 'no-store',
-        headers: {
-            Accept: 'application/vnd.github+json'
-        }
-    });
-
-    if (!response.ok) {
-        throw new Error(`GitHub deployment request failed with status ${response.status}.`);
-    }
-
-    return response.json();
-}
-
-async function fetchLatestSuccessfulPublishedDeploymentTime() {
-    const deployments = await requestGitHubDeploymentData(GITHUB_PAGES_DEPLOYMENTS_API_URL);
-    if (!Array.isArray(deployments)) {
-        throw new Error('GitHub returned an unexpected deployments response.');
-    }
-
-    for (const deployment of deployments) {
-        if (deployment?.ref !== 'published'
-            || deployment?.environment !== 'github-pages'
-            || !Number.isInteger(deployment?.id)) {
-            continue;
-        }
-
-        const statusesUrl = `${GITHUB_PAGES_DEPLOYMENT_API_BASE_URL}/${deployment.id}/statuses?per_page=30`;
-        const statuses = await requestGitHubDeploymentData(statusesUrl);
-        if (!Array.isArray(statuses)) {
-            continue;
-        }
-
-        const successfulStatus = statuses.find(status => status?.state === 'success');
-        if (!successfulStatus?.created_at) {
-            continue;
-        }
-
-        const deploymentTime = new Date(successfulStatus.created_at);
-        if (!Number.isNaN(deploymentTime.getTime())) {
-            return deploymentTime;
+async function fetchLatestPublishedDeploymentTime() {
+    if (window.appBuildMetadataPromise) {
+        const buildMetadata = await window.appBuildMetadataPromise;
+        const publishedAt = buildMetadata?.publishedAt;
+        if (publishedAt instanceof Date && !Number.isNaN(publishedAt.getTime())) {
+            return publishedAt;
         }
     }
 
-    return null;
+    const documentModifiedAt = new Date(document.lastModified);
+    return Number.isNaN(documentModifiedAt.getTime()) ? null : documentModifiedAt;
 }
 
 async function initializeLatestDeploymentTime() {
@@ -166,9 +128,9 @@ async function initializeLatestDeploymentTime() {
     }
 
     try {
-        const deploymentTime = await fetchLatestSuccessfulPublishedDeploymentTime();
+        const deploymentTime = await fetchLatestPublishedDeploymentTime();
         if (!deploymentTime) {
-            throw new Error('No successful published deployment was found.');
+            throw new Error('No published build time was found.');
         }
 
         const formatter = new Intl.DateTimeFormat(undefined, {
@@ -184,13 +146,13 @@ async function initializeLatestDeploymentTime() {
         latestDeploymentTimeElement.dateTime = deploymentTime.toISOString();
         latestDeploymentTimeElement.textContent = formatter.format(deploymentTime);
         latestDeploymentTimeElement.title = localTimeZone
-            ? `Latest successful published deployment, shown in your local timezone (${localTimeZone})`
-            : 'Latest successful published deployment, shown in your local timezone';
+            ? `Latest published build, shown in your local timezone (${localTimeZone})`
+            : 'Latest published build, shown in your local timezone';
     } catch (error) {
         latestDeploymentTimeElement.textContent = 'Time unavailable';
         latestDeploymentTimeElement.removeAttribute('datetime');
-        latestDeploymentTimeElement.title = 'Unable to retrieve the latest successful published deployment from GitHub.';
-        console.warn('Unable to load the latest published deployment time.', error);
+        latestDeploymentTimeElement.title = 'Unable to retrieve the latest published build time.';
+        console.warn('Unable to load the latest published build time.', error);
     }
 }
 
@@ -12220,7 +12182,9 @@ function queueSimulationWork(callback) {
     setTimeout(callback, 16);
 }
 
-const SIMULATION_WORKER_PATH = 'scripts/simulation-worker.js?v=1.910.1';
+const SIMULATION_WORKER_PATH = typeof window.getVersionedAppAssetUrl === 'function'
+    ? window.getVersionedAppAssetUrl('scripts/simulation-worker.js')
+    : 'scripts/simulation-worker.js';
 const WORKER_PROGRESS_UPDATE_INTERVAL_MS = 100;
 
 function terminateActiveSimulationWorker() {
