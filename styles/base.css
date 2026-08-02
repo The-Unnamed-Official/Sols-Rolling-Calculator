@@ -1096,23 +1096,23 @@ body.theme-event-halloween {
 }
 
 body.theme-event-summer {
-    --bg-base: #151104;
-    --bg-overlay: rgba(18, 15, 4, 0.52);
-    --surface-bg: rgba(31, 26, 8, 0.92);
-    --surface-gradient: linear-gradient(155deg, rgba(55, 45, 14, 0.95), rgba(24, 18, 4, 0.98));
-    --surface-overlay-gradient: linear-gradient(160deg, rgba(42, 35, 10, 0.94), rgba(14, 10, 2, 0.98));
-    --surface-overlay-highlight: rgba(255, 229, 143, 0.1);
-    --surface-border: rgba(255, 226, 126, 0.52);
-    --surface-glow: rgba(230, 188, 54, 0.32);
-    --accent: #ffe58f;
-    --accent-strong: #fff3be;
-    --accent-soft: rgba(255, 231, 130, 0.16);
-    --accent-muted: rgba(201, 165, 56, 0.3);
-    --accent-rgb: 255 226 126;
-    --accent-rgb-feed: 155 126 26;
-    --event-secondary-rgb: 91 211 235;
-    --event-tertiary-rgb: 104 239 178;
-    --scrollbar-track-outline: rgba(255, 226, 126, 0.17);
+    --bg-base: #031923;
+    --bg-overlay: rgba(2, 20, 28, 0.48);
+    --surface-bg: rgba(5, 30, 40, 0.91);
+    --surface-gradient: linear-gradient(155deg, rgba(10, 57, 65, 0.96), rgba(3, 20, 32, 0.98));
+    --surface-overlay-gradient: linear-gradient(160deg, rgba(7, 44, 54, 0.95), rgba(2, 15, 26, 0.98));
+    --surface-overlay-highlight: rgba(105, 231, 236, 0.12);
+    --surface-border: rgba(92, 222, 229, 0.52);
+    --surface-glow: rgba(40, 189, 205, 0.34);
+    --accent: #ffd66b;
+    --accent-strong: #fff0a6;
+    --accent-soft: rgba(255, 214, 107, 0.16);
+    --accent-muted: rgba(235, 177, 45, 0.3);
+    --accent-rgb: 255 214 107;
+    --accent-rgb-feed: 159 117 24;
+    --event-secondary-rgb: 82 222 225;
+    --event-tertiary-rgb: 255 133 156;
+    --scrollbar-track-outline: rgba(92, 222, 229, 0.2);
 }
 
 body.theme-event-easter {
