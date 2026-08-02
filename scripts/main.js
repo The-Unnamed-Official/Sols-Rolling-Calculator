@@ -3447,7 +3447,7 @@ const biomeAssets = {
     pumpkinMoon: { image: 'files/images/backgrounds/pumpkinMoonBiomeImage.jpg', music: 'files/music/pumpkinMoonBiomeMusic.mp3' },
     bloodRain: { image: 'files/images/backgrounds/bloodRainBiomeImage.jpg', music: 'files/music/bloodRainBiomeMusic.mp3' },
     limbo: { image: 'files/images/backgrounds/limboImage.jpg', music: 'files/music/limboMusic.mp3' },
-    blazing: { image: 'files/images/backgrounds/blazingBiomeImage.jpg', music: 'files/music/blazingBiomeMusic.mp3' }
+    blazing: { image: 'files/images/backgrounds/blazingBiomeImage.png', music: 'files/music/blazingBiomeMusic.mp3' }
 };
 
 function resolveBiomeAssetKey(biome, selectionState = null) {
