@@ -3,6 +3,7 @@ let luckField = document.getElementById('luck-total');
 const pageBody = document.body;
 const reduceMotionToggleButton = document.getElementById('reduceMotionToggle');
 const versionInfoButton = document.getElementById('versionInfoButton');
+const latestDeploymentTimeElement = document.getElementById('latestDeploymentTime');
 const clickSoundEffectElement = document.getElementById('clickSoundFx');
 const qbearMeowSoundEffectElement = document.getElementById('qbearMeowSoundFx');
 const fortePixelatedSecretState = {
@@ -107,6 +108,91 @@ const rollingSettingsPreference = {
     solsLikeRollsPerSecond: SOLS_LIKE_ROLLS_PER_SECOND_DEFAULT,
     autoPauseAfterCutscene: false
 };
+
+const GITHUB_PAGES_DEPLOYMENTS_API_URL = 'https://api.github.com/repos/The-Unnamed-Official/Sols-Rolling-Calculator/deployments?ref=published&environment=github-pages&per_page=30';
+const GITHUB_PAGES_DEPLOYMENT_API_BASE_URL = 'https://api.github.com/repos/The-Unnamed-Official/Sols-Rolling-Calculator/deployments';
+
+async function requestGitHubDeploymentData(url) {
+    const response = await fetch(url, {
+        cache: 'no-store',
+        headers: {
+            Accept: 'application/vnd.github+json'
+        }
+    });
+
+    if (!response.ok) {
+        throw new Error(`GitHub deployment request failed with status ${response.status}.`);
+    }
+
+    return response.json();
+}
+
+async function fetchLatestSuccessfulPublishedDeploymentTime() {
+    const deployments = await requestGitHubDeploymentData(GITHUB_PAGES_DEPLOYMENTS_API_URL);
+    if (!Array.isArray(deployments)) {
+        throw new Error('GitHub returned an unexpected deployments response.');
+    }
+
+    for (const deployment of deployments) {
+        if (deployment?.ref !== 'published'
+            || deployment?.environment !== 'github-pages'
+            || !Number.isInteger(deployment?.id)) {
+            continue;
+        }
+
+        const statusesUrl = `${GITHUB_PAGES_DEPLOYMENT_API_BASE_URL}/${deployment.id}/statuses?per_page=30`;
+        const statuses = await requestGitHubDeploymentData(statusesUrl);
+        if (!Array.isArray(statuses)) {
+            continue;
+        }
+
+        const successfulStatus = statuses.find(status => status?.state === 'success');
+        if (!successfulStatus?.created_at) {
+            continue;
+        }
+
+        const deploymentTime = new Date(successfulStatus.created_at);
+        if (!Number.isNaN(deploymentTime.getTime())) {
+            return deploymentTime;
+        }
+    }
+
+    return null;
+}
+
+async function initializeLatestDeploymentTime() {
+    if (!latestDeploymentTimeElement) {
+        return;
+    }
+
+    try {
+        const deploymentTime = await fetchLatestSuccessfulPublishedDeploymentTime();
+        if (!deploymentTime) {
+            throw new Error('No successful published deployment was found.');
+        }
+
+        const formatter = new Intl.DateTimeFormat(undefined, {
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit',
+            timeZoneName: 'short'
+        });
+        const localTimeZone = formatter.resolvedOptions().timeZone;
+
+        latestDeploymentTimeElement.dateTime = deploymentTime.toISOString();
+        latestDeploymentTimeElement.textContent = formatter.format(deploymentTime);
+        latestDeploymentTimeElement.title = localTimeZone
+            ? `Latest successful published deployment, shown in your local timezone (${localTimeZone})`
+            : 'Latest successful published deployment, shown in your local timezone';
+    } catch (error) {
+        latestDeploymentTimeElement.textContent = 'Time unavailable';
+        latestDeploymentTimeElement.removeAttribute('datetime');
+        latestDeploymentTimeElement.title = 'Unable to retrieve the latest successful published deployment from GitHub.';
+        console.warn('Unable to load the latest published deployment time.', error);
+    }
+}
 
 const QUALITY_PREFERENCE_KEYS = Object.freeze([
     'removeParticles',
@@ -9470,6 +9556,7 @@ function initializeCreditsDirectory() {
 }
 
 document.addEventListener('DOMContentLoaded', initializeEventSelector);
+document.addEventListener('DOMContentLoaded', initializeLatestDeploymentTime);
 document.addEventListener('DOMContentLoaded', initializeDevBiomeToggle);
 document.addEventListener('DOMContentLoaded', setupSimulationMethodControls);
 document.addEventListener('DOMContentLoaded', initializeRollingSettingsPanel);
