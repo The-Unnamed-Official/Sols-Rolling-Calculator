@@ -6,7 +6,7 @@
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
-    <title>Sol's RNG Rolling Simulator v2</title>
+    <title>Sol's RNG Rolling Simulator v2.001</title>
     <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@7.1.0/css/all.min.css" crossorigin="anonymous">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -417,9 +417,9 @@
                         <h1 class="banner__title">Sol's RNG Rolling Simulator</h1>
                     </div>
                     <div class="banner__subtitle masthead-console__metadata">
-                        <button type="button" class="banner__version-button masthead-console__meta-card masthead-console__meta-card--version masthead-console__version" id="versionInfoButton" aria-haspopup="dialog" aria-expanded="false" data-version-id="v2">
+                        <button type="button" class="banner__version-button masthead-console__meta-card masthead-console__meta-card--version masthead-console__version" id="versionInfoButton" aria-haspopup="dialog" aria-expanded="false" data-version-id="v2.001">
                             <i class="fa-solid fa-code-branch" aria-hidden="true"></i>
-                            <span><small>Current build</small><strong>Version 2</strong></span>
+                            <span><small>Current build</small><strong>Version 2.001</strong></span>
                         </button>
                         <span class="masthead-console__meta-card banner__subtitle-author">
                             <img class="masthead-console__creator-avatar" src="files/images/other/theUnnamed.jpg" alt="" aria-hidden="true" decoding="async">
@@ -849,7 +849,7 @@
                         <div class="multi-potion-stack-option">
                             <div>
                                 <span class="multi-potion-stack-option__label">Stack Compatible Potions</span>
-                                <small>Consumes one of each compatible potion per roll and merges their luck. Oblivion, Pump King's Blood, and Tutorial Potion always stay separate.</small>
+                                <small>Consumes one of each compatible potion per roll and merges their luck. Red Moon I and II never stack together; Oblivion, Pump King's Blood, and Tutorial Potion always stay separate.</small>
                             </div>
                             <label class="toggle">
                                 <input type="checkbox" id="multiPotionStackToggle" class="toggle__input" aria-label="Stack compatible potions">
@@ -1379,6 +1379,7 @@
                             <li>With compatible stacking off, each potion keeps its own batch. With stacking on, compatible potion luck is merged per roll.</li>
                             <li>The existing priority is preserved: Oblivion, Pump King's Blood, Tutorial Potion, then the remaining potion types.</li>
                             <li>Oblivion, Pump King's Blood, and Tutorial Potion always remain separate. Rune-incompatible potion rolls are processed without the rune before compatible rolls.</li>
+                            <li>Red Moon I and Red Moon II are mutually exclusive within a stack. Each can still stack with other compatible potions.</li>
                             <li>Device preset luck is applied before VIP, final-luck, and biome multipliers.</li>
                         </ul>
                         <button type="button" class="help-card__jump" data-help-jump=".surface--parameters">Go to Potion Loadout <i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i></button>
@@ -2241,6 +2242,24 @@
                             </ul>
                         </li>
                     </ul>
+                    <section class="changelog-subupdates" aria-labelledby="changelog-subupdates-v2">
+                        <div class="changelog-subupdates__header">
+                            <h3 class="changelog-subupdates__title" id="changelog-subupdates-v2" data-changelog-subupdates-title></h3>
+                        </div>
+                        <div class="changelog-subupdates__grid">
+                            <article class="changelog-subupdate-card">
+                                <header class="changelog-subupdate-card__header">
+                                    <span class="changelog-subupdate-card__version">v2.001</span>
+                                    <span class="changelog-subupdate-card__title changelog-tab__subtitle">Red Moon stacking fix</span>
+                                    <p class="changelog-subupdate-card__meta">Updated 2026/08/02 at 8:06 PM CEST</p>
+                                </header>
+                                <ul class="changelog-modal__list changelog-modal__list--sub">
+                                    <li><span class="bloodClass">Red Moon I</span> and <span class="bloodIIClass">Red Moon II</span> can no longer stack together in Multiple Potion Mode. Each remains compatible with other stackable potions.</li>
+                                    <span class="subSpace credits-text">Credit goes to <a href="https://discord.com/users/987426773950169089" class="subtitleClass" target="_blank" rel="noopener">qqener</a> for finding out this bug!</span>
+                                </ul>
+                            </article>
+                        </div>
+                    </section>
                 </section>
 
                 <section

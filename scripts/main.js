@@ -4410,15 +4410,19 @@ const SIMULATION_METHOD = Object.freeze({
     SOLS_LIKE: 'sols-like'
 });
 
+const MULTI_POTION_STACK_EXCLUSION_GROUP = Object.freeze({
+    RED_MOON: 'red-moon'
+});
+
 const MULTI_POTION_CONFIGS = Object.freeze([
     Object.freeze({ id: 'heavenly', label: 'Heavenly Potion', resultLabel: 'Heavenly', resultClass: 'heavenlyClass', luck: 150000 }),
     Object.freeze({ id: 'oblivion', label: 'Oblivion Potion', resultLabel: 'Oblivion', resultClass: 'oblivionClass', luck: 600000, oblivion: true, blocksRunes: true }),
     Object.freeze({ id: 'pump-kings-blood', label: "Pump King's Blood", resultLabel: "Pump King's Blood", resultClass: 'pumpBloodClass', luck: 700000, blocksRunes: true }),
     Object.freeze({ id: 'godlike', label: 'Godlike Potion', resultLabel: 'Godlike', resultClass: 'godlikeClass', luck: 400000 }),
-    Object.freeze({ id: 'blood-ii', label: 'Red Moon II', resultLabel: 'Red Moon II', resultClass: 'bloodIIClass', luck: 200000, bloodPreset: 'blood-ii' }),
+    Object.freeze({ id: 'blood-ii', label: 'Red Moon II', resultLabel: 'Red Moon II', resultClass: 'bloodIIClass', luck: 200000, bloodPreset: 'blood-ii', stackExclusionGroup: MULTI_POTION_STACK_EXCLUSION_GROUP.RED_MOON }),
     Object.freeze({ id: 'candy-corn', label: 'Candy Corn', resultLabel: 'Candy Corn', resultClass: 'candyClass', luck: 75000 }),
     Object.freeze({ id: 'bound', label: 'Bound Potion', resultLabel: 'Bound', resultClass: 'boundClass', luck: 50000 }),
-    Object.freeze({ id: 'blood-i', label: 'Red Moon I', resultLabel: 'Red Moon I', resultClass: 'bloodClass', luck: 11000, bloodPreset: 'blood-i' }),
+    Object.freeze({ id: 'blood-i', label: 'Red Moon I', resultLabel: 'Red Moon I', resultClass: 'bloodClass', luck: 11000, bloodPreset: 'blood-i', stackExclusionGroup: MULTI_POTION_STACK_EXCLUSION_GROUP.RED_MOON }),
     Object.freeze({ id: 'dune', label: 'Potion of the Dune', resultLabel: 'Potion of the Dune', resultClass: 'duneClass', luck: 10000, dune: true }),
     Object.freeze({ id: 'popping', label: 'Popping Potion', resultLabel: 'Popping', resultClass: 'popClass', luck: 10000 }),
     Object.freeze({ id: 'tutorial-potion', label: 'Tutorial Potion', resultLabel: 'Tutorial Potion', resultClass: 'tutPotion', luck: 5000, blocksRunes: true })
@@ -4903,14 +4907,27 @@ function stackCompatiblePotionBatches(batches, luckState) {
     const stackedBatches = [];
 
     while (activeBatches.length > 0) {
-        const segmentCount = Math.min(...activeBatches.map(batch => batch.remaining));
-        const potionIds = activeBatches.map(batch => batch.id);
-        const potionLabels = activeBatches.map(batch => batch.label);
-        const baseLuck = activeBatches.reduce((total, batch) => total + batch.baseLuck, 0);
-        const bloodPresets = activeBatches
+        const activeExclusionGroups = new Set();
+        const stackBatches = activeBatches.filter(batch => {
+            const exclusionGroup = batch.stackExclusionGroup;
+            if (!exclusionGroup) {
+                return true;
+            }
+            if (activeExclusionGroups.has(exclusionGroup)) {
+                return false;
+            }
+            activeExclusionGroups.add(exclusionGroup);
+            return true;
+        });
+        const stackedPotionIds = new Set(stackBatches.map(batch => batch.id));
+        const segmentCount = Math.min(...stackBatches.map(batch => batch.remaining));
+        const potionIds = stackBatches.map(batch => batch.id);
+        const potionLabels = stackBatches.map(batch => batch.label);
+        const baseLuck = stackBatches.reduce((total, batch) => total + batch.baseLuck, 0);
+        const bloodPresets = stackBatches
             .map(batch => batch.bloodPreset)
             .filter(Boolean);
-        const isStacked = activeBatches.length > 1;
+        const isStacked = stackBatches.length > 1;
 
         stackedBatches.push({
             id: isStacked ? `stacked:${potionIds.join('+')}` : potionIds[0],
@@ -4923,7 +4940,7 @@ function stackCompatiblePotionBatches(batches, luckState) {
             potionIds,
             potionLabels,
             stacked: isStacked,
-            dune: activeBatches.some(batch => batch.dune),
+            dune: stackBatches.some(batch => batch.dune),
             bloodPreset: bloodPresets[0] || null,
             bloodPresets,
             blocksRunes: false,
@@ -4933,7 +4950,7 @@ function stackCompatiblePotionBatches(batches, luckState) {
         activeBatches = activeBatches
             .map(batch => ({
                 ...batch,
-                remaining: batch.remaining - segmentCount
+                remaining: batch.remaining - (stackedPotionIds.has(batch.id) ? segmentCount : 0)
             }))
             .filter(batch => batch.remaining > 0);
     }
