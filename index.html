@@ -3,6 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
     <title>Sol's RNG Rolling Simulator v2</title>
     <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@7.1.0/css/all.min.css" crossorigin="anonymous">
@@ -19,14 +22,172 @@
     <link rel="icon" type="image/png" sizes="128x128" href="files/images/favicon-128.png">
     <link rel="icon" type="image/png" sizes="256x256" href="files/images/favicon-256.png">
     <link rel="icon" type="image/png" sizes="500x500" href="files/images/favicon-500.png">
-    <link rel="stylesheet" href="styles/base.css">
-    <link rel="stylesheet" href="styles/layout.css">
-    <link rel="stylesheet" href="styles/components.css">
-    <link rel="stylesheet" href="styles/utilities.css">
-    <script src="scripts/utils.js" defer></script>
-    <script src="scripts/state.js" defer></script>
-    <script src="scripts/overlays.js" defer></script>
-    <script src="scripts/main.js" defer></script>
+    <script>
+        (() => {
+            'use strict';
+
+            const BUILD_QUERY_PARAMETER = '_app_build';
+            const CACHE_CHECK_QUERY_PARAMETER = '_app_cache_check';
+            const isHostedPage = window.location.protocol === 'http:' || window.location.protocol === 'https:';
+            const parsedDocumentModifiedAt = Date.parse(document.lastModified);
+            const documentModifiedAt = Number.isFinite(parsedDocumentModifiedAt)
+                ? parsedDocumentModifiedAt
+                : Date.now();
+            const buildCacheKey = String(Math.trunc(documentModifiedAt));
+
+            window.appBuildCacheKey = buildCacheKey;
+            window.getVersionedAppAssetUrl = path => {
+                if (!isHostedPage) {
+                    return path;
+                }
+
+                const url = new URL(path, document.baseURI);
+                url.searchParams.set('v', buildCacheKey);
+                return url.href;
+            };
+
+            const cleanBuildQueryParameter = () => {
+                const cleanUrl = new URL(window.location.href);
+                if (!cleanUrl.searchParams.has(BUILD_QUERY_PARAMETER)) {
+                    return;
+                }
+
+                cleanUrl.searchParams.delete(BUILD_QUERY_PARAMETER);
+                window.history.replaceState(window.history.state, '', cleanUrl.href);
+            };
+
+            const navigateToFreshBuild = buildIdentifier => {
+                const reloadUrl = new URL(window.location.href);
+                reloadUrl.searchParams.delete(CACHE_CHECK_QUERY_PARAMETER);
+                reloadUrl.searchParams.set(BUILD_QUERY_PARAMETER, String(buildIdentifier));
+                window.location.replace(reloadUrl.href);
+
+                return new Promise(() => {});
+            };
+
+            const removeLegacyApplicationCaches = async () => {
+                const cleanupTasks = [];
+                const wasControlledByServiceWorker = Boolean(navigator.serviceWorker?.controller);
+
+                if ('caches' in window) {
+                    cleanupTasks.push(
+                        window.caches.keys().then(cacheNames => Promise.all(
+                            cacheNames.map(cacheName => window.caches.delete(cacheName))
+                        ))
+                    );
+                }
+
+                if ('serviceWorker' in navigator) {
+                    cleanupTasks.push(
+                        navigator.serviceWorker.getRegistrations().then(registrations => Promise.all(
+                            registrations.map(registration => registration.unregister())
+                        ))
+                    );
+                }
+
+                await Promise.allSettled(cleanupTasks);
+
+                if (wasControlledByServiceWorker && isHostedPage) {
+                    return navigateToFreshBuild(Date.now());
+                }
+            };
+
+            let buildMetadataRequest = null;
+            const requestLatestBuildMetadata = () => {
+                if (buildMetadataRequest) {
+                    return buildMetadataRequest;
+                }
+
+                buildMetadataRequest = (async () => {
+                    if (!isHostedPage) {
+                        return {
+                            publishedAt: new Date(documentModifiedAt),
+                            source: 'document'
+                        };
+                    }
+
+                    const metadataUrl = new URL(window.location.href);
+                    metadataUrl.hash = '';
+                    metadataUrl.searchParams.delete(BUILD_QUERY_PARAMETER);
+                    metadataUrl.searchParams.set(
+                        CACHE_CHECK_QUERY_PARAMETER,
+                        `${Date.now()}-${Math.random().toString(36).slice(2)}`
+                    );
+
+                    const response = await fetch(metadataUrl.href, {
+                        method: 'HEAD',
+                        cache: 'no-store',
+                        credentials: 'same-origin'
+                    });
+                    if (!response.ok) {
+                        throw new Error(`Build metadata request failed with status ${response.status}.`);
+                    }
+
+                    const publishedAtValue = response.headers.get('Last-Modified');
+                    const parsedPublishedAt = publishedAtValue ? Date.parse(publishedAtValue) : NaN;
+                    const publishedAt = Number.isFinite(parsedPublishedAt)
+                        ? parsedPublishedAt
+                        : documentModifiedAt;
+
+                    if (publishedAt > documentModifiedAt) {
+                        return navigateToFreshBuild(Math.trunc(publishedAt));
+                    }
+
+                    cleanBuildQueryParameter();
+                    return {
+                        publishedAt: new Date(publishedAt),
+                        source: 'server'
+                    };
+                })()
+                    .catch(error => {
+                        cleanBuildQueryParameter();
+                        console.warn('Unable to check for a newer published build.', error);
+                        return {
+                            publishedAt: new Date(documentModifiedAt),
+                            source: 'document'
+                        };
+                    })
+                    .finally(() => {
+                        buildMetadataRequest = null;
+                    });
+
+                return buildMetadataRequest;
+            };
+
+            window.appBuildMetadataPromise = removeLegacyApplicationCaches()
+                .then(requestLatestBuildMetadata);
+            window.addEventListener('pageshow', event => {
+                if (event.persisted) {
+                    window.appBuildMetadataPromise = requestLatestBuildMetadata();
+                }
+            });
+
+            const stylePaths = [
+                'styles/base.css',
+                'styles/layout.css',
+                'styles/components.css',
+                'styles/utilities.css'
+            ];
+            const scriptPaths = [
+                'scripts/utils.js',
+                'scripts/state.js',
+                'scripts/overlays.js',
+                'scripts/main.js'
+            ];
+            const assetTags = [
+                ...stylePaths.map(path => `<link rel="stylesheet" href="${window.getVersionedAppAssetUrl(path)}">`),
+                ...scriptPaths.map(path => `<script src="${window.getVersionedAppAssetUrl(path)}" defer><\/script>`)
+            ];
+
+            document.write(assetTags.join(''));
+        })();
+    </script>
+    <noscript>
+        <link rel="stylesheet" href="styles/base.css">
+        <link rel="stylesheet" href="styles/layout.css">
+        <link rel="stylesheet" href="styles/components.css">
+        <link rel="stylesheet" href="styles/utilities.css">
+    </noscript>
 </head>
 <body>
     <div class="interface-backdrop" aria-hidden="true">
