@@ -2705,6 +2705,18 @@ body.quality-no-ui-animations .audio-slider__input::-moz-range-thumb {
     font-size: small;
 }
 
+.movedClass {
+    padding-left: 1.2em;
+}
+
+.barelyVisibleClass {
+    color: #ffffff22
+}
+
+.inline-emoji {
+    vertical-align: -2px;
+}
+
 .tinyClass-colorless {
     font-size: smaller;
 }

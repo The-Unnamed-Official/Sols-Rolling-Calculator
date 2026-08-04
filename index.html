@@ -391,16 +391,6 @@
 
     <div id="cinematic-overlay" class="cinematic-overlay" aria-hidden="true"></div>
 
-    <div id="introOverlay" class="intro-overlay" role="dialog" aria-modal="true" aria-label="Start the simulation">
-        <div class="intro-overlay__panel">
-            <div class="intro-overlay__logo" role="img" aria-label="Sols Rolling Simulator">
-                <img src="files/images/icons/logo.png" alt="Sols Rolling Simulator logo" decoding="async" fetchpriority="high">
-            </div>
-            <p class="intro-overlay__copy">Begin the experience to unlock audio playback.</p>
-            <button type="button" class="intro-overlay__start-button" id="startExperienceButton">Start Simulation</button>
-        </div>
-    </div>
-
     <div class="interface-shell">
         <header class="surface interface-header masthead-console" role="banner">
             <div class="masthead__brand">
@@ -417,9 +407,9 @@
                         <h1 class="banner__title">Sol's RNG Rolling Simulator</h1>
                     </div>
                     <div class="banner__subtitle masthead-console__metadata">
-                        <button type="button" class="banner__version-button masthead-console__meta-card masthead-console__meta-card--version masthead-console__version" id="versionInfoButton" aria-haspopup="dialog" aria-expanded="false" data-version-id="v2.001">
+                        <button type="button" class="banner__version-button masthead-console__meta-card masthead-console__meta-card--version masthead-console__version" id="versionInfoButton" aria-haspopup="dialog" aria-expanded="false" data-version-id="v2.010">
                             <i class="fa-solid fa-code-branch" aria-hidden="true"></i>
-                            <span><small>Current build</small><strong>Version 2.001</strong></span>
+                            <span><small>Current build</small><strong>Version 2.010</strong></span>
                         </button>
                         <span class="masthead-console__meta-card banner__subtitle-author">
                             <img class="masthead-console__creator-avatar" src="files/images/other/theUnnamed.jpg" alt="" aria-hidden="true" decoding="async">
@@ -1601,13 +1591,13 @@
                 <i class="fa-solid fa-hand-holding-heart"></i>
             </span>
         </button>
-        <a class="support-float__link" id="supportFloatLink" href="https://buymeacoffee.com/theunnamed" target="_blank" rel="noopener" aria-label="Support future updates on Buy Me a Coffee">
+        <a class="support-float__link" id="supportFloatLink" href="https://ko-fi.com/notunnamed" target="_blank" rel="noopener" aria-label="Support future updates on Ko-Fi">
             <span class="support-float__icon" aria-hidden="true">
                 <i class="fa-solid fa-hand-holding-heart"></i>
             </span>
             <span class="support-float__content">
-                <span class="support-float__eyebrow">Buy Me a Coffee</span>
-                <span class="support-float__label">Support Future Updates</span>
+                <span class="support-float__eyebrow">Support me</span>
+                <span class="support-float__label">Help me with future development of the Rolling Simulator</span>
                 <span class="support-float__meta">Help keep the calculator polished, maintained, and growing.</span>
             </span>
         </a>
@@ -2062,6 +2052,66 @@
             </div>
 
             <div class="changelog-modal__panels" data-changelog-panels>
+                <section
+                    id="changelog-panel-v2010"
+                    class="changelog-modal__panel"
+                    role="tabpanel"
+                    aria-labelledby="changelog-tab-v2010"
+                    data-changelog-panel="v2.010"
+                    data-changelog-label="v2.010"
+                    tabindex="0"
+                >
+                    <header class="changelog-modal__header">
+                        <h2 class="changelog-modal__title">Version 2.010 Update Notes</h2>
+                        <span class="changelog-tab__subtitle">Summer Update Part 2</span>
+                        <p class="changelog-modal__meta">Updated 2026/08/10 · 1:30 PM CEST</p>
+                    </header>
+                    <p class="changelog-modal__intro">Latest changes:</p>
+                    <ul class="changelog-modal__list changelog-modal__list--grouped">
+                        <li class="changelog-release-group changelog-release-group--summer">
+                            <div class="changelog-featured-ui__header changelog-summer__header">
+                                <span class="changelog-featured-ui__icon changelog-summer__icon" aria-hidden="true"><i class="fa-solid fa-sun"></i></span>
+                                <span class="changelog-featured-ui__heading">
+                                    <span class="largeClass"><span class="sigil-outline-summer">Summer</span> Part 2</span>
+                                    <span>The second TIDAL WAVE of Summer 2026 content has arrived! <span class="movedClass barelyVisibleClass">See what I did there <img class="inline-emoji" height="8" width="8" src="files/images/emojis/Blue-Troll-Face-Emoji.png"></span>
+                            </div>
+                            <p class="changelog-summer__intro">Added x new auras:</p>
+                            <ul class="changelog-release-rarity-grid changelog-release-rarity-grid--summer">
+                                <li>Unknown<span class="tinyClass">1 in Unknown</span></li>
+                                <li>Unknown<span class="tinyClass">1 in Unknown</span></li>
+                                <li>Unknown<span class="tinyClass">1 in Unknown</span></li>
+                                <li>Unknown<span class="tinyClass">1 in Unknown</span></li>
+                                <li>Unknown<span class="tinyClass">1 in Unknown</span></li>
+                                <li>Unknown<span class="tinyClass">1 in Unknown</span></li>
+                                <li>Unknown<span class="tinyClass">1 in Unknown</span></li>
+                            </ul>
+                            <ul class="changelog-release-group__list changelog-summer__notes">
+                                <li>Other stuff maybe?</li>
+                            </ul>
+                        </li>
+
+                        <li class="changelog-release-group changelog-release-group--featured-ui">
+                            <div class="changelog-featured-ui__header">
+                                <span class="changelog-featured-ui__icon" aria-hidden="true"><i class="fa-solid fa-screwdriver-wrench"></i></span>
+                                <span class="changelog-featured-ui__heading">
+                                    <span class="largeClass">Other Changes</span>
+                                    <span>QoL enhancements/improvements.</span>
+                                </span>
+                            </div>
+                            <br>
+                            <span class="largeClass">UI startup:</span>
+                            <ul class="changelog-release-group__list">
+                                <li>Removed the beginning UI popup that did absolutely nothing... You're welcome <img class="inline-emoji" width="16" height="16" src="files/images/emojis/aga.png"></li>
+                            </ul>
+                            <br>
+                            <span class="largeClass">Latest Deployment re-do:</span>
+                            <ul class="changelog-release-group__list">
+                                <li>Reworked the "Latest Deployment" section to adaptively change the time to when the lates deployment from the published tree was executed and automatically displays it in your timezone!</li>
+                            </ul>
+                        </li>
+                    </ul>
+                </section>
+
                 <section
                     id="changelog-panel-v2"
                     class="changelog-modal__panel"

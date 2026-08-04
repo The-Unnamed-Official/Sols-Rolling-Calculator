@@ -6335,6 +6335,7 @@ function resolveAuraStyleClass(aura, biome) {
     if (name.startsWith('赤月の破片')) classes.push('sigil-outline-赤月の破片');
     if (name.startsWith('Pixelation')) classes.push('sigil-effect-pixelation');
     if (name.startsWith('Luminosity')) classes.push('sigil-effect-luminosity');
+    if (name.startsWith('Unnamed Needs Equinox NOW')) classes.push('sigil-effect-equinox');
     if (name.startsWith('Equinox')) classes.push('sigil-effect-equinox');
     if (name.startsWith('Equinox : youareanidiot')) classes.push('sigil-effect-equinox');
     if (name.startsWith('Megaphone')) classes.push('sigil-effect-megaphone');
@@ -6756,7 +6757,7 @@ function observeLayeredSigilText() {
 }
 
 const GLITCH_SIGIL_SELECTOR = '.sigil-outline-glitch, .sigil-effect-glitch__title';
-const GLITCH_SIGIL_SYMBOLS = Object.freeze(['@', '#', '$', '%', '&', '*', '!', '?', '+', '=']);
+const GLITCH_SIGIL_SYMBOLS = Object.freeze(['@', '#', '$', '%', '&', '*', '!', '?', '+', '=', '(', ')', '^', '-', '1', '0']);
 const GLITCH_SIGIL_REPLACEABLE_CHARACTER_PATTERN = /[\p{L}\p{N}]/u;
 let glitchSigilFlickerTimeoutId = null;
 let glitchSigilRestoreTimeoutId = null;
@@ -6840,7 +6841,7 @@ function getGlitchSigilTextNodes(element) {
     return textNodes;
 }
 
-function scheduleGlitchSigilFlicker(delay = 450 + Math.random() * 750) {
+function scheduleGlitchSigilFlicker(delay = 10 + Math.random() * 5) {
     if (glitchSigilFlickerTimeoutId !== null) {
         clearTimeout(glitchSigilFlickerTimeoutId);
     }
@@ -6942,6 +6943,7 @@ const AURA_BLUEPRINT_SOURCE = Object.freeze([
     { name: "Illusionary - 10,000,000", chance: 10000000, nativeBiomes: ["cyberspace"], ignoreLuck: true, fixedRollThreshold: 1, cutscene: "illusionary-cutscene" },
     { name: "Meta - 10,000", chance: 10000, nativeBiomes: ["cyberspace"], ignoreLuck: true, fixedRollThreshold: 1 },
     { name: MONARCH_AURA_NAME, chance: 3000000000, cutscene: "monarch-cutscene", nativeBiomes: ["corruption", "glitch"], disableNativeOverrideTier: true },
+    // { name: "Unnamed Needs Equinox NOW - 2,500,000,000", chance: 2500000000, cutscene: "equinox-cutscene" },
     { name: "Equinox - 2,500,000,000", chance: 2500000000, cutscene: "equinox-cutscene" },
     { name: "Equinox : youareanidiot - 2,500,000,000", chance: 2500000000, cutscene: "idiot-cutscene" },
     { name: DREAMCATCHER_AURA_NAME, chance: 2222222222, nativeBiomes: ["night"], cutscene: "catcher-cutscene" },
@@ -7644,6 +7646,9 @@ const EVENT_AURA_LOOKUP = {
         "Vacation - 58,620,000",
         "Bayview - 60,000,000",
         "Pool Party - 972,000,000",
+        "Taverna - 1,100,000,000",
+        "",
+        "",
     ]
 };
 
