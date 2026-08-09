@@ -1384,10 +1384,6 @@
     --resource-rgb: 150 255 164;
 }
 
-.resource-link--nolifers {
-    --resource-rgb: 202 146 255;
-}
-
 .resource-link--repository {
     --resource-rgb: 216 225 240;
 }
@@ -1494,12 +1490,6 @@
     filter: drop-shadow(0 0 7px rgb(var(--resource-rgb) / 0.42));
     transform-origin: 50% 50%;
     will-change: transform;
-}
-
-.resource-link__image--nolifers {
-    width: 46px;
-    height: 46px;
-    filter: drop-shadow(0 0 7px rgb(var(--resource-rgb) / 0.55));
 }
 
 .resource-link--button-clicker .brand-glyph {
@@ -2393,11 +2383,6 @@
     animation: resource-button-clicker-value 0.9s ease-out infinite;
 }
 
-.resource-link--nolifers:hover .resource-link__image--nolifers,
-.resource-link--nolifers:focus-visible .resource-link__image--nolifers {
-    animation: resource-nolifers-spin 1.25s linear infinite;
-}
-
 .resource-link--community:hover .resource-link__image--unnamedrng,
 .resource-link--community:focus-visible .resource-link__image--unnamedrng {
     animation: resource-unnamedrng-loading-spin 3.25s infinite;
@@ -2504,11 +2489,6 @@ body.quality-no-ui-animations .resource-link__click-value {
     100% {
         transform: rotate(720deg) scale(1);
     }
-}
-
-@keyframes resource-nolifers-spin {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
 }
 
 @keyframes resource-button-clicker-press {
