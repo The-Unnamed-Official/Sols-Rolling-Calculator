@@ -3760,17 +3760,14 @@ body:not(.reduce-motion):not(.quality-no-shakes) .luck-preset-button--shake.luck
 }
 
 @media (max-width: 620px) {
-    body.roll-dock-active {
-        padding-bottom: calc(clamp(118px, 30vw, 152px) + env(safe-area-inset-bottom));
-    }
-
     .control-section--cta.control-section--cta--floating {
-        top: auto;
-        right: 72px;
-        bottom: max(10px, env(safe-area-inset-bottom));
-        left: max(10px, env(safe-area-inset-left));
-        width: auto;
-        max-width: none;
+        top: max(10px, env(safe-area-inset-top));
+        right: auto;
+        bottom: auto;
+        left: 50%;
+        width: min(420px, calc(100vw - 24px));
+        max-width: calc(100vw - 24px);
+        transform: translateX(-50%);
         animation-name: roll-dock-enter-mobile;
     }
 
@@ -3805,11 +3802,11 @@ body:not(.reduce-motion):not(.quality-no-shakes) .luck-preset-button--shake.luck
 @keyframes roll-dock-enter-mobile {
     from {
         opacity: 0;
-        transform: translateY(10px) scale(0.985);
+        transform: translate(-50%, -10px) scale(0.985);
     }
     to {
         opacity: 1;
-        transform: translateY(0) scale(1);
+        transform: translateX(-50%) scale(1);
     }
 }
 

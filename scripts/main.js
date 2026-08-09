@@ -1657,10 +1657,32 @@ function initializeRollTriggerFloating() {
     dockAnchor.setAttribute('aria-hidden', 'true');
     cta.before(dockAnchor);
 
-    const shortcutLabel = /Mac|iPhone|iPad|iPod/i.test(navigator.userAgent || '')
-        ? 'Command + Enter'
-        : 'Ctrl + Enter';
-    rollTriggerButton.dataset.shortcutLabel = shortcutLabel;
+    const userAgent = navigator.userAgent || '';
+    const mobileDevicePattern = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Mobile|Tablet/i;
+    const finePointerQuery = window.matchMedia('(any-pointer: fine)');
+    const hoverQuery = window.matchMedia('(any-hover: hover)');
+    const mobileLayoutQuery = window.matchMedia('(max-width: 620px)');
+    const isMobileDevice = navigator.userAgentData?.mobile === true || mobileDevicePattern.test(userAgent);
+
+    const syncShortcutHint = () => {
+        const hasKeyboardLikeInput = finePointerQuery.matches && hoverQuery.matches;
+        if (isMobileDevice || mobileLayoutQuery.matches || !hasKeyboardLikeInput) {
+            delete rollTriggerButton.dataset.shortcutLabel;
+            rollTriggerButton.removeAttribute('aria-keyshortcuts');
+            rollTriggerButton.title = 'Start rolling';
+            return;
+        }
+
+        const shortcutLabel = /Mac/i.test(userAgent) ? 'Command + Enter' : 'Ctrl + Enter';
+        rollTriggerButton.dataset.shortcutLabel = shortcutLabel;
+        rollTriggerButton.setAttribute('aria-keyshortcuts', 'Control+Enter Meta+Enter');
+        rollTriggerButton.title = `Start rolling from anywhere with ${shortcutLabel}`;
+    };
+
+    syncShortcutHint();
+    finePointerQuery.addEventListener?.('change', syncShortcutHint);
+    hoverQuery.addEventListener?.('change', syncShortcutHint);
+    mobileLayoutQuery.addEventListener?.('change', syncShortcutHint);
 
     let floating = false;
     let updateFrame = 0;
@@ -1743,7 +1765,7 @@ function initializeRollTriggerFloating() {
         const blockingLayerOpen = Boolean(document.querySelector(
             '.modal-overlay:not([hidden]), .cutscene-warning-overlay:not([hidden]), #introOverlay:not([hidden])'
         ));
-        if (blockingLayerOpen || simulationActive || rollTriggerButton.disabled) return;
+        if (blockingLayerOpen || isAuraCutscenePlaybackActive() || simulationActive || rollTriggerButton.disabled) return;
 
         event.preventDefault();
         rollTriggerButton.click();
@@ -5745,6 +5767,14 @@ function initializeBiomeInterface() {
 }
 
 const FIRST_PERSON_CUTSCENES = new Set(['illusionary-cutscene']);
+
+function isAuraCutscenePlaybackActive() {
+    const cinematicOverlay = document.getElementById('cinematic-overlay');
+    return Boolean(
+        appState.videoPlaying
+        || cinematicOverlay?.style.display === 'flex'
+    );
+}
 
 function playAuraVideo(videoId, options = {}) {
     const manageAmbient = options.manageAmbient !== false;
@@ -12620,7 +12650,7 @@ function prepareSimulationBatch(batch, selectionState, eventContext) {
 }
 
 function runRollSimulation(options = {}) {
-    if (simulationActive) return;
+    if (simulationActive || isAuraCutscenePlaybackActive()) return;
 
     if (!feedContainer) {
         feedContainer = document.getElementById('simulation-feed');

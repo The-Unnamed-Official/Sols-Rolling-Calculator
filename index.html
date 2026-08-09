@@ -664,7 +664,7 @@
                         </button>
                     </div>
                     <div class="roll-split-control">
-                        <button class="roll-trigger" type="button" onclick="runRollSimulation()" data-shortcut-label="Ctrl + Enter" aria-keyshortcuts="Control+Enter Meta+Enter" title="Start rolling from anywhere with Ctrl or Command + Enter">Start Rolling</button>
+                        <button class="roll-trigger" type="button" onclick="runRollSimulation()" title="Start rolling">Start Rolling</button>
                         <button class="roll-pause" type="button" id="rollPauseButton" aria-label="Pause rolling" title="Pause rolling" disabled hidden>
                             <i class="fa-solid fa-pause" aria-hidden="true"></i>
                         </button>
@@ -2096,7 +2096,7 @@
                     <header class="changelog-modal__header">
                         <h2 class="changelog-modal__title">Version 2.010 Update Notes</h2>
                         <span class="changelog-tab__subtitle">Small QoL Update</span>
-                        <p class="changelog-modal__meta">Updated 2026/08/09 · 8:00 PM CEST</p>
+                        <p class="changelog-modal__meta">Updated 2026/08/09 · 9:20 PM CEST</p>
                     </header>
                     <p class="changelog-modal__intro">Latest changes:</p>
                     <ul class="changelog-modal__list changelog-modal__list--grouped">
@@ -2121,14 +2121,14 @@
                             <br>
                             <span class="largeClass">Always-ready rolling:</span>
                             <ul class="changelog-release-group__list">
-                                <li>Added an adaptive Roll Dock that stays on screen after you scroll past the original Launch Sequence. It remains aligned with the Simulation Console on PC and tablets, then moves into a compact, thumb-friendly bottom position on phones without covering the support control or unsafe screen edges.</li>
+                                <li>Added an adaptive Roll Dock that stays on screen after you scroll past the original Launch Sequence. It remains aligned with the Simulation Console on PC and tablets, then moves into a compact, horizontally centered top position on phones while respecting unsafe screen edges.</li>
                                 <li>The dock keeps the live Ready, Rolling, Paused, and Cutscene status visible, and carries the existing pause and cancel controls with it during Sol's-Like simulations.</li>
                             </ul>
                             <br>
                             <span class="largeClass">Faster controls:</span>
                             <ul class="changelog-release-group__list">
                                 <li>Added a <span class="changelog-control-chip"><i class="fa-solid fa-sliders" aria-hidden="true"></i> Edit parameters</span> shortcut to the floating dock so the run configuration is always one tap away.</li>
-                                <li>Press <span class="changelog-control-chip">Ctrl + Enter</span> on Windows and Linux or <span class="changelog-control-chip">Command + Enter</span> on macOS to start a roll from anywhere on the page. The shortcut is shown directly on the rolling button and pauses itself while dialogs or simulations are active.</li>
+                                <li>Press <span class="changelog-control-chip">Ctrl + Enter</span> on Windows and Linux or <span class="changelog-control-chip">Command + Enter</span> on macOS to start a roll from anywhere on the page. The hint is only shown on non-mobile interfaces with keyboard-like input, and the shortcut stays locked while dialogs, simulations, or aura cutscenes are active.</li>
                                 <li>The dock recalculates its size and position after window, orientation, and device-size changes, and its entrance animation follows the existing reduced-motion and UI-animation preferences.</li>
                             </ul>
                         </li>
