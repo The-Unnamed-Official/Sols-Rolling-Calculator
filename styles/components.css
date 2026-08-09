@@ -3700,6 +3700,119 @@ body:not(.reduce-motion):not(.quality-no-shakes) .luck-preset-button--shake.luck
     left: var(--roll-cta-left, auto);
     width: var(--roll-cta-width, auto);
     max-width: var(--roll-cta-width, auto);
+    z-index: 44;
+    padding: 10px;
+    gap: 8px;
+    box-shadow:
+        0 18px 42px rgba(0, 0, 0, 0.62),
+        0 0 0 1px rgb(var(--accent-rgb) / 0.16),
+        inset 0 0 28px rgb(var(--accent-rgb) / 0.08);
+    animation: roll-dock-enter 220ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.roll-trigger-dock-anchor {
+    flex: 0 0 auto;
+    width: 100%;
+    min-height: 0;
+    pointer-events: none;
+}
+
+.control-section--cta--floating .roll-console__step,
+.control-section--cta--floating .roll-console__module-copy {
+    display: none;
+}
+
+.control-section--cta--floating .roll-console__armed {
+    margin-left: 0;
+}
+
+.roll-dock__parameters {
+    display: none;
+}
+
+.control-section--cta--floating .roll-dock__parameters {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    min-width: 0;
+    margin-left: auto;
+    padding: 7px 10px;
+    font-size: 9px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.control-section--cta--floating .roll-trigger {
+    padding: 14px 16px 21px;
+    font-size: 17px;
+}
+
+@keyframes roll-dock-enter {
+    from {
+        opacity: 0;
+        transform: translateY(-8px) scale(0.985);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+@media (max-width: 620px) {
+    .control-section--cta.control-section--cta--floating {
+        top: max(10px, env(safe-area-inset-top));
+        right: auto;
+        bottom: auto;
+        left: 50%;
+        width: min(420px, calc(100vw - 24px));
+        max-width: calc(100vw - 24px);
+        transform: translateX(-50%);
+        animation-name: roll-dock-enter-mobile;
+    }
+
+    .control-section--cta--floating .roll-console__module-heading--compact {
+        flex-wrap: nowrap;
+    }
+
+    .control-section--cta--floating .roll-dock__parameters span {
+        display: none;
+    }
+
+    .control-section--cta--floating .roll-dock__parameters {
+        flex: 0 0 34px;
+        width: 34px;
+        height: 30px;
+        padding: 0;
+    }
+
+    .control-section--cta--floating .roll-trigger {
+        padding: 12px 10px 19px;
+        font-size: clamp(13px, 4vw, 16px);
+        letter-spacing: 0.14em;
+    }
+
+    .control-section--cta--floating .roll-cancel {
+        margin-top: 0;
+        padding: 9px 10px;
+        font-size: 11px;
+    }
+}
+
+@keyframes roll-dock-enter-mobile {
+    from {
+        opacity: 0;
+        transform: translate(-50%, -10px) scale(0.985);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(-50%) scale(1);
+    }
+}
+
+body.reduce-motion .control-section--cta--floating,
+body.quality-no-ui-animations .control-section--cta--floating {
+    animation: none;
 }
 
 .roll-split-control {
@@ -4279,6 +4392,7 @@ body.quality-no-ui-animations .preset-console__bank {
 }
 
 .roll-trigger::after {
+    content: attr(data-shortcut-label);
     position: absolute;
     bottom: 6px;
     left: 50%;

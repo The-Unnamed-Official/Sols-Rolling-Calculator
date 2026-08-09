@@ -1647,9 +1647,141 @@ function initializeRollTriggerFloating() {
     const cta = document.querySelector('.control-section--cta');
     if (!cta) return;
 
-    cta.classList.remove('control-section--cta--floating');
-    cta.style.removeProperty('--roll-cta-width');
-    cta.style.removeProperty('--roll-cta-left');
+    const rollConsole = cta.closest('.roll-console');
+    const rollTriggerButton = cta.querySelector('.roll-trigger');
+    const parametersButton = document.getElementById('rollDockParametersButton');
+    if (!rollConsole || !rollTriggerButton) return;
+
+    const dockAnchor = document.createElement('div');
+    dockAnchor.className = 'roll-trigger-dock-anchor';
+    dockAnchor.setAttribute('aria-hidden', 'true');
+    cta.before(dockAnchor);
+
+    const userAgent = navigator.userAgent || '';
+    const mobileDevicePattern = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Mobile|Tablet/i;
+    const finePointerQuery = window.matchMedia('(any-pointer: fine)');
+    const hoverQuery = window.matchMedia('(any-hover: hover)');
+    const mobileLayoutQuery = window.matchMedia('(max-width: 620px)');
+    const isMobileDevice = navigator.userAgentData?.mobile === true || mobileDevicePattern.test(userAgent);
+
+    const syncShortcutHint = () => {
+        const hasKeyboardLikeInput = finePointerQuery.matches && hoverQuery.matches;
+        if (isMobileDevice || mobileLayoutQuery.matches || !hasKeyboardLikeInput) {
+            delete rollTriggerButton.dataset.shortcutLabel;
+            rollTriggerButton.removeAttribute('aria-keyshortcuts');
+            rollTriggerButton.title = 'Start rolling';
+            return;
+        }
+
+        const shortcutLabel = /Mac/i.test(userAgent) ? 'Command + Enter' : 'Ctrl + Enter';
+        rollTriggerButton.dataset.shortcutLabel = shortcutLabel;
+        rollTriggerButton.setAttribute('aria-keyshortcuts', 'Control+Enter Meta+Enter');
+        rollTriggerButton.title = `Start rolling from anywhere with ${shortcutLabel}`;
+    };
+
+    syncShortcutHint();
+    finePointerQuery.addEventListener?.('change', syncShortcutHint);
+    hoverQuery.addEventListener?.('change', syncShortcutHint);
+    mobileLayoutQuery.addEventListener?.('change', syncShortcutHint);
+
+    let floating = false;
+    let updateFrame = 0;
+
+    const getDockScale = () => {
+        const anchorRect = dockAnchor.getBoundingClientRect();
+        const layoutWidth = dockAnchor.offsetWidth;
+        if (!layoutWidth || !anchorRect.width) return 1;
+
+        const measuredScale = anchorRect.width / layoutWidth;
+        return Number.isFinite(measuredScale) && measuredScale > 0 ? measuredScale : 1;
+    };
+
+    const reserveDockSpace = visualHeight => {
+        const dockScale = getDockScale();
+        dockAnchor.style.height = `${Math.ceil(visualHeight / dockScale)}px`;
+    };
+
+    const syncDockGeometry = () => {
+        if (!floating) return;
+
+        const anchorRect = dockAnchor.getBoundingClientRect();
+        const dockScale = getDockScale();
+        cta.style.setProperty('--roll-cta-left', `${Math.round(anchorRect.left / dockScale)}px`);
+        cta.style.setProperty('--roll-cta-width', `${Math.round(anchorRect.width / dockScale)}px`);
+        reserveDockSpace(cta.getBoundingClientRect().height);
+    };
+
+    const setFloating = nextFloating => {
+        if (floating === nextFloating) return;
+
+        floating = nextFloating;
+        if (floating) {
+            reserveDockSpace(cta.getBoundingClientRect().height);
+            cta.classList.add('control-section--cta--floating');
+            document.body?.classList.add('roll-dock-active');
+            syncDockGeometry();
+        } else {
+            cta.classList.remove('control-section--cta--floating');
+            cta.style.removeProperty('--roll-cta-width');
+            cta.style.removeProperty('--roll-cta-left');
+            dockAnchor.style.removeProperty('height');
+            document.body?.classList.remove('roll-dock-active');
+        }
+    };
+
+    const updateDock = () => {
+        updateFrame = 0;
+        const activationOffset = Math.max(12, Math.min(18, window.innerWidth * 0.02));
+        const anchorTop = dockAnchor.getBoundingClientRect().top;
+        const shouldFloat = floating
+            ? anchorTop <= activationOffset + 24
+            : anchorTop <= activationOffset;
+
+        setFloating(shouldFloat);
+        syncDockGeometry();
+    };
+
+    const requestDockUpdate = () => {
+        if (updateFrame) return;
+        updateFrame = window.requestAnimationFrame(updateDock);
+    };
+
+    parametersButton?.addEventListener('click', () => {
+        const parametersPanel = document.querySelector('.surface--parameters');
+        if (!parametersPanel) return;
+
+        parametersPanel.scrollIntoView({
+            behavior: appState?.reduceMotion ? 'auto' : 'smooth',
+            block: 'start'
+        });
+    });
+
+    document.addEventListener('keydown', event => {
+        const shortcutPressed = event.key === 'Enter'
+            && (event.ctrlKey || event.metaKey)
+            && !event.altKey;
+        if (!shortcutPressed || event.defaultPrevented || event.repeat) return;
+
+        const blockingLayerOpen = Boolean(document.querySelector(
+            '.modal-overlay:not([hidden]), .cutscene-warning-overlay:not([hidden]), #introOverlay:not([hidden])'
+        ));
+        if (blockingLayerOpen || isAuraCutscenePlaybackActive() || simulationActive || rollTriggerButton.disabled) return;
+
+        event.preventDefault();
+        rollTriggerButton.click();
+    });
+
+    window.addEventListener('scroll', requestDockUpdate, { passive: true });
+    window.addEventListener('resize', requestDockUpdate, { passive: true });
+    window.addEventListener('orientationchange', requestDockUpdate, { passive: true });
+
+    if (typeof ResizeObserver === 'function') {
+        const dockResizeObserver = new ResizeObserver(requestDockUpdate);
+        dockResizeObserver.observe(rollConsole);
+        dockResizeObserver.observe(cta);
+    }
+
+    requestDockUpdate();
 }
 
 function beginSimulationExperience() {
@@ -5636,6 +5768,14 @@ function initializeBiomeInterface() {
 
 const FIRST_PERSON_CUTSCENES = new Set(['illusionary-cutscene']);
 
+function isAuraCutscenePlaybackActive() {
+    const cinematicOverlay = document.getElementById('cinematic-overlay');
+    return Boolean(
+        appState.videoPlaying
+        || cinematicOverlay?.style.display === 'flex'
+    );
+}
+
 function playAuraVideo(videoId, options = {}) {
     const manageAmbient = options.manageAmbient !== false;
     return new Promise(resolve => {
@@ -6335,6 +6475,7 @@ function resolveAuraStyleClass(aura, biome) {
     if (name.startsWith('赤月の破片')) classes.push('sigil-outline-赤月の破片');
     if (name.startsWith('Pixelation')) classes.push('sigil-effect-pixelation');
     if (name.startsWith('Luminosity')) classes.push('sigil-effect-luminosity');
+    if (name.startsWith('Unnamed Needs Equinox NOW')) classes.push('sigil-effect-equinox');
     if (name.startsWith('Equinox')) classes.push('sigil-effect-equinox');
     if (name.startsWith('Equinox : youareanidiot')) classes.push('sigil-effect-equinox');
     if (name.startsWith('Megaphone')) classes.push('sigil-effect-megaphone');
@@ -6755,8 +6896,8 @@ function observeLayeredSigilText() {
     observer.observe(document.body, { childList: true, subtree: true, characterData: true });
 }
 
-const GLITCH_SIGIL_SELECTOR = '.sigil-outline-glitch, .sigil-effect-glitch__title';
-const GLITCH_SIGIL_SYMBOLS = Object.freeze(['@', '#', '$', '%', '&', '*', '!', '?', '+', '=']);
+const GLITCH_SIGIL_SELECTOR = '.sigil-outline-glitch';
+const GLITCH_SIGIL_SYMBOLS = Object.freeze(['@', '#', '$', '%', '&', '*', '!', '?', '+', '=', '(', ')', '^', '-', '1', '0']);
 const GLITCH_SIGIL_REPLACEABLE_CHARACTER_PATTERN = /[\p{L}\p{N}]/u;
 let glitchSigilFlickerTimeoutId = null;
 let glitchSigilRestoreTimeoutId = null;
@@ -6840,7 +6981,7 @@ function getGlitchSigilTextNodes(element) {
     return textNodes;
 }
 
-function scheduleGlitchSigilFlicker(delay = 450 + Math.random() * 750) {
+function scheduleGlitchSigilFlicker(delay = 10 + Math.random() * 5) {
     if (glitchSigilFlickerTimeoutId !== null) {
         clearTimeout(glitchSigilFlickerTimeoutId);
     }
@@ -6942,6 +7083,7 @@ const AURA_BLUEPRINT_SOURCE = Object.freeze([
     { name: "Illusionary - 10,000,000", chance: 10000000, nativeBiomes: ["cyberspace"], ignoreLuck: true, fixedRollThreshold: 1, cutscene: "illusionary-cutscene" },
     { name: "Meta - 10,000", chance: 10000, nativeBiomes: ["cyberspace"], ignoreLuck: true, fixedRollThreshold: 1 },
     { name: MONARCH_AURA_NAME, chance: 3000000000, cutscene: "monarch-cutscene", nativeBiomes: ["corruption", "glitch"], disableNativeOverrideTier: true },
+    // { name: "Unnamed Needs Equinox NOW - 2,500,000,000", chance: 2500000000, cutscene: "equinox-cutscene" },
     { name: "Equinox - 2,500,000,000", chance: 2500000000, cutscene: "equinox-cutscene" },
     { name: "Equinox : youareanidiot - 2,500,000,000", chance: 2500000000, cutscene: "idiot-cutscene" },
     { name: DREAMCATCHER_AURA_NAME, chance: 2222222222, nativeBiomes: ["night"], cutscene: "catcher-cutscene" },
@@ -7644,6 +7786,9 @@ const EVENT_AURA_LOOKUP = {
         "Vacation - 58,620,000",
         "Bayview - 60,000,000",
         "Pool Party - 972,000,000",
+        "Taverna - 1,100,000,000",
+        "",
+        "",
     ]
 };
 
@@ -12505,7 +12650,7 @@ function prepareSimulationBatch(batch, selectionState, eventContext) {
 }
 
 function runRollSimulation(options = {}) {
-    if (simulationActive) return;
+    if (simulationActive || isAuraCutscenePlaybackActive()) return;
 
     if (!feedContainer) {
         feedContainer = document.getElementById('simulation-feed');

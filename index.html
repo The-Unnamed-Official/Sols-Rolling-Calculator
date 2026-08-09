@@ -6,7 +6,7 @@
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
-    <title>Sol's RNG Rolling Simulator v2.001</title>
+    <title>Sol's RNG Rolling Simulator v2.010</title>
     <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@7.1.0/css/all.min.css" crossorigin="anonymous">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -391,16 +391,6 @@
 
     <div id="cinematic-overlay" class="cinematic-overlay" aria-hidden="true"></div>
 
-    <div id="introOverlay" class="intro-overlay" role="dialog" aria-modal="true" aria-label="Start the simulation">
-        <div class="intro-overlay__panel">
-            <div class="intro-overlay__logo" role="img" aria-label="Sols Rolling Simulator">
-                <img src="files/images/icons/logo.png" alt="Sols Rolling Simulator logo" decoding="async" fetchpriority="high">
-            </div>
-            <p class="intro-overlay__copy">Begin the experience to unlock audio playback.</p>
-            <button type="button" class="intro-overlay__start-button" id="startExperienceButton">Start Simulation</button>
-        </div>
-    </div>
-
     <div class="interface-shell">
         <header class="surface interface-header masthead-console" role="banner">
             <div class="masthead__brand">
@@ -417,9 +407,9 @@
                         <h1 class="banner__title">Sol's RNG Rolling Simulator</h1>
                     </div>
                     <div class="banner__subtitle masthead-console__metadata">
-                        <button type="button" class="banner__version-button masthead-console__meta-card masthead-console__meta-card--version masthead-console__version" id="versionInfoButton" aria-haspopup="dialog" aria-expanded="false" data-version-id="v2.001">
+                        <button type="button" class="banner__version-button masthead-console__meta-card masthead-console__meta-card--version masthead-console__version" id="versionInfoButton" aria-haspopup="dialog" aria-expanded="false" data-version-id="v2.010">
                             <i class="fa-solid fa-code-branch" aria-hidden="true"></i>
-                            <span><small>Current build</small><strong>Version 2.001</strong></span>
+                            <span><small>Current build</small><strong>Version 2.010</strong></span>
                         </button>
                         <span class="masthead-console__meta-card banner__subtitle-author">
                             <img class="masthead-console__creator-avatar" src="files/images/other/theUnnamed.jpg" alt="" aria-hidden="true" decoding="async">
@@ -516,17 +506,6 @@
                             <span class="resource-link__category">Community</span>
                             <span class="resource-link__label">Unnamed's RNG Server</span>
                             <span class="resource-link__meta">Join the community and play Unnamed's RNG game.</span>
-                        </span>
-                        <span class="resource-link__launch" aria-hidden="true"><i class="fa-solid fa-arrow-up-right-from-square"></i></span>
-                    </a>
-                    <a class="resource-link resource-link--nolifers" href="https://discord.gg/nolifers" target="_blank" rel="noopener">
-                        <span class="resource-link__icon resource-link__icon--nolifers" aria-hidden="true">
-                            <img class="resource-link__image resource-link__image--nolifers" src="files/images/icons/noLifersLogo.png" alt="" loading="lazy" decoding="async">
-                        </span>
-                        <span class="resource-link__content">
-                            <span class="resource-link__category">Partner community</span>
-                            <span class="resource-link__label">NoLifers Discord</span>
-                            <span class="resource-link__meta">Meet an active community built around Sol's RNG.</span>
                         </span>
                         <span class="resource-link__launch" aria-hidden="true"><i class="fa-solid fa-arrow-up-right-from-square"></i></span>
                     </a>
@@ -679,9 +658,13 @@
                             <span class="roll-console__armed-dot" aria-hidden="true"></span>
                             <span class="roll-console__armed-text">Ready</span>
                         </span>
+                        <button class="interface-button interface-button--minor roll-dock__parameters" type="button" id="rollDockParametersButton" title="Edit roll parameters">
+                            <i class="fa-solid fa-sliders" aria-hidden="true"></i>
+                            <span>Edit parameters</span>
+                        </button>
                     </div>
                     <div class="roll-split-control">
-                        <button class="roll-trigger" type="button" onclick="runRollSimulation()">Start Rolling</button>
+                        <button class="roll-trigger" type="button" onclick="runRollSimulation()" title="Start rolling">Start Rolling</button>
                         <button class="roll-pause" type="button" id="rollPauseButton" aria-label="Pause rolling" title="Pause rolling" disabled hidden>
                             <i class="fa-solid fa-pause" aria-hidden="true"></i>
                         </button>
@@ -1123,7 +1106,6 @@
                     </div>
                     <h2 class="surface__title" id="presets-heading">Preset Command Center</h2>
                     <p class="surface__subtitle">Load curated luck, device, buff, and roll-count configurations.</p>
-                    <span class="preset-signoff__name">Aaden</span>
                 </header>
                 <div class="control-section control-section--presets preset-console__body">
                     <div class="preset-console__tabs" role="tablist" aria-label="Quick preset banks">
@@ -1601,13 +1583,13 @@
                 <i class="fa-solid fa-hand-holding-heart"></i>
             </span>
         </button>
-        <a class="support-float__link" id="supportFloatLink" href="https://buymeacoffee.com/theunnamed" target="_blank" rel="noopener" aria-label="Support future updates on Buy Me a Coffee">
+        <a class="support-float__link" id="supportFloatLink" href="https://ko-fi.com/notunnamed" target="_blank" rel="noopener" aria-label="Support future updates on Ko-Fi">
             <span class="support-float__icon" aria-hidden="true">
                 <i class="fa-solid fa-hand-holding-heart"></i>
             </span>
             <span class="support-float__content">
-                <span class="support-float__eyebrow">Buy Me a Coffee</span>
-                <span class="support-float__label">Support Future Updates</span>
+                <span class="support-float__eyebrow">Support me</span>
+                <span class="support-float__label">Help me with future development of the Rolling Simulator</span>
                 <span class="support-float__meta">Help keep the calculator polished, maintained, and growing.</span>
             </span>
         </a>
@@ -2062,6 +2044,97 @@
             </div>
 
             <div class="changelog-modal__panels" data-changelog-panels>
+                <!-- <section
+                    id="changelog-panel-v2020"
+                    class="changelog-modal__panel"
+                    role="tabpanel"
+                    aria-labelledby="changelog-tab-v2020"
+                    data-changelog-panel="v2.020"
+                    data-changelog-label="v2.020"
+                    tabindex="0"
+                >
+                    <header class="changelog-modal__header">
+                        <h2 class="changelog-modal__title">Version 2.020 Update Notes</h2>
+                        <span class="changelog-tab__subtitle">Summer Update Part 2</span>
+                        <p class="changelog-modal__meta">Updated 2026/08/20 · 1:30 PM CEST</p>
+                    </header>
+                    <p class="changelog-modal__intro">Latest changes:</p>
+                    <ul class="changelog-modal__list changelog-modal__list--grouped">
+                        <li class="changelog-release-group changelog-release-group--summer">
+                            <div class="changelog-featured-ui__header changelog-summer__header">
+                                <span class="changelog-featured-ui__icon changelog-summer__icon" aria-hidden="true"><i class="fa-solid fa-sun"></i></span>
+                                <span class="changelog-featured-ui__heading">
+                                    <span class="largeClass"><span class="sigil-outline-summer">Summer</span> Part 2</span>
+                                    <span>The second TIDAL WAVE of Summer 2026 content has arrived! <span class="movedClass barelyVisibleClass">See what I did there <img class="inline-emoji" height="8" width="8" src="files/images/emojis/Blue-Troll-Face-Emoji.png"></span>
+                            </div>
+                            <p class="changelog-summer__intro">Added x new auras:</p>
+                            <ul class="changelog-release-rarity-grid changelog-release-rarity-grid--summer">
+                                <li>Unknown<span class="tinyClass">1 in Unknown</span></li>
+                                <li>Unknown<span class="tinyClass">1 in Unknown</span></li>
+                                <li>Unknown<span class="tinyClass">1 in Unknown</span></li>
+                                <li>Unknown<span class="tinyClass">1 in Unknown</span></li>
+                                <li>Unknown<span class="tinyClass">1 in Unknown</span></li>
+                                <li>Unknown<span class="tinyClass">1 in Unknown</span></li>
+                                <li>Unknown<span class="tinyClass">1 in Unknown</span></li>
+                            </ul>
+                            <ul class="changelog-release-group__list changelog-summer__notes">
+                                <li>Other stuff maybe?</li>
+                            </ul>
+                        </li>
+                    </ul>
+                </section> -->
+
+                <section
+                    id="changelog-panel-v2010"
+                    class="changelog-modal__panel"
+                    role="tabpanel"
+                    aria-labelledby="changelog-tab-v2010"
+                    data-changelog-panel="v2.010"
+                    data-changelog-label="v2.010"
+                    tabindex="0"
+                >
+                    <header class="changelog-modal__header">
+                        <h2 class="changelog-modal__title">Version 2.010 Update Notes</h2>
+                        <span class="changelog-tab__subtitle">Small QoL Update</span>
+                        <p class="changelog-modal__meta">Updated 2026/08/09 · 9:20 PM CEST</p>
+                    </header>
+                    <p class="changelog-modal__intro">Latest changes:</p>
+                    <ul class="changelog-modal__list changelog-modal__list--grouped">
+                        <li class="changelog-release-group changelog-release-group--featured-ui">
+                            <div class="changelog-featured-ui__header">
+                                <span class="changelog-featured-ui__icon" aria-hidden="true"><i class="fa-solid fa-screwdriver-wrench"></i></span>
+                                <span class="changelog-featured-ui__heading">
+                                    <span class="largeClass">Other Changes</span>
+                                    <span>QoL enhancements/improvements.</span>
+                                </span>
+                            </div>
+                            <br>
+                            <span class="largeClass">UI startup:</span>
+                            <ul class="changelog-release-group__list">
+                                <li>Removed the beginning UI popup that did absolutely nothing... You're welcome <img class="inline-emoji" width="16" height="16" src="files/images/emojis/aga.png"></li>
+                            </ul>
+                            <br>
+                            <span class="largeClass">Latest Deployment re-do:</span>
+                            <ul class="changelog-release-group__list">
+                                <li>Reworked the "Latest Deployment" section to show when the latest deployment from the published tree was executed, automatically displayed in your local timezone.</li>
+                            </ul>
+                            <br>
+                            <span class="largeClass">Always-ready rolling:</span>
+                            <ul class="changelog-release-group__list">
+                                <li>Added an adaptive Roll Dock that stays on screen after you scroll past the original Launch Sequence. It remains aligned with the Simulation Console on PC and tablets, then moves into a compact, horizontally centered top position on phones while respecting unsafe screen edges.</li>
+                                <li>The dock keeps the live Ready, Rolling, Paused, and Cutscene status visible, and carries the existing pause and cancel controls with it during Sol's-Like simulations.</li>
+                            </ul>
+                            <br>
+                            <span class="largeClass">Faster controls:</span>
+                            <ul class="changelog-release-group__list">
+                                <li>Added a <span class="changelog-control-chip"><i class="fa-solid fa-sliders" aria-hidden="true"></i> Edit parameters</span> shortcut to the floating dock so the run configuration is always one tap away.</li>
+                                <li>Press <span class="changelog-control-chip">Ctrl + Enter</span> on Windows and Linux or <span class="changelog-control-chip">Command + Enter</span> on macOS to start a roll from anywhere on the page. The hint is only shown on non-mobile interfaces with keyboard-like input, and the shortcut stays locked while dialogs, simulations, or aura cutscenes are active.</li>
+                                <li>The dock recalculates its size and position after window, orientation, and device-size changes, and its entrance animation follows the existing reduced-motion and UI-animation preferences.</li>
+                            </ul>
+                        </li>
+                    </ul>
+                </section>
+
                 <section
                     id="changelog-panel-v2"
                     class="changelog-modal__panel"
@@ -2094,7 +2167,7 @@
                                 <li><i class="fa-solid fa-flask-vial" aria-hidden="true"></i><span><strong>Run Parameters</strong>Reorganized potion loadouts, environment controls, and Environment Shortcuts into systematic, overflow-safe command modules.</span></li>
                                 <li><i class="fa-solid fa-bolt" aria-hidden="true"></i><span><strong>Quick Presets</strong>Added bank navigation and cleaner preset cards, with hover/focus-only &minus;/+ steppers and safe wrapping for long potion combinations.</span></li>
                                 <li><i class="fa-solid fa-layer-group" aria-hidden="true"></i><span><strong>Settings & popups</strong>Unified Audio, Rolling Settings, quality preferences, aura filters, notices, confirmations, and the update archive into one responsive popup system.</span></li>
-                                <li><i class="fa-solid fa-compass" aria-hidden="true"></i><span><strong>Resources & support</strong>Rebuilt the Resource Hub, added animated NoLifers and Unnamed's RNG cards, Matrix repository effects, and fixed clipped support cards.</span></li>
+                                <li><i class="fa-solid fa-compass" aria-hidden="true"></i><span><strong>Resources & support</strong>Rebuilt the Resource Hub, added animated Unnamed's RNG cards, Matrix repository effects, and fixed clipped support cards.</span></li>
                                 <li><i class="fa-solid fa-people-group" aria-hidden="true"></i><span><strong>Credits directory</strong>Replaced the long credits list with an expandable, searchable directory and instant contribution-type filters.</span></li>
                                 <li><i class="fa-solid fa-mobile-screen-button" aria-hidden="true"></i><span><strong>Phone & tablet polish</strong>Hardened every major UI for narrow screens with adaptive grids, contained controls, compact forms, and safer popup and menu layering.</span></li>
                                 <li><i class="fa-solid fa-gauge-high" aria-hidden="true"></i><span><strong>Quality defaults</strong>New and cleared-data users start with reduced glitch effects enabled while the remaining optional quality preferences stay disabled.</span></li>
@@ -2201,7 +2274,7 @@
                             <ul class="changelog-release-group__list">
                                 <li>Reworked both event-style outlines and biome text sigils with larger lettering, thicker saturated color strokes, stronger palette-tinted fills, and a clean dark outer edge for consistent readability.</li>
                                 <li>Added distinct sigil palettes for <span class="sigil-outline-windy">Windy</span>, <span class="sigil-outline-snowy">Snowy</span>, <span class="sigil-outline-rainy">Rainy</span>, <span class="sigil-outline-sandstorm">Sandstorm</span>, <span class="sigil-outline-starfall">Starfall</span>, <span class="sigil-outline-hell">Hell</span>, <span class="sigil-outline-corruption">Corruption</span>, and <span class="sigil-outline-null">Null</span>.</li>
-                                <li>The <span class="sigil-outline-glitch">Glitch sigil</span> now uses a black-purple outline and corrupts arbitrary text—including multi-word and nested labels—far more often by briefly replacing one character with a symbol before restoring the original content.</li>
+                                <li>The <span class="sigil-outline-glitch">Glitch biome sigil</span> now uses a black-purple outline and corrupts arbitrary text—including multi-word and nested labels—far more often, while the Glitch aura keeps its original scrambled in-game title animation.</li>
                                 <li>Reworked Environment Shortcuts into wider three-column action cards with larger sigil labels and a dedicated full-width Reset action.</li>
                             </ul>
                             <br>
