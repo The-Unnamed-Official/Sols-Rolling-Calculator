@@ -6,12 +6,15 @@
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
-    <title>Sol's RNG Rolling Simulator v2.010</title>
+    <title>Sol's RNG Rolling Simulator v2.020</title>
     <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@7.1.0/css/all.min.css" crossorigin="anonymous">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Amatic+SC:wght@400;700&family=Cinzel:wght@400..900&family=Comic+Neue:ital,wght@0,300;0,400;0,700;1,300;1,400;1,700&family=Creepster&family=Fondamento:ital@0;1&family=Grenze+Gotisch:wght@100..900&family=Jura:wght@300..700&family=Kings&family=Luckiest+Guy&family=Merriweather:ital,opsz,wght@0,18..144,300..900;1,18..144,300..900&family=Michroma&family=Noto+Serif+TC:wght@500;600;700&family=Oswald:wght@200..700&family=Overpass:ital,wght@0,100..900;1,100..900&family=Parisienne&family=Patrick+Hand&family=Playfair+Display:wght@500;600;700&family=Press+Start+2P&family=Roboto+Flex:opsz,wght,XOPQ,XTRA,YOPQ,YTDE,YTFI,YTLC,YTUC@8..144,100..1000,96,468,79,-203,738,514,712&family=Roboto:ital,wght@0,100..900;1,100..900&family=Sarpanch:wght@400;500;600;700&family=Tangerine:wght@400;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+    <link href="https://fonts.googleapis.com/css2?family=Amatic+SC:wght@400;700&family=Cinzel:wght@400..900&family=Comic+Neue:ital,wght@0,300;0,400;0,700;1,300;1,400;1,700&family=Creepster&family=Fondamento:ital@0;1&family=Fuzzy+Bubbles:wght@400;700&family=Grenze+Gotisch:wght@100..900&family=Italianno&family=Josefin+Sans:ital,wght@0,600;1,600&family=Jura:wght@300..700&family=Kings&family=Luckiest+Guy&family=Merriweather:ital,opsz,wght@0,18..144,300..900;1,18..144,300..900&family=Michroma&family=Noto+Serif+TC:wght@500;600;700&family=Oswald:wght@200..700&family=Overpass:ital,wght@0,100..900;1,100..900&family=Parisienne&family=Patrick+Hand&family=Playfair+Display:wght@500;600;700&family=Press+Start+2P&family=Roboto+Flex:opsz,wght,XOPQ,XTRA,YOPQ,YTDE,YTFI,YTLC,YTUC@8..144,100..1000,96,468,79,-203,738,514,712&family=Roboto+Mono:ital,wght@0,100;1,100&family=Roboto:ital,wght@0,100..900;1,100..900&family=Sarpanch:wght@400;500;600;700&family=Tangerine:wght@400;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+    <link href="https://fonts.googleapis.com/css2?family=Audiowide&family=Noto+Sans+TC:wght@100..900&family=Noto+Serif+SC:wght@200..900&family=PT+Serif:ital,wght@0,400;0,700;1,400;1,700&family=Silkscreen:wght@400;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+    <link href="https://fonts.cdnfonts.com/css/zekton-2" rel="stylesheet" media="print" onload="this.media='all'">
+    <link href="https://fonts.cdnfonts.com/css/apple-garamond" rel="stylesheet" media="print" onload="this.media='all'">
     <noscript>
         <link href="https://fonts.googleapis.com/css2?family=Sarpanch:wght@400;500;600;700&display=swap" rel="stylesheet">
     </noscript>
@@ -407,9 +410,9 @@
                         <h1 class="banner__title">Sol's RNG Rolling Simulator</h1>
                     </div>
                     <div class="banner__subtitle masthead-console__metadata">
-                        <button type="button" class="banner__version-button masthead-console__meta-card masthead-console__meta-card--version masthead-console__version" id="versionInfoButton" aria-haspopup="dialog" aria-expanded="false" data-version-id="v2.010">
+                        <button type="button" class="banner__version-button masthead-console__meta-card masthead-console__meta-card--version masthead-console__version" id="versionInfoButton" aria-haspopup="dialog" aria-expanded="false" data-version-id="v2.020">
                             <i class="fa-solid fa-code-branch" aria-hidden="true"></i>
-                            <span><small>Current build</small><strong>Version 2.010</strong></span>
+                            <span><small>Current build</small><strong>Version 2.020</strong></span>
                         </button>
                         <span class="masthead-console__meta-card banner__subtitle-author">
                             <img class="masthead-console__creator-avatar" src="files/images/other/theUnnamed.jpg" alt="" aria-hidden="true" decoding="async">
@@ -445,7 +448,6 @@
                         <button class="interface-toggle options-menu__item" id="audioSettingsButton" type="button">Audio</button>
                         <button class="interface-toggle options-menu__item" id="rollingSettingsButton" type="button">Rolling Settings</button>
                         <button class="interface-toggle options-menu__item" id="qualityPreferencesToggle" type="button">Quality Preferances</button>
-                        <button class="interface-toggle options-menu__item" id="cinematicToggle" type="button" onclick="toggleCinematicMode()" aria-pressed="false">Cutscenes (Fullscreen recommended): Off</button>
                         <button class="interface-toggle options-menu__item" id="backgroundRollingButton" type="button" aria-pressed="false">Allow background rolling: Off</button>
                         <button class="interface-toggle options-menu__item" id="trueChanceDisplayButton" type="button" aria-pressed="false">True chance display: Off</button>
                     </div>
@@ -766,7 +768,12 @@
                     <span class="parameter-console__dev-icon" aria-hidden="true"><i class="fa-solid fa-flask-vial"></i></span>
                     <div class="form-field form-field--toggle">
                         <span class="form-field__label">Developer Biomes</span>
-                        <p>Enable to access developer biomes like Another Realm, Mastermind and The Red Full Moon.</p>
+                        <p>Enable to access
+                            <span class="biome-sigil--hyperspace-realm">[ THE HYPERSPACE REALM ]</span>,
+                            <span class="biome-sigil--null-existence">THE NULL'S EXISTENCE</span>,
+                            <span class="biome-sigil--citadel-of-orders">THE CITADEL OF ORDERS</span>, and
+                            <span class="biome-sigil--red-full-moon">[ 赤い満月 ]</span>.
+                        </p>
                         <label class="toggle toggle--dev-biomes">
                             <input type="checkbox" id="dev-biomes-toggle" class="toggle__input">
                             <span class="toggle__track"></span>
@@ -1137,7 +1144,6 @@
                             <span class="preset-console__bank-badge">18 Options</span>
                         </header>
                         <div class="preset-matrix" id="luck-preset-panel">
-                            <button type="button" data-luck-value="890000" onclick="applyLuckValue(890000, { luckSource: 'standard-preset', activateDunePreset: true, activateBloodPreset: 'blood-ii' })"><span class="allPotionsClass">All Potions</span> +890,000</button>
                             <button type="button" id="luck-preset-pump-kings-blood" data-luck-value="700000" aria-pressed="false" onclick="handlePumpKingsBloodPresetSelection('pump-kings-blood')"><span class="pumpBloodClass">Pump King's Blood</span> +700,000 <span class="preset-active-label" aria-hidden="true">Active</span></button>
                             <button type="button" id="luck-preset-oblivion" data-luck-value="600000" aria-pressed="false" onclick="handleOblivionPresetSelection('oblivion')"><span class="oblivionClass">Oblivion Potion</span> +600,000 <span class="preset-active-label" aria-hidden="true">Active</span></button>
                             <button type="button" data-luck-value="600000" onclick="applyLuckValue(600000, { luckSource: 'standard-preset' })"><span class="godlikeClass">Godlike</span> + <span class="heavenlyClass">Heavenly</span> + <span class="boundClass">Bound</span> +600,000</button>
@@ -1962,25 +1968,24 @@
                         <span>1 roll/ms</span>
                     </div>
                 </div>
-                <div class="rolling-settings__toggle-row" id="autoPauseAfterCutsceneRow">
-                    <span class="rolling-settings__toggle-copy">
-                        <span class="rolling-settings__label" id="autoPauseAfterCutsceneLabel">Automatically pause rolling after cutscene</span>
-                        <span class="rolling-settings__description">When using Sol's-Like, waits for you to press resume before processing the next roll.</span>
-                    </span>
-                    <label class="toggle" aria-labelledby="autoPauseAfterCutsceneLabel">
-                        <input type="checkbox" id="autoPauseAfterCutsceneToggle" class="toggle__input">
-                        <span class="toggle__track"></span>
-                        <span class="toggle__thumb"></span>
-                    </label>
+                <div class="rolling-settings__filters" aria-labelledby="rollingPauseCutsceneLabel">
+                    <div class="rolling-settings__filter-copy">
+                        <span class="rolling-settings__label" id="rollingPauseCutsceneLabel">Pause After Cutscenes</span>
+                        <span class="rolling-settings__description">Choose the individual aura cutscenes that pause Sol's-Like rolling until you press resume.</span>
+                    </div>
+                    <div class="rolling-settings__filter-actions rolling-settings__filter-actions--single">
+                        <button type="button" class="interface-button interface-button--minor" id="rollingPauseCutsceneFiltersButton">Pause Cutscenes</button>
+                    </div>
                 </div>
                 <div class="rolling-settings__filters" aria-labelledby="rollingFilterSettingsLabel">
                     <div class="rolling-settings__filter-copy">
-                        <span class="rolling-settings__label" id="rollingFilterSettingsLabel">Roll Feed Filters</span>
-                        <span class="rolling-settings__description">Open either filter without leaving Rolling Settings.</span>
+                        <span class="rolling-settings__label" id="rollingFilterSettingsLabel">Aura &amp; Cutscene Filters</span>
+                        <span class="rolling-settings__description">Choose what appears in the feed and which aura cutscenes are allowed to play.</span>
                     </div>
                     <div class="rolling-settings__filter-actions">
                         <button type="button" class="interface-button interface-button--minor" id="rollingFilterAuraTiersButton">Filter Aura Tiers</button>
                         <button type="button" class="interface-button interface-button--minor" id="rollingFilterAurasButton">Filter Auras</button>
+                        <button type="button" class="interface-button interface-button--minor" id="rollingCutscenePlaybackFiltersButton">Filter Cutscenes</button>
                     </div>
                 </div>
             </div>
@@ -2029,6 +2034,46 @@
         </div>
     </div>
 
+    <div id="cutscenePauseFilterOverlay" class="modal-overlay" hidden>
+        <div class="surface surface--modal filter-modal" role="dialog" aria-modal="true" aria-labelledby="cutscenePauseFilterTitle">
+            <div class="filter-modal__header">
+                <div class="filter-modal__header-row">
+                    <h2 class="filter-modal__title" id="cutscenePauseFilterTitle">Pause Cutscene Filters</h2>
+                    <button type="button" class="interface-button interface-button--ghost filter-modal__reset" id="cutscenePauseFilterReset">Reset selection</button>
+                </div>
+                <p class="filter-modal__hint">Turn on each aura whose cutscene should pause Sol's-Like rolling after it finishes. Only auras with cutscenes are shown.</p>
+            </div>
+            <div class="filter-modal__grid filter-modal__grid--scroll filter-modal__grid--stacked" id="cutscenePauseFilterList" data-cutscene-pause-filter-list></div>
+            <div class="filter-modal__actions">
+                <button type="button" class="interface-button interface-button--ghost filter-modal__close" id="cutscenePauseFilterClose">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="cutscenePlaybackFilterOverlay" class="modal-overlay" hidden>
+        <div class="surface surface--modal filter-modal" role="dialog" aria-modal="true" aria-labelledby="cutscenePlaybackFilterTitle">
+            <div class="filter-modal__header">
+                <div class="filter-modal__header-row">
+                    <h2 class="filter-modal__title" id="cutscenePlaybackFilterTitle">Cutscene Playback Filters</h2>
+                    <div class="filter-modal__header-actions">
+                        <span class="cutscene-playback-status" id="cutscenePlaybackStatus" role="status" aria-live="polite" data-active="false">
+                            <span class="cutscene-playback-status__indicator" aria-hidden="true"></span>
+                            <span>Enabled cutscenes</span>
+                            <small id="cutscenePlaybackStatusCount">0/0</small>
+                        </span>
+                        <button type="button" class="interface-button interface-button--ghost filter-modal__reset" id="cutscenePlaybackFilterReset">Reset selection</button>
+                        <button type="button" class="interface-button interface-button--ghost filter-modal__reset filter-modal__disable-all" id="cutscenePlaybackFilterDisableAll">Disable All</button>
+                    </div>
+                </div>
+                <p class="filter-modal__hint">Turn on the aura cutscenes that should play. The status pill activates automatically when at least one is enabled; turning every cutscene off disables playback entirely.</p>
+            </div>
+            <div class="filter-modal__grid filter-modal__grid--scroll filter-modal__grid--stacked" id="cutscenePlaybackFilterList" data-cutscene-playback-filter-list></div>
+            <div class="filter-modal__actions">
+                <button type="button" class="interface-button interface-button--ghost filter-modal__close" id="cutscenePlaybackFilterClose">Close</button>
+            </div>
+        </div>
+    </div>
+
     <div id="versionChangelogOverlay" class="modal-overlay" hidden>
         <div class="surface surface--modal changelog-modal" role="dialog" aria-modal="true" aria-labelledby="versionChangelogTitle">
             <h2 class="sr-only" id="versionChangelogTitle">Version changelog</h2>
@@ -2044,7 +2089,7 @@
             </div>
 
             <div class="changelog-modal__panels" data-changelog-panels>
-                <!-- <section
+                <section
                     id="changelog-panel-v2020"
                     class="changelog-modal__panel"
                     role="tabpanel"
@@ -2055,34 +2100,93 @@
                 >
                     <header class="changelog-modal__header">
                         <h2 class="changelog-modal__title">Version 2.020 Update Notes</h2>
-                        <span class="changelog-tab__subtitle">Summer Update Part 2</span>
-                        <p class="changelog-modal__meta">Updated 2026/08/20 · 1:30 PM CEST</p>
+                        <span class="changelog-tab__subtitle">Cutscene Controls &amp; Full Aura Style Rework</span>
+                        <p class="changelog-modal__meta">Updated 2026/08/11</p>
                     </header>
                     <p class="changelog-modal__intro">Latest changes:</p>
                     <ul class="changelog-modal__list changelog-modal__list--grouped">
-                        <li class="changelog-release-group changelog-release-group--summer">
-                            <div class="changelog-featured-ui__header changelog-summer__header">
-                                <span class="changelog-featured-ui__icon changelog-summer__icon" aria-hidden="true"><i class="fa-solid fa-sun"></i></span>
+                        <li class="changelog-release-group changelog-release-group--featured-ui">
+                            <div class="changelog-featured-ui__header">
+                                <span class="changelog-featured-ui__icon" aria-hidden="true"><i class="fa-solid fa-film"></i></span>
                                 <span class="changelog-featured-ui__heading">
-                                    <span class="largeClass"><span class="sigil-outline-summer">Summer</span> Part 2</span>
-                                    <span>The second TIDAL WAVE of Summer 2026 content has arrived! <span class="movedClass barelyVisibleClass">See what I did there <img class="inline-emoji" height="8" width="8" src="files/images/emojis/Blue-Troll-Face-Emoji.png"></span>
+                                    <span class="largeClass">Cutscene filters</span>
+                                    <span>Per-aura playback and pause behavior now lives together in Rolling Settings.</span>
+                                </span>
                             </div>
-                            <p class="changelog-summer__intro">Added x new auras:</p>
-                            <ul class="changelog-release-rarity-grid changelog-release-rarity-grid--summer">
-                                <li>Unknown<span class="tinyClass">1 in Unknown</span></li>
-                                <li>Unknown<span class="tinyClass">1 in Unknown</span></li>
-                                <li>Unknown<span class="tinyClass">1 in Unknown</span></li>
-                                <li>Unknown<span class="tinyClass">1 in Unknown</span></li>
-                                <li>Unknown<span class="tinyClass">1 in Unknown</span></li>
-                                <li>Unknown<span class="tinyClass">1 in Unknown</span></li>
-                                <li>Unknown<span class="tinyClass">1 in Unknown</span></li>
+                            <ul class="changelog-release-group__list">
+                                <li>Replaced the single pause-after-cutscene switch with a popup that lets every cutscene aura pause Sol's-Like rolling independently.</li>
+                                <li>Added a separate Cutscene Playback filter so individual aura cutscenes can play or be skipped automatically.</li>
+                                <li>Moved the old Enable Cutscenes control into the playback popup as a read-only status pill. It activates when any cutscene is selected and visibly disables when all are off.</li>
+                                <li>Added a Disable All action to turn off every aura cutscene at once.</li>
+                                <li>Enabling the first cutscene after everything was disabled now shows the fullscreen recommendation, including the permanent “Don't show this again” option.</li>
+                                <li>Saved pause and playback selections locally, migrated the previous global settings, and kept reset controls, keyboard dismissal, and focus restoration.</li>
                             </ul>
-                            <ul class="changelog-release-group__list changelog-summer__notes">
-                                <li>Other stuff maybe?</li>
+                        </li>
+                        <li class="changelog-release-group changelog-release-group--featured-ui">
+                            <div class="changelog-featured-ui__header">
+                                <span class="changelog-featured-ui__icon" aria-hidden="true"><i class="fa-solid fa-wand-magic-sparkles"></i></span>
+                                <span class="changelog-featured-ui__heading">
+                                    <span class="largeClass">Full Aura Style Rework</span>
+                                    <span>Expanded the aura-name renderer to match the Sol's RNG Fandom Wiki typography, gradients, outlines, spacing, and animations.</span>
+                                </span>
+                            </div>
+                            <ul class="changelog-release-group__list">
+                                <li>Updated every existing 1B+ custom sigil and <span class="changelog-aura-sigil" data-changelog-aura-sigil="Ascendant">Ascendant</span>.</li>
+                                <li class="changelog-aura-list">The reworked auras are
+                                    <span class="changelog-aura-sigil" data-changelog-aura-sigil="Neferkhaf">Neferkhaf</span>,
+                                    <span class="changelog-aura-sigil" data-changelog-aura-sigil="Memory">Memory</span>,
+                                    <span class="changelog-aura-sigil" data-changelog-aura-sigil="Oblivion">Oblivion</span>,
+                                    <span class="changelog-aura-sigil" data-changelog-aura-sigil="赤月の破片">赤月の破片</span>,
+                                    <span class="changelog-aura-sigil" data-changelog-aura-sigil="Prowler">Prowler</span>,
+                                    <span class="changelog-aura-sigil" data-changelog-aura-sigil="Oppression">Oppression</span>,
+                                    <span class="changelog-aura-sigil" data-changelog-aura-sigil="Illusionary">Illusionary</span>,
+                                    <span class="changelog-aura-sigil" data-changelog-aura-sigil="Clockwork">Clockwork</span>,
+                                    <span class="changelog-aura-sigil" data-changelog-aura-sigil="Dreammetric">Dreammetric</span>,
+                                    <span class="changelog-aura-sigil" data-changelog-aura-sigil="Fault">Fault</span>,
+                                    <span class="changelog-aura-sigil" data-changelog-aura-sigil="Megaphone">Megaphone</span>,
+                                    <span class="changelog-aura-sigil" data-changelog-aura-sigil="Meta">Meta</span>,
+                                    <span class="changelog-aura-sigil" data-changelog-aura-sigil="Cryogenic">Cryogenic</span>,
+                                    <span class="changelog-aura-sigil" data-changelog-aura-sigil="Astral : Astrald">Astral : Astrald</span>,
+                                    <span class="changelog-aura-sigil" data-changelog-aura-sigil="紅月を求めし者">紅月を求めし者</span>,
+                                    <span class="changelog-aura-sigil" data-changelog-aura-sigil="紅月の観測者">紅月の観測者</span>,
+                                    <span class="changelog-aura-sigil" data-changelog-aura-sigil="Borealis">Borealis</span>,
+                                    <span class="changelog-aura-sigil" data-changelog-aura-sigil="Glitch">Glitch</span>,
+                                    <span class="changelog-aura-sigil" data-changelog-aura-sigil="Innovator">Innovator</span>,
+                                    <span class="changelog-aura-sigil" data-changelog-aura-sigil="★">★</span>,
+                                    <span class="changelog-aura-sigil" data-changelog-aura-sigil="★★">★★</span>,
+                                    <span class="changelog-aura-sigil" data-changelog-aura-sigil="★★★">★★★</span>,
+                                    <span class="changelog-aura-sigil" data-changelog-aura-sigil="Attorney">Attorney</span>,
+                                    <span class="changelog-aura-sigil" data-changelog-aura-sigil="Verdict">Verdict</span>, and
+                                    <span class="changelog-aura-sigil" data-changelog-aura-sigil="Empty">Empty</span>.
+                                </li>
+                                <li>Applied the same aura-name visuals throughout result feeds, summaries, filters, and cutscene settings.</li>
+                                <li>Pinned <span class="changelog-aura-sigil" data-changelog-aura-sigil="★">★</span>, <span class="changelog-aura-sigil" data-changelog-aura-sigil="★★">★★</span>, <span class="changelog-aura-sigil" data-changelog-aura-sigil="★★★">★★★</span>, and <span class="changelog-aura-sigil" data-changelog-aura-sigil="Borealis">Borealis</span> to the top of result feeds with the other special auras.</li>
+                                <li>Special auras pinned above normal results are now ordered by rarity among themselves, with higher rarities first. This keeps <span class="changelog-aura-sigil" data-changelog-aura-sigil="Dreammetric">Dreammetric</span> above <span class="changelog-aura-sigil" data-changelog-aura-sigil="Borealis">Borealis</span>, <span class="changelog-aura-sigil" data-changelog-aura-sigil="Borealis">Borealis</span> above <span class="changelog-aura-sigil" data-changelog-aura-sigil="★★★">★★★</span>, <span class="changelog-aura-sigil" data-changelog-aura-sigil="★★">★★</span>, and <span class="changelog-aura-sigil" data-changelog-aura-sigil="★">★</span>, and <span class="changelog-aura-sigil" data-changelog-aura-sigil="Illusionary">Illusionary</span> above <span class="changelog-aura-sigil" data-changelog-aura-sigil="Meta">Meta</span>. <span class="changelog-aura-sigil" data-changelog-aura-sigil="Cryogenic">Cryogenic</span> also remains above <span class="changelog-aura-sigil" data-changelog-aura-sigil="Equinox">Equinox</span>.</li>
+                            </ul>
+                        </li>
+                        <li class="changelog-release-group changelog-release-group--featured-ui">
+                            <div class="changelog-featured-ui__header">
+                                <span class="changelog-featured-ui__icon" aria-hidden="true"><i class="fa-solid fa-music"></i></span>
+                                <span class="changelog-featured-ui__heading">
+                                    <span class="largeClass">Biome presentation &amp; music</span>
+                                    <span>Restored biome soundtrack playback and matched the developer-biome labels to the Wiki.</span>
+                                </span>
+                            </div>
+                            <ul class="changelog-release-group__list">
+                                <li>Fixed biome music startup and recovery after cutscenes, unmuting, volume restoration, delayed loading, and blocked autoplay retries. When no start screen is present, music now waits for the first pointer, touch, or keyboard interaction before playing. Aurora uses the available winter biome soundtrack instead of a missing audio file.</li>
+                                <li>Local-file sound effects now use direct media playback instead of Web Audio buffer fetching, eliminating the browser's <code>file://</code> CORS errors when rolling.</li>
+                                <li>Opening the simulator directly from a local file now bypasses the browser-blocked simulation worker and uses the built-in main-thread fallback without producing a SecurityError.</li>
+                                <li>Updated the developer biomes to
+                                    <span class="biome-sigil--hyperspace-realm">[ THE HYPERSPACE REALM ]</span>,
+                                    <span class="biome-sigil--null-existence">THE NULL'S EXISTENCE</span>,
+                                    <span class="biome-sigil--citadel-of-orders">THE CITADEL OF ORDERS</span>, and
+                                    <span class="biome-sigil--red-full-moon">[ 赤い満月 ]</span>
+                                    with their Wiki typography, colors, and outlines.
+                                </li>
                             </ul>
                         </li>
                     </ul>
-                </section> -->
+                </section>
 
                 <section
                     id="changelog-panel-v2010"

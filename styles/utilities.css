@@ -533,6 +533,46 @@
     text-shadow: 0 0.085em 0.07em rgba(0, 0, 0, 0.8);
 }
 
+.biome-sigil--hyperspace-realm,
+.biome-sigil--red-full-moon,
+.biome-sigil--citadel-of-orders {
+    font-family: Sarpanch, sans-serif;
+    font-weight: 700;
+    letter-spacing: normal;
+    text-transform: none;
+}
+
+.biome-sigil--hyperspace-realm {
+    color: #0d1d4a !important;
+    -webkit-text-fill-color: #0d1d4a !important;
+    -webkit-text-stroke: 0.2px #344382;
+}
+
+.biome-sigil--null-existence {
+    color: #000 !important;
+    font-family: Fondamento, serif;
+    font-weight: 700;
+    background: #fcfcfc;
+    background-clip: text !important;
+    -webkit-background-clip: text !important;
+    -webkit-text-fill-color: #000 !important;
+    -webkit-text-stroke: 0.8px transparent;
+    letter-spacing: normal;
+    text-transform: none;
+}
+
+.biome-sigil--red-full-moon {
+    color: #0d0000 !important;
+    -webkit-text-fill-color: #0d0000 !important;
+    -webkit-text-stroke: 0.2px #a90303;
+}
+
+.biome-sigil--citadel-of-orders {
+    color: #e7c698 !important;
+    -webkit-text-fill-color: #e7c698 !important;
+    -webkit-text-stroke: 0.2px #a90303;
+}
+
 .sigil-outline-leviathan {
     font-family: "Playfair Display", serif;
     text-transform: uppercase;
@@ -1182,9 +1222,6 @@ body.quality-no-glitch .sigil-glitch-flicker {
     background-clip: text;
     padding: 2px 4px;
     border-radius: 6px;
-    box-shadow:
-        inset 0 0 0 1px rgba(40, 160, 140, 0.32),
-        0 3px 10px rgba(0, 0, 0, 0.3);
 }
 
 @keyframes aura-luminosity-gradient {
@@ -1915,11 +1952,99 @@ body.quality-no-glitch .sigil-glitch-flicker {
     gap: 12px;
 }
 
+.filter-modal__header-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.cutscene-playback-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    min-height: 30px;
+    padding: 6px 10px;
+    border: 1px solid rgba(116, 135, 158, 0.3);
+    border-radius: 999px;
+    color: rgba(169, 181, 196, 0.7);
+    background: linear-gradient(180deg, rgba(44, 52, 63, 0.65), rgba(20, 25, 32, 0.82));
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.025);
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    line-height: 1;
+    text-transform: uppercase;
+    cursor: default;
+    user-select: none;
+    filter: saturate(0.25);
+    opacity: 0.62;
+    transition: border-color 180ms ease, color 180ms ease, background 180ms ease, box-shadow 180ms ease, filter 180ms ease, opacity 180ms ease;
+}
+
+.cutscene-playback-status[data-active="true"] {
+    border-color: rgba(98, 239, 204, 0.72);
+    color: #dffff5;
+    background: linear-gradient(180deg, rgba(20, 93, 78, 0.72), rgba(7, 49, 43, 0.9));
+    box-shadow: inset 0 0 14px rgba(98, 239, 204, 0.12), 0 0 13px rgba(60, 221, 185, 0.12);
+    filter: none;
+    opacity: 1;
+}
+
+.cutscene-playback-status__indicator {
+    width: 8px;
+    height: 8px;
+    flex: 0 0 8px;
+    border-radius: 50%;
+    background: #737d89;
+    box-shadow: 0 0 0 2px rgba(10, 16, 24, 0.72);
+}
+
+.cutscene-playback-status[data-active="true"] .cutscene-playback-status__indicator {
+    background: #62efcc;
+    box-shadow: 0 0 0 2px rgba(10, 40, 34, 0.78), 0 0 9px rgba(98, 239, 204, 0.8);
+}
+
+.cutscene-playback-status small {
+    color: inherit;
+    font: inherit;
+    letter-spacing: 0.04em;
+    opacity: 0.75;
+}
+
+#cutsceneWarningOverlay {
+    z-index: 10001;
+}
+
+@media (max-width: 620px) {
+    .filter-modal__header-row,
+    .filter-modal__header-actions {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .cutscene-playback-status {
+        justify-content: center;
+    }
+}
+
 .filter-modal__reset {
     padding: 6px 12px;
     font-size: 0.7rem;
     letter-spacing: 0.16em;
     white-space: nowrap;
+}
+
+.filter-modal__disable-all {
+    border-color: rgba(255, 111, 124, 0.42);
+    color: #ffc9cf;
+}
+
+.filter-modal__disable-all:hover,
+.filter-modal__disable-all:focus-visible {
+    border-color: rgba(255, 137, 148, 0.78);
+    background: rgba(112, 25, 39, 0.34);
 }
 
 .filter-modal__title {
@@ -2553,6 +2678,18 @@ body.quality-no-ui-animations .audio-slider__input::-moz-range-thumb {
 
 .changelog-release-group__list > li::marker {
     color: rgb(var(--accent-rgb) / 0.72);
+}
+
+.changelog-aura-list {
+    line-height: 2.15;
+}
+
+.changelog-aura-sigil {
+    display: inline-block;
+    margin-inline: 0.08em;
+    color: var(--text-primary);
+    line-height: 1.45;
+    vertical-align: middle;
 }
 
 .changelog-release-rarity-grid {
@@ -7321,5 +7458,1068 @@ body.theme-event-april-fools .april-fools-copy {
 
     .changelog-event-card--halloween {
         grid-column: auto;
+    }
+}
+
+/* Full Aura Style Rework: the 1B+ set, Ascendant, and the requested special auras. */
+.sigil-wiki-aura {
+    display: inline !important;
+    position: static !important;
+    padding: 0 !important;
+    border: 0 !important;
+    background: none !important;
+    color: inherit !important;
+    -webkit-text-fill-color: initial !important;
+    -webkit-text-stroke: 0 transparent !important;
+    font-family: inherit !important;
+    font-size: inherit !important;
+    font-style: normal !important;
+    font-weight: inherit !important;
+    letter-spacing: normal !important;
+    text-transform: none !important;
+    text-shadow: none !important;
+    filter: none !important;
+    animation: none !important;
+}
+
+.sigil-wiki-aura::before,
+.sigil-wiki-aura::after {
+    content: none !important;
+}
+
+.sigil-wiki {
+    position: relative;
+    display: inline-block;
+    isolation: isolate;
+    white-space: nowrap;
+    vertical-align: baseline;
+}
+
+.sigil-wiki__suffix {
+    color: var(--text-primary, #f5f8ff) !important;
+    -webkit-text-fill-color: currentColor !important;
+    -webkit-text-stroke: 0 transparent !important;
+    font-family: inherit !important;
+    font-size: inherit !important;
+    font-style: normal !important;
+    font-weight: inherit !important;
+    letter-spacing: normal !important;
+    text-transform: none !important;
+    text-shadow: none !important;
+    filter: none !important;
+}
+
+.sigil-wiki__layer {
+    background-clip: text !important;
+    -webkit-background-clip: text !important;
+    -webkit-text-fill-color: transparent;
+}
+
+.sigil-wiki__layer--back {
+    position: absolute;
+}
+
+.sigil-wiki__layer--front {
+    position: relative;
+}
+
+.sigil-wiki__text-stroke::before {
+    content: attr(data-text);
+    position: absolute;
+    z-index: 0;
+}
+
+.sigil-wiki > .sigil-wiki__face {
+    position: relative;
+}
+
+.sigil-wiki--dream-star {
+    font-size: 150%;
+    background: linear-gradient(to bottom, #ed77f8 25%, #eb75f7 35%, #ffebff 40%, #e064ef 50%, #ffedff 60%, #dc61ed 70%, #db5feb 75%);
+    background-clip: text !important;
+    -webkit-background-clip: text !important;
+    -webkit-text-fill-color: transparent;
+    -webkit-text-stroke: .6px #000;
+}
+
+.sigil-wiki--court {
+    font-family: "Playfair Display", serif;
+    font-style: italic;
+    font-weight: 700;
+}
+
+.sigil-wiki__court-stroke::before {
+    content: attr(data-text);
+    position: absolute;
+}
+
+.sigil-wiki__court-stroke--outer::before {
+    -webkit-text-stroke: 2px #3e1500;
+}
+
+.sigil-wiki__court-stroke--inner::before {
+    -webkit-text-stroke: 1px #dcb79a;
+}
+
+.sigil-wiki--court .sigil-wiki__face {
+    background: linear-gradient(175deg, #48291a 37%, #c59568 40%, #fffaf4 42%, #fffaf4 53%, #c99f76 55%, #6b4023 58%, #2a2225 71%);
+    background-clip: text !important;
+    -webkit-background-clip: text !important;
+    -webkit-text-fill-color: transparent;
+}
+
+.sigil-wiki--empty {
+    font-family: "Noto Sans TC", sans-serif;
+    font-style: italic;
+    background-image: linear-gradient(120deg, rgb(0 0 0 / 50%) 30%, #000 30% 50%, transparent 50%), repeating-radial-gradient(circle, #fff, #000 0.000003em);
+    background-clip: text !important;
+    -webkit-background-clip: text !important;
+    -webkit-text-fill-color: transparent;
+    animation: sigil-wiki-empty 2s linear infinite;
+}
+
+@keyframes sigil-wiki-empty {
+    0%, 100% {
+        background-image: linear-gradient(120deg, rgb(0 0 0 / 50%) 30%, #000 30% 50%, transparent 50%), repeating-radial-gradient(circle, #fff, #000 0.000003em);
+    }
+    17% {
+        background-image: linear-gradient(70deg, #000 40% 70%, transparent 70%), repeating-radial-gradient(circle, #fff, #000 0.000003em);
+    }
+    34% {
+        background-image: linear-gradient(10deg, rgb(0 0 0 / 50%) 10%, transparent 10% 30%, #000 30% 70%, transparent 70% 75%, #000 75%), repeating-radial-gradient(circle, #fff, #000 0.000003em);
+    }
+    51% {
+        background-image: linear-gradient(240deg, #000 30%, rgb(0 0 0 / 50%) 30% 70%, #000 70%), repeating-radial-gradient(circle, #fff, #000 0.000003em);
+    }
+    68% {
+        background-image: linear-gradient(320deg, #000 10%, rgb(0 0 0 / 50%) 20% 40%, #000 40% 45%, transparent 45% 60%, #000 60%), repeating-radial-gradient(circle, #fff, #000 0.000003em);
+    }
+    85% {
+        background-image: linear-gradient(190deg, rgb(0 0 0 / 50%) 40%, #000 40% 70%, transparent 70%), repeating-radial-gradient(circle, #fff, #000 0.000003em);
+    }
+}
+
+.sigil-wiki--neferkhaf {
+    font-family: Kings, serif;
+    font-size: 120%;
+    font-weight: 400;
+    letter-spacing: .4em;
+}
+
+.sigil-wiki--neferkhaf .sigil-wiki__layer--back {
+    background: linear-gradient(to bottom, #cdc4b5 36%, #fff6ef 40%, #9a8176 44%, #f6f5ec 70%);
+    -webkit-text-stroke: .15em transparent;
+}
+
+.sigil-wiki--neferkhaf .sigil-wiki__layer--front {
+    background: linear-gradient(178deg, #4b3116 30%, #dbc5b0 40%, #5f4630 50%, #d7c19a 60%, #9e8664 65%, #ffeacf, #4f3924 70%, #d5bda3, #492f16 90%, #d4bd9d, #8d755b, #e2ceb5, #a49078);
+    background-size: 1900% 100%;
+    -webkit-text-stroke: .03em #3f291c;
+    animation: sigil-wiki-neferkhaf-gradient 7s ease-in-out infinite;
+}
+
+@keyframes sigil-wiki-neferkhaf-gradient {
+    0%, 100% { background-position: 0 50%; }
+    50% { background-position: 100% 50%; }
+}
+
+.sigil-wiki--memory {
+    font-family: Merriweather, serif;
+    font-style: italic;
+}
+
+.sigil-wiki--memory .sigil-wiki__text-stroke::before {
+    -webkit-text-stroke: 1px #000;
+}
+
+.sigil-wiki--memory .sigil-wiki__face {
+    background: linear-gradient(to bottom, #1200a0 20%, #341ef1 30%, #5945ff 35%, #7667ff 40%, #6a36ff 50%, #3c0de3 65%, #1f0993 75%, #130565 90%);
+    background-clip: text !important;
+    -webkit-background-clip: text !important;
+    -webkit-text-fill-color: transparent;
+}
+
+.sigil-wiki--oblivion {
+    font-family: Fondamento, serif;
+    font-style: italic;
+    font-weight: 700;
+}
+
+.sigil-wiki--oblivion .sigil-wiki__text-stroke::before {
+    -webkit-text-stroke: 2px #000;
+}
+
+.sigil-wiki--oblivion .sigil-wiki__face {
+    background: linear-gradient(10deg, #331f86 30%, #b449f3 50%, #fd85ff, #fba2ff 65%, #f8b7fb, #fed3ff, #fce8ff);
+    background-clip: text !important;
+    -webkit-background-clip: text !important;
+    -webkit-text-fill-color: transparent;
+}
+
+.sigil-wiki--crimson-fragment {
+    font-family: "Noto Serif SC", "Noto Serif TC", serif;
+    background: linear-gradient(175deg, #920302 20%, #fb4f46 46.3%, #fe998b 48.3%, #ffebbb 48.6%, #feba81 49%, #ef2712 50%, #fe7268 51%, #920302 70%);
+    background-size: 2000% 100%;
+    background-clip: text !important;
+    -webkit-background-clip: text !important;
+    -webkit-text-fill-color: transparent;
+    filter: drop-shadow(0 0 1px #fb4f4b) drop-shadow(0 0 1px #fb4f4b) drop-shadow(0 0 1.5px #cf1210) drop-shadow(0 0 1.5px #cf1210);
+    animation: sigil-wiki-crimson-fragment 12s linear infinite;
+}
+
+@keyframes sigil-wiki-crimson-fragment {
+    0% { background-position: 400% 0; }
+    100% { background-position: 0 0; }
+}
+
+.sigil-wiki--prowler {
+    font-family: Sarpanch, sans-serif;
+    font-style: italic;
+    font-weight: 700;
+    background: linear-gradient(181deg, #0024ad 30%, #4ea3ff 40%, #1761fe 60%, #67b6ff 70%);
+    background-clip: text !important;
+    -webkit-background-clip: text !important;
+    -webkit-text-fill-color: transparent;
+    -webkit-text-stroke: .4px #0024ad;
+}
+
+.sigil-wiki--oppression {
+    width: 10.5em;
+    font-family: "PT Serif", serif;
+    letter-spacing: .3125em;
+    background: #fff;
+    background-clip: text !important;
+    -webkit-background-clip: text !important;
+    -webkit-text-fill-color: transparent;
+    animation: oppressionGradient 2s linear infinite;
+}
+
+.sigil-wiki--illusionary {
+    color: #eff4fc;
+    font-family: "Roboto Mono", monospace;
+    font-style: italic;
+    animation: sigil-wiki-illusionary-color 1.8s steps(2, end) infinite;
+}
+
+@keyframes sigil-wiki-illusionary-color {
+    0%, 100% { color: #eff4fc; text-shadow: 1px 0 0 #0302d2; }
+    50% { color: #0302d2; text-shadow: -1px 0 0 #eff4fc; }
+}
+
+.sigil-wiki--clockwork {
+    font-family: Fondamento, serif;
+    font-style: italic;
+    font-weight: 700;
+    letter-spacing: .23em;
+}
+
+.sigil-wiki--clockwork .sigil-wiki__layer--back {
+    background: linear-gradient(to bottom, #fbfeff 25%, #d0d7e1 50%, #070c11 60%, #fff 60%, #cbd2dd 65%, #03090d 69%);
+    -webkit-text-stroke: .8px transparent;
+}
+
+.sigil-wiki--clockwork .sigil-wiki__layer--front {
+    background: linear-gradient(to bottom, #04080c 25%, #707b8c 45%, #ced5e1 55%, #fff 55%, #fdffff 60%, #010407 60%, #a7b1bf 67%, #fff 72%);
+}
+
+.sigil-wiki--dreammetric {
+    font-family: "Playfair Display", serif;
+    letter-spacing: .2em;
+}
+
+.sigil-wiki--dreammetric .sigil-wiki__text-stroke::before {
+    -webkit-text-stroke: 1.5px #ffecff;
+}
+
+.sigil-wiki--dreammetric .sigil-wiki__face {
+    background: linear-gradient(to bottom, #fffcff 35%, #ffd9ff 45%, #fff1ff 50%, #ffabff 55% 65%, #ffeeff 75%);
+    background-clip: text !important;
+    -webkit-background-clip: text !important;
+    -webkit-text-fill-color: transparent;
+}
+
+.sigil-wiki--fault {
+    font-family: Zekton, Michroma, sans-serif;
+}
+
+.sigil-wiki--fault .sigil-wiki__layer--back {
+    background: linear-gradient(0deg, rgb(0 32 0) 25%, rgb(0 115 0) 40%, rgb(0 148 0) 55%, rgb(0 115 0) 65%, rgb(0 32 0) 75%);
+    -webkit-text-stroke: 2.9px transparent;
+}
+
+.sigil-wiki--fault .sigil-wiki__layer--front {
+    background: linear-gradient(0deg, rgb(112 210 112) 20%, rgb(200 255 200) 30%, rgb(225 255 255) 50%, rgb(175 255 175) 70%, rgb(94 158 92) 75%);
+}
+
+.sigil-wiki--megaphone {
+    padding: .1em;
+    font-family: Silkscreen, monospace;
+    background: linear-gradient(to bottom, #2faca6 30%, #49c793);
+    background-clip: text !important;
+    -webkit-background-clip: text !important;
+    -webkit-text-fill-color: #005257;
+    -webkit-text-stroke: 1.5px transparent;
+}
+
+.sigil-wiki--meta {
+    padding: .1em;
+    color: #f1f4ff;
+    background: #0000fc;
+    font-family: "Josefin Sans", sans-serif;
+}
+
+.sigil-wiki--meta > span {
+    filter: drop-shadow(1px 0 0 #09089e);
+}
+
+.sigil-wiki--cryogenic {
+    font-family: Kings, serif;
+    font-style: italic;
+    font-weight: 700;
+    letter-spacing: .3em;
+}
+
+.sigil-wiki--cryogenic .sigil-wiki__text-stroke::before {
+    -webkit-text-stroke: 1px #7690bf;
+}
+
+.sigil-wiki--cryogenic .sigil-wiki__face {
+    background: linear-gradient(to bottom, #a6c7f2 20%, #e2f1f9 50%, #cdece4 65%);
+    background-clip: text !important;
+    -webkit-background-clip: text !important;
+    -webkit-text-fill-color: transparent;
+}
+
+.sigil-wiki--astrald {
+    font-family: "Apple Garamond", Garamond, serif;
+    transform: skewX(-10deg);
+}
+
+.sigil-wiki--astrald .sigil-wiki__layer--back {
+    background: linear-gradient(to bottom, #b0b1ba 30%, #787983 35%, #6c6f7b 38%, #676f74 42%, #333b41 45%, #4a5053 47%, #2a2d34 55%, #97989e 57%, #6e7177 60%, #888b91 63%, #707479 66%, #abafb5 69%, #68686d 70%, #87888d 71%);
+    -webkit-text-stroke: 1.5px transparent;
+}
+
+.sigil-wiki--astrald .sigil-wiki__layer--front {
+    background: linear-gradient(to bottom, #31343c 25%, #ebefee 35%, #f8fcfb 58%, #010103 60%, #c5cac9 75%);
+}
+
+.sigil-wiki--crimson-seeker,
+.sigil-wiki--crimson-observer {
+    font-family: "Noto Serif SC", "Noto Serif TC", serif;
+    font-style: italic;
+}
+
+.sigil-wiki__crimson-stroke::before {
+    content: attr(data-text);
+    position: absolute;
+}
+
+.sigil-wiki--crimson-seeker .sigil-wiki__crimson-stroke--outer::before { -webkit-text-stroke: 2px #963142; }
+.sigil-wiki--crimson-seeker .sigil-wiki__crimson-stroke--inner::before { -webkit-text-stroke: 1px #c01a3f; }
+.sigil-wiki--crimson-observer .sigil-wiki__crimson-stroke--outer::before { -webkit-text-stroke: 2px #e00c05; }
+.sigil-wiki--crimson-observer .sigil-wiki__crimson-stroke--inner::before { -webkit-text-stroke: .3px #ff9f9f; }
+
+.sigil-wiki--crimson-seeker .sigil-wiki__face,
+.sigil-wiki--crimson-observer .sigil-wiki__face {
+    background-clip: text !important;
+    -webkit-background-clip: text !important;
+    -webkit-text-fill-color: transparent;
+}
+
+.sigil-wiki--crimson-seeker .sigil-wiki__face {
+    background-image: linear-gradient(to bottom, #8d3546 25%, #541622 30%, #982330 35%, #6a0713 40%, #e53955 80%);
+}
+
+.sigil-wiki--crimson-observer .sigil-wiki__face {
+    background-image: linear-gradient(to bottom, #220000 50%, #e20c0d 80%);
+}
+
+.sigil-wiki--borealis {
+    font-family: Tangerine, cursive;
+    font-size: 140%;
+    letter-spacing: .2em;
+    background: linear-gradient(to bottom, #e8b5f8 6%, #fde2ff 8%, #ec96fa 90%);
+    background-clip: text !important;
+    -webkit-background-clip: text !important;
+    -webkit-text-fill-color: rgb(0 0 0 / 20%);
+    -webkit-text-stroke: 2px transparent;
+}
+
+.sigil-wiki--glitch {
+    min-width: 12em;
+}
+
+.sigil-wiki__glitch-title::after {
+    content: "GLITCH";
+    position: absolute;
+    background: linear-gradient(to bottom, #131323 41%, #4f3d91 42%, #1b0f47 45%, #4a3e7a 50%, #040b22 55%, #21135c 60%, #02011a 62%, #422d8e 75%);
+    background-clip: text !important;
+    -webkit-background-clip: text !important;
+    -webkit-text-fill-color: #000;
+    -webkit-text-stroke: 2px transparent;
+    letter-spacing: .2em;
+    filter: saturate(2);
+    animation: sigil-wiki-glitch-font 4s linear infinite, glitch-title-stroke 25s linear infinite, glitch-title-content 3s linear infinite;
+}
+
+.sigil-wiki__glitch-space {
+    color: transparent;
+    font-family: "Press Start 2P", monospace;
+    letter-spacing: .4em;
+}
+
+@keyframes sigil-wiki-glitch-font {
+    0%, 60% { font-family: Jura, sans-serif; }
+    8% { font-family: Michroma, sans-serif; }
+    16%, 72% { font-family: Arial, sans-serif; }
+    24%, 88% { font-family: Sarpanch, sans-serif; }
+    32% { font-family: "Noto Serif TC", serif; }
+    40% { font-family: "Comic Neue", cursive; }
+    48% { font-family: "Amatic SC", cursive; }
+    56% { font-family: Creepster, cursive; }
+    64% { font-family: Fondamento, serif; }
+    80% { font-family: "Luckiest Guy", cursive; }
+    96%, 100% { font-family: "Noto Serif TC", serif; font-weight: 700; }
+}
+
+.sigil-wiki--innovator {
+    font-family: Audiowide, Michroma, sans-serif;
+    font-size: 125%;
+    background: linear-gradient(180deg, #bc6afd, #5c41ac 40%, #8077e0 50%, #acb3ff 55%, #887dc9);
+    background-clip: text !important;
+    -webkit-background-clip: text !important;
+    -webkit-text-fill-color: #3b3692;
+    -webkit-text-stroke: .125em transparent;
+}
+
+.sigil-wiki--monarch {
+    font-family: Kings, serif;
+    font-style: italic;
+    letter-spacing: .25em;
+}
+
+.sigil-wiki--monarch .sigil-wiki__layer--back {
+    background: linear-gradient(177deg, #ffe2ff 25%, #3f18e9 35%, #f3caff 36%, #4b1ee0 45%, #fff2ff 60%, #4623e6 61%, #924fff 70%);
+    -webkit-text-stroke: 2px transparent;
+}
+
+.sigil-wiki--monarch .sigil-wiki__layer--front {
+    background: linear-gradient(185deg, #04003b 20%, #2b04c5 30%, #010035 50% 65%, #3c08c9 75%);
+}
+
+.sigil-wiki--ascendant {
+    font-family: "Playfair Display", serif;
+    font-style: italic;
+}
+
+.sigil-wiki--ascendant .sigil-wiki__layer--back {
+    background: linear-gradient(to bottom, #7c321c 22%, #2d140d 35% 42%, #f1b883 45%, #fffadd 50%, #f5bd89 55%, #3f160a 57% 58%, #e59475 61%, #ffe8d4 63%, #cd7757 66%, #220801 69%, #b74635 80%);
+    -webkit-text-stroke: 1px transparent;
+}
+
+.sigil-wiki--ascendant .sigil-wiki__layer--front {
+    background: linear-gradient(to bottom, #ffeddd 25%, #fffff7 30% 40%, #fff8dc 42%, #fff3d1 60%, #f3b07e 63%, #47130e 66%, #eca375 70%, #fff3d2 75%, #ffcd9b 84%);
+}
+
+.sigil-wiki--astraios {
+    font-family: "Playfair Display", serif;
+    font-style: italic;
+    letter-spacing: .15em;
+}
+
+.sigil-wiki--astraios .sigil-wiki__layer--back {
+    background: linear-gradient(to bottom, #b6b3a2 35%, #54484a 45%, #173532 65%);
+    -webkit-text-stroke: 2px transparent;
+}
+
+.sigil-wiki--astraios .sigil-wiki__layer--front {
+    background: linear-gradient(to bottom, #58685d 20%, #517064 35%, #42c297 50%, #67e1c1 65%);
+}
+
+.sigil-wiki--yolkegg {
+    font-family: Michroma, sans-serif;
+    font-style: italic;
+    font-weight: bold;
+}
+
+.sigil-wiki--yolkegg .sigil-wiki__layer--back {
+    background: linear-gradient(178deg, #bdc6ff 25%, #b682ff 30%, #f5ebff 40%, #cb76ff 45%, #f397ff 50%, #d8a2ff 54%, #92a2ff 60%, #bccdff 70%, #6628ff 76%);
+    -webkit-text-stroke: 2px transparent;
+}
+
+.sigil-wiki--yolkegg .sigil-wiki__layer--front {
+    background: linear-gradient(182deg, #9983dd 25%, #0b1adc 30%, #3c83ff 37%, #183fe9 40%, #1b0ebf 46%, #2511ff 48%, #ba6dff 55%, #401fef 62%, #0c146f 70%, #54427b 75%, #7d58af 82%);
+}
+
+.sigil-wiki--leviathan {
+    font-family: "Playfair Display", serif;
+    letter-spacing: .15em;
+    background: linear-gradient(178deg, #4dd0cc 30%, #153a3e 38%, #9dfdfd 40%, #9af8fb 48%, #124245 50%, #2ed4d2 52%, #23454e 65%, #62cac6 67%, #518488 80%);
+    background-clip: text !important;
+    -webkit-background-clip: text !important;
+    -webkit-text-fill-color: rgb(0 0 0 / 50%);
+    -webkit-text-stroke: .1em transparent;
+}
+
+.sigil-wiki--lamenthyr {
+    font-family: Kings, serif;
+    font-style: italic;
+}
+
+.sigil-wiki--lamenthyr .sigil-wiki__layer--back {
+    background: linear-gradient(178deg, #e53a2d 20%, #ffb4a3 26%, #950d05 35%, #950d05 45%, #ffbab0 48%, #950d05 51%, #ffbab0 54%, #ff7069 59%, #630400 65%, #ff837e 79%);
+    -webkit-text-stroke: .1em transparent;
+}
+
+.sigil-wiki--lamenthyr .sigil-wiki__layer--front {
+    background: linear-gradient(178deg, #420000 35%, #420000 45%, #ffc3b6 50%, #420000 60%);
+}
+
+.sigil-wiki--sky-festival {
+    font-family: Tangerine, cursive;
+    font-size: 170%;
+    font-style: italic;
+    filter: brightness(2.5);
+}
+
+.sigil-wiki--sky-festival .sigil-wiki__layer {
+    background: linear-gradient(170deg, #b7a045 16%, #b79074 20%, #544334 24%, #b79a58 35%, #5a35ff 36%, #7c81ff 41%, #5e69f7 44%, #4235a2 46%, #b2916e 47% 48%, #413afc 50% 53%, #4165bd 55%, #303985 60%, #5f4cff 75%);
+    -webkit-text-fill-color: rgb(0 0 0 / 50%);
+}
+
+.sigil-wiki--sky-festival .sigil-wiki__layer--back {
+    transform: translate(-1.6px, 1px);
+    -webkit-text-stroke: 2px rgb(0 0 0 / 50%);
+}
+
+.sigil-wiki--sky-festival .sigil-wiki__layer--front {
+    -webkit-text-stroke: 2px transparent;
+}
+
+.sigil-wiki--breakthrough-frame {
+    padding: .3em .15em;
+    background: transparent;
+    background-clip: padding-box;
+    border: .06em solid transparent;
+    border-image: linear-gradient(130deg, #fff 1%, transparent 1.5%, transparent 3%, #fff 3.5%, #fff 5%, transparent 5.5%, transparent 7%, #fff 7.5%, #fff 9%, #c3cfe4 9.5%, transparent 20%, transparent 94.5%, #fff 95%, #fff 95.5%, transparent 96%, transparent 96.5%, #fff 97%, #fff 98%, transparent 98.5%, transparent 99%, #fff 99.5%) 1;
+}
+
+.sigil-wiki__breakthrough-panel {
+    padding: .1em;
+    background: linear-gradient(140deg, #fff 4.5%, transparent 5%, transparent 6.5%, #fff 7%, #fff 7.5%, transparent 8%, transparent 8.5%, #fff 9%, #fff 9.5%, #bac7dc 10%, transparent 15%, #0a0a0a 25%);
+    background-clip: padding-box;
+    border: .01em solid transparent;
+    border-width: .01em .01em 0;
+    border-image: linear-gradient(120deg, #fff 5%, #a4b1c4 8%, transparent 25%, transparent 80%, #c8d0d1 93%) 1;
+}
+
+.sigil-wiki__breakthrough-text {
+    font-family: "Josefin Sans", sans-serif;
+    font-weight: 600;
+    letter-spacing: .2em;
+    background: linear-gradient(174deg, #fff 17%, #0c0c0b 18%, #323a4d 25%, #0d0d0c 30%, #fff 31%, #fff 33%, #0b0b0a 34%, #0b0b0a 37%, #fefeff 38%, #fefeff 40%, #15181c 41%, #9cb2cf 49%, #0c0d0e 50%, #2d2f37 53%, #0c0c0d 57%, #9bb0ce 58%, #101215 66%, #fff 67%);
+    background-clip: text !important;
+    -webkit-background-clip: text !important;
+    -webkit-text-fill-color: transparent;
+    -webkit-text-stroke: .3px #d3e0f6;
+    filter: drop-shadow(.5px 1px 0 #0c0c0b) drop-shadow(.5px 1px 0 #77839d);
+}
+
+.sigil-wiki--luminosity {
+    font-family: Kings, serif;
+    letter-spacing: .2em;
+    background: linear-gradient(to bottom, #8dbbed 30%, #7e9fe1 40%, #14232c 55%, #7690c9 60%, #d2e4fb 60%, #203976 65%, #6ca1e7 70%);
+    background-clip: text !important;
+    -webkit-background-clip: text !important;
+    -webkit-text-fill-color: #fdffff;
+    -webkit-text-stroke: 2px transparent;
+}
+
+.sigil-wiki__luminosity-bracket {
+    font-family: Kings, serif;
+    font-size: 150%;
+    background: linear-gradient(to bottom, #789fe8 10%, #d7ecff 35%, #24436d 45%, #cce9fd 45%, #405c6e 57%, #8eaad5 60%, #e3f2ff 65%, #c8dffd 70%);
+    background-clip: text !important;
+    -webkit-background-clip: text !important;
+    -webkit-text-fill-color: #fdffff;
+    -webkit-text-stroke: 2px transparent;
+}
+
+.sigil-wiki--erebus {
+    font-family: "Noto Serif TC", serif;
+    text-transform: uppercase;
+    background: linear-gradient(to bottom, #523123 20%, #661f03 22%, #8c3e30 24%, #882b19 30%, #6b170c 37%, #801b1b 45%, #c03946 50%, #63182d 55%, #6c1730 60%, #6c1730 67%, #850546 75%);
+    background-clip: text !important;
+    -webkit-background-clip: text !important;
+    -webkit-text-fill-color: rgba(0, 0, 0, .7);
+    -webkit-text-stroke: 2px transparent;
+    clip-path: inset(.21em 0 .245em);
+}
+
+.sigil-wiki--dreamcatcher {
+    font-family: Parisienne, cursive;
+    font-size: 120%;
+}
+
+.sigil-wiki__dreamcatcher-dream,
+.sigil-wiki__dreamcatcher-catcher {
+    display: inline-block;
+}
+
+.sigil-wiki__dreamcatcher-dream {
+    font-size: 60%;
+    transform: translate(.3em, -2em);
+}
+
+.sigil-wiki__dreamcatcher-dream .sigil-wiki__text-stroke::before {
+    -webkit-text-stroke: .5px #7064b7;
+}
+
+.sigil-wiki__dreamcatcher-catcher .sigil-wiki__text-stroke::before {
+    -webkit-text-stroke: 1px #7064b7;
+}
+
+.sigil-wiki__dreamcatcher-dream > span:last-child,
+.sigil-wiki__dreamcatcher-catcher > span:last-child {
+    position: relative;
+    background: linear-gradient(to bottom, #b4a7f5 20%, #fcf9ff 30%, #fff 50%);
+    background-clip: text !important;
+    -webkit-background-clip: text !important;
+    -webkit-text-fill-color: transparent;
+}
+
+.sigil-wiki--winter-garden {
+    font-family: Parisienne, cursive;
+    font-size: 125%;
+}
+
+.sigil-wiki--winter-garden .sigil-wiki__text-stroke::before {
+    -webkit-text-stroke: .1em #000;
+}
+
+.sigil-wiki__winter-garden-glow,
+.sigil-wiki__winter-garden-face {
+    background-clip: text !important;
+    -webkit-background-clip: text !important;
+    -webkit-text-fill-color: transparent;
+}
+
+.sigil-wiki__winter-garden-glow {
+    position: absolute;
+    background: linear-gradient(to bottom, #7ef1ff 22%, #513a6d 35%, #968efc 50%, #352148 75%);
+    -webkit-text-stroke: .05em transparent;
+}
+
+.sigil-wiki__winter-garden-face {
+    position: relative;
+    background: linear-gradient(to bottom, #a2b9ea 20%, #8980ff 35%, #7c68cf 50%, #e0d8fa 75%);
+}
+
+.sigil-wiki--frostveil {
+    font-family: Kings, serif;
+    font-size: 120%;
+}
+
+.sigil-wiki__frostveil-sovereign {
+    display: inline-block;
+    filter: opacity(.5);
+    transform: scale(.7) translate(-.6em, -1.7em);
+}
+
+.sigil-wiki__frostveil-sovereign .sigil-wiki__text-stroke::before {
+    -webkit-text-stroke: .8px #bef6ff;
+}
+
+.sigil-wiki__frostveil-sovereign > span:last-child {
+    position: absolute;
+    background: linear-gradient(to bottom, #000d28 30%, #0022ba 45%, #000d28 60%);
+    background-clip: text !important;
+    -webkit-background-clip: text !important;
+    -webkit-text-fill-color: transparent;
+}
+
+.sigil-wiki__frostveil-colon {
+    position: absolute;
+    color: transparent;
+}
+
+.sigil-wiki__frostveil-name {
+    position: relative;
+    background: linear-gradient(to bottom, #c4c4ff 30%, #6390ef 50%, #bdf8ff 65%);
+    background-clip: text !important;
+    -webkit-background-clip: text !important;
+    -webkit-text-fill-color: rgb(0 21 30 / 80%);
+    -webkit-text-stroke: 2.5px transparent;
+}
+
+.sigil-wiki--eggis {
+    font-family: "Playfair Display", serif;
+    font-style: italic;
+    font-weight: 700;
+}
+
+.sigil-wiki--eggis > .sigil-wiki__layer--back {
+    background: linear-gradient(to bottom, #75c654 30%, #4a8222 45%, #61aa3b 55%, #ac994e 57%, #ae5a2f 59%, #be753c 65%);
+    -webkit-text-stroke: 3px transparent;
+}
+
+.sigil-wiki--eggis > .sigil-wiki__text-stroke::before {
+    -webkit-text-stroke: 2px rgb(9 13 2 / 70%);
+}
+
+.sigil-wiki--eggis > .sigil-wiki__layer--front {
+    background: linear-gradient(to bottom, #f7fff3 30%, #daffd4 38%, #4a8f46 42%, #99d294 45%, #f1ffef 50%, #c8e9bc 55%, #5a7c3b 58%, #bf5d0c 60%, #edbd6b 65%, #fffff2 70%, #f1d69a 74%, #e6c279 75%, #fffad9 80%);
+}
+
+.sigil-wiki__eggis-flower {
+    position: absolute;
+    z-index: 1;
+    font-family: "Noto Serif TC", serif;
+    font-style: normal;
+    -webkit-text-stroke: 0 transparent;
+    background-clip: text !important;
+    -webkit-background-clip: text !important;
+    -webkit-text-fill-color: transparent;
+}
+
+.sigil-wiki__eggis-flower--back {
+    background: #eeffea;
+    transform: scale(.4) translate(-.7em, -.7em) rotate(10deg);
+    filter: drop-shadow(.01em .02em 0 #0a230d) drop-shadow(-.01em -.02em 0 #0a230d);
+}
+
+.sigil-wiki__eggis-flower--front {
+    background: #fffbe6;
+    transform: scale(.5) translate(-1.1em, .7em) rotate(10deg);
+    filter: drop-shadow(-.01em -.02em 0 #0e0a04) drop-shadow(.01em .02em 0 #0e0a04);
+}
+
+.sigil-wiki--eostre {
+    font-family: Tangerine, cursive;
+    font-size: 170%;
+    background: linear-gradient(to bottom, #d6f9c2 30%, #cbf8af 59%, #8ade5f 60%, #b3f06f 70%);
+    background-clip: text !important;
+    -webkit-background-clip: text !important;
+    -webkit-text-fill-color: transparent;
+}
+
+.sigil-wiki--eostre > span {
+    font-family: Italianno, cursive;
+    font-size: 140%;
+    background: linear-gradient(to bottom, #d6f9c2 26%, #cbf8af 55%, #8ade5f 56%, #b3f06f 66%);
+    background-clip: text !important;
+    -webkit-background-clip: text !important;
+    -webkit-text-fill-color: transparent;
+}
+
+.sigil-wiki--pukekogod {
+    font-family: Jura, sans-serif;
+    background: linear-gradient(to bottom, #9f0924, #b4143c, #f694b1, #a91241, #811d3a);
+    background-clip: text !important;
+    -webkit-background-clip: text !important;
+    -webkit-text-fill-color: transparent;
+    -webkit-text-stroke: .25px transparent;
+    filter: drop-shadow(-.5px 1px 0 #6f2636);
+}
+
+.sigil-wiki--fools-experience {
+    position: relative;
+}
+
+.sigil-wiki__fools-corners {
+    position: absolute;
+    color: transparent;
+}
+
+.sigil-wiki__fools-corners > span {
+    position: absolute;
+    width: 1.25em;
+    height: 1.25em;
+    background: linear-gradient(130deg, #97b9dd 10%, #dbf5fe 30%);
+    background-size: cover;
+    clip-path: polygon(46% 0%, 34% 20%, 49% 47%, 18% 36%, 0% 52%, 0% 0%, 5% 25%, 29% 31%, 23% 7%, 7% 8%, 0% 52%, 0% 0%);
+}
+
+.sigil-wiki__fools-corners > span:nth-child(1) { transform: translate(-.01em, -.01em); }
+.sigil-wiki__fools-corners > span:nth-child(2) { transform: rotate(90deg) translate(-.01em, -9.95em); }
+.sigil-wiki__fools-corners > span:nth-child(3) { transform: rotate(180deg) translate(-9.95em, -.9em); }
+.sigil-wiki__fools-corners > span:nth-child(4) { transform: rotate(270deg) translate(-.9em, -.01em); }
+
+.sigil-wiki__fools-frame {
+    display: inline-block;
+    padding: .09em;
+    border: .125em solid #dbf0fe;
+    font-family: Sarpanch, sans-serif;
+    font-weight: bold;
+}
+
+.sigil-wiki__fools-frame > .sigil-wiki__text-stroke::before {
+    -webkit-text-stroke: 1px #2f4d6f;
+}
+
+.sigil-wiki__fools-depth,
+.sigil-wiki__fools-face {
+    background-clip: text !important;
+    -webkit-background-clip: text !important;
+}
+
+.sigil-wiki__fools-depth {
+    position: absolute;
+    background: linear-gradient(to bottom, #a6b3c9 20%, #90a4c6 52%, #4c669e 52%, #8db1e6 60%, #5880c4 65%, #3e5380 85%);
+    -webkit-text-stroke: 2.5px transparent;
+}
+
+.sigil-wiki__fools-face {
+    position: relative;
+    background: linear-gradient(to bottom, #effdff 30%, #a8d5fd 65%);
+    -webkit-text-fill-color: transparent;
+}
+
+.sigil-wiki--pixelation {
+    display: inline-flex;
+    margin: 1em 1em .2em .2em;
+    font-family: "Press Start 2P", monospace;
+    font-size: 75%;
+    -webkit-text-stroke: .5px #000;
+    filter: drop-shadow(2.5px 0 0 #000);
+    animation: sigil-wiki-pixel-rainbow 2.7s linear infinite;
+}
+
+@keyframes sigil-wiki-pixel-rainbow {
+    0% { color: rgb(226, 69, 69); }
+    9% { color: rgb(226, 152, 69); }
+    14% { color: rgb(226, 219, 73); }
+    17% { color: rgb(200, 237, 70); }
+    22% { color: rgb(170, 239, 33); }
+    25% { color: rgb(142, 221, 124); }
+    29% { color: rgb(129, 220, 149); }
+    33% { color: rgb(129, 220, 189); }
+    36% { color: rgb(129, 220, 204); }
+    39% { color: rgb(33, 210, 205); }
+    41% { color: rgb(73, 188, 210); }
+    45% { color: rgb(81, 180, 219); }
+    48% { color: rgb(64, 166, 229); }
+    52% { color: rgb(64, 130, 229); }
+    55% { color: rgb(64, 108, 229); }
+    58% { color: rgb(64, 84, 229); }
+    61% { color: rgb(79, 74, 237); }
+    64% { color: rgb(100, 74, 237); }
+    68% { color: rgb(115, 74, 237); }
+    72% { color: rgb(124, 74, 237); }
+    75% { color: rgb(148, 86, 233); }
+    78% { color: rgb(170, 86, 233); }
+    81% { color: rgb(192, 86, 233); }
+    85% { color: rgb(200, 86, 233); }
+    88% { color: rgb(215, 65, 224); }
+    91% { color: rgb(211, 69, 201); }
+    94% { color: rgb(211, 69, 163); }
+    97% { color: rgb(211, 69, 142); }
+    100% { color: rgb(226, 29, 92); }
+}
+
+.sigil-wiki--nyctophobia {
+    font-family: "Roboto Mono", monospace;
+    font-weight: 100;
+    font-style: italic;
+    letter-spacing: .4em;
+    color: #f9f9fa;
+    animation: sigil-wiki-nycto-shake .2s linear infinite;
+}
+
+.sigil-wiki--nyctophobia > span {
+    display: inline-block;
+    white-space: pre;
+    animation: sigil-wiki-nycto-shake .12s linear infinite;
+}
+
+@keyframes sigil-wiki-nycto-shake {
+    0%, 24.99%, 100% { transform: translate(-.9px, .9px); }
+    25%, 49.99% { transform: translate(.9px, -.9px); }
+    50%, 74.99% { transform: translate(-.9px, -.9px); }
+    75%, 99.99% { transform: translate(.9px, .9px); }
+}
+
+.sigil-wiki--dream-traveler {
+    font-family: Jura, sans-serif;
+    font-weight: bold;
+    font-style: italic;
+}
+
+.sigil-wiki__dream-traveler-stroke::before,
+.sigil-wiki__dream-traveler-gradient::before {
+    content: attr(data-text);
+    position: absolute;
+}
+
+.sigil-wiki__dream-traveler-stroke::before {
+    animation: sigil-wiki-dream-traveler-stroke 5s linear infinite;
+}
+
+.sigil-wiki__dream-traveler-gradient::before {
+    animation: sigil-wiki-dream-traveler-gradient 5s linear infinite;
+}
+
+.sigil-wiki__dream-traveler-face {
+    position: relative;
+    animation: sigil-wiki-dream-traveler-transition 5s linear infinite;
+}
+
+@keyframes sigil-wiki-dream-traveler-gradient {
+    0%, 50%, 100% { background: linear-gradient(170deg, #2e1885 27%, #c5aefe 33%, #41307a 42%, #fdeef4 46%, #f3daf3 52%, #6f1930 70%, #c26181 75%, #f1a9cb 90%); }
+    25%, 75% { background: linear-gradient(170deg, #a7a7f6 23%, #bdbcfc 25%, #706fbc 34%, #e0e1ff 50%, #a3abf2 65%, #f0f6ff 75%); }
+    0%, 25%, 50%, 75%, 100% { background-size: 50%; background-clip: text; -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+}
+
+@keyframes sigil-wiki-dream-traveler-stroke {
+    0%, 50%, 100% { background: linear-gradient(170deg, #b89ffa 25%, #6a50c6 30%, #492da6 35%, #b399e9 45%, #fbedfd 47%, #cc72bd 65%, #ae5c89 70%, #f1a9cb 80%); }
+    25%, 75% { background: linear-gradient(170deg, #9fd8fa 25%, #bce6ff 30%, #b5dbee 35%, #99d4e9 45%, #edfbfd 47%, #cedade 65%, #c5faff 70%, #a9d2f1 80%); }
+    0%, 25%, 50%, 75%, 100% { background-size: 50%; background-clip: text; -webkit-background-clip: text; -webkit-text-fill-color: transparent; -webkit-text-stroke: .05em transparent; filter: blur(.01em); }
+}
+
+@keyframes sigil-wiki-dream-traveler-transition {
+    0%, 6.25%, 18.75%, 25%, 31.25%, 43.75%, 50%, 56.25%, 68.75%, 75%, 81.25%, 93.75%, 100% { color: transparent; -webkit-text-stroke: .05em transparent; }
+    12.5%, 37.5%, 62.5%, 87.5% { color: #fff; -webkit-text-stroke: .05em #fff; }
+}
+
+.sigil-wiki--equinox {
+    font-family: "Noto Serif TC", serif;
+    font-style: italic;
+    font-weight: bold;
+    letter-spacing: .2em;
+}
+
+.sigil-wiki__equinox-stroke,
+.sigil-wiki__equinox-transition,
+.sigil-wiki__equinox-pulse {
+    position: absolute;
+    z-index: 1;
+}
+
+.sigil-wiki__equinox-stroke { z-index: 0; }
+
+.sigil-wiki__equinox-stroke::before,
+.sigil-wiki__equinox-transition::before,
+.sigil-wiki__equinox-pulse::before {
+    content: attr(data-text);
+    display: inline-block;
+}
+
+.sigil-wiki__equinox-stroke::before {
+    animation: sigil-wiki-equinox-stroke 2s linear infinite, sigil-wiki-equinox-motion 2s linear infinite;
+}
+
+.sigil-wiki__equinox-transition::before {
+    animation: sigil-wiki-equinox-transition 2s linear infinite, sigil-wiki-equinox-motion 2s linear infinite;
+}
+
+.sigil-wiki__equinox-pulse::before {
+    color: #fff;
+    animation: sigil-wiki-equinox-pulse 2s linear infinite;
+}
+
+.sigil-wiki__equinox-face {
+    position: relative;
+    z-index: 0;
+    display: inline-block;
+    animation: sigil-wiki-equinox-face 2s linear infinite, sigil-wiki-equinox-motion 2s linear infinite;
+}
+
+@keyframes sigil-wiki-equinox-face {
+    0%, 50%, 100% { background: linear-gradient(177deg, #000916 48%, #fff 50%); }
+    25%, 75% { background: linear-gradient(357deg, #000916 48%, #fff 50%); }
+    0%, 25%, 50%, 75%, 100% { background-clip: text; -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+}
+
+@keyframes sigil-wiki-equinox-stroke {
+    0%, 50%, 100% { background: linear-gradient(177deg, #02070c 25%, #b9bbbe 35%, #000813 40%, #ced0d2 45%, #081521 50%, #fff 51%, #999ca0 60%, #f3f5f6 65%, #404c57 78%, #fff 80%); }
+    25%, 75% { background: linear-gradient(357deg, #02070c 25%, #b9bbbe 35%, #000813 40%, #ced0d2 45%, #081521 50%, #fff 51%, #999ca0 60%, #f3f5f6 65%, #404c57 78%, #fff 80%); }
+    0%, 25%, 50%, 75%, 100% { background-clip: text; -webkit-background-clip: text; -webkit-text-fill-color: transparent; -webkit-text-stroke: 1.5px transparent; }
+}
+
+@keyframes sigil-wiki-equinox-transition {
+    0%, 7%, 17%, 25%, 32%, 42%, 50%, 57%, 67%, 75%, 82%, 92%, 100% { color: rgb(255 255 255 / 0%); -webkit-text-stroke: 1.5px rgb(255 255 255 / 0%); }
+    12.5%, 37.5%, 62.5%, 87.5% { color: #fff; -webkit-text-stroke: 1.5px #fff; }
+}
+
+@keyframes sigil-wiki-equinox-pulse {
+    0%, 100% { filter: opacity(30%); transform: scale(1.175) translate(-.5px, -.5px) rotate(-1deg); }
+    12%, 37%, 62%, 87% { filter: opacity(0); transform: scale(1.175); }
+    12.5%, 62.5% { filter: opacity(100%); transform: scale(1) translate(.5px, 1px) rotate(1deg); }
+    25%, 50%, 75% { filter: opacity(30%); transform: scale(1.175) rotate(1deg); }
+    37.5%, 87.5% { filter: opacity(100%); transform: scale(1) translateY(-1px) rotate(-1deg); }
+}
+
+@keyframes sigil-wiki-equinox-motion {
+    0%, 25%, 50%, 75%, 100% { transform: scale(1); }
+    12.5%, 37.5%, 62.5%, 87.5% { transform: scale(1.025); }
+}
+
+.sigil-wiki--equinox-idiot {
+    font-family: "Fuzzy Bubbles", sans-serif;
+    font-style: italic;
+    font-weight: bold;
+    animation: sigil-wiki-idiot-movement 4s linear infinite;
+}
+
+.sigil-wiki__idiot-stroke,
+.sigil-wiki__idiot-face {
+    background-clip: text !important;
+    -webkit-background-clip: text !important;
+}
+
+.sigil-wiki__idiot-stroke {
+    position: absolute;
+    -webkit-text-fill-color: transparent;
+    animation: sigil-wiki-idiot-stroke 1.5s linear infinite;
+}
+
+.sigil-wiki__idiot-face {
+    position: relative;
+    animation: sigil-wiki-idiot-face 1.5s linear infinite, sigil-wiki-idiot-transition 1.5s linear infinite;
+}
+
+.sigil-wiki__idiot-stroke > span,
+.sigil-wiki__idiot-face > span {
+    font-family: "Noto Serif TC", serif;
+}
+
+@keyframes sigil-wiki-idiot-face {
+    0%, 50%, 100% { background: linear-gradient(172deg, #000 30%, #060606 47%, #aaa 50%, #fff 51%, #fffffd 60%, #fdfdfd 70%); }
+    25%, 75% { background: linear-gradient(352deg, #000 30%, #060606 47%, #aaa 50%, #fff 51%, #fffffd 60%, #fdfdfd 70%); }
+}
+
+@keyframes sigil-wiki-idiot-stroke {
+    0%, 50%, 100% { background: linear-gradient(172deg, #070807 30%, #d5d5d5 42%, #3b3b3b 45%, #f4f4f4 48%, #2e2e2e 50%, #fdfdfd 51%, #eeefee 60%, #fefefe 65%, #b0b0b0 70%, #fdfdfb 71%, #f7f7f7 85%); }
+    25%, 75% { background: linear-gradient(352deg, #070807 30%, #d5d5d5 42%, #3b3b3b 45%, #f4f4f4 48%, #2e2e2e 50%, #fdfdfd 51%, #eeefee 60%, #fefefe 65%, #b0b0b0 70%, #fdfdfb 71%, #f7f7f7 85%); }
+    0%, 25%, 50%, 75%, 100% { background-clip: text; -webkit-background-clip: text; -webkit-text-stroke: 2px transparent; }
+}
+
+@keyframes sigil-wiki-idiot-transition {
+    0%, 6.25%, 18.75%, 31.25%, 43.75%, 56.25%, 68.75%, 81.25%, 93.75%, 100% { color: transparent; -webkit-text-stroke: 0 transparent; }
+    12.5%, 37.5%, 62.5%, 87.5% { color: #fff; -webkit-text-stroke: 2.2px #fff; }
+}
+
+@keyframes sigil-wiki-idiot-movement {
+    0%, 100% { transform: translate(2px, 0) rotate(8deg); }
+    12.5% { transform: translate(1px, 0) rotate(4deg); }
+    25% { transform: translate(0, 1px); }
+    37.5% { transform: translate(-1px, 0) rotate(-6deg); }
+    50% { transform: translate(-2px, 0) rotate(-8deg); }
+    62.5% { transform: translate(0, -1px) rotate(-4deg); }
+    75% { transform: translate(1px, -2px); }
+    87.5% { transform: translate(2px, -1px) rotate(6deg); }
+}
+
+body.quality-no-roll-sigil-animations .sigil-wiki *,
+body.reduce-motion .sigil-wiki *,
+body.reduce-motion .sigil-wiki {
+    animation: none !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .sigil-wiki,
+    .sigil-wiki * {
+        animation: none !important;
     }
 }
