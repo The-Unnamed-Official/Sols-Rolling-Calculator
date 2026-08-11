@@ -44,6 +44,14 @@ const auraDetailFilterOverlayState = {
     lastFocusedElement: null
 };
 
+const cutscenePauseFilterOverlayState = {
+    lastFocusedElement: null
+};
+
+const cutscenePlaybackFilterOverlayState = {
+    lastFocusedElement: null
+};
+
 const qualityPreferencesOverlayState = {
     lastFocusedElement: null
 };
@@ -106,8 +114,12 @@ const backgroundRollingPreference = {
 };
 const rollingSettingsPreference = {
     solsLikeRollsPerSecond: SOLS_LIKE_ROLLS_PER_SECOND_DEFAULT,
-    autoPauseAfterCutscene: false
+    cutscenePauseFilters: {},
+    cutscenePlaybackFilters: {}
 };
+let legacyAutoPauseAfterCutscene = null;
+let hasStoredCutscenePlaybackFilters = false;
+let cutscenePlaybackMigrationCompleted = false;
 
 async function fetchLatestPublishedDeploymentTime() {
     if (window.appBuildMetadataPromise) {
@@ -433,9 +445,24 @@ function hydrateRollingSettings() {
         } else if (Object.prototype.hasOwnProperty.call(LEGACY_SOLS_LIKE_SPEED_VALUES, parsed.solsLikeSpeed)) {
             rollingSettingsPreference.solsLikeRollsPerSecond = LEGACY_SOLS_LIKE_SPEED_VALUES[parsed.solsLikeSpeed];
         }
-        if (typeof parsed.autoPauseAfterCutscene === 'boolean') {
-            rollingSettingsPreference.autoPauseAfterCutscene = parsed.autoPauseAfterCutscene;
+        if (parsed.cutscenePauseFilters && typeof parsed.cutscenePauseFilters === 'object') {
+            Object.entries(parsed.cutscenePauseFilters).forEach(([auraName, value]) => {
+                if (typeof auraName === 'string' && typeof value === 'boolean') {
+                    rollingSettingsPreference.cutscenePauseFilters[auraName] = value;
+                }
+            });
+        } else if (typeof parsed.autoPauseAfterCutscene === 'boolean') {
+            legacyAutoPauseAfterCutscene = parsed.autoPauseAfterCutscene;
         }
+        if (parsed.cutscenePlaybackFilters && typeof parsed.cutscenePlaybackFilters === 'object') {
+            hasStoredCutscenePlaybackFilters = true;
+            Object.entries(parsed.cutscenePlaybackFilters).forEach(([auraName, value]) => {
+                if (typeof auraName === 'string' && typeof value === 'boolean') {
+                    rollingSettingsPreference.cutscenePlaybackFilters[auraName] = value;
+                }
+            });
+        }
+        ensureCutsceneFilterPreferences();
     } catch (error) {
     }
 }
@@ -977,8 +1004,6 @@ function syncRollingSettingsControls() {
     const speedSlider = document.getElementById('solsLikeRollingSpeed');
     const speedOutput = document.getElementById('solsLikeRollingSpeedValue');
     const speedPresetButtons = document.querySelectorAll('[data-sols-like-speed]');
-    const autoPauseRow = document.getElementById('autoPauseAfterCutsceneRow');
-    const autoPauseToggle = document.getElementById('autoPauseAfterCutsceneToggle');
     const speedEditableWhilePaused = Boolean(
         simulationActive
         && isSolsLikeSimulationMethod()
@@ -1006,13 +1031,7 @@ function syncRollingSettingsControls() {
             button.disabled = speedSlider.disabled;
         });
     }
-    if (autoPauseRow) {
-        autoPauseRow.hidden = false;
-    }
-    if (autoPauseToggle) {
-        autoPauseToggle.checked = rollingSettingsPreference.autoPauseAfterCutscene;
-        autoPauseToggle.disabled = simulationActive;
-    }
+    syncCutsceneFilterLauncherLabels();
 }
 
 function showRollingSettingsOverlay() {
@@ -1070,9 +1089,10 @@ function initializeRollingSettingsPanel() {
     const closeButton = document.getElementById('rollingSettingsClose');
     const speedSlider = document.getElementById('solsLikeRollingSpeed');
     const speedPresetButtons = document.querySelectorAll('[data-sols-like-speed]');
-    const autoPauseToggle = document.getElementById('autoPauseAfterCutsceneToggle');
+    const pauseCutsceneFilterButton = document.getElementById('rollingPauseCutsceneFiltersButton');
     const tierFilterButton = document.getElementById('rollingFilterAuraTiersButton');
     const auraFilterButton = document.getElementById('rollingFilterAurasButton');
+    const cutscenePlaybackFilterButton = document.getElementById('rollingCutscenePlaybackFiltersButton');
     if (!overlay || !openButton) return;
 
     hydrateRollingSettings();
@@ -1123,9 +1143,9 @@ function initializeRollingSettingsPanel() {
         });
     });
 
-    autoPauseToggle?.addEventListener('change', () => {
-        rollingSettingsPreference.autoPauseAfterCutscene = autoPauseToggle.checked;
-        persistRollingSettings();
+    pauseCutsceneFilterButton?.addEventListener('click', () => {
+        markRollingSettingsChildDialogOpen();
+        showCutscenePauseFilterOverlay();
     });
 
     tierFilterButton?.addEventListener('click', () => {
@@ -1135,6 +1155,10 @@ function initializeRollingSettingsPanel() {
     auraFilterButton?.addEventListener('click', () => {
         markRollingSettingsChildDialogOpen();
         showAuraDetailFilterOverlay();
+    });
+    cutscenePlaybackFilterButton?.addEventListener('click', () => {
+        markRollingSettingsChildDialogOpen();
+        showCutscenePlaybackFilterOverlay();
     });
 }
 
@@ -1207,6 +1231,275 @@ function hideAuraDetailFilterOverlay() {
     });
 }
 
+function getCutsceneAuras() {
+    if (!Array.isArray(AURA_REGISTRY)) {
+        return [];
+    }
+    return AURA_REGISTRY
+        .filter(aura => typeof aura?.cutscene === 'string' && aura.cutscene.length > 0)
+        .sort((a, b) => {
+            if (a.chance !== b.chance) {
+                return a.chance - b.chance;
+            }
+            return a.name.localeCompare(b.name);
+        });
+}
+
+function ensureCutsceneFilterPreferences() {
+    const pauseFilters = rollingSettingsPreference.cutscenePauseFilters;
+    const playbackFilters = rollingSettingsPreference.cutscenePlaybackFilters;
+    getCutsceneAuras().forEach(aura => {
+        if (!Object.prototype.hasOwnProperty.call(pauseFilters, aura.name)) {
+            pauseFilters[aura.name] = legacyAutoPauseAfterCutscene === true;
+        }
+        if (!Object.prototype.hasOwnProperty.call(playbackFilters, aura.name)) {
+            playbackFilters[aura.name] = true;
+        }
+    });
+    legacyAutoPauseAfterCutscene = null;
+}
+
+function isAuraCutscenePauseEnabled(aura) {
+    if (!aura?.name) {
+        return false;
+    }
+    return rollingSettingsPreference.cutscenePauseFilters[aura.name] === true;
+}
+
+function isAuraCutscenePlaybackEnabled(aura) {
+    if (!aura?.name) {
+        return true;
+    }
+    const filters = rollingSettingsPreference.cutscenePlaybackFilters;
+    return !Object.prototype.hasOwnProperty.call(filters, aura.name) || filters[aura.name] !== false;
+}
+
+function hasAnyCutscenePlaybackEnabled() {
+    ensureCutsceneFilterPreferences();
+    return getCutsceneAuras().some(isAuraCutscenePlaybackEnabled);
+}
+
+function syncCutscenePlaybackStatusPill() {
+    const cutsceneAuras = getCutsceneAuras();
+    const playbackCount = cutsceneAuras.filter(isAuraCutscenePlaybackEnabled).length;
+    const total = cutsceneAuras.length;
+    const active = playbackCount > 0;
+    const status = document.getElementById('cutscenePlaybackStatus');
+    const count = document.getElementById('cutscenePlaybackStatusCount');
+    if (status) {
+        status.dataset.active = active ? 'true' : 'false';
+        status.setAttribute(
+            'aria-label',
+            active
+                ? `Enabled cutscenes active: ${playbackCount} of ${total} selected`
+                : `Enabled cutscenes disabled: 0 of ${total} selected`
+        );
+    }
+    if (count) {
+        count.textContent = `${playbackCount}/${total}`;
+    }
+}
+
+function syncCinematicStateFromCutsceneFilters({ showEnableWarning = false } = {}) {
+    const wasEnabled = appState.cinematic === true;
+    const enabled = hasAnyCutscenePlaybackEnabled();
+    appState.cinematic = enabled;
+    syncCutscenePlaybackStatusPill();
+
+    if (enabled && !wasEnabled && showEnableWarning) {
+        cutsceneWarningManager.show();
+    }
+    if (!enabled) {
+        cutsceneWarningManager.hide();
+        const skipButton = document.getElementById('skip-cinematic-button');
+        if (skipButton && skipButton.style.display !== 'none') {
+            skipButton.click();
+        }
+    }
+    persistVisualSettings();
+}
+
+function initializeCinematicStateFromCutsceneFilters() {
+    ensureCutsceneFilterPreferences();
+    if (!cutscenePlaybackMigrationCompleted && !hasStoredCutscenePlaybackFilters) {
+        const legacyEnabled = appState.cinematic === true;
+        getCutsceneAuras().forEach(aura => {
+            rollingSettingsPreference.cutscenePlaybackFilters[aura.name] = legacyEnabled;
+        });
+        persistRollingSettings();
+    }
+    cutscenePlaybackMigrationCompleted = true;
+    syncCinematicStateFromCutsceneFilters();
+    syncCutsceneFilterLauncherLabels();
+}
+
+function syncCutsceneFilterLauncherLabels() {
+    ensureCutsceneFilterPreferences();
+    const cutsceneAuras = getCutsceneAuras();
+    const total = cutsceneAuras.length;
+    const pauseCount = cutsceneAuras.filter(isAuraCutscenePauseEnabled).length;
+    const playbackCount = cutsceneAuras.filter(isAuraCutscenePlaybackEnabled).length;
+    const pauseButton = document.getElementById('rollingPauseCutsceneFiltersButton');
+    const playbackButton = document.getElementById('rollingCutscenePlaybackFiltersButton');
+    if (pauseButton) {
+        pauseButton.textContent = `Pause Cutscenes (${pauseCount}/${total})`;
+    }
+    if (playbackButton) {
+        playbackButton.textContent = `Filter Cutscenes (${playbackCount}/${total} play)`;
+    }
+    syncCutscenePlaybackStatusPill();
+}
+
+function showCutscenePauseFilterOverlay() {
+    const overlay = document.getElementById('cutscenePauseFilterOverlay');
+    if (!overlay) return;
+
+    cutscenePauseFilterOverlayState.lastFocusedElement = document.activeElement;
+    populateCutsceneFilterList('pause');
+    syncCutsceneFilterButtons('pause');
+    revealOverlay(overlay);
+
+    const firstButton = overlay.querySelector('.cutscene-pause-toggle');
+    if (firstButton && typeof firstButton.focus === 'function') {
+        try {
+            firstButton.focus({ preventScroll: true });
+        } catch (error) {
+            firstButton.focus();
+        }
+    }
+}
+
+function hideCutscenePauseFilterOverlay() {
+    const overlay = document.getElementById('cutscenePauseFilterOverlay');
+    if (!overlay) return;
+
+    concealOverlay(overlay, {
+        onHidden: () => {
+            const last = cutscenePauseFilterOverlayState.lastFocusedElement;
+            restoreRollingSettingsAfterChildDialog(last);
+            if (last && typeof last.focus === 'function') {
+                last.focus({ preventScroll: true });
+            }
+            cutscenePauseFilterOverlayState.lastFocusedElement = null;
+        }
+    });
+}
+
+function showCutscenePlaybackFilterOverlay() {
+    const overlay = document.getElementById('cutscenePlaybackFilterOverlay');
+    if (!overlay) return;
+
+    cutscenePlaybackFilterOverlayState.lastFocusedElement = document.activeElement;
+    populateCutsceneFilterList('playback');
+    syncCutsceneFilterButtons('playback');
+    revealOverlay(overlay);
+
+    const firstButton = overlay.querySelector('.cutscene-playback-toggle');
+    if (firstButton && typeof firstButton.focus === 'function') {
+        try {
+            firstButton.focus({ preventScroll: true });
+        } catch (error) {
+            firstButton.focus();
+        }
+    }
+}
+
+function hideCutscenePlaybackFilterOverlay() {
+    const overlay = document.getElementById('cutscenePlaybackFilterOverlay');
+    if (!overlay) return;
+
+    concealOverlay(overlay, {
+        onHidden: () => {
+            const last = cutscenePlaybackFilterOverlayState.lastFocusedElement;
+            restoreRollingSettingsAfterChildDialog(last);
+            if (last && typeof last.focus === 'function') {
+                last.focus({ preventScroll: true });
+            }
+            cutscenePlaybackFilterOverlayState.lastFocusedElement = null;
+        }
+    });
+}
+
+function createAuraFilterNameSpan(aura) {
+    const auraName = aura?.name || '';
+    const isEventAura = aura ? Boolean(getAuraEventId(aura)) : false;
+    const specialClass = aura ? resolveAuraStyleClass(aura, null) : '';
+    const rarityClass = aura && !isEventAura && !shouldSuppressRarityClassForSpecialStyle(specialClass)
+        ? resolveBaseRarityClass(aura)
+        : '';
+    const nameSpan = document.createElement('span');
+    if (aura && (wikiAuraSigilNames.has(auraName.split(' - ')[0].trim()) || auraName.startsWith('Glitch - '))) {
+        nameSpan.innerHTML = formatAuraNameMarkup(aura);
+    } else {
+        nameSpan.textContent = auraName;
+    }
+    const nameClasses = [rarityClass, specialClass].filter(Boolean).join(' ');
+    if (nameClasses) {
+        nameSpan.className = nameClasses;
+    }
+    return nameSpan;
+}
+
+function renderCutsceneFilterButtonLabel(button, aura, enabled, mode) {
+    if (!button || !aura) {
+        return;
+    }
+    button.textContent = '';
+    button.append(mode === 'pause' ? 'Pause after ' : 'Play ');
+    button.append(createAuraFilterNameSpan(aura));
+    button.append(`: ${enabled ? 'On' : 'Off'}`);
+}
+
+function populateCutsceneFilterList(mode) {
+    const pauseMode = mode === 'pause';
+    const list = document.querySelector(
+        pauseMode ? '[data-cutscene-pause-filter-list]' : '[data-cutscene-playback-filter-list]'
+    );
+    if (!list || list.dataset.populated === 'true') {
+        return;
+    }
+
+    ensureCutsceneFilterPreferences();
+    const fragment = document.createDocumentFragment();
+    getCutsceneAuras().forEach(aura => {
+        const button = document.createElement('button');
+        const enabled = pauseMode
+            ? isAuraCutscenePauseEnabled(aura)
+            : isAuraCutscenePlaybackEnabled(aura);
+        button.type = 'button';
+        button.className = `interface-toggle filter-tier-toggle ${pauseMode ? 'cutscene-pause-toggle' : 'cutscene-playback-toggle'}`;
+        button.dataset.auraName = aura.name;
+        button.setAttribute('aria-pressed', enabled ? 'true' : 'false');
+        renderCutsceneFilterButtonLabel(button, aura, enabled, mode);
+        fragment.appendChild(button);
+    });
+    list.appendChild(fragment);
+    list.dataset.populated = 'true';
+}
+
+function syncCutsceneFilterButtons(mode) {
+    const pauseMode = mode === 'pause';
+    const overlay = document.getElementById(
+        pauseMode ? 'cutscenePauseFilterOverlay' : 'cutscenePlaybackFilterOverlay'
+    );
+    if (!overlay) {
+        return;
+    }
+    ensureCutsceneFilterPreferences();
+    overlay.querySelectorAll(pauseMode ? '.cutscene-pause-toggle' : '.cutscene-playback-toggle').forEach(button => {
+        const aura = AURA_BY_NAME.get(button.dataset.auraName) || null;
+        if (!aura) {
+            return;
+        }
+        const enabled = pauseMode
+            ? isAuraCutscenePauseEnabled(aura)
+            : isAuraCutscenePlaybackEnabled(aura);
+        button.setAttribute('aria-pressed', enabled ? 'true' : 'false');
+        renderCutsceneFilterButtonLabel(button, aura, enabled, mode);
+    });
+    syncCutsceneFilterLauncherLabels();
+}
+
 function syncAuraTierFilterButtons() {
     const overlay = document.getElementById('auraFilterOverlay');
     if (!overlay || !appState || !appState.auraTierFilters) {
@@ -1247,25 +1540,10 @@ function renderAuraFilterButtonLabel(button, auraName, enabled) {
         return;
     }
     const aura = AURA_BY_NAME.get(auraName) || null;
-    const isEventAura = aura ? Boolean(getAuraEventId(aura)) : false;
-    const specialClass = aura ? resolveAuraStyleClass(aura, null) : '';
-    const rarityClass = aura && !isEventAura && !shouldSuppressRarityClassForSpecialStyle(specialClass)
-        ? resolveBaseRarityClass(aura)
-        : '';
-    const nameClasses = [rarityClass, specialClass].filter(Boolean).join(' ');
-    const nameSpan = document.createElement('span');
-    if (aura && (auraName.startsWith('Breakthrough') || auraName.startsWith('Glitch - '))) {
-        nameSpan.innerHTML = formatAuraNameMarkup(aura);
-    } else {
-        nameSpan.textContent = auraName;
-    }
-    if (nameClasses) {
-        nameSpan.className = nameClasses;
-    }
 
     button.textContent = '';
     button.append('Skip ');
-    button.append(nameSpan);
+    button.append(aura ? createAuraFilterNameSpan(aura) : auraName);
     button.append(`: ${enabled ? 'On' : 'Off'}`);
 }
 
@@ -1410,6 +1688,96 @@ function initializeAuraDetailFilterPanel() {
         });
     }
 
+}
+
+function initializeCutsceneFilterPanel(mode) {
+    const pauseMode = mode === 'pause';
+    const overlay = document.getElementById(
+        pauseMode ? 'cutscenePauseFilterOverlay' : 'cutscenePlaybackFilterOverlay'
+    );
+    const closeButton = document.getElementById(
+        pauseMode ? 'cutscenePauseFilterClose' : 'cutscenePlaybackFilterClose'
+    );
+    const resetButton = document.getElementById(
+        pauseMode ? 'cutscenePauseFilterReset' : 'cutscenePlaybackFilterReset'
+    );
+    const disableAllButton = pauseMode
+        ? null
+        : document.getElementById('cutscenePlaybackFilterDisableAll');
+    const list = overlay?.querySelector(
+        pauseMode ? '[data-cutscene-pause-filter-list]' : '[data-cutscene-playback-filter-list]'
+    );
+    const hideOverlay = pauseMode
+        ? hideCutscenePauseFilterOverlay
+        : hideCutscenePlaybackFilterOverlay;
+    if (!overlay) return;
+
+    overlay.addEventListener('click', event => {
+        if (event.target === overlay) {
+            hideOverlay();
+        }
+    });
+    overlay.addEventListener('keydown', event => {
+        if (event.key === 'Escape') {
+            hideOverlay();
+        }
+    });
+    closeButton?.addEventListener('click', hideOverlay);
+
+    resetButton?.addEventListener('click', () => {
+        ensureCutsceneFilterPreferences();
+        const playbackWasEnabled = !pauseMode && hasAnyCutscenePlaybackEnabled();
+        const filters = pauseMode
+            ? rollingSettingsPreference.cutscenePauseFilters
+            : rollingSettingsPreference.cutscenePlaybackFilters;
+        getCutsceneAuras().forEach(aura => {
+            filters[aura.name] = !pauseMode;
+        });
+        syncCutsceneFilterButtons(mode);
+        persistRollingSettings();
+        if (!pauseMode) {
+            syncCinematicStateFromCutsceneFilters({ showEnableWarning: !playbackWasEnabled });
+        }
+    });
+
+    disableAllButton?.addEventListener('click', () => {
+        ensureCutsceneFilterPreferences();
+        getCutsceneAuras().forEach(aura => {
+            rollingSettingsPreference.cutscenePlaybackFilters[aura.name] = false;
+        });
+        syncCutsceneFilterButtons('playback');
+        persistRollingSettings();
+        syncCinematicStateFromCutsceneFilters();
+    });
+
+    list?.addEventListener('click', event => {
+        const selector = pauseMode ? '.cutscene-pause-toggle' : '.cutscene-playback-toggle';
+        const button = event.target.closest(selector);
+        if (!button || !list.contains(button)) {
+            return;
+        }
+        const aura = AURA_BY_NAME.get(button.dataset.auraName) || null;
+        if (!aura) {
+            return;
+        }
+        const filters = pauseMode
+            ? rollingSettingsPreference.cutscenePauseFilters
+            : rollingSettingsPreference.cutscenePlaybackFilters;
+        const playbackWasEnabled = !pauseMode && hasAnyCutscenePlaybackEnabled();
+        const enabled = pauseMode
+            ? !isAuraCutscenePauseEnabled(aura)
+            : !isAuraCutscenePlaybackEnabled(aura);
+        filters[aura.name] = enabled;
+        button.setAttribute('aria-pressed', enabled ? 'true' : 'false');
+        renderCutsceneFilterButtonLabel(button, aura, enabled, mode);
+        syncCutsceneFilterLauncherLabels();
+        persistRollingSettings();
+        if (!pauseMode) {
+            syncCinematicStateFromCutsceneFilters({
+                showEnableWarning: enabled && !playbackWasEnabled
+            });
+        }
+    });
 }
 
 function initializeOptionsMenu(menuId, toggleId, panelId) {
@@ -1568,6 +1936,9 @@ function setChannelVolume(channel, normalized, { persist = true } = {}) {
                 element.removeAttribute('muted');
             }
         });
+        if (channel === 'music' && value > 0 && !appState.audio.masterMuted) {
+            startBackgroundMusic(document.getElementById('ambientMusic'));
+        }
     }
 
     if (experienceStarted && channel === 'ui') {
@@ -1816,6 +2187,18 @@ function initializeIntroOverlay() {
     const overlay = document.getElementById('introOverlay');
     const startButton = document.getElementById('startExperienceButton');
     if (!overlay || !startButton) {
+        let interactionArmed = true;
+        const startFromInteraction = () => {
+            if (!interactionArmed) return;
+            interactionArmed = false;
+            document.removeEventListener('pointerdown', startFromInteraction, true);
+            document.removeEventListener('touchstart', startFromInteraction, true);
+            document.removeEventListener('keydown', startFromInteraction, true);
+            beginSimulationExperience();
+        };
+        document.addEventListener('pointerdown', startFromInteraction, { capture: true, passive: true });
+        document.addEventListener('touchstart', startFromInteraction, { capture: true, passive: true });
+        document.addEventListener('keydown', startFromInteraction, true);
         return;
     }
 
@@ -1827,6 +2210,8 @@ function initializeIntroOverlay() {
 const cutsceneWarningManager = (() => {
     const storageKey = 'solsCutsceneWarningDismissed';
     let suppressed = null;
+    let lastFocusedElement = null;
+    let backgroundOverlay = null;
 
     const getOverlay = () => document.getElementById('cutsceneWarningOverlay');
 
@@ -1874,6 +2259,13 @@ const cutsceneWarningManager = (() => {
             if (!overlay.hasAttribute('hidden')) {
                 return true;
             }
+            lastFocusedElement = document.activeElement;
+            backgroundOverlay = lastFocusedElement instanceof Element
+                ? lastFocusedElement.closest('.modal-overlay')
+                : null;
+            if (backgroundOverlay && !backgroundOverlay.hasAttribute('hidden')) {
+                backgroundOverlay.setAttribute('aria-hidden', 'true');
+            }
             revealOverlay(overlay);
             focusPrimaryAction();
             return true;
@@ -1883,7 +2275,18 @@ const cutsceneWarningManager = (() => {
             if (!overlay) {
                 return;
             }
-            concealOverlay(overlay);
+            concealOverlay(overlay, {
+                onHidden: () => {
+                    if (backgroundOverlay && !backgroundOverlay.hasAttribute('hidden')) {
+                        backgroundOverlay.removeAttribute('aria-hidden');
+                    }
+                    if (lastFocusedElement && typeof lastFocusedElement.focus === 'function') {
+                        lastFocusedElement.focus({ preventScroll: true });
+                    }
+                    lastFocusedElement = null;
+                    backgroundOverlay = null;
+                }
+            });
         },
         suppress() {
             suppressed = true;
@@ -2412,6 +2815,19 @@ function normalizeMediaSource(element) {
     }
 }
 
+function canFetchAudioBufferSource(sourceUrl) {
+    if (!sourceUrl) return false;
+    try {
+        const protocol = new URL(sourceUrl, window.location.href).protocol;
+        return protocol === 'http:'
+            || protocol === 'https:'
+            || protocol === 'data:'
+            || protocol === 'blob:';
+    } catch (error) {
+        return false;
+    }
+}
+
 function ensureDeferredMediaSource(element) {
     if (!element) {
         return false;
@@ -2645,6 +3061,13 @@ function playSoundEffect(audioElement, category = 'rolling') {
         return;
     }
 
+    // Browsers do not allow fetch() to read file:// media from an opaque local-file
+    // origin. Direct HTMLAudio playback is supported, so use that path locally.
+    if (!canFetchAudioBufferSource(sourceKey)) {
+        spawnFallbackPlayer(initialGain);
+        return;
+    }
+
     const fetchAudioBuffer = async () => {
         if (appState.audio.bufferCache.has(sourceKey)) {
             return appState.audio.bufferCache.get(sourceKey);
@@ -2767,28 +3190,52 @@ function primeBackgroundMusic(bgMusic) {
     }
 }
 
-function startBackgroundMusic(bgMusic) {
-    if (!bgMusic) return;
+let pendingBackgroundMusicGestureRetry = null;
 
-    ensureBackgroundMusicSource(bgMusic);
+function clearPendingBackgroundMusicGestureRetry() {
+    if (!pendingBackgroundMusicGestureRetry || typeof document === 'undefined') return;
+    const { retry } = pendingBackgroundMusicGestureRetry;
+    document.removeEventListener('pointerdown', retry, true);
+    document.removeEventListener('keydown', retry, true);
+    pendingBackgroundMusicGestureRetry = null;
+}
+
+function queueBackgroundMusicGestureRetry(bgMusic) {
+    if (!bgMusic || typeof document === 'undefined') return;
+    if (pendingBackgroundMusicGestureRetry?.element === bgMusic) return;
+
+    clearPendingBackgroundMusicGestureRetry();
+    const retry = () => {
+        clearPendingBackgroundMusicGestureRetry();
+        if (!experienceStarted || !isSoundChannelActive('music')) return;
+        startBackgroundMusic(bgMusic);
+    };
+    pendingBackgroundMusicGestureRetry = { element: bgMusic, retry };
+    document.addEventListener('pointerdown', retry, true);
+    document.addEventListener('keydown', retry, true);
+}
+
+function startBackgroundMusic(bgMusic) {
+    if (!bgMusic || !experienceStarted || !isSoundChannelActive('music')) return;
+
+    primeBackgroundMusic(bgMusic);
     const playPromise = bgMusic.play();
     if (playPromise && typeof playPromise.catch === 'function') {
-        playPromise.catch(() => {
-            if (!appState.audio.roll) return;
-            try {
-                bgMusic.muted = false;
-                if (typeof bgMusic.removeAttribute === 'function') {
-                    bgMusic.removeAttribute('muted');
+        playPromise
+            .then(() => {
+                clearPendingBackgroundMusicGestureRetry();
+            })
+            .catch(() => {
+                if (!isSoundChannelActive('music')) return;
+                if (bgMusic.readyState < 3 && bgMusic.dataset.backgroundPlaybackRetryBound !== 'true') {
+                    bgMusic.dataset.backgroundPlaybackRetryBound = 'true';
+                    bgMusic.addEventListener('canplay', () => {
+                        delete bgMusic.dataset.backgroundPlaybackRetryBound;
+                        startBackgroundMusic(bgMusic);
+                    }, { once: true });
                 }
-            } catch (error) {
-                console.warn('Unable to clear muted attribute for retry', error);
-            }
-            const retryPromise = bgMusic.play();
-            if (retryPromise && typeof retryPromise.catch === 'function') {
-                retryPromise.catch(() => {});
-            }
-        });
-        return;
+                queueBackgroundMusicGestureRetry(bgMusic);
+            });
     }
 }
 
@@ -2947,12 +3394,16 @@ function setMasterMuteState(isMuted, { force = false, persist = true } = {}) {
 
     if (isMuted) {
         stopSingularitySummonSequence();
+        clearPendingBackgroundMusicGestureRetry();
     }
 
     ['music', 'obtain', 'cutscene', 'ui'].forEach(channel => applyChannelVolumeToElements(channel));
 
     if (!isMuted) {
         resumeAudioEngine();
+        if (experienceStarted) {
+            startBackgroundMusic(document.getElementById('ambientMusic'));
+        }
     }
 
     if (persist) {
@@ -3018,40 +3469,6 @@ function toggleInterfaceAudio() {
     if (appState.audio.ui) {
         playSoundEffect(clickSoundEffectElement, 'ui');
     }
-}
-
-function toggleCinematicMode() {
-    const wasCinematic = appState.cinematic;
-    appState.cinematic = FORCE_CUTSCENES_ALWAYS_ON ? true : !appState.cinematic;
-
-    const cutsceneToggle = document.getElementById('cinematicToggle');
-    if (cutsceneToggle) {
-        cutsceneToggle.textContent = appState.cinematic ? 'Cutscenes (Fullscreen recommended): On' : 'Cutscenes (Fullscreen recommended): Off';
-        cutsceneToggle.setAttribute('aria-pressed', appState.cinematic ? 'true' : 'false');
-    }
-
-    const clickSound = clickSoundEffectElement;
-    if (clickSound) {
-        playSoundEffect(clickSound, 'ui');
-    }
-
-    if (appState.cinematic) {
-        if (!cutsceneWarningManager.isSuppressed()) {
-            cutsceneWarningManager.show();
-        } else if (!wasCinematic) {
-            cutsceneWarningManager.hide();
-        }
-    }
-
-    if (!appState.cinematic) {
-        cutsceneWarningManager.hide();
-        const skipButton = document.getElementById('skip-cinematic-button');
-        if (skipButton && skipButton.style.display !== 'none') {
-            skipButton.click();
-        }
-    }
-
-    persistVisualSettings();
 }
 
 function isGlitchBiomeSelected() {
@@ -3560,7 +3977,7 @@ const biomeAssets = {
     rainy: { image: 'files/images/backgrounds/rainyBiomeImage.jpg', music: 'files/music/rainyBiomeMusic.mp3' },
     windy: { image: 'files/images/backgrounds/windyBiomeImage.jpg', music: 'files/music/windyBiomeMusic.mp3' },
     snowy: { image: 'files/images/backgrounds/snowyBiomeImage.jpg', music: 'files/music/winterBiomeMusic.mp3' },
-    aurora: { image: 'files/images/backgrounds/auroraBiomeImage.jpg', music: 'files/music/auroraBiomeMusic.mp3' },
+    aurora: { image: 'files/images/backgrounds/auroraBiomeImage.jpg', music: 'files/music/winterBiomeMusic.mp3' },
     sandstorm: { image: 'files/images/backgrounds/sandstormBiomeImage.jpg', music: 'files/music/sandstormBiomeMusic.mp3' },
     hell: { image: 'files/images/backgrounds/hellBiomeImage.jpg', music: 'files/music/hellBiomeMusic.mp3' },
     starfall: { image: 'files/images/backgrounds/starfallBiomeImage.jpg', music: 'files/music/starfallBiomeMusic.mp3' },
@@ -5896,7 +6313,7 @@ function playAuraVideo(videoId, options = {}) {
                 appState.scrollLock = null;
             }
             if (bgMusic && wasPlaying && appState.audio.roll) {
-                bgMusic.play().catch(() => {});
+                startBackgroundMusic(bgMusic);
             }
             video.onended = null;
             video.onerror = null;
@@ -6016,7 +6433,7 @@ async function playAuraSequence(queue, options = {}) {
         }
     } finally {
         if (ambientMusic && shouldResumeAmbient && appState.audio.roll) {
-            ambientMusic.play().catch(() => {});
+            startBackgroundMusic(ambientMusic);
         }
         if (!wasFullscreen && enteredFullscreen) {
             await exitFullscreen();
@@ -6297,8 +6714,6 @@ function isAuraTierSkipped(aura, biome) {
     return false;
 }
 
-const CHALLENGED_CUTSCENE_AURAS = new Set(['Oblivion', 'Memory', 'Neferkhaf', '赤月の破片']);
-
 function shouldHideAuraFromRollFeed(aura, biome) {
     return (activeAuraTierFilterCount > 0 && isAuraTierSkipped(aura, biome))
         || (activeAuraFilterCount > 0 && isAuraFiltered(aura));
@@ -6316,23 +6731,8 @@ function resolveBaseRarityClass(aura) {
     return baseRarityClassCache.get(aura);
 }
 
-function shouldSkipAuraCutscene(aura, biome) {
-    if (shouldHideAuraFromRollFeed(aura, biome)) {
-        return true;
-    }
-    if (!aura || !appState || !appState.auraTierFilters) {
-        return false;
-    }
-    if (!appState.auraTierFilters.challenged) {
-        return false;
-    }
-    const auraName = aura.name || '';
-    for (const label of CHALLENGED_CUTSCENE_AURAS) {
-        if (auraName.startsWith(label)) {
-            return true;
-        }
-    }
-    return false;
+function shouldSkipAuraCutscene(aura) {
+    return !isAuraCutscenePlaybackEnabled(aura);
 }
 
 const nativeAuraOutlineOverrides = new Map([
@@ -6458,6 +6858,56 @@ const auraOutlineOverrides = new Map([
     ['Pool Party', 'sigil-outline-summer'],
 ]);
 
+const wikiAuraSigilNames = new Set([
+    '★',
+    '★★',
+    '★★★',
+    'Attorney',
+    'Verdict',
+    'Empty',
+    'Neferkhaf',
+    'Memory',
+    'Oblivion',
+    '赤月の破片',
+    'Prowler',
+    'Oppression',
+    'Illusionary',
+    'Clockwork',
+    'Dreammetric',
+    'Fault',
+    'Megaphone',
+    'Meta',
+    'Cryogenic',
+    'Astral : Astrald',
+    '紅月を求めし者',
+    '紅月の観測者',
+    'Borealis',
+    'Glitch',
+    'Innovator',
+    'Monarch',
+    'Equinox',
+    'Equinox : youareanidiot',
+    'DreamCatcher',
+    'Dream Traveler',
+    'Sky Festival',
+    'Breakthrough',
+    'Y.O.L.K.E.G.G.',
+    'Astraios',
+    'Leviathan',
+    'Winter Garden',
+    'Luminosity',
+    'Erebus',
+    'Aegis : Eggis',
+    'Pixelation',
+    'Nyctophobia',
+    'Lamenthyr',
+    "A Fool's Experience",
+    'P.U.K.E.K.O.G.O.D.',
+    'Eostre',
+    'Sovereign : Frostveil',
+    'Ascendant'
+]);
+
 const glitchOutlineNames = new Set(['Fault', '[CONTENT DELETED']);
 const dreamspaceOutlineNames = new Set(['★★★', '★★', '★']);
 const cyberspaceOutlineExclusions = new Set(['Pixelation', 'Illusionary']);
@@ -6469,6 +6919,8 @@ function resolveAuraStyleClass(aura, biome) {
     if (!name) return '';
 
     const classes = [];
+    const shortName = name.includes(' - ') ? name.split(' - ')[0].trim() : name.trim();
+    if (wikiAuraSigilNames.has(shortName)) classes.push('sigil-wiki-aura');
     if (name.startsWith('Oblivion')) classes.push('sigil-effect-oblivion');
     if (name.startsWith('Memory')) classes.push('sigil-effect-memory');
     if (name.startsWith('Neferkhaf')) classes.push('sigil-effect-neferkhaf');
@@ -6486,8 +6938,6 @@ function resolveAuraStyleClass(aura, biome) {
 
     const auraData = typeof aura === 'string' ? null : aura;
     const auraEventId = auraData ? getAuraEventId(auraData, { preferEnabled: true }) : null;
-
-    const shortName = name.includes(' - ') ? name.split(' - ')[0].trim() : name.trim();
 
     if (auraEventId === 'winter26') {
         const shortNameCheck = name.includes(' - ') ? name.split(' - ')[0].trim() : name.trim();
@@ -6796,9 +7246,261 @@ function clearActiveLuckPotionPresets({ syncBiomeConstraints = true } = {}) {
     }
 }
 
+function splitAuraDisplaySuffix(baseName) {
+    const separatorIndex = baseName.lastIndexOf(' - ');
+    if (separatorIndex < 0) {
+        return { suffix: '' };
+    }
+    const possibleChance = baseName.slice(separatorIndex + 3).trim();
+    return /^\d[\d,]*$/.test(possibleChance)
+        ? { suffix: baseName.slice(separatorIndex) }
+        : { suffix: '' };
+}
+
+function appendWikiAuraSigilSuffix(markup, suffix) {
+    if (!suffix) return markup;
+    return `${markup}<span class="sigil-wiki__suffix">${suffix}</span>`;
+}
+
+function formatWikiAuraSigilMarkup(aura, baseName) {
+    if (!aura || typeof baseName !== 'string') return '';
+    const canonicalName = aura.name.includes(' - ')
+        ? aura.name.split(' - ')[0].trim()
+        : aura.name.trim();
+    if (!wikiAuraSigilNames.has(canonicalName)) return '';
+
+    const { suffix } = splitAuraDisplaySuffix(baseName);
+    const layered = (className, text) => `<span class="sigil-wiki ${className}">` +
+        `<span class="sigil-wiki__layer sigil-wiki__layer--back">${text}</span>` +
+        `<span class="sigil-wiki__layer sigil-wiki__layer--front">${text}</span>` +
+        '</span>';
+    const stroked = (className, text) => `<span class="sigil-wiki ${className}">` +
+        `<span class="sigil-wiki__text-stroke" data-text="${text}"></span>` +
+        `<span class="sigil-wiki__face">${text}</span>` +
+        '</span>';
+    const doubleStroked = (className, text) => `<span class="sigil-wiki ${className}">` +
+        `<span class="sigil-wiki__court-stroke sigil-wiki__court-stroke--outer" data-text="${text}"></span>` +
+        `<span class="sigil-wiki__court-stroke sigil-wiki__court-stroke--inner" data-text="${text}"></span>` +
+        `<span class="sigil-wiki__face">${text}</span>` +
+        '</span>';
+    let markup = '';
+
+    switch (canonicalName) {
+        case '★':
+        case '★★':
+        case '★★★':
+            markup = `<span class="sigil-wiki sigil-wiki--dream-star">${canonicalName}</span>`;
+            break;
+        case 'Attorney':
+            markup = doubleStroked('sigil-wiki--court', 'ATTORNEY');
+            break;
+        case 'Verdict':
+            markup = doubleStroked('sigil-wiki--court', 'VERDICT');
+            break;
+        case 'Empty':
+            markup = '<span class="sigil-wiki sigil-wiki--empty">Empty</span>';
+            break;
+        case 'Neferkhaf':
+            markup = layered('sigil-wiki--neferkhaf', 'Neferkhaf');
+            break;
+        case 'Memory':
+            markup = stroked('sigil-wiki--memory', 'Memory');
+            break;
+        case 'Oblivion':
+            markup = stroked('sigil-wiki--oblivion', 'OBLIVION');
+            break;
+        case '赤月の破片':
+            markup = '<span class="sigil-wiki sigil-wiki--crimson-fragment"><b><i>赤月の破片</i></b></span>';
+            break;
+        case 'Prowler':
+            markup = '<span class="sigil-wiki sigil-wiki--prowler">Prowler</span>';
+            break;
+        case 'Oppression':
+            markup = '<span class="sigil-wiki sigil-wiki--oppression">[OPPRESSION]</span>';
+            break;
+        case 'Illusionary':
+            markup = '<span class="sigil-wiki sigil-wiki--illusionary">illusionary</span>';
+            break;
+        case 'Clockwork':
+            markup = layered('sigil-wiki--clockwork', 'CLOCKWORK');
+            break;
+        case 'Dreammetric':
+            markup = stroked('sigil-wiki--dreammetric', 'Dreammetric');
+            break;
+        case 'Fault':
+            markup = layered('sigil-wiki--fault', 'FAULT');
+            break;
+        case 'Megaphone':
+            markup = '<span class="sigil-wiki sigil-wiki--megaphone">MEGAPHONE</span>';
+            break;
+        case 'Meta':
+            markup = '<span class="sigil-wiki sigil-wiki--meta"><span>meta</span></span>';
+            break;
+        case 'Cryogenic':
+            markup = stroked('sigil-wiki--cryogenic', 'Cryogenic');
+            break;
+        case 'Astral : Astrald':
+            markup = layered('sigil-wiki--astrald', 'Astral : Astrald');
+            break;
+        case '紅月を求めし者':
+            markup = '<span class="sigil-wiki sigil-wiki--crimson-seeker">' +
+                '<span class="sigil-wiki__crimson-stroke sigil-wiki__crimson-stroke--outer" data-text="紅月を求めし者"></span>' +
+                '<span class="sigil-wiki__crimson-stroke sigil-wiki__crimson-stroke--inner" data-text="紅月を求めし者"></span>' +
+                '<span class="sigil-wiki__face">紅月を求めし者</span></span>';
+            break;
+        case '紅月の観測者':
+            markup = '<span class="sigil-wiki sigil-wiki--crimson-observer">' +
+                '<span class="sigil-wiki__crimson-stroke sigil-wiki__crimson-stroke--outer" data-text="紅月の観測者"></span>' +
+                '<span class="sigil-wiki__crimson-stroke sigil-wiki__crimson-stroke--inner" data-text="紅月の観測者"></span>' +
+                '<span class="sigil-wiki__face">紅月の観測者</span></span>';
+            break;
+        case 'Borealis':
+            markup = '<span class="sigil-wiki sigil-wiki--borealis"><b>Borealis</b></span>';
+            break;
+        case 'Glitch':
+            markup = '<span class="sigil-wiki sigil-wiki--glitch">' +
+                '<span class="sigil-wiki__glitch-title" aria-hidden="true"></span>' +
+                '<span class="sigil-wiki__glitch-space">GLITCH</span></span>';
+            break;
+        case 'Innovator':
+            markup = '<span class="sigil-wiki sigil-wiki--innovator"><b>INNOVATOR</b></span>';
+            break;
+        case 'Monarch':
+            markup = layered('sigil-wiki--monarch', 'MONARCH');
+            break;
+        case 'Equinox':
+            markup = '<span class="sigil-wiki sigil-wiki--equinox">' +
+                '<span class="sigil-wiki__equinox-stroke" data-text="『EQUINOX』"></span>' +
+                '<span class="sigil-wiki__equinox-transition" data-text="『EQUINOX』"></span>' +
+                '<span class="sigil-wiki__equinox-pulse" data-text="『EQUINOX』"></span>' +
+                '<span class="sigil-wiki__equinox-face">『EQUINOX』</span>' +
+                '</span>';
+            break;
+        case 'Equinox : youareanidiot':
+            markup = '<span class="sigil-wiki sigil-wiki--equinox-idiot">' +
+                '<span class="sigil-wiki__idiot-stroke"><span>『</span>YOU ARE AN IDIOT<span>』</span></span>' +
+                '<span class="sigil-wiki__idiot-face"><span>『</span>YOU ARE AN IDIOT<span>』</span></span>' +
+                '</span>';
+            break;
+        case 'DreamCatcher':
+            markup = '<span class="sigil-wiki sigil-wiki--dreamcatcher">' +
+                '<span class="sigil-wiki__dreamcatcher-dream"><span class="sigil-wiki__text-stroke" data-text="dream"></span><span>dream</span></span>' +
+                '<span class="sigil-wiki__dreamcatcher-catcher"><span class="sigil-wiki__text-stroke" data-text="catcher"></span><span>catcher</span></span>' +
+                '</span>';
+            break;
+        case 'Dream Traveler': {
+            const dreamTravelerText = 'Dream \u200e \u200e Traveler \u200e';
+            markup = '<span class="sigil-wiki sigil-wiki--dream-traveler">' +
+                `<span class="sigil-wiki__dream-traveler-stroke" data-text="${dreamTravelerText}"></span>` +
+                `<span class="sigil-wiki__dream-traveler-gradient" data-text="${dreamTravelerText}"></span>` +
+                `<span class="sigil-wiki__dream-traveler-face">${dreamTravelerText}</span>` +
+                '</span>';
+            break;
+        }
+        case 'Sky Festival':
+            markup = layered('sigil-wiki--sky-festival', '[ Sky Festival ]');
+            break;
+        case 'Breakthrough':
+            markup = '<span class="sigil-wiki sigil-wiki--breakthrough-frame">' +
+                '<span class="sigil-wiki__breakthrough-panel"><span class="sigil-wiki__breakthrough-text"><i>BREAKTHROUGH</i></span></span>' +
+                '</span>';
+            break;
+        case 'Y.O.L.K.E.G.G.':
+            markup = layered('sigil-wiki--yolkegg', 'Y.O.L.K.E.G.G.');
+            break;
+        case 'Astraios':
+            markup = layered('sigil-wiki--astraios', 'ASTRAIOS');
+            break;
+        case 'Leviathan':
+            markup = '<span class="sigil-wiki sigil-wiki--leviathan">LEVIATHAN</span>';
+            break;
+        case 'Winter Garden':
+            markup = '<span class="sigil-wiki sigil-wiki--winter-garden">' +
+                '<span class="sigil-wiki__text-stroke" data-text="Winter Garden"></span>' +
+                '<span class="sigil-wiki__winter-garden-glow">Winter Garden</span>' +
+                '<span class="sigil-wiki__winter-garden-face">Winter Garden</span>' +
+                '</span>';
+            break;
+        case 'Luminosity':
+            markup = '<span class="sigil-wiki sigil-wiki--luminosity"><i>' +
+                '<span class="sigil-wiki__luminosity-bracket">[ </span>LUMINOSITY<span class="sigil-wiki__luminosity-bracket"> ]</span>' +
+                '</i></span>';
+            break;
+        case 'Erebus':
+            markup = '<span class="sigil-wiki sigil-wiki--erebus"><i><b>Erebus</b></i></span>';
+            break;
+        case 'Aegis : Eggis':
+            markup = '<span class="sigil-wiki sigil-wiki--eggis">' +
+                '<span class="sigil-wiki__layer sigil-wiki__layer--back"><span class="sigil-wiki__eggis-flower sigil-wiki__eggis-flower--back">✿</span>EGGIS</span>' +
+                '<span class="sigil-wiki__text-stroke" data-text="EGGIS"></span>' +
+                '<span class="sigil-wiki__layer sigil-wiki__layer--front">EGGIS<span class="sigil-wiki__eggis-flower sigil-wiki__eggis-flower--front">✿</span></span>' +
+                '</span>';
+            break;
+        case 'Pixelation':
+            markup = '<span class="sigil-wiki sigil-wiki--pixelation"><i>▣ PIXELATION ▣</i></span>';
+            break;
+        case 'Nyctophobia':
+            markup = '<span class="sigil-wiki sigil-wiki--nyctophobia">' +
+                Array.from('nyctophobia').map((letter, index) => `<span style="animation-delay:${0.055 + index * 0.005}s">${letter}</span>`).join('') +
+                '</span>';
+            break;
+        case 'Lamenthyr':
+            markup = layered('sigil-wiki--lamenthyr', 'LAMENTHYR');
+            break;
+        case "A Fool's Experience":
+            markup = '<span class="sigil-wiki sigil-wiki--fools-experience">' +
+                '<span class="sigil-wiki__fools-corners" aria-hidden="true"><span></span><span></span><span></span><span></span></span>' +
+                '<span class="sigil-wiki__fools-frame"><span class="sigil-wiki__fools-depth">A fool\'s experience...</span>' +
+                '<span class="sigil-wiki__text-stroke" data-text="A fool\'s experience..."></span>' +
+                '<span class="sigil-wiki__fools-face">A fool\'s experience...</span></span>' +
+                '</span>';
+            break;
+        case 'P.U.K.E.K.O.G.O.D.':
+            markup = '<span class="sigil-wiki sigil-wiki--pukekogod"><b>P. U. K. E. K. O. G. O. D.</b></span>';
+            break;
+        case 'Eostre':
+            markup = '<span class="sigil-wiki sigil-wiki--eostre"><span>E</span><b>ostre</b></span>';
+            break;
+        case 'Sovereign : Frostveil':
+            markup = '<span class="sigil-wiki sigil-wiki--frostveil">' +
+                '<span class="sigil-wiki__frostveil-sovereign"><span class="sigil-wiki__text-stroke" data-text="SOVEREIGN"></span><span>SOVEREIGN</span></span>' +
+                '<span class="sigil-wiki__frostveil-colon"> : </span><span class="sigil-wiki__frostveil-name">Frostveil</span>' +
+                '</span>';
+            break;
+        case 'Ascendant':
+            markup = layered('sigil-wiki--ascendant', 'ASCENDANT');
+            break;
+        default:
+            return '';
+    }
+
+    return appendWikiAuraSigilSuffix(markup, suffix);
+}
+
+function initializeChangelogAuraSigils() {
+    if (typeof document === 'undefined') return;
+
+    document.querySelectorAll('[data-changelog-aura-sigil]').forEach(element => {
+        if (element.dataset.changelogAuraSigilRendered === 'true') return;
+        const auraName = element.dataset.changelogAuraSigil?.trim();
+        if (!auraName || !wikiAuraSigilNames.has(auraName)) return;
+        const markup = formatWikiAuraSigilMarkup({ name: auraName }, auraName);
+        if (!markup) return;
+        element.innerHTML = markup;
+        element.dataset.changelogAuraSigilRendered = 'true';
+    });
+}
+
 function formatAuraNameMarkup(aura, overrideName) {
     if (!aura) return overrideName || '';
     const baseName = typeof overrideName === 'string' && overrideName.length > 0 ? overrideName : aura.name;
+    const wikiSigilMarkup = formatWikiAuraSigilMarkup(aura, baseName);
+    if (wikiSigilMarkup) {
+        if (aura.subtitle) {
+            return `${wikiSigilMarkup} <span class="sigil-subtitle">${aura.subtitle}</span>`;
+        }
+        return wikiSigilMarkup;
+    }
     if (baseName === 'Glitch' || baseName.startsWith('Glitch - ')) {
         const [namePart, ...restParts] = baseName.split(' - ');
         const suffix = restParts.length > 0 ? ` - ${restParts.join(' - ')}` : '';
@@ -7261,7 +7963,7 @@ const AURA_BLUEPRINT_SOURCE = Object.freeze([
     { name: "Sinister - 15,000,000", chance: 15000000, nativeBiomes: ["glitch", "pumpkinMoon"] },
     { name: "Arcane : Legacy - 15,000,000", chance: 15000000 },
     { name: "Sirius - 14,000,000", chance: 14000000, breakthroughs: nativeBreakthroughs("starfall") },
-    { name: "Borealis - 13,333,333", chance: 11333333, nativeBiomes: ["dreamspace"] },
+    { name: "Borealis - 13,333,333", chance: 13333333, nativeBiomes: ["dreamspace"] },
     { name: "Stormal : Hurricane - 13,500,000", chance: 13500000, breakthroughs: nativeBreakthroughs("windy") },
     { name: "Glitch - 12,210,110", chance: 12210110, nativeBiomes: ["glitch"] },
     { name: "Imaginary - 12,200,200", chance: 12200200, nativeBiomes: ["limbo"] },
@@ -8982,6 +9684,7 @@ function ensureChangelogTabsReady() {
         return;
     }
 
+    initializeChangelogAuraSigils();
     setupChangelogTabs();
     localizeChangelogUpdateTimes();
     versionChangelogOverlayState.tabsInitialized = true;
@@ -9180,10 +9883,10 @@ function initializeHelpCenter() {
         {
             icon: 'fa-film',
             title: 'Configure cutscenes and preferences',
-            description: 'Settings contains audio, quality, cutscene, background-rolling, and true-chance controls.',
-            task: 'Inspect the Cutscenes switch, then open Audio or Quality Preferences.',
-            action: 'settings-menu',
-            target: '#cinematicToggle'
+            description: 'Rolling Settings contains per-aura cutscene playback and pause controls alongside the roll-feed filters.',
+            task: 'Open Filter Cutscenes and choose which aura cutscenes should play.',
+            action: 'rolling-settings',
+            target: '#rollingCutscenePlaybackFiltersButton'
         },
         {
             icon: 'fa-list-ol',
@@ -9443,6 +10146,8 @@ function initializeHelpCenter() {
         const overlays = [
             document.getElementById('auraDetailFilterOverlay'),
             document.getElementById('auraFilterOverlay'),
+            document.getElementById('cutscenePauseFilterOverlay'),
+            document.getElementById('cutscenePlaybackFilterOverlay'),
             document.getElementById('rollingSettingsOverlay')
         ];
         let overlayWasOpen = false;
@@ -10211,8 +10916,17 @@ const BIOME_SIGIL_CLASS_OVERRIDES = Object.freeze({
     bloodRain: 'sigil-outline-blood',
     blazing: 'sigil-outline-summer',
     aurora: 'sigil-outline-winter',
-    mastermind: 'sigil-outline-mastermind',
-    edict: 'sigil-outline-edict'
+    anotherRealm: 'biome-sigil--hyperspace-realm',
+    mastermind: 'biome-sigil--null-existence',
+    edict: 'biome-sigil--citadel-of-orders',
+    fullMoon: 'biome-sigil--red-full-moon'
+});
+
+const BIOME_DISPLAY_LABEL_OVERRIDES = Object.freeze({
+    anotherRealm: '[ THE HYPERSPACE REALM ]',
+    mastermind: "THE NULL'S EXISTENCE",
+    edict: 'THE CITADEL OF ORDERS',
+    fullMoon: '[ 赤い満月 ]'
 });
 
 function getBiomeIconSource(value) {
@@ -10235,7 +10949,7 @@ function populateBiomeOptionElement(target, option, { deferImage = false } = {})
         return '';
     }
 
-    const label = option.textContent.trim();
+    const label = BIOME_DISPLAY_LABEL_OVERRIDES[option.value] || option.textContent.trim();
     target.innerHTML = '';
 
     const iconSource = getBiomeIconSource(option.value);
@@ -11100,12 +11814,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     hydrateVisualSettings();
     applyPerformanceFirstDefaults();
-
-    const cutsceneToggle = document.getElementById('cinematicToggle');
-    if (cutsceneToggle) {
-        cutsceneToggle.textContent = appState.cinematic ? 'Cutscenes (Fullscreen recommended): On' : 'Cutscenes (Fullscreen recommended): Off';
-        cutsceneToggle.setAttribute('aria-pressed', appState.cinematic ? 'true' : 'false');
-    }
+    initializeCinematicStateFromCutsceneFilters();
 
     initializeQualityPreferencesMenu();
     applyReducedMotionState(appState.reduceMotion);
@@ -11150,6 +11859,8 @@ document.addEventListener('DOMContentLoaded', () => {
     initializeOptionsMenu('optionsMenu', 'optionsMenuToggle', 'optionsMenuPanel');
     initializeAuraTierFilterPanel();
     initializeAuraDetailFilterPanel();
+    initializeCutsceneFilterPanel('pause');
+    initializeCutsceneFilterPanel('playback');
 
     const yearEl = document.getElementById('build-year');
     if (yearEl) {
@@ -11739,6 +12450,31 @@ function setupRollFeedSearch() {
     });
 }
 
+const PINNED_DREAMSPACE_STAR_NAMES = new Set(['★', '★★', '★★★']);
+
+function isPinnedDreamspaceStarName(auraName) {
+    if (typeof auraName !== 'string') {
+        return false;
+    }
+    const normalizedName = auraName.replace(/\s+-\s+[\d,]+\s*$/, '').trim();
+    return PINNED_DREAMSPACE_STAR_NAMES.has(normalizedName);
+}
+
+function isPinnedSpecialAuraName(auraName) {
+    if (typeof auraName !== 'string') {
+        return false;
+    }
+    return isExactMetaAuraName(auraName)
+        || isPinnedDreamspaceStarName(auraName)
+        || auraName.startsWith('Illusionary')
+        || auraName.startsWith('Fault')
+        || auraName.startsWith('[CONTENT DELETED]')
+        || auraName.startsWith('Glitch')
+        || auraName.startsWith('Oppression')
+        || auraName.startsWith('Borealis')
+        || auraName.startsWith('Dreammetric');
+}
+
 function sortEntriesInUnnamedResultOrder(sourceEntries) {
     let entries = Array.isArray(sourceEntries) ? [...sourceEntries] : [];
     entries.sort((a, b) => {
@@ -11760,9 +12496,6 @@ function sortEntriesInUnnamedResultOrder(sourceEntries) {
         ];
     };
 
-    prependMatches(entry => typeof entry.auraName === 'string' && entry.auraName.startsWith('Illusionary'));
-    prependMatches(entry => isExactMetaAuraName(entry.auraName));
-
     const cryogenicEntries = entries.filter(
         entry => typeof entry.auraName === 'string' && entry.auraName.startsWith('Cryogenic')
     );
@@ -11776,11 +12509,9 @@ function sortEntriesInUnnamedResultOrder(sourceEntries) {
         entries.splice(equinoxIndex >= 0 ? equinoxIndex : 0, 0, ...cryogenicEntries);
     }
 
-    prependMatches(entry => typeof entry.auraName === 'string' && entry.auraName.startsWith('Fault'));
-    prependMatches(entry => typeof entry.auraName === 'string' && entry.auraName.startsWith('[CONTENT DELETED]'));
-    prependMatches(entry => typeof entry.auraName === 'string' && entry.auraName.startsWith('Glitch'));
-    prependMatches(entry => typeof entry.auraName === 'string' && entry.auraName.startsWith('Oppression'));
-    prependMatches(entry => typeof entry.auraName === 'string' && entry.auraName.startsWith('Dreammetric'));
+    // Keep the special group above ordinary results while preserving the rarity
+    // order established by the initial descending-priority sort.
+    prependMatches(entry => isPinnedSpecialAuraName(entry.auraName));
 
     return entries;
 }
@@ -11983,13 +12714,8 @@ function buildResultEntries(
         const breakthroughStats = breakthroughStatsMap.get(aura.name);
         const isBreakthrough = aura.name.startsWith('Breakthrough');
 
-        const formatBreakthroughMarkupWithCount = (nameValue, countValue) => {
-            const [namePart, ...restParts] = nameValue.split(' - ');
-            const suffixText = restParts.length > 0 ? ` - ${restParts.join(' - ')}` : '';
-            const detailText = `${suffixText} | Times Rolled: ${formatWithCommas(countValue)}`;
-            return `<span class="sigil-effect-breakthrough__title">${namePart.toUpperCase()}</span>` +
-                `<span class="sigil-effect-breakthrough__suffix">${detailText}</span>`;
-        };
+        const formatBreakthroughMarkupWithCount = (nameValue, countValue) =>
+            `${formatAuraNameMarkup(aura, nameValue)}<span class="sigil-wiki__suffix"> | Times Rolled: ${formatWithCommas(countValue)}</span>`;
 
         const eventId = getAuraEventId(aura, { preferEnabled: true });
         const specialClassTokens = specialClass
@@ -12536,14 +13262,19 @@ function syncBreakthroughCounts(statsByAuraIndex, breakthroughCounts) {
 }
 
 function createSimulationWorker() {
-    if (typeof Worker !== 'function') {
+    if (typeof Worker !== 'function' || typeof window === 'undefined') {
+        return null;
+    }
+
+    const locationProtocol = window.location?.protocol || '';
+    const locationOrigin = window.location?.origin || '';
+    if (locationProtocol === 'file:' || locationOrigin === 'null') {
         return null;
     }
 
     try {
         return new Worker(SIMULATION_WORKER_PATH);
     } catch (error) {
-        console.warn('Simulation worker unavailable, falling back to main thread execution.', error);
         return null;
     }
 }
@@ -12691,7 +13422,6 @@ function runRollSimulation(options = {}) {
 
     const isMultiplePotionRun = isMultiplePotionMode();
     const solsLikeRun = isSolsLikeSimulationMethod();
-    const selectedAutoPauseAfterCutscene = Boolean(rollingSettingsPreference.autoPauseAfterCutscene);
     const selectedPotionStackingEnabled = isMultiplePotionRun && isMultiplePotionStackingEnabled();
     const selectedPotionBatches = isMultiplePotionRun
         ? collectMultiplePotionBatches(getMultiplePotionLuckState(), {
@@ -13376,6 +14106,7 @@ function runRollSimulation(options = {}) {
             const markupList = [];
             let processedThisFrame = 0;
             let pendingCutsceneId = null;
+            let pendingCutsceneAura = null;
 
             while (currentRoll < total && processedThisFrame < rollsDue) {
                 const rollResult = performSingleLiveRoll();
@@ -13410,6 +14141,7 @@ function runRollSimulation(options = {}) {
                         && !shouldSkipAuraCutscene(aura, biome)
                     ) {
                         pendingCutsceneId = aura.cutscene;
+                        pendingCutsceneAura = aura;
                         break;
                     }
                 }
@@ -13437,7 +14169,7 @@ function runRollSimulation(options = {}) {
                 cutsceneActive = false;
                 nextRollDueAt = performance.now() + getCurrentRollIntervalMs();
                 if (
-                    selectedAutoPauseAfterCutscene
+                    isAuraCutscenePauseEnabled(pendingCutsceneAura)
                     && !cancelRollRequested
                     && currentRoll < total
                 ) {
@@ -14614,11 +15346,6 @@ const SHARE_IMAGE_EFFECT_HANDLERS = Object.freeze({
             gradient.addColorStop(1, '#38c9a2');
             return gradient;
         };
-        styleSet.name.shadowLayers = [
-            { color: 'rgba(0, 40, 32, 0.85)', blur: 0, offsetX: 1, offsetY: 1 },
-            { color: 'rgba(60, 220, 200, 0.4)', blur: 10, offsetX: 0, offsetY: 2 },
-            { color: 'rgba(14, 28, 24, 0.65)', blur: 18, offsetX: 0, offsetY: 6 }
-        ];
         styleSet.name.transform = text => text.toUpperCase();
         if (styleSet.subtitle) {
             styleSet.subtitle.font = '600 16px "Sarpanch", sans-serif';
@@ -14761,6 +15488,226 @@ function ensureStyleLineHeights(styleSet) {
     }
 }
 
+function replaceShareAuraTitle(text, displayTitle) {
+    const source = typeof text === 'string' ? text : '';
+    const chanceMatch = /\s+-\s+\d[\d,]*/.exec(source);
+    return chanceMatch
+        ? `${displayTitle}${source.slice(chanceMatch.index)}`
+        : displayTitle;
+}
+
+function createWikiShareGradient(stops, angle = 180) {
+    return (context, x, y, width, height) => {
+        const gradient = angle === 180
+            ? context.createLinearGradient(x, y, x, y + height)
+            : createAngleGradient(context, x, y, width, height, angle);
+        stops.forEach(([offset, color]) => gradient.addColorStop(offset, color));
+        return gradient;
+    };
+}
+
+function applyWikiAuraCanvasStyle(styleSet, record) {
+    if (!styleSet?.name || !record?.aura?.name) return;
+    const canonicalName = record.aura.name.includes(' - ')
+        ? record.aura.name.split(' - ')[0].trim()
+        : record.aura.name.trim();
+    if (!wikiAuraSigilNames.has(canonicalName)) return;
+
+    const nameStyle = styleSet.name;
+    nameStyle.decorations = null;
+    nameStyle.shadowLayers = [];
+    nameStyle.stroke = null;
+    nameStyle.lineHeightMultiplier = 1.4;
+
+    const setStyle = ({ title, font, letterSpacing = 0, stops, angle = 180, stroke = null, shadows = [] }) => {
+        nameStyle.font = font;
+        nameStyle.letterSpacing = letterSpacing;
+        nameStyle.transform = text => replaceShareAuraTitle(text, title);
+        nameStyle.fill = createWikiShareGradient(stops, angle);
+        nameStyle.stroke = stroke;
+        nameStyle.shadowLayers = shadows;
+    };
+
+    switch (canonicalName) {
+        case '★':
+        case '★★':
+        case '★★★':
+            setStyle({
+                title: canonicalName, font: '700 38px Arial, sans-serif',
+                stops: [[0.25, '#ed77f8'], [0.35, '#eb75f7'], [0.4, '#ffebff'], [0.5, '#e064ef'], [0.6, '#ffedff'], [0.7, '#dc61ed'], [0.75, '#db5feb']],
+                stroke: { color: '#000000', width: 0.6 }
+            });
+            break;
+        case 'Attorney':
+        case 'Verdict':
+            setStyle({
+                title: canonicalName.toUpperCase(), font: 'italic 700 29px "Playfair Display", serif',
+                stops: [[0.37, '#48291a'], [0.4, '#c59568'], [0.42, '#fffaf4'], [0.53, '#fffaf4'], [0.55, '#c99f76'], [0.58, '#6b4023'], [0.71, '#2a2225']], angle: 175,
+                stroke: { color: '#dcb79a', width: 2 }
+            });
+            break;
+        case 'Empty':
+            setStyle({
+                title: 'Empty', font: 'italic 500 29px "Noto Sans TC", sans-serif',
+                stops: [[0, '#ffffff'], [0.3, '#ffffff'], [0.3, '#050505'], [0.5, '#000000'], [0.5, '#d8d8d8'], [0.72, '#ffffff'], [0.72, '#050505'], [1, '#000000']], angle: 120
+            });
+            break;
+        case 'Monarch':
+            setStyle({
+                title: 'MONARCH', font: 'italic 600 30px "Kings", serif', letterSpacing: 7.5,
+                stops: [[0.2, '#04003b'], [0.3, '#2b04c5'], [0.5, '#010035'], [0.65, '#010035'], [0.75, '#3c08c9']], angle: 185,
+                stroke: { color: '#7e3eea', width: 2 }
+            });
+            break;
+        case 'Equinox':
+            setStyle({
+                title: '『EQUINOX』', font: 'italic 700 27px "Noto Serif TC", serif', letterSpacing: 5.4,
+                stops: [[0.48, '#000916'], [0.5, '#ffffff']], angle: 177,
+                stroke: { color: '#c9cdd2', width: 1.5 }
+            });
+            break;
+        case 'Equinox : youareanidiot':
+            setStyle({
+                title: '『YOU ARE AN IDIOT』', font: 'italic 700 25px "Fuzzy Bubbles", sans-serif',
+                stops: [[0.3, '#000000'], [0.47, '#060606'], [0.5, '#aaaaaa'], [0.51, '#ffffff'], [0.7, '#fdfdfd']], angle: 172,
+                stroke: { color: '#c8c8c8', width: 2 }
+            });
+            break;
+        case 'DreamCatcher':
+            setStyle({
+                title: 'dreamcatcher', font: '400 36px "Parisienne", cursive',
+                stops: [[0.2, '#b4a7f5'], [0.3, '#fcf9ff'], [0.5, '#ffffff']],
+                stroke: { color: '#7064b7', width: 1 }
+            });
+            break;
+        case 'Dream Traveler':
+            setStyle({
+                title: 'Dream \u200e \u200e Traveler \u200e', font: 'italic 700 29px "Jura", sans-serif',
+                stops: [[0.27, '#2e1885'], [0.33, '#c5aefe'], [0.42, '#41307a'], [0.46, '#fdeef4'], [0.52, '#f3daf3'], [0.7, '#6f1930'], [0.75, '#c26181'], [0.9, '#f1a9cb']], angle: 170,
+                stroke: { color: '#b89ffa', width: 1.5 }
+            });
+            break;
+        case 'Sky Festival':
+            setStyle({
+                title: '[ Sky Festival ]', font: 'italic 700 38px "Tangerine", cursive',
+                stops: [[0.16, '#b7a045'], [0.24, '#544334'], [0.35, '#b79a58'], [0.41, '#7c81ff'], [0.5, '#413afc'], [0.6, '#303985'], [0.75, '#5f4cff']], angle: 170,
+                stroke: { color: 'rgba(0, 0, 0, 0.55)', width: 2 }
+            });
+            break;
+        case 'Breakthrough':
+            setStyle({
+                title: 'BREAKTHROUGH', font: 'italic 600 27px "Josefin Sans", sans-serif', letterSpacing: 5.4,
+                stops: [[0.17, '#ffffff'], [0.25, '#323a4d'], [0.3, '#0d0d0c'], [0.38, '#fefeff'], [0.49, '#9cb2cf'], [0.57, '#0c0c0d'], [0.67, '#ffffff']], angle: 174,
+                stroke: { color: '#d3e0f6', width: 1 }
+            });
+            break;
+        case 'Y.O.L.K.E.G.G.':
+            setStyle({
+                title: 'Y.O.L.K.E.G.G.', font: 'italic 700 25px "Michroma", sans-serif',
+                stops: [[0.25, '#9983dd'], [0.3, '#0b1adc'], [0.4, '#183fe9'], [0.48, '#2511ff'], [0.55, '#ba6dff'], [0.7, '#0c146f'], [0.82, '#7d58af']], angle: 182,
+                stroke: { color: '#d4b2ff', width: 2 }
+            });
+            break;
+        case 'Astraios':
+            setStyle({
+                title: 'ASTRAIOS', font: 'italic 600 29px "Playfair Display", serif', letterSpacing: 4.35,
+                stops: [[0.2, '#58685d'], [0.35, '#517064'], [0.5, '#42c297'], [0.65, '#67e1c1']],
+                stroke: { color: '#7a786b', width: 2 }
+            });
+            break;
+        case 'Leviathan':
+            setStyle({
+                title: 'LEVIATHAN', font: '600 29px "Playfair Display", serif', letterSpacing: 4.35,
+                stops: [[0.3, '#4dd0cc'], [0.38, '#153a3e'], [0.4, '#9dfdfd'], [0.5, '#124245'], [0.52, '#2ed4d2'], [0.8, '#518488']], angle: 178,
+                stroke: { color: '#21474a', width: 2.5 }
+            });
+            break;
+        case 'Winter Garden':
+            setStyle({
+                title: 'Winter Garden', font: '600 36px "Parisienne", cursive',
+                stops: [[0.2, '#a2b9ea'], [0.35, '#8980ff'], [0.5, '#7c68cf'], [0.75, '#e0d8fa']],
+                stroke: { color: '#302544', width: 2 }
+            });
+            break;
+        case 'Luminosity':
+            setStyle({
+                title: '[ LUMINOSITY ]', font: 'italic 600 31px "Kings", serif', letterSpacing: 5.2,
+                stops: [[0.3, '#8dbbed'], [0.4, '#7e9fe1'], [0.55, '#14232c'], [0.6, '#d2e4fb'], [0.65, '#203976'], [0.7, '#6ca1e7']],
+                stroke: { color: '#dcecff', width: 2 }
+            });
+            break;
+        case 'Erebus':
+            setStyle({
+                title: 'EREBUS', font: 'italic 700 29px "Noto Serif TC", serif',
+                stops: [[0.2, '#523123'], [0.3, '#882b19'], [0.45, '#801b1b'], [0.5, '#c03946'], [0.67, '#6c1730'], [0.75, '#850546']],
+                stroke: { color: '#44150e', width: 2 }
+            });
+            break;
+        case 'Aegis : Eggis':
+            setStyle({
+                title: '✿ EGGIS ✿', font: 'italic 700 29px "Playfair Display", serif',
+                stops: [[0.3, '#f7fff3'], [0.38, '#daffd4'], [0.42, '#4a8f46'], [0.5, '#f1ffef'], [0.6, '#bf5d0c'], [0.7, '#fffff2'], [0.8, '#fffad9']],
+                stroke: { color: 'rgba(9, 13, 2, 0.7)', width: 2 }
+            });
+            break;
+        case 'Pixelation':
+            setStyle({
+                title: '▣ PIXELATION ▣', font: 'italic 700 22px "Press Start 2P", monospace',
+                stops: [[0, '#e24545'], [0.25, '#8edd7c'], [0.5, '#4082e5'], [0.75, '#9456e9'], [1, '#e21d5c']], angle: 90,
+                stroke: { color: '#000000', width: 1.5 }
+            });
+            break;
+        case 'Nyctophobia':
+            setStyle({
+                title: 'nyctophobia', font: 'italic 100 28px "Roboto Mono", monospace', letterSpacing: 11.2,
+                stops: [[0, '#f9f9fa'], [1, '#f9f9fa']],
+                shadows: [{ color: 'rgba(0, 0, 0, 0.85)', blur: 2, offsetX: 1, offsetY: 1 }]
+            });
+            break;
+        case 'Lamenthyr':
+            setStyle({
+                title: 'LAMENTHYR', font: 'italic 700 29px "Kings", serif',
+                stops: [[0.35, '#420000'], [0.45, '#420000'], [0.5, '#ffc3b6'], [0.6, '#420000']], angle: 178,
+                stroke: { color: '#b6322c', width: 2 }
+            });
+            break;
+        case "A Fool's Experience":
+            setStyle({
+                title: "A fool's experience...", font: '700 25px "Sarpanch", sans-serif',
+                stops: [[0.3, '#effdff'], [0.65, '#a8d5fd']],
+                stroke: { color: '#2f4d6f', width: 2 }
+            });
+            break;
+        case 'P.U.K.E.K.O.G.O.D.':
+            setStyle({
+                title: 'P. U. K. E. K. O. G. O. D.', font: '700 25px "Jura", sans-serif',
+                stops: [[0, '#9f0924'], [.25, '#b4143c'], [.5, '#f694b1'], [.75, '#a91241'], [1, '#811d3a']],
+                stroke: { color: '#6f2636', width: 1 }
+            });
+            break;
+        case 'Eostre':
+            setStyle({
+                title: 'Eostre', font: '700 40px "Tangerine", cursive',
+                stops: [[0.3, '#d6f9c2'], [.59, '#cbf8af'], [.6, '#8ade5f'], [.7, '#b3f06f']]
+            });
+            break;
+        case 'Sovereign : Frostveil':
+            setStyle({
+                title: 'SOVEREIGN : Frostveil', font: '600 32px "Kings", serif',
+                stops: [[.3, '#c4c4ff'], [.5, '#6390ef'], [.65, '#bdf8ff']],
+                stroke: { color: '#123c76', width: 2.5 }
+            });
+            break;
+        case 'Ascendant':
+            setStyle({
+                title: 'ASCENDANT', font: 'italic 600 29px "Playfair Display", serif',
+                stops: [[.25, '#ffeddd'], [.3, '#fffff7'], [.42, '#fff8dc'], [.6, '#fff3d1'], [.63, '#f3b07e'], [.66, '#47130e'], [.75, '#fff3d2'], [.84, '#ffcd9b']],
+                stroke: { color: '#7c321c', width: 1.5 }
+            });
+            break;
+    }
+}
+
 function computeAuraCanvasStyles(record) {
     const baseStyles = {
         name: cloneShareStyle(SHARE_IMAGE_BASE_NAME_STYLE),
@@ -14795,6 +15742,8 @@ function computeAuraCanvasStyles(record) {
         baseStyles.name.letterSpacing = Number.parseFloat((0.15 * parseFontSize(font)).toFixed(2));
         baseStyles.name.transform = text => text.toUpperCase();
     }
+
+    applyWikiAuraCanvasStyle(baseStyles, record);
 
     if (record && record.prefix) {
         baseStyles.prefix = cloneShareStyle(baseStyles.name);

@@ -4375,6 +4375,14 @@ body.quality-no-ui-animations .preset-console__bank {
     gap: 10px;
 }
 
+.rolling-settings__filter-actions--single {
+    grid-template-columns: minmax(0, 1fr);
+}
+
+#rollingCutscenePlaybackFiltersButton {
+    grid-column: 1 / -1;
+}
+
 .rolling-settings__filter-actions .interface-button {
     justify-content: center;
     min-width: 0;
