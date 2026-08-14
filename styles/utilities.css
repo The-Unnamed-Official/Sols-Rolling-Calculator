@@ -2091,6 +2091,35 @@ body.quality-no-glitch .sigil-glitch-flicker {
     letter-spacing: 0.12em;
 }
 
+.cutscene-filter-toggle__layout {
+    display: grid;
+    grid-template-columns: max-content minmax(0, 1fr) max-content;
+    align-items: center;
+    column-gap: 0.4em;
+    width: 100%;
+    line-height: 1.25;
+}
+
+.cutscene-filter-toggle__aura {
+    overflow-wrap: anywhere;
+}
+
+.cutscene-filter-toggle__aura .sigil-subtitle {
+    margin-top: 0.25em;
+}
+
+.cutscene-filter-toggle__status {
+    justify-self: end;
+    white-space: nowrap;
+}
+
+@media (max-width: 480px) {
+    .filter-tier-toggle.cutscene-pause-toggle,
+    .filter-tier-toggle.cutscene-playback-toggle {
+        min-height: 68px;
+    }
+}
+
 .filter-tier-toggle::before {
     content: '';
     position: absolute;
