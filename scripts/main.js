@@ -1444,10 +1444,24 @@ function renderCutsceneFilterButtonLabel(button, aura, enabled, mode) {
     if (!button || !aura) {
         return;
     }
+
+    const verbSpan = document.createElement('span');
+    verbSpan.className = 'cutscene-filter-toggle__verb';
+    verbSpan.textContent = mode === 'pause' ? 'Pause after' : 'Play';
+
+    const nameSpan = createAuraFilterNameSpan(aura);
+    nameSpan.classList.add('cutscene-filter-toggle__aura');
+
+    const statusSpan = document.createElement('span');
+    statusSpan.className = 'cutscene-filter-toggle__status';
+    statusSpan.textContent = `: ${enabled ? 'On' : 'Off'}`;
+
+    const layoutSpan = document.createElement('span');
+    layoutSpan.className = 'cutscene-filter-toggle__layout';
+    layoutSpan.append(verbSpan, nameSpan, statusSpan);
+
     button.textContent = '';
-    button.append(mode === 'pause' ? 'Pause after ' : 'Play ');
-    button.append(createAuraFilterNameSpan(aura));
-    button.append(`: ${enabled ? 'On' : 'Off'}`);
+    button.append(layoutSpan);
 }
 
 function populateCutsceneFilterList(mode) {
