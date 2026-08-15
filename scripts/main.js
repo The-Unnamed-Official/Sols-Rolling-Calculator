@@ -6887,6 +6887,8 @@ const auraOutlineOverrides = new Map([
     ['Taverna', 'sigil-outline-summer'],
     ['Bubble : Cascade', 'sigil-outline-summer'],
     ['Centaurus', 'sigil-outline-summer'],
+    ['Vendor', 'sigil-outline-summer'],
+    ['Fruitpunch', 'sigil-outline-summer'],
 ]);
 
 const wikiAuraSigilNames = new Set([
@@ -7968,6 +7970,7 @@ const AURA_BLUEPRINT_SOURCE = Object.freeze([
     { name: "Santa Frost - 45,000,000", chance: 45000000, breakthroughs: nativeBreakthroughs("snowy") },
     { name: "North Pole - 45,000,000", chance: 45000000, breakthroughs: nativeBreakthroughs("aurora") },
     { name: "Overseer - 45,000,000", chance: 45000000 },
+    { name: "Fruitpunch - 45,000,000", chance: 45000000 },
     { name: "{J u x t a p o s i t i o n} - 40,440,400", chance: 40440400, nativeBiomes: ["limbo"] },
     { name: "Virtual : Fatal Error - 40,413,000", chance: 40413000, breakthroughs: nativeBreakthroughs("cyberspace"), nativeBiomes: ["cyberspace"] },
     { name: "Soul Hunter - 40,000,000", chance: 40000000, nativeBiomes: ["graveyard"] },
@@ -7992,6 +7995,7 @@ const AURA_BLUEPRINT_SOURCE = Object.freeze([
     { name: "Nostalgia - 20,270,000", chance: 20270000 },
     { name: "Very Small Sewage Rat That's About 3.082 Studs Long - 20,070,629", chance: 20070629 },
     { name: "Chromatic - 20,000,000", chance: 20000000 },
+    { name: "Vendor - 17,500,000", chance: 17500000 },
     { name: "Lullaby - 17,000,000", chance: 17000000, breakthroughs: nativeBreakthroughs("night") },
     { name: "Icarus - 15,660,000", chance: 15660000, breakthroughs: nativeBreakthroughs("heaven") },
     { name: "Sinister - 15,000,000", chance: 15000000, nativeBiomes: ["glitch", "pumpkinMoon"] },
@@ -8524,8 +8528,10 @@ const EVENT_AURA_LOOKUP = {
         "Bayview - 60,000,000",
         "Pool Party - 972,000,000",
         "Heatstroke - 83,430",
-        "Taverna - 1,444,444,444",
+        "Vendor - 17,500,000",
+        "Fruitpunch - 45,000,000",
         "Bubble : Cascade - 110,000,000",
+        "Taverna - 1,444,444,444",
         "Centaurus - 3,000,000,000"
     ]
 };
