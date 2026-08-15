@@ -6,7 +6,7 @@
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
-    <title>Sol's RNG Rolling Simulator v2.021</title>
+    <title>Sol's RNG Rolling Simulator v2.026</title>
     <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@7.1.0/css/all.min.css" crossorigin="anonymous">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -391,6 +391,12 @@
     <video id="catcher-cutscene" class="cutscene-video" preload="none" data-audio-channel="cutscene">
         <source data-src="files/videos/cutscenes/catcherCutscene.webm" type="video/webm">
     </video>
+    <video id="taverna-cutscene" class="cutscene-video" preload="none" data-audio-channel="cutscene" data-cutscene-pending="true">
+        <source data-src="files/videos/cutscenes/tavernaCutscene.webm" type="video/webm">
+    </video>
+    <video id="centaurus-cutscene" class="cutscene-video" preload="none" data-audio-channel="cutscene">
+        <source data-src="files/videos/cutscenes/centaurusCutscene.webm" type="video/webm">
+    </video>
 
     <div id="cinematic-overlay" class="cinematic-overlay" aria-hidden="true"></div>
 
@@ -410,9 +416,9 @@
                         <h1 class="banner__title">Sol's RNG Rolling Simulator</h1>
                     </div>
                     <div class="banner__subtitle masthead-console__metadata">
-                        <button type="button" class="banner__version-button masthead-console__meta-card masthead-console__meta-card--version masthead-console__version" id="versionInfoButton" aria-haspopup="dialog" aria-expanded="false" data-version-id="v2.021">
+                        <button type="button" class="banner__version-button masthead-console__meta-card masthead-console__meta-card--version masthead-console__version" id="versionInfoButton" aria-haspopup="dialog" aria-expanded="false" data-version-id="v2.026">
                             <i class="fa-solid fa-code-branch" aria-hidden="true"></i>
-                            <span><small>Current build</small><strong>Version 2.021</strong></span>
+                            <span><small>Current build</small><strong>Version 2.026</strong></span>
                         </button>
                         <span class="masthead-console__meta-card banner__subtitle-author">
                             <img class="masthead-console__creator-avatar" src="files/images/other/theUnnamed.jpg" alt="" aria-hidden="true" decoding="async">
@@ -428,8 +434,8 @@
                                 <small>Game build</small>
                                 <span class="banner__subtitle-game-version">
                                     <a href="https://www.roblox.com/games/15532962292/Sols-RNG" target="_blank" rel="noopener">
-                                        <span class="banner__game-version-name">Sol's RNG Eon 1-26</span>
-                                        <span class="banner__game-season-pill"><span class="sigil-outline-summer">Summer</span> Part 1</span>
+                                        <span class="banner__game-version-name">Sol's RNG Eon 1-26.5</span>
+                                        <span class="banner__game-season-pill"><span class="sigil-outline-summer">Summer</span> Part 1.5</span>
                                     </a>
                                 </span>
                             </span>
@@ -2088,6 +2094,48 @@
             </div>
 
             <div class="changelog-modal__panels" data-changelog-panels>
+                <section
+                    id="changelog-panel-v2026"
+                    class="changelog-modal__panel"
+                    role="tabpanel"
+                    aria-labelledby="changelog-tab-v2026"
+                    data-changelog-panel="v2.026"
+                    data-changelog-label="v2.026"
+                    tabindex="0"
+                >
+                    <header class="changelog-modal__header">
+                        <h2 class="changelog-modal__title">Version 2.026 Update Notes</h2>
+                        <span class="changelog-tab__subtitle">Eon 1-26.5 &amp; Summer 2026 Part 1.5</span>
+                        <p class="changelog-modal__meta">Updated 2026/08/15</p>
+                    </header>
+                    <p class="changelog-modal__intro">Latest changes:</p>
+                    <ul class="changelog-modal__list changelog-modal__list--grouped">
+                        <li class="changelog-release-group changelog-release-group--summer">
+                            <div class="changelog-featured-ui__header changelog-summer__header">
+                                <span class="changelog-featured-ui__icon changelog-summer__icon" aria-hidden="true"><i class="fa-solid fa-sun"></i></span>
+                                <span class="changelog-featured-ui__heading">
+                                    <span class="largeClass"><span class="sigil-outline-summer">Summer</span> Part 1.5</span>
+                                    <span>The next wave of Summer 2026 content has arrived with Eon 1-26.5.</span>
+                                </span>
+                                <span class="changelog-featured-ui__badge changelog-summer__badge">Eon 1-26.5</span>
+                            </div>
+                            <p class="changelog-summer__intro">Added 6 new auras:</p>
+                            <ul class="changelog-release-rarity-grid changelog-release-rarity-grid--summer">
+                                <li><span class="sigil-outline-summer">Heatstroke</span><span class="tinyClass">1 in 83,430</span></li>
+                                <li><span class="sigil-outline-summer">Vendor</span><span class="tinyClass">1 in 17,500,000</span></li>
+                                <li><span class="sigil-outline-summer">Fruitpunch</span><span class="tinyClass">1 in 45,000,000</span></li>
+                                <li><span class="sigil-outline-summer">Bubble : Cascade</span><span class="tinyClass">1 in 110,000,000</span></li>
+                                <li><span class="sigil-outline-summer">Taverna</span><span class="tinyClass">1 in 1,444,444,444</span></li>
+                                <li><span class="sigil-outline-summer">Centaurus</span><span class="tinyClass">1 in 3,000,000,000</span><p class="tinyClass">Cutscene added thanks to <a href="https://discord.com/users/1107458545726787634" class="subtitleClass" target="_blank" rel="noopener">tree_____.</a>!</p></li>
+                            </ul>
+                            <ul class="changelog-release-group__list changelog-summer__notes">
+                                <li>All four auras are available through the <span class="sigil-outline-summer">Summer 2026</span> event in <span class="sigil-outline-summer">Blazing Sun</span> or <span class="sigil-outline-glitch">Glitch</span>, at their listed rarities with no native multiplier.</li>
+                                <li>Prepared Taverna's cutscene. Playback will remain safely dormant until the cutscene recording is available. (If anyone could, <a href="https://discord.com/users/611204110955446301" class="subtitleClass" target="_blank" rel="noopener">DM me</a> the cutscenes, preferably 1920x1080 res with 60fps or above with MAX graphics, I will give credits)</li>
+                            </ul>
+                        </li>
+                    </ul>
+                </section>
+
                 <section
                     id="changelog-panel-v2020"
                     class="changelog-modal__panel"
