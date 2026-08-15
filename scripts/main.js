@@ -6207,10 +6207,20 @@ function isAuraCutscenePlaybackActive() {
     );
 }
 
+function hasCutsceneMediaSource(videoId) {
+    if (typeof document === 'undefined') return false;
+    const video = document.getElementById(videoId);
+    if (!video || video.dataset.cutscenePending === 'true') return false;
+    if (video.getAttribute('src') || video.dataset.src) return true;
+    return Array.from(video.querySelectorAll('source')).some(source => (
+        Boolean(source.getAttribute('src')) || Boolean(source.dataset.src)
+    ));
+}
+
 function playAuraVideo(videoId, options = {}) {
     const manageAmbient = options.manageAmbient !== false;
     return new Promise(resolve => {
-        if (!appState.cinematic) {
+        if (!appState.cinematic || !hasCutsceneMediaSource(videoId)) {
             resolve();
             return;
         }
@@ -6410,7 +6420,10 @@ async function exitFullscreen() {
 }
 
 async function playAuraSequence(queue, options = {}) {
-    if (!Array.isArray(queue) || queue.length === 0) {
+    const playableQueue = Array.isArray(queue)
+        ? queue.filter(hasCutsceneMediaSource)
+        : [];
+    if (playableQueue.length === 0) {
         return { skippedAll: false };
     }
 
@@ -6437,7 +6450,7 @@ async function playAuraSequence(queue, options = {}) {
     };
 
     try {
-        for (const videoId of queue) {
+        for (const videoId of playableQueue) {
             if (!appState.cinematic || skipRemainingCutscenes) break;
             const result = await playAuraVideo(videoId, {
                 manageAmbient: false,
@@ -6870,6 +6883,10 @@ const auraOutlineOverrides = new Map([
     ['Vacation', 'sigil-outline-summer'],
     ['Bayview', 'sigil-outline-summer'],
     ['Pool Party', 'sigil-outline-summer'],
+    ['Heatstroke', 'sigil-outline-summer'],
+    ['Taverna', 'sigil-outline-summer'],
+    ['Bubble : Cascade', 'sigil-outline-summer'],
+    ['Centaurus', 'sigil-outline-summer'],
 ]);
 
 const wikiAuraSigilNames = new Set([
@@ -7799,6 +7816,7 @@ const AURA_BLUEPRINT_SOURCE = Object.freeze([
     { name: "Illusionary - 10,000,000", chance: 10000000, nativeBiomes: ["cyberspace"], ignoreLuck: true, fixedRollThreshold: 1, cutscene: "illusionary-cutscene" },
     { name: "Meta - 10,000", chance: 10000, nativeBiomes: ["cyberspace"], ignoreLuck: true, fixedRollThreshold: 1 },
     { name: MONARCH_AURA_NAME, chance: 3000000000, cutscene: "monarch-cutscene", nativeBiomes: ["corruption", "glitch"], disableNativeOverrideTier: true },
+    { name: "Centaurus - 3,000,000,000", chance: 3000000000, cutscene: "centaurus-cutscene" },
     // { name: "Unnamed Needs Equinox NOW - 2,500,000,000", chance: 2500000000, cutscene: "equinox-cutscene" },
     { name: "Equinox - 2,500,000,000", chance: 2500000000, cutscene: "equinox-cutscene" },
     { name: "Equinox : youareanidiot - 2,500,000,000", chance: 2500000000, cutscene: "idiot-cutscene" },
@@ -7810,6 +7828,7 @@ const AURA_BLUEPRINT_SOURCE = Object.freeze([
     { name: "Astraios - 1,750,000,000", chance:  1750000000, nativeBiomes: ["singularity"], cutscene: "astraios-cutscene" },
     { name: LEVIATHAN_AURA_NAME, chance: 1730400000, nativeBiomes: ["rainy", "glitch"], cutscene: "leviathan-cutscene", disableNativeOverrideTier: true },
     { name: "Winter Garden - 1,450,012,025", chance: 1450012025, breakthroughs: nativeBreakthroughs("aurora"), cutscene: "winter-garden-cutscene" },
+    { name: "Taverna - 1,444,444,444", chance: 1444444444, cutscene: "taverna-cutscene" },
     { name: "Luminosity - 1,200,000,000", chance: 1200000000, cutscene: "luminosity-cutscene" },
     { name: "Erebus - 1,200,000,000", chance: 1200000000, nativeBiomes: ["glitch", "bloodRain"], cutscene: "erebus-cutscene" },
     { name: "Aegis : Eggis - 1,150,000,000", chance: 1150000000, breakthroughs: nativeBreakthroughs("cyberspace"), nativeBiomes: ["cyberspace"], cutscene: "eggis-cutscene" },
@@ -7911,6 +7930,7 @@ const AURA_BLUEPRINT_SOURCE = Object.freeze([
     { name: "Crimson - 120,000,000", chance: 120000000, nativeBiomes: ["glitch", "bloodRain"] },
     { name: "Abominable - 120,000,000", chance: 120000000, breakthroughs: nativeBreakthroughs("snowy") },
     { name: "Lily - 112,000,000", chance: 112000000 },
+    { name: "Bubble : Cascade - 110,000,000", chance: 110000000 },
     { name: "Spectraflow - 100,000,000", chance: 100000000 },
     { name: "Starscourge : Radiant - 100,000,000", chance: 100000000, breakthroughs: nativeBreakthroughs("starfall") },
     { name: "Chromatic : GENESIS - 99,999,999", chance: 99999999 },
@@ -8098,6 +8118,7 @@ const AURA_BLUEPRINT_SOURCE = Object.freeze([
     { name: "Stormal - 90,000", chance: 90000, breakthroughs: nativeBreakthroughs("windy") },
     { name: "Flow - 87,000", chance: 87000, breakthroughs: nativeBreakthroughs("windy") },
     { name: "Constella - 86,988", chance:  86988, nativeBiomes: ["singularity"] },
+    { name: "Heatstroke - 83,430", chance: 83430 },
     { name: "Pulsar - 83,345", chance:  83345, nativeBiomes: ["singularity"] },
     { name: "Permafrost - 73,500", chance: 73500, breakthroughs: nativeBreakthroughs("snowy") },
     { name: "Nautilus - 70,000", chance: 70000 },
@@ -8502,9 +8523,10 @@ const EVENT_AURA_LOOKUP = {
         "Vacation - 58,620,000",
         "Bayview - 60,000,000",
         "Pool Party - 972,000,000",
-        "Taverna - 1,100,000,000",
-        "",
-        "",
+        "Heatstroke - 83,430",
+        "Taverna - 1,444,444,444",
+        "Bubble : Cascade - 110,000,000",
+        "Centaurus - 3,000,000,000"
     ]
 };
 
@@ -8714,9 +8736,9 @@ function getAuraEventId(aura, { preferEnabled = false, enabledSet = null } = {})
 
 const CUTSCENE_PRIORITY_SEQUENCE = [
             "trolled-cutscene", "illusionary-cutscene", "dreammetric-cutscene", "oppression-cutscene", "oblivion-cutscene", "memory-cutscene",
-            "neferkhaf-cutscene", "blood-cutscene", "monarch-cutscene", "idiot-cutscene", "equinox-cutscene", "catcher-cutscene",
+            "neferkhaf-cutscene", "blood-cutscene", "monarch-cutscene", "centaurus-cutscene", "idiot-cutscene", "equinox-cutscene", "catcher-cutscene",
             "dream-traveler-cutscene", "skyFestival-cutscene", "breakthrough-cutscene", "yolk-cutscene", "astraios-cutscene",
-            "leviathan-cutscene", "winter-garden-cutscene", "erebus-cutscene", "luminosity-cutscene", "eggis-cutscene", "godslayer-cutscene",
+            "leviathan-cutscene", "winter-garden-cutscene", "taverna-cutscene", "erebus-cutscene", "luminosity-cutscene", "eggis-cutscene", "godslayer-cutscene",
             "pixelation-cutscene", "nyctophobia-cutscene", "solsLoadingScreen-cutscene", "pukekoGod-cutscene", "frostveil-cutscene",
             "eostre-cutscene", "lamenthyr-cutscene", "verdict-cutscene", "prowler-cutscene", "clockwork-cutscene", "attorney-cutscene"
 ];
