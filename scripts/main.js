@@ -10602,7 +10602,15 @@ function setupSupportFloatToggle() {
     toggleButton.addEventListener('click', event => {
         event.preventDefault();
         event.stopPropagation();
-        setCollapsed(!supportFloat.classList.contains('support-float--collapsed'));
+        const shouldCollapse = !supportFloat.classList.contains('support-float--collapsed');
+        if (!shouldCollapse) {
+            const donationFloat = document.getElementById('donationFloat');
+            const donationToggle = document.getElementById('donationFloatToggle');
+            if (donationFloat && donationToggle && !donationFloat.classList.contains('donation-float--collapsed')) {
+                donationToggle.click();
+            }
+        }
+        setCollapsed(shouldCollapse);
     });
 
     setCollapsed(true);
@@ -10629,7 +10637,15 @@ function setupDonationFloatToggle() {
     toggleButton.addEventListener('click', event => {
         event.preventDefault();
         event.stopPropagation();
-        setCollapsed(!donationFloat.classList.contains('donation-float--collapsed'));
+        const shouldCollapse = !donationFloat.classList.contains('donation-float--collapsed');
+        if (!shouldCollapse) {
+            const supportFloat = document.getElementById('supportFloat');
+            const supportToggle = document.getElementById('supportFloatToggle');
+            if (supportFloat && supportToggle && !supportFloat.classList.contains('support-float--collapsed')) {
+                supportToggle.click();
+            }
+        }
+        setCollapsed(shouldCollapse);
     });
 
     setCollapsed(true);
@@ -10647,7 +10663,6 @@ function setSupportQrDrawerOpen(isOpen, { focusQrButton = false } = {}) {
     qrButton.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
     qrButton.setAttribute('aria-label', isOpen ? 'Hide support QR code' : 'Show support QR code');
     qrButton.title = isOpen ? 'Hide QR code' : 'Show QR code';
-    qrDrawer.setAttribute('aria-hidden', isOpen ? 'false' : 'true');
 
     qrDrawer.querySelectorAll('a, button').forEach(element => {
         if ('tabIndex' in element) {
@@ -10655,13 +10670,32 @@ function setSupportQrDrawerOpen(isOpen, { focusQrButton = false } = {}) {
         }
     });
 
-    if (focusQrButton && typeof qrButton.focus === 'function') {
-        try {
-            qrButton.focus({ preventScroll: true });
-        } catch (error) {
-            qrButton.focus();
+    const restoreQrButtonFocus = () => {
+        if (focusQrButton && typeof qrButton.focus === 'function') {
+            try {
+                qrButton.focus({ preventScroll: true });
+            } catch (error) {
+                qrButton.focus();
+            }
         }
+    };
+
+    if (isOpen) {
+        revealOverlay(qrDrawer);
+        const primaryAction = qrDrawer.querySelector('.support-qr-modal__action');
+        window.requestAnimationFrame(() => {
+            if (primaryAction && typeof primaryAction.focus === 'function') {
+                try {
+                    primaryAction.focus({ preventScroll: true });
+                } catch (error) {
+                    primaryAction.focus();
+                }
+            }
+        });
+        return;
     }
+
+    concealOverlay(qrDrawer, { onHidden: restoreQrButtonFocus });
 }
 
 function toggleSupportQrDrawer() {
@@ -11682,6 +11716,8 @@ document.addEventListener('DOMContentLoaded', () => {
     setupDonationFloatToggle();
 
     const supportQrButton = document.getElementById('supportFloatQrButton');
+    const supportQrDrawer = document.getElementById('supportQrDrawer');
+    const supportQrClose = document.getElementById('supportQrClose');
     if (supportQrButton) {
         supportQrButton.addEventListener('click', event => {
             event.preventDefault();
@@ -11690,18 +11726,17 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    document.addEventListener('click', event => {
-        const supportFloat = document.getElementById('supportFloat');
-        if (!supportFloat || !supportFloat.classList.contains('support-float--qr-open')) {
-            return;
-        }
-        if (supportFloat.contains(event.target)) {
-            return;
-        }
-        closeSupportQrDrawer();
+    supportQrClose?.addEventListener('click', () => {
+        closeSupportQrDrawer({ focusQrButton: true });
     });
 
-    document.addEventListener('keydown', event => {
+    supportQrDrawer?.addEventListener('click', event => {
+        if (event.target === supportQrDrawer) {
+            closeSupportQrDrawer({ focusQrButton: true });
+        }
+    });
+
+    supportQrDrawer?.addEventListener('keydown', event => {
         const supportFloat = document.getElementById('supportFloat');
         if (!supportFloat || !supportFloat.classList.contains('support-float--qr-open')) {
             return;

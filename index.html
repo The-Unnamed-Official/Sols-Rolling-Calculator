@@ -6,7 +6,7 @@
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
-    <title>Sol's RNG Rolling Simulator v2.026</title>
+    <title>Sol's RNG Rolling Simulator v2.027</title>
     <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@7.1.0/css/all.min.css" crossorigin="anonymous">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -416,9 +416,9 @@
                         <h1 class="banner__title">Sol's RNG Rolling Simulator</h1>
                     </div>
                     <div class="banner__subtitle masthead-console__metadata">
-                        <button type="button" class="banner__version-button masthead-console__meta-card masthead-console__meta-card--version masthead-console__version" id="versionInfoButton" aria-haspopup="dialog" aria-expanded="false" data-version-id="v2.026">
+                        <button type="button" class="banner__version-button masthead-console__meta-card masthead-console__meta-card--version masthead-console__version" id="versionInfoButton" aria-haspopup="dialog" aria-expanded="false" data-version-id="v2.027">
                             <i class="fa-solid fa-code-branch" aria-hidden="true"></i>
-                            <span><small>Current build</small><strong>Version 2.026</strong></span>
+                            <span><small>Current build</small><strong>Version 2.027</strong></span>
                         </button>
                         <span class="masthead-console__meta-card banner__subtitle-author">
                             <img class="masthead-console__creator-avatar" src="files/images/other/theUnnamed.jpg" alt="" aria-hidden="true" decoding="async">
@@ -1571,13 +1571,6 @@
         >
             <i class="fa-solid fa-qrcode" aria-hidden="true"></i>
         </button>
-        <div class="support-float__qr-drawer" id="supportQrDrawer" aria-hidden="true">
-            <div class="support-float__qr-sheet">
-                <p class="support-float__qr-title">Scan to support</p>
-                <img class="support-float__qr-image" src="files/images/other/buyMeACoffeQRCode.png" alt="Buy Me a Coffee QR code for The Unnamed" loading="lazy" decoding="async">
-                <a class="interface-button interface-button--minor support-float__qr-action" href="https://buymeacoffee.com/theunnamed" target="_blank" rel="noopener" tabindex="-1">Open Link</a>
-            </div>
-        </div>
         <button
             type="button"
             class="support-float__toggle"
@@ -1595,15 +1588,50 @@
             </span>
         </button>
         <a class="support-float__link" id="supportFloatLink" href="https://ko-fi.com/notunnamed" target="_blank" rel="noopener" aria-label="Support future updates on Ko-Fi">
+            <span class="support-float__rail" aria-hidden="true">
+                <span>Support // 01</span>
+                <span>Project funding</span>
+            </span>
             <span class="support-float__icon" aria-hidden="true">
                 <i class="fa-solid fa-hand-holding-heart"></i>
             </span>
             <span class="support-float__content">
-                <span class="support-float__eyebrow">Support me</span>
-                <span class="support-float__label">Help me with future development of the Rolling Simulator</span>
-                <span class="support-float__meta">Help keep the calculator polished, maintained, and growing.</span>
+                <span class="support-float__eyebrow">Development channel</span>
+                <span class="support-float__label">Fuel the next roll</span>
+                <span class="support-float__meta">Help keep the simulator polished, maintained, and growing.</span>
+                <span class="support-float__action" aria-hidden="true">
+                    <span>Support project</span>
+                    <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                </span>
             </span>
         </a>
+    </div>
+
+    <div class="modal-overlay support-qr-overlay" id="supportQrDrawer" hidden aria-hidden="true">
+        <div class="surface surface--modal support-qr-modal" role="dialog" aria-modal="true" aria-labelledby="supportQrTitle" aria-describedby="supportQrHint">
+            <div class="filter-modal__header">
+                <h2 class="filter-modal__title" id="supportQrTitle">Support the simulator</h2>
+                <p class="filter-modal__hint" id="supportQrHint">Scan the Ko-fi code or open the secure support page directly.</p>
+            </div>
+            <div class="support-qr-modal__body">
+                <div class="support-qr-modal__code-panel">
+                    <span class="support-qr-modal__code-label">Ko-fi // Secure link</span>
+                    <img class="support-qr-modal__image" src="files/images/other/Ko-FiQRCode.png" alt="Ko-fi QR code for The Unnamed" loading="lazy" decoding="async">
+                </div>
+                <div class="support-qr-modal__copy">
+                    <span class="support-qr-modal__status"><i class="fa-solid fa-heart" aria-hidden="true"></i> Independent development</span>
+                    <h3>Help fuel future rolls</h3>
+                    <p>Your support helps keep the simulator polished, maintained, and growing.</p>
+                    <a class="interface-button interface-button--minor support-qr-modal__action" href="https://ko-fi.com/notunnamed" target="_blank" rel="noopener" tabindex="-1">
+                        <span>Open Ko-fi</span>
+                        <i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i>
+                    </a>
+                </div>
+            </div>
+            <div class="filter-modal__actions support-qr-modal__actions">
+                <button type="button" class="interface-button interface-button--ghost filter-modal__close" id="supportQrClose">Close</button>
+            </div>
+        </div>
     </div>
 
     <div class="donation-float" id="donationFloat">
@@ -1623,17 +1651,35 @@
                 <i class="fa-solid fa-hand-holding-dollar"></i>
             </span>
         </button>
-        <a class="donation-float__link" id="donationFloatLink" href="#donationFloat" aria-label="Donation list">
+        <div class="donation-float__link" id="donationFloatLink" role="region" aria-label="Recent donation list">
+            <span class="donation-float__rail" aria-hidden="true">
+                <span>Support // 02</span>
+                <span>2 recent entries</span>
+            </span>
             <span class="donation-float__icon" aria-hidden="true">
                 <i class="fa-solid fa-hand-holding-dollar"></i>
             </span>
             <span class="donation-float__content">
-                <span class="donation-float__eyebrow">Donations</span>
-                <span class="donation-float__label">Recent Support</span>
-                <span class="donation-float__meta">Chesser - $5</span>
-                <span class="donation-float__meta">Stoopid Sols Rat - $1</span>
+                <span class="donation-float__eyebrow">Community ledger</span>
+                <span class="donation-float__label">Recent donations</span>
+                <span class="donation-float__list">
+                    <span class="donation-float__list-head" aria-hidden="true">
+                        <span>Supporter</span>
+                        <span>Amount</span>
+                    </span>
+                    <span class="donation-float__donor">
+                        <span class="donation-float__donor-avatar" aria-hidden="true">C</span>
+                        <span class="donation-float__donor-name">Chesser</span>
+                        <span class="donation-float__amount">$5</span>
+                    </span>
+                    <span class="donation-float__donor">
+                        <span class="donation-float__donor-avatar" aria-hidden="true">SSR</span>
+                        <span class="donation-float__donor-name">Stoopid Sols Rat</span>
+                        <span class="donation-float__amount">$1</span>
+                    </span>
+                </span>
             </span>
-        </a>
+        </div>
     </div>
 
     <div id="cutsceneWarningOverlay" class="cutscene-warning-overlay" hidden>
@@ -2094,6 +2140,28 @@
             </div>
 
             <div class="changelog-modal__panels" data-changelog-panels>
+                <section
+                    id="changelog-panel-v2027"
+                    class="changelog-modal__panel"
+                    role="tabpanel"
+                    aria-labelledby="changelog-tab-v2027"
+                    data-changelog-panel="v2.027"
+                    data-changelog-label="v2.027"
+                    tabindex="0"
+                >
+                    <header class="changelog-modal__header">
+                        <h2 class="changelog-modal__title">Version 2.027 Update Notes</h2>
+                        <span class="changelog-tab__subtitle">Donation Card Visual Refresh</span>
+                        <p class="changelog-modal__meta">Updated 2026/08/25</p>
+                    </header>
+                    <p class="changelog-modal__intro">Latest changes:</p>
+                    <ul class="changelog-modal__list">
+                        <li>Reworked the support and recent-donation cards with a more polished visual system.</li>
+                        <li>Added responsive and compact mobile controls so support options stay accessible without covering the simulator.</li>
+                        <li>Preserved QR support.</li>
+                    </ul>
+                </section>
+
                 <section
                     id="changelog-panel-v2026"
                     class="changelog-modal__panel"

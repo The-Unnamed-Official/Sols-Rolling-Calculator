@@ -6086,17 +6086,17 @@ body.quality-no-ui-animations .help-center__backdrop {
 
 @media (max-width: 600px) {
     .support-float.support-float--collapsed {
-        right: 10px;
-        bottom: max(10px, env(safe-area-inset-bottom));
+        right: 12px;
+        bottom: max(12px, env(safe-area-inset-bottom));
         left: auto;
-        width: 52px;
-        height: 52px;
+        width: 54px;
+        height: 54px;
     }
 
     .support-float--collapsed .support-float__toggle {
-        width: 52px;
-        height: 52px;
-        border-radius: 14px;
+        width: 54px;
+        height: 54px;
+        border-radius: 0;
     }
 }
 
@@ -8550,5 +8550,158 @@ body.reduce-motion .sigil-wiki {
     .sigil-wiki,
     .sigil-wiki * {
         animation: none !important;
+    }
+}
+
+/* V2.027 support QR popup ------------------------------------------------- */
+
+.support-qr-modal {
+    width: min(620px, calc(100vw - (var(--modal-padding) * 2)));
+}
+
+.support-qr-modal__body {
+    display: grid;
+    grid-template-columns: minmax(190px, 230px) minmax(0, 1fr);
+    align-items: stretch;
+    gap: clamp(16px, 3vw, 24px);
+}
+
+.support-qr-modal__code-panel {
+    display: grid;
+    align-content: start;
+    justify-items: center;
+    gap: 12px;
+    min-width: 0;
+    padding: 14px;
+    background:
+        linear-gradient(90deg, rgb(var(--popup-accent-rgb) / 0.045) 1px, transparent 1px) 0 0 / 16px 16px,
+        linear-gradient(0deg, rgb(var(--popup-accent-rgb) / 0.04) 1px, transparent 1px) 0 0 / 16px 16px,
+        rgba(2, 8, 16, 0.78);
+    border: 1px solid rgb(var(--popup-accent-rgb) / 0.22);
+    border-left: 3px solid rgb(var(--popup-accent-rgb) / 0.68);
+    box-shadow: inset 0 0 24px rgb(var(--popup-accent-rgb) / 0.055);
+}
+
+.support-qr-modal__code-label {
+    width: 100%;
+    color: rgb(var(--popup-accent-rgb) / 0.72);
+    font-size: 7px;
+    font-weight: 700;
+    line-height: 1.3;
+    letter-spacing: 0.16em;
+    text-align: left;
+    text-transform: uppercase;
+}
+
+.support-qr-modal__image {
+    display: block;
+    width: min(200px, 100%);
+    height: auto;
+    aspect-ratio: 1;
+    object-fit: contain;
+    padding: 8px;
+    background: #fff;
+    border: 1px solid rgba(255, 255, 255, 0.92);
+    box-shadow:
+        0 14px 30px rgba(0, 0, 0, 0.42),
+        0 0 22px rgb(var(--popup-accent-rgb) / 0.1);
+}
+
+.support-qr-modal__copy {
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+    justify-content: center;
+    gap: 10px;
+    padding-block: 4px;
+}
+
+.support-qr-modal__status {
+    display: inline-flex;
+    width: fit-content;
+    align-items: center;
+    gap: 8px;
+    color: rgb(var(--popup-accent-rgb) / 0.76);
+    font-size: 8px;
+    font-weight: 700;
+    letter-spacing: 0.13em;
+    line-height: 1.3;
+    text-transform: uppercase;
+}
+
+.support-qr-modal__status i {
+    display: grid;
+    place-items: center;
+    width: 24px;
+    height: 24px;
+    color: var(--popup-accent);
+    background: rgb(var(--popup-accent-rgb) / 0.1);
+    border: 1px solid rgb(var(--popup-accent-rgb) / 0.28);
+}
+
+.support-qr-modal__copy h3 {
+    margin: 0;
+    color: var(--text-primary);
+    font-size: clamp(16px, 2.2vw, 21px);
+    line-height: 1.3;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+}
+
+.support-qr-modal__copy p {
+    margin: 0;
+    color: var(--text-tertiary);
+    font-size: 0.82rem;
+    line-height: 1.6;
+    letter-spacing: 0.04em;
+}
+
+.support-qr-modal__action {
+    display: flex;
+    width: 100%;
+    min-height: 46px;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-top: 4px;
+}
+
+.support-qr-modal__actions {
+    justify-content: center;
+}
+
+@media (max-width: 620px) {
+    .support-qr-modal__body {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .support-qr-modal__code-panel {
+        padding: 12px;
+    }
+
+    .support-qr-modal__image {
+        width: min(176px, 52vw);
+        padding: 6px;
+    }
+
+    .support-qr-modal__copy {
+        padding-block: 0;
+        text-align: left;
+    }
+}
+
+@media (max-height: 560px) and (orientation: landscape) {
+    .support-qr-modal__body {
+        grid-template-columns: minmax(140px, 170px) minmax(0, 1fr);
+        gap: 16px;
+    }
+
+    .support-qr-modal__image {
+        width: min(142px, 100%);
+        padding: 5px;
+    }
+
+    .support-qr-modal__copy {
+        gap: 7px;
     }
 }
