@@ -3544,6 +3544,11 @@ function applyReducedMotionState(enabled) {
         if (!video) {
             return;
         }
+        // Cutscenes are an explicit playback preference. Reduced motion should
+        // trim interface animation without hiding or pausing the selected film.
+        if (video.classList?.contains('cutscene-video')) {
+            return;
+        }
         if (enabled) {
             if (!video.paused) {
                 video.dataset.resumeOnMotion = 'true';
@@ -6198,6 +6203,12 @@ function initializeBiomeInterface() {
 }
 
 const FIRST_PERSON_CUTSCENES = new Set(['illusionary-cutscene']);
+const CUTSCENE_LOAD_TIMEOUT_MS = 30000;
+const CUTSCENE_PLAY_TIMEOUT_MS = 15000;
+const CUTSCENE_STALL_TIMEOUT_MS = 30000;
+const CUTSCENE_WATCHDOG_INTERVAL_MS = 500;
+const CUTSCENE_END_EPSILON_SECONDS = 0.35;
+const CUTSCENE_RECOVERY_LIMIT = 1;
 
 function isAuraCutscenePlaybackActive() {
     const cinematicOverlay = document.getElementById('cinematic-overlay');
@@ -6215,6 +6226,116 @@ function hasCutsceneMediaSource(videoId) {
     return Array.from(video.querySelectorAll('source')).some(source => (
         Boolean(source.getAttribute('src')) || Boolean(source.dataset.src)
     ));
+}
+
+function prepareCutsceneVideo(video, { forceReload = false } = {}) {
+    return new Promise((resolve, reject) => {
+        if (!video) {
+            reject(new Error('Cutscene video element was not found.'));
+            return;
+        }
+
+        video.preload = 'auto';
+        video.playsInline = true;
+        video.setAttribute('playsinline', '');
+        video.setAttribute('webkit-playsinline', '');
+        video.disablePictureInPicture = true;
+
+        const sourceElements = Array.from(video.querySelectorAll('source'));
+        const failedSources = new Set();
+        let settled = false;
+        let timeoutId = null;
+
+        const removeListeners = () => {
+            video.removeEventListener('loadeddata', handleReady);
+            video.removeEventListener('canplay', handleReady);
+            video.removeEventListener('error', handleVideoError);
+            sourceElements.forEach(source => source.removeEventListener('error', handleSourceError));
+            if (timeoutId !== null) {
+                window.clearTimeout(timeoutId);
+                timeoutId = null;
+            }
+        };
+
+        const finish = (error = null) => {
+            if (settled) return;
+            settled = true;
+            removeListeners();
+            if (error) {
+                reject(error);
+            } else {
+                resolve();
+            }
+        };
+
+        function handleReady() {
+            if (video.readyState >= 2) {
+                finish();
+            }
+        }
+
+        function handleVideoError() {
+            finish(new Error(`The cutscene media failed to load (code ${video.error?.code || 'unknown'}).`));
+        }
+
+        function handleSourceError(event) {
+            failedSources.add(event.currentTarget);
+            if (sourceElements.length > 0 && failedSources.size >= sourceElements.length) {
+                finish(new Error('No cutscene media source could be loaded.'));
+            }
+        }
+
+        video.addEventListener('loadeddata', handleReady);
+        video.addEventListener('canplay', handleReady);
+        video.addEventListener('error', handleVideoError);
+        sourceElements.forEach(source => source.addEventListener('error', handleSourceError));
+
+        timeoutId = window.setTimeout(() => {
+            finish(new Error('The cutscene took too long to load.'));
+        }, CUTSCENE_LOAD_TIMEOUT_MS);
+
+        const hydrated = ensureDeferredMediaSource(video);
+        if (forceReload || (!hydrated && video.readyState < 2)) {
+            video.load();
+        }
+        handleReady();
+    });
+}
+
+function startPreparedCutscenePlayback(video) {
+    return new Promise((resolve, reject) => {
+        let settled = false;
+        let timeoutId = null;
+
+        const finish = (error = null) => {
+            if (settled) return;
+            settled = true;
+            if (timeoutId !== null) {
+                window.clearTimeout(timeoutId);
+                timeoutId = null;
+            }
+            if (error) {
+                reject(error);
+            } else {
+                resolve();
+            }
+        };
+
+        timeoutId = window.setTimeout(() => {
+            finish(new Error('The cutscene did not begin playing in time.'));
+        }, CUTSCENE_PLAY_TIMEOUT_MS);
+
+        try {
+            const playPromise = video.play();
+            if (playPromise && typeof playPromise.then === 'function') {
+                playPromise.then(() => finish(), finish);
+            } else {
+                finish();
+            }
+        } catch (error) {
+            finish(error);
+        }
+    });
 }
 
 function playAuraVideo(videoId, options = {}) {
@@ -6292,8 +6413,20 @@ function playAuraVideo(videoId, options = {}) {
             document.body.classList.toggle('first-person-cutscene-active', isFirstPerson);
         }
 
+        let loadingStatus = overlay.querySelector('.cinematic-overlay__loading');
+        if (!loadingStatus) {
+            loadingStatus = document.createElement('div');
+            loadingStatus.className = 'cinematic-overlay__loading';
+            loadingStatus.setAttribute('role', 'status');
+            loadingStatus.setAttribute('aria-live', 'polite');
+            loadingStatus.innerHTML = '<span class="cinematic-overlay__spinner" aria-hidden="true"></span><span>Loading cutscene&hellip;</span>';
+            overlay.appendChild(loadingStatus);
+        }
+
+        overlay.classList.add('cinematic-overlay--loading');
         overlay.style.display = 'flex';
-        video.style.display = 'block';
+        overlay.setAttribute('aria-hidden', 'false');
+        video.style.display = 'none';
         controls.style.display = 'flex';
         skipButton.style.display = 'block';
         skipAllButton.style.display = 'block';
@@ -6311,18 +6444,50 @@ function playAuraVideo(videoId, options = {}) {
                 paddingRight: previousPadding
             };
         }
-        video.currentTime = 0;
         video.muted = !appState.audio.roll;
 
         let cleanedUp = false;
+        let playbackStarted = false;
+        let recoveryAttempts = 0;
+        let recoveryInProgress = false;
+        let watchdogIntervalId = null;
+        let lastPlaybackTime = 0;
+        let lastProgressAt = Date.now();
+
+        const safelyResetVideo = () => {
+            try {
+                video.pause();
+            } catch (error) {
+            }
+            try {
+                video.currentTime = 0;
+            } catch (error) {
+            }
+        };
+
+        const removePlaybackListeners = () => {
+            video.removeEventListener('ended', handleEnded);
+            video.removeEventListener('error', handlePlaybackError);
+            video.removeEventListener('timeupdate', handlePlaybackProgress);
+            video.removeEventListener('playing', handlePlaying);
+            document.removeEventListener('visibilitychange', handleVisibilityChange);
+            window.removeEventListener('pagehide', handlePageHide);
+        };
+
         const cleanup = (result = 'finished') => {
             if (cleanedUp) return;
             cleanedUp = true;
+            if (watchdogIntervalId !== null) {
+                window.clearInterval(watchdogIntervalId);
+                watchdogIntervalId = null;
+            }
+            removePlaybackListeners();
             appState.videoPlaying = false;
-            video.pause();
-            video.currentTime = 0;
+            safelyResetVideo();
             video.style.display = 'none';
             overlay.style.display = 'none';
+            overlay.setAttribute('aria-hidden', 'true');
+            overlay.classList.remove('cinematic-overlay--loading');
             overlay.classList.remove('cinematic-overlay--first-person');
             if (document.body) {
                 document.body.classList.remove('first-person-cutscene-active');
@@ -6339,12 +6504,97 @@ function playAuraVideo(videoId, options = {}) {
             if (bgMusic && wasPlaying && appState.audio.roll) {
                 startBackgroundMusic(bgMusic);
             }
-            video.onended = null;
-            video.onerror = null;
             skipButton.onclick = null;
             skipAllButton.onclick = null;
             resolve(result);
         };
+
+        function handleEnded() {
+            cleanup();
+        }
+
+        function handlePlaying() {
+            playbackStarted = true;
+            overlay.classList.remove('cinematic-overlay--loading');
+            lastPlaybackTime = Number.isFinite(video.currentTime) ? video.currentTime : 0;
+            lastProgressAt = Date.now();
+        }
+
+        function handlePlaybackProgress() {
+            const currentTime = Number.isFinite(video.currentTime) ? video.currentTime : 0;
+            if (currentTime > lastPlaybackTime + 0.02) {
+                lastPlaybackTime = currentTime;
+                lastProgressAt = Date.now();
+            }
+
+            const duration = video.duration;
+            if (
+                Number.isFinite(duration)
+                && duration > 0
+                && currentTime >= Math.max(0, duration - CUTSCENE_END_EPSILON_SECONDS)
+            ) {
+                cleanup();
+            }
+        }
+
+        async function recoverPlayback() {
+            if (cleanedUp || recoveryInProgress) return;
+            if (recoveryAttempts >= CUTSCENE_RECOVERY_LIMIT) {
+                console.warn(`Cutscene ${videoId} stopped making progress and was closed safely.`);
+                cleanup('failed');
+                return;
+            }
+
+            recoveryInProgress = true;
+            recoveryAttempts += 1;
+            playbackStarted = false;
+            const resumeTime = Number.isFinite(video.currentTime) ? video.currentTime : 0;
+
+            try {
+                video.style.display = 'none';
+                overlay.classList.add('cinematic-overlay--loading');
+                video.pause();
+                await prepareCutsceneVideo(video, { forceReload: true });
+                if (cleanedUp) return;
+
+                const duration = video.duration;
+                if (resumeTime > 0 && Number.isFinite(duration) && duration > 0) {
+                    video.currentTime = Math.min(resumeTime, Math.max(0, duration - CUTSCENE_END_EPSILON_SECONDS));
+                }
+
+                video.style.display = 'block';
+                await startPreparedCutscenePlayback(video);
+                if (cleanedUp) return;
+                handlePlaying();
+            } catch (error) {
+                if (!cleanedUp) {
+                    console.warn(`Unable to recover cutscene ${videoId}.`, error);
+                    cleanup('failed');
+                }
+            } finally {
+                recoveryInProgress = false;
+            }
+        }
+
+        function handlePlaybackError() {
+            if (playbackStarted) {
+                void recoverPlayback();
+            }
+        }
+
+        function handleVisibilityChange() {
+            lastProgressAt = Date.now();
+            if (!document.hidden && playbackStarted && video.paused && !video.ended && !recoveryInProgress) {
+                const resumePromise = video.play();
+                if (resumePromise && typeof resumePromise.catch === 'function') {
+                    resumePromise.catch(() => recoverPlayback());
+                }
+            }
+        }
+
+        function handlePageHide() {
+            cleanup('interrupted');
+        }
 
         skipButton.onclick = () => {
             cleanup('skipped');
@@ -6357,19 +6607,37 @@ function playAuraVideo(videoId, options = {}) {
             cleanup('skipped-all');
         };
 
-        video.onended = () => {
-            cleanup();
-        };
+        video.addEventListener('ended', handleEnded);
+        video.addEventListener('error', handlePlaybackError);
+        video.addEventListener('timeupdate', handlePlaybackProgress);
+        video.addEventListener('playing', handlePlaying);
+        document.addEventListener('visibilitychange', handleVisibilityChange);
+        window.addEventListener('pagehide', handlePageHide);
 
-        video.onerror = () => {
-            cleanup();
-        };
+        watchdogIntervalId = window.setInterval(() => {
+            if (cleanedUp || recoveryInProgress || document.hidden || !playbackStarted) return;
+            handlePlaybackProgress();
+            if (!cleanedUp && Date.now() - lastProgressAt >= CUTSCENE_STALL_TIMEOUT_MS) {
+                void recoverPlayback();
+            }
+        }, CUTSCENE_WATCHDOG_INTERVAL_MS);
 
-        video.load();
-        const playPromise = video.play();
-        if (playPromise && typeof playPromise.catch === 'function') {
-            playPromise.catch(() => cleanup());
-        }
+        void (async () => {
+            try {
+                await prepareCutsceneVideo(video);
+                if (cleanedUp) return;
+                safelyResetVideo();
+                video.style.display = 'block';
+                await startPreparedCutscenePlayback(video);
+                if (cleanedUp) return;
+                handlePlaying();
+            } catch (error) {
+                if (!cleanedUp) {
+                    console.warn(`Unable to load cutscene ${videoId}.`, error);
+                    cleanup('failed');
+                }
+            }
+        })();
     });
 }
 

@@ -253,8 +253,7 @@ body.reduce-motion *::after {
     transition-duration: 0s !important;
 }
 
-body.reduce-motion .interface-backdrop__video,
-body.reduce-motion .cutscene-video {
+body.reduce-motion .interface-backdrop__video {
     display: none;
 }
 
