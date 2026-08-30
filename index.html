@@ -368,7 +368,7 @@
         <source data-src="files/videos/cutscenes/attorneyCutscene.webm" type="video/webm">
     </video>
     <video id="skyFestival-cutscene" class="cutscene-video" preload="none" data-audio-channel="cutscene">
-        <source data-src="files/videos/cutscenes/skyFestivalCutscene.webm" type="video/webm">
+        <source data-src="files/videos/cutscenes/skyfestivalCutscene.webm" type="video/webm">
     </video>
     <video id="yolk-cutscene" class="cutscene-video" preload="none" data-audio-channel="cutscene">
         <source data-src="files/videos/cutscenes/yolkCutscene.webm" type="video/webm">
@@ -398,7 +398,12 @@
         <source data-src="files/videos/cutscenes/centaurusCutscene.webm" type="video/webm">
     </video>
 
-    <div id="cinematic-overlay" class="cinematic-overlay" aria-hidden="true"></div>
+    <div id="cinematic-overlay" class="cinematic-overlay" aria-hidden="true">
+        <div class="cinematic-overlay__loading" role="status" aria-live="polite">
+            <span class="cinematic-overlay__spinner" aria-hidden="true"></span>
+            <span>Loading cutscene&hellip;</span>
+        </div>
+    </div>
 
     <div class="interface-shell">
         <header class="surface interface-header masthead-console" role="banner">
@@ -416,9 +421,9 @@
                         <h1 class="banner__title">Sol's RNG Rolling Simulator</h1>
                     </div>
                     <div class="banner__subtitle masthead-console__metadata">
-                        <button type="button" class="banner__version-button masthead-console__meta-card masthead-console__meta-card--version masthead-console__version" id="versionInfoButton" aria-haspopup="dialog" aria-expanded="false" data-version-id="v2.027">
+                        <button type="button" class="banner__version-button masthead-console__meta-card masthead-console__meta-card--version masthead-console__version" id="versionInfoButton" aria-haspopup="dialog" aria-expanded="false" data-version-id="v2.028">
                             <i class="fa-solid fa-code-branch" aria-hidden="true"></i>
-                            <span><small>Current build</small><strong>Version 2.027</strong></span>
+                            <span><small>Current build</small><strong>Version 2.028</strong></span>
                         </button>
                         <span class="masthead-console__meta-card banner__subtitle-author">
                             <img class="masthead-console__creator-avatar" src="files/images/other/theUnnamed.jpg" alt="" aria-hidden="true" decoding="async">
@@ -2160,6 +2165,25 @@
                         <li>Added responsive and compact mobile controls so support options stay accessible without covering the simulator.</li>
                         <li>Preserved QR support.</li>
                     </ul>
+                    <section class="changelog-subupdates" aria-labelledby="changelog-subupdates-v2027">
+                        <div class="changelog-subupdates__header">
+                            <h3 class="changelog-subupdates__title" id="changelog-subupdates-v2027" data-changelog-subupdates-title></h3>
+                        </div>
+                        <div class="changelog-subupdates__grid">
+                            <article class="changelog-subupdate-card">
+                                <header class="changelog-subupdate-card__header">
+                                    <span class="changelog-subupdate-card__version">v2.028</span>
+                                    <span class="changelog-subupdate-card__title changelog-tab__subtitle">Reliable Cutscene Loading</span>
+                                    <p class="changelog-subupdate-card__meta">Updated 2026/08/30</p>
+                                </header>
+                                <ul class="changelog-modal__list changelog-modal__list--sub">
+                                    <li>That's all this sub-update changes: cutscenes now load before appearing, recover once from a playback stall, and always close safely after finishing or failing instead of leaving a permanent black screen.</li>
+                                    <li>Fixed the case-sensitive <span class="changelog-aura-sigil" data-changelog-aura-sigil="Sky Festival">Sky Festival</span> video path and improved inline playback, reduced-motion compatibility, loading feedback, and end detection across devices.</li>
+                                    <span class="subSpace credits-text">Credit goes to <a href="https://discord.com/users/1008360412632322088" class="subtitleClass" target="_blank" rel="noopener">antigodthesans</a> for reporting the Sky Festival black-screen issue!</span>
+                                </ul>
+                            </article>
+                        </div>
+                    </section>
                 </section>
 
                 <section
