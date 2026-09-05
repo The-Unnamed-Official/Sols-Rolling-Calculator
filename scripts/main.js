@@ -134,6 +134,7 @@ async function fetchLatestPublishedDeploymentTime() {
     return Number.isNaN(documentModifiedAt.getTime()) ? null : documentModifiedAt;
 }
 
+// Time sync
 async function initializeLatestDeploymentTime() {
     if (!latestDeploymentTimeElement) {
         return;
