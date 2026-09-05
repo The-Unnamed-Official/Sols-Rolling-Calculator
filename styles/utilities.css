@@ -522,6 +522,11 @@
     font-size: x-large !important;
 }
 
+.noClass {
+    text-decoration: none;
+    text-transform: none;
+}
+
 .sigil-outline-mastermind {
     font-family: Fondamento;
     font-weight: bold;

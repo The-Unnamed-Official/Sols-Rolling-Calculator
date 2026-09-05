@@ -6,7 +6,7 @@
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
-    <title>Sol's RNG Rolling Simulator v2.027</title>
+    <title>Sol's RNG Rolling Simulator v2.030</title>
     <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@7.1.0/css/all.min.css" crossorigin="anonymous">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -391,11 +391,14 @@
     <video id="catcher-cutscene" class="cutscene-video" preload="none" data-audio-channel="cutscene">
         <source data-src="files/videos/cutscenes/catcherCutscene.webm" type="video/webm">
     </video>
-    <video id="taverna-cutscene" class="cutscene-video" preload="none" data-audio-channel="cutscene" data-cutscene-pending="true">
+    <video id="taverna-cutscene" class="cutscene-video" preload="none" data-audio-channel="cutscene">
         <source data-src="files/videos/cutscenes/tavernaCutscene.webm" type="video/webm">
     </video>
     <video id="centaurus-cutscene" class="cutscene-video" preload="none" data-audio-channel="cutscene">
         <source data-src="files/videos/cutscenes/centaurusCutscene.webm" type="video/webm">
+    </video>
+    <video id="crabtropica-cutscene" class="cutscene-video" preload="none" data-audio-channel="cutscene">
+        <source data-src="files/videos/cutscenes/crabtropicaCutscene.webm" type="video/webm">
     </video>
 
     <div id="cinematic-overlay" class="cinematic-overlay" aria-hidden="true">
@@ -421,9 +424,9 @@
                         <h1 class="banner__title">Sol's RNG Rolling Simulator</h1>
                     </div>
                     <div class="banner__subtitle masthead-console__metadata">
-                        <button type="button" class="banner__version-button masthead-console__meta-card masthead-console__meta-card--version masthead-console__version" id="versionInfoButton" aria-haspopup="dialog" aria-expanded="false" data-version-id="v2.028">
+                        <button type="button" class="banner__version-button masthead-console__meta-card masthead-console__meta-card--version masthead-console__version" id="versionInfoButton" aria-haspopup="dialog" aria-expanded="false" data-version-id="v2.030">
                             <i class="fa-solid fa-code-branch" aria-hidden="true"></i>
-                            <span><small>Current build</small><strong>Version 2.028</strong></span>
+                            <span><small>Current build</small><strong>Version 2.030</strong></span>
                         </button>
                         <span class="masthead-console__meta-card banner__subtitle-author">
                             <img class="masthead-console__creator-avatar" src="files/images/other/theUnnamed.jpg" alt="" aria-hidden="true" decoding="async">
@@ -439,8 +442,8 @@
                                 <small>Game build</small>
                                 <span class="banner__subtitle-game-version">
                                     <a href="https://www.roblox.com/games/15532962292/Sols-RNG" target="_blank" rel="noopener">
-                                        <span class="banner__game-version-name">Sol's RNG Eon 1-26.5</span>
-                                        <span class="banner__game-season-pill"><span class="sigil-outline-summer">Summer</span> Part 1.5</span>
+                                        <span class="banner__game-version-name">Sol's RNG Eon 1-27</span>
+                                        <span class="banner__game-season-pill"><span class="sigil-outline-summer">Summer</span> Part 2</span>
                                     </a>
                                 </span>
                             </span>
@@ -940,6 +943,7 @@
                                     <option value="graveyard">Graveyard</option>
                                     <option value="bloodRain">Blood Rain</option>
                                     <option value="blazing">Blazing Sun</option>
+                                    <option value="incinerator">Incinerator</option>
                                     <option value="aurora">Aurora</option>
                                     <option value="anotherRealm">Another Realm</option>
                                     <option value="mastermind">Mastermind</option>
@@ -1012,6 +1016,7 @@
                             <option value="edict">Edict</option>
                             <option value="fullMoon">The Red Full Moon</option>
                             <option value="blazing">Blazing Sun</option>
+                            <option value="incinerator">Incinerator</option>
                             <option value="aurora">Aurora</option>
                             <option value="limbo">Limbo</option>
                             <option value="roe">Rune of Everything</option>
@@ -1501,7 +1506,7 @@
             <span class="site-footer__mark" aria-hidden="true"><i class="fa-solid fa-code-branch"></i></span>
             <div>
                 <p class="site-footer__eyebrow">Project Archive</p>
-                <p class="site-footer__text">&copy; <span id="build-year"></span> The Unnamed. All rights reserved.</p>
+                <p class="site-footer__text">&copy; <span id="build-year"></span> The Unnamed. <a class="noClass" target="__blank" href="https://github.com/The-Unnamed-Official/The-Unnamed-Proprietary-License-1.0?tab=License-1-ov-file">The Unnamed Proprietary License</a>.</p>
             </div>
         </div>
         <details class="footer-credits">
@@ -1558,6 +1563,8 @@
                 <li class="footer-credits__item">P.U.K.E.K.O.G.O.D cutscene courtesy of <a href="https://discord.com/users/462990696182448150" target="_blank" rel="noopener">kutay1000</a>.</li>
                 <li class="footer-credits__item">Astraios cutscene courtesy of <a href="https://discord.com/users/1010402510994935929" target="_blank" rel="noopener">remixcodeszz11</a>.</li>
                 <li class="footer-credits__item">Dream Catcher cutscene courtesy of <a href="https://discord.com/users/1169345672047247401" target="_blank" rel="noopener">flopstero</a>.</li>
+                <li class="footer-credits__item">Crabtropica cutscene courtesy of <a href="https://discord.com/users/754022230480126073" target="_blank" rel="noopener">temychh</a>.</li>
+                <li class="footer-credits__item">Taverna cutscene courtesy of <a href="https://discord.com/users/520694876480733184" target="_blank" rel="noopener">feabrey</a>.</li>
                 </ul>
                 <p class="footer-credits__empty" id="creditsEmpty" hidden>No matching credits found.</p>
             </div>
@@ -2145,6 +2152,51 @@
             </div>
 
             <div class="changelog-modal__panels" data-changelog-panels>
+                <section
+                    id="changelog-panel-v2030"
+                    class="changelog-modal__panel"
+                    role="tabpanel"
+                    aria-labelledby="changelog-tab-v2030"
+                    data-changelog-panel="v2.030"
+                    data-changelog-label="v2.030"
+                    tabindex="0"
+                >
+                    <header class="changelog-modal__header">
+                        <h2 class="changelog-modal__title">Version 2.030 Update Notes</h2>
+                        <span class="changelog-tab__subtitle">Summer 2026 Part 2 &amp; Incinerator</span>
+                        <p class="changelog-modal__meta">Updated 2026/09/05</p>
+                    </header>
+                    <p class="changelog-modal__intro">Latest changes:</p>
+                    <ul class="changelog-modal__list changelog-modal__list--grouped">
+                        <li class="changelog-release-group changelog-release-group--summer">
+                            <div class="changelog-featured-ui__header changelog-summer__header">
+                                <span class="changelog-featured-ui__icon changelog-summer__icon" aria-hidden="true"><i class="fa-solid fa-sun"></i></span>
+                                <span class="changelog-featured-ui__heading">
+                                    <span class="largeClass"><span class="sigil-outline-summer">Summer</span> Part 2</span>
+                                    <span>The final wave of Summer 2026 content has arrived.</span>
+                                </span>
+                                <span class="changelog-featured-ui__badge changelog-summer__badge">Summer 2026</span>
+                            </div>
+                            <p class="changelog-summer__intro">Added 8 new auras:</p>
+                            <ul class="changelog-release-rarity-grid changelog-release-rarity-grid--summer">
+                                <li><span class="sigil-outline-summer">Raft</span><span class="tinyClass">1 in 8,000</span></li>
+                                <li><span class="sigil-outline-summer">Buoyant</span><span class="tinyClass">1 in 32,000</span></li>
+                                <li><span class="sigil-outline-summer">Breeze</span><span class="tinyClass">1 in 80,000</span></li>
+                                <li><span class="sigil-outline-summer">Watermelon : Summersnack</span><span class="tinyClass">1 in 3,200,000</span></li>
+                                <li><span class="sigil-outline-summer">Coconut</span><span class="tinyClass">1 in 34,720,000</span></li>
+                                <li><span class="sigil-outline-summer">Life Guard : On-Duty</span><span class="tinyClass">1 in 600,000,000</span></li>
+                                <li><span class="sigil-outline-summer">Tropical Isles</span><span class="tinyClass">1 in 730,000,000</span></li>
+                                <li><span class="sigil-outline-summer">Crabtropica</span><span class="tinyClass">1 in 1,334,221,000</span></li>
+                            </ul>
+                            <ul class="changelog-release-group__list changelog-summer__notes">
+                                <li>Added the daytime-only <span class="sigil-outline-summer">Incinerator</span> biome, available while <span class="sigil-outline-summer">Summer 2026</span> is enabled.</li>
+                                <li>Incinerator uses Blazing Sun's 2026 presentation and gives every Summer 2026 aura from Parts 1, 1.5, and 2 a 2× breakthrough multiplier.</li>
+                                <li>Summer 2026 auras remain available at their listed rarities in <span class="sigil-outline-summer">Blazing Sun</span> and <span class="sigil-outline-glitch">Glitch</span>.</li>
+                            </ul>
+                        </li>
+                    </ul>
+                </section>
+
                 <section
                     id="changelog-panel-v2027"
                     class="changelog-modal__panel"
