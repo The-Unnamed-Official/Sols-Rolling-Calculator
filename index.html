@@ -3,10 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-    <meta http-equiv="Pragma" content="no-cache">
-    <meta http-equiv="Expires" content="0">
-    <title>Sol's RNG Rolling Simulator v2.030</title>
+    <title>Sol's RNG Rolling Simulator</title>
     <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@7.1.0/css/all.min.css" crossorigin="anonymous">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -36,7 +33,7 @@
             const documentModifiedAt = Number.isFinite(parsedDocumentModifiedAt)
                 ? parsedDocumentModifiedAt
                 : Date.now();
-            const buildCacheKey = String(Math.trunc(documentModifiedAt));
+            const buildCacheKey = '2.1.0';
 
             window.appBuildCacheKey = buildCacheKey;
             window.getVersionedAppAssetUrl = path => {
@@ -69,28 +66,31 @@
             };
 
             const removeLegacyApplicationCaches = async () => {
+                const migrationKey = 'solsRollingCalculator:cacheMigration:2.1.0';
+                try {
+                    if (localStorage.getItem(migrationKey) === 'done') return;
+                } catch (_) {}
                 const cleanupTasks = [];
-                const wasControlledByServiceWorker = Boolean(navigator.serviceWorker?.controller);
-
-                if ('caches' in window) {
-                    cleanupTasks.push(
-                        window.caches.keys().then(cacheNames => Promise.all(
-                            cacheNames.map(cacheName => window.caches.delete(cacheName))
-                        ))
-                    );
-                }
+                const appScope = new URL('./', document.baseURI).href;
+                let removedControllingWorker = false;
 
                 if ('serviceWorker' in navigator) {
                     cleanupTasks.push(
                         navigator.serviceWorker.getRegistrations().then(registrations => Promise.all(
-                            registrations.map(registration => registration.unregister())
+                            registrations.filter(registration => registration.scope === appScope)
+                                .map(async registration => {
+                                    const controlled = registration.active?.scriptURL === navigator.serviceWorker.controller?.scriptURL;
+                                    const removed = await registration.unregister();
+                                    if (controlled && removed) removedControllingWorker = true;
+                                })
                         ))
                     );
                 }
 
                 await Promise.allSettled(cleanupTasks);
+                try { localStorage.setItem(migrationKey, 'done'); } catch (_) {}
 
-                if (wasControlledByServiceWorker && isHostedPage) {
+                if (removedControllingWorker && isHostedPage) {
                     return navigateToFreshBuild(Date.now());
                 }
             };
@@ -164,33 +164,19 @@
                     window.appBuildMetadataPromise = requestLatestBuildMetadata();
                 }
             });
-
-            const stylePaths = [
-                'styles/base.css',
-                'styles/layout.css',
-                'styles/components.css',
-                'styles/utilities.css'
-            ];
-            const scriptPaths = [
-                'scripts/utils.js',
-                'scripts/state.js',
-                'scripts/overlays.js',
-                'scripts/main.js'
-            ];
-            const assetTags = [
-                ...stylePaths.map(path => `<link rel="stylesheet" href="${window.getVersionedAppAssetUrl(path)}">`),
-                ...scriptPaths.map(path => `<script src="${window.getVersionedAppAssetUrl(path)}" defer><\/script>`)
-            ];
-
-            document.write(assetTags.join(''));
         })();
     </script>
-    <noscript>
-        <link rel="stylesheet" href="styles/base.css">
-        <link rel="stylesheet" href="styles/layout.css">
-        <link rel="stylesheet" href="styles/components.css">
-        <link rel="stylesheet" href="styles/utilities.css">
-    </noscript>
+    <link rel="stylesheet" href="styles/base.css?v=2.1.0">
+    <link rel="stylesheet" href="styles/layout.css?v=2.1.0">
+    <link rel="stylesheet" href="styles/components.css?v=2.1.0">
+    <link rel="stylesheet" href="styles/utilities.css?v=2.1.0">
+    <script src="scripts/utils.js?v=2.1.0" defer></script>
+    <script src="scripts/runtime.js?v=2.1.0" defer></script>
+    <script src="scripts/simulation-core.js?v=2.1.0" defer></script>
+    <script src="scripts/state.js?v=2.1.0" defer></script>
+    <script src="scripts/media-loader.js?v=2.1.0" defer></script>
+    <script src="scripts/overlays.js?v=2.1.0" defer></script>
+    <script src="scripts/main.js?v=2.1.0" defer></script>
 </head>
 <body>
     <div class="interface-backdrop" aria-hidden="true">
@@ -424,13 +410,23 @@
                         <h1 class="banner__title">Sol's RNG Rolling Simulator</h1>
                     </div>
                     <div class="banner__subtitle masthead-console__metadata">
-                        <button type="button" class="banner__version-button masthead-console__meta-card masthead-console__meta-card--version masthead-console__version" id="versionInfoButton" aria-haspopup="dialog" aria-expanded="false" data-version-id="v2.030">
+                        <button type="button" class="banner__version-button masthead-console__meta-card masthead-console__meta-card--version masthead-console__version" id="versionInfoButton" aria-haspopup="dialog" aria-expanded="false" data-version-id="v2.1.0">
                             <i class="fa-solid fa-code-branch" aria-hidden="true"></i>
-                            <span><small>Current build</small><strong>Version 2.030</strong></span>
+                            <span><small>Current build</small><strong>Version 2.1.0</strong></span>
                         </button>
                         <span class="masthead-console__meta-card banner__subtitle-author">
-                            <img class="masthead-console__creator-avatar" src="files/images/other/theUnnamed.jpg" alt="" aria-hidden="true" decoding="async">
-                            <span><small>Created by</small><span class="banner__subtitle-author-name"><a href="https://discord.com/users/611204110955446301" target="_blank" rel="noopener">not.unnamed</a></span></span>
+                            <span class="masthead-console__creator-avatar-flip" aria-hidden="true">
+                                <span class="masthead-console__creator-avatar-inner">
+                                    <img class="masthead-console__creator-avatar masthead-console__creator-avatar--front" src="files/images/other/theUnnamed.png" alt="" decoding="async">
+                                    <img class="masthead-console__creator-avatar masthead-console__creator-avatar--back" src="files/images/other/theUnnamed-flipped.gif" alt="" decoding="async">
+                                </span>
+                            </span>
+                            <span class="banner__subtitle-author-text">
+                                <small>Created by</small>
+                                <span class="banner__subtitle-author-name">
+                                    <a href="https://discord.com/users/611204110955446301" target="_blank" rel="noopener">not.unnamed</a>
+                                </span>
+                            </span>
                         </span>
                         <span class="masthead-console__meta-card banner__subtitle-updated">
                             <i class="fa-solid fa-clock-rotate-left" aria-hidden="true"></i>
@@ -619,6 +615,13 @@
                             <i class="fa-solid fa-arrow-down" aria-hidden="true"></i>
                         </button>
                     </div>
+                    <nav class="feed-history" id="rollFeedHistory" aria-label="Roll history pages" hidden>
+                        <span id="rollFeedHistoryRange"></span>
+                        <button class="interface-button" id="rollFeedHistoryFirst" type="button" aria-controls="simulation-feed">First</button>
+                        <button class="interface-button" id="rollFeedHistoryPrevious" type="button" aria-controls="simulation-feed">Previous</button>
+                        <button class="interface-button" id="rollFeedHistoryNext" type="button" aria-controls="simulation-feed">Next</button>
+                        <button class="interface-button" id="rollFeedHistoryLatest" type="button" aria-controls="simulation-feed">Latest</button>
+                    </nav>
                 </section>
                 <div class="feed__meta">
                     <p class="feed__tip"><span class="feed__tip-label">[Tip] Suzy:</span> Get Lucky</p>
@@ -1469,6 +1472,7 @@
                         <ul>
                             <li>Search accepts either an aura name or a tier name such as Legendary.</li>
                             <li>Unnamed's results can sort by Rarity or Alphabetical. Sol's-Like also offers Recent to restore exact roll order.</li>
+                            <li>Sol's-Like displays up to 100 entries at a time. Use Previous and Next to review history, or Latest to follow incoming rolls. Search and sorting include the full run.</li>
                             <li>Share Result exports the currently available summary through the supported text and image options.</li>
                             <li>While live rolling, scrolling upward disables automatic following. Use the down-arrow button to follow the newest rolls again.</li>
                             <li>The summary includes run parameters, XP milestones, totals, and statistics after completion.</li>
@@ -2152,6 +2156,22 @@
             </div>
 
             <div class="changelog-modal__panels" data-changelog-panels>
+                <section id="changelog-panel-v210" class="changelog-modal__panel" data-changelog-panel="v2.1.0" data-changelog-label="v2.1.0" role="tabpanel" tabindex="0" hidden>
+                    <div class="changelog-modal__header">
+                        <h2 class="changelog-modal__title">Version 2.1.0 Update Notes</h2>
+                        <p class="changelog-modal__meta">Updated 2026/09/08</p>
+                    </div>
+                    <ul class="changelog-modal__list">
+                        <li>Squared everything up <img class="inline-emoji" width="16" height="16" src="files/images/emojis/aga.png" alt=":aga:"></li>
+                        <li>Reworked simulation execution around a shared engine with indexed selection and time-budgeted work. Sol's RNG probability calculations, aura order, luck, biome rules, and potion rules are unchanged.</li>
+                        <li>Default rolling and the local-file fallback share the same engine, with more responsive cancellation and progress updates.</li>
+                        <li>Sol's-Like rolling reuses prepared aura entries to reduce formatting and HTML parsing while preserving roll order, speed settings, pause controls, and cutscenes.</li>
+                        <li>Fixed long Sol's-Like runs slowing down the website: the feed now displays at most 100 entries at a time, with controls for earlier history. Search and sorting still cover every recorded roll, and totals and sharing include the full run.</li>
+                        <li>Cutscene preparation shares pending loads and warms the next queued video. Image export code loads when requested.</li>
+                        <li>Sigil effects track visible candidates instead of repeatedly searching the whole page. Existing colors, typography, layouts, and animation designs are preserved.</li>
+                    </ul>
+                </section>
+
                 <section
                     id="changelog-panel-v2030"
                     class="changelog-modal__panel"

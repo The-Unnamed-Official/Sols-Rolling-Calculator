@@ -1,312 +1,97 @@
 'use strict';
 
-try {
-    importScripts('utils.js');
-} catch (error) {
-}
-
-let cancelRequested = false;
+// Imports use the same release identity as the page and worker script.
+const buildQuery = new URL(self.location.href).search;
+importScripts(`utils.js${buildQuery}`, `simulation-core.js${buildQuery}`);
 let activeRunId = 0;
+let cancelRequested = false;
+let activeContinuation = null;
 
-function buildWeightedSelection(ratios) {
-    const count = Array.isArray(ratios) ? ratios.length : 0;
-    if (!count) {
-        return null;
-    }
-
-    const cumulativeWeights = new Float64Array(count);
-    let remainingProbability = 1;
-    let totalProbability = 0;
-
-    for (let index = 0; index < count; index++) {
-        const ratio = ratios[index];
-        const weight = remainingProbability * ratio;
-        totalProbability += weight;
-        cumulativeWeights[index] = totalProbability;
-        remainingProbability *= (1 - ratio);
-
-        if (remainingProbability <= 0) {
-            for (let tailIndex = index + 1; tailIndex < count; tailIndex++) {
-                cumulativeWeights[tailIndex] = totalProbability;
-            }
-            break;
-        }
-    }
-
-    return { cumulativeWeights, totalProbability };
-}
-
-function selectWeightedIndex(selection, randomValue) {
-    if (!selection || selection.totalProbability <= 0 || randomValue >= selection.totalProbability) {
-        return -1;
-    }
-
-    const { cumulativeWeights } = selection;
-    let low = 0;
-    let high = cumulativeWeights.length - 1;
-
-    while (low < high) {
-        const mid = (low + high) >> 1;
-        if (randomValue < cumulativeWeights[mid]) {
-            high = mid;
-        } else {
-            low = mid + 1;
-        }
-    }
-
-    return low;
-}
-
-function buildCumulativeSelectionFromProbabilities(probabilities) {
-    const count = Array.isArray(probabilities) ? probabilities.length : 0;
-    if (!count) {
-        return null;
-    }
-
-    const cumulativeWeights = new Float64Array(count);
-    let totalProbability = 0;
-    for (let index = 0; index < count; index++) {
-        const probability = probabilities[index];
-        if (Number.isFinite(probability) && probability > 0) {
-            totalProbability += probability;
-        }
-        cumulativeWeights[index] = totalProbability;
-    }
-
-    if (totalProbability <= 0) {
-        return null;
-    }
-
-    return { cumulativeWeights, totalProbability };
-}
-
-function buildCombinedSelection(groups) {
-    const auraIndices = [];
-    const breakthroughIndices = [];
-    const probabilities = [];
-    let remainingProbability = 1;
-
-    groups.forEach(group => {
-        const selection = group && group.selection;
-        if (!selection || selection.totalProbability <= 0 || remainingProbability <= 0) {
-            return;
-        }
-
-        let previousCumulative = 0;
-        for (let index = 0; index < selection.cumulativeWeights.length; index++) {
-            const cumulative = selection.cumulativeWeights[index];
-            const localProbability = cumulative - previousCumulative;
-            previousCumulative = cumulative;
-            const probability = remainingProbability * localProbability;
-            if (probability <= 0) {
-                continue;
-            }
-
-            auraIndices.push(group.auraIndices[index]);
-            breakthroughIndices.push(group.breakthroughIndices ? group.breakthroughIndices[index] : -1);
-            probabilities.push(probability);
-        }
-
-        remainingProbability *= Math.max(0, 1 - selection.totalProbability);
-    });
-
-    return {
-        auraIndices,
-        breakthroughIndices,
-        selection: buildCumulativeSelectionFromProbabilities(probabilities)
-    };
-}
-
-function createZeroCounts(length) {
-    const size = Number.isFinite(length) && length > 0 ? Math.floor(length) : 0;
-    return new Float64Array(size);
-}
-
-function readNow() {
-    if (typeof performance !== 'undefined' && typeof performance.now === 'function') {
-        return performance.now();
-    }
-    return Date.now();
+function closeContinuation() {
+    if (!activeContinuation) return;
+    activeContinuation.port1.close();
+    activeContinuation.port2.close();
+    activeContinuation = null;
 }
 
 self.onmessage = event => {
     const message = event.data || {};
-
     if (message.type === 'cancel') {
         cancelRequested = true;
         return;
     }
-
-    if (message.type !== 'start') {
-        return;
-    }
-
+    if (message.type !== 'start') return;
+    closeContinuation();
     const runId = ++activeRunId;
     cancelRequested = false;
-
     try {
         const auraCount = Number.isFinite(message.auraCount) && message.auraCount > 0
-            ? Math.floor(message.auraCount)
-            : 0;
+            ? Math.floor(message.auraCount) : 0;
         const progressIntervalMs = Number.isFinite(message.progressIntervalMs) && message.progressIntervalMs > 0
-            ? message.progressIntervalMs
-            : 100;
-
-        const legacyBatch = {
-            total: message.total,
-            prerollAuraIndices: message.prerollAuraIndices,
-            prerollAuraRatios: message.prerollAuraRatios,
-            lucklessAuraIndices: message.lucklessAuraIndices,
-            lucklessAuraRatios: message.lucklessAuraRatios,
-            lucklessBreakthroughIndices: message.lucklessBreakthroughIndices,
-            luckAffectedAuraIndices: message.luckAffectedAuraIndices,
-            luckAffectedAuraRatios: message.luckAffectedAuraRatios,
-            luckAffectedBreakthroughIndices: message.luckAffectedBreakthroughIndices
-        };
-        const batchMessages = Array.isArray(message.batches) && message.batches.length > 0
-            ? message.batches
-            : [legacyBatch];
-        const batchConfigs = batchMessages.map(batch => {
-            const prerollAuraIndices = Array.isArray(batch.prerollAuraIndices) ? batch.prerollAuraIndices : [];
-            const prerollAuraRatios = Array.isArray(batch.prerollAuraRatios) ? batch.prerollAuraRatios : [];
-            const lucklessAuraIndices = Array.isArray(batch.lucklessAuraIndices) ? batch.lucklessAuraIndices : [];
-            const lucklessAuraRatios = Array.isArray(batch.lucklessAuraRatios) ? batch.lucklessAuraRatios : [];
-            const lucklessBreakthroughIndices = Array.isArray(batch.lucklessBreakthroughIndices) ? batch.lucklessBreakthroughIndices : [];
-            const luckAffectedAuraIndices = Array.isArray(batch.luckAffectedAuraIndices) ? batch.luckAffectedAuraIndices : [];
-            const luckAffectedAuraRatios = Array.isArray(batch.luckAffectedAuraRatios) ? batch.luckAffectedAuraRatios : [];
-            const luckAffectedBreakthroughIndices = Array.isArray(batch.luckAffectedBreakthroughIndices) ? batch.luckAffectedBreakthroughIndices : [];
-
-            return {
-                total: Number.isFinite(batch.total) && batch.total > 0 ? Math.floor(batch.total) : 0,
-                winCounts: createZeroCounts(auraCount),
-                breakthroughCounts: createZeroCounts(auraCount),
-                combinedSelection: buildCombinedSelection([
-                    {
-                        selection: buildWeightedSelection(prerollAuraRatios),
-                        auraIndices: prerollAuraIndices,
-                        breakthroughIndices: null
-                    },
-                    {
-                        selection: buildWeightedSelection(lucklessAuraRatios),
-                        auraIndices: lucklessAuraIndices,
-                        breakthroughIndices: lucklessBreakthroughIndices
-                    },
-                    {
-                        selection: buildWeightedSelection(luckAffectedAuraRatios),
-                        auraIndices: luckAffectedAuraIndices,
-                        breakthroughIndices: luckAffectedBreakthroughIndices
+            ? message.progressIntervalMs : 100;
+        const { buildWeightedSelection, buildCombinedSimulationSelection, createRunner } = SimulationCore;
+        const array = value => Array.isArray(value) ? value : [];
+        const batchMessages = Array.isArray(message.batches) && message.batches.length
+            ? message.batches : [message];
+        const batches = batchMessages.map(batch => ({
+            count: Number.isFinite(batch.total) && batch.total > 0 ? Math.floor(batch.total) : 0,
+            winCounts: new Float64Array(auraCount),
+            breakthroughCounts: new Float64Array(auraCount),
+            combinedSelection: buildCombinedSimulationSelection([
+                { selection: buildWeightedSelection(array(batch.prerollAuraRatios)),
+                    auraIndices: array(batch.prerollAuraIndices) },
+                { selection: buildWeightedSelection(array(batch.lucklessAuraRatios)),
+                    auraIndices: array(batch.lucklessAuraIndices),
+                    breakthroughIndices: array(batch.lucklessBreakthroughIndices) },
+                { selection: buildWeightedSelection(array(batch.luckAffectedAuraRatios)),
+                    auraIndices: array(batch.luckAffectedAuraIndices),
+                    breakthroughIndices: array(batch.luckAffectedBreakthroughIndices) }
+            ])
+        })).filter(batch => batch.count > 0);
+        const winCounts = new Float64Array(auraCount);
+        const breakthroughCounts = new Float64Array(auraCount);
+        const runner = createRunner(batches, winCounts, drawEntropy, breakthroughCounts);
+        const continuation = new MessageChannel();
+        activeContinuation = continuation;
+        let lastProgressAt = performance.now();
+        const processSlice = () => {
+            if (runId !== activeRunId) return;
+            try {
+                if (cancelRequested) {
+                    closeContinuation();
+                    self.postMessage({ type: 'cancelled', currentRoll: runner.currentRoll });
+                    return;
+                }
+                // Yield by elapsed time instead of blocking on millions of rolls.
+                runner.runSlice(12, () => performance.now());
+                const now = performance.now();
+                if (!runner.done) {
+                    if (now - lastProgressAt >= progressIntervalMs) {
+                        lastProgressAt = now;
+                        self.postMessage({ type: 'progress', currentRoll: runner.currentRoll });
                     }
-                ])
-            };
-        }).filter(batch => batch.total > 0);
-        const total = batchConfigs.reduce((sum, batch) => sum + batch.total, 0);
-
-        const sampleEntropy = typeof drawEntropy === 'function' ? drawEntropy : Math.random;
-        const winCounts = createZeroCounts(auraCount);
-        const breakthroughCounts = createZeroCounts(auraCount);
-
-        let currentRoll = 0;
-        let currentBatchIndex = 0;
-        let currentBatchRoll = 0;
-        let lastProgressTimestamp = readNow();
-        const batchSize = Math.min(5000000, Math.max(250000, Math.ceil(Math.max(total, 1) / 180)));
-
-        const applySelectionHit = () => {
-            while (
-                currentBatchIndex < batchConfigs.length
-                && currentBatchRoll >= batchConfigs[currentBatchIndex].total
-            ) {
-                currentBatchIndex += 1;
-                currentBatchRoll = 0;
-            }
-            const activeBatch = batchConfigs[currentBatchIndex];
-            if (!activeBatch) {
-                return false;
-            }
-
-            const combinedSelection = activeBatch.combinedSelection;
-            const selectedIndex = selectWeightedIndex(combinedSelection.selection, sampleEntropy());
-            currentBatchRoll += 1;
-            if (selectedIndex === -1) {
-                return false;
-            }
-
-            const auraIndex = combinedSelection.auraIndices[selectedIndex];
-            if (Number.isInteger(auraIndex) && auraIndex >= 0 && auraIndex < auraCount) {
-                winCounts[auraIndex] += 1;
-                activeBatch.winCounts[auraIndex] += 1;
-            }
-
-            const breakthroughIndex = combinedSelection.breakthroughIndices[selectedIndex];
-            if (Number.isInteger(breakthroughIndex) && breakthroughIndex >= 0 && breakthroughIndex < auraCount) {
-                breakthroughCounts[breakthroughIndex] += 1;
-                activeBatch.breakthroughCounts[breakthroughIndex] += 1;
-            }
-
-            return true;
-        };
-
-        const postProgressIfNeeded = force => {
-            const now = readNow();
-            if (!force && (now - lastProgressTimestamp) < progressIntervalMs) {
-                return;
-            }
-            lastProgressTimestamp = now;
-            self.postMessage({
-                type: 'progress',
-                currentRoll
-            });
-        };
-
-        const processBatch = () => {
-            if (runId !== activeRunId) {
-                return;
-            }
-
-            if (cancelRequested) {
+                    // Message tasks yield to cancellation without the minimum
+                    // delay browsers impose on chains of nested timers.
+                    continuation.port2.postMessage(null);
+                    return;
+                }
+                const batchWinCounts = batches.map(batch => batch.winCounts);
+                const batchBreakthroughCounts = batches.map(batch => batch.breakthroughCounts);
+                closeContinuation();
                 self.postMessage({
-                    type: 'cancelled',
-                    currentRoll
-                });
-                return;
+                    type: 'complete', currentRoll: runner.currentRoll,
+                    winCounts, breakthroughCounts, batchWinCounts, batchBreakthroughCounts
+                }, [winCounts, breakthroughCounts, ...batchWinCounts, ...batchBreakthroughCounts]
+                    .map(counts => counts.buffer));
+            } catch (error) {
+                closeContinuation();
+                self.postMessage({ type: 'error', error: error?.message || String(error) });
             }
-
-            const batchTarget = Math.min(total, currentRoll + batchSize);
-            while (currentRoll < batchTarget) {
-                applySelectionHit();
-                currentRoll += 1;
-            }
-
-            if (currentRoll < total) {
-                postProgressIfNeeded(false);
-                setTimeout(processBatch, 0);
-                return;
-            }
-
-            postProgressIfNeeded(true);
-            const batchWinCounts = batchConfigs.map(batch => batch.winCounts);
-            const batchBreakthroughCounts = batchConfigs.map(batch => batch.breakthroughCounts);
-            const transferBuffers = [
-                winCounts.buffer,
-                breakthroughCounts.buffer,
-                ...batchWinCounts.map(counts => counts.buffer),
-                ...batchBreakthroughCounts.map(counts => counts.buffer)
-            ];
-            self.postMessage({
-                type: 'complete',
-                currentRoll,
-                winCounts,
-                breakthroughCounts,
-                batchWinCounts,
-                batchBreakthroughCounts
-            }, transferBuffers);
         };
-
-        processBatch();
+        continuation.port1.onmessage = processSlice;
+        processSlice();
     } catch (error) {
-        self.postMessage({
-            type: 'error',
-            error: error && error.message ? error.message : String(error)
-        });
+        closeContinuation();
+        self.postMessage({ type: 'error', error: error?.message || String(error) });
     }
 };

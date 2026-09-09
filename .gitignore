@@ -407,6 +407,9 @@ FodyWeavers.xsd
 # Local History for Visual Studio Code
 .history/
 
+# Local performance and browser verification artifacts
+test-results/
+
 # Built Visual Studio Code Extensions
 *.vsix
 
