@@ -1,0 +1,109 @@
+/* Layout adapters for the attributed Wiki artwork in wiki-title-data.js. */
+.wiki-title {
+    position: relative;
+    display: inline-block;
+    isolation: isolate;
+    vertical-align: baseline;
+    white-space: nowrap;
+    font-family: 'Noto Sans TC', sans-serif;
+    font-weight: 400;
+    font-style: normal;
+    letter-spacing: normal;
+    text-transform: none;
+    text-shadow: none;
+    -webkit-text-fill-color: initial;
+    -webkit-text-stroke: 0 transparent;
+    line-height: 1.65;
+    color: #fff;
+}
+.wiki-title > span { display: inline-block; }
+.wiki-title > .wiki-title__plain { display: none; }
+body.quality-simple-auras .wiki-title:is(.wiki-title--aura, .wiki-title--rarity) {
+    font: inherit;
+    line-height: inherit;
+    white-space: normal;
+    color: var(--text-primary, #f5f8ff);
+}
+body.quality-simple-auras .wiki-title:is(.wiki-title--aura, .wiki-title--rarity) > .wiki-title__art { display: none; }
+body.quality-simple-auras .wiki-title > .wiki-title__plain { display: inline; }
+body.quality-simple-auras .wiki-title--aura .wiki-title__art *,
+body.quality-simple-auras .wiki-title--aura .wiki-title__art *::before,
+body.quality-simple-auras .wiki-title--aura .wiki-title__art *::after { animation: none !important; }
+.aura-tier-detail, .aura-native, .aura-count, .wiki-title__plain { -webkit-text-fill-color: currentColor; }
+.aura-tier-separator {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    grid-column: 1 / -1;
+    margin: 18px 0 8px;
+    font: 700 0.82rem Sarpanch, sans-serif;
+    letter-spacing: 0.13em;
+    text-transform: uppercase;
+    color: #d8ddea;
+}
+.aura-tier-separator::after {
+    content: '';
+    flex: 1;
+    min-width: 16px;
+    border-top: 1px solid currentColor;
+    opacity: 0.45;
+}
+.aura-tier-separator:first-child { margin-top: 6px; }
+.aura-tier-separator[data-aura-tier-heading="epic"] { color: #cf9ed0; }
+.aura-tier-separator[data-aura-tier-heading="unique"] { color: #e9bb62; }
+.aura-tier-separator[data-aura-tier-heading="legendary"] { color: #71eed7; }
+.aura-tier-separator[data-aura-tier-heading="mythic"] { color: #f17bd5; }
+.aura-tier-separator[data-aura-tier-heading="exalted"] { color: #85baff; }
+.aura-tier-separator[data-aura-tier-heading="glorious"] { color: #ff9696; }
+.aura-tier-separator[data-aura-tier-heading="transcendent"] { color: #b7f5f5; }
+.aura-tier-separator[data-aura-tier-heading="challenged"] { color: #fff; }
+.quality-settings__aura-switch {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 20px;
+    width: 100%;
+    flex-shrink: 0;
+    margin-top: 14px;
+    text-align: left;
+}
+.quality-settings__aura-switch > span:first-child { display: grid; gap: 6px; }
+.quality-settings__switch-track {
+    position: relative;
+    display: block;
+    width: 42px;
+    height: 24px;
+    border-radius: 20px;
+    background: #35415a;
+    border: 1px solid #5a6882;
+}
+.quality-settings__switch-track::after {
+    content: '';
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: #eef5ff;
+}
+.quality-settings__aura-switch[aria-checked="true"] .quality-settings__switch-track { background: #267558; border-color: #69ecae; }
+.quality-settings__aura-switch[aria-checked="true"] .quality-settings__switch-track::after { left: 21px; }
+.wiki-title .wiki-ref-GradientedTextStroke::before { content: attr(data-textstroke); }
+.wiki-item-label {
+    background: none !important;
+    -webkit-text-fill-color: initial !important;
+    -webkit-text-stroke: 0 transparent !important;
+    text-shadow: none !important;
+    filter: none !important;
+    animation: none !important;
+    letter-spacing: normal !important;
+}
+.wiki-item-label::before, .wiki-item-label::after { content: none !important; }
+.changelog-aura-sigil { white-space: normal; }
+body.quality-no-roll-sigil-animations .wiki-title *,
+body.quality-no-roll-sigil-animations .wiki-title *::before,
+body.quality-no-roll-sigil-animations .wiki-title *::after {
+    animation: none !important;
+    transition: none !important;
+}

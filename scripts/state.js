@@ -54,7 +54,8 @@
             disableShakes: false,
             disableRollAndSigilAnimations: false,
             reduceGlitchEffects: true,
-            removeGlitchEffects: false
+            removeGlitchEffects: false,
+            disableWikiAuraStyles: false
         },
         backgroundRolling: false,
         selectiveTrueChanceDisplay: false,

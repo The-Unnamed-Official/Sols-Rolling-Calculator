@@ -175,7 +175,8 @@ const QUALITY_PREFERENCE_KEYS = Object.freeze([
     'disableShakes',
     'disableRollAndSigilAnimations',
     'reduceGlitchEffects',
-    'removeGlitchEffects'
+    'removeGlitchEffects',
+    'disableWikiAuraStyles'
 ]);
 
 const PERFORMANCE_FIRST_QUALITY_DEFAULTS = Object.freeze({
@@ -183,8 +184,9 @@ const PERFORMANCE_FIRST_QUALITY_DEFAULTS = Object.freeze({
     disableUiAnimations: false,
     disableShakes: false,
     disableRollAndSigilAnimations: false,
-    reduceGlitchEffects: true,
-    removeGlitchEffects: false
+    reduceGlitchEffects: false,
+    removeGlitchEffects: false,
+    disableWikiAuraStyles: false
 });
 
 if (FORCE_CUTSCENES_ALWAYS_ON && typeof appState === 'object') {
@@ -768,7 +770,7 @@ const BIOME_PRIMARY_SELECT_ID = 'biome-primary-dropdown';
 const BIOME_OTHER_SELECT_ID = 'biome-other-dropdown';
 const BIOME_TIME_SELECT_ID = 'biome-time-dropdown';
 const DAY_RESTRICTED_BIOMES = new Set(['pumpkinMoon', 'graveyard']);
-const DAY_ONLY_BIOMES = new Set(['blazing', 'incinerator']);
+const DAY_ONLY_BIOMES = new Set(['blazing']);
 const CYBERSPACE_ILLUSIONARY_WARNING_STORAGE_KEY = 'solsRollingCalculator:hideCyberspaceIllusionaryWarning';
 const SINGULARITY_MULTIPLIER_WARNING_STORAGE_KEY = 'solsRollingCalculator:hideSingularityMultiplierWarning';
 const SINGULARITY_SUMMON_SOUND_ID = 'singularitySummonSound';
@@ -1484,11 +1486,13 @@ function populateCutsceneFilterList(mode) {
         button.type = 'button';
         button.className = `interface-toggle filter-tier-toggle ${pauseMode ? 'cutscene-pause-toggle' : 'cutscene-playback-toggle'}`;
         button.dataset.auraName = aura.name;
+        button.dataset.auraTier = resolveAuraDisplayTierKey(aura);
         button.setAttribute('aria-pressed', enabled ? 'true' : 'false');
         renderCutsceneFilterButtonLabel(button, aura, enabled, mode);
         fragment.appendChild(button);
     });
     list.appendChild(fragment);
+    syncAuraTierSeparators(list, '.cutscene-pause-toggle,.cutscene-playback-toggle');
     list.dataset.populated = 'true';
 }
 
@@ -1601,12 +1605,13 @@ function populateAuraFilterList() {
         button.type = 'button';
         button.className = 'interface-toggle filter-tier-toggle filter-aura-toggle';
         button.dataset.auraName = aura.name;
+        button.dataset.auraTier = resolveAuraDisplayTierKey(aura);
         button.setAttribute('aria-pressed', 'false');
         renderAuraFilterButtonLabel(button, aura.name, false);
         fragment.appendChild(button);
     });
     list.appendChild(fragment);
-
+    syncAuraTierSeparators(list, '.filter-aura-toggle');
     list.dataset.populated = 'true';
 }
 
@@ -3579,6 +3584,7 @@ function applyQualityPreferencesState() {
         pageBody.classList.toggle('quality-no-roll-sigil-animations', appState.qualityPreferences.disableRollAndSigilAnimations);
         pageBody.classList.toggle('quality-reduced-glitch', appState.qualityPreferences.reduceGlitchEffects);
         pageBody.classList.toggle('quality-no-glitch', appState.qualityPreferences.removeGlitchEffects);
+        pageBody.classList.toggle('quality-simple-auras', appState.qualityPreferences.disableWikiAuraStyles);
         pageBody.classList.toggle('performance-mode', performanceModeActive);
     }
 
@@ -3605,7 +3611,7 @@ function applyQualityPreferencesState() {
 }
 
 function syncQualityPreferenceButtons() {
-    const menu = document.getElementById('qualityPreferencesMenu');
+    const menu = document.getElementById('qualityPreferencesOverlay');
     if (!menu) {
         return;
     }
@@ -3618,7 +3624,9 @@ function syncQualityPreferenceButtons() {
             return;
         }
 
-        const enabled = Boolean(appState.qualityPreferences[key]);
+        const enabled = button.hasAttribute('data-quality-inverted')
+            ? !appState.qualityPreferences[key]
+            : Boolean(appState.qualityPreferences[key]);
         button.setAttribute('aria-checked', enabled ? 'true' : 'false');
         button.classList.toggle('quality-settings__item--active', enabled);
     });
@@ -3672,7 +3680,7 @@ function initializeQualityPreferencesMenu() {
         openMenu();
     });
 
-    menu.addEventListener('click', event => {
+    overlay.addEventListener('click', event => {
         const button = event.target instanceof Element ? event.target.closest('[data-quality-option]') : null;
         if (!button) {
             return;
@@ -3716,7 +3724,7 @@ function initializeQualityPreferencesMenu() {
         }
     });
 
-    menu.addEventListener('keydown', event => {
+    overlay.addEventListener('keydown', event => {
         if (event.key === 'Escape') {
             closeMenu();
             trigger.focus({ preventScroll: true });
@@ -4963,9 +4971,9 @@ const MULTI_POTION_STACK_EXCLUSION_GROUP = Object.freeze({
 
 const MULTI_POTION_CONFIGS = Object.freeze([
     Object.freeze({ id: 'heavenly', label: 'Heavenly Potion', resultLabel: 'Heavenly', resultClass: 'heavenlyClass', luck: 150000 }),
-    Object.freeze({ id: 'oblivion', label: 'Oblivion Potion', resultLabel: 'Oblivion', resultClass: 'oblivionClass', luck: 600000, oblivion: true, blocksRunes: true }),
     Object.freeze({ id: 'pump-kings-blood', label: "Pump King's Blood", resultLabel: "Pump King's Blood", resultClass: 'pumpBloodClass', luck: 700000, blocksRunes: true }),
-    Object.freeze({ id: 'godlike', label: 'Godlike Potion', resultLabel: 'Godlike', resultClass: 'godlikeClass', luck: 400000 }),
+    Object.freeze({ id: 'oblivion', label: 'Oblivion Potion', resultLabel: 'Oblivion', resultClass: 'oblivionClass', luck: 600000, oblivion: true, blocksRunes: true }),
+    Object.freeze({ id: 'godlike', label: 'Godlike Potion', resultLabel: 'Godlike', resultClass: 'godlikePotionClass', luck: 400000 }),
     Object.freeze({ id: 'blood-ii', label: 'Red Moon II', resultLabel: 'Red Moon II', resultClass: 'bloodIIClass', luck: 200000, bloodPreset: 'blood-ii', stackExclusionGroup: MULTI_POTION_STACK_EXCLUSION_GROUP.RED_MOON }),
     Object.freeze({ id: 'candy-corn', label: 'Candy Corn', resultLabel: 'Candy Corn', resultClass: 'candyClass', luck: 75000 }),
     Object.freeze({ id: 'bound', label: 'Bound Potion', resultLabel: 'Bound', resultClass: 'boundClass', luck: 50000 }),
@@ -5201,11 +5209,11 @@ function applyLuckValue(value, options = {}) {
         || normalizedOptions.luckSource === LUCK_SELECTION_SOURCE.DEVICE_PRESET;
 
     if (shouldResetSpecialPresets) {
-        if (!('activateOblivionPreset' in normalizedOptions)) {
-            normalizedOptions.activateOblivionPreset = false;
-        }
         if (!('activatePumpKingsBloodPreset' in normalizedOptions)) {
             normalizedOptions.activatePumpKingsBloodPreset = false;
+        }
+        if (!('activateOblivionPreset' in normalizedOptions)) {
+            normalizedOptions.activateOblivionPreset = false;
         }
         if (!('activateTutorialPotionPreset' in normalizedOptions)) {
             normalizedOptions.activateTutorialPotionPreset = false;
@@ -5219,7 +5227,6 @@ function applyLuckValue(value, options = {}) {
     }
 
     if (normalizedOptions.activateOblivionPreset === true) {
-        normalizedOptions.activatePumpKingsBloodPreset = false;
         normalizedOptions.activateTutorialPotionPreset = false;
         normalizedOptions.activateDunePreset = false;
         normalizedOptions.activateBloodPreset = false;
@@ -5439,7 +5446,7 @@ function formatMultiplePotionBatchResultMarkup(batch) {
     const potionConfigs = getMultiplePotionBatchResultConfigs(batch);
     const potionMarkup = potionConfigs.length > 0
         ? potionConfigs.map(config => (
-            `<span class="${config.resultClass}">${config.resultLabel || config.label}</span>`
+            WikiTitles.item(config.label, config.resultLabel || config.label)
         )).join(' + ')
         : 'Potion';
     const luckValue = Number.isFinite(batch?.luckValue) ? Math.max(0, batch.luckValue) : 0;
@@ -5515,9 +5522,14 @@ function collectMultiplePotionBatches(
 
     const blockingBatches = [];
     const compatibleBatches = [];
-    document.querySelectorAll('[data-multi-potion]').forEach(input => {
-        const config = MULTI_POTION_CONFIG_BY_ID.get(input.dataset.multiPotion);
-        if (!config) {
+    const inputsByPotionId = new Map(Array.from(
+        document.querySelectorAll('[data-multi-potion]'),
+        input => [input.dataset.multiPotion, input]
+    ));
+    // Follow configured potion priority regardless of the input fields' layout.
+    MULTI_POTION_CONFIGS.forEach(config => {
+        const input = inputsByPotionId.get(config.id);
+        if (!input) {
             return;
         }
 
@@ -6780,6 +6792,46 @@ function formatAuraTierLabel(tier) {
         .trim();
 }
 
+function resolveAuraDisplayTierKey(aura, biome = null) {
+    if (!aura) return 'basic';
+    if (isForcedChallengedAura(aura.name)) return 'challenged';
+    const rarityClass = biome === null ? resolveBaseRarityClass(aura) : resolveRarityClass(aura, biome);
+    const key = AURA_TIER_CLASS_TO_KEY.get(rarityClass);
+    if (key) return key;
+    for (const [tierKey, prefixes] of AURA_TIER_SKIP_NAME_OVERRIDES) {
+        if (prefixes.some(prefix => aura.name.startsWith(prefix))) return tierKey;
+    }
+    return AURA_TIER_CLASS_TO_KEY.get(computeBaseRarityClass({ ...aura, disableRarityClass: false })) || 'basic';
+}
+
+function createAuraTierHeading(tierKey) {
+    const tier = AURA_TIER_FILTERS.find(candidate => candidate.key === tierKey);
+    if (!tier) return null;
+    const heading = document.createElement('span');
+    heading.className = 'aura-tier-separator';
+    heading.dataset.auraTierHeading = tierKey;
+    heading.setAttribute('role', 'heading');
+    heading.setAttribute('aria-level', '3');
+    heading.textContent = formatAuraTierLabel(tier);
+    return heading;
+}
+
+function syncAuraTierSeparators(container, selector, enabled = true) {
+    if (!container) return;
+    container.querySelectorAll(':scope > .aura-tier-separator').forEach(heading => heading.remove());
+    if (!enabled) return;
+    let previousTier = null;
+    container.querySelectorAll(selector).forEach(entry => {
+        if (entry.hidden) return;
+        const tierKey = entry.dataset.auraTier || '';
+        if (tierKey !== previousTier) {
+            const heading = createAuraTierHeading(tierKey);
+            if (heading) entry.before(heading);
+        }
+        previousTier = tierKey;
+    });
+}
+
 function getAuraTierSearchTerms(tierKey) {
     if (typeof tierKey !== 'string' || !tierKey) {
         return '';
@@ -7082,56 +7134,7 @@ const auraOutlineOverrides = new Map([
     ['Crabtropica', 'sigil-outline-summer'],
 ]);
 
-const wikiAuraSigilNames = new Set([
-    '★',
-    '★★',
-    '★★★',
-    'Attorney',
-    'Verdict',
-    'Empty',
-    'Neferkhaf',
-    'Memory',
-    'Oblivion',
-    '赤月の破片',
-    'Prowler',
-    'Oppression',
-    'Illusionary',
-    'Clockwork',
-    'Dreammetric',
-    'Fault',
-    'Megaphone',
-    'Meta',
-    'Cryogenic',
-    'Astral : Astrald',
-    '紅月を求めし者',
-    '紅月の観測者',
-    'Borealis',
-    'Glitch',
-    'Innovator',
-    'Monarch',
-    'Equinox',
-    'Equinox : youareanidiot',
-    'DreamCatcher',
-    'Dream Traveler',
-    'Sky Festival',
-    'Breakthrough',
-    'Y.O.L.K.E.G.G.',
-    'Astraios',
-    'Leviathan',
-    'Winter Garden',
-    'Luminosity',
-    'Erebus',
-    'Aegis : Eggis',
-    'Pixelation',
-    'Nyctophobia',
-    'Lamenthyr',
-    "A Fool's Experience",
-    'P.U.K.E.K.O.G.O.D.',
-    'Eostre',
-    'Sovereign : Frostveil',
-    'Ascendant'
-]);
-
+const wikiAuraSigilNames = new Set(Object.keys(WikiTitleData.auras));
 const glitchOutlineNames = new Set(['Fault', '[CONTENT DELETED']);
 const dreamspaceOutlineNames = new Set(['★★★', '★★', '★']);
 const cyberspaceOutlineExclusions = new Set(['Pixelation', 'Illusionary']);
@@ -7144,7 +7147,7 @@ function resolveAuraStyleClass(aura, biome) {
 
     const classes = [];
     const shortName = name.includes(' - ') ? name.split(' - ')[0].trim() : name.trim();
-    if (wikiAuraSigilNames.has(shortName)) classes.push('sigil-wiki-aura');
+    if (wikiAuraSigilNames.has(shortName)) return 'sigil-wiki-aura';
     if (name.startsWith('Oblivion')) classes.push('sigil-effect-oblivion');
     if (name.startsWith('Memory')) classes.push('sigil-effect-memory');
     if (name.startsWith('Neferkhaf')) classes.push('sigil-effect-neferkhaf');
@@ -7209,7 +7212,7 @@ function shouldSuppressRarityClassForSpecialStyle(specialClass = '') {
     if (!specialClass) {
         return false;
     }
-    return specialClass.includes('sigil-outline-edict') || specialClass.includes('sigil-effect-clockwork');
+    return specialClass.includes('sigil-wiki-aura') || specialClass.includes('sigil-outline-edict') || specialClass.includes('sigil-effect-clockwork');
 }
 
 const OBLIVION_PRESET_IDENTIFIER = 'oblivion';
@@ -7481,224 +7484,12 @@ function splitAuraDisplaySuffix(baseName) {
         : { suffix: '' };
 }
 
-function appendWikiAuraSigilSuffix(markup, suffix) {
-    if (!suffix) return markup;
-    return `${markup}<span class="sigil-wiki__suffix">${suffix}</span>`;
-}
-
-function formatWikiAuraSigilMarkup(aura, baseName) {
+function formatWikiAuraSigilMarkup(aura, baseName, biome = null) {
     if (!aura || typeof baseName !== 'string') return '';
-    const canonicalName = aura.name.includes(' - ')
-        ? aura.name.split(' - ')[0].trim()
-        : aura.name.trim();
-    if (!wikiAuraSigilNames.has(canonicalName)) return '';
-
+    const canonicalName = aura.name.split(' - ')[0].trim();
     const { suffix } = splitAuraDisplaySuffix(baseName);
-    const layered = (className, text) => `<span class="sigil-wiki ${className}">` +
-        `<span class="sigil-wiki__layer sigil-wiki__layer--back">${text}</span>` +
-        `<span class="sigil-wiki__layer sigil-wiki__layer--front">${text}</span>` +
-        '</span>';
-    const stroked = (className, text) => `<span class="sigil-wiki ${className}">` +
-        `<span class="sigil-wiki__text-stroke" data-text="${text}"></span>` +
-        `<span class="sigil-wiki__face">${text}</span>` +
-        '</span>';
-    const doubleStroked = (className, text) => `<span class="sigil-wiki ${className}">` +
-        `<span class="sigil-wiki__court-stroke sigil-wiki__court-stroke--outer" data-text="${text}"></span>` +
-        `<span class="sigil-wiki__court-stroke sigil-wiki__court-stroke--inner" data-text="${text}"></span>` +
-        `<span class="sigil-wiki__face">${text}</span>` +
-        '</span>';
-    let markup = '';
-
-    switch (canonicalName) {
-        case '★':
-        case '★★':
-        case '★★★':
-            markup = `<span class="sigil-wiki sigil-wiki--dream-star">${canonicalName}</span>`;
-            break;
-        case 'Attorney':
-            markup = doubleStroked('sigil-wiki--court', 'ATTORNEY');
-            break;
-        case 'Verdict':
-            markup = doubleStroked('sigil-wiki--court', 'VERDICT');
-            break;
-        case 'Empty':
-            markup = '<span class="sigil-wiki sigil-wiki--empty">Empty</span>';
-            break;
-        case 'Neferkhaf':
-            markup = layered('sigil-wiki--neferkhaf', 'Neferkhaf');
-            break;
-        case 'Memory':
-            markup = stroked('sigil-wiki--memory', 'Memory');
-            break;
-        case 'Oblivion':
-            markup = stroked('sigil-wiki--oblivion', 'OBLIVION');
-            break;
-        case '赤月の破片':
-            markup = '<span class="sigil-wiki sigil-wiki--crimson-fragment"><b><i>赤月の破片</i></b></span>';
-            break;
-        case 'Prowler':
-            markup = '<span class="sigil-wiki sigil-wiki--prowler">Prowler</span>';
-            break;
-        case 'Oppression':
-            markup = '<span class="sigil-wiki sigil-wiki--oppression">[OPPRESSION]</span>';
-            break;
-        case 'Illusionary':
-            markup = '<span class="sigil-wiki sigil-wiki--illusionary">illusionary</span>';
-            break;
-        case 'Clockwork':
-            markup = layered('sigil-wiki--clockwork', 'CLOCKWORK');
-            break;
-        case 'Dreammetric':
-            markup = stroked('sigil-wiki--dreammetric', 'Dreammetric');
-            break;
-        case 'Fault':
-            markup = layered('sigil-wiki--fault', 'FAULT');
-            break;
-        case 'Megaphone':
-            markup = '<span class="sigil-wiki sigil-wiki--megaphone">MEGAPHONE</span>';
-            break;
-        case 'Meta':
-            markup = '<span class="sigil-wiki sigil-wiki--meta"><span>meta</span></span>';
-            break;
-        case 'Cryogenic':
-            markup = stroked('sigil-wiki--cryogenic', 'Cryogenic');
-            break;
-        case 'Astral : Astrald':
-            markup = layered('sigil-wiki--astrald', 'Astral : Astrald');
-            break;
-        case '紅月を求めし者':
-            markup = '<span class="sigil-wiki sigil-wiki--crimson-seeker">' +
-                '<span class="sigil-wiki__crimson-stroke sigil-wiki__crimson-stroke--outer" data-text="紅月を求めし者"></span>' +
-                '<span class="sigil-wiki__crimson-stroke sigil-wiki__crimson-stroke--inner" data-text="紅月を求めし者"></span>' +
-                '<span class="sigil-wiki__face">紅月を求めし者</span></span>';
-            break;
-        case '紅月の観測者':
-            markup = '<span class="sigil-wiki sigil-wiki--crimson-observer">' +
-                '<span class="sigil-wiki__crimson-stroke sigil-wiki__crimson-stroke--outer" data-text="紅月の観測者"></span>' +
-                '<span class="sigil-wiki__crimson-stroke sigil-wiki__crimson-stroke--inner" data-text="紅月の観測者"></span>' +
-                '<span class="sigil-wiki__face">紅月の観測者</span></span>';
-            break;
-        case 'Borealis':
-            markup = '<span class="sigil-wiki sigil-wiki--borealis"><b>Borealis</b></span>';
-            break;
-        case 'Glitch':
-            markup = '<span class="sigil-wiki sigil-wiki--glitch">' +
-                '<span class="sigil-wiki__glitch-title" aria-hidden="true"></span>' +
-                '<span class="sigil-wiki__glitch-space">GLITCH</span></span>';
-            break;
-        case 'Innovator':
-            markup = '<span class="sigil-wiki sigil-wiki--innovator"><b>INNOVATOR</b></span>';
-            break;
-        case 'Monarch':
-            markup = layered('sigil-wiki--monarch', 'MONARCH');
-            break;
-        case 'Equinox':
-            markup = '<span class="sigil-wiki sigil-wiki--equinox">' +
-                '<span class="sigil-wiki__equinox-stroke" data-text="『EQUINOX』"></span>' +
-                '<span class="sigil-wiki__equinox-transition" data-text="『EQUINOX』"></span>' +
-                '<span class="sigil-wiki__equinox-pulse" data-text="『EQUINOX』"></span>' +
-                '<span class="sigil-wiki__equinox-face">『EQUINOX』</span>' +
-                '</span>';
-            break;
-        case 'Equinox : youareanidiot':
-            markup = '<span class="sigil-wiki sigil-wiki--equinox-idiot">' +
-                '<span class="sigil-wiki__idiot-stroke"><span>『</span>YOU ARE AN IDIOT<span>』</span></span>' +
-                '<span class="sigil-wiki__idiot-face"><span>『</span>YOU ARE AN IDIOT<span>』</span></span>' +
-                '</span>';
-            break;
-        case 'DreamCatcher':
-            markup = '<span class="sigil-wiki sigil-wiki--dreamcatcher">' +
-                '<span class="sigil-wiki__dreamcatcher-dream"><span class="sigil-wiki__text-stroke" data-text="dream"></span><span>dream</span></span>' +
-                '<span class="sigil-wiki__dreamcatcher-catcher"><span class="sigil-wiki__text-stroke" data-text="catcher"></span><span>catcher</span></span>' +
-                '</span>';
-            break;
-        case 'Dream Traveler': {
-            const dreamTravelerText = 'Dream \u200e \u200e Traveler \u200e';
-            markup = '<span class="sigil-wiki sigil-wiki--dream-traveler">' +
-                `<span class="sigil-wiki__dream-traveler-stroke" data-text="${dreamTravelerText}"></span>` +
-                `<span class="sigil-wiki__dream-traveler-gradient" data-text="${dreamTravelerText}"></span>` +
-                `<span class="sigil-wiki__dream-traveler-face">${dreamTravelerText}</span>` +
-                '</span>';
-            break;
-        }
-        case 'Sky Festival':
-            markup = layered('sigil-wiki--sky-festival', '[ Sky Festival ]');
-            break;
-        case 'Breakthrough':
-            markup = '<span class="sigil-wiki sigil-wiki--breakthrough-frame">' +
-                '<span class="sigil-wiki__breakthrough-panel"><span class="sigil-wiki__breakthrough-text"><i>BREAKTHROUGH</i></span></span>' +
-                '</span>';
-            break;
-        case 'Y.O.L.K.E.G.G.':
-            markup = layered('sigil-wiki--yolkegg', 'Y.O.L.K.E.G.G.');
-            break;
-        case 'Astraios':
-            markup = layered('sigil-wiki--astraios', 'ASTRAIOS');
-            break;
-        case 'Leviathan':
-            markup = '<span class="sigil-wiki sigil-wiki--leviathan">LEVIATHAN</span>';
-            break;
-        case 'Winter Garden':
-            markup = '<span class="sigil-wiki sigil-wiki--winter-garden">' +
-                '<span class="sigil-wiki__text-stroke" data-text="Winter Garden"></span>' +
-                '<span class="sigil-wiki__winter-garden-glow">Winter Garden</span>' +
-                '<span class="sigil-wiki__winter-garden-face">Winter Garden</span>' +
-                '</span>';
-            break;
-        case 'Luminosity':
-            markup = '<span class="sigil-wiki sigil-wiki--luminosity"><i>' +
-                '<span class="sigil-wiki__luminosity-bracket">[ </span>LUMINOSITY<span class="sigil-wiki__luminosity-bracket"> ]</span>' +
-                '</i></span>';
-            break;
-        case 'Erebus':
-            markup = '<span class="sigil-wiki sigil-wiki--erebus"><i><b>Erebus</b></i></span>';
-            break;
-        case 'Aegis : Eggis':
-            markup = '<span class="sigil-wiki sigil-wiki--eggis">' +
-                '<span class="sigil-wiki__layer sigil-wiki__layer--back"><span class="sigil-wiki__eggis-flower sigil-wiki__eggis-flower--back">✿</span>EGGIS</span>' +
-                '<span class="sigil-wiki__text-stroke" data-text="EGGIS"></span>' +
-                '<span class="sigil-wiki__layer sigil-wiki__layer--front">EGGIS<span class="sigil-wiki__eggis-flower sigil-wiki__eggis-flower--front">✿</span></span>' +
-                '</span>';
-            break;
-        case 'Pixelation':
-            markup = '<span class="sigil-wiki sigil-wiki--pixelation"><i>▣ PIXELATION ▣</i></span>';
-            break;
-        case 'Nyctophobia':
-            markup = '<span class="sigil-wiki sigil-wiki--nyctophobia">' +
-                Array.from('nyctophobia').map((letter, index) => `<span style="animation-delay:${0.055 + index * 0.005}s">${letter}</span>`).join('') +
-                '</span>';
-            break;
-        case 'Lamenthyr':
-            markup = layered('sigil-wiki--lamenthyr', 'LAMENTHYR');
-            break;
-        case "A Fool's Experience":
-            markup = '<span class="sigil-wiki sigil-wiki--fools-experience">' +
-                '<span class="sigil-wiki__fools-corners" aria-hidden="true"><span></span><span></span><span></span><span></span></span>' +
-                '<span class="sigil-wiki__fools-frame"><span class="sigil-wiki__fools-depth">A fool\'s experience...</span>' +
-                '<span class="sigil-wiki__text-stroke" data-text="A fool\'s experience..."></span>' +
-                '<span class="sigil-wiki__fools-face">A fool\'s experience...</span></span>' +
-                '</span>';
-            break;
-        case 'P.U.K.E.K.O.G.O.D.':
-            markup = '<span class="sigil-wiki sigil-wiki--pukekogod"><b>P. U. K. E. K. O. G. O. D.</b></span>';
-            break;
-        case 'Eostre':
-            markup = '<span class="sigil-wiki sigil-wiki--eostre"><span>E</span><b>ostre</b></span>';
-            break;
-        case 'Sovereign : Frostveil':
-            markup = '<span class="sigil-wiki sigil-wiki--frostveil">' +
-                '<span class="sigil-wiki__frostveil-sovereign"><span class="sigil-wiki__text-stroke" data-text="SOVEREIGN"></span><span>SOVEREIGN</span></span>' +
-                '<span class="sigil-wiki__frostveil-colon"> : </span><span class="sigil-wiki__frostveil-name">Frostveil</span>' +
-                '</span>';
-            break;
-        case 'Ascendant':
-            markup = layered('sigil-wiki--ascendant', 'ASCENDANT');
-            break;
-        default:
-            return '';
-    }
-
-    return appendWikiAuraSigilSuffix(markup, suffix);
+    const tierAura = AURA_BY_CANONICAL_NAME.get(canonicalName) || aura;
+    return WikiTitles.aura(canonicalName, suffix ? suffix.slice(3) : '', `rarity-tier-${resolveAuraDisplayTierKey(tierAura, biome)}`);
 }
 
 function initializeChangelogAuraSigils() {
@@ -7715,13 +7506,13 @@ function initializeChangelogAuraSigils() {
     });
 }
 
-function formatAuraNameMarkup(aura, overrideName) {
+function formatAuraNameMarkup(aura, overrideName, biome = null) {
     if (!aura) return overrideName || '';
     const baseName = typeof overrideName === 'string' && overrideName.length > 0 ? overrideName : aura.name;
-    const wikiSigilMarkup = formatWikiAuraSigilMarkup(aura, baseName);
+    const wikiSigilMarkup = formatWikiAuraSigilMarkup(aura, baseName, biome);
     if (wikiSigilMarkup) {
         if (aura.subtitle) {
-            return `${wikiSigilMarkup} <span class="sigil-subtitle">${aura.subtitle}</span>`;
+            return `${wikiSigilMarkup} <span class="sigil-subtitle"><span class="aura-tier-detail rarity-tier-${resolveAuraDisplayTierKey(aura, biome)}">${aura.subtitle}</span></span>`;
         }
         return wikiSigilMarkup;
     }
@@ -7788,6 +7579,8 @@ function updateLayeredSigilText(container = document) {
 function observeLayeredSigilText() {
     updateLayeredSigilText();
     registerGlitchSigils(document);
+    WikiTitles.initializeItems();
+    WikiTitles.initializeEffects();
     if (!document.body) return;
     const pendingRoots = new Set();
     let flushScheduled = false;
@@ -7797,6 +7590,8 @@ function observeLayeredSigilText() {
             if (!root.isConnected) return;
             updateLayeredSigilText(root);
             registerGlitchSigils(root);
+            WikiTitles.initializeItems(root);
+            WikiTitles.initializeEffects(root);
         });
         pendingRoots.clear();
     };
@@ -7870,8 +7665,7 @@ let glitchSigilRestoreTimeoutId = null;
 function canFlickerGlitchSigils() {
     return typeof document !== 'undefined'
         && !document.hidden
-        && !appState.reduceMotion
-        && !appState.qualityPreferences?.removeGlitchEffects;
+        && !appState.qualityPreferences?.disableRollAndSigilAnimations;
 }
 
 function createGlitchSigilFlickerText(text) {
@@ -8502,6 +8296,7 @@ function createAuraRegistry(definitions) {
 
 const AURA_REGISTRY = createAuraRegistry(AURA_BLUEPRINT_SOURCE);
 const AURA_BY_NAME = new Map(AURA_REGISTRY.map(aura => [aura.name, aura]));
+const AURA_BY_CANONICAL_NAME = new Map(AURA_REGISTRY.map(aura => [aura.name.split(' - ')[0].trim(), aura]));
 initializeAuraFilters(AURA_REGISTRY);
 
 const auraWinCounts = new Float64Array(AURA_REGISTRY.length);
@@ -9986,6 +9781,7 @@ function ensureChangelogTabsReady() {
     }
 
     initializeChangelogAuraSigils();
+    WikiTitles.initializeItems();
     setupChangelogTabs();
     localizeChangelogUpdateTimes();
     versionChangelogOverlayState.tabsInitialized = true;
@@ -10640,12 +10436,12 @@ function initializeCreditsDirectory() {
     creditItems.forEach(item => {
         const contributionText = item.textContent.toLocaleLowerCase();
         item.dataset.creditSearchText = contributionText;
-        item.dataset.creditCategory = contributionText.includes('cutscene') ? 'cutscene' : 'media';
+        item.dataset.creditCategory ||= contributionText.includes('cutscene') ? 'cutscene' : 'media';
         const kind = document.createElement('span');
         kind.className = 'footer-credits__item-kind';
         kind.textContent = item.dataset.creditCategory === 'cutscene'
             ? 'Cutscene'
-            : (contributionText.includes('song') ? 'Audio' : 'Biome');
+            : (item.dataset.creditCategory === 'artwork' ? 'Artwork' : contributionText.includes('song') ? 'Audio' : 'Biome');
         item.prepend(kind);
     });
 
@@ -11317,7 +11113,11 @@ function populateBiomeOptionElement(target, option, { deferImage = false } = {})
     if (sigilClass) {
         labelSpan.classList.add(sigilClass);
     }
-    labelSpan.textContent = label;
+    if (resolveRuneConfiguration(option.value)) {
+        labelSpan.innerHTML = WikiTitles.item(label);
+    } else {
+        labelSpan.textContent = label;
+    }
     target.appendChild(labelSpan);
 
     target.title = label;
@@ -11665,7 +11465,8 @@ function updateBiomeControlConstraints({ source = null, triggerSync = true } = {
     let timeChanged = false;
 
     const selectedRuneConfig = resolveRuneConfiguration(otherSelect.value);
-    const specialPotionBlocksRunes = oblivionPresetEnabled
+    const specialPotionBlocksRunes =
+           oblivionPresetEnabled
         || pumpKingsBloodPresetEnabled
         || tutorialPotionPresetEnabled;
     const runeActive = selectedRuneConfig !== null && !specialPotionBlocksRunes;
@@ -11774,11 +11575,11 @@ function updateBiomeControlConstraints({ source = null, triggerSync = true } = {
             timeSelect.value = 'day';
             timeChanged = true;
         }
-        if (oblivionPresetEnabled) {
-            applyOblivionPresetOptions({ activateOblivionPreset: false });
-        }
         if (pumpKingsBloodPresetEnabled) {
             applyPumpKingsBloodPresetOptions({ activatePumpKingsBloodPreset: false });
+        }
+        if (oblivionPresetEnabled) {
+            applyOblivionPresetOptions({ activateOblivionPreset: false });
         }
         if (tutorialPotionPresetEnabled) {
             applyTutorialPotionPresetOptions({ activateTutorialPotionPreset: false });
@@ -11797,14 +11598,14 @@ function updateBiomeControlConstraints({ source = null, triggerSync = true } = {
         const runeOption = resolveRuneConfiguration(option.value);
         let disabled = false;
         let title = '';
-        if (oblivionPresetEnabled && runeOption) {
-            disabled = true;
-            title = 'Unavailable while Oblivion preset is active.';
-            option.dataset.conditionMessage = title;
-            option.dataset.conditionLabel = option.textContent?.trim() || 'Rune';
-        } else if (pumpKingsBloodPresetEnabled && runeOption) {
+        if (pumpKingsBloodPresetEnabled && runeOption) {
             disabled = true;
             title = "Unavailable while Pump King's Blood is active.";
+            option.dataset.conditionMessage = title;
+            option.dataset.conditionLabel = option.textContent?.trim() || 'Rune';
+        } else if (oblivionPresetEnabled && runeOption) {
+            disabled = true;
+            title = 'Unavailable while Oblivion preset is active.';
             option.dataset.conditionMessage = title;
             option.dataset.conditionLabel = option.textContent?.trim() || 'Rune';
         } else if (tutorialPotionPresetEnabled && runeOption) {
@@ -12682,8 +12483,6 @@ let observedRollFeedEntries = new WeakSet();
 let liveRollFeed = null;
 const LIVE_ROLL_FEED_PAGE_SIZE = 100;
 
-// History retains shared presentations and roll numbers, never a DOM node per roll.
-// Only the current window is mounted, including after completion and while searching.
 function createLiveRollFeed(onNavigate) {
     const records = [];
     let ordered = records;
@@ -12692,6 +12491,7 @@ function createLiveRollFeed(onNavigate) {
     if (query) matches = [];
     let start = 0;
     let following = true;
+    let sortMode = ROLL_FEED_SORT_MODE.RECENT;
     const mounted = new Map();
     const list = document.createElement('div');
     list.className = 'live-roll-feed__window';
@@ -12706,6 +12506,7 @@ function createLiveRollFeed(onNavigate) {
     const lastStart = () => Math.max(0, matches.length - LIVE_ROLL_FEED_PAGE_SIZE);
 
     function render() {
+        list.querySelectorAll(':scope > .aura-tier-separator').forEach(heading => heading.remove());
         start = following ? lastStart() : Math.min(start, lastStart());
         const visible = matches.slice(start, start + LIVE_ROLL_FEED_PAGE_SIZE);
         const keep = new Set(visible);
@@ -12728,6 +12529,7 @@ function createLiveRollFeed(onNavigate) {
             cursor = element.nextElementSibling;
         }
         observeRollFeedEntries(list);
+        syncAuraTierSeparators(list, '[data-roll-feed-entry]', sortMode === ROLL_FEED_SORT_MODE.RARITY);
         navigation.hidden = records.length === 0;
         const range = matches.length
             ? `${formatWithCommas(start + 1)}–${formatWithCommas(start + visible.length)} of ${formatWithCommas(matches.length)}`
@@ -12786,6 +12588,7 @@ function createLiveRollFeed(onNavigate) {
             feedContainer.scrollTop = following ? feedContainer.scrollHeight : 0;
         },
         sort(mode) {
+            sortMode = mode;
             latest.textContent = mode === ROLL_FEED_SORT_MODE.RECENT ? 'Latest' : 'Last';
             const sortable = records.map(record => ({ ...record.presentation, originalOrder: record.originalOrder, record }));
             if (mode === ROLL_FEED_SORT_MODE.RARITY) {
@@ -12903,6 +12706,8 @@ function applyRollFeedSearchFilter(root = feedContainer) {
         }
         entry.hidden = !searchableText.includes(query);
     });
+    const resultsList = root.querySelector('.roll-feed__results-list');
+    syncAuraTierSeparators(resultsList, '[data-roll-feed-entry]', rollFeedSortMode === ROLL_FEED_SORT_MODE.RARITY);
 }
 
 function setupRollFeedSearch() {
@@ -13198,18 +13003,15 @@ function buildResultEntries(
         if (winCount <= 0) continue;
 
         const specialClass = typeof resolveAuraStyleClass === 'function' ? resolveAuraStyleClass(aura, biome) : '';
-        const rarityClass = typeof resolveRarityClass === 'function' && !shouldSuppressRarityClassForSpecialStyle(specialClass)
-            ? resolveRarityClass(aura, biome)
-            : '';
-        const eventClass = getAuraEventIds(aura).length > 0 ? 'sigil-event-text' : '';
-        const classAttr = [rarityClass, specialClass, eventClass].filter(Boolean).join(' ');
-        const formattedName = formatAuraNameMarkup(aura);
+        const rarityClass = `rarity-tier-${resolveAuraDisplayTierKey(aura, biome)}`;
+        const classAttr = `aura-tier-detail ${rarityClass}`;
+        const formattedName = formatAuraNameMarkup(aura, undefined, biome);
         const formattedTextName = formatAuraNameText(aura);
         const breakthroughStats = breakthroughStatsMap.get(aura.name);
         const isBreakthrough = aura.name.startsWith('Breakthrough');
 
         const formatBreakthroughMarkupWithCount = (nameValue, countValue) =>
-            `${formatAuraNameMarkup(aura, nameValue)}<span class="sigil-wiki__suffix"> | Times Rolled: ${formatWithCommas(countValue)}</span>`;
+            `${formatAuraNameMarkup(aura, nameValue, biome)}<span class="aura-tier-detail aura-count ${rarityClass}"> | Times Rolled: ${formatWithCommas(countValue)}</span>`;
 
         const eventId = getAuraEventId(aura, { preferEnabled: true });
         const specialClassTokens = specialClass
@@ -13223,6 +13025,8 @@ function buildResultEntries(
 
         const createShareVisualRecord = (baseName, countValue, options = {}) => ({
             aura,
+            biome,
+            tierKey: resolveAuraDisplayTierKey(aura, biome),
             displayName: isBreakthroughAura
                 ? `${baseName} | Times Rolled: ${formatWithCommas(countValue)}`
                 : baseName,
@@ -13247,7 +13051,7 @@ function buildResultEntries(
                 : null;
             const resultSuffixMarkup = potionSourceMarkup
                 ? ` ${potionSourceMarkup}`
-                : (realChanceValue ? ` <span class="tinyClass">True Chance: 1 in ${realChanceValue}</span>` : '');
+                : (realChanceValue ? ` <span class="tinyClass"><span class="aura-tier-detail ${rarityClass}">True Chance: 1 in ${realChanceValue}</span></span>` : '');
             entries.push({
                 markup: `${markup}${resultSuffixMarkup}`,
                 share: potionSourceText ? `${shareText} | ${potionSourceText}` : shareText,
@@ -13256,7 +13060,7 @@ function buildResultEntries(
                     ? { ...visualRecord, potionSource: potionSourceText || null }
                     : null,
                 auraName: auraName || null,
-                tierKey: resolveAuraTierKey(aura, biome) || ''
+                tierKey: resolveAuraDisplayTierKey(aura, biome)
             });
         };
 
@@ -13264,12 +13068,12 @@ function buildResultEntries(
             const btName = aura.name.replace(/-\s*[\d,]+/, `- ${formatWithCommas(breakthroughStats.btChance)}`);
             const nativeLabel = isBreakthrough
                 ? formatBreakthroughMarkupWithCount(btName, breakthroughStats.count)
-                : formatAuraNameMarkup(aura, btName);
+                : formatAuraNameMarkup(aura, btName, biome);
             const nativeShareName = formatAuraNameText(aura, btName);
             pushVisualEntry(
                 isBreakthrough
-                    ? `<span class="${classAttr}">[Native] ${nativeLabel}</span>`
-                    : `<span class="${classAttr}">[Native] ${nativeLabel} | Times Rolled: ${formatWithCommas(breakthroughStats.count)}</span>`,
+                    ? `<span class="${classAttr}"><span class="aura-native ${rarityClass}">[Native]</span> ${nativeLabel}</span>`
+                    : `<span class="${classAttr}"><span class="aura-native ${rarityClass}">[Native]</span> ${nativeLabel}<span class="aura-count ${rarityClass}"> | Times Rolled: ${formatWithCommas(breakthroughStats.count)}</span></span>`,
                 `[Native] ${nativeShareName} | Times Rolled: ${formatWithCommas(breakthroughStats.count)}`,
                 determineResultPriority(aura, breakthroughStats.btChance),
                 createShareVisualRecord(btName, breakthroughStats.count, { prefix: '[Native]', variant: 'native' }),
@@ -13285,7 +13089,7 @@ function buildResultEntries(
                 pushVisualEntry(
                     isBreakthrough
                         ? `<span class="${classAttr}">${breakthroughRemainingLabel}</span>`
-                        : `<span class="${classAttr}">${formattedName} | Times Rolled: ${formatWithCommas(remainingCount)}</span>`,
+                        : `<span class="${classAttr}">${formattedName}<span class="aura-count ${rarityClass}"> | Times Rolled: ${formatWithCommas(remainingCount)}</span></span>`,
                     `${formattedTextName} | Times Rolled: ${formatWithCommas(remainingCount)}`,
                     determineResultPriority(aura, aura.chance),
                     createShareVisualRecord(aura.name, remainingCount, { variant: 'standard' }),
@@ -13300,7 +13104,7 @@ function buildResultEntries(
             pushVisualEntry(
                 isBreakthrough
                     ? `<span class="${classAttr}">${breakthroughLabel}</span>`
-                    : `<span class="${classAttr}">${formattedName} | Times Rolled: ${formatWithCommas(winCount)}</span>`,
+                    : `<span class="${classAttr}">${formattedName}<span class="aura-count ${rarityClass}"> | Times Rolled: ${formatWithCommas(winCount)}</span></span>`,
                 `${formattedTextName} | Times Rolled: ${formatWithCommas(winCount)}`,
                 determineResultPriority(aura, aura.chance),
                 createShareVisualRecord(aura.name, winCount, { variant: 'standard' }),
@@ -13349,22 +13153,16 @@ function buildLiveRollMarkup(
         return '';
     }
 
-    const specialClass = typeof resolveAuraStyleClass === 'function'
-        ? resolveAuraStyleClass(aura, biome)
-        : '';
-    const rarityClass = typeof resolveRarityClass === 'function' && !shouldSuppressRarityClassForSpecialStyle(specialClass)
-        ? resolveRarityClass(aura, biome)
-        : '';
-    const eventClass = getAuraEventIds(aura).length > 0 ? 'sigil-event-text' : '';
-    const classAttr = [rarityClass, specialClass, eventClass].filter(Boolean).join(' ');
+    const rarityClass = `rarity-tier-${resolveAuraDisplayTierKey(aura, biome)}`;
+    const classAttr = `aura-tier-detail ${rarityClass}`;
     const nativeChance = isNativeRoll && breakthroughStats
         ? breakthroughStats.btChance
         : aura.chance;
     const displayName = isNativeRoll && breakthroughStats
         ? aura.name.replace(/-\s*[\d,]+/, `- ${formatWithCommas(breakthroughStats.btChance)}`)
         : aura.name;
-    const prefix = isNativeRoll ? '[Native] ' : '';
-    const formattedName = formatAuraNameMarkup(aura, displayName);
+    const prefix = isNativeRoll ? `<span class="aura-native ${rarityClass}">[Native]</span> ` : '';
+    const formattedName = formatAuraNameMarkup(aura, displayName, biome);
     const trueChanceValue = !potionBatch
         && allowTrueChance
         && appState.selectiveTrueChanceDisplay
@@ -13373,9 +13171,9 @@ function buildLiveRollMarkup(
         : null;
     const trueChanceMarkup = potionBatch
         ? ` ${formatMultiplePotionBatchResultMarkup(potionBatch)}`
-        : (trueChanceValue ? ` <span class="tinyClass">True Chance: 1 in ${trueChanceValue}</span>` : '');
+        : (trueChanceValue ? ` <span class="tinyClass"><span class="aura-tier-detail ${rarityClass}">True Chance: 1 in ${trueChanceValue}</span></span>` : '');
 
-    const tierKey = resolveAuraTierKey(aura, biome) || '';
+    const tierKey = resolveAuraDisplayTierKey(aura, biome);
     const alphabeticalName = getAuraAlphabeticalSortName(aura.name);
     const auraPriority = determineResultPriority(aura, nativeChance);
     const encodedAuraName = encodeURIComponent(aura.name);

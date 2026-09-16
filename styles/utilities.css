@@ -1063,12 +1063,12 @@
     100% { content: "g;lI*TC_H"; }
 }
 
-body.quality-no-ui-animations .sigil-effect-glitch__title::after {
+body.quality-no-roll-sigil-animations .sigil-effect-glitch__title::after {
     content: "GLITCH";
     animation: none;
 }
 
-body.quality-no-ui-animations .sigil-effect-glitch__title {
+body.quality-no-roll-sigil-animations .sigil-effect-glitch__title {
     min-width: 0;
 }
 
@@ -1077,26 +1077,9 @@ body.quality-no-ui-animations .sigil-effect-glitch__title {
     filter: contrast(1.18) saturate(1.2);
 }
 
-body.quality-no-ui-animations .sigil-glitch-flicker,
-body.quality-no-glitch .sigil-glitch-flicker {
+body.quality-no-roll-sigil-animations .sigil-glitch-flicker {
     transform: none;
     filter: none;
-}
-
-@media (prefers-reduced-motion: reduce) {
-    .sigil-effect-glitch__title {
-        min-width: 0;
-    }
-
-    .sigil-effect-glitch__title::after {
-        content: "GLITCH";
-        animation: none;
-    }
-
-    .sigil-glitch-flicker {
-        transform: none;
-        filter: none;
-    }
 }
 
 .sigil-outline-pythios {
@@ -1771,42 +1754,42 @@ body.quality-no-glitch .sigil-glitch-flicker {
     box-shadow: 0 8px 18px rgba(0, 0, 0, 0.5);
 }
 
-  .cutscene-warning-overlay[data-visible] .surface--modal,
-  .modal-overlay[data-visible] .surface--modal {
-      --corner-size: clamp(28px, 6vw, 36px);
-      --corner-thickness: 3px;
-      animation: modal-pop 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
-  }
+.cutscene-warning-overlay[data-visible] .surface--modal,
+.modal-overlay[data-visible] .surface--modal {
+    --corner-size: clamp(28px, 6vw, 36px);
+    --corner-thickness: 3px;
+    animation: modal-pop 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
 
-  .cutscene-warning-overlay[data-closing] .surface--modal,
-  .modal-overlay[data-closing] .surface--modal {
-      animation: modal-fade-out 0.28s cubic-bezier(0.4, 0, 0.2, 1) both;
-  }
+.cutscene-warning-overlay[data-closing] .surface--modal,
+.modal-overlay[data-closing] .surface--modal {
+    animation: modal-fade-out 0.28s cubic-bezier(0.4, 0, 0.2, 1) both;
+}
 
-  .audio-modal {
-      position: relative;
-      display: flex;
-      flex-direction: column;
-      gap: 18px;
-  }
+.audio-modal {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
 
-  .audio-modal__header {
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-  }
+.audio-modal__header {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
 
-  .audio-modal__title {
-      margin: 0;
-      font-size: clamp(18px, 2vw, 22px);
-      letter-spacing: 0.18em;
-  }
+.audio-modal__title {
+    margin: 0;
+    font-size: clamp(18px, 2vw, 22px);
+    letter-spacing: 0.18em;
+}
 
-  .audio-modal__hint {
-      margin: 0;
-      color: var(--text-secondary);
-      font-size: 0.95rem;
-  }
+.audio-modal__hint {
+    margin: 0;
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+}
 
 .audio-modal__controls {
     display: block;

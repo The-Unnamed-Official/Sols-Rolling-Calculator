@@ -1,0 +1,1141 @@
+/* Adapted from Sol's RNG Wiki contributors, CC BY-SA. See WIKI-STYLES.md. */
+.wiki-title .wiki-ref-rainbow{font-weight:bold;animation:wiki-rainbowkeyfr .9s infinite;-webkit-animation:wiki-rainbowkeyfr .9s infinite;-moz-animation:wiki-rainbowkeyfr .9s infinite}
+
+.wiki-title .wiki-ref-ChromaticReworkStroke::before{
+	content: attr(data-text);
+	animation: wiki-ChromaticReworkRainbow 1.65s ease-in-out infinite;
+	-webkit-background-clip: text !important;
+	background-clip: text;
+	-webkit-text-fill-color: transparent;
+	-webkit-text-stroke-color: transparent;
+	-webkit-text-stroke-width: 1.7px;
+	position: absolute;
+}
+.wiki-title .wiki-ref-SpectraflowGradient{
+	position: relative; 
+	-webkit-background-clip: text !important; 
+	-webkit-text-fill-color: transparent; 
+	background: linear-gradient(to bottom, #898aff 15%, #6767fb 40%, 
+	#9f9fff 40%, #b1b1ff 56.5%, #2222a8 56.5%, #9191ff 75%);
+	z-index: 0;
+	animation: wiki-SpectraflowPulse 1.7s linear infinite;		
+	display: inline-block;
+}
+
+.wiki-title .wiki-ref-SpectraflowGradientStroke::before{
+	position: absolute; 
+	-webkit-background-clip: text !important; 
+	-webkit-text-stroke: 1px transparent; 
+	background: linear-gradient(to bottom, #6b6df8 15%, #a5a5ff 30%, 
+	#5354e2 40%, #ababff 55%, #3234c1 55%, #9999ff 70%);
+	content: attr(data-text);
+	z-index: -1;
+	animation: wiki-SpectraflowPulse 1.7s linear infinite;	
+	display: inline-block;
+}
+
+.wiki-title .wiki-ref-SpectraflowPulse::after{
+	position: absolute; 
+	-webkit-background-clip: text !important; 
+	-webkit-text-fill-color: transparent; 
+	background: linear-gradient(to bottom, #d79cff 15%, #c485ff 40%, 
+	#ebbaff 40%, #eebeff 56.5%, #552cbd 56.5%, #dca2ff 75%);
+	content: attr(data-text);
+	z-index: 1;
+	animation: wiki-SpectraflowPulse 1.7s linear infinite, wiki-SpectraflowTransition 1.7s linear infinite;	
+	display: inline-block;
+}
+
+.wiki-title .wiki-ref-SpectraflowStrokePulse::after{
+	position: absolute; 
+	-webkit-background-clip: text !important; 
+	-webkit-text-stroke: 1px transparent; 
+	background: linear-gradient(to bottom, #9f70ea 15%, #d9a6fe 30%, 
+	#a56af7 40%, #c283ff 55%, #6c3ccf 55%, #d4a0fd 70%);
+	content: attr(data-text);
+	z-index: 0;
+	animation: wiki-SpectraflowPulse 1.7s linear infinite, wiki-SpectraflowTransition 1.7s linear infinite;
+	display: inline-block;
+}
+
+.wiki-title .wiki-ref-symbol::before {
+  content: "Φ";
+  position: absolute;
+  font-size: 240%;
+  top: -80%;
+  left: 48%;
+  -webkit-text-stroke: 0.005em rgba(255, 255, 255, 0.159);
+  -webkit-text-fill-color: rgba(0, 0, 0, 0.159);
+  font-family: Ubuntu;
+  font-weight: normal;
+}        
+
+.wiki-title .wiki-ref-symbol {
+  filter: drop-shadow(.09em .05em 0.0005em rgba(194, 195, 197, .77)); 
+}
+.wiki-title .wiki-ref-NyctoReworkShake span {
+  display: inline-block;
+  animation: wiki-HyperVoltEverStormShake 0.12s linear infinite;
+  white-space: pre;
+}
+
+.wiki-title .wiki-ref-TextStroke::before {
+content: attr(data-text);
+z-index: 0;
+position: absolute;
+}
+
+
+.wiki-title .wiki-ref-EquinoxGradientRework{
+	animation: wiki-EquinoxGradientRework 2s linear infinite, wiki-EquinoxPulseRework 2s linear infinite;
+	display: inline-block;
+}
+
+.wiki-title .wiki-ref-EquinoxStrokeGradientRework::before{
+	animation: wiki-EquinoxStrokeGradientRework 2s linear infinite, wiki-EquinoxPulseRework 2s linear infinite;
+	display: inline-block;
+	content: attr(data-text);
+}
+
+.wiki-title .wiki-ref-EquinoxTransitionRework::before{
+	animation: wiki-EquinoxTransitionRework 2s linear infinite, wiki-EquinoxPulseRework 2s linear infinite;
+	display: inline-block;
+	content: attr(data-text);
+}
+
+.wiki-title .wiki-ref-EquinoxPulseEffect::before{
+	animation: wiki-EquinoxPulseEffect 2s linear infinite;
+	display: inline-block;
+	content: attr(data-text);
+	color: white;
+}
+ .wiki-title .wiki-ref-GlitchTitle::after{
+	animation: wiki-NewGlitchFont 4s linear infinite, wiki-NewGlitchTextStroke 25s linear infinite, wiki-GlitchTitle 3s linear infinite;
+	-webkit-background-clip: text !important;
+	-webkit-text-fill-color: black;
+	background-clip: text;
+	letter-spacing: .2em;
+	content: "GLITCH";
+	filter: saturate(2);
+}
+
+.wiki-title .wiki-ref-harvester {
+  background: linear-gradient(
+    5deg,
+    #d7254c,
+    #B01E40,
+    #bd214d,
+    #E73660,
+    #bd214d,
+    #B01E40,
+    #800080,
+    #B01E40,
+    #d7254c,
+    #bd214d,
+    #E73660,
+    #bd214d
+  );
+  background-size: 200% 100%;
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  animation: wiki-HarvesterGradient 0.4s linear infinite, wiki-HarvesterShake 0.12s infinite linear;
+} 
+
+.wiki-title .wiki-ref-ArachnophobiaTitle::before {
+      content: attr(data-text);
+      -webkit-background-clip: text !important; 
+      -webkit-text-fill-color: transparent; 
+      background: linear-gradient(to bottom, #ff9a8a 25%, #ed4346 30%, #ff706e 45%, #c93232 50%, #e23538 55%);
+      position: absolute;
+      animation: wiki-ArachnophobiaEffect .7s linear infinite;
+    }
+
+.wiki-title .wiki-ref-DreamTravelerStroke::before{
+	animation: wiki-DreamTravelerStroke 5s linear infinite; 
+	position: absolute;
+	content: attr(data-text);
+}
+
+.wiki-title .wiki-ref-DreamTravelerGradient::before{
+	animation: wiki-DreamTravelerGradient 5s linear infinite; 
+	position: absolute;
+	content: attr(data-text);
+}
+
+.wiki-title .wiki-ref-tilt-shake{
+  display: inline-flex;
+  animation: wiki-tilt-shake 4.25s infinite
+}
+    .wiki-title .wiki-ref-flower1-2 {
+      z-index: -1
+    }
+
+    .wiki-title .wiki-ref-flower1-2::before{
+      position: absolute;
+      content: "✿";
+      background: #ff4fff;
+      -webkit-text-fill-color: transparent;
+      -webkit-background-clip: text !important;
+      font-size: 70%;
+      text-shadow: 0px 0px 5px #ffa2ff,
+      1px 0px 5px #ffa2ff,
+      0px 1px 5px #ffa2ff;
+      left: -10%;
+      top: -26%;
+      transform: rotate(-3deg);
+      z-index: 0;
+    }
+    
+    .wiki-title .wiki-ref-flower1-2::after{
+      position: absolute;
+      content: "✿";
+      background: #ffff64;
+      -webkit-text-fill-color: transparent;
+      -webkit-background-clip: text !important;
+      font-size: 30%;
+      text-shadow: 0px 0px 5px #fffab6,
+      1px 0px 5px #fffab6,
+      0px 1px 5px #fffab6;
+      left: -2%;
+      top: 40%;
+      transform: rotate(-7deg);
+      z-index: 1;
+    }
+
+      .wiki-title .wiki-ref-flower3 {
+      z-index: -2;
+    }
+    
+    .wiki-title .wiki-ref-flower3::before{
+      position: absolute;
+      content: "✿";
+      background: #5fffff;
+      -webkit-text-fill-color: transparent;
+      -webkit-background-clip: text !important;
+      font-size: 30%;
+      text-shadow: 0px 0px 5px #a0ecfd,
+      1px 0px 5px #a0ecfd,
+      0px 1px 5px #a0ecfd;
+      left: 15%;
+      top: 2%;
+      transform: rotate(-7deg);
+      z-index: 2;
+    }@keyframes wiki-rainbowkeyfr{0%{color:#E24545}9%{color:#E29845}14%{color:#E2DB49}17%{color:#C8ED46}22%{color:#AAEF21}25%{color:#8EDD7C}29%{color:#81DC95}33%{color:#81DCBD}36%{color:#81DCCC}39%{color:#21D2CD}41%{color:#49BCD2}45%{color:#51B4DB}48%{color:#40A6E5}52%{color:#4082E5}55%{color:#406CE5}58%{color:#4054E5}61%{color:#4F4AED}64%{color:#644AED}68%{color:#734AED}72%{color:#7C4AED}75%{color:#9456E9}78%{color:#AA56E9}81%{color:#C056E9}85%{color:#C856E9}88%{color:#D741E0}91%{color:#D345C9}94%{color:#D345A3}97%{color:#D3458E}100%{color:#E21D5C}}
+@keyframes wiki-HarnessedTitle {
+  0% { background: linear-gradient(0deg, #8df3fb, #8df3fb, #0d25b8, #8df3fb, #8df3fb, #0d25b8, #8df3fb, #8df3fb); -webkit-background-clip: text; }
+  2.7% { background: linear-gradient(10deg, #8df3fb, #8df3fb, #0d25b8, #8df3fb, #8df3fb, #0d25b8, #8df3fb, #8df3fb); -webkit-background-clip: text; }
+  5.5% { background: linear-gradient(20deg, #8df3fb, #8df3fb, #0d25b8, #8df3fb, #8df3fb, #0d25b8, #8df3fb, #8df3fb); -webkit-background-clip: text; }
+  8.3% { background: linear-gradient(30deg, #8df3fb, #8df3fb, #0d25b8, #8df3fb, #8df3fb, #0d25b8, #8df3fb, #8df3fb); -webkit-background-clip: text; }
+  11.1% { background: linear-gradient(40deg, #8df3fb, #8df3fb, #0d25b8, #8df3fb, #8df3fb, #0d25b8, #8df3fb, #8df3fb); -webkit-background-clip: text; }
+  13.8% { background: linear-gradient(50deg, #8df3fb, #8df3fb, #0d25b8, #8df3fb, #8df3fb, #0d25b8, #8df3fb, #8df3fb); -webkit-background-clip: text; }
+  16.6% { background: linear-gradient(60deg, #8df3fb, #8df3fb, #0d25b8, #8df3fb, #8df3fb, #0d25b8, #8df3fb, #8df3fb); -webkit-background-clip: text; }
+  19.4% { background: linear-gradient(70deg, #8df3fb, #8df3fb, #0d25b8, #8df3fb, #8df3fb, #0d25b8, #8df3fb, #8df3fb); -webkit-background-clip: text; }
+  22.2% { background: linear-gradient(80deg, #8df3fb, #8df3fb, #0d25b8, #8df3fb, #8df3fb, #0d25b8, #8df3fb, #8df3fb); -webkit-background-clip: text; }
+  25% { background: linear-gradient(90deg, #8df3fb, #8df3fb, #0d25b8, #8df3fb, #8df3fb, #0d25b8, #8df3fb, #8df3fb); -webkit-background-clip: text; }
+  27.7% { background: linear-gradient(100deg, #8df3fb, #8df3fb, #0d25b8, #8df3fb, #8df3fb, #0d25b8, #8df3fb, #8df3fb); -webkit-background-clip: text; }
+  30.5% { background: linear-gradient(110deg, #8df3fb, #8df3fb, #0d25b8, #8df3fb, #8df3fb, #0d25b8, #8df3fb, #8df3fb); -webkit-background-clip: text; }
+  33.3% { background: linear-gradient(120deg, #8df3fb, #8df3fb, #0d25b8, #8df3fb, #8df3fb, #0d25b8, #8df3fb, #8df3fb); -webkit-background-clip: text; }
+  36.1% { background: linear-gradient(130deg, #8df3fb, #8df3fb, #0d25b8, #8df3fb, #8df3fb, #0d25b8, #8df3fb, #8df3fb); -webkit-background-clip: text; }
+  38.8% { background: linear-gradient(140deg, #8df3fb, #8df3fb, #0d25b8, #8df3fb, #8df3fb, #0d25b8, #8df3fb, #8df3fb); -webkit-background-clip: text; }
+  41.6% { background: linear-gradient(150deg, #8df3fb, #8df3fb, #0d25b8, #8df3fb, #8df3fb, #0d25b8, #8df3fb, #8df3fb); -webkit-background-clip: text; }
+  44.4% { background: linear-gradient(160deg, #8df3fb, #8df3fb, #0d25b8, #8df3fb, #8df3fb, #0d25b8, #8df3fb, #8df3fb); -webkit-background-clip: text; }
+  47.2% { background: linear-gradient(170deg, #8df3fb, #8df3fb, #0d25b8, #8df3fb, #8df3fb, #0d25b8, #8df3fb, #8df3fb); -webkit-background-clip: text; }
+  50% { background: linear-gradient(180deg, #8df3fb, #8df3fb, #0d25b8, #8df3fb, #8df3fb, #0d25b8, #8df3fb, #8df3fb); -webkit-background-clip: text; }
+  52.7% { background: linear-gradient(190deg, #8df3fb, #8df3fb, #0d25b8, #8df3fb, #8df3fb, #0d25b8, #8df3fb, #8df3fb); -webkit-background-clip: text; }
+  55.5% { background: linear-gradient(200deg, #8df3fb, #8df3fb, #0d25b8, #8df3fb, #8df3fb, #0d25b8, #8df3fb, #8df3fb); -webkit-background-clip: text; }
+  58.3% { background: linear-gradient(210deg, #8df3fb, #8df3fb, #0d25b8, #8df3fb, #8df3fb, #0d25b8, #8df3fb, #8df3fb); -webkit-background-clip: text; }
+  61.1% { background: linear-gradient(220deg, #8df3fb, #8df3fb, #0d25b8, #8df3fb, #8df3fb, #0d25b8, #8df3fb, #8df3fb); -webkit-background-clip: text; }
+  63.8% { background: linear-gradient(230deg, #8df3fb, #8df3fb, #0d25b8, #8df3fb, #8df3fb, #0d25b8, #8df3fb, #8df3fb); -webkit-background-clip: text; }
+  66.6% { background: linear-gradient(240deg, #8df3fb, #8df3fb, #0d25b8, #8df3fb, #8df3fb, #0d25b8, #8df3fb, #8df3fb); -webkit-background-clip: text; }
+  69.4% { background: linear-gradient(250deg, #8df3fb, #8df3fb, #0d25b8, #8df3fb, #8df3fb, #0d25b8, #8df3fb, #8df3fb); -webkit-background-clip: text; }
+  72.2% { background: linear-gradient(260deg, #8df3fb, #8df3fb, #0d25b8, #8df3fb, #8df3fb, #0d25b8, #8df3fb, #8df3fb); -webkit-background-clip: text; }
+  75% { background: linear-gradient(270deg, #8df3fb, #8df3fb, #0d25b8, #8df3fb, #8df3fb, #0d25b8, #8df3fb, #8df3fb); -webkit-background-clip: text; }
+  77.7% { background: linear-gradient(280deg, #8df3fb, #8df3fb, #0d25b8, #8df3fb, #8df3fb, #0d25b8, #8df3fb, #8df3fb); -webkit-background-clip: text; }
+  80.5% { background: linear-gradient(290deg, #8df3fb, #8df3fb, #0d25b8, #8df3fb, #8df3fb, #0d25b8, #8df3fb, #8df3fb); -webkit-background-clip: text; }
+  83.3% { background: linear-gradient(300deg, #8df3fb, #8df3fb, #0d25b8, #8df3fb, #8df3fb, #0d25b8, #8df3fb, #8df3fb); -webkit-background-clip: text; }
+  86.1% { background: linear-gradient(310deg, #8df3fb, #8df3fb, #0d25b8, #8df3fb, #8df3fb, #0d25b8, #8df3fb, #8df3fb); -webkit-background-clip: text; }
+  88.8% { background: linear-gradient(320deg, #8df3fb, #8df3fb, #0d25b8, #8df3fb, #8df3fb, #0d25b8, #8df3fb, #8df3fb); -webkit-background-clip: text; }
+  91.6% { background: linear-gradient(330deg, #8df3fb, #8df3fb, #0d25b8, #8df3fb, #8df3fb, #0d25b8, #8df3fb, #8df3fb); -webkit-background-clip: text; }
+  94.4% { background: linear-gradient(340deg, #8df3fb, #8df3fb, #0d25b8, #8df3fb, #8df3fb, #0d25b8, #8df3fb, #8df3fb); -webkit-background-clip: text; }
+  97.2% { background: linear-gradient(350deg, #8df3fb, #8df3fb, #0d25b8, #8df3fb, #8df3fb, #0d25b8, #8df3fb, #8df3fb); -webkit-background-clip: text; }
+  100% { background: linear-gradient(360deg, #8df3fb, #8df3fb, #0d25b8, #8df3fb, #8df3fb, #0d25b8, #8df3fb, #8df3fb); -webkit-background-clip: text; }
+}
+@keyframes wiki-EmptyAnimation{
+	0%{-webkit-background-clip: text !important; background-clip: text; -webkit-text-fill-color: transparent; background-image: linear-gradient(120deg, rgb(0 0 0/50%) 30%, black 30% 50%, transparent 50%), repeating-radial-gradient(circle, white, black 0.000003em);}
+	17%{-webkit-background-clip: text !important; background-clip: text; -webkit-text-fill-color: transparent; background-image: linear-gradient(70deg, black 40% 70%, transparent 70%), repeating-radial-gradient(circle, white, black 0.000003em);}	
+	34%{-webkit-background-clip: text !important; background-clip: text; -webkit-text-fill-color: transparent; background-image: linear-gradient(10deg, rgb(0 0 0/50%) 10%, transparent 10% 30%, black 30% 70%, transparent 70% 75%, black 75%), repeating-radial-gradient(circle, white, black 0.000003em);}
+	51%{-webkit-background-clip: text !important; background-clip: text; -webkit-text-fill-color: transparent; background-image: linear-gradient(240deg, black 30%, rgb(0 0 0/50%) 30% 70%, black 70%), repeating-radial-gradient(circle, white, black 0.000003em);}			
+	68%{-webkit-background-clip: text !important; background-clip: text; -webkit-text-fill-color: transparent; background-image: linear-gradient(320deg, black 10%, rgb(0 0 0/50%) 20% 40%, black 40% 45%, transparent 45% 60%, black 60%), repeating-radial-gradient(circle, white, black 0.000003em);}
+	85%{-webkit-background-clip: text !important; background-clip: text; -webkit-text-fill-color: transparent; background-image: linear-gradient(190deg, rgb(0 0 0/50%) 40%, black 40% 70%, transparent 70%), repeating-radial-gradient(circle, white, black 0.000003em);}	
+	100%{-webkit-background-clip: text !important; background-clip: text; -webkit-text-fill-color: transparent; background-image: linear-gradient(120deg, rgb(0 0 0/50%) 30%, black 30% 50%, transparent 50%), repeating-radial-gradient(circle, white, black 0.000003em);}	
+}
+@keyframes wiki-ChromaticReworkRainbow{
+	0% {background-image: linear-gradient(to bottom, #f2fb12 50%, #8aed17 52%, #c8ef44 65%);}
+	4.16% {background-image: linear-gradient(to bottom, #f2fb12 50%, #8aed17 52%, #c8ef44 65%);}	
+	8.32% {background-image: linear-gradient(to bottom, #f2fb12 50%, #8aed17 52%, #c8ef44 65%);}		
+	12.48% {background-image: linear-gradient(to bottom, #c8f82a 50%, #68e717 52%, #a6f01b 65%);}			
+	16.64% {background-image: linear-gradient(to bottom, #c8f82a 50%, #68e717 52%, #a6f01b 65%);}				
+	20.8% {background-image: linear-gradient(to bottom, #22f31e 50%, #2eeb3a 52%, #0ff310 65%);}				
+	24.96% {background-image: linear-gradient(to bottom, #22f3f4 50%, #0ce7b8 52%, #0ef9f4 65%);}			
+	29.12% {background-image: linear-gradient(to bottom, #22f3f4 50%, #0ce7b8 52%, #0ef9f4 65%);}			
+	33.28% {background-image: linear-gradient(to bottom, #22f3f4 50%, #0ce7b8 52%, #0ef9f4 65%);}			
+	37.44% {background-image: linear-gradient(to bottom, #0ef9f4 50%, #27aee3 52%, #22f3f4 65%);}
+	41.6% {background-image: linear-gradient(to bottom, #0ef9f4 50%, #27aee3 52%, #22f3f4 65%);}				
+	45.76% {background-image: linear-gradient(to bottom, #257bf0 50%, #0b28ef 52%, #294fe6 65%);}			
+	49.92% {background-image: linear-gradient(to bottom, #2f30ec 50%, #0913ca 52%, #0b28ef 65%);}			
+	54.08% {background-image: linear-gradient(to bottom, #bb14f7 50%, #3b0ce3 52%, #5f14e9 65%);}				
+	58.24% {background-image: linear-gradient(to bottom, #f51afa 50%, #a016f6 52%, #d911ed 65%);}					
+	62.4% {background-image: linear-gradient(to bottom, #f51afa 50%, #a016f6 52%, #d911ed 65%);}			
+	66.56% {background-image: linear-gradient(to bottom, #f51afa 50%, #a016f6 52%, #d911ed 65%);}		
+	70.72% {background-image: linear-gradient(to bottom, #f51afa 50%, #a016f6 52%, #d911ed 65%);}		
+	74.88% {background-image: linear-gradient(to bottom, #f31be4 50%, #d71e80 52%, #ee24c9 65%);}			
+	79.04% {background-image: linear-gradient(to bottom, #f31be4 50%, #d71e80 52%, #ee24c9 65%);}			
+	83.2% {background-image: linear-gradient(to bottom, #f5235f 50%, #d11b3d 52%, #ee173f 65%);}			
+	87.36% {background-image: linear-gradient(to bottom, #f2c946 50%, #ea5c22 52%, #e98325 65%);}			
+	91.52% {background-image: linear-gradient(to bottom, #f2fb12 50%, #f0a91f 52%, #f3fb2a 65%);}		
+	95.68% {background-image: linear-gradient(to bottom, #f2fb12 50%, #f2c946 52%, #f2fb12 65%);}	
+	99.84% {background-image: linear-gradient(to bottom, #f2fb12 50%, #f2c946 52%, #f2fb12 65%);}		
+	100% {background-image: linear-gradient(to bottom, #f2fb12 50%, #f2c946 52%, #f2fb12 65%);}			
+}
+@keyframes wiki-FatalErrorTitle{
+0% {-webkit-background-clip: text !important; background-clip: text; background: linear-gradient(to bottom, #FFFFFF 0%, #39FF14 60%, #FFFFFF 65%, #39FF14 80%, #39FF14 100%); -webkit-text-stroke-color: transparent;}
+
+50% {-webkit-background-clip: text !important; background-clip: text; background: linear-gradient(to bottom, #FFFFFF 0%, #D92E31 60%, #FFFFFF 65%, #D92E31 80%, #D92E31 100%); -webkit-text-stroke-color: transparent;}
+
+100% {-webkit-background-clip: text !important; background-clip: text; background: linear-gradient(to bottom, #FFFFFF 0%, #5476EC 60%, #FFFFFF 65%, #5476EC 80%, #5476EC 100%); -webkit-text-stroke-color: transparent;}
+}
+@keyframes wiki-HarnessedElementsTitle {
+  0% { background: linear-gradient(0deg, #fdf5a2 20%, #e4ab4f 30%, #fdf5a2 40%, 
+    #fdf5a2 60%, #e4ab4f 70%, #fdf5a2 80%); -webkit-background-clip: text !important; background-clip: text; -webkit-text-fill-color: transparent;}
+  0.67% { background: linear-gradient(10deg, #fdf5a2 20%, #e4ab4f 30%, #fdf5a2 40%, 
+    #fdf5a2 60%, #e4ab4f 70%, #fdf5a2 80%); -webkit-background-clip: text !important; background-clip: text; -webkit-text-fill-color: transparent;}
+  1.34% { background: linear-gradient(20deg, #fdf5a2 20%, #e4ab4f 30%, #fdf5a2 40%, 
+    #fdf5a2 60%, #e4ab4f 70%, #fdf5a2 80%); -webkit-background-clip: text !important; background-clip: text; -webkit-text-fill-color: transparent;}
+  2.01% { background: linear-gradient(30deg, #fdf5a2 20%, #e4ab4f 30%, #fdf5a2 40%, 
+    #fdf5a2 60%, #e4ab4f 70%, #fdf5a2 80%); -webkit-background-clip: text !important; background-clip: text; -webkit-text-fill-color: transparent;}
+  2.68% { background: linear-gradient(40deg, #fdf5a2 20%, #e4ab4f 30%, #fdf5a2 40%, 
+    #fdf5a2 60%, #e4ab4f 70%, #fdf5a2 80%); -webkit-background-clip: text !important; background-clip: text; -webkit-text-fill-color: transparent;}
+  3.35% { background: linear-gradient(50deg, #fdf5a2 20%, #e4ab4f 30%, #fdf5a2 40%, 
+    #fdf5a2 60%, #e4ab4f 70%, #fdf5a2 80%); -webkit-background-clip: text !important; background-clip: text; -webkit-text-fill-color: transparent;}
+  4.02% { background: linear-gradient(60deg, #fdf5a2 20%, #e4ab4f 30%, #fdf5a2 40%, 
+    #fdf5a2 60%, #e4ab4f 70%, #fdf5a2 80%); -webkit-background-clip: text !important; background-clip: text; -webkit-text-fill-color: transparent;}
+  4.69% { background: linear-gradient(70deg, #fdf5a2 20%, #e4ab4f 30%, #fdf5a2 40%, 
+    #fdf5a2 60%, #e4ab4f 70%, #fdf5a2 80%); -webkit-background-clip: text !important; background-clip: text; -webkit-text-fill-color: transparent;}
+  5.36% { background: linear-gradient(80deg, #fdf5a2 20%, #e4ab4f 30%, #fdf5a2 40%, 
+    #fdf5a2 60%, #e4ab4f 70%, #fdf5a2 80%); -webkit-background-clip: text !important; background-clip: text; -webkit-text-fill-color: transparent;}
+  6.63% { background: linear-gradient(90deg, #fdf5a2 20%, #e4ab4f 30%, #fdf5a2 40%, 
+    #fdf5a2 60%, #e4ab4f 70%, #fdf5a2 80%); -webkit-background-clip: text !important; background-clip: text; -webkit-text-fill-color: transparent;}
+  7.37% { background: linear-gradient(100deg, #fdf5a2 20%, #e4ab4f 30%, #fdf5a2 40%, 
+    #fdf5a2 60%, #e4ab4f 70%, #fdf5a2 80%); -webkit-background-clip: text !important; background-clip: text; -webkit-text-fill-color: transparent;}
+  8.04% { background: linear-gradient(110deg, #fdf5a2 20%, #e4ab4f 30%, #fdf5a2 40%, 
+    #fdf5a2 60%, #e4ab4f 70%, #fdf5a2 80%); -webkit-background-clip: text !important; background-clip: text; -webkit-text-fill-color: transparent;}
+  8.71% { background: linear-gradient(120deg, #fdf5a2 20%, #e4ab4f 30%, #fdf5a2 40%, 
+    #fdf5a2 60%, #e4ab4f 70%, #fdf5a2 80%); -webkit-background-clip: text !important; background-clip: text; -webkit-text-fill-color: transparent;}
+  9.38% { background: linear-gradient(130deg, #fdf5a2 20%, #e4ab4f 30%, #fdf5a2 40%, 
+    #fdf5a2 60%, #e4ab4f 70%, #fdf5a2 80%); -webkit-background-clip: text !important; background-clip: text; -webkit-text-fill-color: transparent;}
+  10.05% { background: linear-gradient(140deg, #fdf5a2 20%, #e4ab4f 30%, #fdf5a2 40%, 
+    #fdf5a2 60%, #e4ab4f 70%, #fdf5a2 80%); -webkit-background-clip: text !important; background-clip: text; -webkit-text-fill-color: transparent;}
+  10.72% { background: linear-gradient(150deg, #fdf5a2 20%, #e4ab4f 30%, #fdf5a2 40%, 
+    #fdf5a2 60%, #e4ab4f 70%, #fdf5a2 80%); -webkit-background-clip: text !important; background-clip: text; -webkit-text-fill-color: transparent;}
+  11.39% { background: linear-gradient(160deg, #fdf5a2 20%, #e4ab4f 30%, #fdf5a2 40%, 
+    #fdf5a2 60%, #e4ab4f 70%, #fdf5a2 80%); -webkit-background-clip: text !important; background-clip: text; -webkit-text-fill-color: transparent;}
+  12.06% { background: linear-gradient(170deg, #fdf5a2 20%, #e4ab4f 30%, #fdf5a2 40%, 
+    #fdf5a2 60%, #e4ab4f 70%, #fdf5a2 80%); -webkit-background-clip: text !important; background-clip: text; -webkit-text-fill-color: transparent;}
+  12.73% { background: linear-gradient(180deg, #fdf5a2 20%, #e4ab4f 30%, #fdf5a2 40%, 
+    #fdf5a2 60%, #e4ab4f 70%, #fdf5a2 80%); -webkit-background-clip: text !important; background-clip: text; -webkit-text-fill-color: transparent;}
+  13.4% { background: linear-gradient(190deg, #fdf5a2 20%, #e4ab4f 30%, #fdf5a2 40%, 
+    #fdf5a2 60%, #e4ab4f 70%, #fdf5a2 80%); -webkit-background-clip: text !important; background-clip: text; -webkit-text-fill-color: transparent;}
+  14.07% { background: linear-gradient(200deg, #fdf5a2 20%, #e4ab4f 30%, #fdf5a2 40%, 
+    #fdf5a2 60%, #e4ab4f 70%, #fdf5a2 80%); -webkit-background-clip: text !important; background-clip: text; -webkit-text-fill-color: transparent;}
+  14.74% { background: linear-gradient(210deg, #fdf5a2 20%, #e4ab4f 30%, #fdf5a2 40%, 
+    #fdf5a2 60%, #e4ab4f 70%, #fdf5a2 80%); -webkit-background-clip: text !important; background-clip: text; -webkit-text-fill-color: transparent;}
+  15.41% { background: linear-gradient(220deg, #fdf5a2 20%, #e4ab4f 30%, #fdf5a2 40%, 
+    #fdf5a2 60%, #e4ab4f 70%, #fdf5a2 80%); -webkit-background-clip: text !important; background-clip: text; -webkit-text-fill-color: transparent;}
+  16.08% { background: linear-gradient(230deg, #fdf5a2 20%, #e4ab4f 30%, #fdf5a2 40%, 
+    #fdf5a2 60%, #e4ab4f 70%, #fdf5a2 80%); -webkit-background-clip: text !important; background-clip: text; -webkit-text-fill-color: transparent;}
+  16.75% { background: linear-gradient(240deg, #fdf5a2 20%, #e4ab4f 30%, #fdf5a2 40%, 
+    #fdf5a2 60%, #e4ab4f 70%, #fdf5a2 80%); -webkit-background-clip: text !important; background-clip: text; -webkit-text-fill-color: transparent;}
+  17.42% { background: linear-gradient(250deg, #fdf5a2 20%, #e4ab4f 30%, #fdf5a2 40%, 
+    #fdf5a2 60%, #e4ab4f 70%, #fdf5a2 80%); -webkit-background-clip: text !important; background-clip: text; -webkit-text-fill-color: transparent;}
+  18.09% { background: linear-gradient(260deg, #fdf5a2 20%, #e4ab4f 30%, #fdf5a2 40%, 
+    #fdf5a2 60%, #e4ab4f 70%, #fdf5a2 80%); -webkit-background-clip: text !important; background-clip: text; -webkit-text-fill-color: transparent;}
+  18.76% { background: linear-gradient(270deg, #fdf5a2 20%, #e4ab4f 30%, #fdf5a2 40%, 
+    #fdf5a2 60%, #e4ab4f 70%, #fdf5a2 80%); -webkit-background-clip: text !important; background-clip: text; -webkit-text-fill-color: transparent;}
+  19.43% { background: linear-gradient(280deg, #fdf5a2 20%, #e4ab4f 30%, #fdf5a2 40%, 
+    #fdf5a2 60%, #e4ab4f 70%, #fdf5a2 80%); -webkit-background-clip: text !important; background-clip: text; -webkit-text-fill-color: transparent;}
+  20.1% { background: linear-gradient(290deg, #fdf5a2 20%, #e4ab4f 30%, #fdf5a2 40%, 
+    #fdf5a2 60%, #e4ab4f 70%, #fdf5a2 80%); -webkit-background-clip: text !important; background-clip: text; -webkit-text-fill-color: transparent;}
+  20.77% { background: linear-gradient(300deg, #fdf5a2 20%, #e4ab4f 30%, #fdf5a2 40%, 
+    #fdf5a2 60%, #e4ab4f 70%, #fdf5a2 80%); -webkit-background-clip: text !important; background-clip: text; -webkit-text-fill-color: transparent;}
+  21.44% { background: linear-gradient(310deg, #fdf5a2 20%, #e4ab4f 30%, #fdf5a2 40%, 
+    #fdf5a2 60%, #e4ab4f 70%, #fdf5a2 80%); -webkit-background-clip: text !important; background-clip: text; -webkit-text-fill-color: transparent;}
+  22.11% { background: linear-gradient(320deg, #fdf5a2 20%, #e4ab4f 30%, #fdf5a2 40%, 
+    #fdf5a2 60%, #e4ab4f 70%, #fdf5a2 80%); -webkit-background-clip: text !important; background-clip: text; -webkit-text-fill-color: transparent;}
+  22.78% { background: linear-gradient(330deg, #fdf5a2 20%, #e4ab4f 30%, #fdf5a2 40%, 
+    #fdf5a2 60%, #e4ab4f 70%, #fdf5a2 80%); -webkit-background-clip: text !important; background-clip: text; -webkit-text-fill-color: transparent;}
+  23.45% { background: linear-gradient(340deg, #fdf5a2 20%, #e4ab4f 30%, #fdf5a2 40%, 
+    #fdf5a2 60%, #e4ab4f 70%, #fdf5a2 80%); -webkit-background-clip: text !important; background-clip: text; -webkit-text-fill-color: transparent;}
+  24.12% { background: linear-gradient(350deg, #fdf5a2 20%, #e4ab4f 30%, #fdf5a2 40%, 
+    #fdf5a2 60%, #e4ab4f 70%, #fdf5a2 80%); -webkit-background-clip: text !important; background-clip: text; -webkit-text-fill-color: transparent;}
+  24.79% { background: linear-gradient(360deg, #fdf5a2 20%, #e4ab4f 30%, #fdf5a2 40%, 
+    #fdf5a2 60%, #e4ab4f 70%, #fdf5a2 80%); -webkit-background-clip: text !important; background-clip: text; -webkit-text-fill-color: transparent;}
+  25.46% { background: linear-gradient(0deg, #ffe461 20%, #ff7a18 30%, #ffe461 40%, 
+    #ffe461 60%, #ff7a18 70%, #ffe461 80%); -webkit-background-clip: text !important; background-clip: text; -webkit-text-fill-color: transparent;}
+  26.13% { background: linear-gradient(10deg, #ffe461 20%, #ff7a18 30%, #ffe461 40%, 
+    #ffe461 60%, #ff7a18 70%, #ffe461 80%); -webkit-background-clip: text !important; background-clip: text; -webkit-text-fill-color: transparent;}
+  26.8% { background: linear-gradient(20deg, #ffe461 20%, #ff7a18 30%, #ffe461 40%, 
+    #ffe461 60%, #ff7a18 70%, #ffe461 80%); -webkit-background-clip: text !important; background-clip: text; -webkit-text-fill-color: transparent;}
+  27.47% { background: linear-gradient(30deg, #ffe461 20%, #ff7a18 30%, #ffe461 40%, 
+    #ffe461 60%, #ff7a18 70%, #ffe461 80%); -webkit-background-clip: text !important; background-clip: text; -webkit-text-fill-color: transparent;}
+  28.14% { background: linear-gradient(40deg, #ffe461 20%, #ff7a18 30%, #ffe461 40%, 
+    #ffe461 60%, #ff7a18 70%, #ffe461 80%); -webkit-background-clip: text !important; background-clip: text; -webkit-text-fill-color: transparent;}
+  28.81% { background: linear-gradient(50deg, #ffe461 20%, #ff7a18 30%, #ffe461 40%, 
+    #ffe461 60%, #ff7a18 70%, #ffe461 80%); -webkit-background-clip: text !important; background-clip: text; -webkit-text-fill-color: transparent;}
+  29.48% { background: linear-gradient(60deg, #ffe461 20%, #ff7a18 30%, #ffe461 40%, 
+    #ffe461 60%, #ff7a18 70%, #ffe461 80%); -webkit-background-clip: text !important; background-clip: text; -webkit-text-fill-color: transparent;}
+  30.15% { background: linear-gradient(70deg, #ffe461 20%, #ff7a18 30%, #ffe461 40%, 
+    #ffe461 60%, #ff7a18 70%, #ffe461 80%); -webkit-background-clip: text !important; background-clip: text; -webkit-text-fill-color: transparent;}
+  30.82% { background: linear-gradient(80deg, #ffe461 20%, #ff7a18 30%, #ffe461 40%, 
+    #ffe461 60%, #ff7a18 70%, #ffe461 80%); -webkit-background-clip: text !important; background-clip: text; -webkit-text-fill-color: transparent;}
+  31.49% { background: linear-gradient(90deg, #ffe461 20%, #ff7a18 30%, #ffe461 40%, 
+    #ffe461 60%, #ff7a18 70%, #ffe461 80%); -webkit-background-clip: text !important; background-clip: text; -webkit-text-fill-color: transparent;}
+  32.16% { background: linear-gradient(100deg, #ffe461 20%, #ff7a18 30%, #ffe461 40%, 
+    #ffe461 60%, #ff7a18 70%, #ffe461 80%); -webkit-background-clip: text !important; background-clip: text; -webkit-text-fill-color: transparent;}
+  32.83% { background: linear-gradient(110deg, #ffe461 20%, #ff7a18 30%, #ffe461 40%, 
+    #ffe461 60%, #ff7a18 70%, #ffe461 80%); -webkit-background-clip: text !important; background-clip: text; -webkit-text-fill-color: transparent;}
+  33.5% { background: linear-gradient(120deg, #ffe461 20%, #ff7a18 30%, #ffe461 40%, 
+    #ffe461 60%, #ff7a18 70%, #ffe461 80%); -webkit-background-clip: text !important; background-clip: text; -webkit-text-fill-color: transparent;}
+  34.17% { background: linear-gradient(130deg, #ffe461 20%, #ff7a18 30%, #ffe461 40%, 
+    #ffe461 60%, #ff7a18 70%, #ffe461 80%); -webkit-background-clip: text !important; background-clip: text; -webkit-text-fill-color: transparent;}
+  34.84% { background: linear-gradient(140deg, #ffe461 20%, #ff7a18 30%, #ffe461 40%, 
+    #ffe461 60%, #ff7a18 70%, #ffe461 80%); -webkit-background-clip: text !important; background-clip: text; -webkit-text-fill-color: transparent;}
+  35.51% { background: linear-gradient(150deg, #ffe461 20%, #ff7a18 30%, #ffe461 40%, 
+    #ffe461 60%, #ff7a18 70%, #ffe461 80%); -webkit-background-clip: text !important; background-clip: text; -webkit-text-fill-color: transparent;}
+  36.18% { background: linear-gradient(160deg, #ffe461 20%, #ff7a18 30%, #ffe461 40%, 
+    #ffe461 60%, #ff7a18 70%, #ffe461 80%); -webkit-background-clip: text !important; background-clip: text; -webkit-text-fill-color: transparent;}
+  36.85% { background: linear-gradient(170deg, #ffe461 20%, #ff7a18 30%, #ffe461 40%, 
+    #ffe461 60%, #ff7a18 70%, #ffe461 80%); -webkit-background-clip: text !important; background-clip: text; -webkit-text-fill-color: transparent;}
+  37.52% { background: linear-gradient(180deg, #ffe461 20%, #ff7a18 30%, #ffe461 40%, 
+    #ffe461 60%, #ff7a18 70%, #ffe461 80%); -webkit-background-clip: text !important; background-clip: text; -webkit-text-fill-color: transparent;}
+  38.19% { background: linear-gradient(190deg, #ffe461 20%, #ff7a18 30%, #ffe461 40%, 
+    #ffe461 60%, #ff7a18 70%, #ffe461 80%); -webkit-background-clip: text !important; background-clip: text; -webkit-text-fill-color: transparent;}
+  38.86% { background: linear-gradient(200deg, #ffe461 20%, #ff7a18 30%, #ffe461 40%, 
+    #ffe461 60%, #ff7a18 70%, #ffe461 80%); -webkit-background-clip: text !important; background-clip: text; -webkit-text-fill-color: transparent;}
+  39.53% { background: linear-gradient(210deg, #ffe461 20%, #ff7a18 30%, #ffe461 40%, 
+    #ffe461 60%, #ff7a18 70%, #ffe461 80%); -webkit-background-clip: text !important; background-clip: text; -webkit-text-fill-color: transparent;}
+  40.2% { background: linear-gradient(220deg, #ffe461 20%, #ff7a18 30%, #ffe461 40%, 
+    #ffe461 60%, #ff7a18 70%, #ffe461 80%); -webkit-background-clip: text !important; background-clip: text; -webkit-text-fill-color: transparent;}
+  40.87% { background: linear-gradient(230deg, #ffe461 20%, #ff7a18 30%, #ffe461 40%, 
+    #ffe461 60%, #ff7a18 70%, #ffe461 80%); -webkit-background-clip: text !important; background-clip: text; -webkit-text-fill-color: transparent;}
+  41.54% { background: linear-gradient(240deg, #ffe461 20%, #ff7a18 30%, #ffe461 40%, 
+    #ffe461 60%, #ff7a18 70%, #ffe461 80%); -webkit-background-clip: text !important; background-clip: text; -webkit-text-fill-color: transparent;}
+  42.21% { background: linear-gradient(250deg, #ffe461 20%, #ff7a18 30%, #ffe461 40%, 
+    #ffe461 60%, #ff7a18 70%, #ffe461 80%); -webkit-background-clip: text !important; background-clip: text; -webkit-text-fill-color: transparent;}
+  42.88% { background: linear-gradient(260deg, #ffe461 20%, #ff7a18 30%, #ffe461 40%, 
+    #ffe461 60%, #ff7a18 70%, #ffe461 80%); -webkit-background-clip: text !important; background-clip: text; -webkit-text-fill-color: transparent;}
+  43.55% { background: linear-gradient(270deg, #ffe461 20%, #ff7a18 30%, #ffe461 40%, 
+    #ffe461 60%, #ff7a18 70%, #ffe461 80%); -webkit-background-clip: text !important; background-clip: text; -webkit-text-fill-color: transparent;}
+  44.22% { background: linear-gradient(280deg, #ffe461 20%, #ff7a18 30%, #ffe461 40%, 
+    #ffe461 60%, #ff7a18 70%, #ffe461 80%); -webkit-background-clip: text !important; background-clip: text; -webkit-text-fill-color: transparent;}
+  44.89% { background: linear-gradient(290deg, #ffe461 20%, #ff7a18 30%, #ffe461 40%, 
+    #ffe461 60%, #ff7a18 70%, #ffe461 80%); -webkit-background-clip: text !important; background-clip: text; -webkit-text-fill-color: transparent;}
+  45.56% { background: linear-gradient(300deg, #ffe461 20%, #ff7a18 30%, #ffe461 40%, 
+    #ffe461 60%, #ff7a18 70%, #ffe461 80%); -webkit-background-clip: text !important; background-clip: text; -webkit-text-fill-color: transparent;}
+  46.23% { background: linear-gradient(310deg, #ffe461 20%, #ff7a18 30%, #ffe461 40%, 
+    #ffe461 60%, #ff7a18 70%, #ffe461 80%); -webkit-background-clip: text !important; background-clip: text; -webkit-text-fill-color: transparent;}
+  46.9% { background: linear-gradient(320deg, #ffe461 20%, #ff7a18 30%, #ffe461 40%, 
+    #ffe461 60%, #ff7a18 70%, #ffe461 80%); -webkit-background-clip: text !important; background-clip: text; -webkit-text-fill-color: transparent;}
+  47.57% { background: linear-gradient(330deg, #ffe461 20%, #ff7a18 30%, #ffe461 40%, 
+    #ffe461 60%, #ff7a18 70%, #ffe461 80%); -webkit-background-clip: text !important; background-clip: text; -webkit-text-fill-color: transparent;}
+  48.24% { background: linear-gradient(340deg, #ffe461 20%, #ff7a18 30%, #ffe461 40%, 
+    #ffe461 60%, #ff7a18 70%, #ffe461 80%); -webkit-background-clip: text !important; background-clip: text; -webkit-text-fill-color: transparent;}
+  48.91% { background: linear-gradient(350deg, #ffe461 20%, #ff7a18 30%, #ffe461 40%, 
+    #ffe461 60%, #ff7a18 70%, #ffe461 80%); -webkit-background-clip: text !important; background-clip: text; -webkit-text-fill-color: transparent;}
+  49.58% { background: linear-gradient(360deg, #ffe461 20%, #ff7a18 30%, #ffe461 40%, 
+    #ffe461 60%, #ff7a18 70%, #ffe461 80%); -webkit-background-clip: text !important; background-clip: text; -webkit-text-fill-color: transparent;}
+  50.25% { background: linear-gradient(0deg, #dcfaff 20%, #477ab8 30%, #dcfaff 40%,
+     #dcfaff 60%, #477ab8 70%, #dcfaff 80%); -webkit-background-clip: text !important; background-clip: text; -webkit-text-fill-color: transparent;}
+  50.92% { background: linear-gradient(10deg, #dcfaff 20%, #477ab8 30%, #dcfaff 40%,
+     #dcfaff 60%, #477ab8 70%, #dcfaff 80%); -webkit-background-clip: text !important; background-clip: text; -webkit-text-fill-color: transparent;}
+  51.59% { background: linear-gradient(20deg, #dcfaff 20%, #477ab8 30%, #dcfaff 40%,
+     #dcfaff 60%, #477ab8 70%, #dcfaff 80%); -webkit-background-clip: text !important; background-clip: text; -webkit-text-fill-color: transparent;}
+  52.26% { background: linear-gradient(30deg, #dcfaff 20%, #477ab8 30%, #dcfaff 40%,
+     #dcfaff 60%, #477ab8 70%, #dcfaff 80%); -webkit-background-clip: text !important; background-clip: text; -webkit-text-fill-color: transparent;}
+  52.93% { background: linear-gradient(40deg, #dcfaff 20%, #477ab8 30%, #dcfaff 40%,
+     #dcfaff 60%, #477ab8 70%, #dcfaff 80%); -webkit-background-clip: text !important; background-clip: text; -webkit-text-fill-color: transparent;}
+  53.6% { background: linear-gradient(50deg, #dcfaff 20%, #477ab8 30%, #dcfaff 40%,
+     #dcfaff 60%, #477ab8 70%, #dcfaff 80%); -webkit-background-clip: text !important; background-clip: text; -webkit-text-fill-color: transparent;}
+  54.27% { background: linear-gradient(60deg, #dcfaff 20%, #477ab8 30%, #dcfaff 40%,
+     #dcfaff 60%, #477ab8 70%, #dcfaff 80%); -webkit-background-clip: text !important; background-clip: text; -webkit-text-fill-color: transparent;}
+  54.94% { background: linear-gradient(70deg, #dcfaff 20%, #477ab8 30%, #dcfaff 40%,
+     #dcfaff 60%, #477ab8 70%, #dcfaff 80%); -webkit-background-clip: text !important; background-clip: text; -webkit-text-fill-color: transparent;}
+  55.61% { background: linear-gradient(80deg, #dcfaff 20%, #477ab8 30%, #dcfaff 40%,
+     #dcfaff 60%, #477ab8 70%, #dcfaff 80%); -webkit-background-clip: text !important; background-clip: text; -webkit-text-fill-color: transparent;}
+  56.28% { background: linear-gradient(90deg, #dcfaff 20%, #477ab8 30%, #dcfaff 40%,
+     #dcfaff 60%, #477ab8 70%, #dcfaff 80%); -webkit-background-clip: text !important; background-clip: text; -webkit-text-fill-color: transparent;}
+  56.95% { background: linear-gradient(100deg, #dcfaff 20%, #477ab8 30%, #dcfaff 40%,
+     #dcfaff 60%, #477ab8 70%, #dcfaff 80%); -webkit-background-clip: text !important; background-clip: text; -webkit-text-fill-color: transparent;}
+  57.62% { background: linear-gradient(110deg, #dcfaff 20%, #477ab8 30%, #dcfaff 40%,
+     #dcfaff 60%, #477ab8 70%, #dcfaff 80%); -webkit-background-clip: text !important; background-clip: text; -webkit-text-fill-color: transparent;}
+  58.29% { background: linear-gradient(120deg, #dcfaff 20%, #477ab8 30%, #dcfaff 40%,
+     #dcfaff 60%, #477ab8 70%, #dcfaff 80%); -webkit-background-clip: text !important; background-clip: text; -webkit-text-fill-color: transparent;}
+  58.96% { background: linear-gradient(130deg, #dcfaff 20%, #477ab8 30%, #dcfaff 40%,
+     #dcfaff 60%, #477ab8 70%, #dcfaff 80%); -webkit-background-clip: text !important; background-clip: text; -webkit-text-fill-color: transparent;}
+  59.63% { background: linear-gradient(140deg, #dcfaff 20%, #477ab8 30%, #dcfaff 40%,
+     #dcfaff 60%, #477ab8 70%, #dcfaff 80%); -webkit-background-clip: text !important; background-clip: text; -webkit-text-fill-color: transparent;}
+  60.3% { background: linear-gradient(150deg, #dcfaff 20%, #477ab8 30%, #dcfaff 40%,
+     #dcfaff 60%, #477ab8 70%, #dcfaff 80%); -webkit-background-clip: text !important; background-clip: text; -webkit-text-fill-color: transparent;}
+  60.97% { background: linear-gradient(160deg, #dcfaff 20%, #477ab8 30%, #dcfaff 40%,
+     #dcfaff 60%, #477ab8 70%, #dcfaff 80%); -webkit-background-clip: text !important; background-clip: text; -webkit-text-fill-color: transparent;}
+  61.64% { background: linear-gradient(170deg, #dcfaff 20%, #477ab8 30%, #dcfaff 40%,
+     #dcfaff 60%, #477ab8 70%, #dcfaff 80%); -webkit-background-clip: text !important; background-clip: text; -webkit-text-fill-color: transparent;}
+  62.31% { background: linear-gradient(180deg, #dcfaff 20%, #477ab8 30%, #dcfaff 40%,
+     #dcfaff 60%, #477ab8 70%, #dcfaff 80%); -webkit-background-clip: text !important; background-clip: text; -webkit-text-fill-color: transparent;}
+  62.98% { background: linear-gradient(190deg, #dcfaff 20%, #477ab8 30%, #dcfaff 40%,
+     #dcfaff 60%, #477ab8 70%, #dcfaff 80%); -webkit-background-clip: text !important; background-clip: text; -webkit-text-fill-color: transparent;}
+  63.65% { background: linear-gradient(200deg, #dcfaff 20%, #477ab8 30%, #dcfaff 40%,
+     #dcfaff 60%, #477ab8 70%, #dcfaff 80%); -webkit-background-clip: text !important; background-clip: text; -webkit-text-fill-color: transparent;}
+  64.32% { background: linear-gradient(210deg, #dcfaff 20%, #477ab8 30%, #dcfaff 40%,
+     #dcfaff 60%, #477ab8 70%, #dcfaff 80%); -webkit-background-clip: text !important; background-clip: text; -webkit-text-fill-color: transparent;}
+  64.99% { background: linear-gradient(220deg, #dcfaff 20%, #477ab8 30%, #dcfaff 40%,
+     #dcfaff 60%, #477ab8 70%, #dcfaff 80%); -webkit-background-clip: text !important; background-clip: text; -webkit-text-fill-color: transparent;}
+  65.66% { background: linear-gradient(230deg, #dcfaff 20%, #477ab8 30%, #dcfaff 40%,
+     #dcfaff 60%, #477ab8 70%, #dcfaff 80%); -webkit-background-clip: text !important; background-clip: text; -webkit-text-fill-color: transparent;}
+  66.33% { background: linear-gradient(240deg, #dcfaff 20%, #477ab8 30%, #dcfaff 40%,
+     #dcfaff 60%, #477ab8 70%, #dcfaff 80%); -webkit-background-clip: text !important; background-clip: text; -webkit-text-fill-color: transparent;}
+  67% { background: linear-gradient(250deg, #dcfaff 20%, #477ab8 30%, #dcfaff 40%,
+     #dcfaff 60%, #477ab8 70%, #dcfaff 80%); -webkit-background-clip: text !important; background-clip: text; -webkit-text-fill-color: transparent;}
+  67.67% { background: linear-gradient(260deg, #dcfaff 20%, #477ab8 30%, #dcfaff 40%,
+     #dcfaff 60%, #477ab8 70%, #dcfaff 80%); -webkit-background-clip: text !important; background-clip: text; -webkit-text-fill-color: transparent;}
+  68.34% { background: linear-gradient(270deg, #dcfaff 20%, #477ab8 30%, #dcfaff 40%,
+     #dcfaff 60%, #477ab8 70%, #dcfaff 80%); -webkit-background-clip: text !important; background-clip: text; -webkit-text-fill-color: transparent;}
+  69.01% { background: linear-gradient(280deg, #dcfaff 20%, #477ab8 30%, #dcfaff 40%,
+     #dcfaff 60%, #477ab8 70%, #dcfaff 80%); -webkit-background-clip: text !important; background-clip: text; -webkit-text-fill-color: transparent;}
+  69.68% { background: linear-gradient(290deg, #dcfaff 20%, #477ab8 30%, #dcfaff 40%,
+     #dcfaff 60%, #477ab8 70%, #dcfaff 80%); -webkit-background-clip: text !important; background-clip: text; -webkit-text-fill-color: transparent;}
+  70.35% { background: linear-gradient(300deg, #dcfaff 20%, #477ab8 30%, #dcfaff 40%,
+     #dcfaff 60%, #477ab8 70%, #dcfaff 80%); -webkit-background-clip: text !important; background-clip: text; -webkit-text-fill-color: transparent;}
+  71.02% { background: linear-gradient(310deg, #dcfaff 20%, #477ab8 30%, #dcfaff 40%,
+     #dcfaff 60%, #477ab8 70%, #dcfaff 80%); -webkit-background-clip: text !important; background-clip: text; -webkit-text-fill-color: transparent;}
+  71.69% { background: linear-gradient(320deg, #dcfaff 20%, #477ab8 30%, #dcfaff 40%,
+     #dcfaff 60%, #477ab8 70%, #dcfaff 80%); -webkit-background-clip: text !important; background-clip: text; -webkit-text-fill-color: transparent;}
+  72.36% { background: linear-gradient(330deg, #dcfaff 20%, #477ab8 30%, #dcfaff 40%,
+     #dcfaff 60%, #477ab8 70%, #dcfaff 80%); -webkit-background-clip: text !important; background-clip: text; -webkit-text-fill-color: transparent;}
+  73.03% { background: linear-gradient(340deg, #dcfaff 20%, #477ab8 30%, #dcfaff 40%,
+     #dcfaff 60%, #477ab8 70%, #dcfaff 80%); -webkit-background-clip: text !important; background-clip: text; -webkit-text-fill-color: transparent;}
+  73.7% { background: linear-gradient(350deg, #dcfaff 20%, #477ab8 30%, #dcfaff 40%,
+     #dcfaff 60%, #477ab8 70%, #dcfaff 80%); -webkit-background-clip: text !important; background-clip: text; -webkit-text-fill-color: transparent;}
+  74.37% { background: linear-gradient(360deg, #dcfaff 20%, #477ab8 30%, #dcfaff 40%,
+     #dcfaff 60%, #477ab8 70%, #dcfaff 80%); -webkit-background-clip: text !important; background-clip: text; -webkit-text-fill-color: transparent;} 
+  75.04% { background: linear-gradient(0deg, #bbf43c 20%, #52b00f 30%, #bbf43c 40%,
+     #bbf43c 60%, #52b00f 70%, #bbf43c 80%); -webkit-background-clip: text !important; background-clip: text; -webkit-text-fill-color: transparent;}
+  75.71% { background: linear-gradient(10deg, #bbf43c 20%, #52b00f 30%, #bbf43c 40%,
+     #bbf43c 60%, #52b00f 70%, #bbf43c 80%); -webkit-background-clip: text !important; background-clip: text; -webkit-text-fill-color: transparent;}
+  76.38% { background: linear-gradient(20deg, #bbf43c 20%, #52b00f 30%, #bbf43c 40%,
+     #bbf43c 60%, #52b00f 70%, #bbf43c 80%); -webkit-background-clip: text !important; background-clip: text; -webkit-text-fill-color: transparent;}
+  77.05% { background: linear-gradient(30deg, #bbf43c 20%, #52b00f 30%, #bbf43c 40%,
+     #bbf43c 60%, #52b00f 70%, #bbf43c 80%); -webkit-background-clip: text !important; background-clip: text; -webkit-text-fill-color: transparent;}
+  77.72% { background: linear-gradient(40deg, #bbf43c 20%, #52b00f 30%, #bbf43c 40%,
+     #bbf43c 60%, #52b00f 70%, #bbf43c 80%); -webkit-background-clip: text !important; background-clip: text; -webkit-text-fill-color: transparent;}
+  78.39% { background: linear-gradient(50deg, #bbf43c 20%, #52b00f 30%, #bbf43c 40%,
+     #bbf43c 60%, #52b00f 70%, #bbf43c 80%); -webkit-background-clip: text !important; background-clip: text; -webkit-text-fill-color: transparent;}
+  79.06% { background: linear-gradient(60deg, #bbf43c 20%, #52b00f 30%, #bbf43c 40%,
+     #bbf43c 60%, #52b00f 70%, #bbf43c 80%); -webkit-background-clip: text !important; background-clip: text; -webkit-text-fill-color: transparent;}
+  79.73% { background: linear-gradient(70deg, #bbf43c 20%, #52b00f 30%, #bbf43c 40%,
+     #bbf43c 60%, #52b00f 70%, #bbf43c 80%); -webkit-background-clip: text !important; background-clip: text; -webkit-text-fill-color: transparent;}
+  80.4% { background: linear-gradient(80deg, #bbf43c 20%, #52b00f 30%, #bbf43c 40%,
+     #bbf43c 60%, #52b00f 70%, #bbf43c 80%); -webkit-background-clip: text !important; background-clip: text; -webkit-text-fill-color: transparent;}
+  81.07% { background: linear-gradient(90deg, #bbf43c 20%, #52b00f 30%, #bbf43c 40%,
+     #bbf43c 60%, #52b00f 70%, #bbf43c 80%); -webkit-background-clip: text !important; background-clip: text; -webkit-text-fill-color: transparent;}
+  81.74% { background: linear-gradient(100deg, #bbf43c 20%, #52b00f 30%, #bbf43c 40%,
+     #bbf43c 60%, #52b00f 70%, #bbf43c 80%); -webkit-background-clip: text !important; background-clip: text; -webkit-text-fill-color: transparent;}
+  82.41% { background: linear-gradient(110deg, #bbf43c 20%, #52b00f 30%, #bbf43c 40%,
+     #bbf43c 60%, #52b00f 70%, #bbf43c 80%); -webkit-background-clip: text !important; background-clip: text; -webkit-text-fill-color: transparent;}
+  83.08% { background: linear-gradient(120deg, #bbf43c 20%, #52b00f 30%, #bbf43c 40%,
+     #bbf43c 60%, #52b00f 70%, #bbf43c 80%); -webkit-background-clip: text !important; background-clip: text; -webkit-text-fill-color: transparent;}
+  83.75% { background: linear-gradient(130deg, #bbf43c 20%, #52b00f 30%, #bbf43c 40%,
+     #bbf43c 60%, #52b00f 70%, #bbf43c 80%); -webkit-background-clip: text !important; background-clip: text; -webkit-text-fill-color: transparent;}
+  84.42% { background: linear-gradient(140deg, #bbf43c 20%, #52b00f 30%, #bbf43c 40%,
+     #bbf43c 60%, #52b00f 70%, #bbf43c 80%); -webkit-background-clip: text !important; background-clip: text; -webkit-text-fill-color: transparent;}
+  85.09% { background: linear-gradient(150deg, #bbf43c 20%, #52b00f 30%, #bbf43c 40%,
+     #bbf43c 60%, #52b00f 70%, #bbf43c 80%); -webkit-background-clip: text !important; background-clip: text; -webkit-text-fill-color: transparent;}
+  85.76% { background: linear-gradient(160deg, #bbf43c 20%, #52b00f 30%, #bbf43c 40%,
+     #bbf43c 60%, #52b00f 70%, #bbf43c 80%); -webkit-background-clip: text !important; background-clip: text; -webkit-text-fill-color: transparent;}
+  86.43% { background: linear-gradient(170deg, #bbf43c 20%, #52b00f 30%, #bbf43c 40%,
+     #bbf43c 60%, #52b00f 70%, #bbf43c 80%); -webkit-background-clip: text !important; background-clip: text; -webkit-text-fill-color: transparent;}
+  87.1% { background: linear-gradient(180deg, #bbf43c 20%, #52b00f 30%, #bbf43c 40%,
+     #bbf43c 60%, #52b00f 70%, #bbf43c 80%); -webkit-background-clip: text !important; background-clip: text; -webkit-text-fill-color: transparent;}
+  87.77% { background: linear-gradient(190deg, #bbf43c 20%, #52b00f 30%, #bbf43c 40%,
+     #bbf43c 60%, #52b00f 70%, #bbf43c 80%); -webkit-background-clip: text !important; background-clip: text; -webkit-text-fill-color: transparent;}
+  88.44% { background: linear-gradient(200deg, #bbf43c 20%, #52b00f 30%, #bbf43c 40%,
+     #bbf43c 60%, #52b00f 70%, #bbf43c 80%); -webkit-background-clip: text !important; background-clip: text; -webkit-text-fill-color: transparent;}
+  89.11% { background: linear-gradient(210deg, #bbf43c 20%, #52b00f 30%, #bbf43c 40%,
+     #bbf43c 60%, #52b00f 70%, #bbf43c 80%); -webkit-background-clip: text !important; background-clip: text; -webkit-text-fill-color: transparent;}
+  89.78% { background: linear-gradient(220deg, #bbf43c 20%, #52b00f 30%, #bbf43c 40%,
+     #bbf43c 60%, #52b00f 70%, #bbf43c 80%); -webkit-background-clip: text !important; background-clip: text; -webkit-text-fill-color: transparent;}
+  90.45% { background: linear-gradient(230deg, #bbf43c 20%, #52b00f 30%, #bbf43c 40%,
+     #bbf43c 60%, #52b00f 70%, #bbf43c 80%); -webkit-background-clip: text !important; background-clip: text; -webkit-text-fill-color: transparent;}
+  91.12% { background: linear-gradient(240deg, #bbf43c 20%, #52b00f 30%, #bbf43c 40%,
+     #bbf43c 60%, #52b00f 70%, #bbf43c 80%); -webkit-background-clip: text !important; background-clip: text; -webkit-text-fill-color: transparent;}
+  91.79% { background: linear-gradient(250deg, #bbf43c 20%, #52b00f 30%, #bbf43c 40%,
+     #bbf43c 60%, #52b00f 70%, #bbf43c 80%); -webkit-background-clip: text !important; background-clip: text; -webkit-text-fill-color: transparent;}
+  92.46% { background: linear-gradient(260deg, #bbf43c 20%, #52b00f 30%, #bbf43c 40%,
+     #bbf43c 60%, #52b00f 70%, #bbf43c 80%); -webkit-background-clip: text !important; background-clip: text; -webkit-text-fill-color: transparent;}
+  93.13% { background: linear-gradient(270deg, #bbf43c 20%, #52b00f 30%, #bbf43c 40%,
+     #bbf43c 60%, #52b00f 70%, #bbf43c 80%); -webkit-background-clip: text !important; background-clip: text; -webkit-text-fill-color: transparent;}
+  93.8% { background: linear-gradient(280deg, #bbf43c 20%, #52b00f 30%, #bbf43c 40%,
+     #bbf43c 60%, #52b00f 70%, #bbf43c 80%); -webkit-background-clip: text !important; background-clip: text; -webkit-text-fill-color: transparent;}
+  94.47% { background: linear-gradient(290deg, #bbf43c 20%, #52b00f 30%, #bbf43c 40%,
+     #bbf43c 60%, #52b00f 70%, #bbf43c 80%); -webkit-background-clip: text !important; background-clip: text; -webkit-text-fill-color: transparent;}
+  95.14% { background: linear-gradient(300deg, #bbf43c 20%, #52b00f 30%, #bbf43c 40%,
+     #bbf43c 60%, #52b00f 70%, #bbf43c 80%); -webkit-background-clip: text !important; background-clip: text; -webkit-text-fill-color: transparent;}
+  95.81% { background: linear-gradient(310deg, #bbf43c 20%, #52b00f 30%, #bbf43c 40%,
+     #bbf43c 60%, #52b00f 70%, #bbf43c 80%); -webkit-background-clip: text !important; background-clip: text; -webkit-text-fill-color: transparent;}
+  96.48% { background: linear-gradient(320deg, #bbf43c 20%, #52b00f 30%, #bbf43c 40%,
+     #bbf43c 60%, #52b00f 70%, #bbf43c 80%); -webkit-background-clip: text !important; background-clip: text; -webkit-text-fill-color: transparent;}
+  97.15% { background: linear-gradient(330deg, #bbf43c 20%, #52b00f 30%, #bbf43c 40%,
+     #bbf43c 60%, #52b00f 70%, #bbf43c 80%); -webkit-background-clip: text !important; background-clip: text; -webkit-text-fill-color: transparent;}
+  97.82% { background: linear-gradient(340deg, #bbf43c 20%, #52b00f 30%, #bbf43c 40%,
+     #bbf43c 60%, #52b00f 70%, #bbf43c 80%); -webkit-background-clip: text !important; background-clip: text; -webkit-text-fill-color: transparent;}
+  98.49% { background: linear-gradient(350deg, #bbf43c 20%, #52b00f 30%, #bbf43c 40%,
+     #bbf43c 60%, #52b00f 70%, #bbf43c 80%); -webkit-background-clip: text !important; background-clip: text; -webkit-text-fill-color: transparent;}
+  100% { background: linear-gradient(360deg, #bbf43c 20%, #52b00f 30%, #bbf43c 40%,
+     #bbf43c 60%, #52b00f 70%, #bbf43c 80%); -webkit-background-clip: text !important; background-clip: text; -webkit-text-fill-color: transparent;}        
+}
+
+@keyframes wiki-SpectraflowPulse{
+	0% {transform: scale(1.1);}	
+	24% {transform: scale(1);}	
+	25% {transform: scale(1.1);}
+	49% {transform: scale(1);}	
+    50% {transform: scale(1.1);}
+	74% {transform: scale(1);}	
+    75% {transform: scale(1.1);}    
+	100% {transform: scale(1);}	
+}
+
+@keyframes wiki-SpectraflowTransition{
+	0% {filter: opacity(1);}	
+	24% {filter: opacity(0);}	
+	25% {filter: opacity(1);}
+	49% {filter: opacity(0);}	
+	50% {filter: opacity(1);}	
+	74% {filter: opacity(0);}	
+	75% {filter: opacity(1);}	
+	100% {filter: opacity(0);}	
+}
+@keyframes wiki-GenesisTitle{
+  0% {-webkit-text-stroke: 0.25px #bcb9e8;}
+  10% {-webkit-text-stroke: 0.25px #dfcdfa;}
+  18% {-webkit-text-stroke: 0.25px #e6d9fd;}
+  27% {-webkit-text-stroke: 0.25px #cdd7fd;}
+  36% {-webkit-text-stroke: 0.25px #d6e1fb;}
+  45% {-webkit-text-stroke: 0.25px #cbe2f9;}
+  54% {-webkit-text-stroke: 0.25px #b7d9fa;}
+  63% {-webkit-text-stroke: 0.25px #bdecff;}
+  72% {-webkit-text-stroke: 0.25px #cae7fc;}
+  81% {-webkit-text-stroke: 0.25px #c5c8f6;}
+  92% {-webkit-text-stroke: 0.25px #dde2fe;}
+  100% {-webkit-text-stroke: 0.25px #ded0fe;}
+}
+
+@keyframes wiki-tilt-shake{
+  0% {transform: rotate(0deg);}
+  25% {transform: rotate(6.5deg);}
+  50% {transform: rotate(0deg);}
+  75% {transform: rotate(-6.5deg);}
+  100% {transform: rotate(0deg);}
+}
+@keyframes wiki-HyperVoltEverStormShake{
+	0% {transform: translateX(-.9px) translateY(.9px);}
+	24.99% {transform: translateX(-.9px) translateY(.9px);}	
+	25% {transform: translateX(.9px) translateY(-.9px);}	
+	49.99% {transform: translateX(.9px) translateY(-.9px);}	
+	50% {transform: translateX(-.9px) translateY(-.9px);}	
+	74.99% {transform: translateX(-.9px) translateY(-.9px);}		
+	75% {transform: translateX(.9px) translateY(.9px);}		
+	99.99% {transform: translateX(.9px) translateY(.9px);}			
+	100% {transform: translateX(-.9px) translateY(.9px);}	
+}
+
+
+@keyframes wiki-HyperVoltEverStormMovement{
+	0% {transform: translateX(-7.2px) translateY(4px) rotate(-3deg);}
+	2.37% {transform: translateX(-7.2px) translateY(4px) rotate(-2.9deg);}	
+	2.38% {transform: translateX(-6.3px) translateY(2px) rotate(-2.9deg);}	
+	4.75% {transform: translateX(-6.3px) translateY(2px) rotate(-2.8deg);}	
+	4.76% {transform: translateX(-5.94px) translateY(0px) rotate(-2.8deg);}
+	7.13% {transform: translateX(-5.94px) translateY(0px) rotate(-2.7deg);}	
+	7.14% {transform: translateX(-4.5px) translateY(6px) rotate(-2.7deg);}		
+	9.51% {transform: translateX(-4.5px) translateY(6px) rotate(-2.6deg);}	
+	9.52% {transform: translateX(-2.97px) translateY(7px) rotate(-2.6deg);}		
+	11.89% {transform: translateX(-2.97px) translateY(7px) rotate(-2.5deg);}		
+	11.9% {transform: translateX(-1.35px) translateY(8px) rotate(-2.5deg);}		
+	14.27% {transform: translateX(-1.35px) translateY(8px) rotate(-2.4deg);}		
+	14.28% {transform: translateX(-.45px) translateY(9px) rotate(-2.4deg);}		
+	16.65% {transform: translateX(-.45px) translateY(9px) rotate(-2.3deg);}	
+	16.66% {transform: translateX(0px) translateY(10px) rotate(-2.3deg);}	
+	19.04% {transform: translateX(.36px) translateY(9px) rotate(-2deg);}	
+	21.41% {transform: translateX(.36px) translateY(9px) rotate(-2deg);}		
+	21.42% {transform: translateX(1.53px) translateY(8px) rotate(-1.5deg);}		
+	23.79% {transform: translateX(1.53px) translateY(8px) rotate(-1.5deg);}			
+	23.8% {transform: translateX(2.7px) translateY(6px) rotate(-.8deg);}		
+	26.17% {transform: translateX(2.7px) translateY(6px) rotate(-.8deg);}		
+	26.18% {transform: translateX(3.87px) translateY(4px) rotate(-.3deg);}		
+	28.55% {transform: translateX(3.87px) translateY(4px) rotate(-.3deg);}		
+	28.56% {transform: translateX(4.5px) translateY(0px) rotate(-.1deg);}	
+	30.93% {transform: translateX(4.5px) translateY(0px) rotate(-.1deg);}	
+	30.94% {transform: translateX(4.59px) translateY(-1px) rotate(0deg);}		
+	33.31% {transform: translateX(4.59px) translateY(-1px) rotate(0deg);}			
+	33.32% {transform: translateX(4.59px) translateY(0px) rotate(.1deg);}	
+	35.69% {transform: translateX(4.59px) translateY(0px) rotate(.1deg);}		
+	35.7% {transform: translateX(4.59px) translateY(2px) rotate(.3deg);}	
+	38.07% {transform: translateX(4.59px) translateY(2px) rotate(.3deg);}		
+	38.08% {transform: translateX(3.15px) translateY(3px) rotate(.8deg);}	
+	40.45% {transform: translateX(3.15px) translateY(3px) rotate(.8deg);}		
+	40.46% {transform: translateX(2.7px) translateY(4px) rotate(1.5deg);}		
+	42.83% {transform: translateX(2.7px) translateY(4px) rotate(1.5deg);}			
+	42.84% {transform: translateX(.6px) translateY(8px) rotate(2deg);}	
+	45.21% {transform: translateX(.6px) translateY(8px) rotate(2deg);}		
+	45.22% {transform: translateX(-.6px) translateY(9px) rotate(2.2deg);}		
+	47.59% {transform: translateX(-.6px) translateY(9px) rotate(2.3deg);}			
+	47.6% {transform: translateX(-.6px) translateY(10px) rotate(2.4deg);}	
+	49.97% {transform: translateX(-.6px) translateY(10px) rotate(2.5deg);}		
+	49.98% {transform: translateX(-1.35px) translateY(8px) rotate(2.6deg);}		
+	52.35% {transform: translateX(-1.35px) translateY(8px) rotate(2.7deg);}		
+	52.36% {transform: translateX(-1.35px) translateY(6px) rotate(2.8deg);}	
+	54.73% {transform: translateX(-1.35px) translateY(6px) rotate(2.9deg);}		
+	54.74% {transform: translateX(-1.8px) translateY(4px) rotate(3deg);}	
+	57.11% {transform: translateX(-1.8px) translateY(4px) rotate(2.8deg);}		
+	57.12% {transform: translateX(-1.35px) translateY(0px) rotate(2.7deg);}		
+	59.49% {transform: translateX(-1.35px) translateY(0px) rotate(2.6deg);}		
+	59.5% {transform: translateX(-.9px) translateY(4px) rotate(2.5deg);}	
+	61.87% {transform: translateX(-.9px) translateY(4px) rotate(2.4deg);}		
+	61.88% {transform: translateX(0px) translateY(8px) rotate(2.3deg);}		
+	64.25% {transform: translateX(0px) translateY(8px) rotate(2.2deg);}			
+	64.26% {transform: translateX(.9px) translateY(7px) rotate(2deg);}	
+	66.63% {transform: translateX(.9px) translateY(7px) rotate(2deg);}		
+	66.64% {transform: translateX(1.35px) translateY(8px) rotate(1.5deg);}		
+	69.01% {transform: translateX(1.35px) translateY(8px) rotate(1.5deg);}		
+	69.02% {transform: translateX(1.62px) translateY(9px) rotate(.8deg);}			
+	71.39% {transform: translateX(1.62px) translateY(9px) rotate(.8deg);}			
+	71.4% {transform: translateX(2.7px) translateY(9px) rotate(.3deg);}	
+	73.77% {transform: translateX(2.7px) translateY(9px) rotate(.3deg);}		
+	73.78% {transform: translateX(3.6px) translateY(7px) rotate(.1deg);}	
+	76.15% {transform: translateX(3.6px) translateY(7px) rotate(.1deg);}		
+	76.16% {transform: translateX(3.87px) translateY(6px) rotate(0deg);}	
+	78.53% {transform: translateX(3.87px) translateY(6px) rotate(0deg);}		
+	78.54% {transform: translateX(3.6px) translateY(2px) rotate(-.1deg);}		
+	80.91% {transform: translateX(3.6px) translateY(2px) rotate(-.1deg);}			
+	80.92% {transform: translateX(3.6px) translateY(0px) rotate(-.3deg);}
+	83.29% {transform: translateX(3.6px) translateY(0px) rotate(-.3deg);}	
+	83.3% {transform: translateX(3.51px) translateY(1px) rotate(-.8deg);}	
+	85.67% {transform: translateX(3.51px) translateY(1px) rotate(-.8deg);}		
+	85.68% {transform: translateX(2.97px) translateY(2px) rotate(-1.5deg);}	
+	88.05% {transform: translateX(2.97px) translateY(2px) rotate(-1.5deg);}		
+	88.06% {transform: translateX(1.8px) translateY(6px) rotate(-2deg);}		
+	90.43% {transform: translateX(1.8px) translateY(6px) rotate(-2deg);}			
+	90.44% {transform: translateX(.9px) translateY(8px) rotate(-2.2deg);}	
+	92.81% {transform: translateX(.9px) translateY(8px) rotate(-2.3deg);}		
+	92.82% {transform: translateX(-1.6px) translateY(9px) rotate(-2.4deg);}			
+	95.19% {transform: translateX(-1.6px) translateY(9px) rotate(-2.5deg);}			
+	95.2% {transform: translateX(-3.8px) translateY(10px) rotate(-2.6deg);}		
+	97.57% {transform: translateX(-3.8px) translateY(10px) rotate(-2.7deg);}			
+	97.58% {transform: translateX(-6.3px) translateY(7px) rotate(-2.8deg);}		
+	99.99% {transform: translateX(-6.3px) translateY(7px) rotate(-2.9deg);}			
+	100% {transform: translateX(-7.2px) translateY(4px) rotate(-3deg);}			
+}
+@keyframes wiki-HistoryTitle {
+  0% {
+    color: #B2F1A4;
+  }
+  50% {
+    color: #EFFDE8;
+  }
+  100% {
+    color: #B2F1A4;
+  }
+}
+   @keyframes wiki-RealityTitle {
+  0%   { color: #5a8ee6; }
+  10%  { color: #8597f4; }
+  20%  { color: #A0AAC0; }
+  30%  { color: #81A294; }
+  40%  { color: #9BD0B3; }
+  50%  { color: #79B2B0; }
+  60%  { color: #AC99AD; }
+  70%  { color: #A179BD; }
+  80%  { color: #BCA0CD; }
+  90%  { color: #A0AAC0; }
+  100% { color: #5a8ee6; }
+}
+@keyframes wiki-EquinoxGradientRework{
+	0% {background: linear-gradient(177deg, #000916 48%, #ffffff 50%); -webkit-background-clip: text !important; background-clip: text; -webkit-text-fill-color: transparent;}
+	25%  {background: linear-gradient(357deg, #000916 48%, #ffffff 50%); -webkit-background-clip: text !important; background-clip: text; -webkit-text-fill-color: transparent;}
+	50% {background: linear-gradient(177deg, #000916 48%, #ffffff 50%); -webkit-background-clip: text !important; background-clip: text; -webkit-text-fill-color: transparent;}	
+	75%  {background: linear-gradient(357deg, #000916 48%, #ffffff 50%); -webkit-background-clip: text !important; background-clip: text; -webkit-text-fill-color: transparent;}	
+	100% {background: linear-gradient(177deg, #000916 48%, #ffffff 50%); -webkit-background-clip: text !important; background-clip: text; -webkit-text-fill-color: transparent;}	
+}
+
+@keyframes wiki-EquinoxStrokeGradientRework{
+	0% {background: linear-gradient(177deg, #02070c 25%, #b9bbbe 35%, #000813 40%, #ced0d2 45%, #081521 50%, #ffffff 51%, #999ca0 60%, #f3f5f6 65%, #404c57 78%, #ffffff 80%); -webkit-text-stroke: 1.5px transparent; -webkit-background-clip: text !important; background-clip: text; -webkit-text-fill-color: transparent;}
+	25%  {background: linear-gradient(357deg, #02070c 25%, #b9bbbe 35%, #000813 40%, #ced0d2 45%, #081521 50%, #ffffff 51%, #999ca0 60%, #f3f5f6 65%, #404c57 78%, #ffffff 80%); -webkit-text-stroke: 1.5px transparent; -webkit-background-clip: text !important; background-clip: text; -webkit-text-fill-color: transparent;}
+	50% {background: linear-gradient(177deg, #02070c 25%, #b9bbbe 35%, #000813 40%, #ced0d2 45%, #081521 50%, #ffffff 51%, #999ca0 60%, #f3f5f6 65%, #404c57 78%, #ffffff 80%); -webkit-text-stroke: 1.5px transparent; -webkit-background-clip: text !important; background-clip: text; -webkit-text-fill-color: transparent;}	
+	75%  {background: linear-gradient(357deg, #02070c 25%, #b9bbbe 35%, #000813 40%, #ced0d2 45%, #081521 50%, #ffffff 51%, #999ca0 60%, #f3f5f6 65%, #404c57 78%, #ffffff 80%); -webkit-text-stroke: 1.5px transparent; -webkit-background-clip: text !important; background-clip: text; -webkit-text-fill-color: transparent;}	
+	100% {background: linear-gradient(177deg, #02070c 25%, #b9bbbe 35%, #000813 40%, #ced0d2 45%, #081521 50%, #ffffff 51%, #999ca0 60%, #f3f5f6 65%, #404c57 78%, #ffffff 80%); -webkit-text-stroke: 1.5px transparent; -webkit-background-clip: text !important; background-clip: text; -webkit-text-fill-color: transparent;}	
+}
+
+@keyframes wiki-EquinoxTransitionRework{
+	0% {color: rgb(255 255 255/0%); -webkit-text-stroke: 1.5px rgb(255 255 255 0%);}
+	7% {color: rgb(255 255 255/0%); -webkit-text-stroke: 1.5px rgb(255 255 255 0%);}	
+	12.5% {color: rgb(255 255 255/100%); -webkit-text-stroke: 1.5px rgb(255 255 255 100%);}	
+	17% {color: rgb(255 255 255/0%); -webkit-text-stroke: 1.5px rgb(255 255 255 0%);}
+	25% {color: rgb(255 255 255/0%); -webkit-text-stroke: 1.5px rgb(255 255 255 0%);}
+	32% {color: rgb(255 255 255/0%); -webkit-text-stroke: 1.5px rgb(255 255 255 0%);}
+	37.5% {color: rgb(255 255 255/100%); -webkit-text-stroke: 1.5px rgb(255 255 255 100%);}	
+	42% {color: rgb(255 255 255/0%); -webkit-text-stroke: 1.5px rgb(255 255 255 0%);}
+	50% {color: rgb(255 255 255/0%); -webkit-text-stroke: 1.5px rgb(255 255 255 0%);}
+	57% {color: rgb(255 255 255/0%); -webkit-text-stroke: 1.5px rgb(255 255 255 0%);}
+	62.5% {color: rgb(255 255 255/100%); -webkit-text-stroke: 1.5px rgb(255 255 255 100%);}		
+	67% {color: rgb(255 255 255/0%); -webkit-text-stroke: 1.5px rgb(255 255 255 0%);}
+	75% {color: rgb(255 255 255/0%); -webkit-text-stroke: 1.5px rgb(255 255 255 0%);}
+	82% {color: rgb(255 255 255/0%); -webkit-text-stroke: 1.5px rgb(255 255 255 0%);}
+	87.5% {color: rgb(255 255 255/100%); -webkit-text-stroke: 1.5px rgb(255 255 255 100%);}		
+	92% {color: rgb(255 255 255/0%); -webkit-text-stroke: 1.5px rgb(255 255 255 0%);}
+	100% {color: rgb(255 255 255/0%); -webkit-text-stroke: 1.5px rgb(255 255 255 0%);}
+}
+
+@keyframes wiki-EquinoxPulseEffect{
+	0% {filter: opacity(30%); transform: scale(1.175) translateX(-.5px) translateY(-.5px) rotate(-1deg);}
+	12% {filter: opacity(0%); transform: scale(1.175) translateX(0) translateY(0) rotate(0deg);}
+	12.5% {filter: opacity(100%); transform: scale(1) translateX(.5px) translateY(1px) rotate(1deg);}	
+	25% {filter: opacity(30%); transform: scale(1.175) translateX(0) translateY(0) rotate(1deg);}	
+	37% {filter: opacity(0%); transform: scale(1.175) translateX(-.5px) translateY(-.5px) rotate(0deg);}	
+	37.5% {filter: opacity(100%); transform: scale(1) translateX(0) translateY(-1px) rotate(-1deg);}	
+	50% {filter: opacity(30%); transform: scale(1.175) translateX(.5px) translateY(-.3px) rotate(-1deg);}	
+	62% {filter: opacity(0%); transform: scale(1.175) translateX(0) translateY(.1px) rotate(0deg);}	
+	62.5% {filter: opacity(100%); transform: scale(1) translateX(-.5px) translateY(1px) rotate(1deg);}	
+	75% {filter: opacity(30%); transform: scale(1.175) translateX(0) translateY(.5px) rotate(1deg);}	
+	87% {filter: opacity(0%); transform: scale(1.175) translateX(.5px) translateY(-.1px) rotate(0deg);}
+	87.5% {filter: opacity(100%); transform: scale(1) translateX(0) translateY(-1px) rotate(-1deg);}	
+	100% {filter: opacity(30%); transform: scale(1.175) translateX(-.5px) translateY(-.5px) rotate(-1deg);}		
+}
+
+@keyframes wiki-EquinoxPulseRework{
+	0% {transform: scale(1) translateX(-.5px) translateY(-.5px) rotate(-1deg);}
+	12% {transform: scale(1) translateX(0) translateY(0) rotate(0deg);}	
+	12.5% {transform: scale(1.025) translateX(.5px) translateY(1px) rotate(1deg);}
+	25% {transform: scale(1) translateX(0) translateY(0) rotate(1deg);}	
+	37% {transform: scale(1) translateX(-.5px) translateY(-.5px) rotate(0deg);}
+	37.5% {transform: scale(1.025) translateX(0) translateY(-1px) rotate(-1deg);}	
+	50% {transform: scale(1) translateX(.5px) translateY(-.3px) rotate(-1deg);}	
+	62% {transform: scale(1) translateX(0) translateY(.1px) rotate(0deg);}	
+	62.5% {transform: scale(1.025) translateX(-.5px) translateY(1px) rotate(1deg);}	
+	75% {transform: scale(1) translateX(0) translateY(.5px) rotate(1deg);}	
+	87% {transform: scale(1) translateX(.5px) translateY(-.1px) rotate(0deg);}
+	87.5% {transform: scale(1.025) translateX(0) translateY(-1px) rotate(-1deg);}	
+	100% {transform: scale(1) translateX(-.5px) translateY(-.5px) rotate(-1deg);}	
+}
+@keyframes wiki-FOTCMGradient{
+	0% {background-position: 400% 0;}
+	100% {background-position: 0 0;}	
+}
+
+@keyframes wiki-NewGlitchFont{
+	0% {font-family: Jura;}
+	2.17% {font-family: Kalam;}
+	4.34% {font-family: Michroma;}
+	6.51% {font-family: sans-serif;}
+	8.68% {font-family: Permanent Marker;}	
+	10.85% {font-family: Arial;}
+	13.02% {font-family: Noto Sans TC;}	
+	15.19% {font-family: Sarpanch;}	
+	17.36% {font-family: Special Elite;}	
+	19.53% {font-family: Arial;}
+	21.7% {font-family: Arial; font-weight: bold;}	
+	23.87% {font-family: Noto Sans TC;}	
+	26.04% {font-family: Noto Sans TC; font-weight: bold;}	
+	28.21% {font-family: Noto Sans TC;}
+	30.38% {font-family: Arial; font-style: italic;}
+	32.55% {font-family: Noto Serif TC;}
+	34.72% {font-family: Comic Neue;}	
+	36.89% {font-family: Noto Sans TC;}	
+	39.06% {font-family: Noto Sans TC; font-weight: bold;}	
+	41.23% {font-family: Arial; font-weight: 900;}	
+	43.4% {font-family: Amatic SC;}
+	45.57% {font-family: Bangers;}
+	47.74% {font-family: Creepster;}	
+	49.91% {font-family: Denk One;}	
+	52.08% {font-family: Fondamento;}	
+	54.25% {font-family: Patrick Hand;}	
+	56.42% {font-family: Indie Flower;}	
+	58.59% {font-family: Josefin Sans;}	
+	60.76% {font-family: Jura;}
+	62.93% {font-family: Kalam;}	
+	65.1% {font-family: Luckiest Guy;}	
+	67.27% {font-family: Merriweather;}	
+	69.44% {font-family: Michroma;}	
+	71.61% {font-family: Arial;}
+	73.78% {font-family: Denk One;}	
+	75.95% {font-family: Patrick Hand;}	
+	78.12% {font-family: Permanent Marker;}	
+	80.29% {font-family: Arial;}
+	82.46% {font-family: Sarpanch;}	
+	84.63% {font-family: Special Elite;}	
+	86.8% {font-family: Noto Sans TC;}	
+	88.97% {font-family: Arial;}
+	91.14% {font-family: Noto Sans TC; font-weight: bold;}	
+	93.31% {font-family: Noto Sans TC;}	
+	95.48% {font-family: Arial; font-weight: bold;}	
+	97.65% {font-family: Noto Sans TC;}	
+	100% {font-family: Noto Sans TC; font-weight: bold;}	
+}
+
+@keyframes wiki-NewGlitchTextStroke{
+	0%{-webkit-background-clip: text !important;-webkit-text-fill-color: black;background-clip: text;-webkit-text-stroke:2px transparent;background: linear-gradient(to bottom, #131323 41%, #4f3d91 42%, #1b0f47 45%, #4a3e7a 50%, #040b22 55%, #21135c 60%, #02011a 62%, #422d8e 75%);}
+	25%{-webkit-background-clip: text !important;-webkit-text-fill-color: black;background-clip: text;-webkit-text-stroke:2px transparent;background: linear-gradient(to bottom, #173424 25%, #030a03 41%, #2e5540 42%, #030a03 45%, #23372d 50%, #030a03 55%, #204c35 60%, #091106 62%, #204c35 75%);}	
+	50%{-webkit-background-clip: text !important;-webkit-text-fill-color: black;background-clip: text;-webkit-text-stroke:2px transparent;background: linear-gradient(to bottom, #662b39 25%, #1b030a 41%, #905062 42%, #220002 45%, #7a4c57 50%, #220002 55%, #773c4a 60%, #220002 62%, #762c3c 75%);}	
+	75%{-webkit-background-clip: text !important;-webkit-text-fill-color: black;background-clip: text;-webkit-text-stroke:2px transparent;background: linear-gradient(to bottom, #1b0b1c 25%, #050a09 41%, #6d3479 42%, #30083a 45%, #5c3966 50%, #1c0223 55%, #53265a 60%, #0b0b12 62%, #6e2d8c 75%);}		
+	100%{-webkit-background-clip: text !important;-webkit-text-fill-color: black;background-clip: text;-webkit-text-stroke:2px transparent;background: linear-gradient(to bottom, #3a3c3e 25%, #050a09 41%, #787c7a 42%, #232323 45%, #6d7175 50%, #050a09 55%, #5e625c 60%, #010202 62%, #6d7175 75%);}		
+}
+
+@keyframes wiki-GlitchTitle{
+	0%{content: "glI/T_C&h-";}
+	4.3%{content: "GL4ITCH";}	
+	8.6%{content: "GLIt.ch";}	
+	12.9%{content: "GLi(Tc-H";}
+	17.2%{content: "glitCh";}	
+	21.5%{content: "G''liTcH}";}
+	25.8%{content: "GL'it+'CH";}	
+	30.1%{content: "GL,IT(cH";}
+	34.4%{content: "gLit^CH";}	
+	38.7%{content: "GLitC%h#";}	
+	43%{content: "G<(litch''";}	
+	47.3%{content: "gLi@TCH'";}	
+	51.6%{content: "GLi(Tc-H";}
+	55.9%{content: "glitch";}
+	60.2%{content: "g}L>I*tc/H";}	
+	64.5%{content: "gLIt=CH";}	
+	68.8%{content: "GLi(Tc-H";}
+	73.1%{content: "g?liTc'h|";}	
+	77.4%{content: "G''lItC[h/";}	
+	81.7%{content: "g#LiT/cH";}	
+	86%{content: "g.lIT|cH&";}
+	90.3%{content: "gliTCH";}	
+	94.6%{content: "g*Lit%CH";}	
+	98.9%{content: "GLITch^";}	
+	100%{content: "g;lI*TC_H";}	
+}
+@keyframes wiki-OppressionGradient {
+	0% {background:linear-gradient(90deg,white,white,white, white,white,white, black,black,black, white,white,white, black,black,black, white,white,white, black,black,black, white,white,white, white,white,white, white,white,white, black,black,black, white,white,white);}
+	
+	5% {background:linear-gradient(90deg,black,black,black, white,white,white, black,black,black, white,white,white, white,white,white, black,black,black, black,black,black, white,white,white, black,black,black, white,white,white, black,black,black, white,white,white);}
+	
+	10% {background:linear-gradient(90deg,white,white,white, black,black,black, white,white,white, white,white,white, black,black,black, white,white,white, white,white,white, black,black,black, white,white,white, white,white,white, white,white,white, white,white,white);}
+	
+	15% {background:linear-gradient(90deg,black,black,black, white,white,white, black,black,black, white,white,white, black,black,black, white,white,white, black,black,black, white,white,white, black,black,black, white,white,white, black,black,black, black,black,black);}
+	
+	20% {background:linear-gradient(90deg,black,black,black, black,black,black, black,black,black, black,black,black, white,white,white, black,black,black, black,black,black, black,black,black, black,black,black, white,white,white, black,black,black, white,white,white);}
+	
+	25% {background:linear-gradient(90deg,white,white,white, white,white,white, black,black,black, white,white,white, black,black,black, white,white,white, black,black,black, white,white,white, black,black,black, black,black,black, black,white,white, white,white,white);}
+	
+	30% {background:linear-gradient(90deg,black,black,black, black,black,black, black,black,black, white,white,white, white,white,white, black,black,black, white,white,white, white,white,white, white,white,white, white,white,white, black,black,black, white,white,white);}
+	
+	35% {background:linear-gradient(90deg,white,white,white, white,white,white, white,white,white, white,white,white, black,black,black, white,white,white, black,black,black, black,black,black, black,black,black, black,black,black, black,black,black, black,black,black);}
+	
+	40% {background:linear-gradient(90deg,black,black,black, white,white,white, black,black,black, black,black,black, white,white,white, black,black,black, black,black,black, white,white,white, black,black,black, white,white,white, white,white,white, white,white,white);}
+	
+	45% {background:linear-gradient(90deg,black,black,black, black,black,black, white,white,white, white,white,white, black,black,black, white,white,white, white,white,white, black,black,black, white,white,white, black,black,black, black,black,black, white,white,white);}
+	
+	50% {background:linear-gradient(90deg,white,white,white, white,white,white, black,black,black, white,white,white, white,white,white, white,white,white, black,black,black, white,white,white, black,black,black, black,black,black, white,white,white, black,black,black);}
+	
+	55% {background:linear-gradient(90deg,black,black,black, black,black,black, white,white,white, black,black,black, black,black,black, white,white,white, black,black,black, white,white,white, white,white,white, white,white,white, black,black,black, white,white,white);}     
+	
+	60% {background:linear-gradient(90deg,black,black,black, white,white,white, black,black,black, white,white,white, white,white,white, black,black,black, white,white,white, white,white,white, black,black,black, black,black,black, white,white,white, black,black,black);}
+	
+	65% {background:linear-gradient(90deg,white,white,white, white,white,white, black,black,black, white,white,white, black,black,black, white,white,white, black,black,black, black,black,black, black,black,black, white,white,white, black,black,black, black,black,black);}
+	
+	70% {background:linear-gradient(90deg,black,black,black, white,white,white, white,white,white, black,black,black, white,white,white, white,white,white, black,black,black, white,white,white, white,white,white, white,white,white, black,black,black, white,white,white);}
+	
+	75% {background:linear-gradient(90deg,black,black,black, black,black,black, black,black,black, white,white,white, black,black,black, black,black,black, white,white,white, white,white,white, black,black,black, black,black,black, white,white,white, black,black,black);}
+	
+	80% {background:linear-gradient(90deg,black,black,black, black,black,black, white,white,white, white,white,white, black,black,black, white,white,white, black,black,black, black,black,black, white,white,white, white,white,white, black,black,black, white,white,white);}
+	
+	85% {background:linear-gradient(90deg,black,black,black, black,black,black, black,black,black, black,black,black, white,white,white, white,white,white, black,black,black, white,white,white, black,black,black, black,black,black, white,white,white, black,black,black);}
+	
+	90% {background:linear-gradient(90deg,white,white,white, white,white,white, black,black,black, white,white,white, black,black,black, black,black,black, white,white,white, black,black,black, black,black,black, white,white,white, black,black,black, white,white,white);}
+	
+	95% {background:linear-gradient(90deg,white,white,white, black,black,black, white,white,white, black,black,black, black,black,black, white,white,white, black,black,black, white,white,white, black,black,black, black,black,black, white,white,white, white,white,white);}
+	
+	100% {background:linear-gradient(90deg,black,black,black, white,white,white, black,black,black, white,white,white, black,black,black, white,white,white, black,black,black, black,black,black, black,black,black, white,white,white, black,black,black, black,black,black);}
+}
+@keyframes wiki-HarvesterGradient {
+  0% {
+    background-position: 0% 0%;
+  }
+  100% {
+    background-position: 200% 0%;
+  }
+}
+
+ @keyframes wiki-HarvesterShake {
+   0% { transform: translate(0px, 0px) rotate(0deg); }
+   20% { transform: translate(-0.01em, 0.01em) rotate(-1deg); }
+   40% { transform: translate(0.01em, -0.01em) rotate(1deg); }
+   60% { transform: translate(-0.01em, -0.01em) rotate(0deg); }
+   80% { transform: translate(0.01em, 0.01em) rotate(1deg); }
+   100% { transform: translate(0px, 0px) rotate(0deg); }
+}
+@keyframes wiki-ArachnophobiaMovement{
+     0% {transform: rotate(0deg) translate(-0.03em);}
+     10% {transform: rotate(1deg) translate(0em);}     
+     20% {transform: rotate(2deg) translate(-0.03em);}     
+     30% {transform: rotate(1.5deg) translate(0em);}
+     40% {transform: rotate(1deg) translate(-0.03em);}          
+     50% {transform: rotate(0deg) translate(0em);} 
+     60% {transform: rotate(-1deg) translate(-0.03em);}     
+     70% {transform: rotate(-2deg) translate(0em);}
+     80% {transform: rotate(-1.5deg) translate(-0.03em);}
+     90% {transform: rotate(-1deg) translate(0em);}            
+     100% {transform: rotate(0deg) translate(-0.03em);}        
+}    
+
+    @keyframes wiki-ArachnophobiaEffect{
+     0%, 100% {transform: translate(-.05em, -.025em); filter: opacity(10%)}
+     50% {transform: translate(-.06em, -.003em); filter: opacity(75%)}
+    }
+@keyframes wiki-DreamTravelerGradient {
+	0% {-webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; background-image: linear-gradient(170deg, #2e1885 27%, #c5aefe 33%, #41307a 42%, #fdeef4 46%, #f3daf3 52%, #6f1930 70%, #c26181 75%, #f1a9cb 90%); background-size: 50%;}
+	25% {-webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; background-image: linear-gradient(170deg, #a7a7f6 23%, #bdbcfc 25%, #706fbc 34%, #e0e1ff 50%, #a3abf2 65%, #f0f6ff 75%); background-size: 50%;}
+	50% {-webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; background-image: linear-gradient(170deg, #2e1885 27%, #c5aefe 33%, #41307a 42%, #fdeef4 46%, #f3daf3 52%, #6f1930 70%, #c26181 75%, #f1a9cb 90%); background-size: 50%;}
+	75% {-webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; background-image: linear-gradient(170deg, #a7a7f6 23%, #bdbcfc 25%, #706fbc 34%, #e0e1ff 50%, #a3abf2 65%, #f0f6ff 75%); background-size: 50%;}	
+	100% {-webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; background-image: linear-gradient(170deg, #2e1885 27%, #c5aefe 33%, #41307a 42%, #fdeef4 46%, #f3daf3 52%, #6f1930 70%, #c26181 75%, #f1a9cb 90%); background-size: 50%;}	
+}
+
+@keyframes wiki-DreamTravelerStroke {
+	0% {-webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; background-image: linear-gradient(170deg, #b89ffa 25%, #6a50c6 30%, #492da6 35%, #b399e9 45%, #fbedfd 47%, #cc72bd 65%, #ae5c89 70%, #f1a9cb 80%); -webkit-text-stroke-width:.05em; -webkit-text-stroke-color: transparent; filter: blur(.01em); background-size: 50%;}
+	25% {-webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; background-image: linear-gradient(170deg, #9fd8fa 25%, #bce6ff 30%, #b5dbee 35%, #99d4e9 45%, #edfbfd 47%, #cedade 65%, #c5faff 70%, #a9d2f1 80%); -webkit-text-stroke-width:.05em; -webkit-text-stroke-color: transparent; filter: blur(.01em); background-size: 50%;}
+	50% {-webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; background-image: linear-gradient(170deg, #b89ffa 25%, #6a50c6 30%, #492da6 35%, #b399e9 45%, #fbedfd 47%, #cc72bd 65%, #ae5c89 70%, #f1a9cb 80%); -webkit-text-stroke-width:.05em; -webkit-text-stroke-color: transparent; filter: blur(.01em); background-size: 50%;}
+	75% {-webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; background-image: linear-gradient(170deg, #9fd8fa 25%, #bce6ff 30%, #b5dbee 35%, #99d4e9 45%, #edfbfd 47%, #cedade 65%, #c5faff 70%, #a9d2f1 80%); -webkit-text-stroke-width:.05em; -webkit-text-stroke-color: transparent; filter: blur(.01em); background-size: 50%;}	
+	100% {-webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; background-image: linear-gradient(170deg, #b89ffa 25%, #6a50c6 30%, #492da6 35%, #b399e9 45%, #fbedfd 47%, #cc72bd 65%, #ae5c89 70%, #f1a9cb 80%); -webkit-text-stroke-width:.05em; -webkit-text-stroke-color: transparent; filter: blur(.01em); background-size: 50%;}	
+}
+
+@keyframes wiki-DreamTravelerTransition {
+	0% {color: transparent; -webkit-text-stroke-width: .05em; -webkit-text-stroke-color: transparent}
+	6.25% {color: transparent; -webkit-text-stroke-width: .05em; -webkit-text-stroke-color: transparent}	
+	12.5% {color: white; -webkit-text-stroke-width: .05em; -webkit-text-stroke-color: white}
+	18.75% {color: transparent; -webkit-text-stroke-width: .05em; -webkit-text-stroke-color: transparent}	
+	25% {color: transparent; -webkit-text-stroke-width: .05em; -webkit-text-stroke-color: transparent}
+	31.25% {color: transparent; -webkit-text-stroke-width: .05em; -webkit-text-stroke-color: transparent}
+	37.5% {color: white; -webkit-text-stroke-width: .05em; -webkit-text-stroke-color: white}
+	43.75% {color: transparent; -webkit-text-stroke-width: .05em; -webkit-text-stroke-color: transparent}	
+	50% {color: transparent; -webkit-text-stroke-width: .05em; -webkit-text-stroke-color: transparent}
+	56.25% {color: transparent; -webkit-text-stroke-width: .05em; -webkit-text-stroke-color: transparent}	
+	62.5% {color: white; -webkit-text-stroke-width: .05em; -webkit-text-stroke-color: white}
+	68.75% {color: transparent; -webkit-text-stroke-width: .05em; -webkit-text-stroke-color: transparent}	
+	75% {color: transparent; -webkit-text-stroke-width: .05em; -webkit-text-stroke-color: transparent}
+	81.25% {color: transparent; -webkit-text-stroke-width: .05em; -webkit-text-stroke-color: transparent}	
+	87.5% {color: white; -webkit-text-stroke-width: .05em; -webkit-text-stroke-color: white}
+	93.75% {color: transparent; -webkit-text-stroke-width: .05em; -webkit-text-stroke-color: transparent}
+	100% {color: transparent; -webkit-text-stroke-width: .05em; -webkit-text-stroke-color: transparent}	
+}
+@keyframes wiki-BloatedAnimation{
+	0% {background-position: 0 100%;}
+	100% {background-position: -200% 100%;}
+}
+@keyframes wiki-EquinoxYaaiGradient{
+	0% {
+		background: linear-gradient(172deg, #000000 30%, #060606 47%, #aaaaaa 50%, #ffffff 51%, #fffffd 60%, #fdfdfd 70%); -webkit-background-clip: text !important; background-clip: text;
+	}
+	25% {
+		background: linear-gradient(352deg, #000000 30%, #060606 47%, #aaaaaa 50%, #ffffff 51%, #fffffd 60%, #fdfdfd 70%); -webkit-background-clip: text !important; background-clip: text;
+	}
+	50% {
+		background: linear-gradient(172deg, #000000 30%, #060606 47%, #aaaaaa 50%, #ffffff 51%, #fffffd 60%, #fdfdfd 70%); -webkit-background-clip: text !important; background-clip: text;
+	}
+	75% {
+		background: linear-gradient(352deg, #000000 30%, #060606 47%, #aaaaaa 50%, #ffffff 51%, #fffffd 60%, #fdfdfd 70%); -webkit-background-clip: text !important; background-clip: text;
+	}
+    100% {
+		background: linear-gradient(172deg, #000000 30%, #060606 47%, #aaaaaa 50%, #ffffff 51%, #fffffd 60%, #fdfdfd 70%); -webkit-background-clip: text !important; background-clip: text;
+	}	
+}
+
+ @keyframes wiki-EquinoxYaaiStrokeGradient{
+	0% {
+		background: linear-gradient(172deg, #070807 30%, #d5d5d5 42%, #3b3b3b 45%, #f4f4f4 48%, #2e2e2e 50%, #fdfdfd 51%, #eeefee 60%, #fefefe 65%, #b0b0b0 70%, #fdfdfb 71%, #f7f7f7 85%); -webkit-background-clip: text !important; background-clip: text; -webkit-text-stroke: 2px transparent;
+	}
+	25% {
+		background: linear-gradient(352deg, #070807 30%, #d5d5d5 42%, #3b3b3b 45%, #f4f4f4 48%, #2e2e2e 50%, #fdfdfd 51%, #eeefee 60%, #fefefe 65%, #b0b0b0 70%, #fdfdfb 71%, #f7f7f7 85%); -webkit-background-clip: text !important; background-clip: text; -webkit-text-stroke: 2px transparent;
+	}	
+	50% {
+		background: linear-gradient(172deg, #070807 30%, #d5d5d5 42%, #3b3b3b 45%, #f4f4f4 48%, #2e2e2e 50%, #fdfdfd 51%, #eeefee 60%, #fefefe 65%, #b0b0b0 70%, #fdfdfb 71%, #f7f7f7 85%); -webkit-background-clip: text !important; background-clip: text; -webkit-text-stroke: 2px transparent;
+	}	
+	75% {
+		background: linear-gradient(352deg, #070807 30%, #d5d5d5 42%, #3b3b3b 45%, #f4f4f4 48%, #2e2e2e 50%, #fdfdfd 51%, #eeefee 60%, #fefefe 65%, #b0b0b0 70%, #fdfdfb 71%, #f7f7f7 85%); -webkit-background-clip: text !important; background-clip: text; -webkit-text-stroke: 2px transparent;
+	}
+	100% {
+		background: linear-gradient(172deg, #070807 30%, #d5d5d5 42%, #3b3b3b 45%, #f4f4f4 48%, #2e2e2e 50%, #fdfdfd 51%, #eeefee 60%, #fefefe 65%, #b0b0b0 70%, #fdfdfb 71%, #f7f7f7 85%); -webkit-background-clip: text !important; background-clip: text; -webkit-text-stroke: 2px transparent;
+	}
+}
+
+ @keyframes wiki-EquinoxYaaiGradientTransition{
+	0%, 6.25% {
+		color: transparent; -webkit-text-stroke: 0 transparent
+	}
+	12.5% {
+		color: white; -webkit-text-stroke: 2.2px white;
+	}	
+	18.75%, 31.25% {
+		color: transparent; -webkit-text-stroke: 0 transparent
+	}
+	37.5% {
+		color: white; -webkit-text-stroke: 2.2px white;
+	}	
+	43.75%, 56.25% {
+		color: transparent; -webkit-text-stroke: 0 transparent
+	}
+	62.5% {
+		color: white; -webkit-text-stroke: 2.2px white;
+	}	
+	68.75%, 81.25% {
+		color: transparent; -webkit-text-stroke: 0 transparent
+	}
+	87.5% {
+		color: white; -webkit-text-stroke: 2.2px white;
+	}	
+    93.75%, 100% {
+		color: transparent; -webkit-text-stroke: 0 transparent
+	}	
+}
+
+@keyframes wiki-EquinoxYaaiMovement{
+	0%{
+		transform: translateX(2px) translateY(0) rotate(8deg);
+	}
+	12.5%{
+		transform: translateX(1px) translateY(0) rotate(4deg);
+	}	
+	25%{
+		transform: translateX(0px) translateY(1px) rotate(0deg);
+	}	
+	37.5%{
+		transform: translateX(-1px) translateY(0px) rotate(-6deg);
+	}		
+	50%{
+		transform: translateX(-2px) translateY(0px) rotate(-8deg);
+	}
+	62.5%{
+		transform: translateX(0px) translateY(-1px) rotate(-4deg);
+	}	
+	75%{
+		transform: translateX(1px) translateY(-2px) rotate(0deg);
+	}	
+	87.5%{
+		transform: translateX(2px) translateY(-1px) rotate(6deg);
+	}	
+	100%{
+		transform: translateX(2px) translateY(0px) rotate(8deg);
+	}		
+}
