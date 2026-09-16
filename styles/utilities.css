@@ -8803,3 +8803,20 @@ body.reduce-motion .sigil-wiki {
         gap: 7px;
     }
 }
+
+.footer-credits__list > .footer-credits__item.footer-credits__item--wiki-artwork {
+    grid-column: 1 / -1 !important;
+    display: block !important;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.footer-credits__item.footer-credits__item--wiki-artwork .footer-credits__item-kind {
+    display: inline-block;
+    margin-right: 7px;
+    vertical-align: 1px;
+}
+
+.footer-credits__item.footer-credits__item--wiki-artwork a {
+    display: inline !important;
+}
