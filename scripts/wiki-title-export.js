@@ -70,21 +70,36 @@
         const holder = document.createElement('div');
         holder.setAttribute('aria-hidden', 'true');
         holder.style.cssText = `position:fixed;left:-100000px;top:0;width:${maxWidth}px;pointer-events:none;color:#f5f8ff;font:28px Sarpanch,sans-serif;`;
+        let previousTier = null;
         const rows = records.map(record => {
             const row = document.createElement('div');
             row.style.cssText = 'padding:12px 10px;line-height:1.65;box-sizing:border-box;';
-            if (record.prefix) row.append(document.createTextNode(`${record.prefix} `));
+            const tierKey = record.tierKey || resolveAuraDisplayTierKey(record.aura, record.biome ?? null);
+            const tierClass = `rarity-tier-${tierKey}`;
+            if (tierKey !== previousTier) {
+                const heading = createAuraTierHeading(tierKey);
+                if (heading) { heading.style.fontSize = '20px'; row.append(heading); }
+            }
+            previousTier = tierKey;
+            if (record.prefix) {
+                const prefix = document.createElement('span');
+                prefix.className = `aura-tier-detail aura-native ${tierClass}`;
+                prefix.textContent = `${record.prefix} `;
+                row.append(prefix);
+            }
             const name = document.createElement('span');
             const displayName = record.displayName.split(' | Times Rolled:')[0];
-            name.innerHTML = formatAuraNameMarkup({ ...record.aura, subtitle: null }, displayName);
+            name.innerHTML = formatAuraNameMarkup({ ...record.aura, subtitle: null }, displayName, record.biome ?? null);
             row.append(name);
             const count = document.createElement('span');
-            count.style.cssText = 'margin-left:20px;font:500 22px Sarpanch,sans-serif;color:#cfe7ff;white-space:nowrap;display:inline-block;';
+            count.className = `aura-tier-detail aura-count ${tierClass}`;
+            count.style.cssText = 'margin-left:20px;font:500 22px Sarpanch,sans-serif;white-space:nowrap;display:inline-block;';
             count.textContent = record.countLabel || `Times Rolled: ${formatWithCommas(record.count)}`;
             row.append(count);
             if (record.subtitle) {
                 const subtitle = document.createElement('div');
-                subtitle.style.cssText = 'font:italic 20px Sarpanch,sans-serif;color:#cfe7ff';
+                subtitle.className = `aura-tier-detail ${tierClass}`;
+                subtitle.style.cssText = 'font:italic 20px Sarpanch,sans-serif';
                 subtitle.textContent = record.subtitle;
                 row.append(subtitle);
             }

@@ -440,6 +440,62 @@ const server = http.createServer((req, res) => {
         assert.equal(await page.locator('#versionInfoButton').getAttribute('data-version-id'), 'v2.1.1');
         assert.equal(await page.locator('[data-changelog-tab]').first().getAttribute('data-changelog-tab'), 'v2.1.1');
         assert.equal(await page.locator('#changelog-panel-v210 .changelog-subupdate-card').count(), 0);
+        results.tierPresentation = await page.evaluate(() => {
+            const names = ['Common', 'Magnetic', 'Aquatic', 'Exotic', 'Arcane', 'Chromatic', 'Sovereign', 'Luminosity', 'Illusionary', 'Cryogenic', 'Meta', 'Lunar'];
+            const auras = names.map(name => AURA_BY_CANONICAL_NAME.get(name));
+            const counts = new Uint32Array(AURA_REGISTRY.length).fill(3);
+            const lunar = AURA_BY_CANONICAL_NAME.get('Lunar');
+            const collection = buildResultEntries(auras, 'normal', new Map([[lunar.name, { count: 1, btChance: 5000 }]]), 1, { winCounts: counts });
+            feedContainer.innerHTML = '<span class="roll-feed__results-list">' + collection.feedRecords.map((record, index) =>
+                `<span class="roll-feed__result-entry" data-roll-feed-entry data-aura-tier="${record.tierKey}" data-result-order="${index}" data-aura-name="${encodeURIComponent(record.auraName)}" data-aura-sort-name="${encodeURIComponent(record.alphabeticalName)}" data-aura-priority="${record.priority}">${record.markup}</span>`
+            ).join('') + '</span>';
+            setRollFeedSortingAvailable(true, { resetMode: true, supportsRecent: false });
+            applyRollFeedSort('rarity');
+            const list = feedContainer.querySelector('.roll-feed__results-list');
+            const headings = [...list.querySelectorAll('.aura-tier-separator')];
+            const byName = name => [...list.querySelectorAll('[data-roll-feed-entry]')].find(row => decodeURIComponent(row.dataset.auraName).startsWith(name + ' - '));
+            const color = (name, selector) => getComputedStyle(byName(name).querySelector(selector)).color;
+            const sampleColors = ['Common', 'Magnetic', 'Aquatic', 'Arcane', 'Chromatic', 'Sovereign', 'Luminosity'].map(name => ({
+                name, rarity: color(name, '.aura-rarity'), count: color(name, '.aura-count')
+            }));
+            const native = list.querySelector('.aura-native');
+            const nativeRarity = native.parentElement.querySelector('.aura-rarity');
+            populateAuraFilterList();
+            return {
+                sampleColors,
+                namesOnly: list.querySelectorAll('.wiki-title--rarity').length === 0 && list.querySelectorAll('.aura-rarity .wiki-title').length === 0,
+                nativeTierMatches: native.classList.contains('rarity-tier-' + native.closest('[data-roll-feed-entry]').dataset.auraTier)
+                    && getComputedStyle(native).color === getComputedStyle(nativeRarity).color
+                    && getComputedStyle(native).backgroundImage === getComputedStyle(nativeRarity).backgroundImage,
+                headingsMatchNextRow: headings.every(heading => heading.dataset.auraTierHeading === heading.nextElementSibling.dataset.auraTier),
+                filterTiers: [...new Set([...document.querySelectorAll('#auraFilterList .aura-tier-separator')].map(heading => heading.dataset.auraTierHeading))].sort()
+            };
+        });
+        assert.equal(results.tierPresentation.namesOnly, true);
+        assert.equal(results.tierPresentation.nativeTierMatches, true);
+        assert.equal(results.tierPresentation.headingsMatchNextRow, true);
+        const tierColors = ['rgb(216, 221, 234)', 'rgb(129, 84, 130)', 'rgb(219, 167, 56)', 'rgb(223, 26, 176)', 'rgb(16, 71, 124)', 'rgb(133, 16, 16)', 'rgb(183, 245, 245)'];
+        results.tierPresentation.sampleColors.forEach((sample, index) => {
+            assert.equal(sample.rarity, tierColors[index], sample.name);
+            assert.equal(sample.count, tierColors[index], sample.name);
+        });
+        assert.deepEqual(results.tierPresentation.filterTiers, ['basic', 'challenged', 'epic', 'exalted', 'glorious', 'legendary', 'mythic', 'transcendent', 'unique']);
+        await page.locator('#rollFeedSearch').fill('sovereign');
+        await page.waitForFunction(() => document.querySelectorAll('.roll-feed__results-list .aura-tier-separator').length === 1);
+        assert.equal(await page.locator('.roll-feed__results-list .aura-tier-separator').textContent(), 'Glorious');
+        await page.locator('#rollFeedSearch').fill('no-such-aura-test');
+        await page.waitForFunction(() => !document.querySelector('.roll-feed__results-list .aura-tier-separator'));
+        await page.locator('#rollFeedSearch').fill('');
+        await page.waitForFunction(() => document.querySelectorAll('.roll-feed__results-list .aura-tier-separator').length > 1);
+        await page.evaluate(() => applyRollFeedSort('alphabetical'));
+        assert.equal(await page.locator('.roll-feed__results-list .aura-tier-separator').count(), 0);
+        await page.evaluate(() => applyRollFeedSort('rarity'));
+        await page.locator('.footer-credits__summary').click();
+        await page.locator('[data-credit-filter="artwork"]').click();
+        assert.equal(await page.locator('#creditsList .footer-credits__item:visible').count(), 1);
+        assert.match(await page.locator('#creditsList .footer-credits__item:visible').textContent(), /Sol's RNG Wiki contributors/);
+        assert.equal(await page.locator('#creditsList [data-credit-category="artwork"] a').first().getAttribute('href'), 'https://sol-rng.fandom.com/wiki/Auras');
+        await page.locator('.footer-credits__summary').click();
         // The bottom switch updates already-mounted and future titles, persists,
         // and leaves item artwork independent of the aura preference.
         const auraSwitch = page.getByRole('switch', { name: 'Full Aura Style Rework', exact: true });
@@ -463,13 +519,16 @@ const server = http.createServer((req, res) => {
                 allPlain: titles.every(title => getComputedStyle(title.querySelector('.wiki-title__art')).display === 'none'
                     && getComputedStyle(title.querySelector('.wiki-title__plain')).display !== 'none'),
                 separateStyledRarities: window.preferenceFixture.querySelectorAll('.wiki-title--rarity').length,
+                headingsHidden: [...document.querySelectorAll('.aura-tier-separator')].every(heading => getComputedStyle(heading).display === 'none'),
+                oldTierColor: getComputedStyle(document.querySelector('.roll-feed__results-list .wiki-title__plain.rarity-tier-glorious')).color,
                 itemsStillStyled: [...window.preferenceFixture.querySelectorAll('.wiki-title--item .wiki-title__art')]
                     .filter(art => getComputedStyle(art).display !== 'none').length,
                 preservedNode: document.getElementById('aura-preference-test') === window.preferenceFixture
             };
         });
         assert.deepEqual(results.auraPreference, {
-            plainTitles: 394, allPlain: true, separateStyledRarities: 3, itemsStillStyled: 2, preservedNode: true
+            plainTitles: 391, allPlain: true, separateStyledRarities: 0, headingsHidden: true,
+            oldTierColor: 'rgb(133, 16, 16)', itemsStillStyled: 2, preservedNode: true
         });
         assert.equal(await page.evaluate(() => {
             window.preferenceFixture.insertAdjacentHTML('beforeend', WikiTitles.aura('Common'));

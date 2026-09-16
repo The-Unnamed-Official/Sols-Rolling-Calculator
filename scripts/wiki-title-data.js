@@ -19,13 +19,11 @@ globalThis.WikiTitleData = {
     },
     "Illusionary": {
       "source": "https://sol-rng.fandom.com/wiki/Illusionary",
-      "markup": "<span class=\"wiki-ref-ColorChange-Illusionary\" data-color=\"#0302d2\" style=\"color:#eff4fc;font-family:Roboto Mono, Inconsolata;font-style:italic\">illusionary</span>",
-      "rarityMarkup": "<span class=\"wiki-ref-ColorChange-Illusionary\" data-color=\"#0302d2\" style=\"color:#eff4fc;font-family:Roboto Mono, Inconsolata;font-style:italic\">__RARITY__</span>"
+      "markup": "<span class=\"wiki-ref-ColorChange-Illusionary\" data-color=\"#0302d2\" style=\"color:#eff4fc;font-family:Roboto Mono, Inconsolata;font-style:italic\">illusionary</span>"
     },
     "Meta": {
       "source": "https://sol-rng.fandom.com/wiki/Meta",
-      "markup": "<span style=\"font-family:Josefin Sans;background:#0000fc;padding:.1em;color:#f1f4ff\"><span style=\"filter:drop-shadow(1px 0 0 #09089e)\">meta</span></span>",
-      "rarityMarkup": "<span style=\"font-family:Josefin Sans;background:#0000fc;padding:.1em;color:#f1f4ff\"><span style=\"filter:drop-shadow(1px 0 0 #09089e)\">__RARITY__</span></span>"
+      "markup": "<span style=\"font-family:Josefin Sans;background:#0000fc;padding:.1em;color:#f1f4ff\"><span style=\"filter:drop-shadow(1px 0 0 #09089e)\">meta</span></span>"
     },
     "Monarch": {
       "source": "https://sol-rng.fandom.com/wiki/Monarch",
@@ -781,7 +779,7 @@ globalThis.WikiTitleData = {
     },
     "Glitch": {
       "source": "https://sol-rng.fandom.com/wiki/Glitch",
-      "markup": "<span style=\"display:inline-block\"><span class=\"wiki-ref-GlitchTitle\" style=\"position:absolute\"></span><span style=\"position:relative;color:transparent;font-family:'Press Start 2P';letter-spacing:.4em\">GLITCH</span></span>"
+      "markup": "<span style=\"display:inline-block\"><span class=\"wiki-ref-GlitchTitle\" style=\"position:absolute\"></span><span style=\"position:relative;visibility:hidden;font-family:'Press Start 2P';letter-spacing:.4em\">GLITCH</span></span>"
     },
     "Imaginary": {
       "source": "https://sol-rng.fandom.com/wiki/Imaginary",
@@ -1197,8 +1195,7 @@ globalThis.WikiTitleData = {
     },
     "Cryogenic": {
       "source": "https://sol-rng.fandom.com/wiki/Cryogenic",
-      "markup": "<span style=\"font-family:Kings;font-weight:bold;letter-spacing:.3em;display:inline-block;font-style:italic\"><span class=\"wiki-ref-TextStroke\" data-text=\"Cryogenic\" style=\"-webkit-text-stroke:1px #7690bf\"></span><span style=\"position:relative;-webkit-background-clip:text !important;-webkit-text-fill-color:transparent;background:linear-gradient(to bottom, #a6c7f2 20%, #e2f1f9 50%, #cdece4 65%)\">Cryogenic</span></span>",
-      "rarityMarkup": "<span style=\"font-family:Kings;font-weight:bold;letter-spacing:.3em;display:inline-block;font-style:italic\"><span class=\"wiki-ref-TextStroke\" data-text=\"__RARITY__\" style=\"-webkit-text-stroke:1px #7690bf\"></span><span style=\"position:relative;-webkit-background-clip:text !important;-webkit-text-fill-color:transparent;background:linear-gradient(to bottom, #a6c7f2 20%, #e2f1f9 50%, #cdece4 65%)\">__RARITY__</span></span>"
+      "markup": "<span style=\"font-family:Kings;font-weight:bold;letter-spacing:.3em;display:inline-block;font-style:italic\"><span class=\"wiki-ref-TextStroke\" data-text=\"Cryogenic\" style=\"-webkit-text-stroke:1px #7690bf\"></span><span style=\"position:relative;-webkit-background-clip:text !important;-webkit-text-fill-color:transparent;background:linear-gradient(to bottom, #a6c7f2 20%, #e2f1f9 50%, #cdece4 65%)\">Cryogenic</span></span>"
     },
     "Star Rider : Snowflake": {
       "source": "https://sol-rng.fandom.com/wiki/StarRider_:_Snowflake",

@@ -5,10 +5,10 @@
         '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
     })[character]);
     const data = globalThis.WikiTitleData;
-    const wrap = (markup, label, kind) => {
+    const wrap = (markup, label, kind, tierClass = '') => {
         const art = markup.replace(/(class="wiki-ref-ColorChange-Illusionary"[^>]*>)([^<]+)(<\/span>)/g,
             (_, open, text, close) => open + [...text].map(letter => `<span>${letter}</span>`).join('') + close);
-        const simple = kind === 'item' ? '' : `<span class="wiki-title__plain" aria-hidden="true">${escape(label)}</span>`;
+        const simple = kind === 'item' ? '' : `<span class="wiki-title__plain ${escape(tierClass)}" aria-hidden="true">${escape(label)}</span>`;
         return `<span class="sigil-wiki wiki-title wiki-title--${kind}" role="img" aria-label="${escape(label)}"><span class="wiki-title__art" aria-hidden="true">${art}</span>${simple}</span>`;
     };
     const itemAliases = {
@@ -18,15 +18,12 @@
         'PLC Device': 'Pole Light Core Device', 'Singularity Device': 'Singularity Gauntlet',
         'Archangel Device': 'Heavenly Device', 'Rune of Heavens': 'Rune of Heaven'
     };
-    function aura(name, rarity = '') {
+    function aura(name, rarity = '', tierClass = 'rarity-tier-basic') {
         const title = data.auras[name];
         if (!title) return '';
-        const markup = wrap(title.markup, name, 'aura');
+        const markup = wrap(title.markup, name, 'aura', tierClass);
         if (!rarity) return markup;
-        const digits = title.rarityMarkup
-            ? wrap(title.rarityMarkup.replaceAll('__RARITY__', escape(rarity)), rarity, 'rarity')
-            : `<span class="sigil-wiki__suffix">${escape(rarity)}</span>`;
-        return `${markup}<span class="sigil-wiki__suffix"> - </span>${digits}`;
+        return `${markup}<span class="aura-tier-detail aura-rarity ${escape(tierClass)}"> - ${escape(rarity)}</span>`;
     }
     function item(name, label = name) {
         const title = data.items[itemAliases[name] || name];
@@ -41,7 +38,12 @@
         return wrap(template.innerHTML, label, 'item');
     }
     function initializeItems(root = document) {
-        root.querySelectorAll('[data-wiki-item]').forEach(element => {
+        if (!root || typeof root.querySelectorAll !== 'function') return;
+        const elements = [...root.querySelectorAll('[data-wiki-item]')];
+        if (root.matches?.('[data-wiki-item]')) {
+            elements.unshift(root);
+        }
+        elements.forEach(element => {
             if (element.dataset.wikiItemRendered) return;
             const label = element.textContent.trim();
             element.innerHTML = item(element.dataset.wikiItem, label);
@@ -51,13 +53,12 @@
     }
     const visibleLetters = new Set();
     const observedLetters = new WeakSet();
-    const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)');
     const effectSelector = '.wiki-ref-ColorChange-Illusionary';
     let timer = null;
     let visualSeed = 761;
     function tick() {
         timer = null;
-        const disabled = document.hidden || reduceMotion.matches || document.body.matches('.reduce-motion,.quality-no-roll-sigil-animations,.quality-reduced-glitch,.quality-no-glitch,.quality-simple-auras');
+        const disabled = document.hidden || document.body.matches('.quality-no-roll-sigil-animations,.quality-simple-auras');
         visibleLetters.forEach(element => {
             if (!element.isConnected) { visibility?.unobserve(element); visibleLetters.delete(element); return; }
             const letters = [...element.children];

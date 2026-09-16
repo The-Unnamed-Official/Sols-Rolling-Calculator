@@ -184,7 +184,7 @@ const PERFORMANCE_FIRST_QUALITY_DEFAULTS = Object.freeze({
     disableUiAnimations: false,
     disableShakes: false,
     disableRollAndSigilAnimations: false,
-    reduceGlitchEffects: true,
+    reduceGlitchEffects: false,
     removeGlitchEffects: false,
     disableWikiAuraStyles: false
 });
@@ -1486,11 +1486,13 @@ function populateCutsceneFilterList(mode) {
         button.type = 'button';
         button.className = `interface-toggle filter-tier-toggle ${pauseMode ? 'cutscene-pause-toggle' : 'cutscene-playback-toggle'}`;
         button.dataset.auraName = aura.name;
+        button.dataset.auraTier = resolveAuraDisplayTierKey(aura);
         button.setAttribute('aria-pressed', enabled ? 'true' : 'false');
         renderCutsceneFilterButtonLabel(button, aura, enabled, mode);
         fragment.appendChild(button);
     });
     list.appendChild(fragment);
+    syncAuraTierSeparators(list, '.cutscene-pause-toggle,.cutscene-playback-toggle');
     list.dataset.populated = 'true';
 }
 
@@ -1603,12 +1605,13 @@ function populateAuraFilterList() {
         button.type = 'button';
         button.className = 'interface-toggle filter-tier-toggle filter-aura-toggle';
         button.dataset.auraName = aura.name;
+        button.dataset.auraTier = resolveAuraDisplayTierKey(aura);
         button.setAttribute('aria-pressed', 'false');
         renderAuraFilterButtonLabel(button, aura.name, false);
         fragment.appendChild(button);
     });
     list.appendChild(fragment);
-
+    syncAuraTierSeparators(list, '.filter-aura-toggle');
     list.dataset.populated = 'true';
 }
 
@@ -4970,7 +4973,7 @@ const MULTI_POTION_CONFIGS = Object.freeze([
     Object.freeze({ id: 'heavenly', label: 'Heavenly Potion', resultLabel: 'Heavenly', resultClass: 'heavenlyClass', luck: 150000 }),
     Object.freeze({ id: 'pump-kings-blood', label: "Pump King's Blood", resultLabel: "Pump King's Blood", resultClass: 'pumpBloodClass', luck: 700000, blocksRunes: true }),
     Object.freeze({ id: 'oblivion', label: 'Oblivion Potion', resultLabel: 'Oblivion', resultClass: 'oblivionClass', luck: 600000, oblivion: true, blocksRunes: true }),
-    Object.freeze({ id: 'godlike', label: 'Godlike Potion', resultLabel: 'Godlike', resultClass: 'godlikeClass', luck: 400000 }),
+    Object.freeze({ id: 'godlike', label: 'Godlike Potion', resultLabel: 'Godlike', resultClass: 'godlikePotionClass', luck: 400000 }),
     Object.freeze({ id: 'blood-ii', label: 'Red Moon II', resultLabel: 'Red Moon II', resultClass: 'bloodIIClass', luck: 200000, bloodPreset: 'blood-ii', stackExclusionGroup: MULTI_POTION_STACK_EXCLUSION_GROUP.RED_MOON }),
     Object.freeze({ id: 'candy-corn', label: 'Candy Corn', resultLabel: 'Candy Corn', resultClass: 'candyClass', luck: 75000 }),
     Object.freeze({ id: 'bound', label: 'Bound Potion', resultLabel: 'Bound', resultClass: 'boundClass', luck: 50000 }),
@@ -6789,6 +6792,46 @@ function formatAuraTierLabel(tier) {
         .trim();
 }
 
+function resolveAuraDisplayTierKey(aura, biome = null) {
+    if (!aura) return 'basic';
+    if (isForcedChallengedAura(aura.name)) return 'challenged';
+    const rarityClass = biome === null ? resolveBaseRarityClass(aura) : resolveRarityClass(aura, biome);
+    const key = AURA_TIER_CLASS_TO_KEY.get(rarityClass);
+    if (key) return key;
+    for (const [tierKey, prefixes] of AURA_TIER_SKIP_NAME_OVERRIDES) {
+        if (prefixes.some(prefix => aura.name.startsWith(prefix))) return tierKey;
+    }
+    return AURA_TIER_CLASS_TO_KEY.get(computeBaseRarityClass({ ...aura, disableRarityClass: false })) || 'basic';
+}
+
+function createAuraTierHeading(tierKey) {
+    const tier = AURA_TIER_FILTERS.find(candidate => candidate.key === tierKey);
+    if (!tier) return null;
+    const heading = document.createElement('span');
+    heading.className = 'aura-tier-separator';
+    heading.dataset.auraTierHeading = tierKey;
+    heading.setAttribute('role', 'heading');
+    heading.setAttribute('aria-level', '3');
+    heading.textContent = formatAuraTierLabel(tier);
+    return heading;
+}
+
+function syncAuraTierSeparators(container, selector, enabled = true) {
+    if (!container) return;
+    container.querySelectorAll(':scope > .aura-tier-separator').forEach(heading => heading.remove());
+    if (!enabled) return;
+    let previousTier = null;
+    container.querySelectorAll(selector).forEach(entry => {
+        if (entry.hidden) return;
+        const tierKey = entry.dataset.auraTier || '';
+        if (tierKey !== previousTier) {
+            const heading = createAuraTierHeading(tierKey);
+            if (heading) entry.before(heading);
+        }
+        previousTier = tierKey;
+    });
+}
+
 function getAuraTierSearchTerms(tierKey) {
     if (typeof tierKey !== 'string' || !tierKey) {
         return '';
@@ -7441,11 +7484,12 @@ function splitAuraDisplaySuffix(baseName) {
         : { suffix: '' };
 }
 
-function formatWikiAuraSigilMarkup(aura, baseName) {
+function formatWikiAuraSigilMarkup(aura, baseName, biome = null) {
     if (!aura || typeof baseName !== 'string') return '';
     const canonicalName = aura.name.split(' - ')[0].trim();
     const { suffix } = splitAuraDisplaySuffix(baseName);
-    return WikiTitles.aura(canonicalName, suffix ? suffix.slice(3) : '');
+    const tierAura = AURA_BY_CANONICAL_NAME.get(canonicalName) || aura;
+    return WikiTitles.aura(canonicalName, suffix ? suffix.slice(3) : '', `rarity-tier-${resolveAuraDisplayTierKey(tierAura, biome)}`);
 }
 
 function initializeChangelogAuraSigils() {
@@ -7462,13 +7506,13 @@ function initializeChangelogAuraSigils() {
     });
 }
 
-function formatAuraNameMarkup(aura, overrideName) {
+function formatAuraNameMarkup(aura, overrideName, biome = null) {
     if (!aura) return overrideName || '';
     const baseName = typeof overrideName === 'string' && overrideName.length > 0 ? overrideName : aura.name;
-    const wikiSigilMarkup = formatWikiAuraSigilMarkup(aura, baseName);
+    const wikiSigilMarkup = formatWikiAuraSigilMarkup(aura, baseName, biome);
     if (wikiSigilMarkup) {
         if (aura.subtitle) {
-            return `${wikiSigilMarkup} <span class="sigil-subtitle">${aura.subtitle}</span>`;
+            return `${wikiSigilMarkup} <span class="sigil-subtitle"><span class="aura-tier-detail rarity-tier-${resolveAuraDisplayTierKey(aura, biome)}">${aura.subtitle}</span></span>`;
         }
         return wikiSigilMarkup;
     }
@@ -7535,6 +7579,7 @@ function updateLayeredSigilText(container = document) {
 function observeLayeredSigilText() {
     updateLayeredSigilText();
     registerGlitchSigils(document);
+    WikiTitles.initializeItems();
     WikiTitles.initializeEffects();
     if (!document.body) return;
     const pendingRoots = new Set();
@@ -7545,6 +7590,7 @@ function observeLayeredSigilText() {
             if (!root.isConnected) return;
             updateLayeredSigilText(root);
             registerGlitchSigils(root);
+            WikiTitles.initializeItems(root);
             WikiTitles.initializeEffects(root);
         });
         pendingRoots.clear();
@@ -7619,8 +7665,7 @@ let glitchSigilRestoreTimeoutId = null;
 function canFlickerGlitchSigils() {
     return typeof document !== 'undefined'
         && !document.hidden
-        && !appState.reduceMotion
-        && !appState.qualityPreferences?.removeGlitchEffects;
+        && !appState.qualityPreferences?.disableRollAndSigilAnimations;
 }
 
 function createGlitchSigilFlickerText(text) {
@@ -8251,6 +8296,7 @@ function createAuraRegistry(definitions) {
 
 const AURA_REGISTRY = createAuraRegistry(AURA_BLUEPRINT_SOURCE);
 const AURA_BY_NAME = new Map(AURA_REGISTRY.map(aura => [aura.name, aura]));
+const AURA_BY_CANONICAL_NAME = new Map(AURA_REGISTRY.map(aura => [aura.name.split(' - ')[0].trim(), aura]));
 initializeAuraFilters(AURA_REGISTRY);
 
 const auraWinCounts = new Float64Array(AURA_REGISTRY.length);
@@ -10390,12 +10436,12 @@ function initializeCreditsDirectory() {
     creditItems.forEach(item => {
         const contributionText = item.textContent.toLocaleLowerCase();
         item.dataset.creditSearchText = contributionText;
-        item.dataset.creditCategory = contributionText.includes('cutscene') ? 'cutscene' : 'media';
+        item.dataset.creditCategory ||= contributionText.includes('cutscene') ? 'cutscene' : 'media';
         const kind = document.createElement('span');
         kind.className = 'footer-credits__item-kind';
         kind.textContent = item.dataset.creditCategory === 'cutscene'
             ? 'Cutscene'
-            : (contributionText.includes('song') ? 'Audio' : 'Biome');
+            : (item.dataset.creditCategory === 'artwork' ? 'Artwork' : contributionText.includes('song') ? 'Audio' : 'Biome');
         item.prepend(kind);
     });
 
@@ -12437,8 +12483,6 @@ let observedRollFeedEntries = new WeakSet();
 let liveRollFeed = null;
 const LIVE_ROLL_FEED_PAGE_SIZE = 100;
 
-// History retains shared presentations and roll numbers, never a DOM node per roll.
-// Only the current window is mounted, including after completion and while searching.
 function createLiveRollFeed(onNavigate) {
     const records = [];
     let ordered = records;
@@ -12447,6 +12491,7 @@ function createLiveRollFeed(onNavigate) {
     if (query) matches = [];
     let start = 0;
     let following = true;
+    let sortMode = ROLL_FEED_SORT_MODE.RECENT;
     const mounted = new Map();
     const list = document.createElement('div');
     list.className = 'live-roll-feed__window';
@@ -12461,6 +12506,7 @@ function createLiveRollFeed(onNavigate) {
     const lastStart = () => Math.max(0, matches.length - LIVE_ROLL_FEED_PAGE_SIZE);
 
     function render() {
+        list.querySelectorAll(':scope > .aura-tier-separator').forEach(heading => heading.remove());
         start = following ? lastStart() : Math.min(start, lastStart());
         const visible = matches.slice(start, start + LIVE_ROLL_FEED_PAGE_SIZE);
         const keep = new Set(visible);
@@ -12483,6 +12529,7 @@ function createLiveRollFeed(onNavigate) {
             cursor = element.nextElementSibling;
         }
         observeRollFeedEntries(list);
+        syncAuraTierSeparators(list, '[data-roll-feed-entry]', sortMode === ROLL_FEED_SORT_MODE.RARITY);
         navigation.hidden = records.length === 0;
         const range = matches.length
             ? `${formatWithCommas(start + 1)}–${formatWithCommas(start + visible.length)} of ${formatWithCommas(matches.length)}`
@@ -12541,6 +12588,7 @@ function createLiveRollFeed(onNavigate) {
             feedContainer.scrollTop = following ? feedContainer.scrollHeight : 0;
         },
         sort(mode) {
+            sortMode = mode;
             latest.textContent = mode === ROLL_FEED_SORT_MODE.RECENT ? 'Latest' : 'Last';
             const sortable = records.map(record => ({ ...record.presentation, originalOrder: record.originalOrder, record }));
             if (mode === ROLL_FEED_SORT_MODE.RARITY) {
@@ -12658,6 +12706,8 @@ function applyRollFeedSearchFilter(root = feedContainer) {
         }
         entry.hidden = !searchableText.includes(query);
     });
+    const resultsList = root.querySelector('.roll-feed__results-list');
+    syncAuraTierSeparators(resultsList, '[data-roll-feed-entry]', rollFeedSortMode === ROLL_FEED_SORT_MODE.RARITY);
 }
 
 function setupRollFeedSearch() {
@@ -12953,18 +13003,15 @@ function buildResultEntries(
         if (winCount <= 0) continue;
 
         const specialClass = typeof resolveAuraStyleClass === 'function' ? resolveAuraStyleClass(aura, biome) : '';
-        const rarityClass = typeof resolveRarityClass === 'function' && !shouldSuppressRarityClassForSpecialStyle(specialClass)
-            ? resolveRarityClass(aura, biome)
-            : '';
-        const eventClass = getAuraEventIds(aura).length > 0 ? 'sigil-event-text' : '';
-        const classAttr = [rarityClass, specialClass, eventClass].filter(Boolean).join(' ');
-        const formattedName = formatAuraNameMarkup(aura);
+        const rarityClass = `rarity-tier-${resolveAuraDisplayTierKey(aura, biome)}`;
+        const classAttr = `aura-tier-detail ${rarityClass}`;
+        const formattedName = formatAuraNameMarkup(aura, undefined, biome);
         const formattedTextName = formatAuraNameText(aura);
         const breakthroughStats = breakthroughStatsMap.get(aura.name);
         const isBreakthrough = aura.name.startsWith('Breakthrough');
 
         const formatBreakthroughMarkupWithCount = (nameValue, countValue) =>
-            `${formatAuraNameMarkup(aura, nameValue)}<span class="sigil-wiki__suffix"> | Times Rolled: ${formatWithCommas(countValue)}</span>`;
+            `${formatAuraNameMarkup(aura, nameValue, biome)}<span class="aura-tier-detail aura-count ${rarityClass}"> | Times Rolled: ${formatWithCommas(countValue)}</span>`;
 
         const eventId = getAuraEventId(aura, { preferEnabled: true });
         const specialClassTokens = specialClass
@@ -12978,6 +13025,8 @@ function buildResultEntries(
 
         const createShareVisualRecord = (baseName, countValue, options = {}) => ({
             aura,
+            biome,
+            tierKey: resolveAuraDisplayTierKey(aura, biome),
             displayName: isBreakthroughAura
                 ? `${baseName} | Times Rolled: ${formatWithCommas(countValue)}`
                 : baseName,
@@ -13002,7 +13051,7 @@ function buildResultEntries(
                 : null;
             const resultSuffixMarkup = potionSourceMarkup
                 ? ` ${potionSourceMarkup}`
-                : (realChanceValue ? ` <span class="tinyClass">True Chance: 1 in ${realChanceValue}</span>` : '');
+                : (realChanceValue ? ` <span class="tinyClass"><span class="aura-tier-detail ${rarityClass}">True Chance: 1 in ${realChanceValue}</span></span>` : '');
             entries.push({
                 markup: `${markup}${resultSuffixMarkup}`,
                 share: potionSourceText ? `${shareText} | ${potionSourceText}` : shareText,
@@ -13011,7 +13060,7 @@ function buildResultEntries(
                     ? { ...visualRecord, potionSource: potionSourceText || null }
                     : null,
                 auraName: auraName || null,
-                tierKey: resolveAuraTierKey(aura, biome) || ''
+                tierKey: resolveAuraDisplayTierKey(aura, biome)
             });
         };
 
@@ -13019,12 +13068,12 @@ function buildResultEntries(
             const btName = aura.name.replace(/-\s*[\d,]+/, `- ${formatWithCommas(breakthroughStats.btChance)}`);
             const nativeLabel = isBreakthrough
                 ? formatBreakthroughMarkupWithCount(btName, breakthroughStats.count)
-                : formatAuraNameMarkup(aura, btName);
+                : formatAuraNameMarkup(aura, btName, biome);
             const nativeShareName = formatAuraNameText(aura, btName);
             pushVisualEntry(
                 isBreakthrough
-                    ? `<span class="${classAttr}">[Native] ${nativeLabel}</span>`
-                    : `<span class="${classAttr}">[Native] ${nativeLabel} | Times Rolled: ${formatWithCommas(breakthroughStats.count)}</span>`,
+                    ? `<span class="${classAttr}"><span class="aura-native ${rarityClass}">[Native]</span> ${nativeLabel}</span>`
+                    : `<span class="${classAttr}"><span class="aura-native ${rarityClass}">[Native]</span> ${nativeLabel}<span class="aura-count ${rarityClass}"> | Times Rolled: ${formatWithCommas(breakthroughStats.count)}</span></span>`,
                 `[Native] ${nativeShareName} | Times Rolled: ${formatWithCommas(breakthroughStats.count)}`,
                 determineResultPriority(aura, breakthroughStats.btChance),
                 createShareVisualRecord(btName, breakthroughStats.count, { prefix: '[Native]', variant: 'native' }),
@@ -13040,7 +13089,7 @@ function buildResultEntries(
                 pushVisualEntry(
                     isBreakthrough
                         ? `<span class="${classAttr}">${breakthroughRemainingLabel}</span>`
-                        : `<span class="${classAttr}">${formattedName} | Times Rolled: ${formatWithCommas(remainingCount)}</span>`,
+                        : `<span class="${classAttr}">${formattedName}<span class="aura-count ${rarityClass}"> | Times Rolled: ${formatWithCommas(remainingCount)}</span></span>`,
                     `${formattedTextName} | Times Rolled: ${formatWithCommas(remainingCount)}`,
                     determineResultPriority(aura, aura.chance),
                     createShareVisualRecord(aura.name, remainingCount, { variant: 'standard' }),
@@ -13055,7 +13104,7 @@ function buildResultEntries(
             pushVisualEntry(
                 isBreakthrough
                     ? `<span class="${classAttr}">${breakthroughLabel}</span>`
-                    : `<span class="${classAttr}">${formattedName} | Times Rolled: ${formatWithCommas(winCount)}</span>`,
+                    : `<span class="${classAttr}">${formattedName}<span class="aura-count ${rarityClass}"> | Times Rolled: ${formatWithCommas(winCount)}</span></span>`,
                 `${formattedTextName} | Times Rolled: ${formatWithCommas(winCount)}`,
                 determineResultPriority(aura, aura.chance),
                 createShareVisualRecord(aura.name, winCount, { variant: 'standard' }),
@@ -13104,22 +13153,16 @@ function buildLiveRollMarkup(
         return '';
     }
 
-    const specialClass = typeof resolveAuraStyleClass === 'function'
-        ? resolveAuraStyleClass(aura, biome)
-        : '';
-    const rarityClass = typeof resolveRarityClass === 'function' && !shouldSuppressRarityClassForSpecialStyle(specialClass)
-        ? resolveRarityClass(aura, biome)
-        : '';
-    const eventClass = getAuraEventIds(aura).length > 0 ? 'sigil-event-text' : '';
-    const classAttr = [rarityClass, specialClass, eventClass].filter(Boolean).join(' ');
+    const rarityClass = `rarity-tier-${resolveAuraDisplayTierKey(aura, biome)}`;
+    const classAttr = `aura-tier-detail ${rarityClass}`;
     const nativeChance = isNativeRoll && breakthroughStats
         ? breakthroughStats.btChance
         : aura.chance;
     const displayName = isNativeRoll && breakthroughStats
         ? aura.name.replace(/-\s*[\d,]+/, `- ${formatWithCommas(breakthroughStats.btChance)}`)
         : aura.name;
-    const prefix = isNativeRoll ? '[Native] ' : '';
-    const formattedName = formatAuraNameMarkup(aura, displayName);
+    const prefix = isNativeRoll ? `<span class="aura-native ${rarityClass}">[Native]</span> ` : '';
+    const formattedName = formatAuraNameMarkup(aura, displayName, biome);
     const trueChanceValue = !potionBatch
         && allowTrueChance
         && appState.selectiveTrueChanceDisplay
@@ -13128,9 +13171,9 @@ function buildLiveRollMarkup(
         : null;
     const trueChanceMarkup = potionBatch
         ? ` ${formatMultiplePotionBatchResultMarkup(potionBatch)}`
-        : (trueChanceValue ? ` <span class="tinyClass">True Chance: 1 in ${trueChanceValue}</span>` : '');
+        : (trueChanceValue ? ` <span class="tinyClass"><span class="aura-tier-detail ${rarityClass}">True Chance: 1 in ${trueChanceValue}</span></span>` : '');
 
-    const tierKey = resolveAuraTierKey(aura, biome) || '';
+    const tierKey = resolveAuraDisplayTierKey(aura, biome);
     const alphabeticalName = getAuraAlphabeticalSortName(aura.name);
     const auraPriority = determineResultPriority(aura, nativeChance);
     const encodedAuraName = encodeURIComponent(aura.name);

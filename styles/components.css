@@ -2483,11 +2483,232 @@ body.quality-no-ui-animations .bloodIIClass {
     color: transparent;
 }
 
-.godlikeClass {
+.godlikePotionClass {
     background: linear-gradient(135deg, #fff700 0%, #fff700 33.33%, #00f2ff 33.33%, #00f2ff 66.66%, #ff0000 66.66%, #ff0000 100%);
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
+}
+
+.godlikeClass {
+    background: linear-gradient(135deg, #10d657 0%, #14b9d5 33.33%, #1d31d1 50%, #150d71 66.66%, #862ad2 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+
+.changelog-font {
+    font-family: "Audiowide";
+}
+
+.changelog-color {
+    color: #00eaff;
+}
+
+.changelog-gradient {
+    background: linear-gradient(90deg, #ff6767, #ffff5e, #58ff66, #58fff1, #4b90ff, #ff4be7);
+    background-size: 300% 300%;
+    animation: class-gradient 5.25s linear infinite;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+
+.changelog-outline {
+    position: relative;
+    color: var(--text-secondary);
+    z-index: 0;
+}
+
+.changelog-outline::before {
+    content: attr(data-text);
+    position: absolute;
+    inset: 0;
+    -webkit-text-stroke: 4px #e1d6ff26;
+    z-index: -1;
+}
+
+.changelog-effect {
+    position: relative;
+    display: inline-block;
+    color: var(--text-secondary);
+}
+
+.changelog-effect__text {
+    position: relative;
+    z-index: 2;
+    text-shadow: 0 0 5px rgba(0, 190, 253, 0.45);
+}
+
+.changelog-particle {
+    position: absolute;
+    width: 3px;
+    height: 3px;
+    left: 50%;
+    top: 50%;
+    border-radius: 50%;
+    background: #9deeff;
+    pointer-events: none;
+    opacity: 0;
+    z-index: 1;
+    box-shadow: 0 0 4px #00befd;
+    animation: changelog-particle 1.8s ease-out infinite;
+}
+
+.changelog-particle:nth-of-type(1) {
+    visibility: hidden;
+}
+
+.changelog-particle:nth-of-type(2) {
+    --x: -30px;
+    --y: -3px;
+    --dx: -12px;
+    --dy: -2px;
+    animation-delay: 0s;
+}
+
+.changelog-particle:nth-of-type(3) {
+    --x: -23px;
+    --y: 7px;
+    --dx: -10px;
+    --dy: 7px;
+    animation-delay: 0.07s;
+}
+
+.changelog-particle:nth-of-type(4) {
+    --x: -17px;
+    --y: -10px;
+    --dx: -8px;
+    --dy: -9px;
+    animation-delay: 0.14s;
+}
+
+.changelog-particle:nth-of-type(5) {
+    --x: -10px;
+    --y: 10px;
+    --dx: -5px;
+    --dy: 11px;
+    animation-delay: 0.21s;
+}
+
+.changelog-particle:nth-of-type(6) {
+    --x: -2px;
+    --y: -12px;
+    --dx: -1px;
+    --dy: -13px;
+    animation-delay: 0.28s;
+}
+
+.changelog-particle:nth-of-type(7) {
+    --x: 6px;
+    --y: 9px;
+    --dx: 4px;
+    --dy: 11px;
+    animation-delay: 0.35s;
+}
+
+.changelog-particle:nth-of-type(8) {
+    --x: 13px;
+    --y: -11px;
+    --dx: 7px;
+    --dy: -10px;
+    animation-delay: 0.42s;
+}
+
+.changelog-particle:nth-of-type(9) {
+    --x: 20px;
+    --y: 8px;
+    --dx: 9px;
+    --dy: 8px;
+    animation-delay: 0.49s;
+}
+
+.changelog-particle:nth-of-type(10) {
+    --x: 27px;
+    --y: -8px;
+    --dx: 11px;
+    --dy: -7px;
+    animation-delay: 0.56s;
+}
+
+.changelog-particle:nth-of-type(11) {
+    --x: 32px;
+    --y: 4px;
+    --dx: 12px;
+    --dy: 4px;
+    animation-delay: 0.63s;
+}
+
+.changelog-particle:nth-of-type(12) {
+    --x: -34px;
+    --y: -10px;
+    --dx: -13px;
+    --dy: -8px;
+    animation-delay: 0.70s;
+}
+
+.changelog-particle:nth-of-type(13) {
+    --x: 36px;
+    --y: -9px;
+    --dx: 13px;
+    --dy: -8px;
+    animation-delay: 0.77s;
+}
+
+.changelog-particle:nth-of-type(3n) {
+    width: 2px;
+    height: 2px;
+    background: #ffffff;
+}
+
+.changelog-particle:nth-of-type(4n) {
+    background: #00befd;
+}
+
+@keyframes changelog-particle {
+    0% {
+        transform:
+            translate(
+                calc(-50% + var(--x)),
+                calc(-50% + var(--y))
+            )
+            scale(0);
+        opacity: 0;
+    }
+
+    12% {
+        transform:
+            translate(
+                calc(-50% + var(--x)),
+                calc(-50% + var(--y))
+            )
+            scale(1.25);
+        opacity: 1;
+    }
+
+    35% {
+        transform:
+            translate(
+                calc(-50% + var(--x) + var(--dx) * 0.35),
+                calc(-50% + var(--y) + var(--dy) * 0.35)
+            )
+            scale(1);
+        opacity: 1;
+    }
+
+    70% {
+        opacity: 0.55;
+    }
+
+    100% {
+        transform:
+            translate(
+                calc(-50% + var(--x) + var(--dx)),
+                calc(-50% + var(--y) + var(--dy))
+            )
+            scale(0.25);
+        opacity: 0;
+    }
 }
 
 .qbearClass {

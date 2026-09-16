@@ -884,7 +884,7 @@
                                 <input class="form-field__input multi-potion-field__input" type="text" inputmode="numeric" pattern="[0-9]*" value="0" data-multi-potion="oblivion" aria-label="Oblivion Potion quantity">
                             </label>
                             <label class="multi-potion-field">
-                                <span><span class="godlikeClass" data-wiki-item="Godlike Potion">Godlike Potion</span><small>+400,000 luck</small></span>
+                                <span><span class="godlikePotionClass" data-wiki-item="Godlike Potion">Godlike Potion</span><small>+400,000 luck</small></span>
                                 <input class="form-field__input multi-potion-field__input" type="text" inputmode="numeric" pattern="[0-9]*" value="0" data-multi-potion="godlike" aria-label="Godlike Potion quantity">
                             </label>
                             <label class="multi-potion-field">
@@ -1170,8 +1170,8 @@
                         <div class="preset-matrix" id="luck-preset-panel">
                             <button type="button" id="luck-preset-pump-kings-blood" data-luck-value="700000" aria-pressed="false" onclick="handlePumpKingsBloodPresetSelection('pump-kings-blood')"><span class="pumpBloodClass" data-wiki-item="Pump King's Blood">Pump King's Blood</span> +700,000 <span class="preset-active-label" aria-hidden="true">Active</span></button>
                             <button type="button" id="luck-preset-oblivion" data-luck-value="600000" aria-pressed="false" onclick="handleOblivionPresetSelection('oblivion')"><span class="oblivionClass" data-wiki-item="Oblivion Potion">Oblivion Potion</span> +600,000 <span class="preset-active-label" aria-hidden="true">Active</span></button>
-                            <button type="button" data-luck-value="600000" onclick="applyLuckValue(600000, { luckSource: 'standard-preset' })"><span class="godlikeClass" data-wiki-item="Godlike Potion">Godlike</span> + <span class="heavenlyClass" data-wiki-item="Heavenly Potion">Heavenly</span> + <span class="boundClass" data-wiki-item="Potion of Bound">Bound</span> +600,000</button>
-                            <button type="button" data-luck-value="400000" onclick="applyLuckValue(400000, { luckSource: 'standard-preset' })"><span class="godlikeClass" data-wiki-item="Godlike Potion">Godlike</span> +400,000</button>
+                            <button type="button" data-luck-value="600000" onclick="applyLuckValue(600000, { luckSource: 'standard-preset' })"><span class="godlikePotionClass" data-wiki-item="Godlike Potion">Godlike</span> + <span class="heavenlyClass" data-wiki-item="Heavenly Potion">Heavenly</span> + <span class="boundClass" data-wiki-item="Potion of Bound">Bound</span> +600,000</button>
+                            <button type="button" data-luck-value="400000" onclick="applyLuckValue(400000, { luckSource: 'standard-preset' })"><span class="godlikePotionClass" data-wiki-item="Godlike Potion">Godlike</span> +400,000</button>
                             <button type="button" id="void-heart-trigger" data-luck-value="300000" data-limbo-only="true" style="display:none;" onclick="applyLuckValue(300000, { luckSource: 'standard-preset' })"><span data-wiki-item="Void Heart">Void Heart</span> +300,000</button>
                             <button type="button" data-luck-value="0.7" data-limbo-only="true" style="display:none;" onclick="applyLuckValue(0.7, { luckSource: 'standard-preset' })"><span data-wiki-item="Forbidden Potion I">Forbidden I</span> +70%</button>
                             <button type="button" data-luck-value="3.25" data-limbo-only="true" style="display:none;" onclick="applyLuckValue(3.25, { luckSource: 'standard-preset' })"><span data-wiki-item="Forbidden Potion II">Forbidden II</span> +325%</button>
@@ -1197,16 +1197,16 @@
                             <span class="preset-console__bank-badge">VIP Not Included</span>
                         </header>
                         <div class="preset-matrix preset-matrix--compact" id="device-buff-preset-panel">
-                            <button type="button" data-luck-value="23.21" onclick="applyDeviceBuffPreset(23.21, this)"><span class="archangelClass" data-wiki-item="Heavenly Device">Archangel Device</span> + "<span data-wiki-item="Godlike!">Godlike!</span>" + "<span data-wiki-item="Soul Master's Talisman">Soul Master's Talisman</span>" x23.21</button>
+                            <button type="button" data-luck-value="23.21" onclick="applyDeviceBuffPreset(23.21, this)"><span class="archangelClass" data-wiki-item="Heavenly Device">Archangel Device</span> + "<span class="godlikeClass" data-wiki-item="Godlike!">Godlike!</span>" + "<span data-wiki-item="Soul Master's Talisman">Soul Master's Talisman</span>" x23.21</button>
                             <button type="button" data-luck-value="30.41" onclick="applyDeviceBuffPreset(30.41, this)"><span class="archangelClass" data-wiki-item="Heavenly Device">Archangel Device</span> + Max Luck x30.41</button>
                             <button type="button" data-luck-value="39.71" onclick="applyDeviceBuffPreset(39.71, this)"><span class="archangelClass" data-wiki-item="Heavenly Device">Archangel Device</span> + Max Luck + Event buffs x39.71</button>
-                            <button type="button" data-luck-value="28.21" onclick="applyDeviceBuffPreset(28.21, this)"><span class="archangelClass" data-wiki-item="Heavenly Device">Archangel Device</span> + <span class="plcClass" data-wiki-item="Pole Light Core Device">PLC Device</span> + "<span data-wiki-item="Godlike!">Godlike!</span>" + "<span data-wiki-item="Soul Master's Talisman">Soul Master's Talisman</span>" x28.21</button>
+                            <button type="button" data-luck-value="28.21" onclick="applyDeviceBuffPreset(28.21, this)"><span class="archangelClass" data-wiki-item="Heavenly Device">Archangel Device</span> + <span class="plcClass" data-wiki-item="Pole Light Core Device">PLC Device</span> + "<span class="godlikeClass" data-wiki-item="Godlike!">Godlike!</span>" + "<span data-wiki-item="Soul Master's Talisman">Soul Master's Talisman</span>" x28.21</button>
                             <button type="button" data-luck-value="35.41" onclick="applyDeviceBuffPreset(35.41, this)"><span class="archangelClass" data-wiki-item="Heavenly Device">Archangel Device</span> + <span class="plcClass" data-wiki-item="Pole Light Core Device">PLC Device</span> + Max Luck x35.41</button>
                             <button type="button" data-luck-value="44.71" onclick="applyDeviceBuffPreset(44.71, this)"><span class="archangelClass" data-wiki-item="Heavenly Device">Archangel Device</span> + <span class="plcClass" data-wiki-item="Pole Light Core Device">PLC Device</span> + Max Luck + Event buffs x44.71</button>
-                            <button type="button" data-luck-value="28.21" onclick="applyDeviceBuffPreset(28.21, this)"><span class="singularityClass" data-wiki-item="Singularity Gauntlet">Singularity Device</span> + "<span data-wiki-item="Godlike!">Godlike!</span>" + "<span data-wiki-item="Soul Master's Talisman">Soul Master's Talisman</span>" x28.21</button>
+                            <button type="button" data-luck-value="28.21" onclick="applyDeviceBuffPreset(28.21, this)"><span class="singularityClass" data-wiki-item="Singularity Gauntlet">Singularity Device</span> + "<span class="godlikeClass" data-wiki-item="Godlike!">Godlike!</span>" + "<span data-wiki-item="Soul Master's Talisman">Soul Master's Talisman</span>" x28.21</button>
                             <button type="button" data-luck-value="35.41" onclick="applyDeviceBuffPreset(35.41, this)"><span class="singularityClass" data-wiki-item="Singularity Gauntlet">Singularity Device</span> + Max Luck x35.41</button>
                             <button type="button" data-luck-value="44.71" onclick="applyDeviceBuffPreset(44.71, this)"><span class="singularityClass" data-wiki-item="Singularity Gauntlet">Singularity Device</span> + Max Luck + Event buffs x44.71</button>
-                            <button type="button" data-luck-value="33.21" onclick="applyDeviceBuffPreset(33.21, this)"><span class="singularityClass" data-wiki-item="Singularity Gauntlet">Singularity Device</span> + <span class="plcClass" data-wiki-item="Pole Light Core Device">PLC Device</span> + "<span data-wiki-item="Godlike!">Godlike!</span>" + "<span data-wiki-item="Soul Master's Talisman">Soul Master's Talisman</span>" x33.21</button>
+                            <button type="button" data-luck-value="33.21" onclick="applyDeviceBuffPreset(33.21, this)"><span class="singularityClass" data-wiki-item="Singularity Gauntlet">Singularity Device</span> + <span class="plcClass" data-wiki-item="Pole Light Core Device">PLC Device</span> + "<span class="godlikeClass" data-wiki-item="Godlike!">Godlike!</span>" + "<span data-wiki-item="Soul Master's Talisman">Soul Master's Talisman</span>" x33.21</button>
                             <button type="button" data-luck-value="40.41" onclick="applyDeviceBuffPreset(40.41, this)"><span class="singularityClass" data-wiki-item="Singularity Gauntlet">Singularity Device</span> + <span class="plcClass" data-wiki-item="Pole Light Core Device">PLC Device</span> + Max Luck x40.41</button>
                             <button type="button" data-luck-value="49.71" onclick="applyDeviceBuffPreset(49.71, this)"><span class="singularityClass" data-wiki-item="Singularity Gauntlet">Singularity Device</span> + <span class="plcClass" data-wiki-item="Pole Light Core Device">PLC Device</span> + Max Luck + Event buffs x49.71</button>
                         </div>
@@ -1515,7 +1515,7 @@
             <span class="site-footer__mark" aria-hidden="true"><i class="fa-solid fa-code-branch"></i></span>
             <div>
                 <p class="site-footer__eyebrow">Project Archive</p>
-                <p class="site-footer__text">&copy; <span id="build-year"></span> The Unnamed. <a class="noClass" target="__blank" href="https://github.com/The-Unnamed-Official/The-Unnamed-Proprietary-License-1.0?tab=License-1-ov-file">The Unnamed Proprietary License</a>.</p>
+                <p class="site-footer__text">&copy; <span id="build-year"></span> The Unnamed. <a class="noClass" target="__blank" href="https://github.com/The-Unnamed-Official/The-Unnamed-Proprietary-License-1.0?tab=License-1-ov-file">The Unnamed Proprietary License 1.0</a>.</p>
             </div>
         </div>
         <details class="footer-credits">
@@ -1525,7 +1525,7 @@
                     <strong>Credits Directory</strong>
                     <span>Browse the people and media behind the simulator</span>
                 </span>
-                <span class="footer-credits__summary-count">23 entries</span>
+                <span class="footer-credits__summary-count">26 entries</span>
                 <i class="fa-solid fa-chevron-down footer-credits__summary-chevron" aria-hidden="true"></i>
             </summary>
             <div class="footer-credits__panel">
@@ -1546,10 +1546,12 @@
                         <button type="button" class="footer-credits__filter is-active" data-credit-filter="all" aria-pressed="true">All</button>
                         <button type="button" class="footer-credits__filter" data-credit-filter="cutscene" aria-pressed="false">Cutscenes</button>
                         <button type="button" class="footer-credits__filter" data-credit-filter="media" aria-pressed="false">Audio & Biomes</button>
+                        <button type="button" class="footer-credits__filter" data-credit-filter="artwork" aria-pressed="false">Artwork</button>
                     </div>
-                    <span class="footer-credits__result-count" id="creditsResultCount" role="status" aria-live="polite">22 contributions</span>
+                    <span class="footer-credits__result-count" id="creditsResultCount" role="status" aria-live="polite">25 contributions</span>
                 </div>
                 <ul class="footer-credits__list" id="creditsList">
+                <li class="footer-credits__item footer-credits__item--wiki-artwork" data-credit-category="artwork">Aura and item title artwork, fonts, colors, and effects adapted from <a href="https://sol-rng.fandom.com/wiki/Auras" target="_blank" rel="noopener">Sol's RNG Wiki contributors</a> Community artwork is shared under <a href="https://www.fandom.com/licensing" target="_blank" rel="noopener">CC BY-SA, unless otherwise noted</a></li>
                 <li class="footer-credits__item">Glitch biome backdrop courtesy of <a href="https://www.youtube.com/watch?v=Efxaiefo3QY" target="_blank" rel="noopener">ComedicChicken</a>.</li>
                 <li class="footer-credits__item">Erebus cutscene courtesy of <a href="https://www.youtube.com/watch?v=ift10zMOVRk" target="_blank" rel="noopener">4zell</a>.</li>
                 <li class="footer-credits__item">Lamenthyr cutscene courtesy of <a href="https://www.youtube.com/watch?v=DwEzY_nA054" target="_blank" rel="noopener">Ray</a>.</li>
@@ -1987,7 +1989,7 @@
             <button class="interface-button quality-settings__item quality-settings__aura-switch" type="button" role="switch" aria-checked="true" aria-labelledby="wikiAuraStylesLabel" aria-describedby="wikiAuraStylesDescription" data-quality-option="disableWikiAuraStyles" data-quality-inverted>
                 <span>
                     <span class="quality-settings__name" id="wikiAuraStylesLabel">Full Aura Style Rework</span>
-                    <span class="quality-settings__description" id="wikiAuraStylesDescription">Use Wiki title fonts, colors, and effects for every aura. Turn off for simple aura names.</span>
+                    <span class="quality-settings__description" id="wikiAuraStylesDescription">Use Wiki styling for aura names. Turn off to use tier colors for names too.</span>
                 </span>
                 <span class="quality-settings__switch-track" aria-hidden="true"></span>
             </button>
@@ -2174,31 +2176,93 @@
                         <span class="changelog-tab__subtitle">Complete Aura &amp; Item Style Rework</span>
                         <p class="changelog-modal__meta">Updated 2026/09/16</p>
                     </header>
+
                     <ul class="changelog-modal__list changelog-modal__list--grouped">
                         <li class="changelog-release-group">
-                            <span class="largeClass">Every aura, from 1 in 1 to the rarest:</span>
+                            <span class="largeClass">I am talking EVERY aura here:</span>
                             <ul class="changelog-release-group__list">
                                 <li>Reworked all 391 auras to use their title styles from the <a href="https://sol-rng.fandom.com/wiki/Auras" target="_blank" rel="noopener">Sol's RNG Wiki</a>, from <span class="changelog-aura-sigil" data-changelog-aura-sigil="Nothing">Nothing</span> (1 in 1) and <span class="changelog-aura-sigil" data-changelog-aura-sigil="Common">Common</span> through <span class="changelog-aura-sigil" data-changelog-aura-sigil="Sovereign">Sovereign</span> and the rarest auras.</li>
-                                <li>Aura names use their matching fonts, colors, gradients, outlines, and effects in results, live rolls, aura filters, changelogs, and shared images.</li>
-                                <li>Added a Full Aura Style Rework switch at the bottom of Quality Preferences. Turn it off for simple names; the choice is saved and applies immediately.</li>
-                                <li><span class="changelog-aura-sigil" data-changelog-aura-sigil="Illusionary">Illusionary</span>, <span class="changelog-aura-sigil" data-changelog-aura-sigil="Cryogenic">Cryogenic</span>, and <span class="changelog-aura-sigil" data-changelog-aura-sigil="Meta">Meta</span> display their rarity in the same style as their aura name, with the rarity styled separately from the name.</li>
+
+                                <li>
+                                    Aura names use their matching
+                                    <span class="changelog-font">fonts</span>,
+                                    <span class="changelog-color">colors</span>,
+                                    <span class="changelog-gradient">gradients</span>,
+                                    <span class="changelog-outline" data-text="outlines">outlines</span>,
+                                    and
+                                    <span class="changelog-effect">effects
+                                        <i class="changelog-particle"></i>
+                                        <i class="changelog-particle"></i>
+                                        <i class="changelog-particle"></i>
+                                        <i class="changelog-particle"></i>
+                                        <i class="changelog-particle"></i>
+                                        <i class="changelog-particle"></i>
+                                        <i class="changelog-particle"></i>
+                                        <i class="changelog-particle"></i>
+                                        <i class="changelog-particle"></i>
+                                        <i class="changelog-particle"></i>
+                                        <i class="changelog-particle"></i>
+                                        <i class="changelog-particle"></i>
+                                    </span>
+                                    in results, live rolls, aura filters, changelogs, and shared images.
+                                </li>
+
+                                <li>Added a Full Aura Style Rework switch at the bottom of Quality Preferences. Turn it off to restore tier-colored aura names; the choice is saved and applies immediately.</li>
+
+                                <li>Wiki styling applies only to aura names. Rarity numbers, Times Rolled, True Chance, and [Native] labels use the aura's tier colors, including <span class="changelog-aura-sigil" data-changelog-aura-sigil="Illusionary">Illusionary</span>, <span class="changelog-aura-sigil" data-changelog-aura-sigil="Cryogenic">Cryogenic</span>, and <span class="changelog-aura-sigil" data-changelog-aura-sigil="Meta">Meta</span>.</li>
+
+                                <li>Aura Tier Separators now organize aura filters and rarity-sorted results by visible tier boundaries and stay enabled even when Full Aura Style Rework is turned off.</li>
+
+                                <span class="subSpace credits-text">Thanks to <a href="https://discord.com/users/1008360412632322088" class="subtitleClass" target="_blank" rel="noopener">antigodthesans</a> for sharing this idea with me!</span>
                             </ul>
                         </li>
+
                         <li class="changelog-release-group">
                             <span class="largeClass">All item names reworked:</span>
                             <ul class="changelog-release-group__list">
-                                <li>Reworked potion, device, talisman, and rune names with their matching colors and effects. Stacked potion results use these styles too.</li>
+                                <li>Reworked potion, device, talisman, and rune names with their matching 
+                                    <span class="changelog-font">fonts</span>,
+                                    <span class="changelog-color">colors</span>,
+                                    <span class="changelog-gradient">gradients</span>,
+                                    <span class="changelog-outline" data-text="outlines">outlines</span>,
+                                    and
+                                    <span class="changelog-effect">effects
+                                        <i class="changelog-particle"></i>
+                                        <i class="changelog-particle"></i>
+                                        <i class="changelog-particle"></i>
+                                        <i class="changelog-particle"></i>
+                                        <i class="changelog-particle"></i>
+                                        <i class="changelog-particle"></i>
+                                        <i class="changelog-particle"></i>
+                                        <i class="changelog-particle"></i>
+                                        <i class="changelog-particle"></i>
+                                        <i class="changelog-particle"></i>
+                                        <i class="changelog-particle"></i>
+                                        <i class="changelog-particle"></i>
+                                    </span>.
+                                    Stacked potion results use these styles too.</li>
                             </ul>
                         </li>
+
+                        <li class="changelog-release-group">
+                            <span class="largeClass">Aura style &amp; animation fixes:</span>
+                            <ul class="changelog-release-group__list">
+                                <li>Fixed Reduce glitch effects and Remove glitch effects incorrectly disabling animated aura sigils such as <span class="changelog-aura-sigil" data-changelog-aura-sigil="Glitch">Glitch</span>, <span class="changelog-aura-sigil" data-changelog-aura-sigil="Oppression">Oppression</span>, <span class="changelog-aura-sigil" data-changelog-aura-sigil="Illusionary">Illusionary</span>, and other animated aura titles.</li>
+                                <li>Aura sigil animations are now controlled independently from the Glitch effect quality settings and are only disabled by the Disable roll &amp; sigil animations option.</li>
+                            </ul>
+                        </li>
+
                         <li class="changelog-release-group">
                             <span class="largeClass">Potion &amp; biome bug fixes:</span>
                             <ul class="changelog-release-group__list">
-                                <li><span class="pumpBloodClass" data-wiki-item="Pump King's Blood">Pump King's Blood</span> is now always used before <span class="oblivionClass" data-wiki-item="Oblivion Potion">Oblivion Potion</span> in multiple-potion simulations, with or without compatible potion stacking.
-                                    <span class="subSpace credits-text">Thanks to <a href="https://discord.com/users/1008360412632322088" class="subtitleClass" target="_blank" rel="noopener">antigodthesans</a> for reporting the <span data-wiki-item="Oblivion Potion">Oblivion</span> and <span data-wiki-item="Pump King's Blood">Pump King's Blood</span> bug!</span>
-                                </li>
-                                <li><span class="sigil-outline-summer">Incinerator</span> can now be selected during both Day and Night while Summer 2026 is enabled.
-                                    <span class="subSpace credits-text">Thanks to <a href="https://discord.com/users/966428347485802566" class="subtitleClass" target="_blank" rel="noopener">mattplays607</a> for reporting the Incinerator daytime-only bug!</span>
-                                </li>
+                                <li><span class="pumpBloodClass" data-wiki-item="Pump King's Blood">Pump King's Blood</span> is now always used before <span class="oblivionClass" data-wiki-item="Oblivion Potion">Oblivion Potion</span> in multiple-potion simulations, with or without compatible potion stacking.</li>
+
+                                <span class="subSpace credits-text">Thanks to <a href="https://discord.com/users/1008360412632322088" class="subtitleClass" target="_blank" rel="noopener">antigodthesans</a> for reporting the <span data-wiki-item="Oblivion Potion">Oblivion</span> and <span data-wiki-item="Pump King's Blood">Pump King's Blood</span> bug!</span>
+                                <br>
+
+                                <li><span class="sigil-outline-summer">Incinerator</span> can now be selected during both Day and Night while Summer 2026 is enabled.</li>
+
+                                <span class="subSpace credits-text">Credit goes to <a href="https://discord.com/users/966428347485802566" class="subtitleClass" target="_blank" rel="noopener">mattplays607</a> for reporting the Incinerator daytime-only bug!</span>
                             </ul>
                         </li>
                     </ul>

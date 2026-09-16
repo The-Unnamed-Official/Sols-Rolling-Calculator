@@ -112,11 +112,6 @@ for (const aura of blueprint) {
     const source = sourceByName.get(normalize(aliases[name] || name));
     if (!source) throw new Error(`Missing wiki title: ${name}`);
     auras[name] = { source: source.url, markup: sanitizeMarkup(source.markup) };
-    if (['Illusionary', 'Cryogenic', 'Meta'].includes(name)) {
-        auras[name].rarityMarkup = auras[name].markup.replace(new RegExp(name, 'gi'), '__RARITY__');
-        // Keep class names intact when replacing the displayed Illusionary text.
-        auras[name].rarityMarkup = auras[name].rarityMarkup.replace('ColorChange-__RARITY__', 'ColorChange-Illusionary');
-    }
 }
 const items = {};
 const itemNames = new Set([

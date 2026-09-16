@@ -26,9 +26,37 @@ body.quality-simple-auras .wiki-title:is(.wiki-title--aura, .wiki-title--rarity)
 }
 body.quality-simple-auras .wiki-title:is(.wiki-title--aura, .wiki-title--rarity) > .wiki-title__art { display: none; }
 body.quality-simple-auras .wiki-title > .wiki-title__plain { display: inline; }
-body.quality-simple-auras .wiki-title:not(.wiki-title--item) *,
-body.quality-simple-auras .wiki-title:not(.wiki-title--item) *::before,
-body.quality-simple-auras .wiki-title:not(.wiki-title--item) *::after { animation: none !important; }
+body.quality-simple-auras .wiki-title--aura .wiki-title__art *,
+body.quality-simple-auras .wiki-title--aura .wiki-title__art *::before,
+body.quality-simple-auras .wiki-title--aura .wiki-title__art *::after { animation: none !important; }
+.aura-tier-detail, .aura-native, .aura-count, .wiki-title__plain { -webkit-text-fill-color: currentColor; }
+.aura-tier-separator {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    grid-column: 1 / -1;
+    margin: 18px 0 8px;
+    font: 700 0.82rem Sarpanch, sans-serif;
+    letter-spacing: 0.13em;
+    text-transform: uppercase;
+    color: #d8ddea;
+}
+.aura-tier-separator::after {
+    content: '';
+    flex: 1;
+    min-width: 16px;
+    border-top: 1px solid currentColor;
+    opacity: 0.45;
+}
+.aura-tier-separator:first-child { margin-top: 6px; }
+.aura-tier-separator[data-aura-tier-heading="epic"] { color: #cf9ed0; }
+.aura-tier-separator[data-aura-tier-heading="unique"] { color: #e9bb62; }
+.aura-tier-separator[data-aura-tier-heading="legendary"] { color: #71eed7; }
+.aura-tier-separator[data-aura-tier-heading="mythic"] { color: #f17bd5; }
+.aura-tier-separator[data-aura-tier-heading="exalted"] { color: #85baff; }
+.aura-tier-separator[data-aura-tier-heading="glorious"] { color: #ff9696; }
+.aura-tier-separator[data-aura-tier-heading="transcendent"] { color: #b7f5f5; }
+.aura-tier-separator[data-aura-tier-heading="challenged"] { color: #fff; }
 .quality-settings__aura-switch {
     display: grid;
     grid-template-columns: minmax(0, 1fr) auto;
@@ -75,18 +103,7 @@ body.quality-simple-auras .wiki-title:not(.wiki-title--item) *::after { animatio
 .changelog-aura-sigil { white-space: normal; }
 body.quality-no-roll-sigil-animations .wiki-title *,
 body.quality-no-roll-sigil-animations .wiki-title *::before,
-body.quality-no-roll-sigil-animations .wiki-title *::after,
-body.quality-no-shakes .wiki-title [style*="animation"],
-body.quality-no-shakes .wiki-title .wiki-ref-NyctoReworkShake span,
-body.quality-reduced-glitch .wiki-title .wiki-ref-GlitchTitle::after,
-body.quality-reduced-glitch .wiki-title .wiki-ref-SwitchingCases,
-body.quality-reduced-glitch .wiki-title .wiki-ref-ColorChange-Illusionary,
-body.quality-no-glitch .wiki-title *,
-body.quality-no-glitch .wiki-title *::before,
-body.quality-no-glitch .wiki-title *::after {
+body.quality-no-roll-sigil-animations .wiki-title *::after {
     animation: none !important;
     transition: none !important;
-}
-@media (prefers-reduced-motion: reduce) {
-    .wiki-title *, .wiki-title *::before, .wiki-title *::after { animation: none !important; transition: none !important; }
 }
