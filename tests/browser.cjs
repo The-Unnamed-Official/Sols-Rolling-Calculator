@@ -39,7 +39,7 @@ const server = http.createServer((req, res) => {
             const page = await browser.newPage({ viewport: { width: 1440, height: 1000 } });
             page.on('pageerror', error => errors.push(`${variant}: ${error.message}`));
             await page.addInitScript(() => {
-                localStorage.setItem('solsRollingCalculator:lastSeenChangelogVersion', location.pathname.includes('baseline') ? 'v2.030' : 'v2.1.0');
+                localStorage.setItem('solsRollingCalculator:lastSeenChangelogVersion', location.pathname.includes('baseline') ? 'v2.030' : 'v2.1.1');
                 localStorage.setItem('solsRollingCalculator:cacheMigration:2.1.0', 'done');
             });
             await page.goto(`${origin}/${variant === 'baseline' ? 'baseline/' : ''}`, { waitUntil: 'load' });
@@ -57,6 +57,70 @@ const server = http.createServer((req, res) => {
             pages.push(page);
         }
         const [baseline, page] = pages;
+        // Potion priority must survive layout changes in both stacking modes.
+        results.potionPriority = await page.evaluate(() => {
+            const grid = document.querySelector('.multi-potion-grid');
+            const originalFields = [...grid.children];
+            const inputs = [...grid.querySelectorAll('[data-multi-potion]')];
+            const originalCounts = inputs.map(input => getNumericInputValue(input));
+            const quantities = { 'pump-kings-blood': 3, oblivion: 2, 'tutorial-potion': 1, heavenly: 4, godlike: 2 };
+            const luckState = { deviceLuckBonus: 0, finalLuckMultiplier: 1 };
+            try {
+                grid.append(...originalFields.slice().reverse());
+                inputs.forEach(input => setNumericInputValue(input, quantities[input.dataset.multiPotion] || 0));
+                return [false, true].map(stackCompatiblePotions => collectMultiplePotionBatches(
+                    luckState, { stackCompatiblePotions }
+                ).map(batch => ({ id: batch.id, count: batch.count, blocksRunes: Boolean(batch.blocksRunes) })));
+            } finally {
+                inputs.forEach((input, index) => setNumericInputValue(input, originalCounts[index]));
+                grid.append(...originalFields);
+            }
+        });
+        const specialPotionBatches = [
+            { id: 'pump-kings-blood', count: 3, blocksRunes: true },
+            { id: 'oblivion', count: 2, blocksRunes: true },
+            { id: 'tutorial-potion', count: 1, blocksRunes: true }
+        ];
+        assert.deepEqual(results.potionPriority, [
+            [...specialPotionBatches, { id: 'heavenly', count: 4, blocksRunes: false }, { id: 'godlike', count: 2, blocksRunes: false }],
+            [...specialPotionBatches, { id: 'stacked:heavenly+godlike', count: 2, blocksRunes: false }, { id: 'heavenly', count: 2, blocksRunes: false }]
+        ]);
+        results.incineratorTime = await page.evaluate(() => {
+            const primary = document.getElementById(BIOME_PRIMARY_SELECT_ID);
+            const time = document.getElementById(BIOME_TIME_SELECT_ID);
+            const original = { primary: primary.value, time: time.value };
+            const states = [];
+            const capture = () => states.push({
+                biome: primary.value, time: time.value,
+                incineratorDisabled: primary.querySelector('[value="incinerator"]').disabled,
+                nightDisabled: time.querySelector('[value="night"]').disabled
+            });
+            try {
+                primary.value = 'normal';
+                time.value = 'night';
+                updateBiomeControlConstraints({ source: BIOME_TIME_SELECT_ID });
+                capture();
+                primary.value = 'incinerator';
+                updateBiomeControlConstraints({ source: BIOME_PRIMARY_SELECT_ID });
+                capture();
+                for (const value of ['day', 'night']) {
+                    time.value = value;
+                    updateBiomeControlConstraints({ source: BIOME_TIME_SELECT_ID });
+                    capture();
+                }
+                return states;
+            } finally {
+                primary.value = original.primary;
+                time.value = original.time;
+                updateBiomeControlConstraints();
+            }
+        });
+        assert.deepEqual(results.incineratorTime, [
+            { biome: 'normal', time: 'night', incineratorDisabled: false, nightDisabled: false },
+            { biome: 'incinerator', time: 'night', incineratorDisabled: false, nightDisabled: false },
+            { biome: 'incinerator', time: 'day', incineratorDisabled: false, nightDisabled: false },
+            { biome: 'incinerator', time: 'night', incineratorDisabled: false, nightDisabled: false }
+        ]);
         // Rules and formatting comparison across every aura and representative biome/luck contexts.
         const captureRules = async p => p.evaluate(() => {
             const result = [];
@@ -83,10 +147,23 @@ const server = http.createServer((req, res) => {
                         bt: batch.combinedSelection.breakthroughIndices });
                 }
             }
-            return { result, markup: AURA_REGISTRY.map(aura => formatAuraNameMarkup(aura)) };
+            return result;
         });
         assert.deepEqual(await captureRules(page), await captureRules(baseline));
-        results.rulesAndSigils = 'exact match for all 391 aura markups and 42 rule/potion contexts';
+        results.rulesAndSigils = 'exact match for all 42 rule/potion contexts';
+        results.wikiTitleCoverage = await page.evaluate(() => AURA_REGISTRY.map(aura => {
+            const fragment = document.createElement('div');
+            fragment.innerHTML = formatAuraNameMarkup(aura);
+            const title = fragment.querySelector('.wiki-title--aura');
+            return { name: aura.name.split(' - ')[0], label: title?.getAttribute('aria-label'),
+                art: Boolean(title?.querySelector('[aria-hidden="true"]')?.innerHTML.trim()),
+                source: WikiTitleData.auras[aura.name.split(' - ')[0]]?.source };
+        }));
+        assert.equal(results.wikiTitleCoverage.length, 391);
+        results.wikiTitleCoverage.forEach(({name,label,art,source}) => {
+            assert.equal(label,name); assert.ok(art,name); assert.match(source,/^https:\/\/sol-rng\.fandom\.com\/wiki\//);
+        });
+        results.wikiTitleCoverage = `${results.wikiTitleCoverage.length} of ${results.wikiTitleCoverage.length} aura titles have source-backed art and accessible names`;
         // Compare real workers using the app's own compiled candidates. Median
         // includes worker startup; no synthetic probability model is substituted.
         for (let i = 0; !process.env.SKIP_BENCHMARK && i < pages.length; i++) {
@@ -224,7 +301,7 @@ const server = http.createServer((req, res) => {
             activeSolLikeSimulationController.cancel();
         });
         await page.waitForFunction(() => !simulationActive);
-        // Lazy module can load once and still render all original canvas styles.
+        // Lazy export module uses the same Wiki title artwork.
         await page.evaluate(() => AppRuntime.loadScript('scripts/share-image.js'));
         assert.equal(await page.evaluate(() => typeof generateShareImage), 'function');
         const downloadPromise = page.waitForEvent('download');
@@ -359,6 +436,60 @@ const server = http.createServer((req, res) => {
         }), 1);
         await page.evaluate(() => ensureChangelogTabsReady());
         assert.equal(await page.locator('[data-changelog-tab="v2.1.0"]').count(), 1);
+        assert.equal(await page.locator('[data-changelog-tab="v2.1.1"]').count(), 1);
+        assert.equal(await page.locator('#versionInfoButton').getAttribute('data-version-id'), 'v2.1.1');
+        assert.equal(await page.locator('[data-changelog-tab]').first().getAttribute('data-changelog-tab'), 'v2.1.1');
+        assert.equal(await page.locator('#changelog-panel-v210 .changelog-subupdate-card').count(), 0);
+        // The bottom switch updates already-mounted and future titles, persists,
+        // and leaves item artwork independent of the aura preference.
+        const auraSwitch = page.getByRole('switch', { name: 'Full Aura Style Rework', exact: true });
+        await page.locator('#optionsMenuToggle').click();
+        await page.locator('#qualityPreferencesToggle').click();
+        assert.equal(await auraSwitch.getAttribute('aria-checked'), 'true');
+        await page.evaluate(() => {
+            const fixture = document.createElement('div');
+            fixture.id = 'aura-preference-test';
+            fixture.innerHTML = Object.keys(WikiTitleData.auras).map(name => WikiTitles.aura(name, '1 in 1,000')).join(' ')
+                + WikiTitles.item('Rune of Heavens') + WikiTitles.item('Oblivion');
+            document.body.append(fixture);
+            window.preferenceFixture = fixture;
+        });
+        await auraSwitch.click();
+        assert.equal(await auraSwitch.getAttribute('aria-checked'), 'false');
+        results.auraPreference = await page.evaluate(() => {
+            const titles = [...window.preferenceFixture.querySelectorAll('.wiki-title--aura,.wiki-title--rarity')];
+            return {
+                plainTitles: titles.length,
+                allPlain: titles.every(title => getComputedStyle(title.querySelector('.wiki-title__art')).display === 'none'
+                    && getComputedStyle(title.querySelector('.wiki-title__plain')).display !== 'none'),
+                separateStyledRarities: window.preferenceFixture.querySelectorAll('.wiki-title--rarity').length,
+                itemsStillStyled: [...window.preferenceFixture.querySelectorAll('.wiki-title--item .wiki-title__art')]
+                    .filter(art => getComputedStyle(art).display !== 'none').length,
+                preservedNode: document.getElementById('aura-preference-test') === window.preferenceFixture
+            };
+        });
+        assert.deepEqual(results.auraPreference, {
+            plainTitles: 394, allPlain: true, separateStyledRarities: 3, itemsStillStyled: 2, preservedNode: true
+        });
+        assert.equal(await page.evaluate(() => {
+            window.preferenceFixture.insertAdjacentHTML('beforeend', WikiTitles.aura('Common'));
+            return getComputedStyle(window.preferenceFixture.lastElementChild.querySelector('.wiki-title__art')).display;
+        }), 'none');
+        await page.reload();
+        await page.waitForFunction(() => typeof WikiTitles !== 'undefined' && document.body.classList.contains('quality-simple-auras'));
+        await page.locator('#optionsMenuToggle').click();
+        await page.locator('#qualityPreferencesToggle').click();
+        assert.equal(await auraSwitch.getAttribute('aria-checked'), 'false');
+        await page.setViewportSize({ width: 375, height: 812 });
+        await auraSwitch.scrollIntoViewIfNeeded();
+        const switchBounds = await auraSwitch.boundingBox();
+        assert.ok(switchBounds.x >= 0 && switchBounds.x + switchBounds.width <= 375);
+        await page.screenshot({ path: path.join(root, 'test-results/aura-preference-mobile.png') });
+        await auraSwitch.press('Space');
+        assert.equal(await auraSwitch.getAttribute('aria-checked'), 'true');
+        assert.equal(await page.evaluate(() => document.body.classList.contains('quality-simple-auras')), false);
+        await page.locator('#qualityPreferencesClose').click();
+        await page.setViewportSize({ width: 1440, height: 1000 });
         await page.screenshot({ path: path.join(root, 'test-results/current.png'), fullPage: false });
         assert.deepEqual(errors, []);
         results.browserErrors = errors;

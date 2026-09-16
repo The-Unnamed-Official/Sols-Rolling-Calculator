@@ -1,0 +1,92 @@
+/* Layout adapters for the attributed Wiki artwork in wiki-title-data.js. */
+.wiki-title {
+    position: relative;
+    display: inline-block;
+    isolation: isolate;
+    vertical-align: baseline;
+    white-space: nowrap;
+    font-family: 'Noto Sans TC', sans-serif;
+    font-weight: 400;
+    font-style: normal;
+    letter-spacing: normal;
+    text-transform: none;
+    text-shadow: none;
+    -webkit-text-fill-color: initial;
+    -webkit-text-stroke: 0 transparent;
+    line-height: 1.65;
+    color: #fff;
+}
+.wiki-title > span { display: inline-block; }
+.wiki-title > .wiki-title__plain { display: none; }
+body.quality-simple-auras .wiki-title:is(.wiki-title--aura, .wiki-title--rarity) {
+    font: inherit;
+    line-height: inherit;
+    white-space: normal;
+    color: var(--text-primary, #f5f8ff);
+}
+body.quality-simple-auras .wiki-title:is(.wiki-title--aura, .wiki-title--rarity) > .wiki-title__art { display: none; }
+body.quality-simple-auras .wiki-title > .wiki-title__plain { display: inline; }
+body.quality-simple-auras .wiki-title:not(.wiki-title--item) *,
+body.quality-simple-auras .wiki-title:not(.wiki-title--item) *::before,
+body.quality-simple-auras .wiki-title:not(.wiki-title--item) *::after { animation: none !important; }
+.quality-settings__aura-switch {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 20px;
+    width: 100%;
+    flex-shrink: 0;
+    margin-top: 14px;
+    text-align: left;
+}
+.quality-settings__aura-switch > span:first-child { display: grid; gap: 6px; }
+.quality-settings__switch-track {
+    position: relative;
+    display: block;
+    width: 42px;
+    height: 24px;
+    border-radius: 20px;
+    background: #35415a;
+    border: 1px solid #5a6882;
+}
+.quality-settings__switch-track::after {
+    content: '';
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: #eef5ff;
+}
+.quality-settings__aura-switch[aria-checked="true"] .quality-settings__switch-track { background: #267558; border-color: #69ecae; }
+.quality-settings__aura-switch[aria-checked="true"] .quality-settings__switch-track::after { left: 21px; }
+.wiki-title .wiki-ref-GradientedTextStroke::before { content: attr(data-textstroke); }
+.wiki-item-label {
+    background: none !important;
+    -webkit-text-fill-color: initial !important;
+    -webkit-text-stroke: 0 transparent !important;
+    text-shadow: none !important;
+    filter: none !important;
+    animation: none !important;
+    letter-spacing: normal !important;
+}
+.wiki-item-label::before, .wiki-item-label::after { content: none !important; }
+.changelog-aura-sigil { white-space: normal; }
+body.quality-no-roll-sigil-animations .wiki-title *,
+body.quality-no-roll-sigil-animations .wiki-title *::before,
+body.quality-no-roll-sigil-animations .wiki-title *::after,
+body.quality-no-shakes .wiki-title [style*="animation"],
+body.quality-no-shakes .wiki-title .wiki-ref-NyctoReworkShake span,
+body.quality-reduced-glitch .wiki-title .wiki-ref-GlitchTitle::after,
+body.quality-reduced-glitch .wiki-title .wiki-ref-SwitchingCases,
+body.quality-reduced-glitch .wiki-title .wiki-ref-ColorChange-Illusionary,
+body.quality-no-glitch .wiki-title *,
+body.quality-no-glitch .wiki-title *::before,
+body.quality-no-glitch .wiki-title *::after {
+    animation: none !important;
+    transition: none !important;
+}
+@media (prefers-reduced-motion: reduce) {
+    .wiki-title *, .wiki-title *::before, .wiki-title *::after { animation: none !important; transition: none !important; }
+}

@@ -33,7 +33,7 @@
             const documentModifiedAt = Number.isFinite(parsedDocumentModifiedAt)
                 ? parsedDocumentModifiedAt
                 : Date.now();
-            const buildCacheKey = '2.1.0';
+            const buildCacheKey = '2.1.1';
 
             window.appBuildCacheKey = buildCacheKey;
             window.getVersionedAppAssetUrl = path => {
@@ -166,17 +166,22 @@
             });
         })();
     </script>
-    <link rel="stylesheet" href="styles/base.css?v=2.1.0">
-    <link rel="stylesheet" href="styles/layout.css?v=2.1.0">
-    <link rel="stylesheet" href="styles/components.css?v=2.1.0">
-    <link rel="stylesheet" href="styles/utilities.css?v=2.1.0">
-    <script src="scripts/utils.js?v=2.1.0" defer></script>
-    <script src="scripts/runtime.js?v=2.1.0" defer></script>
-    <script src="scripts/simulation-core.js?v=2.1.0" defer></script>
-    <script src="scripts/state.js?v=2.1.0" defer></script>
-    <script src="scripts/media-loader.js?v=2.1.0" defer></script>
-    <script src="scripts/overlays.js?v=2.1.0" defer></script>
-    <script src="scripts/main.js?v=2.1.0" defer></script>
+    <link rel="stylesheet" href="styles/base.css?v=2.1.1">
+    <link rel="stylesheet" href="styles/layout.css?v=2.1.1">
+    <link rel="stylesheet" href="styles/components.css?v=2.1.1">
+    <link rel="stylesheet" href="styles/utilities.css?v=2.1.1">
+    <link rel="stylesheet" href="styles/wiki-title-fonts.css?v=2.1.1">
+    <link rel="stylesheet" href="styles/wiki-title-effects.css?v=2.1.1">
+    <link rel="stylesheet" href="styles/wiki-titles.css?v=2.1.1">
+    <script src="scripts/utils.js?v=2.1.1" defer></script>
+    <script src="scripts/runtime.js?v=2.1.1" defer></script>
+    <script src="scripts/simulation-core.js?v=2.1.1" defer></script>
+    <script src="scripts/state.js?v=2.1.1" defer></script>
+    <script src="scripts/media-loader.js?v=2.1.1" defer></script>
+    <script src="scripts/overlays.js?v=2.1.1" defer></script>
+    <script src="scripts/wiki-title-data.js?v=2.1.1" defer></script>
+    <script src="scripts/wiki-titles.js?v=2.1.1" defer></script>
+    <script src="scripts/main.js?v=2.1.1" defer></script>
 </head>
 <body>
     <div class="interface-backdrop" aria-hidden="true">
@@ -410,9 +415,9 @@
                         <h1 class="banner__title">Sol's RNG Rolling Simulator</h1>
                     </div>
                     <div class="banner__subtitle masthead-console__metadata">
-                        <button type="button" class="banner__version-button masthead-console__meta-card masthead-console__meta-card--version masthead-console__version" id="versionInfoButton" aria-haspopup="dialog" aria-expanded="false" data-version-id="v2.1.0">
+                        <button type="button" class="banner__version-button masthead-console__meta-card masthead-console__meta-card--version masthead-console__version" id="versionInfoButton" aria-haspopup="dialog" aria-expanded="false" data-version-id="v2.1.1">
                             <i class="fa-solid fa-code-branch" aria-hidden="true"></i>
-                            <span><small>Current build</small><strong>Version 2.1.0</strong></span>
+                            <span><small>Current build</small><strong>Version 2.1.1</strong></span>
                         </button>
                         <span class="masthead-console__meta-card banner__subtitle-author">
                             <span class="masthead-console__creator-avatar-flip" aria-hidden="true">
@@ -457,7 +462,7 @@
                     <div class="options-menu__surface" id="optionsMenuPanel" aria-labelledby="optionsMenuToggle">
                         <button class="interface-toggle options-menu__item" id="audioSettingsButton" type="button">Audio</button>
                         <button class="interface-toggle options-menu__item" id="rollingSettingsButton" type="button">Rolling Settings</button>
-                        <button class="interface-toggle options-menu__item" id="qualityPreferencesToggle" type="button">Quality Preferances</button>
+                        <button class="interface-toggle options-menu__item" id="qualityPreferencesToggle" type="button">Quality Preferences</button>
                         <button class="interface-toggle options-menu__item" id="backgroundRollingButton" type="button" aria-pressed="false">Allow background rolling: Off</button>
                         <button class="interface-toggle options-menu__item" id="trueChanceDisplayButton" type="button" aria-pressed="false">True chance display: Off</button>
                     </div>
@@ -856,7 +861,7 @@
                         <div class="multi-potion-stack-option">
                             <div>
                                 <span class="multi-potion-stack-option__label">Stack Compatible Potions</span>
-                                <small>Consumes one of each compatible potion per roll and merges their luck. Red Moon I and II never stack together; Oblivion, Pump King's Blood, and Tutorial Potion always stay separate.</small>
+                                <small>Consumes one of each compatible potion per roll and merges their luck. Red Moon I and II never stack together; Pump King's Blood, Oblivion, and Tutorial Potion always stay separate and are used first, in that order.</small>
                             </div>
                             <label class="toggle">
                                 <input type="checkbox" id="multiPotionStackToggle" class="toggle__input" aria-label="Stack compatible potions">
@@ -867,47 +872,47 @@
                         <p class="multi-potion-stack-summary" id="multiPotionStackSummary" data-feature-boot="compact" hidden></p>
                         <div class="multi-potion-grid">
                             <label class="multi-potion-field">
-                                <span><span class="heavenlyClass">Heavenly Potion</span><small>+150,000 luck</small></span>
+                                <span><span class="heavenlyClass" data-wiki-item="Heavenly Potion">Heavenly Potion</span><small>+150,000 luck</small></span>
                                 <input class="form-field__input multi-potion-field__input" type="text" inputmode="numeric" pattern="[0-9]*" value="0" data-multi-potion="heavenly" aria-label="Heavenly Potion quantity">
                             </label>
                             <label class="multi-potion-field">
-                                <span><span class="oblivionClass">Oblivion Potion</span><small>+600,000 luck</small></span>
-                                <input class="form-field__input multi-potion-field__input" type="text" inputmode="numeric" pattern="[0-9]*" value="0" data-multi-potion="oblivion" aria-label="Oblivion Potion quantity">
-                            </label>
-                            <label class="multi-potion-field">
-                                <span><span class="pumpBloodClass">Pump King's Blood</span><small>+700,000 luck</small></span>
+                                <span><span class="pumpBloodClass" data-wiki-item="Pump King's Blood">Pump King's Blood</span><small>+700,000 luck</small></span>
                                 <input class="form-field__input multi-potion-field__input" type="text" inputmode="numeric" pattern="[0-9]*" value="0" data-multi-potion="pump-kings-blood" aria-label="Pump King's Blood quantity">
                             </label>
                             <label class="multi-potion-field">
-                                <span><span class="godlikeClass">Godlike Potion</span><small>+400,000 luck</small></span>
+                                <span><span class="oblivionClass" data-wiki-item="Oblivion Potion">Oblivion Potion</span><small>+600,000 luck</small></span>
+                                <input class="form-field__input multi-potion-field__input" type="text" inputmode="numeric" pattern="[0-9]*" value="0" data-multi-potion="oblivion" aria-label="Oblivion Potion quantity">
+                            </label>
+                            <label class="multi-potion-field">
+                                <span><span class="godlikeClass" data-wiki-item="Godlike Potion">Godlike Potion</span><small>+400,000 luck</small></span>
                                 <input class="form-field__input multi-potion-field__input" type="text" inputmode="numeric" pattern="[0-9]*" value="0" data-multi-potion="godlike" aria-label="Godlike Potion quantity">
                             </label>
                             <label class="multi-potion-field">
-                                <span><span class="bloodIIClass">Red Moon II</span><small>+200,000 luck</small></span>
+                                <span><span class="bloodIIClass" data-wiki-item="Red Moon Potion II">Red Moon II</span><small>+200,000 luck</small></span>
                                 <input class="form-field__input multi-potion-field__input" type="text" inputmode="numeric" pattern="[0-9]*" value="0" data-multi-potion="blood-ii" aria-label="Red Moon II quantity">
                             </label>
                             <label class="multi-potion-field">
-                                <span><span class="candyClass">Candy Corn</span><small>+75,000 luck</small></span>
+                                <span><span class="candyClass" data-wiki-item="Candy Corn">Candy Corn</span><small>+75,000 luck</small></span>
                                 <input class="form-field__input multi-potion-field__input" type="text" inputmode="numeric" pattern="[0-9]*" value="0" data-multi-potion="candy-corn" aria-label="Candy Corn quantity">
                             </label>
                             <label class="multi-potion-field">
-                                <span><span class="boundClass">Bound Potion</span><small>+50,000 luck</small></span>
+                                <span><span class="boundClass" data-wiki-item="Potion of Bound">Bound Potion</span><small>+50,000 luck</small></span>
                                 <input class="form-field__input multi-potion-field__input" type="text" inputmode="numeric" pattern="[0-9]*" value="0" data-multi-potion="bound" aria-label="Bound Potion quantity">
                             </label>
                             <label class="multi-potion-field">
-                                <span><span class="bloodClass">Red Moon I</span><small>+11,000 luck</small></span>
+                                <span><span class="bloodClass" data-wiki-item="Red Moon Potion I">Red Moon I</span><small>+11,000 luck</small></span>
                                 <input class="form-field__input multi-potion-field__input" type="text" inputmode="numeric" pattern="[0-9]*" value="0" data-multi-potion="blood-i" aria-label="Red Moon I quantity">
                             </label>
                             <label class="multi-potion-field">
-                                <span><span class="duneClass">Potion of the Dune</span><small>+10,000 luck</small></span>
+                                <span><span class="duneClass" data-wiki-item="Potion of the Dune">Potion of the Dune</span><small>+10,000 luck</small></span>
                                 <input class="form-field__input multi-potion-field__input" type="text" inputmode="numeric" pattern="[0-9]*" value="0" data-multi-potion="dune" aria-label="Potion of the Dune quantity">
                             </label>
                             <label class="multi-potion-field">
-                                <span><span class="popClass">Popping Potion</span><small>+10,000 luck</small></span>
+                                <span><span class="popClass" data-wiki-item="Popping Potion">Popping Potion</span><small>+10,000 luck</small></span>
                                 <input class="form-field__input multi-potion-field__input" type="text" inputmode="numeric" pattern="[0-9]*" value="0" data-multi-potion="popping" aria-label="Popping Potion quantity">
                             </label>
                             <label class="multi-potion-field">
-                                <span><span class="tutPotion">Tutorial Potion</span><small>+5,000 luck</small></span>
+                                <span><span class="tutPotion" data-wiki-item="Tutorial Potion">Tutorial Potion</span><small>+5,000 luck</small></span>
                                 <input class="form-field__input multi-potion-field__input" type="text" inputmode="numeric" pattern="[0-9]*" value="0" data-multi-potion="tutorial-potion" aria-label="Tutorial Potion quantity">
                             </label>
                         </div>
@@ -1163,23 +1168,23 @@
                             <span class="preset-console__bank-badge">18 Options</span>
                         </header>
                         <div class="preset-matrix" id="luck-preset-panel">
-                            <button type="button" id="luck-preset-pump-kings-blood" data-luck-value="700000" aria-pressed="false" onclick="handlePumpKingsBloodPresetSelection('pump-kings-blood')"><span class="pumpBloodClass">Pump King's Blood</span> +700,000 <span class="preset-active-label" aria-hidden="true">Active</span></button>
-                            <button type="button" id="luck-preset-oblivion" data-luck-value="600000" aria-pressed="false" onclick="handleOblivionPresetSelection('oblivion')"><span class="oblivionClass">Oblivion Potion</span> +600,000 <span class="preset-active-label" aria-hidden="true">Active</span></button>
-                            <button type="button" data-luck-value="600000" onclick="applyLuckValue(600000, { luckSource: 'standard-preset' })"><span class="godlikeClass">Godlike</span> + <span class="heavenlyClass">Heavenly</span> + <span class="boundClass">Bound</span> +600,000</button>
-                            <button type="button" data-luck-value="400000" onclick="applyLuckValue(400000, { luckSource: 'standard-preset' })"><span class="godlikeClass">Godlike</span> +400,000</button>
-                            <button type="button" id="void-heart-trigger" data-luck-value="300000" data-limbo-only="true" style="display:none;" onclick="applyLuckValue(300000, { luckSource: 'standard-preset' })">Void Heart +300,000</button>
-                            <button type="button" data-luck-value="0.7" data-limbo-only="true" style="display:none;" onclick="applyLuckValue(0.7, { luckSource: 'standard-preset' })">Forbidden I +70%</button>
-                            <button type="button" data-luck-value="3.25" data-limbo-only="true" style="display:none;" onclick="applyLuckValue(3.25, { luckSource: 'standard-preset' })">Forbidden II +325%</button>
-                            <button type="button" data-luck-value="13.5" data-limbo-only="true" style="display:none;" onclick="applyLuckValue(13.5, { luckSource: 'standard-preset' })">Forbidden III +1,350%</button>
-                            <button type="button" data-luck-value="200000" onclick="applyLuckValue(200000, { luckSource: 'standard-preset' })"><span class="heavenlyClass">Heavenly</span> + <span class="boundClass">Bound</span> +200,000</button>
-                            <button type="button" id="luck-preset-blood-ii" data-luck-value="200000" aria-pressed="false" onclick="handleBloodPresetSelection('blood-ii')"><span class="bloodIIClass">Red Moon II</span> +200,000 <span class="preset-active-label" aria-hidden="true">Active</span></button>
-                            <button type="button" data-luck-value="150000" onclick="applyLuckValue(150000, { luckSource: 'standard-preset' })"><span class="heavenlyClass">Heavenly</span> +150,000</button>
-                            <button type="button" data-luck-value="75000" onclick="applyLuckValue(75000, { luckSource: 'standard-preset' })"><span class="candyClass">Candy Corn</span> +75,000</button>
-                            <button type="button" data-luck-value="50000" onclick="applyLuckValue(50000, { luckSource: 'standard-preset' })"><span class="boundClass">Bound</span> +50,000</button>
-                            <button type="button" id="luck-preset-blood-i" data-luck-value="11000" aria-pressed="false" onclick="handleBloodPresetSelection('blood-i')"><span class="bloodClass">Red Moon I</span> +11,000 <span class="preset-active-label" aria-hidden="true">Active</span></button>
-                            <button type="button" id="luck-preset-dune" data-luck-value="10000" aria-pressed="false" onclick="handleDunePresetSelection('dune')"><span class="duneClass">Potion of the Dune</span> +10,000 <span class="preset-active-label" aria-hidden="true">Active</span></button>
-                            <button type="button" data-luck-value="10000" onclick="applyLuckValue(10000, { luckSource: 'standard-preset' })"><span class="popClass">Popping Potion</span> +10,000</button>
-                            <button type="button" id="luck-preset-tutorial-potion" data-luck-value="5000" aria-pressed="false" onclick="handleTutorialPotionPresetSelection('tutorial-potion')"><span class="tutPotion">Tutorial Potion</span> +5,000 <span class="preset-active-label" aria-hidden="true">Active</span></button>
+                            <button type="button" id="luck-preset-pump-kings-blood" data-luck-value="700000" aria-pressed="false" onclick="handlePumpKingsBloodPresetSelection('pump-kings-blood')"><span class="pumpBloodClass" data-wiki-item="Pump King's Blood">Pump King's Blood</span> +700,000 <span class="preset-active-label" aria-hidden="true">Active</span></button>
+                            <button type="button" id="luck-preset-oblivion" data-luck-value="600000" aria-pressed="false" onclick="handleOblivionPresetSelection('oblivion')"><span class="oblivionClass" data-wiki-item="Oblivion Potion">Oblivion Potion</span> +600,000 <span class="preset-active-label" aria-hidden="true">Active</span></button>
+                            <button type="button" data-luck-value="600000" onclick="applyLuckValue(600000, { luckSource: 'standard-preset' })"><span class="godlikeClass" data-wiki-item="Godlike Potion">Godlike</span> + <span class="heavenlyClass" data-wiki-item="Heavenly Potion">Heavenly</span> + <span class="boundClass" data-wiki-item="Potion of Bound">Bound</span> +600,000</button>
+                            <button type="button" data-luck-value="400000" onclick="applyLuckValue(400000, { luckSource: 'standard-preset' })"><span class="godlikeClass" data-wiki-item="Godlike Potion">Godlike</span> +400,000</button>
+                            <button type="button" id="void-heart-trigger" data-luck-value="300000" data-limbo-only="true" style="display:none;" onclick="applyLuckValue(300000, { luckSource: 'standard-preset' })"><span data-wiki-item="Void Heart">Void Heart</span> +300,000</button>
+                            <button type="button" data-luck-value="0.7" data-limbo-only="true" style="display:none;" onclick="applyLuckValue(0.7, { luckSource: 'standard-preset' })"><span data-wiki-item="Forbidden Potion I">Forbidden I</span> +70%</button>
+                            <button type="button" data-luck-value="3.25" data-limbo-only="true" style="display:none;" onclick="applyLuckValue(3.25, { luckSource: 'standard-preset' })"><span data-wiki-item="Forbidden Potion II">Forbidden II</span> +325%</button>
+                            <button type="button" data-luck-value="13.5" data-limbo-only="true" style="display:none;" onclick="applyLuckValue(13.5, { luckSource: 'standard-preset' })"><span data-wiki-item="Forbidden Potion III">Forbidden III</span> +1,350%</button>
+                            <button type="button" data-luck-value="200000" onclick="applyLuckValue(200000, { luckSource: 'standard-preset' })"><span class="heavenlyClass" data-wiki-item="Heavenly Potion">Heavenly</span> + <span class="boundClass" data-wiki-item="Potion of Bound">Bound</span> +200,000</button>
+                            <button type="button" id="luck-preset-blood-ii" data-luck-value="200000" aria-pressed="false" onclick="handleBloodPresetSelection('blood-ii')"><span class="bloodIIClass" data-wiki-item="Red Moon Potion II">Red Moon II</span> +200,000 <span class="preset-active-label" aria-hidden="true">Active</span></button>
+                            <button type="button" data-luck-value="150000" onclick="applyLuckValue(150000, { luckSource: 'standard-preset' })"><span class="heavenlyClass" data-wiki-item="Heavenly Potion">Heavenly</span> +150,000</button>
+                            <button type="button" data-luck-value="75000" onclick="applyLuckValue(75000, { luckSource: 'standard-preset' })"><span class="candyClass" data-wiki-item="Candy Corn">Candy Corn</span> +75,000</button>
+                            <button type="button" data-luck-value="50000" onclick="applyLuckValue(50000, { luckSource: 'standard-preset' })"><span class="boundClass" data-wiki-item="Potion of Bound">Bound</span> +50,000</button>
+                            <button type="button" id="luck-preset-blood-i" data-luck-value="11000" aria-pressed="false" onclick="handleBloodPresetSelection('blood-i')"><span class="bloodClass" data-wiki-item="Red Moon Potion I">Red Moon I</span> +11,000 <span class="preset-active-label" aria-hidden="true">Active</span></button>
+                            <button type="button" id="luck-preset-dune" data-luck-value="10000" aria-pressed="false" onclick="handleDunePresetSelection('dune')"><span class="duneClass" data-wiki-item="Potion of the Dune">Potion of the Dune</span> +10,000 <span class="preset-active-label" aria-hidden="true">Active</span></button>
+                            <button type="button" data-luck-value="10000" onclick="applyLuckValue(10000, { luckSource: 'standard-preset' })"><span class="popClass" data-wiki-item="Popping Potion">Popping Potion</span> +10,000</button>
+                            <button type="button" id="luck-preset-tutorial-potion" data-luck-value="5000" aria-pressed="false" onclick="handleTutorialPotionPresetSelection('tutorial-potion')"><span class="tutPotion" data-wiki-item="Tutorial Potion">Tutorial Potion</span> +5,000 <span class="preset-active-label" aria-hidden="true">Active</span></button>
                         </div>
                     </section>
                     <section class="preset-collection preset-collection--compact preset-console__bank" id="preset-bank-device" data-preset-bank="device" role="tabpanel" aria-labelledby="preset-tab-device" hidden>
@@ -1192,18 +1197,18 @@
                             <span class="preset-console__bank-badge">VIP Not Included</span>
                         </header>
                         <div class="preset-matrix preset-matrix--compact" id="device-buff-preset-panel">
-                            <button type="button" data-luck-value="23.21" onclick="applyDeviceBuffPreset(23.21, this)"><span class="archangelClass">Archangel Device</span> + "Godlike!" + "Soul Master's Talisman" x23.21</button>
-                            <button type="button" data-luck-value="30.41" onclick="applyDeviceBuffPreset(30.41, this)"><span class="archangelClass">Archangel Device</span> + Max Luck x30.41</button>
-                            <button type="button" data-luck-value="39.71" onclick="applyDeviceBuffPreset(39.71, this)"><span class="archangelClass">Archangel Device</span> + Max Luck + Event buffs x39.71</button>
-                            <button type="button" data-luck-value="28.21" onclick="applyDeviceBuffPreset(28.21, this)"><span class="archangelClass">Archangel Device</span> + <span class="plcClass">PLC Device</span> + "Godlike!" + "Soul Master's Talisman" x28.21</button>
-                            <button type="button" data-luck-value="35.41" onclick="applyDeviceBuffPreset(35.41, this)"><span class="archangelClass">Archangel Device</span> + <span class="plcClass">PLC Device</span> + Max Luck x35.41</button>
-                            <button type="button" data-luck-value="44.71" onclick="applyDeviceBuffPreset(44.71, this)"><span class="archangelClass">Archangel Device</span> + <span class="plcClass">PLC Device</span> + Max Luck + Event buffs x44.71</button>
-                            <button type="button" data-luck-value="28.21" onclick="applyDeviceBuffPreset(28.21, this)"><span class="singularityClass">Singularity Device</span> + "Godlike!" + "Soul Master's Talisman" x28.21</button>
-                            <button type="button" data-luck-value="35.41" onclick="applyDeviceBuffPreset(35.41, this)"><span class="singularityClass">Singularity Device</span> + Max Luck x35.41</button>
-                            <button type="button" data-luck-value="44.71" onclick="applyDeviceBuffPreset(44.71, this)"><span class="singularityClass">Singularity Device</span> + Max Luck + Event buffs x44.71</button>
-                            <button type="button" data-luck-value="33.21" onclick="applyDeviceBuffPreset(33.21, this)"><span class="singularityClass">Singularity Device</span> + <span class="plcClass">PLC Device</span> + "Godlike!" + "Soul Master's Talisman" x33.21</button>
-                            <button type="button" data-luck-value="40.41" onclick="applyDeviceBuffPreset(40.41, this)"><span class="singularityClass">Singularity Device</span> + <span class="plcClass">PLC Device</span> + Max Luck x40.41</button>
-                            <button type="button" data-luck-value="49.71" onclick="applyDeviceBuffPreset(49.71, this)"><span class="singularityClass">Singularity Device</span> + <span class="plcClass">PLC Device</span> + Max Luck + Event buffs x49.71</button>
+                            <button type="button" data-luck-value="23.21" onclick="applyDeviceBuffPreset(23.21, this)"><span class="archangelClass" data-wiki-item="Heavenly Device">Archangel Device</span> + "<span data-wiki-item="Godlike!">Godlike!</span>" + "<span data-wiki-item="Soul Master's Talisman">Soul Master's Talisman</span>" x23.21</button>
+                            <button type="button" data-luck-value="30.41" onclick="applyDeviceBuffPreset(30.41, this)"><span class="archangelClass" data-wiki-item="Heavenly Device">Archangel Device</span> + Max Luck x30.41</button>
+                            <button type="button" data-luck-value="39.71" onclick="applyDeviceBuffPreset(39.71, this)"><span class="archangelClass" data-wiki-item="Heavenly Device">Archangel Device</span> + Max Luck + Event buffs x39.71</button>
+                            <button type="button" data-luck-value="28.21" onclick="applyDeviceBuffPreset(28.21, this)"><span class="archangelClass" data-wiki-item="Heavenly Device">Archangel Device</span> + <span class="plcClass" data-wiki-item="Pole Light Core Device">PLC Device</span> + "<span data-wiki-item="Godlike!">Godlike!</span>" + "<span data-wiki-item="Soul Master's Talisman">Soul Master's Talisman</span>" x28.21</button>
+                            <button type="button" data-luck-value="35.41" onclick="applyDeviceBuffPreset(35.41, this)"><span class="archangelClass" data-wiki-item="Heavenly Device">Archangel Device</span> + <span class="plcClass" data-wiki-item="Pole Light Core Device">PLC Device</span> + Max Luck x35.41</button>
+                            <button type="button" data-luck-value="44.71" onclick="applyDeviceBuffPreset(44.71, this)"><span class="archangelClass" data-wiki-item="Heavenly Device">Archangel Device</span> + <span class="plcClass" data-wiki-item="Pole Light Core Device">PLC Device</span> + Max Luck + Event buffs x44.71</button>
+                            <button type="button" data-luck-value="28.21" onclick="applyDeviceBuffPreset(28.21, this)"><span class="singularityClass" data-wiki-item="Singularity Gauntlet">Singularity Device</span> + "<span data-wiki-item="Godlike!">Godlike!</span>" + "<span data-wiki-item="Soul Master's Talisman">Soul Master's Talisman</span>" x28.21</button>
+                            <button type="button" data-luck-value="35.41" onclick="applyDeviceBuffPreset(35.41, this)"><span class="singularityClass" data-wiki-item="Singularity Gauntlet">Singularity Device</span> + Max Luck x35.41</button>
+                            <button type="button" data-luck-value="44.71" onclick="applyDeviceBuffPreset(44.71, this)"><span class="singularityClass" data-wiki-item="Singularity Gauntlet">Singularity Device</span> + Max Luck + Event buffs x44.71</button>
+                            <button type="button" data-luck-value="33.21" onclick="applyDeviceBuffPreset(33.21, this)"><span class="singularityClass" data-wiki-item="Singularity Gauntlet">Singularity Device</span> + <span class="plcClass" data-wiki-item="Pole Light Core Device">PLC Device</span> + "<span data-wiki-item="Godlike!">Godlike!</span>" + "<span data-wiki-item="Soul Master's Talisman">Soul Master's Talisman</span>" x33.21</button>
+                            <button type="button" data-luck-value="40.41" onclick="applyDeviceBuffPreset(40.41, this)"><span class="singularityClass" data-wiki-item="Singularity Gauntlet">Singularity Device</span> + <span class="plcClass" data-wiki-item="Pole Light Core Device">PLC Device</span> + Max Luck x40.41</button>
+                            <button type="button" data-luck-value="49.71" onclick="applyDeviceBuffPreset(49.71, this)"><span class="singularityClass" data-wiki-item="Singularity Gauntlet">Singularity Device</span> + <span class="plcClass" data-wiki-item="Pole Light Core Device">PLC Device</span> + Max Luck + Event buffs x49.71</button>
                         </div>
                     </section>
                     <section class="preset-collection preset-console__bank" id="preset-bank-roll" data-preset-bank="roll" role="tabpanel" aria-labelledby="preset-tab-roll" hidden>
@@ -1384,8 +1389,8 @@
                         <p><strong>Single Potion Mode</strong> uses one luck value and roll amount. <strong>Multiple Potion Mode</strong> processes the quantity entered for each potion as ordered batches.</p>
                         <ul>
                             <li>With compatible stacking off, each potion keeps its own batch. With stacking on, compatible potion luck is merged per roll.</li>
-                            <li>The existing priority is preserved: Oblivion, Pump King's Blood, Tutorial Potion, then the remaining potion types.</li>
-                            <li>Oblivion, Pump King's Blood, and Tutorial Potion always remain separate. Rune-incompatible potion rolls are processed without the rune before compatible rolls.</li>
+                            <li>Potions are used in this order: Pump King's Blood, Oblivion, Tutorial Potion, then the remaining potion types.</li>
+                            <li>Pump King's Blood, Oblivion, and Tutorial Potion always remain separate. Rune-incompatible potion rolls are processed without the rune before compatible rolls.</li>
                             <li>Red Moon I and Red Moon II are mutually exclusive within a stack. Each can still stack with other compatible potions.</li>
                             <li>Device preset luck is applied before VIP, final-luck, and biome multipliers.</li>
                         </ul>
@@ -1950,7 +1955,7 @@
     <div id="qualityPreferencesOverlay" class="modal-overlay" hidden>
         <div class="surface surface--modal filter-modal quality-settings__modal" role="dialog" aria-modal="true" aria-labelledby="qualityPreferencesTitle">
             <div class="filter-modal__header">
-                <h2 class="filter-modal__title" id="qualityPreferencesTitle">Quality Preferances</h2>
+                <h2 class="filter-modal__title" id="qualityPreferencesTitle">Quality Preferences</h2>
                 <p class="filter-modal__hint">Fine tune visual performance settings and effects.</p>
             </div>
             <div class="quality-settings__menu" id="qualityPreferencesMenu" role="menu">
@@ -1979,6 +1984,13 @@
                     <span class="quality-settings__description">Disables all glitch motion, signal overlays, and glitch audio while preserving the biome theme.</span>
                 </button>
             </div>
+            <button class="interface-button quality-settings__item quality-settings__aura-switch" type="button" role="switch" aria-checked="true" aria-labelledby="wikiAuraStylesLabel" aria-describedby="wikiAuraStylesDescription" data-quality-option="disableWikiAuraStyles" data-quality-inverted>
+                <span>
+                    <span class="quality-settings__name" id="wikiAuraStylesLabel">Full Aura Style Rework</span>
+                    <span class="quality-settings__description" id="wikiAuraStylesDescription">Use Wiki title fonts, colors, and effects for every aura. Turn off for simple aura names.</span>
+                </span>
+                <span class="quality-settings__switch-track" aria-hidden="true"></span>
+            </button>
             <div class="filter-modal__actions">
                 <button type="button" class="interface-button interface-button--ghost filter-modal__close" id="qualityPreferencesClose">Close</button>
             </div>
@@ -2156,6 +2168,42 @@
             </div>
 
             <div class="changelog-modal__panels" data-changelog-panels>
+                <section id="changelog-panel-v211" class="changelog-modal__panel" data-changelog-panel="v2.1.1" data-changelog-label="v2.1.1" role="tabpanel" tabindex="0" hidden>
+                    <header class="changelog-modal__header">
+                        <h2 class="changelog-modal__title">Version 2.1.1 Update Notes</h2>
+                        <span class="changelog-tab__subtitle">Complete Aura &amp; Item Style Rework</span>
+                        <p class="changelog-modal__meta">Updated 2026/09/16</p>
+                    </header>
+                    <ul class="changelog-modal__list changelog-modal__list--grouped">
+                        <li class="changelog-release-group">
+                            <span class="largeClass">Every aura, from 1 in 1 to the rarest:</span>
+                            <ul class="changelog-release-group__list">
+                                <li>Reworked all 391 auras to use their title styles from the <a href="https://sol-rng.fandom.com/wiki/Auras" target="_blank" rel="noopener">Sol's RNG Wiki</a>, from <span class="changelog-aura-sigil" data-changelog-aura-sigil="Nothing">Nothing</span> (1 in 1) and <span class="changelog-aura-sigil" data-changelog-aura-sigil="Common">Common</span> through <span class="changelog-aura-sigil" data-changelog-aura-sigil="Sovereign">Sovereign</span> and the rarest auras.</li>
+                                <li>Aura names use their matching fonts, colors, gradients, outlines, and effects in results, live rolls, aura filters, changelogs, and shared images.</li>
+                                <li>Added a Full Aura Style Rework switch at the bottom of Quality Preferences. Turn it off for simple names; the choice is saved and applies immediately.</li>
+                                <li><span class="changelog-aura-sigil" data-changelog-aura-sigil="Illusionary">Illusionary</span>, <span class="changelog-aura-sigil" data-changelog-aura-sigil="Cryogenic">Cryogenic</span>, and <span class="changelog-aura-sigil" data-changelog-aura-sigil="Meta">Meta</span> display their rarity in the same style as their aura name, with the rarity styled separately from the name.</li>
+                            </ul>
+                        </li>
+                        <li class="changelog-release-group">
+                            <span class="largeClass">All item names reworked:</span>
+                            <ul class="changelog-release-group__list">
+                                <li>Reworked potion, device, talisman, and rune names with their matching colors and effects. Stacked potion results use these styles too.</li>
+                            </ul>
+                        </li>
+                        <li class="changelog-release-group">
+                            <span class="largeClass">Potion &amp; biome bug fixes:</span>
+                            <ul class="changelog-release-group__list">
+                                <li><span class="pumpBloodClass" data-wiki-item="Pump King's Blood">Pump King's Blood</span> is now always used before <span class="oblivionClass" data-wiki-item="Oblivion Potion">Oblivion Potion</span> in multiple-potion simulations, with or without compatible potion stacking.
+                                    <span class="subSpace credits-text">Thanks to <a href="https://discord.com/users/1008360412632322088" class="subtitleClass" target="_blank" rel="noopener">antigodthesans</a> for reporting the <span data-wiki-item="Oblivion Potion">Oblivion</span> and <span data-wiki-item="Pump King's Blood">Pump King's Blood</span> bug!</span>
+                                </li>
+                                <li><span class="sigil-outline-summer">Incinerator</span> can now be selected during both Day and Night while Summer 2026 is enabled.
+                                    <span class="subSpace credits-text">Thanks to <a href="https://discord.com/users/966428347485802566" class="subtitleClass" target="_blank" rel="noopener">mattplays607</a> for reporting the Incinerator daytime-only bug!</span>
+                                </li>
+                            </ul>
+                        </li>
+                    </ul>
+                </section>
+
                 <section id="changelog-panel-v210" class="changelog-modal__panel" data-changelog-panel="v2.1.0" data-changelog-label="v2.1.0" role="tabpanel" tabindex="0" hidden>
                     <div class="changelog-modal__header">
                         <h2 class="changelog-modal__title">Version 2.1.0 Update Notes</h2>
@@ -2199,19 +2247,19 @@
                             </div>
                             <p class="changelog-summer__intro">Added 8 new auras:</p>
                             <ul class="changelog-release-rarity-grid changelog-release-rarity-grid--summer">
-                                <li><span class="sigil-outline-summer">Raft</span><span class="tinyClass">1 in 8,000</span></li>
-                                <li><span class="sigil-outline-summer">Buoyant</span><span class="tinyClass">1 in 32,000</span></li>
-                                <li><span class="sigil-outline-summer">Breeze</span><span class="tinyClass">1 in 80,000</span></li>
-                                <li><span class="sigil-outline-summer">Watermelon : Summersnack</span><span class="tinyClass">1 in 3,200,000</span></li>
-                                <li><span class="sigil-outline-summer">Coconut</span><span class="tinyClass">1 in 34,720,000</span></li>
-                                <li><span class="sigil-outline-summer">Life Guard : On-Duty</span><span class="tinyClass">1 in 600,000,000</span></li>
-                                <li><span class="sigil-outline-summer">Tropical Isles</span><span class="tinyClass">1 in 730,000,000</span></li>
-                                <li><span class="sigil-outline-summer">Crabtropica</span><span class="tinyClass">1 in 1,334,221,000</span></li>
+                                <li><span class="changelog-aura-sigil sigil-wiki-aura" data-changelog-aura-sigil="Raft">Raft</span><span class="tinyClass">1 in 8,000</span></li>
+                                <li><span class="changelog-aura-sigil sigil-wiki-aura" data-changelog-aura-sigil="Buoyant">Buoyant</span><span class="tinyClass">1 in 32,000</span></li>
+                                <li><span class="changelog-aura-sigil sigil-wiki-aura" data-changelog-aura-sigil="Breeze">Breeze</span><span class="tinyClass">1 in 80,000</span></li>
+                                <li><span class="changelog-aura-sigil sigil-wiki-aura" data-changelog-aura-sigil="Watermelon : Summersnack">Watermelon : Summersnack</span><span class="tinyClass">1 in 3,200,000</span></li>
+                                <li><span class="changelog-aura-sigil sigil-wiki-aura" data-changelog-aura-sigil="Coconut">Coconut</span><span class="tinyClass">1 in 34,720,000</span></li>
+                                <li><span class="changelog-aura-sigil sigil-wiki-aura" data-changelog-aura-sigil="Life Guard : On-Duty">Life Guard : On-Duty</span><span class="tinyClass">1 in 600,000,000</span></li>
+                                <li><span class="changelog-aura-sigil sigil-wiki-aura" data-changelog-aura-sigil="Tropical Isles">Tropical Isles</span><span class="tinyClass">1 in 730,000,000</span></li>
+                                <li><span class="changelog-aura-sigil sigil-wiki-aura" data-changelog-aura-sigil="Crabtropica">Crabtropica</span><span class="tinyClass">1 in 1,334,221,000</span></li>
                             </ul>
                             <ul class="changelog-release-group__list changelog-summer__notes">
-                                <li>Added the daytime-only <span class="sigil-outline-summer">Incinerator</span> biome, available while <span class="sigil-outline-summer">Summer 2026</span> is enabled.</li>
+                                <li>Added the <span class="sigil-outline-summer">Incinerator</span> biome, available during Day and Night while <span class="sigil-outline-summer">Summer 2026</span> is enabled.</li>
                                 <li>Incinerator uses Blazing Sun's 2026 presentation and gives every Summer 2026 aura from Parts 1, 1.5, and 2 a 2× breakthrough multiplier.</li>
-                                <li>Summer 2026 auras remain available at their listed rarities in <span class="sigil-outline-summer">Blazing Sun</span> and <span class="sigil-outline-glitch">Glitch</span>.</li>
+                                <li>Summer 2026 auras remain available at their listed rarities in <span class="sigil-outline-summer">Blazing Sun</span> and <span class="changelog-aura-sigil sigil-wiki-aura" data-changelog-aura-sigil="Glitch">Glitch</span>.</li>
                             </ul>
                         </li>
                     </ul>
@@ -2251,7 +2299,7 @@
                                 <ul class="changelog-modal__list changelog-modal__list--sub">
                                     <li>That's all this sub-update changes: cutscenes now load before appearing, recover once from a playback stall, and always close safely after finishing or failing instead of leaving a permanent black screen.</li>
                                     <li>Fixed the case-sensitive <span class="changelog-aura-sigil" data-changelog-aura-sigil="Sky Festival">Sky Festival</span> video path and improved inline playback, reduced-motion compatibility, loading feedback, and end detection across devices.</li>
-                                    <span class="subSpace credits-text">Credit goes to <a href="https://discord.com/users/1008360412632322088" class="subtitleClass" target="_blank" rel="noopener">antigodthesans</a> for reporting the Sky Festival black-screen issue!</span>
+                                    <span class="subSpace credits-text">Credit goes to <a href="https://discord.com/users/1008360412632322088" class="subtitleClass" target="_blank" rel="noopener">antigodthesans</a> for reporting the <span class="changelog-aura-sigil" data-changelog-aura-sigil="Sky Festival">Sky Festival</span> black-screen issue!</span>
                                 </ul>
                             </article>
                         </div>
@@ -2285,16 +2333,16 @@
                             </div>
                             <p class="changelog-summer__intro">Added 6 new auras:</p>
                             <ul class="changelog-release-rarity-grid changelog-release-rarity-grid--summer">
-                                <li><span class="sigil-outline-summer">Heatstroke</span><span class="tinyClass">1 in 83,430</span></li>
-                                <li><span class="sigil-outline-summer">Vendor</span><span class="tinyClass">1 in 17,500,000</span></li>
-                                <li><span class="sigil-outline-summer">Fruitpunch</span><span class="tinyClass">1 in 45,000,000</span></li>
-                                <li><span class="sigil-outline-summer">Bubble : Cascade</span><span class="tinyClass">1 in 110,000,000</span></li>
-                                <li><span class="sigil-outline-summer">Taverna</span><span class="tinyClass">1 in 1,444,444,444</span></li>
-                                <li><span class="sigil-outline-summer">Centaurus</span><span class="tinyClass">1 in 3,000,000,000</span><p class="tinyClass">Cutscene added thanks to <a href="https://discord.com/users/1107458545726787634" class="subtitleClass" target="_blank" rel="noopener">tree_____.</a>!</p></li>
+                                <li><span class="changelog-aura-sigil sigil-wiki-aura" data-changelog-aura-sigil="Heatstroke">Heatstroke</span><span class="tinyClass">1 in 83,430</span></li>
+                                <li><span class="changelog-aura-sigil sigil-wiki-aura" data-changelog-aura-sigil="Vendor">Vendor</span><span class="tinyClass">1 in 17,500,000</span></li>
+                                <li><span class="changelog-aura-sigil sigil-wiki-aura" data-changelog-aura-sigil="Fruitpunch">Fruitpunch</span><span class="tinyClass">1 in 45,000,000</span></li>
+                                <li><span class="changelog-aura-sigil sigil-wiki-aura" data-changelog-aura-sigil="Bubble : Cascade">Bubble : Cascade</span><span class="tinyClass">1 in 110,000,000</span></li>
+                                <li><span class="changelog-aura-sigil sigil-wiki-aura" data-changelog-aura-sigil="Taverna">Taverna</span><span class="tinyClass">1 in 1,444,444,444</span></li>
+                                <li><span class="changelog-aura-sigil sigil-wiki-aura" data-changelog-aura-sigil="Centaurus">Centaurus</span><span class="tinyClass">1 in 3,000,000,000</span><p class="tinyClass">Cutscene added thanks to <a href="https://discord.com/users/1107458545726787634" class="subtitleClass" target="_blank" rel="noopener">tree_____.</a>!</p></li>
                             </ul>
                             <ul class="changelog-release-group__list changelog-summer__notes">
-                                <li>All four auras are available through the <span class="sigil-outline-summer">Summer 2026</span> event in <span class="sigil-outline-summer">Blazing Sun</span> or <span class="sigil-outline-glitch">Glitch</span>, at their listed rarities with no native multiplier.</li>
-                                <li>Prepared Taverna's cutscene. Playback will remain safely dormant until the cutscene recording is available. (If anyone could, <a href="https://discord.com/users/611204110955446301" class="subtitleClass" target="_blank" rel="noopener">DM me</a> the cutscenes, preferably 1920x1080 res with 60fps or above with MAX graphics, I will give credits)</li>
+                                <li>All four auras are available through the <span class="sigil-outline-summer">Summer 2026</span> event in <span class="sigil-outline-summer">Blazing Sun</span> or <span class="changelog-aura-sigil sigil-wiki-aura" data-changelog-aura-sigil="Glitch">Glitch</span>, at their listed rarities with no native multiplier.</li>
+                                <li>Prepared <span class="changelog-aura-sigil" data-changelog-aura-sigil="Taverna">Taverna</span>'s cutscene. Playback will remain safely dormant until the cutscene recording is available. (If anyone could, <a href="https://discord.com/users/611204110955446301" class="subtitleClass" target="_blank" rel="noopener">DM me</a> the cutscenes, preferably 1920x1080 res with 60fps or above with MAX graphics, I will give credits)</li>
                             </ul>
                         </li>
                     </ul>
@@ -2526,7 +2574,7 @@
                             </ul>
                             <ul class="changelog-release-group__list changelog-summer__notes">
                                 <li>Added a <span class="sigil-outline-summer">Summer 2026</span> event option and enabled it by default.</li>
-                                <li><span class="sigil-outline-summer">Summer 2026</span> auras can only be rolled in <span class="sigil-outline-summer">Blazing Sun</span> or <span class="sigil-outline-glitch">Glitch</span>, at their listed rarities with no native multiplier.</li>
+                                <li><span class="sigil-outline-summer">Summer 2026</span> auras can only be rolled in <span class="sigil-outline-summer">Blazing Sun</span> or <span class="changelog-aura-sigil sigil-wiki-aura" data-changelog-aura-sigil="Glitch">Glitch</span>, at their listed rarities with no native multiplier.</li>
                             </ul>
                         </li>
                         <li class="changelog-release-group changelog-release-group--events">
@@ -2587,10 +2635,10 @@
                                 <li><span class="allPotionsClass">Sol's-Like</span> rolls now enter the feed exactly once and in the precise order generated, in both Single Potion and Multiple Potion modes.</li>
                                 <li>Added an attached pause/resume control beside Roll, with a centered icon and safe resume from the next unprocessed roll.</li>
                                 <li>The live roll feed now keeps updating without forcing the scrollbar downward while you review earlier rolls. A fixed <span class="changelog-control-chip"><i class="fa-solid fa-arrow-down" aria-hidden="true"></i> Follow newest rolls</span> button appears only when scrolling is desynchronized, then jumps to the latest aura and restores automatic following.</li>
-                                <li>Cutscenes now interrupt rolling at the exact aura position, pause the progress bar, and resume without skipped, duplicated, or reordered results. If <span class="sigil-effect-luminosity">Luminosity</span> rolls before <span class="sigil-effect-equinox">Equinox</span>, their cutscenes play in that exact order; every cutscene aura follows this rule, including <span class="sigil-outline-monarch">Monarch</span>.</li>
+                                <li>Cutscenes now interrupt rolling at the exact aura position, pause the progress bar, and resume without skipped, duplicated, or reordered results. If <span class="changelog-aura-sigil sigil-wiki-aura" data-changelog-aura-sigil="Luminosity">Luminosity</span> rolls before <span class="changelog-aura-sigil sigil-wiki-aura" data-changelog-aura-sigil="Equinox">Equinox</span>, their cutscenes play in that exact order; every cutscene aura follows this rule, including <span class="changelog-aura-sigil sigil-wiki-aura" data-changelog-aura-sigil="Monarch">Monarch</span>.</li>
                                 <li>Added an always-visible <span class="subtitleClass">Automatically pause rolling after cutscene</span> switch for manually resuming after each <span class="allPotionsClass">Sol's-Like</span> cutscene.</li>
                                 <li>The Sol's-Like speed slider remains editable while rolling is manually paused, and the new speed applies from the next resumed roll without restarting or changing the RNG sequence.</li>
-                                <li>Preserved the existing stacked-potion priority, including <span class="oblivionClass">Oblivion</span>, <span class="pumpBloodClass">Pump King's Blood</span>, <span class="tutPotion">Tutorial Potion</span>, and all remaining potion types.</li>
+                                <li>Preserved the existing stacked-potion priority, including <span class="oblivionClass" data-wiki-item="Oblivion Potion">Oblivion</span>, <span class="pumpBloodClass" data-wiki-item="Pump King's Blood">Pump King's Blood</span>, <span class="tutPotion" data-wiki-item="Tutorial Potion">Tutorial Potion</span>, and all remaining potion types.</li>
                             </ul>
                         </li>
                         <li class="changelog-release-group changelog-release-group--featured-ui">
@@ -2621,7 +2669,7 @@
                                 <li>Added a 1-1,000 rolls-per-second slider, ranging from one roll per second to one roll per millisecond, plus linked speed shortcuts for <strong>Average</strong> (5), <strong>Skip+</strong> (15), <strong>Recommended</strong> (100), <strong>Default</strong> (120), and <strong>Sonic Speed</strong> (500 rolls per second).</li>
                                 <li>Added a roll-feed search bar that filters by either aura name or tier name, such as <span class="rarity-tier-legendary">Legendary</span>.</li>
                                 <li>Added a post-run <span class="subtitleClass">Sort</span> button beside the search bar for completed simulations in both <span class="subtitleClass">Unnamed's</span> and <span class="allPotionsClass">Sol's-Like</span> methods. <span class="subtitleClass">Unnamed's</span> cycles between <strong>Rarity</strong> and <strong>Alphabetical</strong>, while <span class="allPotionsClass">Sol's-Like</span> also includes <strong>Recent</strong> for its original live roll order.</li>
-                                <li>Multiple Potion Mode now always labels every result with the potion batch and its effective luck in place of True Chance, such as <span class="tinyClass">With <span class="heavenlyClass">Heavenly</span> (150,000 Luck)</span>. Each potion name keeps its matching visual style, and stacked results list every potion used.</li>
+                                <li>Multiple Potion Mode now always labels every result with the potion batch and its effective luck in place of True Chance, such as <span class="tinyClass">With <span class="heavenlyClass" data-wiki-item="Heavenly Potion">Heavenly</span> (150,000 Luck)</span>. Each potion name keeps its matching visual style, and stacked results list every potion used.</li>
                             </ul>
                             <br>
                             <span class="largeClass">RoE setting preservation:</span>
@@ -2631,13 +2679,13 @@
                             <br>
                             <span class="largeClass">Limbo time & aura fix:</span>
                             <ul class="changelog-release-group__list">
-                                <li><span class="sigil-outline-limbo">Limbo</span> now locks the time setting to Day and disables both time options while active, matching its rune restrictions. <span class="rarity-tier-challenged">DreamCatcher</span> can no longer be rolled in Limbo through a previously active Night selection.</li>
+                                <li><span class="sigil-outline-limbo">Limbo</span> now locks the time setting to Day and disables both time options while active, matching its rune restrictions. <span class="changelog-aura-sigil sigil-wiki-aura" data-changelog-aura-sigil="DreamCatcher">DreamCatcher</span> can no longer be rolled in Limbo through a previously active Night selection.</li>
                                 <span class="subSpace credits-text">Credit goes to <a href="https://discord.com/users/1001560164635258900" class="subtitleClass" target="_blank" rel="noopener">zeefir_</a> for finding out this bug!</span>
                             </ul>
                             <br>
                             <span class="largeClass">Glitch biome presentation:</span>
                             <ul class="changelog-release-group__list">
-                                <li>Rebuilt the <span class="sigil-outline-glitch">Glitch</span> biome interface with an extremely vibrant purple, black, and cyan palette, randomized signal tears, RGB channel separation, scanline corruption, frame dropouts, scrambled diagnostics, and independently desynchronized interface panels.</li>
+                                <li>Rebuilt the <span class="changelog-aura-sigil sigil-wiki-aura" data-changelog-aura-sigil="Glitch">Glitch</span> biome interface with an extremely vibrant purple, black, and cyan palette, randomized signal tears, RGB channel separation, scanline corruption, frame dropouts, scrambled diagnostics, and independently desynchronized interface panels.</li>
                                 <li>The Glitch Effect now adds flashing square and rectangular corruption groups with thick clutter to its intense glitch sequences, which trigger after randomized 7–13 second pauses witho- No one cares about the details. It's cool and neat O-O</li>
                             </ul>
                             <br>
@@ -2659,7 +2707,7 @@
                                     <p class="changelog-subupdate-card__meta">Updated 2026/08/02 at 8:06 PM CEST</p>
                                 </header>
                                 <ul class="changelog-modal__list changelog-modal__list--sub">
-                                    <li><span class="bloodClass">Red Moon I</span> and <span class="bloodIIClass">Red Moon II</span> can no longer stack together in Multiple Potion Mode. Each remains compatible with other stackable potions.</li>
+                                    <li><span class="bloodClass" data-wiki-item="Red Moon Potion I">Red Moon I</span> and <span class="bloodIIClass" data-wiki-item="Red Moon Potion II">Red Moon II</span> can no longer stack together in Multiple Potion Mode. Each remains compatible with other stackable potions.</li>
                                     <span class="subSpace credits-text">Credit goes to <a href="https://discord.com/users/987426773950169089" class="subtitleClass" target="_blank" rel="noopener">qqener</a> for finding out this bug!</span>
                                 </ul>
                             </article>
@@ -2687,8 +2735,8 @@
                         <li class="changelog-release-group">
                             <span class="largeClass">Simulation accuracy & biome fixes:</span>
                             <ul class="changelog-release-group__list">
-                                <li>Fixed Limbo tier filtering for <span class="rarity-tier-mythic">ゴシック</span>, <span class="rarity-tier-exalted">Imaginary</span>, <span class="rarity-tier-exalted">{J u x t a p o s i t i o n}</span>, and other Limbo-exclusive auras when Skip Mythic or Skip Exalted Auras is enabled.</li>
-                                <li><span class="sigil-outline-empty">Empty</span> can now be rolled in the <span class="sigil-outline-glitch">Glitch</span> biome.</li>
+                                <li>Fixed Limbo tier filtering for <span class="changelog-aura-sigil sigil-wiki-aura" data-changelog-aura-sigil="ゴシック">ゴシック</span>, <span class="changelog-aura-sigil sigil-wiki-aura" data-changelog-aura-sigil="Imaginary">Imaginary</span>, <span class="changelog-aura-sigil sigil-wiki-aura" data-changelog-aura-sigil="{J u x t a p o s i t i o n}">{J u x t a p o s i t i o n}</span>, and other Limbo-exclusive auras when Skip Mythic or Skip Exalted Auras is enabled.</li>
+                                <li><span class="changelog-aura-sigil sigil-wiki-aura" data-changelog-aura-sigil="Empty">Empty</span> can now be rolled in the <span class="changelog-aura-sigil sigil-wiki-aura" data-changelog-aura-sigil="Glitch">Glitch</span> biome.</li>
                                 <li>
                                     Corrected aura rarities:
                                     <ul class="changelog-release-rarity-grid">
@@ -2708,7 +2756,7 @@
                             <span class="largeClass">Potion simulation & device presets:</span>
                             <ul class="changelog-release-group__list">
                                 <li>Added Single Potion and Multiple Potion modes with exact mixed quantities.</li>
-                                <li><span class="oblivionClass">Oblivion</span>, <span class="pumpBloodClass">Pump King's Blood</span>, and <span class="tutPotion">Tutorial Potion</span> run as isolated batches first. Runes remain selectable and begin applying when a compatible potion batch starts.</li>
+                                <li><span class="oblivionClass" data-wiki-item="Oblivion Potion">Oblivion</span>, <span class="pumpBloodClass" data-wiki-item="Pump King's Blood">Pump King's Blood</span>, and <span class="tutPotion" data-wiki-item="Tutorial Potion">Tutorial Potion</span> run as isolated batches first. Runes remain selectable and begin applying when a compatible potion batch starts.</li>
                                 <li>Added a Stack Compatible Potions switch that merges compatible potion luck into shared rolls while keeping incompatible potions isolated.</li>
                                 <li>Device preset luck is added to every potion instead of multiplying potion luck, updates live with VIP, Final Luck, and Dev Abuse modifiers, and displays the selected preset name in the roll feed.</li>
 
@@ -2760,7 +2808,7 @@
                             <li>Spectre<span class="tinyClass">1 in 160,000 (pls forgive me...)</span></li>
                             <li>Jazz<span class="tinyClass">1 in 140,000 (pls forgive me...)</span></li>
                             <li><span class="sigil-outline-xc">红月の観測者</span><span class="tinyClass">1 in 444,444 (The Red Full Moon Exclusive)</span></li>
-                            <li><span class="sigil-outline-xc">紅月を求めし者</span><span class="tinyClass">1 in 666,666 (The Red Full Moon Exclusive)</span></li>
+                            <li><span class="changelog-aura-sigil sigil-wiki-aura" data-changelog-aura-sigil="紅月を求めし者">紅月を求めし者</span><span class="tinyClass">1 in 666,666 (The Red Full Moon Exclusive)</span></li>
                             <li>Spectre : Requiem<span class="tinyClass">1 in 8,222,000</span></li>
                             <li>Graffiti<span class="tinyClass">1 in 1 in 12,000,000</span></li>
                             <li>Sharkyn : Hammerhead<span class="tinyClass">1 in 120,000,000 (1 in 30,000,000 inside Hell)</span></li>
@@ -2769,11 +2817,11 @@
                         </ul>
                         <li><span class="largeClass">Updated one aura:</span></li>
                         <ul>
-                            <li>Aviator now has a native to windy effects...<span class="tinyClass">(1 in 8,000,000 inside Windy)</span></li>
+                            <li><span class="changelog-aura-sigil" data-changelog-aura-sigil="Aviator">Aviator</span> now has a native to windy effects...<span class="tinyClass">(1 in 8,000,000 inside Windy)</span></li>
                         </ul>
                         <li><span class="largeClass">Updated one cutscene:</span></li>
                         <ul>
-                            <li>Oblivion now has the reworked cutscene with the updated sigils.</li> 
+                            <li><span class="changelog-aura-sigil" data-changelog-aura-sigil="Oblivion">Oblivion</span> now has the reworked cutscene with the updated sigils.</li>
                                 <span class="subSpace">Credit goes to <a href="https://discord.com/users/290087943391936513" class="subtitleClass" target="_blank" rel="noopener">kda_killed</a>!</span>
                         </ul>
                         <li><span class="largeClass">Updated XC's Admin Abuse Biome:</span></li>
@@ -2870,10 +2918,10 @@
                         </ul>
                         <li>Updated some cutscenes:</li>
                         <ul>
-                            <li><span class="sigil-outline-dreammetric">Dreammetric</span> and <span class="sigil-outline-oppression">Oppression</span> now plays their cutscenes before anything else</li>
+                            <li><span class="changelog-aura-sigil sigil-wiki-aura" data-changelog-aura-sigil="Dreammetric">Dreammetric</span> and <span class="changelog-aura-sigil sigil-wiki-aura" data-changelog-aura-sigil="Oppression">Oppression</span> now plays their cutscenes before anything else</li>
                         </ul>
-                        <li><span class="sigil-outline-dreammetric">Dreammetric</span> now appears at the top when rolled.</li>
-                        <li>Added 6 new device presets which includes <span class="plcClass">PLC Device</span> for both <span class="archangelClass">Archangel Device</span> and <span class="singularityClass">Singularity Device</span></li>
+                        <li><span class="changelog-aura-sigil sigil-wiki-aura" data-changelog-aura-sigil="Dreammetric">Dreammetric</span> now appears at the top when rolled.</li>
+                        <li>Added 6 new device presets which includes <span class="plcClass" data-wiki-item="Pole Light Core Device">PLC Device</span> for both <span class="archangelClass" data-wiki-item="Heavenly Device">Archangel Device</span> and <span class="singularityClass" data-wiki-item="Singularity Gauntlet">Singularity Device</span></li>
                         <li>Fixed Quality Preferences so Disable UI Animations controls button and interface motion effects.</li>
                         <li>Luck now live-updates from the active multiplier stack, including <span class="sigil-outline-singularity">Singularity</span>, VIP, Dave's Luck, Dorcelessness, We're Sorry!, Astrald's Blessing, and dev biome Admin Abuse buffs.</li>
                             <span class="subSpace"><span class="tinyClass-colorless">I bet Zeefir is happy about this</span></span>
@@ -2881,9 +2929,9 @@
                         <li>Removed the manual <span class="sigil-outline-xyz">Xyz</span>, <span class="sigil-outline-mastermind">Axis</span>, <span class="sigil-outline-xc">XC</span>, and <span class="sigil-outline-edict">Word</span> Admin Abuse switches so only Dorcelessness, We're Sorry!, YG Blessing, and Astrald's Blessing remain in the multiplier panel.</li>
                         <li>Dev biome Admin Abuse buffs now apply from their biomes: <span class="sigil-outline-xyz">Another Realm</span> uses Xyz with an old/new prompt, <span class="sigil-outline-mastermind">Mastermind</span> uses Axis with an old/new prompt, <span class="sigil-outline-xc">The Red Full Moon</span> uses XC, and <span class="sigil-outline-edict">Edict</span> uses Word.</li>
                         <li><span class="sigil-outline-singularity">Singularity</span> now gives a 1.1x luck multiplier and shows a notice when selected.</li>
-                        <li>Fixed <span class="pumpBloodClass">Pump King's Blood</span> and <span class="tutPotion">Tutorial Potion</span><span class="tinyClass-unmoved">(I had no idea this disabled buffs too..)</span> allowing runes. Runes are now blocked with the same warning notification used by <span class="oblivionClass">Oblivion Potion</span>.</li>
+                        <li>Fixed <span class="pumpBloodClass" data-wiki-item="Pump King's Blood">Pump King's Blood</span> and <span class="tutPotion" data-wiki-item="Tutorial Potion">Tutorial Potion</span><span class="tinyClass-unmoved">(I had no idea this disabled buffs too..)</span> allowing runes. Runes are now blocked with the same warning notification used by <span class="oblivionClass" data-wiki-item="Oblivion Potion">Oblivion Potion</span>.</li>
                             <span class="subSpace">Thanks to <a href="https://discord.com/users/1008360412632322088" class="subtitleClass" target="_blank" rel="noopener">antigodthesans</a> for pointing this out.</span>
-                        <li>Adjusted the active preset glows so <span class="tutPotion">Tutorial Potion</span> is more yellow and <span class="pumpBloodClass">Pump King's Blood</span> is more orange.</li>
+                        <li>Adjusted the active preset glows so <span class="tutPotion" data-wiki-item="Tutorial Potion">Tutorial Potion</span> is more yellow and <span class="pumpBloodClass" data-wiki-item="Pump King's Blood">Pump King's Blood</span> is more orange.</li>
                     </ul>
                     <section class="changelog-subupdates" aria-labelledby="changelog-subupdates-v1850">
                         <div class="changelog-subupdates__header">
@@ -2897,7 +2945,7 @@
                                     <p class="changelog-subupdate-card__meta">Updated 2026/06/13 at 2:08 PM CEST</p>
                                 </header>
                                 <ul class="changelog-modal__list changelog-modal__list--sub">
-                                    <li><span class="sigil-outline-empty">Empty</span> can now be rolled in Limbo too while keeping its Exalted styling.</li>
+                                    <li><span class="changelog-aura-sigil sigil-wiki-aura" data-changelog-aura-sigil="Empty">Empty</span> can now be rolled in Limbo too while keeping its Exalted styling.</li>
                                 </ul>
                             </article>
                         </div>
@@ -2937,7 +2985,7 @@
                                     <p class="changelog-subupdate-card__meta">Updated 2026/06/08 at 11:20 PM CEST</p>
                                 </header>
                                 <ul class="changelog-modal__list changelog-modal__list--sub">
-                                    <li>Whoopsies, forgot to make Astral : Astrald only obtainable through a luck switch like Megaphone 🥶</li>
+                                    <li>Whoopsies, forgot to make <span class="changelog-aura-sigil" data-changelog-aura-sigil="Astral : Astrald">Astral : Astrald</span> only obtainable through a luck switch like <span class="changelog-aura-sigil" data-changelog-aura-sigil="Megaphone">Megaphone</span> 🥶</li>
                                 </ul>
                             </article>
                             <article class="changelog-subupdate-card">
@@ -2947,7 +2995,7 @@
                                     <p class="changelog-subupdate-card__meta">Updated 2026/06/08 at 11:00 AM CEST</p>
                                 </header>
                                 <ul class="changelog-modal__list changelog-modal__list--sub">
-                                    <li>Choosing the <span class="allPotionsClass">All Potions</span> preset now automatically activates <span class="bloodIIClass">Red Moon II</span> and <span class="duneClass">Potion of the Dune</span>.</li>
+                                    <li>Choosing the <span class="allPotionsClass">All Potions</span> preset now automatically activates <span class="bloodIIClass" data-wiki-item="Red Moon Potion II">Red Moon II</span> and <span class="duneClass" data-wiki-item="Potion of the Dune">Potion of the Dune</span>.</li>
                                 </ul>
                             </article>
                             <article class="changelog-subupdate-card">
@@ -2957,7 +3005,7 @@
                                     <p class="changelog-subupdate-card__meta">Updated 2026/06/02 at 3:50 PM CEST</p>
                                 </header>
                                 <ul class="changelog-modal__list changelog-modal__list--sub">
-                                    <li>Updated the All Potion preset to include <span class="bloodIIClass">Red Moon II</span></li>
+                                    <li>Updated the All Potion preset to include <span class="bloodIIClass" data-wiki-item="Red Moon Potion II">Red Moon II</span></li>
                                 </ul>
                             </article>
                             <article class="changelog-subupdate-card">
@@ -2969,13 +3017,13 @@
                                 <ul class="changelog-modal__list changelog-modal__list--sub">
                                     <li>Completely forgot some auras are now native in <span class="sigil-outline-singularity">Singularity</span> and not starfall...</li>
                                     <ul>
-                                        <li><span class="sigil-outline-singularity">Comet</span> is now native in <span class="sigil-outline-singularity">Singularity</span>.</li>
-                                        <li><span class="sigil-outline-singularity">Galaxy</span> is now native in <span class="sigil-outline-singularity">Singularity</span>.</li>
-                                        <li><span class="sigil-outline-singularity">Gargantua</span> is now native in <span class="sigil-outline-singularity">Singularity</span>.</li>
+                                        <li><span class="changelog-aura-sigil sigil-wiki-aura" data-changelog-aura-sigil="Comet">Comet</span> is now native in <span class="sigil-outline-singularity">Singularity</span>.</li>
+                                        <li><span class="changelog-aura-sigil sigil-wiki-aura" data-changelog-aura-sigil="Galaxy">Galaxy</span> is now native in <span class="sigil-outline-singularity">Singularity</span>.</li>
+                                        <li><span class="changelog-aura-sigil sigil-wiki-aura" data-changelog-aura-sigil="Gargantua">Gargantua</span> is now native in <span class="sigil-outline-singularity">Singularity</span>.</li>
 
                                         <li><span class="sigil-outline-singularity">Singularity</span> native auras now do not get affected inside glitch.</li>
                                     </ul>
-                                    <li><span class="sigil-outline-singularity">Gravitational : Point Zero</span> & <span class="sigil-outline-singularity">Projection</span> is now considered <span class="rarity-tier-challenged">Challenged</span> tier</li>
+                                    <li><span class="changelog-aura-sigil sigil-wiki-aura" data-changelog-aura-sigil="Gravitational : Point Zero">Gravitational : Point Zero</span> & <span class="changelog-aura-sigil sigil-wiki-aura" data-changelog-aura-sigil="Projection">Projection</span> is now considered <span class="rarity-tier-challenged">Challenged</span> tier</li>
                                     <li>Changes to Admin Abuse multipliers:</li>
                                     <ul>
                                         <li>All Dev event swithces has been renamed from "(Dev) event" to "(Dev) Admin Abuse"</li>
@@ -3001,10 +3049,10 @@
                                     <p class="changelog-subupdate-card__meta">Updated 2026/06/01 at 10:00 PM CEST</p>
                                 </header>
                                 <ul class="changelog-modal__list changelog-modal__list--sub">
-                                    <li><span class="sigil-outline-cyberspace">Cytokinesis</span> and <span class="sigil-outline-cyberspace">Virtual Memory</span> has been fixed to not have their native rarity applied when in <span class="sigil-outline-glitch">Glitched</span> biome</li>
+                                    <li><span class="changelog-aura-sigil sigil-wiki-aura" data-changelog-aura-sigil="Cytokinesis">Cytokinesis</span> and <span class="changelog-aura-sigil sigil-wiki-aura" data-changelog-aura-sigil="Virtual Memory">Virtual Memory</span> has been fixed to not have their native rarity applied when in <span class="sigil-outline-glitch">Glitched</span> biome</li>
                                     <ul>
-                                        <li>The real issue here was I had completely forgotten to fix up the name for Virtual Memory in the back-end so it's still searching for "Virtual : Memory" 😭</li>
-                                        <li>The problem with <span class="sigil-outline-cyberspace">Cytokinesis</span> was just that I had typed "Cytokenisis" which isn't the correct way of spelling it.. so this has also been fixed ig :aga:</li>
+                                        <li>The real issue here was I had completely forgotten to fix up the name for <span class="changelog-aura-sigil" data-changelog-aura-sigil="Virtual Memory">Virtual Memory</span> in the back-end so it's still searching for "Virtual : Memory" 😭</li>
+                                        <li>The problem with <span class="changelog-aura-sigil sigil-wiki-aura" data-changelog-aura-sigil="Cytokinesis">Cytokinesis</span> was just that I had typed "Cytokenisis" which isn't the correct way of spelling it.. so this has also been fixed ig :aga:</li>
                                     </ul>
                                 </ul>
                             </article>
@@ -3012,12 +3060,12 @@
                             <article class="changelog-subupdate-card">
                                 <header class="changelog-subupdate-card__header">
                                     <span class="changelog-subupdate-card__version">v1.841</span>
-                                    <span class="changelog-subupdate-card__title changelog-tab__subtitle">Red Moon & Oblivion Rework</span>
+                                    <span class="changelog-subupdate-card__title changelog-tab__subtitle">Red Moon & <span class="changelog-aura-sigil" data-changelog-aura-sigil="Oblivion">Oblivion</span> Rework</span>
                                     <p class="changelog-subupdate-card__meta">Updated 2026/05/30 at 2:20 PM CEST</p>
                                 </header>
                                 <ul class="changelog-modal__list changelog-modal__list--sub">
-                                    <li>Renamed <span class="bloodClass">Red Moon Potion</span> to <span class="bloodClass">Red Moon I</span> and added <span class="bloodIIClass">Red Moon II</span>, which grants +200,000 luck and changes <span class="sigil-outline-赤月の破片">赤月の破片</span> from 1 in 1,000 to 1 in 100.</li>
-                                    <li>Also reworked the style for <span class="oblivionClass">Oblivion Potion</span></li>
+                                    <li>Renamed <span class="bloodClass" data-wiki-item="Red Moon Potion I">Red Moon Potion</span> to <span class="bloodClass" data-wiki-item="Red Moon Potion I">Red Moon I</span> and added <span class="bloodIIClass" data-wiki-item="Red Moon Potion II">Red Moon II</span>, which grants +200,000 luck and changes <span class="changelog-aura-sigil sigil-wiki-aura" data-changelog-aura-sigil="赤月の破片">赤月の破片</span> from 1 in 1,000 to 1 in 100.</li>
+                                    <li>Also reworked the style for <span class="oblivionClass" data-wiki-item="Oblivion Potion">Oblivion Potion</span></li>
                                 </ul>
                             </article>
                         </div>
@@ -3043,8 +3091,8 @@
                     <p class="changelog-modal__intro">Latest changes:</p>
                     <ul class="changelog-modal__list">
                         <li>Added sub-update changelog cards so smaller patch versions can stay under the main update changelog.</li>
-                        <li>Renamed Virtual : Memory to Virtual Memory.</li>
-                        <li>Fixed Virtual Memory so it no longer displays as a Virtual mutation.</li>
+                        <li>Renamed Virtual : Memory to <span class="changelog-aura-sigil" data-changelog-aura-sigil="Virtual Memory">Virtual Memory</span>.</li>
+                        <li>Fixed <span class="changelog-aura-sigil" data-changelog-aura-sigil="Virtual Memory">Virtual Memory</span> so it no longer displays as a Virtual mutation.</li>
                     </ul>
                     <section class="changelog-subupdates" aria-labelledby="changelog-subupdates-v1830">
                         <div class="changelog-subupdates__header">
@@ -3096,10 +3144,10 @@
                                     <li>Added a Singularity summon "cutscene".</li>
                                     <li>Added a Disable Shakes quality preference that disables the four high-luck preset shake animations and skips the Singularity summon sound and shake.</li>
                                     <li>Adjusted Disable UI Animations so the preset shake effects are controlled by Disable Shakes instead.</li>
-                                    <li>Updated the Cyberspace notice to mention Meta alongside Illusionary.</li>
-                                    <li>Added an Eostre cutscene.</li>
-                                    <li>Updated the Y.O.L.K.E.G.G. and Sky Festival cutscenes.</li>
-                                    <li>Removed the cutscene for Ascendant as it's not a transcendent aura + less spam when simulating with cutscenes on 👍</li>
+                                    <li>Updated the Cyberspace notice to mention <span class="changelog-aura-sigil" data-changelog-aura-sigil="Meta">Meta</span> alongside <span class="changelog-aura-sigil" data-changelog-aura-sigil="Illusionary">Illusionary</span>.</li>
+                                    <li>Added an <span class="changelog-aura-sigil" data-changelog-aura-sigil="Eostre">Eostre</span> cutscene.</li>
+                                    <li>Updated the <span class="changelog-aura-sigil" data-changelog-aura-sigil="Y.O.L.K.E.G.G.">Y.O.L.K.E.G.G.</span> and <span class="changelog-aura-sigil" data-changelog-aura-sigil="Sky Festival">Sky Festival</span> cutscenes.</li>
+                                    <li>Removed the cutscene for <span class="changelog-aura-sigil" data-changelog-aura-sigil="Ascendant">Ascendant</span> as it's not a transcendent aura + less spam when simulating with cutscenes on 👍</li>
                                 </ul>
                             </article>
                         </div>
@@ -3136,12 +3184,12 @@
                                 <li>Cytokinesis<span class="tinyClass">1 in 400,330,372 [1 in 165,200,236 in Cyberspace]</span></li>
                                 <li>Meta<span class="tinyClass">1 in 10,000 [Unaffected by luck exclusively in Cyberspace]</span></li>
                                 <ul>
-                                    <li>Meta will display at he complete top of the roll feed</li>
+                                    <li><span class="changelog-aura-sigil" data-changelog-aura-sigil="Meta">Meta</span> will display at he complete top of the roll feed</li>
                                 </ul>
                             </ul>
                             <li><span class="largeClass">Updated an aura:</span></li>
                             <ul>
-                                <li>Fixed the name of Symbiosis (previously named symbiosis with a non-capital S :sob:)</li>
+                                <li>Fixed the name of <span class="changelog-aura-sigil" data-changelog-aura-sigil="Symbiosis">Symbiosis</span> (previously named symbiosis with a non-capital S :sob:)</li>
                                 <li>Some auras have been made <span class="unobtainableClass">Unobtainable</span> until further notice:</li>
                                 <ul>
                                     <li><span class="sigil-outline-glitch">[CONTENT DELETED]</span></li>
@@ -3159,12 +3207,12 @@
                             <article class="changelog-subupdate-card">
                                 <header class="changelog-subupdate-card__header">
                                     <span class="changelog-subupdate-card__version">v1.828</span>
-                                    <span class="changelog-subupdate-card__title changelog-tab__subtitle">Meta & Mobile Donation Fixes</span>
+                                    <span class="changelog-subupdate-card__title changelog-tab__subtitle"><span class="changelog-aura-sigil" data-changelog-aura-sigil="Meta">Meta</span> & Mobile Donation Fixes</span>
                                     <p class="changelog-subupdate-card__meta">Updated 2026/05/10 at 3:40 PM CEST</p>
                                 </header>
                                 <ul class="changelog-modal__list changelog-modal__list--sub">
-                                    <li>Fixed <span class="sigil-outline-cyberspace">Meta</span> so it can only be rolled in Cyberspace, matching its intended exclusive behavior.</li>
-                                    <li>Fixed <span class="sigil-outline-cyberspace">Meta</span> so it no longer displays normal rarity styling, matching Illusionary's special display behavior.</li>
+                                    <li>Fixed <span class="changelog-aura-sigil sigil-wiki-aura" data-changelog-aura-sigil="Meta">Meta</span> so it can only be rolled in Cyberspace, matching its intended exclusive behavior.</li>
+                                    <li>Fixed <span class="changelog-aura-sigil sigil-wiki-aura" data-changelog-aura-sigil="Meta">Meta</span> so it no longer displays normal rarity styling, matching <span class="changelog-aura-sigil" data-changelog-aura-sigil="Illusionary">Illusionary</span>'s special display behavior.</li>
                                     <li>Fixed the floating donation cards blocking taps and clicks after being minimized, especially for mobile players trying to interact with the content behind them.</li>
                                     <li>Removed the recent donation card from mobile layouts so it no longer gets in the way on smaller screens.</li>
                                 </ul>
@@ -3221,15 +3269,15 @@
                         <li><span class="largeClass">Added a new biome called <span class="sigil-outline-singularity">Singularity</span>.</span></li>
                         <li><span class="largeClass">Added 9 new <span class="sigil-outline-singularity">Singularity</span> exclusive auras:</span></li>
                         <ul>
-                            <li><span class="sigil-outline-singularity">Pleiades</span><span class="tinyClass">1 in 65,358 [Singularity Exclusive]</span></li>
-                            <li><span class="sigil-outline-singularity">Pulsar</span><span class="tinyClass">1 in 83,345 [Singularity Exclusive]</span></li>
-                            <li><span class="sigil-outline-singularity">Constella</span><span class="tinyClass">1 in 86,988 [Singularity Exclusive]</span></li>
-                            <li><span class="sigil-outline-singularity">Vega</span><span class="tinyClass">1 in 2,580,000 [Singularity Exclusive]</span></li>
-                            <li><span class="sigil-outline-singularity">Astronaut</span><span class="tinyClass">1 in 6,117,196 [Singularity Exclusive]</span></li>
-                            <li><span class="sigil-outline-singularity">Centurion</span><span class="tinyClass">1 in 25,000,000 [Singularity Exclusive]</span></li>
-                            <li><span class="sigil-outline-singularity">Projection</span><span class="tinyClass">1 in 197,000,000 [Singularity Exclusive]</span></li>
-                            <li><span class="sigil-outline-singularity">Gravitational : Point Zero</span><span class="tinyClass">1 in 521,121,900 [Singularity Exclusive]</span></li>
-                            <li><span class="sigil-outline-singularity">Astraios</span><span class="tinyClass">1 in 1,750,000,000 [Singularity Exclusive]</span></li>
+                            <li><span class="changelog-aura-sigil sigil-wiki-aura" data-changelog-aura-sigil="Pleiades">Pleiades</span><span class="tinyClass">1 in 65,358 [Singularity Exclusive]</span></li>
+                            <li><span class="changelog-aura-sigil sigil-wiki-aura" data-changelog-aura-sigil="Pulsar">Pulsar</span><span class="tinyClass">1 in 83,345 [Singularity Exclusive]</span></li>
+                            <li><span class="changelog-aura-sigil sigil-wiki-aura" data-changelog-aura-sigil="Constella">Constella</span><span class="tinyClass">1 in 86,988 [Singularity Exclusive]</span></li>
+                            <li><span class="changelog-aura-sigil sigil-wiki-aura" data-changelog-aura-sigil="Vega">Vega</span><span class="tinyClass">1 in 2,580,000 [Singularity Exclusive]</span></li>
+                            <li><span class="changelog-aura-sigil sigil-wiki-aura" data-changelog-aura-sigil="Astronaut">Astronaut</span><span class="tinyClass">1 in 6,117,196 [Singularity Exclusive]</span></li>
+                            <li><span class="changelog-aura-sigil sigil-wiki-aura" data-changelog-aura-sigil="Centurion">Centurion</span><span class="tinyClass">1 in 25,000,000 [Singularity Exclusive]</span></li>
+                            <li><span class="changelog-aura-sigil sigil-wiki-aura" data-changelog-aura-sigil="Projection">Projection</span><span class="tinyClass">1 in 197,000,000 [Singularity Exclusive]</span></li>
+                            <li><span class="changelog-aura-sigil sigil-wiki-aura" data-changelog-aura-sigil="Gravitational : Point Zero">Gravitational : Point Zero</span><span class="tinyClass">1 in 521,121,900 [Singularity Exclusive]</span></li>
+                            <li><span class="changelog-aura-sigil sigil-wiki-aura" data-changelog-aura-sigil="Astraios">Astraios</span><span class="tinyClass">1 in 1,750,000,000 [Singularity Exclusive]</span></li>
                         </ul>
                         <li><span class="largeClass">Added 3 new default auras:</span></li>
                         <ul>
@@ -3239,8 +3287,8 @@
                         </ul>
                         <li><span class="largeClass">Updated some auras:</span></li>
                         <ul>
-                            <li>Updated Equinox's cutscene to the new rework</li>
-                            <li>Fixed the rarity of <span class="sigil-outline-easter-2026">Eggsistance</span> from: 377,777,777 to 307,777,777</span></li>
+                            <li>Updated <span class="changelog-aura-sigil" data-changelog-aura-sigil="Equinox">Equinox</span>'s cutscene to the new rework</li>
+                            <li>Fixed the rarity of <span class="changelog-aura-sigil sigil-wiki-aura" data-changelog-aura-sigil="Eggsistance">Eggsistance</span> from: 377,777,777 to 307,777,777</span></li>
                         </ul>
                         <li><span class="largeClass">Some performance and math fixes:</span></li>
                         <ul>
@@ -3276,16 +3324,16 @@
                             <li>Ballerino Capuchino, Trallalero Trallala & Tung Tung Tung Sahur took a visit! See if you can find them 👀</li>
                             <li>Added 10 +<span class="tinyClass">67</span> new <span class="sigil-outline-april">April Fools Event 2026</span> auras:</li>
                             <ul>
-                                <li><span class="sigil-outline-april">Burger</span> <span class="tinyClass">1 in 676,767</span></li>
-                                <li><span class="sigil-outline-april">StarRider : yourdidit</span> <span class="tinyClass">1 in 1,234,567 (1 in 246,913 in Starfall)</span></li>
-                                <li><span class="sigil-outline-april">Bounded : Kidnapped</span> <span class="tinyClass">1 in 2,000,000</span></li>
-                                <li><span class="sigil-outline-april">Very Small Sewage Rat That's About 3.082 Studs Long</span> <span class="tinyClass">1 in 20,070,629</span></li>
-                                <li><span class="sigil-outline-april">Pukeko : Jumping</span> <span class="tinyClass">1 in 31,980,000</span></li>
-                                <li><span class="sigil-outline-april">Aether : Dissapointment</span> <span class="tinyClass">1 in 33,333,330 (1 in 6,666,666 in Heaven)</span></li>
-                                <li><span class="sigil-outline-april">Bloated.exe</span> <span class="tinyClass">1 in 67,676,767</span></li>
-                                <li><span class="sigil-outline-april">Doodle : Abyssal Hunter</span> <span class="tinyClass">1 in 400,000,000</span></li>
-                                <li><span class="sigil-outline-april">Lumenpool : Ramenpool</span> <span class="tinyClass">1 in 630,000,000 (1 in 157,500,000 in Rainy)</span></li>
-                                <li><span class="sigil-outline-april">Equinox : youareanidiot</span> <span class="tinyClass">1 in 2,500,000,000</span>
+                                <li><span class="changelog-aura-sigil sigil-wiki-aura" data-changelog-aura-sigil="Burger">Burger</span> <span class="tinyClass">1 in 676,767</span></li>
+                                <li><span class="changelog-aura-sigil sigil-wiki-aura" data-changelog-aura-sigil="StarRider : yourdidit">StarRider : yourdidit</span> <span class="tinyClass">1 in 1,234,567 (1 in 246,913 in Starfall)</span></li>
+                                <li><span class="changelog-aura-sigil sigil-wiki-aura" data-changelog-aura-sigil="Bounded : Kidnapped">Bounded : Kidnapped</span> <span class="tinyClass">1 in 2,000,000</span></li>
+                                <li><span class="changelog-aura-sigil sigil-wiki-aura" data-changelog-aura-sigil="Very Small Sewage Rat That's About 3.082 Studs Long">Very Small Sewage Rat That's About 3.082 Studs Long</span> <span class="tinyClass">1 in 20,070,629</span></li>
+                                <li><span class="changelog-aura-sigil sigil-wiki-aura" data-changelog-aura-sigil="Pukeko : Jumping">Pukeko : Jumping</span> <span class="tinyClass">1 in 31,980,000</span></li>
+                                <li><span class="changelog-aura-sigil sigil-wiki-aura" data-changelog-aura-sigil="Aether : Dissapointment">Aether : Dissapointment</span> <span class="tinyClass">1 in 33,333,330 (1 in 6,666,666 in Heaven)</span></li>
+                                <li><span class="changelog-aura-sigil sigil-wiki-aura" data-changelog-aura-sigil="Bloated.exe">Bloated.exe</span> <span class="tinyClass">1 in 67,676,767</span></li>
+                                <li><span class="changelog-aura-sigil sigil-wiki-aura" data-changelog-aura-sigil="Doodle : Abyssal Hunter">Doodle : Abyssal Hunter</span> <span class="tinyClass">1 in 400,000,000</span></li>
+                                <li><span class="changelog-aura-sigil sigil-wiki-aura" data-changelog-aura-sigil="Lumenpool : Ramenpool">Lumenpool : Ramenpool</span> <span class="tinyClass">1 in 630,000,000 (1 in 157,500,000 in Rainy)</span></li>
+                                <li><span class="changelog-aura-sigil sigil-wiki-aura" data-changelog-aura-sigil="Equinox : youareanidiot">Equinox : youareanidiot</span> <span class="tinyClass">1 in 2,500,000,000</span>
                                     <ul>
                                         <a>Added cutscene <span class="tinyClass">Courtesy of gold_solsrng</span></a>
                                     </ul>
@@ -3293,8 +3341,8 @@
                             </ul>
                             <li>Added 2 returning <span class="sigil-outline-april">April Fools</span> auras:</li>
                             <ul>
-                                <li><span class="sigil-outline-april">Pukeko</span> <span class="tinyClass">1 in 3,198</span></li>
-                                <li><span class="sigil-outline-april">Flushed : Troll</span> <span class="tinyClass">1 in 1,000,000</span>
+                                <li><span class="changelog-aura-sigil sigil-wiki-aura" data-changelog-aura-sigil="Pukeko">Pukeko</span> <span class="tinyClass">1 in 3,198</span></li>
+                                <li><span class="changelog-aura-sigil sigil-wiki-aura" data-changelog-aura-sigil="Flushed : Troll">Flushed : Troll</span> <span class="tinyClass">1 in 1,000,000</span>
                                     <ul>
                                         <a>Might have added a cutscene :3</a>
                                     </ul>
@@ -3326,23 +3374,23 @@
                             <li><span class="sigil-outline-easter-2026">Easter Event 2026</span> is now the default enabled event!</li>
                             <li>Added 9 new <span class="sigil-outline-easter-2026">Easter Event 2026</span> auras:</li>
                             <ul>
-                                <li><span class="sigil-outline-easter-2026">Hatchwarden</span> <span class="tinyClass">1 in 40,000,000</span></li>
-                                <li><span class="sigil-outline-easter-2026">Emperor</span> <span class="tinyClass">1 in 80,000,000</span></li>
-                                <li><span class="sigil-outline-easter-2026">Eggsistance</span> <span class="tinyClass">1 in 377,777,777</span></li>
-                                <li><span class="sigil-outline-easter-2026">Revive</span> <span class="tinyClass">1 in 645,000,000</span></li>
-                                <li><span class="sigil-outline-easter-2026">Eggore</span> <span class="tinyClass">1 in 700,000,000</span></li>
-                                <li><span class="sigil-outline-easter-2026">Eostre</span> <span class="tinyClass">1 in 1,000,000,000</span></li>
-                                <li><span class="sigil-outline-easter-2026">Aegis : Eggis</span> <span class="tinyClass">1 in 1,150,000,000</span>
+                                <li><span class="changelog-aura-sigil sigil-wiki-aura" data-changelog-aura-sigil="Hatchwarden">Hatchwarden</span> <span class="tinyClass">1 in 40,000,000</span></li>
+                                <li><span class="changelog-aura-sigil sigil-wiki-aura" data-changelog-aura-sigil="Emperor">Emperor</span> <span class="tinyClass">1 in 80,000,000</span></li>
+                                <li><span class="changelog-aura-sigil sigil-wiki-aura" data-changelog-aura-sigil="Eggsistance">Eggsistance</span> <span class="tinyClass">1 in 377,777,777</span></li>
+                                <li><span class="changelog-aura-sigil sigil-wiki-aura" data-changelog-aura-sigil="Revive">Revive</span> <span class="tinyClass">1 in 645,000,000</span></li>
+                                <li><span class="changelog-aura-sigil sigil-wiki-aura" data-changelog-aura-sigil="Eggore">Eggore</span> <span class="tinyClass">1 in 700,000,000</span></li>
+                                <li><span class="changelog-aura-sigil sigil-wiki-aura" data-changelog-aura-sigil="Eostre">Eostre</span> <span class="tinyClass">1 in 1,000,000,000</span></li>
+                                <li><span class="changelog-aura-sigil sigil-wiki-aura" data-changelog-aura-sigil="Aegis : Eggis">Aegis : Eggis</span> <span class="tinyClass">1 in 1,150,000,000</span>
                                     <ul>
                                         <a>Added cutscene <span class="tinyClass">Courtesy of poland2q</span></a>
                                     </ul>
                                 </li>
-                                <li><span class="sigil-outline-easter-2026">Y.O.L.K.E.G.G.</span> <span class="tinyClass">1 in 1,780,808,080</span>
+                                <li><span class="changelog-aura-sigil sigil-wiki-aura" data-changelog-aura-sigil="Y.O.L.K.E.G.G.">Y.O.L.K.E.G.G.</span> <span class="tinyClass">1 in 1,780,808,080</span>
                                     <ul>
                                         <a>Added cutscene <span class="tinyClass">Courtesy of poland2q</span></a>
                                     </ul>
                                 </li>
-                                <li><span class="sigil-outline-easter-2026">Sky Festival</span> <span class="tinyClass">1 in 2,000,000,000</span>
+                                <li><span class="changelog-aura-sigil sigil-wiki-aura" data-changelog-aura-sigil="Sky Festival">Sky Festival</span> <span class="tinyClass">1 in 2,000,000,000</span>
                                     <ul>
                                         <a>Added cutscene <span class="tinyClass">Courtesy of callumcat_</span></a>
                                     </ul>
@@ -3352,9 +3400,9 @@
                         
                         <li>Added 3 new default auras:</li>
                         <ul>
-                            <li><span class="sigil-outline-valentine-2026">Kawaii</span> <span class="tinyClass">1 in 12,300</span></li>
-                            <li><span class="sigil-outline-innovator">Starborn</span><span class="tinyClass">72,000,000</span></li>
-                                <li><span class="sigil-outline-valentine-2026">Celestial</span> : <span class="sigil-outline-innovator">Eclipse</span> <span class="tinyClass">1 in 384,400,000</span></li>
+                            <li><span class="changelog-aura-sigil sigil-wiki-aura" data-changelog-aura-sigil="Kawaii">Kawaii</span> <span class="tinyClass">1 in 12,300</span></li>
+                            <li><span class="changelog-aura-sigil sigil-wiki-aura" data-changelog-aura-sigil="Starborn">Starborn</span><span class="tinyClass">72,000,000</span></li>
+                                <li><span class="changelog-aura-sigil sigil-wiki-aura" data-changelog-aura-sigil="Celestial">Celestial</span> : <span class="sigil-outline-innovator">Eclipse</span> <span class="tinyClass">1 in 384,400,000</span></li>
                         </ul>
                         <li>Fixed some icons not appearing.</li>
                     </ul>
@@ -3380,7 +3428,7 @@
                     </header>
                     <p class="changelog-modal__intro">Latest changes:</p>
                     <ul class="changelog-modal__list">
-                        <li>Updated <span class="sigil-outline-dreammetric">Dreammetric</span>'s cutscene <span class="tinyClass">Credits to Bocchi</span></li>
+                        <li>Updated <span class="changelog-aura-sigil sigil-wiki-aura" data-changelog-aura-sigil="Dreammetric">Dreammetric</span>'s cutscene <span class="tinyClass">Credits to Bocchi</span></li>
                         <li>Added a dedicated donation section with direct support buttons.</li>
                     </ul>
                     <p>If there's any bugs you encounter, please DM me here <a href="https://discord.com/users/611204110955446301" class="subtitleClass" target="_blank" rel="noopener">@not.unnamed</a></p>
@@ -3403,7 +3451,7 @@
                     <p class="changelog-modal__intro">Latest changes:</p>
                     <ul class="changelog-modal__list">
                         <li>Updated <span class="sigil-effect-nyctophobia">Nyctophobia 's</span> cutscene. <span class="tinyClass">By me now</span></li>
-                        <li>Updated all <span class="sigil-outline-glitch">Glitch</span> auras to appear at the complete top.</li>
+                        <li>Updated all <span class="changelog-aura-sigil sigil-wiki-aura" data-changelog-aura-sigil="Glitch">Glitch</span> auras to appear at the complete top.</li>
                         <li>Added a new aura:</li>
                         <ul>
                             <li><span class="sigil-outline-glitch">[CONTENT DELETED]</span> <span class="tinyClass">1 in 4,040 - In Glitch (Unaffected by luck)</span>.</li>
@@ -3531,7 +3579,7 @@
                 >
                     <header class="changelog-modal__header">
                         <h2 class="changelog-modal__title">Version v1.710 Update Notes</h2>
-                        <span class="changelog-tab__subtitle">Red Full Moon | <span class="sigil-outline-赤月の破片">赤月の破片</span></span>
+                        <span class="changelog-tab__subtitle">Red Full Moon | <span class="changelog-aura-sigil sigil-wiki-aura" data-changelog-aura-sigil="赤月の破片">赤月の破片</span></span>
                         <p class="changelog-modal__meta">Updated 2026/02/28 at 12:50 PM CET</p>
                     </header>
                     <p class="changelog-modal__intro">Latest changes:</p>
@@ -3546,7 +3594,7 @@
                             <li>Lily <span class="tinyClass">1 in 112,000,000</span></li>
                             <li>Raven : Plague <span class="tinyClass">1 in 200,000,000 inside of Limbo</span></li>
                             <li>Sailor : Admiral <span class="tinyClass">1 in 540,000,000 (135,000,000 inside of Rainy)</span></li>
-                            <li><span class="sigil-outline-赤月の破片">赤月の破片</span> <span class="tinyClass">1 in 1,000 from Red Moon I (1 in 100 from Red Moon II)</span></li>
+                            <li><span class="changelog-aura-sigil sigil-wiki-aura" data-changelog-aura-sigil="赤月の破片">赤月の破片</span> <span class="tinyClass">1 in 1,000 from Red Moon I (1 in 100 from Red Moon II)</span></li>
                         </ul>
                     </ul>
                     <p>If there's any bugs you encounter, please DM me here <a href="https://discord.com/users/611204110955446301" class="subtitleClass" target="_blank" rel="noopener">@not.unnamed</a></p>
@@ -3593,15 +3641,15 @@
                     </header>
                     <p class="changelog-modal__intro">Latest changes:</p>
                     <ul class="changelog-modal__list">
-                        <li>Fixed aura naming typo from <span class="sigil-outline-pythios">Pythos</span> to <span class="sigil-outline-pythios">Pythios</span>.</li>
-                        <li>Updated filtering so <span class="sigil-outline-borealis">Borealis</span> is treated as a <span class="rarity-tier-challenged">Challenged</span> aura.</li>
+                        <li>Fixed aura naming typo from <span class="sigil-outline-pythios">Pythos</span> to <span class="changelog-aura-sigil sigil-wiki-aura" data-changelog-aura-sigil="Pythios">Pythios</span>.</li>
+                        <li>Updated filtering so <span class="changelog-aura-sigil sigil-wiki-aura" data-changelog-aura-sigil="Borealis">Borealis</span> is treated as a <span class="rarity-tier-challenged">Challenged</span> aura.</li>
                         <li>Updated filtering so <span class="sigil-effect-glitch"><span class="sigil-effect-glitch__title">GLITCH</span></span> is treated as a <span class="rarity-tier-challenged">Challenged</span> aura.</li>
                         <p>Thanks to <a href="https://discord.com/users/1234359746153418826" class="subtitleClass" target="_blank" rel="noopener">aksiz.dos_33995</a> for reporting these bugs.</p>
                         
                         <li><span class="sigil-effect-glitch"><span class="sigil-effect-glitch__title">GLITCH</span></span> will now display as it does in-game.</li>
-                        <li><span class="sigil-outline-borealis">Borealis</span> will now display as it does in-game.</li>
-                        <li><span class="sigil-outline-oppression">Oppression</span> will now display as it does in-game.</li>
-                        <li><span class="sigil-outline-dreammetric">Dreammetric</span> will now display as it does in-game.</li>
+                        <li><span class="changelog-aura-sigil sigil-wiki-aura" data-changelog-aura-sigil="Borealis">Borealis</span> will now display as it does in-game.</li>
+                        <li><span class="changelog-aura-sigil sigil-wiki-aura" data-changelog-aura-sigil="Oppression">Oppression</span> will now display as it does in-game.</li>
+                        <li><span class="changelog-aura-sigil sigil-wiki-aura" data-changelog-aura-sigil="Dreammetric">Dreammetric</span> will now display as it does in-game.</li>
                     </ul>
                     <p>If there's any bugs you encounter, please DM me here <a href="https://discord.com/users/611204110955446301" class="subtitleClass" target="_blank" rel="noopener">@not.unnamed</a></p>
                 </section>
@@ -3640,7 +3688,7 @@
                     <p class="changelog-modal__intro">Latest changes:</p>
                     <ul class="changelog-modal__list">
                         <li>Updated <span class="sigil-outline-edict">Edict</span> to look accurate as in Sol's RNG.</li>
-                        <li>Updated <span class="sigil-effect-clockwork">Clockwork</span> to look accurate as in Sol's RNG.</li>
+                        <li>Updated <span class="changelog-aura-sigil sigil-wiki-aura" data-changelog-aura-sigil="Clockwork">Clockwork</span> to look accurate as in Sol's RNG.</li>
                     </ul>
                     <span class="tinyClass">(When Eon 2 👀)</span>
                     <p>If there's any bugs you encounter, please DM me here <a href="https://discord.com/users/611204110955446301" class="subtitleClass" target="_blank" rel="noopener">@not.unnamed</a></p>

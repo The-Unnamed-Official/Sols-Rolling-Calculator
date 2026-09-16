@@ -175,7 +175,8 @@ const QUALITY_PREFERENCE_KEYS = Object.freeze([
     'disableShakes',
     'disableRollAndSigilAnimations',
     'reduceGlitchEffects',
-    'removeGlitchEffects'
+    'removeGlitchEffects',
+    'disableWikiAuraStyles'
 ]);
 
 const PERFORMANCE_FIRST_QUALITY_DEFAULTS = Object.freeze({
@@ -184,7 +185,8 @@ const PERFORMANCE_FIRST_QUALITY_DEFAULTS = Object.freeze({
     disableShakes: false,
     disableRollAndSigilAnimations: false,
     reduceGlitchEffects: true,
-    removeGlitchEffects: false
+    removeGlitchEffects: false,
+    disableWikiAuraStyles: false
 });
 
 if (FORCE_CUTSCENES_ALWAYS_ON && typeof appState === 'object') {
@@ -768,7 +770,7 @@ const BIOME_PRIMARY_SELECT_ID = 'biome-primary-dropdown';
 const BIOME_OTHER_SELECT_ID = 'biome-other-dropdown';
 const BIOME_TIME_SELECT_ID = 'biome-time-dropdown';
 const DAY_RESTRICTED_BIOMES = new Set(['pumpkinMoon', 'graveyard']);
-const DAY_ONLY_BIOMES = new Set(['blazing', 'incinerator']);
+const DAY_ONLY_BIOMES = new Set(['blazing']);
 const CYBERSPACE_ILLUSIONARY_WARNING_STORAGE_KEY = 'solsRollingCalculator:hideCyberspaceIllusionaryWarning';
 const SINGULARITY_MULTIPLIER_WARNING_STORAGE_KEY = 'solsRollingCalculator:hideSingularityMultiplierWarning';
 const SINGULARITY_SUMMON_SOUND_ID = 'singularitySummonSound';
@@ -3579,6 +3581,7 @@ function applyQualityPreferencesState() {
         pageBody.classList.toggle('quality-no-roll-sigil-animations', appState.qualityPreferences.disableRollAndSigilAnimations);
         pageBody.classList.toggle('quality-reduced-glitch', appState.qualityPreferences.reduceGlitchEffects);
         pageBody.classList.toggle('quality-no-glitch', appState.qualityPreferences.removeGlitchEffects);
+        pageBody.classList.toggle('quality-simple-auras', appState.qualityPreferences.disableWikiAuraStyles);
         pageBody.classList.toggle('performance-mode', performanceModeActive);
     }
 
@@ -3605,7 +3608,7 @@ function applyQualityPreferencesState() {
 }
 
 function syncQualityPreferenceButtons() {
-    const menu = document.getElementById('qualityPreferencesMenu');
+    const menu = document.getElementById('qualityPreferencesOverlay');
     if (!menu) {
         return;
     }
@@ -3618,7 +3621,9 @@ function syncQualityPreferenceButtons() {
             return;
         }
 
-        const enabled = Boolean(appState.qualityPreferences[key]);
+        const enabled = button.hasAttribute('data-quality-inverted')
+            ? !appState.qualityPreferences[key]
+            : Boolean(appState.qualityPreferences[key]);
         button.setAttribute('aria-checked', enabled ? 'true' : 'false');
         button.classList.toggle('quality-settings__item--active', enabled);
     });
@@ -3672,7 +3677,7 @@ function initializeQualityPreferencesMenu() {
         openMenu();
     });
 
-    menu.addEventListener('click', event => {
+    overlay.addEventListener('click', event => {
         const button = event.target instanceof Element ? event.target.closest('[data-quality-option]') : null;
         if (!button) {
             return;
@@ -3716,7 +3721,7 @@ function initializeQualityPreferencesMenu() {
         }
     });
 
-    menu.addEventListener('keydown', event => {
+    overlay.addEventListener('keydown', event => {
         if (event.key === 'Escape') {
             closeMenu();
             trigger.focus({ preventScroll: true });
@@ -4963,8 +4968,8 @@ const MULTI_POTION_STACK_EXCLUSION_GROUP = Object.freeze({
 
 const MULTI_POTION_CONFIGS = Object.freeze([
     Object.freeze({ id: 'heavenly', label: 'Heavenly Potion', resultLabel: 'Heavenly', resultClass: 'heavenlyClass', luck: 150000 }),
-    Object.freeze({ id: 'oblivion', label: 'Oblivion Potion', resultLabel: 'Oblivion', resultClass: 'oblivionClass', luck: 600000, oblivion: true, blocksRunes: true }),
     Object.freeze({ id: 'pump-kings-blood', label: "Pump King's Blood", resultLabel: "Pump King's Blood", resultClass: 'pumpBloodClass', luck: 700000, blocksRunes: true }),
+    Object.freeze({ id: 'oblivion', label: 'Oblivion Potion', resultLabel: 'Oblivion', resultClass: 'oblivionClass', luck: 600000, oblivion: true, blocksRunes: true }),
     Object.freeze({ id: 'godlike', label: 'Godlike Potion', resultLabel: 'Godlike', resultClass: 'godlikeClass', luck: 400000 }),
     Object.freeze({ id: 'blood-ii', label: 'Red Moon II', resultLabel: 'Red Moon II', resultClass: 'bloodIIClass', luck: 200000, bloodPreset: 'blood-ii', stackExclusionGroup: MULTI_POTION_STACK_EXCLUSION_GROUP.RED_MOON }),
     Object.freeze({ id: 'candy-corn', label: 'Candy Corn', resultLabel: 'Candy Corn', resultClass: 'candyClass', luck: 75000 }),
@@ -5201,11 +5206,11 @@ function applyLuckValue(value, options = {}) {
         || normalizedOptions.luckSource === LUCK_SELECTION_SOURCE.DEVICE_PRESET;
 
     if (shouldResetSpecialPresets) {
-        if (!('activateOblivionPreset' in normalizedOptions)) {
-            normalizedOptions.activateOblivionPreset = false;
-        }
         if (!('activatePumpKingsBloodPreset' in normalizedOptions)) {
             normalizedOptions.activatePumpKingsBloodPreset = false;
+        }
+        if (!('activateOblivionPreset' in normalizedOptions)) {
+            normalizedOptions.activateOblivionPreset = false;
         }
         if (!('activateTutorialPotionPreset' in normalizedOptions)) {
             normalizedOptions.activateTutorialPotionPreset = false;
@@ -5219,7 +5224,6 @@ function applyLuckValue(value, options = {}) {
     }
 
     if (normalizedOptions.activateOblivionPreset === true) {
-        normalizedOptions.activatePumpKingsBloodPreset = false;
         normalizedOptions.activateTutorialPotionPreset = false;
         normalizedOptions.activateDunePreset = false;
         normalizedOptions.activateBloodPreset = false;
@@ -5439,7 +5443,7 @@ function formatMultiplePotionBatchResultMarkup(batch) {
     const potionConfigs = getMultiplePotionBatchResultConfigs(batch);
     const potionMarkup = potionConfigs.length > 0
         ? potionConfigs.map(config => (
-            `<span class="${config.resultClass}">${config.resultLabel || config.label}</span>`
+            WikiTitles.item(config.label, config.resultLabel || config.label)
         )).join(' + ')
         : 'Potion';
     const luckValue = Number.isFinite(batch?.luckValue) ? Math.max(0, batch.luckValue) : 0;
@@ -5515,9 +5519,14 @@ function collectMultiplePotionBatches(
 
     const blockingBatches = [];
     const compatibleBatches = [];
-    document.querySelectorAll('[data-multi-potion]').forEach(input => {
-        const config = MULTI_POTION_CONFIG_BY_ID.get(input.dataset.multiPotion);
-        if (!config) {
+    const inputsByPotionId = new Map(Array.from(
+        document.querySelectorAll('[data-multi-potion]'),
+        input => [input.dataset.multiPotion, input]
+    ));
+    // Follow configured potion priority regardless of the input fields' layout.
+    MULTI_POTION_CONFIGS.forEach(config => {
+        const input = inputsByPotionId.get(config.id);
+        if (!input) {
             return;
         }
 
@@ -7082,56 +7091,7 @@ const auraOutlineOverrides = new Map([
     ['Crabtropica', 'sigil-outline-summer'],
 ]);
 
-const wikiAuraSigilNames = new Set([
-    '★',
-    '★★',
-    '★★★',
-    'Attorney',
-    'Verdict',
-    'Empty',
-    'Neferkhaf',
-    'Memory',
-    'Oblivion',
-    '赤月の破片',
-    'Prowler',
-    'Oppression',
-    'Illusionary',
-    'Clockwork',
-    'Dreammetric',
-    'Fault',
-    'Megaphone',
-    'Meta',
-    'Cryogenic',
-    'Astral : Astrald',
-    '紅月を求めし者',
-    '紅月の観測者',
-    'Borealis',
-    'Glitch',
-    'Innovator',
-    'Monarch',
-    'Equinox',
-    'Equinox : youareanidiot',
-    'DreamCatcher',
-    'Dream Traveler',
-    'Sky Festival',
-    'Breakthrough',
-    'Y.O.L.K.E.G.G.',
-    'Astraios',
-    'Leviathan',
-    'Winter Garden',
-    'Luminosity',
-    'Erebus',
-    'Aegis : Eggis',
-    'Pixelation',
-    'Nyctophobia',
-    'Lamenthyr',
-    "A Fool's Experience",
-    'P.U.K.E.K.O.G.O.D.',
-    'Eostre',
-    'Sovereign : Frostveil',
-    'Ascendant'
-]);
-
+const wikiAuraSigilNames = new Set(Object.keys(WikiTitleData.auras));
 const glitchOutlineNames = new Set(['Fault', '[CONTENT DELETED']);
 const dreamspaceOutlineNames = new Set(['★★★', '★★', '★']);
 const cyberspaceOutlineExclusions = new Set(['Pixelation', 'Illusionary']);
@@ -7144,7 +7104,7 @@ function resolveAuraStyleClass(aura, biome) {
 
     const classes = [];
     const shortName = name.includes(' - ') ? name.split(' - ')[0].trim() : name.trim();
-    if (wikiAuraSigilNames.has(shortName)) classes.push('sigil-wiki-aura');
+    if (wikiAuraSigilNames.has(shortName)) return 'sigil-wiki-aura';
     if (name.startsWith('Oblivion')) classes.push('sigil-effect-oblivion');
     if (name.startsWith('Memory')) classes.push('sigil-effect-memory');
     if (name.startsWith('Neferkhaf')) classes.push('sigil-effect-neferkhaf');
@@ -7209,7 +7169,7 @@ function shouldSuppressRarityClassForSpecialStyle(specialClass = '') {
     if (!specialClass) {
         return false;
     }
-    return specialClass.includes('sigil-outline-edict') || specialClass.includes('sigil-effect-clockwork');
+    return specialClass.includes('sigil-wiki-aura') || specialClass.includes('sigil-outline-edict') || specialClass.includes('sigil-effect-clockwork');
 }
 
 const OBLIVION_PRESET_IDENTIFIER = 'oblivion';
@@ -7481,224 +7441,11 @@ function splitAuraDisplaySuffix(baseName) {
         : { suffix: '' };
 }
 
-function appendWikiAuraSigilSuffix(markup, suffix) {
-    if (!suffix) return markup;
-    return `${markup}<span class="sigil-wiki__suffix">${suffix}</span>`;
-}
-
 function formatWikiAuraSigilMarkup(aura, baseName) {
     if (!aura || typeof baseName !== 'string') return '';
-    const canonicalName = aura.name.includes(' - ')
-        ? aura.name.split(' - ')[0].trim()
-        : aura.name.trim();
-    if (!wikiAuraSigilNames.has(canonicalName)) return '';
-
+    const canonicalName = aura.name.split(' - ')[0].trim();
     const { suffix } = splitAuraDisplaySuffix(baseName);
-    const layered = (className, text) => `<span class="sigil-wiki ${className}">` +
-        `<span class="sigil-wiki__layer sigil-wiki__layer--back">${text}</span>` +
-        `<span class="sigil-wiki__layer sigil-wiki__layer--front">${text}</span>` +
-        '</span>';
-    const stroked = (className, text) => `<span class="sigil-wiki ${className}">` +
-        `<span class="sigil-wiki__text-stroke" data-text="${text}"></span>` +
-        `<span class="sigil-wiki__face">${text}</span>` +
-        '</span>';
-    const doubleStroked = (className, text) => `<span class="sigil-wiki ${className}">` +
-        `<span class="sigil-wiki__court-stroke sigil-wiki__court-stroke--outer" data-text="${text}"></span>` +
-        `<span class="sigil-wiki__court-stroke sigil-wiki__court-stroke--inner" data-text="${text}"></span>` +
-        `<span class="sigil-wiki__face">${text}</span>` +
-        '</span>';
-    let markup = '';
-
-    switch (canonicalName) {
-        case '★':
-        case '★★':
-        case '★★★':
-            markup = `<span class="sigil-wiki sigil-wiki--dream-star">${canonicalName}</span>`;
-            break;
-        case 'Attorney':
-            markup = doubleStroked('sigil-wiki--court', 'ATTORNEY');
-            break;
-        case 'Verdict':
-            markup = doubleStroked('sigil-wiki--court', 'VERDICT');
-            break;
-        case 'Empty':
-            markup = '<span class="sigil-wiki sigil-wiki--empty">Empty</span>';
-            break;
-        case 'Neferkhaf':
-            markup = layered('sigil-wiki--neferkhaf', 'Neferkhaf');
-            break;
-        case 'Memory':
-            markup = stroked('sigil-wiki--memory', 'Memory');
-            break;
-        case 'Oblivion':
-            markup = stroked('sigil-wiki--oblivion', 'OBLIVION');
-            break;
-        case '赤月の破片':
-            markup = '<span class="sigil-wiki sigil-wiki--crimson-fragment"><b><i>赤月の破片</i></b></span>';
-            break;
-        case 'Prowler':
-            markup = '<span class="sigil-wiki sigil-wiki--prowler">Prowler</span>';
-            break;
-        case 'Oppression':
-            markup = '<span class="sigil-wiki sigil-wiki--oppression">[OPPRESSION]</span>';
-            break;
-        case 'Illusionary':
-            markup = '<span class="sigil-wiki sigil-wiki--illusionary">illusionary</span>';
-            break;
-        case 'Clockwork':
-            markup = layered('sigil-wiki--clockwork', 'CLOCKWORK');
-            break;
-        case 'Dreammetric':
-            markup = stroked('sigil-wiki--dreammetric', 'Dreammetric');
-            break;
-        case 'Fault':
-            markup = layered('sigil-wiki--fault', 'FAULT');
-            break;
-        case 'Megaphone':
-            markup = '<span class="sigil-wiki sigil-wiki--megaphone">MEGAPHONE</span>';
-            break;
-        case 'Meta':
-            markup = '<span class="sigil-wiki sigil-wiki--meta"><span>meta</span></span>';
-            break;
-        case 'Cryogenic':
-            markup = stroked('sigil-wiki--cryogenic', 'Cryogenic');
-            break;
-        case 'Astral : Astrald':
-            markup = layered('sigil-wiki--astrald', 'Astral : Astrald');
-            break;
-        case '紅月を求めし者':
-            markup = '<span class="sigil-wiki sigil-wiki--crimson-seeker">' +
-                '<span class="sigil-wiki__crimson-stroke sigil-wiki__crimson-stroke--outer" data-text="紅月を求めし者"></span>' +
-                '<span class="sigil-wiki__crimson-stroke sigil-wiki__crimson-stroke--inner" data-text="紅月を求めし者"></span>' +
-                '<span class="sigil-wiki__face">紅月を求めし者</span></span>';
-            break;
-        case '紅月の観測者':
-            markup = '<span class="sigil-wiki sigil-wiki--crimson-observer">' +
-                '<span class="sigil-wiki__crimson-stroke sigil-wiki__crimson-stroke--outer" data-text="紅月の観測者"></span>' +
-                '<span class="sigil-wiki__crimson-stroke sigil-wiki__crimson-stroke--inner" data-text="紅月の観測者"></span>' +
-                '<span class="sigil-wiki__face">紅月の観測者</span></span>';
-            break;
-        case 'Borealis':
-            markup = '<span class="sigil-wiki sigil-wiki--borealis"><b>Borealis</b></span>';
-            break;
-        case 'Glitch':
-            markup = '<span class="sigil-wiki sigil-wiki--glitch">' +
-                '<span class="sigil-wiki__glitch-title" aria-hidden="true"></span>' +
-                '<span class="sigil-wiki__glitch-space">GLITCH</span></span>';
-            break;
-        case 'Innovator':
-            markup = '<span class="sigil-wiki sigil-wiki--innovator"><b>INNOVATOR</b></span>';
-            break;
-        case 'Monarch':
-            markup = layered('sigil-wiki--monarch', 'MONARCH');
-            break;
-        case 'Equinox':
-            markup = '<span class="sigil-wiki sigil-wiki--equinox">' +
-                '<span class="sigil-wiki__equinox-stroke" data-text="『EQUINOX』"></span>' +
-                '<span class="sigil-wiki__equinox-transition" data-text="『EQUINOX』"></span>' +
-                '<span class="sigil-wiki__equinox-pulse" data-text="『EQUINOX』"></span>' +
-                '<span class="sigil-wiki__equinox-face">『EQUINOX』</span>' +
-                '</span>';
-            break;
-        case 'Equinox : youareanidiot':
-            markup = '<span class="sigil-wiki sigil-wiki--equinox-idiot">' +
-                '<span class="sigil-wiki__idiot-stroke"><span>『</span>YOU ARE AN IDIOT<span>』</span></span>' +
-                '<span class="sigil-wiki__idiot-face"><span>『</span>YOU ARE AN IDIOT<span>』</span></span>' +
-                '</span>';
-            break;
-        case 'DreamCatcher':
-            markup = '<span class="sigil-wiki sigil-wiki--dreamcatcher">' +
-                '<span class="sigil-wiki__dreamcatcher-dream"><span class="sigil-wiki__text-stroke" data-text="dream"></span><span>dream</span></span>' +
-                '<span class="sigil-wiki__dreamcatcher-catcher"><span class="sigil-wiki__text-stroke" data-text="catcher"></span><span>catcher</span></span>' +
-                '</span>';
-            break;
-        case 'Dream Traveler': {
-            const dreamTravelerText = 'Dream \u200e \u200e Traveler \u200e';
-            markup = '<span class="sigil-wiki sigil-wiki--dream-traveler">' +
-                `<span class="sigil-wiki__dream-traveler-stroke" data-text="${dreamTravelerText}"></span>` +
-                `<span class="sigil-wiki__dream-traveler-gradient" data-text="${dreamTravelerText}"></span>` +
-                `<span class="sigil-wiki__dream-traveler-face">${dreamTravelerText}</span>` +
-                '</span>';
-            break;
-        }
-        case 'Sky Festival':
-            markup = layered('sigil-wiki--sky-festival', '[ Sky Festival ]');
-            break;
-        case 'Breakthrough':
-            markup = '<span class="sigil-wiki sigil-wiki--breakthrough-frame">' +
-                '<span class="sigil-wiki__breakthrough-panel"><span class="sigil-wiki__breakthrough-text"><i>BREAKTHROUGH</i></span></span>' +
-                '</span>';
-            break;
-        case 'Y.O.L.K.E.G.G.':
-            markup = layered('sigil-wiki--yolkegg', 'Y.O.L.K.E.G.G.');
-            break;
-        case 'Astraios':
-            markup = layered('sigil-wiki--astraios', 'ASTRAIOS');
-            break;
-        case 'Leviathan':
-            markup = '<span class="sigil-wiki sigil-wiki--leviathan">LEVIATHAN</span>';
-            break;
-        case 'Winter Garden':
-            markup = '<span class="sigil-wiki sigil-wiki--winter-garden">' +
-                '<span class="sigil-wiki__text-stroke" data-text="Winter Garden"></span>' +
-                '<span class="sigil-wiki__winter-garden-glow">Winter Garden</span>' +
-                '<span class="sigil-wiki__winter-garden-face">Winter Garden</span>' +
-                '</span>';
-            break;
-        case 'Luminosity':
-            markup = '<span class="sigil-wiki sigil-wiki--luminosity"><i>' +
-                '<span class="sigil-wiki__luminosity-bracket">[ </span>LUMINOSITY<span class="sigil-wiki__luminosity-bracket"> ]</span>' +
-                '</i></span>';
-            break;
-        case 'Erebus':
-            markup = '<span class="sigil-wiki sigil-wiki--erebus"><i><b>Erebus</b></i></span>';
-            break;
-        case 'Aegis : Eggis':
-            markup = '<span class="sigil-wiki sigil-wiki--eggis">' +
-                '<span class="sigil-wiki__layer sigil-wiki__layer--back"><span class="sigil-wiki__eggis-flower sigil-wiki__eggis-flower--back">✿</span>EGGIS</span>' +
-                '<span class="sigil-wiki__text-stroke" data-text="EGGIS"></span>' +
-                '<span class="sigil-wiki__layer sigil-wiki__layer--front">EGGIS<span class="sigil-wiki__eggis-flower sigil-wiki__eggis-flower--front">✿</span></span>' +
-                '</span>';
-            break;
-        case 'Pixelation':
-            markup = '<span class="sigil-wiki sigil-wiki--pixelation"><i>▣ PIXELATION ▣</i></span>';
-            break;
-        case 'Nyctophobia':
-            markup = '<span class="sigil-wiki sigil-wiki--nyctophobia">' +
-                Array.from('nyctophobia').map((letter, index) => `<span style="animation-delay:${0.055 + index * 0.005}s">${letter}</span>`).join('') +
-                '</span>';
-            break;
-        case 'Lamenthyr':
-            markup = layered('sigil-wiki--lamenthyr', 'LAMENTHYR');
-            break;
-        case "A Fool's Experience":
-            markup = '<span class="sigil-wiki sigil-wiki--fools-experience">' +
-                '<span class="sigil-wiki__fools-corners" aria-hidden="true"><span></span><span></span><span></span><span></span></span>' +
-                '<span class="sigil-wiki__fools-frame"><span class="sigil-wiki__fools-depth">A fool\'s experience...</span>' +
-                '<span class="sigil-wiki__text-stroke" data-text="A fool\'s experience..."></span>' +
-                '<span class="sigil-wiki__fools-face">A fool\'s experience...</span></span>' +
-                '</span>';
-            break;
-        case 'P.U.K.E.K.O.G.O.D.':
-            markup = '<span class="sigil-wiki sigil-wiki--pukekogod"><b>P. U. K. E. K. O. G. O. D.</b></span>';
-            break;
-        case 'Eostre':
-            markup = '<span class="sigil-wiki sigil-wiki--eostre"><span>E</span><b>ostre</b></span>';
-            break;
-        case 'Sovereign : Frostveil':
-            markup = '<span class="sigil-wiki sigil-wiki--frostveil">' +
-                '<span class="sigil-wiki__frostveil-sovereign"><span class="sigil-wiki__text-stroke" data-text="SOVEREIGN"></span><span>SOVEREIGN</span></span>' +
-                '<span class="sigil-wiki__frostveil-colon"> : </span><span class="sigil-wiki__frostveil-name">Frostveil</span>' +
-                '</span>';
-            break;
-        case 'Ascendant':
-            markup = layered('sigil-wiki--ascendant', 'ASCENDANT');
-            break;
-        default:
-            return '';
-    }
-
-    return appendWikiAuraSigilSuffix(markup, suffix);
+    return WikiTitles.aura(canonicalName, suffix ? suffix.slice(3) : '');
 }
 
 function initializeChangelogAuraSigils() {
@@ -7788,6 +7535,7 @@ function updateLayeredSigilText(container = document) {
 function observeLayeredSigilText() {
     updateLayeredSigilText();
     registerGlitchSigils(document);
+    WikiTitles.initializeEffects();
     if (!document.body) return;
     const pendingRoots = new Set();
     let flushScheduled = false;
@@ -7797,6 +7545,7 @@ function observeLayeredSigilText() {
             if (!root.isConnected) return;
             updateLayeredSigilText(root);
             registerGlitchSigils(root);
+            WikiTitles.initializeEffects(root);
         });
         pendingRoots.clear();
     };
@@ -9986,6 +9735,7 @@ function ensureChangelogTabsReady() {
     }
 
     initializeChangelogAuraSigils();
+    WikiTitles.initializeItems();
     setupChangelogTabs();
     localizeChangelogUpdateTimes();
     versionChangelogOverlayState.tabsInitialized = true;
@@ -11317,7 +11067,11 @@ function populateBiomeOptionElement(target, option, { deferImage = false } = {})
     if (sigilClass) {
         labelSpan.classList.add(sigilClass);
     }
-    labelSpan.textContent = label;
+    if (resolveRuneConfiguration(option.value)) {
+        labelSpan.innerHTML = WikiTitles.item(label);
+    } else {
+        labelSpan.textContent = label;
+    }
     target.appendChild(labelSpan);
 
     target.title = label;
@@ -11665,7 +11419,8 @@ function updateBiomeControlConstraints({ source = null, triggerSync = true } = {
     let timeChanged = false;
 
     const selectedRuneConfig = resolveRuneConfiguration(otherSelect.value);
-    const specialPotionBlocksRunes = oblivionPresetEnabled
+    const specialPotionBlocksRunes =
+           oblivionPresetEnabled
         || pumpKingsBloodPresetEnabled
         || tutorialPotionPresetEnabled;
     const runeActive = selectedRuneConfig !== null && !specialPotionBlocksRunes;
@@ -11774,11 +11529,11 @@ function updateBiomeControlConstraints({ source = null, triggerSync = true } = {
             timeSelect.value = 'day';
             timeChanged = true;
         }
-        if (oblivionPresetEnabled) {
-            applyOblivionPresetOptions({ activateOblivionPreset: false });
-        }
         if (pumpKingsBloodPresetEnabled) {
             applyPumpKingsBloodPresetOptions({ activatePumpKingsBloodPreset: false });
+        }
+        if (oblivionPresetEnabled) {
+            applyOblivionPresetOptions({ activateOblivionPreset: false });
         }
         if (tutorialPotionPresetEnabled) {
             applyTutorialPotionPresetOptions({ activateTutorialPotionPreset: false });
@@ -11797,14 +11552,14 @@ function updateBiomeControlConstraints({ source = null, triggerSync = true } = {
         const runeOption = resolveRuneConfiguration(option.value);
         let disabled = false;
         let title = '';
-        if (oblivionPresetEnabled && runeOption) {
-            disabled = true;
-            title = 'Unavailable while Oblivion preset is active.';
-            option.dataset.conditionMessage = title;
-            option.dataset.conditionLabel = option.textContent?.trim() || 'Rune';
-        } else if (pumpKingsBloodPresetEnabled && runeOption) {
+        if (pumpKingsBloodPresetEnabled && runeOption) {
             disabled = true;
             title = "Unavailable while Pump King's Blood is active.";
+            option.dataset.conditionMessage = title;
+            option.dataset.conditionLabel = option.textContent?.trim() || 'Rune';
+        } else if (oblivionPresetEnabled && runeOption) {
+            disabled = true;
+            title = 'Unavailable while Oblivion preset is active.';
             option.dataset.conditionMessage = title;
             option.dataset.conditionLabel = option.textContent?.trim() || 'Rune';
         } else if (tutorialPotionPresetEnabled && runeOption) {
