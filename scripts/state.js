@@ -70,7 +70,8 @@
             exalted: false,
             glorious: false,
             transcendent: false,
-            challenged: false
+            challenged: false,
+            'challenged-plus': false
         },
         auraFilters: {}
     };

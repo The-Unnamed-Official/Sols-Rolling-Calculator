@@ -33,7 +33,7 @@
             const documentModifiedAt = Number.isFinite(parsedDocumentModifiedAt)
                 ? parsedDocumentModifiedAt
                 : Date.now();
-            const buildCacheKey = '2.1.1';
+            const buildCacheKey = '2.1.2';
 
             window.appBuildCacheKey = buildCacheKey;
             window.getVersionedAppAssetUrl = path => {
@@ -166,22 +166,22 @@
             });
         })();
     </script>
-    <link rel="stylesheet" href="styles/base.css?v=2.1.1">
-    <link rel="stylesheet" href="styles/layout.css?v=2.1.1">
-    <link rel="stylesheet" href="styles/components.css?v=2.1.1">
-    <link rel="stylesheet" href="styles/utilities.css?v=2.1.1">
-    <link rel="stylesheet" href="styles/wiki-title-fonts.css?v=2.1.1">
-    <link rel="stylesheet" href="styles/wiki-title-effects.css?v=2.1.1">
-    <link rel="stylesheet" href="styles/wiki-titles.css?v=2.1.1">
-    <script src="scripts/utils.js?v=2.1.1" defer></script>
-    <script src="scripts/runtime.js?v=2.1.1" defer></script>
-    <script src="scripts/simulation-core.js?v=2.1.1" defer></script>
-    <script src="scripts/state.js?v=2.1.1" defer></script>
-    <script src="scripts/media-loader.js?v=2.1.1" defer></script>
-    <script src="scripts/overlays.js?v=2.1.1" defer></script>
-    <script src="scripts/wiki-title-data.js?v=2.1.1" defer></script>
-    <script src="scripts/wiki-titles.js?v=2.1.1" defer></script>
-    <script src="scripts/main.js?v=2.1.1" defer></script>
+    <link rel="stylesheet" href="styles/base.css?v=2.1.2">
+    <link rel="stylesheet" href="styles/layout.css?v=2.1.2">
+    <link rel="stylesheet" href="styles/components.css?v=2.1.2">
+    <link rel="stylesheet" href="styles/utilities.css?v=2.1.2">
+    <link rel="stylesheet" href="styles/wiki-title-fonts.css?v=2.1.2">
+    <link rel="stylesheet" href="styles/wiki-title-effects.css?v=2.1.2">
+    <link rel="stylesheet" href="styles/wiki-titles.css?v=2.1.2">
+    <script src="scripts/utils.js?v=2.1.2" defer></script>
+    <script src="scripts/runtime.js?v=2.1.2" defer></script>
+    <script src="scripts/simulation-core.js?v=2.1.2" defer></script>
+    <script src="scripts/state.js?v=2.1.2" defer></script>
+    <script src="scripts/media-loader.js?v=2.1.2" defer></script>
+    <script src="scripts/overlays.js?v=2.1.2" defer></script>
+    <script src="scripts/wiki-title-data.js?v=2.1.2" defer></script>
+    <script src="scripts/wiki-titles.js?v=2.1.2" defer></script>
+    <script src="scripts/main.js?v=2.1.2" defer></script>
 </head>
 <body>
     <div class="interface-backdrop" aria-hidden="true">
@@ -415,9 +415,9 @@
                         <h1 class="banner__title">Sol's RNG Rolling Simulator</h1>
                     </div>
                     <div class="banner__subtitle masthead-console__metadata">
-                        <button type="button" class="banner__version-button masthead-console__meta-card masthead-console__meta-card--version masthead-console__version" id="versionInfoButton" aria-haspopup="dialog" aria-expanded="false" data-version-id="v2.1.1">
+                        <button type="button" class="banner__version-button masthead-console__meta-card masthead-console__meta-card--version masthead-console__version" id="versionInfoButton" aria-haspopup="dialog" aria-expanded="false" data-version-id="v2.1.2">
                             <i class="fa-solid fa-code-branch" aria-hidden="true"></i>
-                            <span><small>Current build</small><strong>Version 2.1.1</strong></span>
+                            <span><small>Current build</small><strong>Version 2.1.2</strong></span>
                         </button>
                         <span class="masthead-console__meta-card banner__subtitle-author">
                             <span class="masthead-console__creator-avatar-flip" aria-hidden="true">
@@ -523,6 +523,17 @@
                             <span class="resource-link__category">Community</span>
                             <span class="resource-link__label">Unnamed's RNG Server</span>
                             <span class="resource-link__meta">Join the community and play Unnamed's RNG game.</span>
+                        </span>
+                        <span class="resource-link__launch" aria-hidden="true"><i class="fa-solid fa-arrow-up-right-from-square"></i></span>
+                    </a>
+                    <a class="resource-link resource-link--wiki" href="https://sol-rng.fandom.com/wiki/Sol%27s_RNG_Wiki" target="_blank" rel="noopener">
+                        <span class="resource-link__icon" aria-hidden="true">
+                            <img class="resource-link__image resource-link__image--solswiki" src="files/images/icons/solsWikiLogo.png" alt="" loading="lazy" decoding="async">
+                        </span>
+                        <span class="resource-link__content">
+                            <span class="resource-link__category">Wiki</span>
+                            <span class="resource-link__label">Sol's RNG Wiki</span>
+                            <span class="resource-link__meta">Explore the Sol\'s RNG Wiki for aura, biome, item, event, and game information.</span>
                         </span>
                         <span class="resource-link__launch" aria-hidden="true"><i class="fa-solid fa-arrow-up-right-from-square"></i></span>
                     </a>
@@ -2092,6 +2103,7 @@
                 <button type="button" class="interface-toggle filter-tier-toggle" data-tier-key="glorious" data-tier-label="Skip Glorious Auras" aria-pressed="false">Skip <span class="rarity-tier-glorious">Glorious</span> Auras: Off</button>
                 <button type="button" class="interface-toggle filter-tier-toggle" data-tier-key="transcendent" data-tier-label="Skip Transcendent Auras" aria-pressed="false">Skip <span class="rarity-tier-transcendent">Transcendent</span> Auras: Off</button>
                 <button type="button" class="interface-toggle filter-tier-toggle" data-tier-key="challenged" data-tier-label="Skip Challenged Auras" aria-pressed="false">Skip <span class="rarity-tier-challenged">Challenged</span> Auras: Off</button>
+                <button type="button" class="interface-toggle filter-tier-toggle" data-tier-key="challenged-plus" data-tier-label="Skip Challenged+ Auras" aria-pressed="false">Skip <span class="rarity-tier-challenged-plus">Challenged+</span> Auras: Off</button>
             </div>
             <div class="filter-modal__actions">
                 <button type="button" class="interface-button interface-button--ghost filter-modal__close" id="auraFilterClose">Close</button>
@@ -2209,7 +2221,7 @@
 
                                 <li>Added a Full Aura Style Rework switch at the bottom of Quality Preferences. Turn it off to restore tier-colored aura names; the choice is saved and applies immediately.</li>
 
-                                <li>Wiki styling applies only to aura names. Rarity numbers, Times Rolled, True Chance, and [Native] labels use the aura's tier colors, including <span class="changelog-aura-sigil" data-changelog-aura-sigil="Illusionary">Illusionary</span>, <span class="changelog-aura-sigil" data-changelog-aura-sigil="Cryogenic">Cryogenic</span>, and <span class="changelog-aura-sigil" data-changelog-aura-sigil="Meta">Meta</span>.</li>
+                                <li>Wiki styling applies only to aura names. Rarity numbers keep their tier colors, event aura Times Rolled and [Native] labels use their matching event sigils, and True Chance keeps its own neutral color, including <span class="changelog-aura-sigil" data-changelog-aura-sigil="Illusionary">Illusionary</span>, <span class="changelog-aura-sigil" data-changelog-aura-sigil="Cryogenic">Cryogenic</span>, and <span class="changelog-aura-sigil" data-changelog-aura-sigil="Meta">Meta</span>.</li>
 
                                 <li>Aura Tier Separators now organize aura filters and rarity-sorted results by visible tier boundaries and stay enabled even when Full Aura Style Rework is turned off.</li>
 
@@ -2266,6 +2278,28 @@
                             </ul>
                         </li>
                     </ul>
+
+                    <section class="changelog-subupdates" aria-labelledby="changelog-subupdates-v211">
+                        <div class="changelog-subupdates__header">
+                            <h3 class="changelog-subupdates__title" id="changelog-subupdates-v211" data-changelog-subupdates-title></h3>
+                        </div>
+                        <div class="changelog-subupdates__grid">
+                            <article class="changelog-subupdate-card">
+                                <header class="changelog-subupdate-card__header">
+                                    <span class="changelog-subupdate-card__version">v2.1.2</span>
+                                    <span class="changelog-subupdate-card__title changelog-tab__subtitle">Tier Corrections &amp; Wiki Resource</span>
+                                    <p class="changelog-subupdate-card__meta">Updated 2026/09/16</p>
+                                </header>
+                                <ul class="changelog-modal__list changelog-modal__list--sub">
+                                    <li>Fixed event auras incorrectly inheriting the Challenged tier from native-biome handling. Event auras now always use their normal chance-based rarity tier instead.</li>
+                                    <li>Event aura names, Times Rolled counters, and [Native] labels now use their matching event sigil instead of a generic tier color whenever Full Aura Style Rework is disabled, including aura filters, results, live rolls, and shared images. True Chance now uses its own neutral color again instead of inheriting the aura's rarity tier color..</li>
+                                    <li>Added a new <span class="rarity-tier-challenged-plus">Challenged+</span> tier above Challenged for <span class="changelog-aura-sigil" data-changelog-aura-sigil="Oppression">Oppression</span>, <span class="changelog-aura-sigil" data-changelog-aura-sigil="Monarch">Monarch</span>, <span class="changelog-aura-sigil" data-changelog-aura-sigil="Illusionary">Illusionary</span>, <span class="changelog-aura-sigil" data-changelog-aura-sigil="Dreammetric">Dreammetric</span>, <span class="changelog-aura-sigil" data-changelog-aura-sigil="Astraios">Astraios</span>, and <span class="changelog-aura-sigil" data-changelog-aura-sigil="Oblivion">Oblivion</span>.</li>
+                                    <li>Added Challenged+ to tier filtering, tier separators, roll-feed tier search, included-tier summaries, and rarity-sorted result grouping.</li>
+                                    <li>Added a dedicated <a href="https://sol-rng.fandom.com/wiki/Sol%27s_RNG_Wiki" target="_blank" rel="noopener">Sol's RNG Wiki</a> card to the Resource Hub with a funni speen <img class="inline-emoji" width="16" height="16" src="files/images/emojis/steamhappy.png" alt=":steamhappy:"></li>
+                                </ul>
+                            </article>
+                        </div>
+                    </section>
                 </section>
 
                 <section id="changelog-panel-v210" class="changelog-modal__panel" data-changelog-panel="v2.1.0" data-changelog-label="v2.1.0" role="tabpanel" tabindex="0" hidden>
