@@ -1240,12 +1240,7 @@ function getCutsceneAuras() {
     }
     return AURA_REGISTRY
         .filter(aura => typeof aura?.cutscene === 'string' && aura.cutscene.length > 0)
-        .sort((a, b) => {
-            if (a.chance !== b.chance) {
-                return a.chance - b.chance;
-            }
-            return a.name.localeCompare(b.name);
-        });
+        .sort(compareAurasByDisplayTierThenChance);
 }
 
 function ensureCutsceneFilterPreferences() {
@@ -1576,28 +1571,7 @@ function populateAuraFilterList() {
     }
 
     list.textContent = '';
-    const sortedAuras = [...AURA_REGISTRY].sort((a, b) => {
-        if (a.chance !== b.chance) {
-            return a.chance - b.chance;
-        }
-        return a.name.localeCompare(b.name);
-    });
-
-    const reorderSequence = [MONARCH_AURA_NAME, DUNE_AURA_LABEL, BLOOD_AURA_LABEL, MEMORY_AURA_LABEL, OBLIVION_AURA_LABEL];
-    const auraByName = new Map(sortedAuras.map(aura => [aura.name, aura]));
-    const filteredAuras = sortedAuras.filter(aura => !reorderSequence.includes(aura.name));
-    const monarchIndex = sortedAuras.findIndex(aura => aura.name === MONARCH_AURA_NAME);
-    const insertionIndex = monarchIndex >= 0
-        ? sortedAuras.slice(0, monarchIndex + 1).filter(aura => !reorderSequence.includes(aura.name)).length
-        : 0;
-    const orderedAuras = reorderSequence.map(name => auraByName.get(name)).filter(Boolean);
-    const displayAuras = monarchIndex >= 0
-        ? [
-            ...filteredAuras.slice(0, insertionIndex),
-            ...orderedAuras,
-            ...filteredAuras.slice(insertionIndex)
-        ]
-        : [...filteredAuras, ...orderedAuras];
+    const displayAuras = [...AURA_REGISTRY].sort(compareAurasByDisplayTierThenChance);
 
     const fragment = document.createDocumentFragment();
     displayAuras.forEach(aura => {
@@ -5371,6 +5345,177 @@ function setSimulationMethod(method, { playAudio = true } = {}) {
     }
 }
 
+function setupWikiResourceHubSpin() {
+    const card = document.querySelector('.resource-link--wiki');
+    const icon = card?.querySelector('.resource-link__image--solswiki');
+
+    if (!card || !icon) return;
+    if (card.dataset.wikiSpinBound === 'true') return;
+
+    card.dataset.wikiSpinBound = 'true';
+
+    const fullRotationDuration = 2800;
+    const easeInDuration = 1000;
+    const easeOutDuration = 1000;
+    const normalSpeed = 360 / fullRotationDuration;
+
+    let angle = 0;
+    let frameId = null;
+    let exitAnimation = null;
+    let hovering = false;
+    let lastFrameTime = 0;
+    let accelerationStartedAt = 0;
+
+    function normalizeAngle(value) {
+        return ((value % 360) + 360) % 360;
+    }
+
+    function getCurrentRotation() {
+        const transform = getComputedStyle(icon).transform;
+
+        if (!transform || transform === 'none') {
+            return normalizeAngle(angle);
+        }
+
+        const matrix = new DOMMatrixReadOnly(transform);
+
+        return normalizeAngle(
+            Math.atan2(matrix.b, matrix.a) * (180 / Math.PI)
+        );
+    }
+
+    function velocityEase(t) {
+        return t * t * t * (t * (t * 6 - 15) + 10);
+    }
+
+    function cancelExitAnimation() {
+        if (!exitAnimation) return;
+
+        const currentAngle = getCurrentRotation();
+        const animation = exitAnimation;
+
+        exitAnimation = null;
+
+        animation.onfinish = null;
+        animation.oncancel = null;
+        animation.cancel();
+
+        angle = currentAngle;
+        icon.style.transform = `rotate(${angle}deg)`;
+    }
+
+    function spinFrame(now) {
+        if (!hovering) {
+            frameId = null;
+            return;
+        }
+
+        if (!lastFrameTime) {
+            lastFrameTime = now;
+        }
+
+        const delta = Math.min(now - lastFrameTime, 50);
+        lastFrameTime = now;
+
+        const elapsed = now - accelerationStartedAt;
+        const progress = Math.min(1, elapsed / easeInDuration);
+
+        const speed = normalSpeed * velocityEase(progress);
+
+        angle += speed * delta;
+
+        icon.style.transform = `rotate(${angle}deg)`;
+
+        frameId = requestAnimationFrame(spinFrame);
+    }
+
+    function startSpin() {
+        if (hovering) return;
+
+        hovering = true;
+
+        cancelExitAnimation();
+
+        if (frameId !== null) {
+            cancelAnimationFrame(frameId);
+            frameId = null;
+        }
+
+        angle = getCurrentRotation();
+
+        lastFrameTime = 0;
+        accelerationStartedAt = performance.now();
+
+        frameId = requestAnimationFrame(spinFrame);
+    }
+
+    function stopSpin() {
+        if (!hovering) return;
+
+        hovering = false;
+
+        if (frameId !== null) {
+            cancelAnimationFrame(frameId);
+            frameId = null;
+        }
+
+        cancelExitAnimation();
+
+        const currentAngle = getCurrentRotation();
+
+        angle = currentAngle;
+
+        const normalizedAngle = normalizeAngle(currentAngle);
+
+        const remainingRotation = normalizedAngle < 0.01
+            ? 0
+            : 360 - normalizedAngle;
+
+        const targetAngle = currentAngle + remainingRotation;
+
+        const animation = icon.animate(
+            [
+                {
+                    transform: `rotate(${currentAngle}deg)`
+                },
+                {
+                    transform: `rotate(${targetAngle}deg)`
+                }
+            ],
+            {
+                duration: easeOutDuration,
+                easing: 'cubic-bezier(0, 0.65, 0.25, 1)',
+                fill: 'forwards'
+            }
+        );
+
+        exitAnimation = animation;
+
+        animation.onfinish = () => {
+            if (exitAnimation !== animation) return;
+
+            exitAnimation = null;
+
+            animation.onfinish = null;
+            animation.oncancel = null;
+
+            animation.cancel();
+
+            angle = 0;
+            icon.style.transform = 'rotate(0deg)';
+        };
+
+        animation.oncancel = () => {
+            if (exitAnimation === animation) {
+                exitAnimation = null;
+            }
+        };
+    }
+
+    card.addEventListener('mouseenter', startSpin);
+    card.addEventListener('mouseleave', stopSpin);
+}
+
 function setupSimulationMethodControls() {
     document.querySelectorAll('[data-simulation-method]').forEach(button => {
         button.addEventListener('click', () => {
@@ -6665,15 +6810,35 @@ async function playAuraSequence(queue, options = {}) {
     return { skippedAll: skipRemainingCutscenes };
 }
 
+function computeChanceRarityClass(chance) {
+    if (chance >= 999999999) return 'rarity-tier-transcendent';
+    if (chance >= 99999999) return 'rarity-tier-glorious';
+    if (chance >= 9999999) return 'rarity-tier-exalted';
+    if (chance >= 999999) return 'rarity-tier-mythic';
+    if (chance >= 99999) return 'rarity-tier-legendary';
+    if (chance >= 9999) return 'rarity-tier-unique';
+    if (chance >= 999) return 'rarity-tier-epic';
+    return 'rarity-tier-basic';
+}
+
+function isEventAuraForTier(aura) {
+    if (!aura || typeof getAuraEventIds !== 'function') {
+        return false;
+    }
+    return getAuraEventIds(aura).length > 0;
+}
+
 function computeRarityClass(aura, biome) {
     if (!aura) return '';
     const auraName = aura.name || '';
+    if (isEventAuraForTier(aura)) return computeChanceRarityClass(aura.chance);
+    if (isForcedChallengedPlusAura(auraName)) return 'rarity-tier-challenged-plus';
     const skipNativeChallengedClass = isForcedChallengedAura(auraName);
     if (auraName.startsWith('Pixelation')) return 'rarity-tier-transcendent';
-    if (auraName.startsWith('Illusionary') || isExactMetaAuraName(auraName)) return 'rarity-tier-challenged';
+    if (isExactMetaAuraName(auraName)) return 'rarity-tier-challenged';
     if (auraName === 'Fault') return 'rarity-tier-challenged';
     if (auraName.startsWith('DreamCatcher')) return 'rarity-tier-challenged';
-    if (['Oblivion', 'Memory', 'Neferkhaf', '赤月の破片', 'Projection', 'Gravitational : Point Zero'].some(name => auraName.startsWith(name))) {
+    if (['Memory', 'Neferkhaf', '赤月の破片', 'Projection', 'Gravitational : Point Zero'].some(name => auraName.startsWith(name))) {
         return 'rarity-tier-challenged';
     }
     if (aura.disableRarityClass) return '';
@@ -6690,15 +6855,7 @@ function computeRarityClass(aura, biome) {
     ) {
         return 'rarity-tier-challenged';
     }
-    const chance = aura.chance;
-    if (chance >= 999999999) return 'rarity-tier-transcendent';
-    if (chance >= 99999999) return 'rarity-tier-glorious';
-    if (chance >= 9999999) return 'rarity-tier-exalted';
-    if (chance >= 999999) return 'rarity-tier-mythic';
-    if (chance >= 99999) return 'rarity-tier-legendary';
-    if (chance >= 9999) return 'rarity-tier-unique';
-    if (chance >= 999) return 'rarity-tier-epic';
-    return 'rarity-tier-basic';
+    return computeChanceRarityClass(aura.chance);
 }
 
 const rarityClassCache = new WeakMap();
@@ -6722,28 +6879,24 @@ function resolveRarityClass(aura, biome) {
 function computeBaseRarityClass(aura) {
     if (!aura) return '';
     const auraName = aura.name || '';
+    if (isEventAuraForTier(aura)) return computeChanceRarityClass(aura.chance);
+    if (isForcedChallengedPlusAura(auraName)) return 'rarity-tier-challenged-plus';
     if (auraName.startsWith('Pixelation')) return 'rarity-tier-transcendent';
-    if (auraName.startsWith('Illusionary') || isExactMetaAuraName(auraName)) return 'rarity-tier-challenged';
+    if (isExactMetaAuraName(auraName)) return 'rarity-tier-challenged';
     if (auraName === 'Fault') return 'rarity-tier-challenged';
     if (auraName.startsWith('DreamCatcher')) return 'rarity-tier-challenged';
-    if (['Oblivion', 'Memory', 'Neferkhaf', '赤月の破片', 'Projection', 'Gravitational : Point Zero'].some(name => auraName.startsWith(name))) {
+    if (['Memory', 'Neferkhaf', '赤月の破片', 'Projection', 'Gravitational : Point Zero'].some(name => auraName.startsWith(name))) {
         return 'rarity-tier-challenged';
     }
     if (aura.disableRarityClass) return '';
-    const chance = aura.chance;
-    if (chance >= 999999999) return 'rarity-tier-transcendent';
-    if (chance >= 99999999) return 'rarity-tier-glorious';
-    if (chance >= 9999999) return 'rarity-tier-exalted';
-    if (chance >= 999999) return 'rarity-tier-mythic';
-    if (chance >= 99999) return 'rarity-tier-legendary';
-    if (chance >= 9999) return 'rarity-tier-unique';
-    if (chance >= 999) return 'rarity-tier-epic';
-    return 'rarity-tier-basic';
+    return computeChanceRarityClass(aura.chance);
 }
 
 function shouldUseNativeOverrideTier(aura, biome) {
     if (!aura || aura.disableRarityClass || aura.disableNativeOverrideTier) return false;
+    if (isEventAuraForTier(aura)) return false;
     const auraName = (aura.name || '').trim();
+    if (isForcedChallengedPlusAura(auraName)) return false;
     if (isForcedChallengedAura(auraName)) return false;
     if (isEmptyAuraName(auraName)) return false;
     const hasLimboNative = auraMatchesAnyBiome(aura, ['limbo', 'limbo-null']);
@@ -6766,10 +6919,12 @@ const AURA_TIER_FILTERS = Object.freeze([
     { key: 'exalted', label: 'Skip Exalted Auras', className: 'rarity-tier-exalted' },
     { key: 'glorious', label: 'Skip Glorious Auras', className: 'rarity-tier-glorious' },
     { key: 'transcendent', label: 'Skip Transcendent Auras', className: 'rarity-tier-transcendent' },
-    { key: 'challenged', label: 'Skip Challenged Auras', className: 'rarity-tier-challenged' }
+    { key: 'challenged', label: 'Skip Challenged Auras', className: 'rarity-tier-challenged' },
+    { key: 'challenged-plus', label: 'Skip Challenged+ Auras', className: 'rarity-tier-challenged-plus' }
 ]);
 
 const AURA_TIER_CLASS_TO_KEY = new Map(AURA_TIER_FILTERS.map(tier => [tier.className, tier.key]));
+const AURA_TIER_ORDER = new Map(AURA_TIER_FILTERS.map((tier, index) => [tier.key, index]));
 const AURA_TIER_SKIP_NAME_OVERRIDES = new Map([
     ['transcendent', ['Nyctophobia']],
     ['glorious', ['Unknown', 'Elude', 'Prologue', 'Dreamscape']],
@@ -6794,6 +6949,10 @@ function formatAuraTierLabel(tier) {
 
 function resolveAuraDisplayTierKey(aura, biome = null) {
     if (!aura) return 'basic';
+    if (isEventAuraForTier(aura)) {
+        return AURA_TIER_CLASS_TO_KEY.get(computeChanceRarityClass(aura.chance)) || 'basic';
+    }
+    if (isForcedChallengedPlusAura(aura.name)) return 'challenged-plus';
     if (isForcedChallengedAura(aura.name)) return 'challenged';
     const rarityClass = biome === null ? resolveBaseRarityClass(aura) : resolveRarityClass(aura, biome);
     const key = AURA_TIER_CLASS_TO_KEY.get(rarityClass);
@@ -6802,6 +6961,19 @@ function resolveAuraDisplayTierKey(aura, biome = null) {
         if (prefixes.some(prefix => aura.name.startsWith(prefix))) return tierKey;
     }
     return AURA_TIER_CLASS_TO_KEY.get(computeBaseRarityClass({ ...aura, disableRarityClass: false })) || 'basic';
+}
+
+function compareAurasByDisplayTierThenChance(a, b) {
+    const aTier = resolveAuraDisplayTierKey(a);
+    const bTier = resolveAuraDisplayTierKey(b);
+    const tierDifference = (AURA_TIER_ORDER.get(aTier) ?? -1) - (AURA_TIER_ORDER.get(bTier) ?? -1);
+    if (tierDifference !== 0) {
+        return tierDifference;
+    }
+    if (a.chance !== b.chance) {
+        return a.chance - b.chance;
+    }
+    return a.name.localeCompare(b.name);
 }
 
 function createAuraTierHeading(tierKey) {
@@ -6841,7 +7013,7 @@ function getAuraTierSearchTerms(tierKey) {
 
 const AURA_TIER_SEARCH_TERMS = new Map(AURA_TIER_FILTERS.map(tier => [
     tier.key,
-    `${tier.key} ${formatAuraTierLabel(tier)}`.trim().toLocaleLowerCase()
+    `${tier.key} ${tier.key.replaceAll('-', ' ')} ${formatAuraTierLabel(tier)}`.trim().toLocaleLowerCase()
 ]));
 
 function getIncludedAuraTierLabels() {
@@ -6894,7 +7066,13 @@ function resolveAuraTierKey(aura, biome) {
     if (!aura) {
         return null;
     }
+    if (isEventAuraForTier(aura)) {
+        return AURA_TIER_CLASS_TO_KEY.get(computeChanceRarityClass(aura.chance)) || 'basic';
+    }
     const auraName = (aura.name || '').trim();
+    if (isForcedChallengedPlusAura(auraName)) {
+        return 'challenged-plus';
+    }
     if (isForcedChallengedAura(auraName)) {
         return 'challenged';
     }
@@ -6914,14 +7092,23 @@ function resolveAuraTierKey(aura, biome) {
     return null;
 }
 
-function isForcedChallengedAura(auraName) {
+function normalizeAuraTierName(auraName) {
     if (typeof auraName !== 'string') {
-        return false;
+        return '';
     }
-    const normalizedAuraName = auraName
+    return auraName
         .split(' - ')[0]
         .trim();
-    return ['[CONTENT DELETED]', 'Glitch', 'Borealis', 'Dreammetric', 'Oppression'].includes(normalizedAuraName);
+}
+
+function isForcedChallengedPlusAura(auraName) {
+    const normalizedAuraName = normalizeAuraTierName(auraName);
+    return ['Oppression', 'Monarch', 'Illusionary', 'Dreammetric', 'Astraios', 'Oblivion'].includes(normalizedAuraName);
+}
+
+function isForcedChallengedAura(auraName) {
+    const normalizedAuraName = normalizeAuraTierName(auraName);
+    return ['[CONTENT DELETED]', 'Glitch', 'Borealis'].includes(normalizedAuraName);
 }
 
 function isEmptyAuraName(auraName) {
@@ -7484,12 +7671,37 @@ function splitAuraDisplaySuffix(baseName) {
         : { suffix: '' };
 }
 
+const EVENT_AURA_SIGIL_CLASSES = Object.freeze({
+    valentine24: 'sigil-outline-valentine-2024',
+    aprilFools24: 'sigil-outline-april',
+    summer24: 'sigil-outline-summer',
+    ria24: 'sigil-outline-innovator',
+    halloween24: 'sigil-outline-halloween',
+    winter25: 'sigil-outline-winter',
+    aprilFools25: 'sigil-outline-april',
+    summer25: 'sigil-outline-summer',
+    halloween25: 'sigil-outline-blood',
+    winter26: 'sigil-outline-winter-2026',
+    valentine26: 'sigil-outline-valentine-2026',
+    easter26: 'sigil-outline-easter-2026',
+    aprilFools26: 'sigil-outline-april',
+    summer26: 'sigil-outline-summer'
+});
+
+function resolveEventAuraSigilClass(aura) {
+    if (!aura || typeof aura !== 'object') return '';
+    const eventId = getAuraEventId(aura, { preferEnabled: true });
+    return eventId ? (EVENT_AURA_SIGIL_CLASSES[eventId] || '') : '';
+}
+
 function formatWikiAuraSigilMarkup(aura, baseName, biome = null) {
     if (!aura || typeof baseName !== 'string') return '';
     const canonicalName = aura.name.split(' - ')[0].trim();
     const { suffix } = splitAuraDisplaySuffix(baseName);
     const tierAura = AURA_BY_CANONICAL_NAME.get(canonicalName) || aura;
-    return WikiTitles.aura(canonicalName, suffix ? suffix.slice(3) : '', `rarity-tier-${resolveAuraDisplayTierKey(tierAura, biome)}`);
+    const eventSigilClass = resolveEventAuraSigilClass(tierAura);
+    const fallbackStyleClass = eventSigilClass || `rarity-tier-${resolveAuraDisplayTierKey(tierAura, biome)}`;
+    return WikiTitles.aura(canonicalName, suffix ? suffix.slice(3) : '', fallbackStyleClass);
 }
 
 function initializeChangelogAuraSigils() {
@@ -7515,6 +7727,14 @@ function formatAuraNameMarkup(aura, overrideName, biome = null) {
             return `${wikiSigilMarkup} <span class="sigil-subtitle"><span class="aura-tier-detail rarity-tier-${resolveAuraDisplayTierKey(aura, biome)}">${aura.subtitle}</span></span>`;
         }
         return wikiSigilMarkup;
+    }
+    const eventSigilClass = resolveEventAuraSigilClass(aura);
+    if (eventSigilClass) {
+        const eventMarkup = `<span class="${eventSigilClass}">${baseName}</span>`;
+        if (aura.subtitle) {
+            return `${eventMarkup} <span class="sigil-subtitle">${aura.subtitle}</span>`;
+        }
+        return eventMarkup;
     }
     if (baseName === 'Glitch' || baseName.startsWith('Glitch - ')) {
         const [namePart, ...restParts] = baseName.split(' - ');
@@ -10498,6 +10718,7 @@ document.addEventListener('DOMContentLoaded', initializeIntroOverlay);
 document.addEventListener('DOMContentLoaded', initializeRollTriggerFloating);
 document.addEventListener('DOMContentLoaded', setupRollCancellationControl);
 document.addEventListener('DOMContentLoaded', setupNodeShiftAnimation);
+document.addEventListener('DOMContentLoaded', setupWikiResourceHubSpin);
 document.addEventListener('DOMContentLoaded', relocateResourcesPanelForMobile);
 document.addEventListener('DOMContentLoaded', observeLayeredSigilText);
 document.addEventListener('DOMContentLoaded', startGlitchSigilFlicker);
@@ -12757,15 +12978,13 @@ function isPinnedSpecialAuraName(auraName) {
     if (typeof auraName !== 'string') {
         return false;
     }
-    return isExactMetaAuraName(auraName)
+    return isForcedChallengedPlusAura(auraName)
+        || isExactMetaAuraName(auraName)
         || isPinnedDreamspaceStarName(auraName)
-        || auraName.startsWith('Illusionary')
         || auraName.startsWith('Fault')
         || auraName.startsWith('[CONTENT DELETED]')
         || auraName.startsWith('Glitch')
-        || auraName.startsWith('Oppression')
-        || auraName.startsWith('Borealis')
-        || auraName.startsWith('Dreammetric');
+        || auraName.startsWith('Borealis');
 }
 
 function sortEntriesInUnnamedResultOrder(sourceEntries) {
@@ -12805,6 +13024,7 @@ function sortEntriesInUnnamedResultOrder(sourceEntries) {
     // Keep the special group above ordinary results while preserving the rarity
     // order established by the initial descending-priority sort.
     prependMatches(entry => isPinnedSpecialAuraName(entry.auraName));
+    prependMatches(entry => isForcedChallengedPlusAura(entry.auraName));
 
     return entries;
 }
@@ -13004,6 +13224,9 @@ function buildResultEntries(
 
         const specialClass = typeof resolveAuraStyleClass === 'function' ? resolveAuraStyleClass(aura, biome) : '';
         const rarityClass = `rarity-tier-${resolveAuraDisplayTierKey(aura, biome)}`;
+        const eventSigilClass = resolveEventAuraSigilClass(aura);
+        const countClass = [rarityClass, eventSigilClass].filter(Boolean).join(' ');
+        const nativeClass = [rarityClass, eventSigilClass].filter(Boolean).join(' ');
         const classAttr = `aura-tier-detail ${rarityClass}`;
         const formattedName = formatAuraNameMarkup(aura, undefined, biome);
         const formattedTextName = formatAuraNameText(aura);
@@ -13011,7 +13234,7 @@ function buildResultEntries(
         const isBreakthrough = aura.name.startsWith('Breakthrough');
 
         const formatBreakthroughMarkupWithCount = (nameValue, countValue) =>
-            `${formatAuraNameMarkup(aura, nameValue, biome)}<span class="aura-tier-detail aura-count ${rarityClass}"> | Times Rolled: ${formatWithCommas(countValue)}</span>`;
+            `${formatAuraNameMarkup(aura, nameValue, biome)}<span class="aura-tier-detail aura-count ${countClass}"> | Times Rolled: ${formatWithCommas(countValue)}</span>`;
 
         const eventId = getAuraEventId(aura, { preferEnabled: true });
         const specialClassTokens = specialClass
@@ -13051,7 +13274,7 @@ function buildResultEntries(
                 : null;
             const resultSuffixMarkup = potionSourceMarkup
                 ? ` ${potionSourceMarkup}`
-                : (realChanceValue ? ` <span class="tinyClass"><span class="aura-tier-detail ${rarityClass}">True Chance: 1 in ${realChanceValue}</span></span>` : '');
+                : (realChanceValue ? ` <span class="tinyClass">True Chance: 1 in ${realChanceValue}</span>` : '');
             entries.push({
                 markup: `${markup}${resultSuffixMarkup}`,
                 share: potionSourceText ? `${shareText} | ${potionSourceText}` : shareText,
@@ -13072,8 +13295,8 @@ function buildResultEntries(
             const nativeShareName = formatAuraNameText(aura, btName);
             pushVisualEntry(
                 isBreakthrough
-                    ? `<span class="${classAttr}"><span class="aura-native ${rarityClass}">[Native]</span> ${nativeLabel}</span>`
-                    : `<span class="${classAttr}"><span class="aura-native ${rarityClass}">[Native]</span> ${nativeLabel}<span class="aura-count ${rarityClass}"> | Times Rolled: ${formatWithCommas(breakthroughStats.count)}</span></span>`,
+                    ? `<span class="${classAttr}"><span class="aura-native ${nativeClass}">[Native]</span> ${nativeLabel}</span>`
+                    : `<span class="${classAttr}"><span class="aura-native ${nativeClass}">[Native]</span> ${nativeLabel}<span class="aura-count ${countClass}"> | Times Rolled: ${formatWithCommas(breakthroughStats.count)}</span></span>`,
                 `[Native] ${nativeShareName} | Times Rolled: ${formatWithCommas(breakthroughStats.count)}`,
                 determineResultPriority(aura, breakthroughStats.btChance),
                 createShareVisualRecord(btName, breakthroughStats.count, { prefix: '[Native]', variant: 'native' }),
@@ -13089,7 +13312,7 @@ function buildResultEntries(
                 pushVisualEntry(
                     isBreakthrough
                         ? `<span class="${classAttr}">${breakthroughRemainingLabel}</span>`
-                        : `<span class="${classAttr}">${formattedName}<span class="aura-count ${rarityClass}"> | Times Rolled: ${formatWithCommas(remainingCount)}</span></span>`,
+                        : `<span class="${classAttr}">${formattedName}<span class="aura-count ${countClass}"> | Times Rolled: ${formatWithCommas(remainingCount)}</span></span>`,
                     `${formattedTextName} | Times Rolled: ${formatWithCommas(remainingCount)}`,
                     determineResultPriority(aura, aura.chance),
                     createShareVisualRecord(aura.name, remainingCount, { variant: 'standard' }),
@@ -13104,7 +13327,7 @@ function buildResultEntries(
             pushVisualEntry(
                 isBreakthrough
                     ? `<span class="${classAttr}">${breakthroughLabel}</span>`
-                    : `<span class="${classAttr}">${formattedName}<span class="aura-count ${rarityClass}"> | Times Rolled: ${formatWithCommas(winCount)}</span></span>`,
+                    : `<span class="${classAttr}">${formattedName}<span class="aura-count ${countClass}"> | Times Rolled: ${formatWithCommas(winCount)}</span></span>`,
                 `${formattedTextName} | Times Rolled: ${formatWithCommas(winCount)}`,
                 determineResultPriority(aura, aura.chance),
                 createShareVisualRecord(aura.name, winCount, { variant: 'standard' }),
@@ -13154,6 +13377,8 @@ function buildLiveRollMarkup(
     }
 
     const rarityClass = `rarity-tier-${resolveAuraDisplayTierKey(aura, biome)}`;
+    const eventSigilClass = resolveEventAuraSigilClass(aura);
+    const nativeClass = [rarityClass, eventSigilClass].filter(Boolean).join(' ');
     const classAttr = `aura-tier-detail ${rarityClass}`;
     const nativeChance = isNativeRoll && breakthroughStats
         ? breakthroughStats.btChance
@@ -13161,7 +13386,7 @@ function buildLiveRollMarkup(
     const displayName = isNativeRoll && breakthroughStats
         ? aura.name.replace(/-\s*[\d,]+/, `- ${formatWithCommas(breakthroughStats.btChance)}`)
         : aura.name;
-    const prefix = isNativeRoll ? `<span class="aura-native ${rarityClass}">[Native]</span> ` : '';
+    const prefix = isNativeRoll ? `<span class="aura-native ${nativeClass}">[Native]</span> ` : '';
     const formattedName = formatAuraNameMarkup(aura, displayName, biome);
     const trueChanceValue = !potionBatch
         && allowTrueChance
@@ -13171,7 +13396,7 @@ function buildLiveRollMarkup(
         : null;
     const trueChanceMarkup = potionBatch
         ? ` ${formatMultiplePotionBatchResultMarkup(potionBatch)}`
-        : (trueChanceValue ? ` <span class="tinyClass"><span class="aura-tier-detail ${rarityClass}">True Chance: 1 in ${trueChanceValue}</span></span>` : '');
+        : (trueChanceValue ? ` <span class="tinyClass">True Chance: 1 in ${trueChanceValue}</span>` : '');
 
     const tierKey = resolveAuraDisplayTierKey(aura, biome);
     const alphabeticalName = getAuraAlphabeticalSortName(aura.name);

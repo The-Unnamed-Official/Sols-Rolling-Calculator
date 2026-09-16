@@ -1500,6 +1500,11 @@
     transform-origin: 50% 78%;
 }
 
+.resource-link--wiki .resource-link__image--solswiki {
+    transform-origin: center;
+    will-change: transform;
+}
+
 .resource-link--button-clicker .brand-glyph::before,
 .resource-link--button-clicker .brand-glyph::after {
     content: '';

@@ -57,6 +57,7 @@ body.quality-simple-auras .wiki-title--aura .wiki-title__art *::after { animatio
 .aura-tier-separator[data-aura-tier-heading="glorious"] { color: #ff9696; }
 .aura-tier-separator[data-aura-tier-heading="transcendent"] { color: #b7f5f5; }
 .aura-tier-separator[data-aura-tier-heading="challenged"] { color: #fff; }
+.aura-tier-separator[data-aura-tier-heading="challenged-plus"] { color: #cfaeff; }
 .quality-settings__aura-switch {
     display: grid;
     grid-template-columns: minmax(0, 1fr) auto;

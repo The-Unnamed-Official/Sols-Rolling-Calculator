@@ -2734,6 +2734,15 @@ body.quality-no-ui-animations .bloodIIClass {
     color: transparent;
 }
 
+.rarity-tier-challenged-plus {
+    background: linear-gradient(90deg, #16001f, #ffffff, #16001f, #0d0013);
+    background-size: 300% 100%;
+    animation: class-gradient 2.65s linear infinite;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+
 .unobtainableClass {
     font-family: Sarpanch;
     font-weight: 700;

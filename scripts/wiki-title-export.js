@@ -76,6 +76,10 @@
             row.style.cssText = 'padding:12px 10px;line-height:1.65;box-sizing:border-box;';
             const tierKey = record.tierKey || resolveAuraDisplayTierKey(record.aura, record.biome ?? null);
             const tierClass = `rarity-tier-${tierKey}`;
+            const eventSigilClass = typeof resolveEventAuraSigilClass === 'function'
+                ? resolveEventAuraSigilClass(record.aura)
+                : '';
+            const countClass = [tierClass, eventSigilClass].filter(Boolean).join(' ');
             if (tierKey !== previousTier) {
                 const heading = createAuraTierHeading(tierKey);
                 if (heading) { heading.style.fontSize = '20px'; row.append(heading); }
@@ -83,7 +87,7 @@
             previousTier = tierKey;
             if (record.prefix) {
                 const prefix = document.createElement('span');
-                prefix.className = `aura-tier-detail aura-native ${tierClass}`;
+                prefix.className = `aura-tier-detail aura-native ${countClass}`;
                 prefix.textContent = `${record.prefix} `;
                 row.append(prefix);
             }
@@ -92,7 +96,7 @@
             name.innerHTML = formatAuraNameMarkup({ ...record.aura, subtitle: null }, displayName, record.biome ?? null);
             row.append(name);
             const count = document.createElement('span');
-            count.className = `aura-tier-detail aura-count ${tierClass}`;
+            count.className = `aura-tier-detail aura-count ${countClass}`;
             count.style.cssText = 'margin-left:20px;font:500 22px Sarpanch,sans-serif;white-space:nowrap;display:inline-block;';
             count.textContent = record.countLabel || `Times Rolled: ${formatWithCommas(record.count)}`;
             row.append(count);
