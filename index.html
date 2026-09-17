@@ -33,7 +33,7 @@
             const documentModifiedAt = Number.isFinite(parsedDocumentModifiedAt)
                 ? parsedDocumentModifiedAt
                 : Date.now();
-            const buildCacheKey = '2.1.2';
+            const buildCacheKey = '2.1.3';
 
             window.appBuildCacheKey = buildCacheKey;
             window.getVersionedAppAssetUrl = path => {
@@ -166,22 +166,22 @@
             });
         })();
     </script>
-    <link rel="stylesheet" href="styles/base.css?v=2.1.2">
-    <link rel="stylesheet" href="styles/layout.css?v=2.1.2">
-    <link rel="stylesheet" href="styles/components.css?v=2.1.2">
-    <link rel="stylesheet" href="styles/utilities.css?v=2.1.2">
-    <link rel="stylesheet" href="styles/wiki-title-fonts.css?v=2.1.2">
-    <link rel="stylesheet" href="styles/wiki-title-effects.css?v=2.1.2">
-    <link rel="stylesheet" href="styles/wiki-titles.css?v=2.1.2">
-    <script src="scripts/utils.js?v=2.1.2" defer></script>
-    <script src="scripts/runtime.js?v=2.1.2" defer></script>
-    <script src="scripts/simulation-core.js?v=2.1.2" defer></script>
-    <script src="scripts/state.js?v=2.1.2" defer></script>
-    <script src="scripts/media-loader.js?v=2.1.2" defer></script>
-    <script src="scripts/overlays.js?v=2.1.2" defer></script>
-    <script src="scripts/wiki-title-data.js?v=2.1.2" defer></script>
-    <script src="scripts/wiki-titles.js?v=2.1.2" defer></script>
-    <script src="scripts/main.js?v=2.1.2" defer></script>
+    <link rel="stylesheet" href="styles/base.css?v=2.1.3">
+    <link rel="stylesheet" href="styles/layout.css?v=2.1.3">
+    <link rel="stylesheet" href="styles/components.css?v=2.1.3">
+    <link rel="stylesheet" href="styles/utilities.css?v=2.1.3">
+    <link rel="stylesheet" href="styles/wiki-title-fonts.css?v=2.1.3">
+    <link rel="stylesheet" href="styles/wiki-title-effects.css?v=2.1.3">
+    <link rel="stylesheet" href="styles/wiki-titles.css?v=2.1.3">
+    <script src="scripts/utils.js?v=2.1.3" defer></script>
+    <script src="scripts/runtime.js?v=2.1.3" defer></script>
+    <script src="scripts/simulation-core.js?v=2.1.3" defer></script>
+    <script src="scripts/state.js?v=2.1.3" defer></script>
+    <script src="scripts/media-loader.js?v=2.1.3" defer></script>
+    <script src="scripts/overlays.js?v=2.1.3" defer></script>
+    <script src="scripts/wiki-title-data.js?v=2.1.3" defer></script>
+    <script src="scripts/wiki-titles.js?v=2.1.3" defer></script>
+    <script src="scripts/main.js?v=2.1.3" defer></script>
 </head>
 <body>
     <div class="interface-backdrop" aria-hidden="true">
@@ -415,9 +415,9 @@
                         <h1 class="banner__title">Sol's RNG Rolling Simulator</h1>
                     </div>
                     <div class="banner__subtitle masthead-console__metadata">
-                        <button type="button" class="banner__version-button masthead-console__meta-card masthead-console__meta-card--version masthead-console__version" id="versionInfoButton" aria-haspopup="dialog" aria-expanded="false" data-version-id="v2.1.2">
+                        <button type="button" class="banner__version-button masthead-console__meta-card masthead-console__meta-card--version masthead-console__version" id="versionInfoButton" aria-haspopup="dialog" aria-expanded="false" data-version-id="v2.1.3">
                             <i class="fa-solid fa-code-branch" aria-hidden="true"></i>
-                            <span><small>Current build</small><strong>Version 2.1.2</strong></span>
+                            <span><small>Current build</small><strong>Version 2.1.3</strong></span>
                         </button>
                         <span class="masthead-console__meta-card banner__subtitle-author">
                             <span class="masthead-console__creator-avatar-flip" aria-hidden="true">
@@ -2296,6 +2296,19 @@
                                     <li>Added a new <span class="rarity-tier-challenged-plus">Challenged+</span> tier above Challenged for <span class="changelog-aura-sigil" data-changelog-aura-sigil="Oppression">Oppression</span>, <span class="changelog-aura-sigil" data-changelog-aura-sigil="Monarch">Monarch</span>, <span class="changelog-aura-sigil" data-changelog-aura-sigil="Illusionary">Illusionary</span>, <span class="changelog-aura-sigil" data-changelog-aura-sigil="Dreammetric">Dreammetric</span>, <span class="changelog-aura-sigil" data-changelog-aura-sigil="Astraios">Astraios</span>, and <span class="changelog-aura-sigil" data-changelog-aura-sigil="Oblivion">Oblivion</span>.</li>
                                     <li>Added Challenged+ to tier filtering, tier separators, roll-feed tier search, included-tier summaries, and rarity-sorted result grouping.</li>
                                     <li>Added a dedicated <a href="https://sol-rng.fandom.com/wiki/Sol%27s_RNG_Wiki" target="_blank" rel="noopener">Sol's RNG Wiki</a> card to the Resource Hub with a funni speen <img class="inline-emoji" width="16" height="16" src="files/images/emojis/steamhappy.png" alt=":steamhappy:"></li>
+                                </ul>
+                            </article>
+
+                            <article class="changelog-subupdate-card">
+                                <header class="changelog-subupdate-card__header">
+                                    <span class="changelog-subupdate-card__version">v2.1.3</span>
+                                    <span class="changelog-subupdate-card__title changelog-tab__subtitle">Challenged and Challenged+ correction</span>
+                                    <p class="changelog-subupdate-card__meta">Updated 2026/09/17</p>
+                                </header>
+                                <ul class="changelog-modal__list changelog-modal__list--sub">
+                                    <li>Fixed some auras displaying and identifying as challenged that aren't actually challenged. The only challenged auras are: <span class="changelog-aura-sigil" data-changelog-aura-sigil="赤月の破片">赤月の破片</span> | <span class="changelog-aura-sigil" data-changelog-aura-sigil="Neferkhaf">Neferkhaf</span> | <span class="changelog-aura-sigil" data-changelog-aura-sigil="Memory">Memory</span> | <span class="changelog-aura-sigil" data-changelog-aura-sigil="★">★</span> | <span class="changelog-aura-sigil" data-changelog-aura-sigil="★★">★★</span> | <span class="changelog-aura-sigil" data-changelog-aura-sigil="★★★">★★★</span> | <span class="changelog-aura-sigil" data-changelog-aura-sigil="Borealis">Borealis</span> | <span class="changelog-aura-sigil" data-changelog-aura-sigil="Meta">Meta</span> | <span class="changelog-aura-sigil" data-changelog-aura-sigil="DreamCatcher">Dream Catcher</span> | <span class="changelog-aura-sigil" data-changelog-aura-sigil="Gravitational : Point Zero">Point Zero</span> | <span class="changelog-aura-sigil" data-changelog-aura-sigil="Projection">Projection</span> | <span class="changelog-aura-sigil" data-changelog-aura-sigil="Leviathan">Leviathan</span> | <span class="changelog-aura-sigil" data-changelog-aura-sigil="Glitch">Glitch</span></li>
+
+                                <span class="subSpace credits-text">Credit goes to <a href="https://discord.com/users/1327300393226604630" class="subtitleClass" target="_blank" rel="noopener">xvoidesp</a> for reporting this bug on the <a href="https://discord.gg/m6k7Jagm3v" target="_blank" rel="noopener">Unnamed's RNG</a> discord server!</span>
                                 </ul>
                             </article>
                         </div>

@@ -6833,28 +6833,11 @@ function computeRarityClass(aura, biome) {
     const auraName = aura.name || '';
     if (isEventAuraForTier(aura)) return computeChanceRarityClass(aura.chance);
     if (isForcedChallengedPlusAura(auraName)) return 'rarity-tier-challenged-plus';
-    const skipNativeChallengedClass = isForcedChallengedAura(auraName);
+    if (isForcedChallengedAura(auraName)) return 'rarity-tier-challenged';
     if (auraName.startsWith('Pixelation')) return 'rarity-tier-transcendent';
-    if (isExactMetaAuraName(auraName)) return 'rarity-tier-challenged';
-    if (auraName === 'Fault') return 'rarity-tier-challenged';
-    if (auraName.startsWith('DreamCatcher')) return 'rarity-tier-challenged';
-    if (['Memory', 'Neferkhaf', '赤月の破片', 'Projection', 'Gravitational : Point Zero'].some(name => auraName.startsWith(name))) {
-        return 'rarity-tier-challenged';
-    }
     if (aura.disableRarityClass) return '';
     const hasLimboNative = auraMatchesAnyBiome(aura, ['limbo', 'limbo-null']);
     if (hasLimboNative && biome === 'limbo') return 'rarity-tier-limbo';
-    const cyberspaceNative = auraMatchesAnyBiome(aura, ['cyberspace']);
-    const hasNativeBiomes = aura && aura.nativeBiomes;
-    if (
-        hasNativeBiomes
-        && !skipNativeChallengedClass
-        && !isEmptyAuraName(auraName)
-        && !aura.nativeBiomes.has('limbo-null')
-        && (!cyberspaceNative || biome === 'cyberspace')
-    ) {
-        return 'rarity-tier-challenged';
-    }
     return computeChanceRarityClass(aura.chance);
 }
 
@@ -6881,33 +6864,14 @@ function computeBaseRarityClass(aura) {
     const auraName = aura.name || '';
     if (isEventAuraForTier(aura)) return computeChanceRarityClass(aura.chance);
     if (isForcedChallengedPlusAura(auraName)) return 'rarity-tier-challenged-plus';
+    if (isForcedChallengedAura(auraName)) return 'rarity-tier-challenged';
     if (auraName.startsWith('Pixelation')) return 'rarity-tier-transcendent';
-    if (isExactMetaAuraName(auraName)) return 'rarity-tier-challenged';
-    if (auraName === 'Fault') return 'rarity-tier-challenged';
-    if (auraName.startsWith('DreamCatcher')) return 'rarity-tier-challenged';
-    if (['Memory', 'Neferkhaf', '赤月の破片', 'Projection', 'Gravitational : Point Zero'].some(name => auraName.startsWith(name))) {
-        return 'rarity-tier-challenged';
-    }
     if (aura.disableRarityClass) return '';
     return computeChanceRarityClass(aura.chance);
 }
 
-function shouldUseNativeOverrideTier(aura, biome) {
-    if (!aura || aura.disableRarityClass || aura.disableNativeOverrideTier) return false;
-    if (isEventAuraForTier(aura)) return false;
-    const auraName = (aura.name || '').trim();
-    if (isForcedChallengedPlusAura(auraName)) return false;
-    if (isForcedChallengedAura(auraName)) return false;
-    if (isEmptyAuraName(auraName)) return false;
-    const hasLimboNative = auraMatchesAnyBiome(aura, ['limbo', 'limbo-null']);
-    if (hasLimboNative && biome === 'limbo') return false;
-    const cyberspaceNative = auraMatchesAnyBiome(aura, ['cyberspace']);
-    const hasNativeBiomes = aura && aura.nativeBiomes;
-    return Boolean(
-        hasNativeBiomes
-        && !aura.nativeBiomes.has('limbo-null')
-        && (!cyberspaceNative || biome === 'cyberspace')
-    );
+function shouldUseNativeOverrideTier() {
+    return false;
 }
 
 const AURA_TIER_FILTERS = Object.freeze([
@@ -7108,7 +7072,21 @@ function isForcedChallengedPlusAura(auraName) {
 
 function isForcedChallengedAura(auraName) {
     const normalizedAuraName = normalizeAuraTierName(auraName);
-    return ['[CONTENT DELETED]', 'Glitch', 'Borealis'].includes(normalizedAuraName);
+    return [
+        '★',
+        '★★',
+        '★★★',
+        'Borealis',
+        'Leviathan',
+        'Memory',
+        'Glitch',
+        'Meta',
+        'Gravitational : Point Zero',
+        'DreamCatcher',
+        'Projection',
+        'Neferkhaf',
+        '赤月の破片'
+    ].includes(normalizedAuraName);
 }
 
 function isEmptyAuraName(auraName) {
