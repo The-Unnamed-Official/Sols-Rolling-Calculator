@@ -33,7 +33,7 @@
             const documentModifiedAt = Number.isFinite(parsedDocumentModifiedAt)
                 ? parsedDocumentModifiedAt
                 : Date.now();
-            const buildCacheKey = '2.1.3';
+            const buildCacheKey = '2.1.5';
 
             window.appBuildCacheKey = buildCacheKey;
             window.getVersionedAppAssetUrl = path => {
@@ -166,22 +166,22 @@
             });
         })();
     </script>
-    <link rel="stylesheet" href="styles/base.css?v=2.1.3">
-    <link rel="stylesheet" href="styles/layout.css?v=2.1.3">
-    <link rel="stylesheet" href="styles/components.css?v=2.1.3">
-    <link rel="stylesheet" href="styles/utilities.css?v=2.1.3">
-    <link rel="stylesheet" href="styles/wiki-title-fonts.css?v=2.1.3">
-    <link rel="stylesheet" href="styles/wiki-title-effects.css?v=2.1.3">
-    <link rel="stylesheet" href="styles/wiki-titles.css?v=2.1.3">
-    <script src="scripts/utils.js?v=2.1.3" defer></script>
-    <script src="scripts/runtime.js?v=2.1.3" defer></script>
-    <script src="scripts/simulation-core.js?v=2.1.3" defer></script>
-    <script src="scripts/state.js?v=2.1.3" defer></script>
-    <script src="scripts/media-loader.js?v=2.1.3" defer></script>
-    <script src="scripts/overlays.js?v=2.1.3" defer></script>
-    <script src="scripts/wiki-title-data.js?v=2.1.3" defer></script>
-    <script src="scripts/wiki-titles.js?v=2.1.3" defer></script>
-    <script src="scripts/main.js?v=2.1.3" defer></script>
+    <link rel="stylesheet" href="styles/base.css?v=2.1.5">
+    <link rel="stylesheet" href="styles/layout.css?v=2.1.5">
+    <link rel="stylesheet" href="styles/components.css?v=2.1.5">
+    <link rel="stylesheet" href="styles/utilities.css?v=2.1.5">
+    <link rel="stylesheet" href="styles/wiki-title-fonts.css?v=2.1.5">
+    <link rel="stylesheet" href="styles/wiki-title-effects.css?v=2.1.5">
+    <link rel="stylesheet" href="styles/wiki-titles.css?v=2.1.5">
+    <script src="scripts/utils.js?v=2.1.5" defer></script>
+    <script src="scripts/runtime.js?v=2.1.5" defer></script>
+    <script src="scripts/simulation-core.js?v=2.1.5" defer></script>
+    <script src="scripts/state.js?v=2.1.5" defer></script>
+    <script src="scripts/media-loader.js?v=2.1.5" defer></script>
+    <script src="scripts/overlays.js?v=2.1.5" defer></script>
+    <script src="scripts/wiki-title-data.js?v=2.1.5" defer></script>
+    <script src="scripts/wiki-titles.js?v=2.1.5" defer></script>
+    <script src="scripts/main.js?v=2.1.5" defer></script>
 </head>
 <body>
     <div class="interface-backdrop" aria-hidden="true">
@@ -391,6 +391,9 @@
     <video id="crabtropica-cutscene" class="cutscene-video" preload="none" data-audio-channel="cutscene">
         <source data-src="files/videos/cutscenes/crabtropicaCutscene.webm" type="video/webm">
     </video>
+    <video id="hellborn-cutscene" class="cutscene-video" preload="none" data-audio-channel="cutscene">
+        <source data-src="files/videos/cutscenes/hellbornCutscene.webm" type="video/webm">
+    </video>
 
     <div id="cinematic-overlay" class="cinematic-overlay" aria-hidden="true">
         <div class="cinematic-overlay__loading" role="status" aria-live="polite">
@@ -415,9 +418,9 @@
                         <h1 class="banner__title">Sol's RNG Rolling Simulator</h1>
                     </div>
                     <div class="banner__subtitle masthead-console__metadata">
-                        <button type="button" class="banner__version-button masthead-console__meta-card masthead-console__meta-card--version masthead-console__version" id="versionInfoButton" aria-haspopup="dialog" aria-expanded="false" data-version-id="v2.1.3">
+                        <button type="button" class="banner__version-button masthead-console__meta-card masthead-console__meta-card--version masthead-console__version" id="versionInfoButton" aria-haspopup="dialog" aria-expanded="false" data-version-id="v2.1.5">
                             <i class="fa-solid fa-code-branch" aria-hidden="true"></i>
-                            <span><small>Current build</small><strong>Version 2.1.3</strong></span>
+                            <span><small>Current build</small><strong>Version 2.1.5</strong></span>
                         </button>
                         <span class="masthead-console__meta-card banner__subtitle-author">
                             <span class="masthead-console__creator-avatar-flip" aria-hidden="true">
@@ -443,7 +446,7 @@
                                 <small>Game build</small>
                                 <span class="banner__subtitle-game-version">
                                     <a href="https://www.roblox.com/games/15532962292/Sols-RNG" target="_blank" rel="noopener">
-                                        <span class="banner__game-version-name">Sol's RNG Eon 1-27</span>
+                                        <span class="banner__game-version-name">Sol's RNG Eon 1-28</span>
                                         <span class="banner__game-season-pill"><span class="sigil-outline-summer">Summer</span> Part 2</span>
                                     </a>
                                 </span>
@@ -1586,7 +1589,7 @@
                 <li class="footer-credits__item">Astraios cutscene courtesy of <a href="https://discord.com/users/1010402510994935929" target="_blank" rel="noopener">remixcodeszz11</a>.</li>
                 <li class="footer-credits__item">Dream Catcher cutscene courtesy of <a href="https://discord.com/users/1169345672047247401" target="_blank" rel="noopener">flopstero</a>.</li>
                 <li class="footer-credits__item">Crabtropica cutscene courtesy of <a href="https://discord.com/users/754022230480126073" target="_blank" rel="noopener">temychh</a>.</li>
-                <li class="footer-credits__item">Taverna cutscene courtesy of <a href="https://discord.com/users/520694876480733184" target="_blank" rel="noopener">feabrey</a>.</li>
+                <li class="footer-credits__item">Osteria cutscene courtesy of <a href="https://discord.com/users/520694876480733184" target="_blank" rel="noopener">feabrey</a>.</li>
                 </ul>
                 <p class="footer-credits__empty" id="creditsEmpty" hidden>No matching credits found.</p>
             </div>
@@ -2182,6 +2185,68 @@
             </div>
 
             <div class="changelog-modal__panels" data-changelog-panels>
+                <section
+                    id="changelog-panel-v215"
+                    class="changelog-modal__panel changelog-modal__panel--eon128-hell"
+                    role="tabpanel"
+                    aria-labelledby="changelog-tab-v215"
+                    data-changelog-panel="v2.1.5"
+                    data-changelog-label="v2.1.5"
+                    tabindex="0"
+                    hidden
+                >
+                    <header class="changelog-modal__header">
+                        <h2 class="changelog-modal__title">Version 2.1.5 Update Notes</h2>
+                        <span class="changelog-tab__subtitle">Eon 1-28</span>
+                        <p class="changelog-modal__meta">Updated 2026/09/19</p>
+                    </header>
+                    <p class="changelog-modal__intro">Latest changes:</p>
+                    <ul class="changelog-modal__list changelog-modal__list--grouped">
+                        <li class="changelog-release-group changelog-release-group--eon128-hell">
+                            <div class="changelog-featured-ui__header changelog-eon128-hell__header">
+                                <span class="changelog-featured-ui__icon changelog-eon128-hell__icon" aria-hidden="true"><i class="fa-solid fa-fire-flame-curved"></i></span>
+                                <span class="changelog-featured-ui__heading">
+                                    <span class="largeClass">Eon 1-28</span>
+                                    <span>Summer 2026 Part 2 continues, but this wave burns much hotter with new Hell-focused additions.</span>
+                                </span>
+                                <span class="changelog-featured-ui__badge changelog-eon128-hell__badge">Eon 1-28</span>
+                            </div>
+                            <p class="changelog-eon128-hell__intro">Added 4 new auras:</p>
+                            <ul class="changelog-release-rarity-grid changelog-release-rarity-grid--eon128-hell">
+                                <li class="changelog-eon128-aura-card">
+                                    <span class="changelog-eon128-aura-card__name changelog-aura-sigil sigil-wiki-aura" data-changelog-aura-sigil="HellFire">HellFire</span>
+                                    <span class="changelog-eon128-aura-card__odds">1 in 4,776</span>
+                                    <span class="changelog-eon128-aura-card__native">1 in 796 in <span class="sigil-outline-hell">Hell</span></span>
+                                </li>
+                                <li class="changelog-eon128-aura-card">
+                                    <span class="changelog-eon128-aura-card__name changelog-aura-sigil sigil-wiki-aura" data-changelog-aura-sigil="Virtual : Ultimate">Virtual : Ultimate</span>
+                                    <span class="changelog-eon128-aura-card__odds">1 in 80,000,000</span>
+                                    <span class="changelog-eon128-aura-card__native">1 in 40,000,000 in <span class="sigil-outline-cyberspace">Cyberspace</span></span>
+                                </li>
+                                <li class="changelog-eon128-aura-card">
+                                    <span class="changelog-eon128-aura-card__name changelog-aura-sigil sigil-wiki-aura" data-changelog-aura-sigil="Volcanic">Volcanic</span>
+                                    <span class="changelog-eon128-aura-card__odds">1 in 480,000,000</span>
+                                    <span class="changelog-eon128-aura-card__native">1 in 80,000,000 in <span class="sigil-outline-hell">Hell</span></span>
+                                </li>
+                                <li class="changelog-eon128-aura-card">
+                                    <span class="changelog-eon128-aura-card__name changelog-aura-sigil sigil-wiki-aura" data-changelog-aura-sigil="Hellborn">Hellborn</span>
+                                    <span class="changelog-eon128-aura-card__odds">1 in 2,644,600,640</span>
+                                    <span class="changelog-eon128-aura-card__native"><span class="rarity-tier-challenged-plus">Challenged+</span> aura and can only be obtained in <span class="sigil-outline-hell">Hell</span> or <span class="sigil-outline-glitch">Glitch</span>.</span>
+                                </li>
+                            </ul>
+                            <ul class="changelog-release-group__list changelog-eon128-hell__notes">
+                                <li><span class="rarity-tier-challenged-plus">Hellborn</span> follows the same restricted-biome behavior as Monarch: it cannot roll outside its allowed biomes, with <span class="sigil-outline-hell">Hell</span> and <span class="sigil-outline-glitch">Glitch</span> being its only valid locations.</li>
+                                <li>Corrected special aura tiers: <span class="changelog-aura-sigil sigil-wiki-aura" data-changelog-aura-sigil="Fault">Fault</span> is forced to <span class="rarity-tier-legendary">Legendary</span>, <span class="changelog-aura-sigil sigil-wiki-aura" data-changelog-aura-sigil="★">★</span> to <span class="rarity-tier-unique">Unique</span>, <span class="changelog-aura-sigil sigil-wiki-aura" data-changelog-aura-sigil="★★">★★</span> to <span class="rarity-tier-legendary">Legendary</span>, and <span class="changelog-aura-sigil sigil-wiki-aura" data-changelog-aura-sigil="★★★">★★★</span> to <span class="rarity-tier-mythic">Mythic</span>.</li>
+                                <li>The title styles for these fours new auras (<span class="changelog-aura-sigil sigil-wiki-aura" data-changelog-aura-sigil="HellFire">HellFire</span>, <span class="changelog-aura-sigil sigil-wiki-aura" data-changelog-aura-sigil="Virtual : Ultimate">Virtual : Ultimate</span>, <span class="changelog-aura-sigil sigil-wiki-aura" data-changelog-aura-sigil="Volcanic">Volcanic</span> and <span class="changelog-aura-sigil sigil-wiki-aura" data-changelog-aura-sigil="Hellborn">Hellborn</span>) are temporary simulator styling. As well as the 4 reworked auras (<span class="changelog-aura-sigil sigil-wiki-aura" data-changelog-aura-sigil="Undead">Undead</span>, <span class="changelog-aura-sigil sigil-wiki-aura" data-changelog-aura-sigil="Memory">Memory</span>, <span class="changelog-aura-sigil sigil-wiki-aura" data-changelog-aura-sigil="Oblivion">Oblivion</span> and <span class="changelog-aura-sigil sigil-wiki-aura" data-changelog-aura-sigil="Breakthrough">Breakthrough</span>); when the Sol's RNG Wiki adds these auras and publishes their reworked title styles, the simulator will be updated to match the Wiki styling.</li>
+                            </ul>
+                        </li>
+                    </ul>
+                    <div class="changelog-eon128-halloween-whisper">
+                        <i class="fa-solid fa-spider" aria-hidden="true"></i>
+                        <span><strong>Something is crawling closer...</strong> <span class="sigil-outline-halloween">Halloween</span> is slowly approaching the Simulator.</span>
+                    </div>
+                </section>
+
                 <section id="changelog-panel-v211" class="changelog-modal__panel" data-changelog-panel="v2.1.1" data-changelog-label="v2.1.1" role="tabpanel" tabindex="0" hidden>
                     <header class="changelog-modal__header">
                         <h2 class="changelog-modal__title">Version 2.1.1 Update Notes</h2>

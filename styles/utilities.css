@@ -2919,6 +2919,164 @@ body.quality-no-ui-animations .audio-slider__input::-moz-range-thumb {
     margin-top: 0.45em;
 }
 
+
+.changelog-modal__panel--eon128-hell {
+    --accent-rgb: 255 91 48;
+    --accent-strong: #ffd6c4;
+}
+
+.changelog-modal__panel--eon128-hell .changelog-modal__title {
+    color: #ffe1d3;
+    text-shadow: 0 0 18px rgba(255, 78, 38, 0.24);
+}
+
+.changelog-modal__panel--eon128-hell > .changelog-modal__header .changelog-tab__subtitle {
+    background: linear-gradient(90deg, #ff6a3d, #ffb15e, #ffe2bd, #ff7849);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+
+.changelog-release-group--eon128-hell {
+    overflow: hidden;
+    border-color: rgba(255, 83, 42, 0.34);
+    border-left-color: #ff5b30;
+    background:
+        radial-gradient(circle at 0 0, rgba(255, 66, 28, 0.18), transparent 35%),
+        radial-gradient(circle at 100% 100%, rgba(255, 139, 51, 0.09), transparent 42%),
+        repeating-linear-gradient(90deg, transparent 0 44px, rgba(255, 91, 48, 0.022) 44px 45px),
+        rgba(17, 5, 5, 0.86);
+    box-shadow:
+        inset 3px 0 0 rgba(255, 91, 48, 0.28),
+        inset 0 1px 0 rgba(255, 255, 255, 0.045),
+        inset 0 0 30px rgba(119, 13, 2, 0.1);
+}
+
+.changelog-eon128-hell__header {
+    border-bottom-color: rgba(255, 91, 48, 0.2);
+}
+
+.changelog-eon128-hell__icon {
+    border-color: rgba(255, 91, 48, 0.5);
+    color: #ff7044;
+    background: rgba(119, 13, 2, 0.22);
+    box-shadow:
+        inset 0 0 16px rgba(255, 91, 48, 0.12),
+        0 0 12px rgba(255, 77, 35, 0.1);
+}
+
+.changelog-eon128-hell__badge {
+    border-color: rgba(255, 91, 48, 0.46);
+    color: #ffd2bd;
+    background: rgba(119, 13, 2, 0.18);
+}
+
+.changelog-eon128-hell__intro {
+    margin: 0 0 8px;
+    color: #f4d7ca;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.07em;
+}
+
+.changelog-release-rarity-grid--eon128-hell {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    gap: 10px;
+}
+
+.changelog-release-rarity-grid--eon128-hell > .changelog-eon128-aura-card {
+    display: grid;
+    align-content: start;
+    gap: 4px;
+    min-width: 0;
+    padding: 11px 12px;
+    border: 1px solid rgba(255, 91, 48, 0.18);
+    border-left: 2px solid rgba(255, 91, 48, 0.62);
+    background:
+        linear-gradient(110deg, rgba(119, 13, 2, 0.18), transparent 58%),
+        rgba(10, 6, 10, 0.58);
+    box-shadow: inset 0 0 18px rgba(255, 77, 35, 0.035);
+}
+
+.changelog-release-rarity-grid--eon128-hell > .changelog-eon128-aura-card:hover {
+    border-color: rgba(255, 112, 68, 0.34);
+    border-left-color: #ff7044;
+    background:
+        linear-gradient(110deg, rgba(139, 18, 4, 0.23), transparent 60%),
+        rgba(13, 7, 11, 0.66);
+}
+
+.changelog-eon128-aura-card__name {
+    display: block;
+    width: max-content;
+    max-width: 100%;
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 1.35;
+}
+
+.changelog-eon128-aura-card__odds {
+    color: #f6e6df;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.035em;
+}
+
+.changelog-eon128-aura-card__native {
+    color: #a99690;
+    font-size: 9px;
+    line-height: 1.5;
+}
+
+.changelog-eon128-hell__notes {
+    margin-top: 12px;
+}
+
+.changelog-eon128-halloween-whisper {
+    --event-card-rgb: 255 155 69;
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: fit-content;
+    max-width: 100%;
+    margin: -4px 0 0 auto;
+    padding: 6px 30px 6px 9px;
+    border: 1px solid rgb(var(--event-card-rgb) / 0.2);
+    background:
+        linear-gradient(110deg, rgb(var(--event-card-rgb) / 0.08), transparent 66%),
+        rgba(11, 7, 15, 0.62);
+    color: #b9a5a0;
+    font-size: 8px;
+    line-height: 1.4;
+    opacity: 0.86;
+}
+
+.changelog-eon128-halloween-whisper > i {
+    color: rgb(var(--event-card-rgb));
+    font-size: 9px;
+    filter: drop-shadow(0 0 5px rgb(var(--event-card-rgb) / 0.34));
+}
+
+.changelog-eon128-halloween-whisper strong {
+    color: #f2d8ca;
+    font-size: 8px;
+    letter-spacing: 0.04em;
+}
+
+.changelog-eon128-halloween-whisper::after {
+    content: '';
+    position: absolute;
+    right: 7px;
+    bottom: 4px;
+    width: 8px;
+    height: 8px;
+    border-right: 1px solid rgb(var(--event-card-rgb) / 0.24);
+    border-bottom: 1px solid rgb(var(--event-card-rgb) / 0.24);
+}
+
 .changelog-modal__actions {
     display: flex;
     justify-content: center;
