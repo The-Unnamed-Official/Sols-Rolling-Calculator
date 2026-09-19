@@ -33,6 +33,10 @@ globalThis.WikiTitleData = {
       "source": "https://sol-rng.fandom.com/wiki/Centaurus",
       "markup": "<span style=\"font-family:Lora;display:inline-block;letter-spacing:.15em;font-weight:bold\"><span style=\"position:absolute;-webkit-text-stroke:1px transparent;-webkit-text-fill-color:transparent;-webkit-background-clip:text !important;background:linear-gradient(to bottom, #ffffff 30%, #fefefa 35%, #d5c4a1 40%, #d9bf9d 45%, #fdfbee 50% 58%, #a1967d 60%, #fdfaec 62%, #fefdf8 70%)\">C<small>ENTAURU</small>S</span><span style=\"position:relative;-webkit-background-clip:text !important;-webkit-text-fill-color:transparent;background:linear-gradient(to bottom, #f2ead5 30%, #f8d5c7 45%, #aa9587 55%, #927e76 60%, #e2c5ba 70%)\">C<small>ENTAURU</small>S</span></span>"
     },
+    "Hellborn": {
+      "source": "https://sol-rng.fandom.com/wiki/Hellborn",
+      "markup": "<span style=\"font-family:Sarpanch\">Hellborn</span>"
+    },
     "Equinox": {
       "source": "https://sol-rng.fandom.com/wiki/Equinox",
       "markup": "<span style=\"font-family:Noto Serif TC;display:inline-block;font-style:italic;letter-spacing:.2em;font-weight:bold\"><span class=\"wiki-ref-EquinoxStrokeGradientRework\" data-text=\"『EQUINOX』\" style=\"position:absolute;z-index:0\"></span><span class=\"wiki-ref-EquinoxTransitionRework\" data-text=\"『EQUINOX』\" style=\"position:absolute;z-index:1\"></span><span class=\"wiki-ref-EquinoxPulseEffect\" data-text=\"『EQUINOX』\" style=\"position:absolute;z-index:1\"></span><span class=\"wiki-ref-EquinoxGradientRework\" style=\"position:relative;z-index:0\">『EQUINOX』</span></span>"
@@ -73,9 +77,9 @@ globalThis.WikiTitleData = {
       "source": "https://sol-rng.fandom.com/wiki/Winter_Garden",
       "markup": "<span style=\"font-family:Parisienne;display:inline-block;font-size:125%;white-space:nowrap\"><span class=\"wiki-ref-TextStroke\" data-text=\"Winter Garden ‎\" style=\"-webkit-text-stroke:.1em #000000\"></span><span style=\"position:absolute;-webkit-background-clip:text !important;-webkit-text-fill-color:transparent;background:linear-gradient(to bottom, #7ef1ff 22%, #513a6d 35%, #968efc 50%, #352148 75%);-webkit-text-stroke:.05em transparent\">Winter Garden ‎</span><span style=\"position:relative;-webkit-background-clip:text !important;-webkit-text-fill-color:transparent;background:linear-gradient(to bottom, #a2b9ea 20%, #8980ff 35%, #7c68cf 50%, #e0d8fa 75%)\">Winter Garden ‎</span></span>"
     },
-    "Taverna": {
-      "source": "https://sol-rng.fandom.com/wiki/Taverna",
-      "markup": "<span style=\"font-family:Rye;-webkit-background-clip:text !important;-webkit-text-fill-color:#7e390e;-webkit-text-stroke:2px transparent;background:#dfa07b\">TAVERNA</span>"
+    "Osteria": {
+      "source": "https://sol-rng.fandom.com/wiki/Osteria",
+      "markup": "<span style=\"font-family:Rye;-webkit-background-clip:text !important;-webkit-text-fill-color:#7e390e;-webkit-text-stroke:2px transparent;background:#dfa07b\">OSTERIA</span>"
     },
     "Crabtropica": {
       "source": "https://sol-rng.fandom.com/wiki/Crabtropica",
@@ -164,10 +168,6 @@ globalThis.WikiTitleData = {
     "Ruins : Withered": {
       "source": "https://sol-rng.fandom.com/wiki/Ruins_:_Withered",
       "markup": "<span style=\"font-family:Playfair Display;font-weight:400;letter-spacing:.2em;display:inline-block;white-space:nowrap\"><span class=\"wiki-ref-GradientedTextStroke\" data-textstroke=\"⟪-WITHERED-⟫\" data-gradient=\"to bottom\" data-colors=\"#14dad6 25%, #000000 45%, #00a985 75%\" data-width=\"2.4\" style=\"filter:opacity(70%);position:absolute;background:linear-gradient(to bottom,#14dad6 25%, #000000 45%, #00a985 75%);-webkit-background-clip:text!important;-webkit-text-fill-color:transparent;-webkit-text-stroke:2.4px transparent\"></span><span class=\"wiki-ref-TextStroke\" data-text=\"⟪-WITHERED-⟫\" style=\"-webkit-text-stroke:1.12px #000000\"></span><span style=\"position:relative;-webkit-background-clip:text !important;-webkit-text-fill-color:transparent;background:linear-gradient(to bottom, #24f2e2 30%, #006c57 37%, #8effff 42%, #77ffff 60%, #001e19 80%)\">⟪-WITHERED-⟫<span style=\"display:inline-block;transform:scale(.45) translateY(-3.5em) translateX(-13.75em);white-space:nowrap\"><span class=\"wiki-ref-GradientedTextStroke\" data-textstroke=\"-RUINS-\" data-gradient=\"to bottom\" data-colors=\"#14dad6 25%, #000000 45%, #00a985 75%\" data-width=\"2.4\" style=\"position:absolute;background:linear-gradient(to bottom,#14dad6 25%, #000000 45%, #00a985 75%);-webkit-background-clip:text!important;-webkit-text-fill-color:transparent;-webkit-text-stroke:2.4px transparent\"></span><span class=\"wiki-ref-TextStroke\" data-text=\"-RUINS-\" style=\"-webkit-text-stroke:1.12px #000000\"></span><span style=\"position:absolute;-webkit-background-clip:text !important;-webkit-text-fill-color:transparent;background:linear-gradient(to bottom, #adfff7 35%, #025343 40%, #4fd9dd 45%, #86f6fb 50%, #53d9e0 60%, #001d1a 65%, #001f1b 70%);-webkit-text-stroke:0 transparent\">-RUINS-</span></span></span></span>"
-    },
-    "Virtual : Full Control": {
-      "source": "https://sol-rng.fandom.com/wiki/Virtual_:_Full_Control",
-      "markup": "<span style=\"position:relative;-webkit-background-clip:text !important;-webkit-text-fill-color:transparent;background:linear-gradient(0deg, rgb(6, 112, 53) 23%, rgb(1, 194, 114) 35%, rgb(145, 255, 144) 50%, rgb(10, 190, 89) 54%, rgb(0, 221, 98) 100%);font-family:Audiowide;font-weight:bold;font-style:italic;filter:drop-shadow(1px 0px 0px rgb(145, 255, 144)) drop-shadow(0px 1px 0px rgb(145, 255, 144)) drop-shadow(-.5px 0px 0px rgb(145, 255, 144)) drop-shadow(0px -.5px 0px rgb(145, 255, 144))\">VIRTUAL // FULL CONTROL</span>"
     },
     "Parol": {
       "source": "https://sol-rng.fandom.com/wiki/Parol",
@@ -276,6 +276,10 @@ globalThis.WikiTitleData = {
     "Phantasma": {
       "source": "https://sol-rng.fandom.com/wiki/Phantasma",
       "markup": "<span style=\"font-family:Noto Serif TC;-webkit-background-clip:text !important;-webkit-text-fill-color:rgba(0, 0, 0, 0.6);background:linear-gradient(to bottom, #dea991 10%, #dea991 20%, #d99362 25%, #d99362 35%, #ffd6a2 40%, #ffd6a2 50%, #dea991 55%, #dea991 65%, #bc774c 70%, #bc774c 80%);-webkit-text-stroke:0.1em transparent\">Phantasma</span>"
+    },
+    "Volcanic": {
+      "source": "https://sol-rng.fandom.com/wiki/Volcanic",
+      "markup": "<span style=\"font-family:Sarpanch\">Volcanic</span>"
     },
     "Kyawthuite : Remembrance": {
       "source": "https://sol-rng.fandom.com/wiki/Kyawthuite_:_Remembrance",
@@ -544,6 +548,14 @@ globalThis.WikiTitleData = {
     "Accursed": {
       "source": "https://sol-rng.fandom.com/wiki/Accursed",
       "markup": "<span style=\"display:inline-block;font-family:Playfair Display\"><span style=\"position:absolute;-webkit-background-clip:text !important;-webkit-text-fill-color:transparent;background:linear-gradient(to bottom, #6f0011 32%, #f66bb8, #6f0011 70%);transform:scale(1.5) translate(.4em, -.2em);filter:opacity(50%);letter-spacing:0.2em;font-weight:bold\">RUNIC</span><span style=\"position:relative;-webkit-background-clip:text !important;-webkit-text-fill-color:transparent;background:linear-gradient(to bottom, #f66bb8 30%, #fe4d7b 50%, #6f0011 55%, #6f0011 60%, #fe4d7b 65%, #ff91cb 70%, #bd1139 80%);-webkit-text-stroke:0.4px rgba(243, 142, 185, 0.8);filter:drop-shadow(-0.4px 2px 0px rgba(0, 0, 0, 0.6))\">ACCURSED</span></span>"
+    },
+    "Virtual : Full Control": {
+      "source": "https://sol-rng.fandom.com/wiki/Virtual_:_Full_Control",
+      "markup": "<span style=\"position:relative;-webkit-background-clip:text !important;-webkit-text-fill-color:transparent;background:linear-gradient(0deg, rgb(6, 112, 53) 23%, rgb(1, 194, 114) 35%, rgb(145, 255, 144) 50%, rgb(10, 190, 89) 54%, rgb(0, 221, 98) 100%);font-family:Audiowide;font-weight:bold;font-style:italic;filter:drop-shadow(1px 0px 0px rgb(145, 255, 144)) drop-shadow(0px 1px 0px rgb(145, 255, 144)) drop-shadow(-.5px 0px 0px rgb(145, 255, 144)) drop-shadow(0px -.5px 0px rgb(145, 255, 144))\">VIRTUAL // FULL CONTROL</span>"
+    },
+    "Virtual : Ultimate": {
+      "source": "https://sol-rng.fandom.com/wiki/Virtual_:_Ultimate",
+      "markup": "<span style=\"font-family:Sarpanch\">Virtual : Ultimate</span>"
     },
     "Aquaria": {
       "source": "https://sol-rng.fandom.com/wiki/Aquaria",
@@ -1404,6 +1416,10 @@ globalThis.WikiTitleData = {
     "Flutter": {
       "source": "https://sol-rng.fandom.com/wiki/Flutter",
       "markup": "<span style=\"font-family:Fuzzy Bubbles;display:inline-block;font-weight:bold\"><span class=\"wiki-ref-GradientedTextStroke\" data-textstroke=\"Flutter ‎\" data-gradient=\"180deg\" data-colors=\"#7d26c3 30%, #af7821 80%\" data-width=\"1.5\" style=\"background:linear-gradient(rgb(125, 38, 195) 30%, rgb(175, 120, 33) 80%) text;--data-text:&quot;Flutter ‎&quot;;-webkit-text-fill-color:transparent;-webkit-text-stroke:1.5px transparent;position:absolute;position:absolute;background:linear-gradient(180deg,#7d26c3 30%, #af7821 80%);-webkit-background-clip:text!important;-webkit-text-fill-color:transparent;-webkit-text-stroke:1.5px transparent\"></span><span style=\"position:relative;color:transparent;background-image:linear-gradient(180deg, #f9c2ff 30%, #ffdca5 80%);-webkit-background-clip:text !important;-webkit-text-fill-color:transparent\">Flutter ‎ </span></span>"
+    },
+    "HellFire": {
+      "source": "https://sol-rng.fandom.com/wiki/HellFire",
+      "markup": "<span style=\"font-family:Sarpanch\">HellFire</span>"
     },
     "Bleeding": {
       "source": "https://sol-rng.fandom.com/wiki/Bleeding",

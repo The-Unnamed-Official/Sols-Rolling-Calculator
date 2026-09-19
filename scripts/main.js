@@ -6834,6 +6834,8 @@ function computeRarityClass(aura, biome) {
     if (isEventAuraForTier(aura)) return computeChanceRarityClass(aura.chance);
     if (isForcedChallengedPlusAura(auraName)) return 'rarity-tier-challenged-plus';
     if (isForcedChallengedAura(auraName)) return 'rarity-tier-challenged';
+    const forcedStandardTierKey = getForcedStandardAuraTierKey(auraName);
+    if (forcedStandardTierKey) return `rarity-tier-${forcedStandardTierKey}`;
     if (auraName.startsWith('Pixelation')) return 'rarity-tier-transcendent';
     if (aura.disableRarityClass) return '';
     const hasLimboNative = auraMatchesAnyBiome(aura, ['limbo', 'limbo-null']);
@@ -6865,6 +6867,8 @@ function computeBaseRarityClass(aura) {
     if (isEventAuraForTier(aura)) return computeChanceRarityClass(aura.chance);
     if (isForcedChallengedPlusAura(auraName)) return 'rarity-tier-challenged-plus';
     if (isForcedChallengedAura(auraName)) return 'rarity-tier-challenged';
+    const forcedStandardTierKey = getForcedStandardAuraTierKey(auraName);
+    if (forcedStandardTierKey) return `rarity-tier-${forcedStandardTierKey}`;
     if (auraName.startsWith('Pixelation')) return 'rarity-tier-transcendent';
     if (aura.disableRarityClass) return '';
     return computeChanceRarityClass(aura.chance);
@@ -7067,15 +7071,21 @@ function normalizeAuraTierName(auraName) {
 
 function isForcedChallengedPlusAura(auraName) {
     const normalizedAuraName = normalizeAuraTierName(auraName);
-    return ['Oppression', 'Monarch', 'Illusionary', 'Dreammetric', 'Astraios', 'Oblivion'].includes(normalizedAuraName);
+    return ['Oppression', 'Monarch', 'Hellborn', 'Illusionary', 'Dreammetric', 'Astraios', 'Oblivion'].includes(normalizedAuraName);
+}
+
+function getForcedStandardAuraTierKey(auraName) {
+    const normalizedAuraName = normalizeAuraTierName(auraName);
+    if (normalizedAuraName === 'Fault') return 'legendary';
+    if (normalizedAuraName === '★') return 'unique';
+    if (normalizedAuraName === '★★') return 'legendary';
+    if (normalizedAuraName === '★★★') return 'mythic';
+    return null;
 }
 
 function isForcedChallengedAura(auraName) {
     const normalizedAuraName = normalizeAuraTierName(auraName);
     return [
-        '★',
-        '★★',
-        '★★★',
         'Borealis',
         'Leviathan',
         'Memory',
@@ -7284,7 +7294,7 @@ const auraOutlineOverrides = new Map([
     ['Bayview', 'sigil-outline-summer'],
     ['Pool Party', 'sigil-outline-summer'],
     ['Heatstroke', 'sigil-outline-summer'],
-    ['Taverna', 'sigil-outline-summer'],
+    ['Osteria', 'sigil-outline-summer'],
     ['Bubble : Cascade', 'sigil-outline-summer'],
     ['Centaurus', 'sigil-outline-summer'],
     ['Vendor', 'sigil-outline-summer'],
@@ -8011,6 +8021,7 @@ const MEGAPHONE_AURA_NAME = 'Megaphone - 5,000';
 const BREAKTHROUGH_AURA_NAME = 'Breakthrough - 1,999,999,999';
 const LEVIATHAN_AURA_NAME = 'Leviathan - 1,730,400,000';
 const MONARCH_AURA_NAME = "Monarch - 3,000,000,000";
+const HELLBORN_AURA_NAME = "Hellborn - 2,644,600,640";
 const DREAMCATCHER_AURA_NAME = "DreamCatcher - 2,222,222,222";
 const EMPTY_AURA_NAME = 'Empty - 11,111,111'
 
@@ -8052,6 +8063,7 @@ const AURA_BLUEPRINT_SOURCE = Object.freeze([
     { name: "Meta - 10,000", chance: 10000, nativeBiomes: ["cyberspace"], ignoreLuck: true, fixedRollThreshold: 1 },
     { name: MONARCH_AURA_NAME, chance: 3000000000, cutscene: "monarch-cutscene", nativeBiomes: ["corruption", "glitch"], disableNativeOverrideTier: true },
     { name: "Centaurus - 3,000,000,000", chance: 3000000000, breakthroughs: nativeBreakthroughs("incinerator"), cutscene: "centaurus-cutscene" },
+    { name: HELLBORN_AURA_NAME, chance: 2644600640, nativeBiomes: ["hell", "glitch"], disableNativeOverrideTier: true, cutscene: "hellborn-cutscene" },
     // { name: "Unnamed Needs Equinox NOW - 2,500,000,000", chance: 2500000000, cutscene: "equinox-cutscene" },
     { name: "Equinox - 2,500,000,000", chance: 2500000000, cutscene: "equinox-cutscene" },
     { name: "Equinox : youareanidiot - 2,500,000,000", chance: 2500000000, cutscene: "idiot-cutscene" },
@@ -8063,7 +8075,7 @@ const AURA_BLUEPRINT_SOURCE = Object.freeze([
     { name: "Astraios - 1,750,000,000", chance:  1750000000, nativeBiomes: ["singularity"], cutscene: "astraios-cutscene" },
     { name: LEVIATHAN_AURA_NAME, chance: 1730400000, nativeBiomes: ["rainy", "glitch"], cutscene: "leviathan-cutscene", disableNativeOverrideTier: true },
     { name: "Winter Garden - 1,450,012,025", chance: 1450012025, breakthroughs: nativeBreakthroughs("aurora"), cutscene: "winter-garden-cutscene" },
-    { name: "Taverna - 1,444,444,444", chance: 1444444444, breakthroughs: nativeBreakthroughs("incinerator"), cutscene: "taverna-cutscene" },
+    { name: "Osteria - 1,444,444,444", chance: 1444444444, breakthroughs: nativeBreakthroughs("incinerator"), cutscene: "taverna-cutscene" },
     { name: "Crabtropica - 1,334,221,000", chance: 1334221000, breakthroughs: nativeBreakthroughs("incinerator"), cutscene: "crabtropica-cutscene" },
     { name: "Luminosity - 1,200,000,000", chance: 1200000000, cutscene: "luminosity-cutscene" },
     { name: "Erebus - 1,200,000,000", chance: 1200000000, nativeBiomes: ["glitch", "bloodRain"], cutscene: "erebus-cutscene" },
@@ -8114,6 +8126,7 @@ const AURA_BLUEPRINT_SOURCE = Object.freeze([
     { name: "Matrix : Overdrive - 503,000,000", chance: 503000000, breakthroughs: nativeBreakthroughs("cyberspace"), nativeBiomes: ["cyberspace"] },
     { name: "Life Guard : On-Duty - 600,000,000", chance: 600000000, breakthroughs: nativeBreakthroughs("incinerator") },
     { name: "Ruins - 500,000,000", chance: 500000000 },
+    { name: "Volcanic - 480,000,000", chance: 480000000, breakthroughs: nativeBreakthroughs("hell") },
     { name: "Phantasma - 462,600,000", chance: 462600000, nativeBiomes: ["glitch", "pumpkinMoon"] },
     { name: "Kyawthuite : Remembrance - 450,000,000", chance: 450000000 },
     { name: "unknown - 444,444,444", chance: 444444444, nativeBiomes: ["limbo"] },
@@ -8121,6 +8134,7 @@ const AURA_BLUEPRINT_SOURCE = Object.freeze([
     { name: "Afterparty - 440,000,000", chance: 440000000, nativeBiomes: ["glitch", "graveyard"] },
     { name: "Gargantua - 430,000,000", chance: 430000000, breakthroughs: nativeBreakthroughs("singularity") },
     { name: "EveNight - 424,000,000", chance: 424000000, breakthroughs: nativeBreakthroughs("aurora") },
+    { name: "Twilight : Withering Grace - 422,656,000", chance: 422656000, breakthroughs: nativeBreakthroughs("night") },
     { name: "Northern - 405,000,000", chance: 405000000, breakthroughs: nativeBreakthroughs("aurora") },
     { name: "Abyssal Hunter - 400,000,000", chance: 400000000, breakthroughs: nativeBreakthroughs("rainy") },
     { name: "Doodle : Abyssal Hunter - 400,000,000", chance: 400000000 },
@@ -8159,7 +8173,6 @@ const AURA_BLUEPRINT_SOURCE = Object.freeze([
     { name: "Projection - 197,000,000", chance:  197000000, nativeBiomes: ["singularity"] },
     { name: "Nightmare Sky - 190,000,000", chance: 190000000, nativeBiomes: ["pumpkinMoon"] },
     { name: "Felled - 180,000,000", chance: 180000000, breakthroughs: nativeBreakthroughs("hell") },
-    { name: "Twilight : Withering Grace - 180,000,000", chance: 180000000, breakthroughs: nativeBreakthroughs("night") },
     { name: "Symphony - 175,000,000", chance: 175000000 },
     { name: "Glock : the glock of the sky - 170,000,000", chance: 170000000 },
     { name: "Bounded : Aichmalotos - 170,000,000", chance: 170000000 },
@@ -8182,6 +8195,7 @@ const AURA_BLUEPRINT_SOURCE = Object.freeze([
     { name: "Hellbound - 85,000,000", chance: 85000000, breakthroughs: nativeBreakthroughs("hell") },
     { name: "Harnessed : Elements - 85,000,000", chance: 85000000 },
     { name: "Accursed - 82,000,000", chance: 82000000, nativeBiomes: ["glitch", "bloodRain"] },
+    { name: "Virtual : Ultimate - 80,000,000", chance: 80000000, breakthroughs: nativeBreakthroughs("cyberspace"), nativeBiomes: ["cyberspace"] },
     { name: "Aquaria - 80,000,000", chance: 80000000, breakthroughs: nativeBreakthroughs("rainy") },
     { name: "Carriage - 80,000,000", chance: 80000000 },
     { name: "Emperor - 80,000,000", chance: 80000000 },
@@ -8398,6 +8412,7 @@ const AURA_BLUEPRINT_SOURCE = Object.freeze([
     { name: MEGAPHONE_AURA_NAME, chance: 5000, requiresYgBlessing: true },
     { name: "Targeted - 5,000", chance: 5000 },
     { name: "Flutter - 5,000", chance: 5000 },
+    { name: "HellFire - 4,776", chance: 4776, breakthroughs: nativeBreakthroughs("hell") },
     { name: "Bleeding - 4,444", chance: 4444 },
     { name: "Sidereum - 4,096", chance: 4096 },
     // { name: "[CONTENT DELETED] - 4,040", chance: 4040, nativeBiomes: ["glitch"], ignoreLuck: true, fixedRollThreshold: 1 }, Unobtainable until further notice
@@ -8773,7 +8788,7 @@ const EVENT_AURA_LOOKUP = {
         "Vendor - 17,500,000",
         "Fruitpunch - 45,000,000",
         "Bubble : Cascade - 110,000,000",
-        "Taverna - 1,444,444,444",
+        "Osteria - 1,444,444,444",
         "Centaurus - 3,000,000,000",
         "Raft - 8,000",
         "Buoyant - 32,000",
@@ -8994,7 +9009,7 @@ function getAuraEventId(aura, { preferEnabled = false, enabledSet = null } = {})
 
 const CUTSCENE_PRIORITY_SEQUENCE = [
             "trolled-cutscene", "illusionary-cutscene", "dreammetric-cutscene", "oppression-cutscene", "oblivion-cutscene", "memory-cutscene",
-            "neferkhaf-cutscene", "blood-cutscene", "monarch-cutscene", "centaurus-cutscene", "idiot-cutscene", "equinox-cutscene", "catcher-cutscene",
+            "neferkhaf-cutscene", "blood-cutscene", "monarch-cutscene", "centaurus-cutscene", "idiot-cutscene", "hellborn-cutscene", "equinox-cutscene", "catcher-cutscene",
             "dream-traveler-cutscene", "skyFestival-cutscene", "breakthrough-cutscene", "yolk-cutscene", "astraios-cutscene",
             "leviathan-cutscene", "winter-garden-cutscene", "taverna-cutscene", "crabtropica-cutscene", "erebus-cutscene", "luminosity-cutscene", "eggis-cutscene", "godslayer-cutscene",
             "pixelation-cutscene", "nyctophobia-cutscene", "solsLoadingScreen-cutscene", "pukekoGod-cutscene", "frostveil-cutscene",
@@ -12238,6 +12253,7 @@ const GLITCH_BREAKTHROUGH_EXCLUSION_SET = new Set(['day', 'night', 'aurora', 'si
 const NULL_BIOME_FILTER = new Set(['null', 'limbo-null']);
 const LEVIATHAN_ALLOWED_BIOMES = new Set(['rainy', 'glitch']);
 const MONARCH_ALLOWED_BIOMES = new Set(['corruption', 'glitch']);
+const HELLBORN_ALLOWED_BIOMES = new Set(['hell', 'glitch']);
 const EMPTY_ALLOWED_BIOMES = new Set(['null', 'limbo', 'glitch']);
 const DREAMCATCHER_ALLOWED_BIOMES = new Set(['night']);
 const auraGlitchBreakthroughMinChanceCache = new Array(AURA_REGISTRY.length).fill(null);
@@ -12425,7 +12441,7 @@ function computeStandardEffectiveChance(aura, context) {
         }
     }
 
-    const isRuneIgnoredAura = aura?.name === LEVIATHAN_AURA_NAME || aura?.name === MONARCH_AURA_NAME;
+    const isRuneIgnoredAura = aura?.name === LEVIATHAN_AURA_NAME || aura?.name === MONARCH_AURA_NAME || aura?.name === HELLBORN_AURA_NAME;
     const resolvedActiveBiomes = isRuneIgnoredAura && Array.isArray(context.baseActiveBiomes)
         ? context.baseActiveBiomes
         : activeBiomes;
@@ -12530,6 +12546,13 @@ function determineAuraEffectiveChance(aura, context) {
     if (aura?.name === MONARCH_AURA_NAME) {
         const canonicalBiome = context?.biome || 'normal';
         const inAllowedBiome = MONARCH_ALLOWED_BIOMES.has(canonicalBiome);
+        if (!inAllowedBiome) {
+            return Infinity;
+        }
+    }
+    if (aura?.name === HELLBORN_AURA_NAME) {
+        const canonicalBiome = context?.biome || 'normal';
+        const inAllowedBiome = HELLBORN_ALLOWED_BIOMES.has(canonicalBiome);
         if (!inAllowedBiome) {
             return Infinity;
         }
