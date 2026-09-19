@@ -8964,9 +8964,12 @@ body.reduce-motion .sigil-wiki {
 
 .footer-credits__list > .footer-credits__item.footer-credits__item--wiki-artwork {
     grid-column: 1 / -1 !important;
-    display: block !important;
     width: 100%;
     box-sizing: border-box;
+}
+
+.footer-credits__list > .footer-credits__item.footer-credits__item--wiki-artwork:not([hidden]) {
+    display: block;
 }
 
 .footer-credits__item.footer-credits__item--wiki-artwork .footer-credits__item-kind {
