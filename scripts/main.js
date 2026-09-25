@@ -4961,8 +4961,107 @@ const MULTI_POTION_CONFIG_BY_ID = new Map(MULTI_POTION_CONFIGS.map(config => [co
 let potionSimulationMode = POTION_SIMULATION_MODE.SINGLE;
 let simulationMethod = SIMULATION_METHOD.UNNAMED;
 let singlePotionRollValue = 1;
-let activeMultiDeviceBuffLuckBonus = 0;
-let activeMultiDeviceBuffPresetName = null;
+const equippedGear = { right: 'none', left: 'none', pocket: 'none' };
+let additionalBasicBuffs = 0;
+let singleSpecialLuck = 0;
+
+function getGearLuckInputs(multiple = isMultiplePotionMode()) {
+    const selection = collectBiomeSelectionState();
+    return {
+        basic: GearLuck.basicLuck(equippedGear, multiple ? 1 : Math.max(0, baseLuck - singleSpecialLuck), additionalBasicBuffs,
+            selection.primaryBiome || selection.canonicalBiome, selection.timeBiome),
+        special: multiple ? 0 : singleSpecialLuck,
+        finalMultiplier: getLuckMultiplierTotal(getActiveLuckMultipliers())
+    };
+}
+
+function getEquipmentSummary() {
+    return Object.entries(equippedGear).map(([slot, id]) => `${slot === 'pocket' ? 'Pocket' : slot === 'left' ? 'Left' : 'Right'}: ${GearLuck.find(slot, id)?.name || 'None'}`).join(' · ');
+}
+
+function syncEquipmentPreview() {
+    const inputs = getGearLuckInputs();
+    const preview = document.getElementById('equipment-luck-preview');
+    const rule = GearLuck.bonusRule(equippedGear.left);
+    const normal = GearLuck.totalLuck(inputs.basic, inputs.special, inputs.finalMultiplier, GearLuck.rollState(equippedGear.left, 1));
+    const bonus = GearLuck.totalLuck(inputs.basic, inputs.special, inputs.finalMultiplier, GearLuck.rollState(equippedGear.left, rule.interval || 1001));
+    if (preview) preview.textContent = `Basic luck: ${formatWithCommas(inputs.basic)} · Special luck: ${formatWithCommas(inputs.special)} · First roll: ${formatWithCommas(normal)} · ${rule.interval ? 'Bonus roll' : 'Ruins active'}: ${formatWithCommas(bonus)}`;
+    const summary = document.getElementById('bonus-roll-summary');
+    if (summary) summary.textContent = GearLuck.describe(equippedGear.left);
+    const selectionSummary = document.getElementById('equipment-selection-summary');
+    if (selectionSummary) selectionSummary.textContent = getEquipmentSummary();
+    document.querySelectorAll('[data-equipment-item]').forEach(button => {
+        const active = equippedGear[button.dataset.equipmentSlot] === button.dataset.equipmentItem;
+        button.setAttribute('aria-pressed', String(active));
+        button.querySelector('.equipment-card__status').textContent = active ? 'Equipped' : 'Equip';
+    });
+}
+
+function initializeEquipmentControls() {
+    const tabs = Array.from(document.querySelectorAll('[data-equipment-tab]'));
+    const activateTab = slot => {
+        tabs.forEach(tab => {
+            const active = tab.dataset.equipmentTab === slot;
+            tab.setAttribute('aria-selected', String(active));
+            tab.classList.toggle('preset-console__tab--active', active);
+            tab.tabIndex = active ? 0 : -1;
+            document.getElementById(tab.getAttribute('aria-controls')).hidden = !active;
+        });
+    };
+    tabs.forEach((tab, index) => {
+        tab.addEventListener('click', () => activateTab(tab.dataset.equipmentTab));
+        tab.addEventListener('keydown', event => {
+            const next = event.key === 'Home' ? 0 : event.key === 'End' ? tabs.length - 1
+                : event.key === 'ArrowRight' ? (index + 1) % tabs.length
+                : event.key === 'ArrowLeft' ? (index + tabs.length - 1) % tabs.length : -1;
+            if (next < 0) return;
+            event.preventDefault();
+            activateTab(tabs[next].dataset.equipmentTab);
+            tabs[next].focus();
+        });
+    });
+    for (const [slot, items] of Object.entries(GearLuck.catalog)) {
+        const panel = document.getElementById(`equipment-panel-${slot}`);
+        if (!panel) continue;
+        const makeCard = item => {
+            const button = document.createElement('button');
+            button.type = 'button';
+            button.className = 'equipment-card';
+            button.dataset.equipmentSlot = slot;
+            button.dataset.equipmentItem = item?.id || 'none';
+            const description = item ? item.effect || `Adds +${item.luck} basic luck.`
+                : `Leave the ${slot === 'pocket' ? 'pocket gear' : `${slot} device`} slot empty.`;
+            const defaultBonus = slot === 'left' && ['none', 'gemstone', 'jackpot', 'pole-light'].includes(item?.id || 'none')
+                ? ' Default ×2 bonus luck every 10th roll.' : '';
+            button.innerHTML = `<span class="equipment-card__heading"><span class="equipment-card__name">${item ? WikiTitles.item(item.name) : 'None'}</span><span class="equipment-card__status"></span></span><span class="equipment-card__description">${description}${defaultBonus}</span>`;
+            button.addEventListener('click', () => {
+                equippedGear[slot] = item?.id || 'none';
+                recomputeLuckValue();
+                playSoundEffect(clickSoundEffectElement, 'ui');
+            });
+            return button;
+        };
+        panel.append(makeCard(null));
+        for (const event of [false, true]) {
+            const matching = items.filter(item => item.event === event);
+            if (!matching.length) continue;
+            const heading = document.createElement('h4');
+            heading.className = 'equipment-panel__heading';
+            heading.textContent = event ? 'Event equipment' : 'Standard equipment';
+            const grid = document.createElement('div');
+            grid.className = 'equipment-card-grid';
+            matching.forEach(item => grid.append(makeCard(item)));
+            panel.append(heading, grid);
+        }
+    }
+    const buffs = document.getElementById('equipment-basic-buffs');
+    bindNumericInputFormatting(buffs, { min: 0 });
+    buffs?.addEventListener('input', () => {
+        additionalBasicBuffs = getNumericInputValue(buffs, { min: 0 }) || 0;
+        recomputeLuckValue();
+    });
+    recomputeLuckValue();
+}
 const featureBootFrameIds = new WeakMap();
 const featureShutdownTimerIds = new WeakMap();
 
@@ -5220,7 +5319,9 @@ function applyLuckValue(value, options = {}) {
     const luckInput = document.getElementById('luck-total');
     const targetLuck = Math.max(0, value);
 
-    baseLuck = targetLuck;
+    const standardPreset = normalizedOptions.luckSource === LUCK_SELECTION_SOURCE.STANDARD_PRESET;
+    singleSpecialLuck = standardPreset && targetLuck >= 5000 ? targetLuck : 0;
+    baseLuck = targetLuck + (standardPreset ? 1 : 0);
     currentLuck = targetLuck;
 
     if (luckInput) {
@@ -5544,18 +5645,18 @@ function isMultiplePotionStackingEnabled() {
 }
 
 function getMultiplePotionLuckState() {
-    const deviceLuckBonus = Number.isFinite(activeMultiDeviceBuffLuckBonus)
-        ? Math.max(0, activeMultiDeviceBuffLuckBonus)
-        : 0;
+    const inputs = getGearLuckInputs(true);
     return {
-        deviceLuckBonus,
-        finalLuckMultiplier: getLuckMultiplierTotal(getActiveLuckMultipliers())
+        deviceLuckBonus: inputs.basic,
+        leftDevice: equippedGear.left,
+        finalLuckMultiplier: inputs.finalMultiplier
     };
 }
 
 function calculateMultiplePotionLuck(basePotionLuck, luckState = getMultiplePotionLuckState()) {
     const normalizedPotionLuck = Number.isFinite(basePotionLuck) ? Math.max(0, basePotionLuck) : 0;
-    return (normalizedPotionLuck + luckState.deviceLuckBonus) * luckState.finalLuckMultiplier;
+    return GearLuck.totalLuck(luckState.deviceLuckBonus, normalizedPotionLuck, luckState.finalLuckMultiplier,
+        GearLuck.rollState(luckState.leftDevice, 1));
 }
 
 function createMultiplePotionBatch(config, count, luckState) {
@@ -5584,7 +5685,7 @@ function formatMultiplePotionBatchResultText(batch) {
         ? potionConfigs.map(config => config.resultLabel || config.label).join(' + ')
         : 'Potion';
     const luckValue = Number.isFinite(batch?.luckValue) ? Math.max(0, batch.luckValue) : 0;
-    return `With ${potionNames} (${formatWithCommas(luckValue)} Luck)`;
+    return `${potionConfigs.length ? `With ${potionNames} · ` : ''}${batch.rollLabel || 'First roll'} (${formatWithCommas(luckValue)} Luck)`;
 }
 
 function formatMultiplePotionBatchResultMarkup(batch) {
@@ -5595,7 +5696,18 @@ function formatMultiplePotionBatchResultMarkup(batch) {
         )).join(' + ')
         : 'Potion';
     const luckValue = Number.isFinite(batch?.luckValue) ? Math.max(0, batch.luckValue) : 0;
-    return `<span class="tinyClass">With ${potionMarkup} (${formatWithCommas(luckValue)} Luck)</span>`;
+    return `<span class="tinyClass">${potionConfigs.length ? `With ${potionMarkup} · ` : ''}${batch.rollLabel || 'First roll'} (${formatWithCommas(luckValue)} Luck)</span>`;
+}
+
+function formatRollResultSuffix(trueChanceValue, batch, potionMarkup = '') {
+    const multiplier = batch?.rollMultiplier || 1;
+    const chance = trueChanceValue ? `True Chance: 1 in ${trueChanceValue} ` : '';
+    const bonus = multiplier !== 1 ? `(${Number(multiplier.toFixed(4))}x)` : '';
+    const gemstone = batch?.gemstoneLuck ? ` (+${batch.gemstoneLuck} Gemstone)` : '';
+    const details = `${chance}${bonus}${gemstone}`.trim();
+    const potions = getMultiplePotionBatchResultConfigs(batch).length
+        ? ` ${potionMarkup || formatMultiplePotionBatchResultMarkup(batch)}` : '';
+    return (details ? ` <span class="tinyClass">${details}</span>` : '') + potions;
 }
 
 function stackCompatiblePotionBatches(batches, luckState) {
@@ -5707,20 +5819,6 @@ function getMultiPotionRuneBlockedRollCount(batches = collectMultiplePotionBatch
     }, 0);
 }
 
-function syncMultiDeviceBuffPresetButtons() {
-    document.querySelectorAll('#device-buff-preset-panel button[data-luck-value]').forEach(button => {
-        const buttonLuckBonus = Number(button.dataset.luckValue);
-        const buttonPresetName = (button.textContent || '').replace(/\s+/g, ' ').trim();
-        const active = isMultiplePotionMode()
-            && Number.isFinite(buttonLuckBonus)
-            && Math.abs(buttonLuckBonus - activeMultiDeviceBuffLuckBonus) < Number.EPSILON
-            && buttonPresetName === activeMultiDeviceBuffPresetName;
-        button.classList.remove('luck-preset-button--active');
-        button.classList.toggle('device-preset-button--selected', active);
-        button.setAttribute('aria-pressed', active ? 'true' : 'false');
-    });
-}
-
 function formatPotionBatchList(batches, { includeLuck = false } = {}) {
     if (!Array.isArray(batches) || batches.length === 0) {
         return 'None';
@@ -5741,7 +5839,7 @@ function syncMultiplePotionLuckPreviews(luckState = getMultiplePotionLuckState()
             return;
         }
         const effectiveLuck = calculateMultiplePotionLuck(config.luck, luckState);
-        luckPreview.textContent = `+${formatWithCommas(effectiveLuck)} luck`;
+        luckPreview.textContent = `${formatWithCommas(effectiveLuck)} first-roll luck`;
     });
 }
 
@@ -5839,19 +5937,15 @@ function setPotionSimulationMode(mode, { playAudio = true } = {}) {
     }
 
     if (multipleModeActive && !wasMultiple) {
-        activeMultiDeviceBuffLuckBonus = 0;
-        activeMultiDeviceBuffPresetName = null;
         clearActiveLuckPotionPresets({ syncBiomeConstraints: false });
         syncMultiplePotionTotal();
     } else if (!multipleModeActive && wasMultiple) {
-        activeMultiDeviceBuffLuckBonus = 0;
-        activeMultiDeviceBuffPresetName = null;
         const rollField = document.getElementById('roll-total');
         if (rollField) {
             setNumericInputValue(rollField, singlePotionRollValue, { format: true, min: 1, max: 1000000000000 });
         }
     }
-    syncMultiDeviceBuffPresetButtons();
+    recomputeLuckValue();
 
     if (typeof updateBiomeControlConstraints === 'function') {
         updateBiomeControlConstraints({ triggerSync: true });
@@ -5930,7 +6024,13 @@ function applyLuckDelta(presetValue, options = {}) {
         ? Math.max(0, baseLuck)
         : Math.max(0, Number.isFinite(derivedBaseLuck) ? derivedBaseLuck : 0);
 
-    baseLuck = Math.max(0, startingBaseLuck + numericPresetValue);
+    if (normalizedOptions.luckSource === LUCK_SELECTION_SOURCE.STANDARD_PRESET && Math.abs(numericPresetValue) >= 5000) {
+        const nextSpecialLuck = Math.max(0, singleSpecialLuck + numericPresetValue);
+        baseLuck = Math.max(0, startingBaseLuck - singleSpecialLuck) + nextSpecialLuck;
+        singleSpecialLuck = nextSpecialLuck;
+    } else {
+        baseLuck = Math.max(singleSpecialLuck, startingBaseLuck + numericPresetValue);
+    }
 
     if (typeof applyOblivionPresetOptions === 'function') {
         applyOblivionPresetOptions(normalizedOptions);
@@ -6102,30 +6202,6 @@ function applyRollPreset(value) {
     playSoundEffect(clickSoundEffectElement, 'ui');
 }
 
-function applyDeviceBuffPreset(luckBonus, sourceButton = null) {
-    const numericLuckBonus = Number(luckBonus);
-    if (!Number.isFinite(numericLuckBonus) || numericLuckBonus <= 0) {
-        return;
-    }
-
-    if (isMultiplePotionMode()) {
-        const presetName = sourceButton instanceof Element
-            ? (sourceButton.textContent || '').replace(/\s+/g, ' ').trim()
-            : `Device/Buff Preset x${numericLuckBonus}`;
-        const samePresetSelected = Math.abs(activeMultiDeviceBuffLuckBonus - numericLuckBonus) < Number.EPSILON
-            && activeMultiDeviceBuffPresetName === presetName;
-        activeMultiDeviceBuffLuckBonus = samePresetSelected ? 0 : numericLuckBonus;
-        activeMultiDeviceBuffPresetName = samePresetSelected ? null : presetName;
-        syncMultiDeviceBuffPresetButtons();
-        syncMultiplePotionTotal();
-        playSoundEffect(clickSoundEffectElement, 'ui');
-        return;
-    }
-
-    const targetLuck = Math.max(1, numericLuckBonus);
-    applyLuckValue(targetLuck, { luckSource: LUCK_SELECTION_SOURCE.DEVICE_PRESET });
-}
-
 function setPresetConsoleBank(bankName, { focusTab = false, playAudio = false } = {}) {
     const tabs = Array.from(document.querySelectorAll('[data-preset-bank-target]'));
     const panels = Array.from(document.querySelectorAll('[data-preset-bank]'));
@@ -6202,7 +6278,9 @@ function recomputeLuckValue() {
     baseLuck = normalizedBaseLuck;
 
     const multipliers = getActiveLuckMultipliers();
-    currentLuck = normalizedBaseLuck * getLuckMultiplierTotal(multipliers);
+    const gearInputs = getGearLuckInputs(false);
+    currentLuck = GearLuck.totalLuck(gearInputs.basic, gearInputs.special, gearInputs.finalMultiplier,
+        GearLuck.rollState(equippedGear.left, 1));
     syncLastLuckMultipliers(multipliers);
 
     if (luckField) {
@@ -6211,6 +6289,7 @@ function recomputeLuckValue() {
     }
 
     syncLuckVisualEffects(currentLuck);
+    syncEquipmentPreview();
     if (isMultiplePotionMode()) {
         syncMultiplePotionTotal();
     }
@@ -6219,6 +6298,7 @@ function recomputeLuckValue() {
 function resetLuckFields() {
     const luckInput = document.getElementById('luck-total');
     baseLuck = 1;
+    singleSpecialLuck = 0;
     currentLuck = 1;
     if (luckInput) {
         const shouldFormat = document.activeElement !== luckInput;
@@ -7669,6 +7749,7 @@ const EVENT_AURA_SIGIL_CLASSES = Object.freeze({
     aprilFools25: 'sigil-outline-april',
     summer25: 'sigil-outline-summer',
     halloween25: 'sigil-outline-blood',
+    halloween26: 'sigil-outline-blood',
     winter26: 'sigil-outline-winter-2026',
     valentine26: 'sigil-outline-valentine-2026',
     easter26: 'sigil-outline-easter-2026',
@@ -7692,12 +7773,14 @@ function formatWikiAuraSigilMarkup(aura, baseName, biome = null) {
     return WikiTitles.aura(canonicalName, suffix ? suffix.slice(3) : '', fallbackStyleClass);
 }
 
-function initializeChangelogAuraSigils() {
+function initializeChangelogAuraSigils(root = document) {
     if (typeof document === 'undefined') return;
 
-    document.querySelectorAll('[data-changelog-aura-sigil]').forEach(element => {
+    const elements = [...root.querySelectorAll('[data-changelog-aura-sigil]')];
+    if (root.matches?.('[data-changelog-aura-sigil]')) elements.unshift(root);
+    elements.forEach(element => {
         if (element.dataset.changelogAuraSigilRendered === 'true') return;
-        const auraName = element.dataset.changelogAuraSigil?.trim();
+        const auraName = WikiTitles.resolveAuraName(element.dataset.changelogAuraSigil?.trim());
         if (!auraName || !wikiAuraSigilNames.has(auraName)) return;
         const markup = formatWikiAuraSigilMarkup({ name: auraName }, auraName);
         if (!markup) return;
@@ -7785,6 +7868,7 @@ function updateLayeredSigilText(container = document) {
 }
 
 function observeLayeredSigilText() {
+    initializeChangelogAuraSigils();
     updateLayeredSigilText();
     registerGlitchSigils(document);
     WikiTitles.initializeItems();
@@ -7797,6 +7881,7 @@ function observeLayeredSigilText() {
         pendingRoots.forEach(root => {
             if (!root.isConnected) return;
             updateLayeredSigilText(root);
+            initializeChangelogAuraSigils(root);
             registerGlitchSigils(root);
             WikiTitles.initializeItems(root);
             WikiTitles.initializeEffects(root);
@@ -8055,6 +8140,7 @@ function nativeBreakthroughs(...biomes) {
 }
 
 const AURA_BLUEPRINT_SOURCE = Object.freeze([
+    ...EventData.halloween26.auras,
     { name: "Oblivion", chance: 2000, requiresOblivionPreset: true, ignoreLuck: true, fixedRollThreshold: 1, subtitle: "The Truth Seeker", cutscene: "oblivion-cutscene", disableRarityClass: true },
     { name: "Memory", chance: 200000, requiresOblivionPreset: true, ignoreLuck: true, fixedRollThreshold: 1, subtitle: "The Fallen", cutscene: "memory-cutscene", disableRarityClass: true },
     { name: "Neferkhaf", chance: 1000, requiresDunePreset: true, ignoreLuck: true, fixedRollThreshold: 1, subtitle: "The Crawler", cutscene: "neferkhaf-cutscene", disableRarityClass: true },
@@ -8561,12 +8647,13 @@ const EVENT_LIST = [
     { id: "easter26", label: "Easter 2026" },
     { id: "aprilFools26", label: "April Fools 2026" },
     { id: "summer26", label: "Summer 2026" },
+    { id: EventData.halloween26.id, label: EventData.halloween26.label },
 ];
 
 const VALENTINE_EVENT_IDS = Object.freeze(['valentine24', 'valentine26']);
 const APRIL_FOOLS_EVENT_IDS = Object.freeze(['aprilFools24', 'aprilFools25', 'aprilFools26']);
 const EASTER_EVENT_IDS = Object.freeze(['easter26']);
-const HALLOWEEN_EVENT_IDS = Object.freeze(['halloween24', 'halloween25']);
+const HALLOWEEN_EVENT_IDS = Object.freeze(['halloween24', 'halloween25', 'halloween26']);
 const SUMMER_EVENT_IDS = Object.freeze(['summer24', 'summer25', 'summer26']);
 const WINTER_EVENT_IDS = Object.freeze(['winter25', 'winter26']);
 
@@ -8649,6 +8736,7 @@ let harvesterCurseTimeoutId = null;
 let flushedTrollSignatureTimeoutId = null;
 
 const EVENT_AURA_LOOKUP = {
+    halloween26: EventData.halloween26.auras.map(aura => aura.name),
     valentine24: [
         "Divinus : Love - 32",
         "Flushed : Heart Eye - 6,900",
@@ -8802,9 +8890,9 @@ const EVENT_AURA_LOOKUP = {
 };
 
 const BIOME_EVENT_CONSTRAINTS = {
-    graveyard: ["halloween24", "halloween25"],
-    pumpkinMoon: ["halloween24", "halloween25"],
-    bloodRain: ["halloween25"],
+    graveyard: ["halloween24", "halloween25", "halloween26"],
+    pumpkinMoon: ["halloween24", "halloween25", "halloween26"],
+    bloodRain: ["halloween25", "halloween26"],
     blazing: ["summer25", "summer26"],
     incinerator: ["summer26"],
     aurora: ["winter26"],
@@ -8814,16 +8902,16 @@ const EVENT_BIOME_CONDITION_MESSAGES = Object.freeze({
     anotherRealm: 'Requires Developer Biomes to be enabled under run parameters.',
     mastermind: 'Requires Developer Biomes to be enabled under run parameters.',
     edict: 'Requires Developer Biomes to be enabled under run parameters.',
-    graveyard: 'Requires Night time with Halloween 2024 or Halloween 2025 enabled.',
-    pumpkinMoon: 'Requires Night time with Halloween 2024 or Halloween 2025 enabled.',
-    bloodRain: 'Requires Halloween 2025 enabled.',
+    graveyard: 'Requires Night time with a Halloween event enabled.',
+    pumpkinMoon: 'Requires Night time with a Halloween event enabled.',
+    bloodRain: 'Requires Halloween 2025 or Halloween 2026 enabled.',
     blazing: 'Requires Summer 2025 or Summer 2026 enabled.',
     incinerator: 'Requires Summer 2026 enabled.',
     aurora: 'Requires Winter 2026 enabled.',
     fullMoon: 'Requires Developer Biomes to be enabled under run parameters.',
 });
 
-const enabledEvents = new Set(['summer26']);
+const enabledEvents = new Set(Object.values(EventData).filter(event => event.status === 'ready' && event.defaultEnabled).map(event => event.id));
 const auraEventIndex = new Map();
 
 function hasAnyEnabledEvent(eventIds) {
@@ -8926,6 +9014,7 @@ function biomeEventRequirementsMet(biomeId) {
 const GLITCH_EVENT_WHITELIST = new Set([
     "halloween24",
     "halloween25",
+    "halloween26",
 ]);
 
 const EVENT_AURA_BIOME_CONSTRAINTS = Object.freeze({
@@ -9380,6 +9469,7 @@ function showAstraldBlessingOverlay() {
 
 function setEventToggleState(eventId, enabled) {
     if (!eventId) return;
+    if (enabled && EventData[eventId]?.status === 'upcoming') return;
     const hasEvent = enabledEvents.has(eventId);
     if (enabled && !hasEvent) {
         enabledEvents.add(eventId);
@@ -9404,6 +9494,11 @@ function initializeEventSelector() {
     const checkboxes = eventMenu.querySelectorAll('input[type="checkbox"][data-event-id]');
     checkboxes.forEach(input => {
         const eventId = input.dataset.eventId;
+        if (EventData[eventId]) {
+            input.disabled = EventData[eventId].status === 'upcoming';
+            const status = input.closest('label')?.querySelector('[data-event-status]');
+            if (status) status.textContent = input.disabled ? ' · Upcoming' : '';
+        }
         input.checked = enabledEvents.has(eventId);
         syncEventOptionVisualState(eventId, input.checked);
         input.addEventListener('change', () => {
@@ -10704,6 +10799,7 @@ document.addEventListener('DOMContentLoaded', setupRollFeedSorting);
 document.addEventListener('DOMContentLoaded', initializePotionSimulationMode);
 document.addEventListener('DOMContentLoaded', setupLuckPresetAdjustmentButtons);
 document.addEventListener('DOMContentLoaded', setupPresetConsoleTabs);
+document.addEventListener('DOMContentLoaded', initializeEquipmentControls);
 document.addEventListener('DOMContentLoaded', setupLuckPresetAnimations);
 document.addEventListener('DOMContentLoaded', setupVersionChangelogOverlay);
 document.addEventListener('DOMContentLoaded', maybeShowChangelogOnFirstVisit);
@@ -11474,6 +11570,7 @@ function initializeSingleSelectControl(selectId) {
 
         optionButtons.forEach(({ button, option }) => {
             const isActive = option.value === select.value;
+            button.setAttribute('aria-selected', isActive ? 'true' : 'false');
             const conditionMessage = option.dataset.conditionMessage
                 || (isBiomeSelect && option.disabled ? EVENT_BIOME_CONDITION_MESSAGES[option.value] : '');
             const hasConditionHelp = !!conditionMessage;
@@ -12109,12 +12206,15 @@ document.addEventListener('DOMContentLoaded', () => {
             const parsed = raw ? Number.parseFloat(raw) : NaN;
             const normalized = Number.isFinite(parsed) && parsed > 0 ? Math.max(0, parsed) : 0;
             baseLuck = normalized;
+            singleSpecialLuck = 0;
             setLuckSelectionSource(LUCK_SELECTION_SOURCE.MANUAL);
             clearActiveLuckPotionPresets({ syncBiomeConstraints: false });
             const multipliers = getActiveLuckMultipliers();
-            currentLuck = baseLuck * getLuckMultiplierTotal(multipliers);
+            const inputs = getGearLuckInputs(false);
+            currentLuck = GearLuck.totalLuck(inputs.basic, inputs.special, inputs.finalMultiplier, GearLuck.rollState(equippedGear.left, 1));
             syncLastLuckMultipliers(multipliers);
             syncLuckVisualEffects(currentLuck);
+            syncEquipmentPreview();
         });
 
         luckField.addEventListener('blur', recomputeLuckValue);
@@ -12524,6 +12624,14 @@ function computeStandardEffectiveChance(aura, context) {
         }
     }
 
+    // Tide changes rarity only: it must never unlock Rainy-exclusive auras.
+    if (context.rainyNative && !aura.nativeBiomes) {
+        const rainyMultiplier = readBreakthroughMultiplier(aura, 'rainy');
+        if (rainyMultiplier) effectiveChance = Math.min(effectiveChance, Math.floor(aura.chance / rainyMultiplier));
+    }
+    if (context.vampireHunter && eventIds.some(id => HALLOWEEN_EVENT_IDS.includes(id))) {
+        effectiveChance *= 0.8;
+    }
     return Math.max(1, effectiveChance);
 }
 
@@ -13267,15 +13375,12 @@ function buildResultEntries(
         });
 
         const pushVisualEntry = (markup, shareText, priority, visualRecord, auraName, rarityForRealChance) => {
-            const realChanceValue = !potionBatch
-                && allowTrueChance
+            const realChanceValue = allowTrueChance
                 && appState.selectiveTrueChanceDisplay
                 && !shouldHideSelectiveTrueChanceForAura(auraName)
                 ? formatRealChanceValue(rarityForRealChance, luckValue)
                 : null;
-            const resultSuffixMarkup = potionSourceMarkup
-                ? ` ${potionSourceMarkup}`
-                : (realChanceValue ? ` <span class="tinyClass">True Chance: 1 in ${realChanceValue}</span>` : '');
+            const resultSuffixMarkup = formatRollResultSuffix(realChanceValue, potionBatch, potionSourceMarkup);
             entries.push({
                 markup: `${markup}${resultSuffixMarkup}`,
                 share: potionSourceText ? `${shareText} | ${potionSourceText}` : shareText,
@@ -13389,15 +13494,12 @@ function buildLiveRollMarkup(
         : aura.name;
     const prefix = isNativeRoll ? `<span class="aura-native ${nativeClass}">[Native]</span> ` : '';
     const formattedName = formatAuraNameMarkup(aura, displayName, biome);
-    const trueChanceValue = !potionBatch
-        && allowTrueChance
+    const trueChanceValue = allowTrueChance
         && appState.selectiveTrueChanceDisplay
         && !shouldHideSelectiveTrueChanceForAura(aura.name)
         ? formatRealChanceValue(nativeChance, luckValue)
         : null;
-    const trueChanceMarkup = potionBatch
-        ? ` ${formatMultiplePotionBatchResultMarkup(potionBatch)}`
-        : (trueChanceValue ? ` <span class="tinyClass">True Chance: 1 in ${trueChanceValue}</span>` : '');
+    const trueChanceMarkup = formatRollResultSuffix(trueChanceValue, potionBatch);
 
     const tierKey = resolveAuraDisplayTierKey(aura, biome);
     const alphabeticalName = getAuraAlphabeticalSortName(aura.name);
@@ -13701,6 +13803,8 @@ function prepareSimulationBatch(batch, selectionState, eventContext) {
         luckValue,
         ignoreRune: Boolean(batch?.blocksRunes)
     });
+    evaluationContext.rainyNative = Boolean(batch.rainyNative);
+    evaluationContext.vampireHunter = Boolean(batch.vampireHunter);
     const computedAuras = buildComputedAuraEntries(
         AURA_REGISTRY,
         evaluationContext,
@@ -13776,6 +13880,10 @@ function prepareSimulationBatch(batch, selectionState, eventContext) {
 
     return {
         id: batch.id || null,
+        rollLabel: batch.rollLabel || '',
+        rollMultiplier: batch.rollMultiplier || 1,
+        gemstoneLuck: batch.gemstoneLuck || 0,
+        variantKey: batch.variantKey,
         potionIds: Array.isArray(batch.potionIds) ? batch.potionIds.slice() : null,
         count: Math.max(0, Math.floor(batch.count || 0)),
         luckValue,
@@ -13790,6 +13898,45 @@ function prepareSimulationBatch(batch, selectionState, eventContext) {
         lucklessCandidateConfig,
         luckAffectedCandidateConfig
     };
+}
+
+function prepareEquipmentSimulation(definitions, selectionState, eventContext, multiple) {
+    const inputs = getGearLuckInputs(multiple);
+    const timing = GearLuck.schedule(equippedGear.left);
+    const batches = [];
+    const sequencePlan = [];
+    let startRoll = 0;
+    const actualBiome = selectionState.primaryBiome || selectionState.canonicalBiome;
+    const vampireHunter = equippedGear.right === 'vampire-hunter'
+        && ['graveyard', 'pumpkinMoon', 'bloodRain', 'glitch'].includes(actualBiome);
+    definitions.forEach(definition => {
+        const stateIndices = new Map();
+        GearLuck.statesInRange(timing, startRoll, definition.count).forEach(stateIndex => {
+            const state = timing.states[stateIndex];
+            const labels = [];
+            if (state.bonus) labels.push(`×${state.bonusMultiplier} bonus`);
+            if (state.basicMultiplier !== 1) labels.push(`×${state.basicMultiplier} basic`);
+            if (state.extraLuck) labels.push(`+${state.extraLuck} Gemstone`);
+            if (state.rainyNative) labels.push('Rainy rarity');
+            const batch = prepareSimulationBatch({
+                ...definition,
+                luckValue: GearLuck.totalLuck(inputs.basic, multiple ? definition.baseLuck : inputs.special, inputs.finalMultiplier, state),
+                rainyNative: state.rainyNative,
+                vampireHunter,
+                variantKey: batches.length,
+                rollMultiplier: state.bonusMultiplier * state.basicMultiplier,
+                gemstoneLuck: state.extraLuck,
+                rollLabel: labels.join(' · ') || 'Normal roll'
+            }, selectionState, eventContext);
+            stateIndices.set(stateIndex, batches.length);
+            batches.push(batch);
+        });
+        const mapEntry = entry => Array.isArray(entry) ? entry.map(index => stateIndices.get(index)) : stateIndices.get(entry);
+        sequencePlan.push({ count: definition.count, startRoll,
+            prefix: timing.prefix.map(mapEntry), pattern: timing.pattern.map(mapEntry), heldRandomEvery: timing.heldRandomEvery });
+        startRoll += definition.count;
+    });
+    return { batches, sequencePlan };
 }
 
 function runRollSimulation(options = {}) {
@@ -13840,9 +13987,8 @@ function runRollSimulation(options = {}) {
             stackCompatiblePotions: selectedPotionStackingEnabled
         })
         : [];
-    const selectedDevicePresetName = isMultiplePotionRun
-        ? (activeMultiDeviceBuffPresetName || 'None')
-        : null;
+    const selectedDevicePresetName = getEquipmentSummary();
+    const selectedBonusDescription = GearLuck.describe(equippedGear.left);
     if (isMultiplePotionRun && selectedPotionBatches.length === 0) {
         resetLiveRollFeed();
         resetRollFeedVisibilityObserver();
@@ -13978,14 +14124,15 @@ function runRollSimulation(options = {}) {
         }
     }
 
-    const simulationBatches = simulationBatchDefinitions.map(batch => prepareSimulationBatch(
-        batch,
+    const { batches: simulationBatches, sequencePlan } = prepareEquipmentSimulation(
+        simulationBatchDefinitions,
         selectionState,
         {
             eventChecker: isEventAuraEnabled,
             enabledEventsSet: eventSnapshot || enabledEvents
-        }
-    ));
+        },
+        isMultiplePotionRun
+    );
     const cutscenesEnabled = appState.cinematic === true;
 
     const queueAnimationFrame = callback => queueSimulationWork(callback);
@@ -14119,7 +14266,12 @@ function runRollSimulation(options = {}) {
         const eventLabels = usedEventIds.map(id => EVENT_LABEL_MAP.get(id) || id);
         const eventSummaryText = eventLabels.length > 0 ? eventLabels.join(', ') : EVENT_SUMMARY_EMPTY_LABEL;
         const auraFilterSummaryText = getAuraFilterSummaryText();
-        const luckSummaryText = isMultiplePotionRun ? 'Varies by potion' : formatWithCommas(luckValue);
+        const usedLuckValues = simulationBatches.filter(batch => batch.winCounts.some(count => count > 0)).map(batch => batch.luckValue);
+        if (!usedLuckValues.length) usedLuckValues.push(simulationBatches[0]?.luckValue || 0);
+        const minLuck = Math.min(...usedLuckValues);
+        const maxLuck = Math.max(...usedLuckValues);
+        const luckSummaryText = minLuck === maxLuck ? formatWithCommas(minLuck)
+            : `${formatWithCommas(minLuck)}–${formatWithCommas(maxLuck)} (varies by roll${isMultiplePotionRun ? ' and potion' : ''})`;
         const potionSummaryText = isMultiplePotionRun
             ? formatPotionBatchList(selectedPotionBatches, { includeLuck: true })
             : null;
@@ -14136,7 +14288,8 @@ function runRollSimulation(options = {}) {
             `Rolls: ${formatWithCommas(completedRolls)}<br>`,
             `Potion Mode: ${isMultiplePotionRun ? 'Multiple' : 'Single'}<br>`,
             ...(isMultiplePotionRun ? [`Compatible Potion Stacking: ${selectedPotionStackingEnabled ? 'Enabled' : 'Disabled'}<br>`] : []),
-            ...(isMultiplePotionRun ? [`Device Preset: ${selectedDevicePresetName}<br>`] : []),
+            `Equipment: ${selectedDevicePresetName}<br>`,
+            `Roll cycle: ${selectedBonusDescription}<br>`,
             ...(potionSummaryText ? [`Potions: ${potionSummaryText}<br>`] : []),
             `Luck: ${luckSummaryText}<br>`,
             `Biome: ${biomeLabel}<br>`,
@@ -14152,13 +14305,13 @@ function runRollSimulation(options = {}) {
             batch.breakthroughStatsMap,
             batch.luckValue,
             {
-                allowTrueChance: !isMultiplePotionRun,
-                potionBatch: isMultiplePotionRun ? batch : null,
+                allowTrueChance: true,
+                potionBatch: batch,
                 winCounts: batch.winCounts
             }
         ));
         let feedRecords = resultCollections.flatMap(collection => collection.feedRecords);
-        if (isMultiplePotionRun) {
+        if (simulationBatches.length > 1) {
             feedRecords = sortEntriesInUnnamedResultOrder(
                 feedRecords.map((record, originalOrder) => ({ ...record, originalOrder }))
             );
@@ -14223,6 +14376,7 @@ function runRollSimulation(options = {}) {
             potionMode: isMultiplePotionRun ? POTION_SIMULATION_MODE.MULTIPLE : POTION_SIMULATION_MODE.SINGLE,
             potionStackingEnabled: selectedPotionStackingEnabled,
             devicePresetName: selectedDevicePresetName,
+            bonusDescription: selectedBonusDescription,
             potionBatches: isMultiplePotionRun
                 ? selectedPotionBatches.map(batch => ({
                     id: batch.id,
@@ -14252,7 +14406,7 @@ function runRollSimulation(options = {}) {
     };
 
     const startMainThreadSimulation = () => {
-        const runner = SimulationCore.createRunner(simulationBatches, auraWinCounts, sampleEntropy);
+        const runner = SimulationCore.createRunner(simulationBatches, auraWinCounts, sampleEntropy, null, sequencePlan);
         function processRollSequence() {
             if (cancelRollRequested) {
                 finalizeSimulation(true, currentRoll);
@@ -14287,8 +14441,8 @@ function runRollSimulation(options = {}) {
             )
         );
         const maxFrameDuration = shouldScheduleBackgroundWork() ? 20 : 12;
+        const liveCursor = SimulationCore.createRollCursor(simulationBatches, sequencePlan);
         let currentBatchIndex = 0;
-        let currentBatchRoll = 0;
         let manualPaused = false;
         let cutsceneActive = false;
         let processing = false;
@@ -14360,14 +14514,7 @@ function runRollSimulation(options = {}) {
         };
 
         const performSingleLiveRoll = () => {
-            while (
-                currentBatchIndex < simulationBatches.length
-                && currentBatchRoll >= simulationBatches[currentBatchIndex].count
-            ) {
-                currentBatchIndex += 1;
-                currentBatchRoll = 0;
-            }
-
+            currentBatchIndex = liveCursor.next(sampleEntropy);
             const activeBatch = simulationBatches[currentBatchIndex];
             if (!activeBatch) {
                 return null;
@@ -14375,7 +14522,6 @@ function runRollSimulation(options = {}) {
 
             const combinedSelectionConfig = activeBatch.combinedSelection;
             const selectedIndex = selectWeightedIndex(combinedSelectionConfig.selection, sampleEntropy());
-            currentBatchRoll += 1;
             if (selectedIndex === -1) {
                 return null;
             }
@@ -14490,8 +14636,8 @@ function runRollSimulation(options = {}) {
                                 rollResult.isNativeRoll,
                                 rollResult.potionBatch.luckValue,
                                 {
-                                    allowTrueChance: !isMultiplePotionRun,
-                                    potionBatch: isMultiplePotionRun ? rollResult.potionBatch : null
+                                    allowTrueChance: true,
+                                    potionBatch: rollResult.potionBatch
                                 }
                             );
                             liveMarkupTemplate.innerHTML = markup;
@@ -14682,6 +14828,7 @@ function runRollSimulation(options = {}) {
             total,
             auraCount: AURA_REGISTRY.length,
             progressIntervalMs: WORKER_PROGRESS_UPDATE_INTERVAL_MS,
+            sequencePlan,
             batches: simulationBatches.map(batch => ({
                 total: batch.count,
                 prerollAuraIndices: batch.prerollAuraIndices,
@@ -15060,9 +15207,8 @@ function createDiscordShareText(summary) {
         ...(summary.potionMode === POTION_SIMULATION_MODE.MULTIPLE
             ? [`> **Compatible Potion Stacking:** ${summary.potionStackingEnabled ? 'Enabled' : 'Disabled'}`]
             : []),
-        ...(summary.potionMode === POTION_SIMULATION_MODE.MULTIPLE
-            ? [`> **Device Preset:** ${summary.devicePresetName || 'None'}`]
-            : []),
+        `> **Equipment:** ${summary.devicePresetName || 'None'}`,
+        ...(summary.bonusDescription ? [`> **Roll cycle:** ${summary.bonusDescription}`] : []),
         ...(potionSummary ? [`> **Potions:** ${potionSummary}`] : []),
         `> **Luck:** ${luckSummary}`,
         `> **Biome:** ${summary.biomeLabel}`,
@@ -15115,9 +15261,8 @@ function createPlainShareText(summary) {
         ...(summary.potionMode === POTION_SIMULATION_MODE.MULTIPLE
             ? [`Compatible Potion Stacking: ${summary.potionStackingEnabled ? 'Enabled' : 'Disabled'}`]
             : []),
-        ...(summary.potionMode === POTION_SIMULATION_MODE.MULTIPLE
-            ? [`Device Preset: ${summary.devicePresetName || 'None'}`]
-            : []),
+        `Equipment: ${summary.devicePresetName || 'None'}`,
+        ...(summary.bonusDescription ? [`Roll cycle: ${summary.bonusDescription}`] : []),
         ...(potionSummary ? [`Potions: ${potionSummary}`] : []),
         `Luck: ${luckSummary}`,
         `Biome: ${summary.biomeLabel}`,

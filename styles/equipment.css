@@ -1,0 +1,78 @@
+.equipment-loadout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1rem;
+}
+.equipment-slot {
+    min-width: 0;
+    padding: 1rem;
+    border: 1px solid rgba(120, 170, 215, .22);
+    border-radius: 12px;
+    background: rgba(6, 16, 30, .5);
+    align-content: start;
+}
+.equipment-panel[hidden] { display: none; }
+.equipment-tabs.preset-console__tabs { margin: 0; padding: 0; }
+.equipment-tabs .preset-console__tab { grid-template-columns: minmax(0, 1fr) auto; min-width: 0; padding: .8rem; }
+.equipment-tabs .preset-console__tab-copy { min-width: 0; }
+.equipment-tabs .preset-console__tab-copy strong { white-space: normal; }
+.equipment-selection-summary { margin: 0; color: #d5e6ed; font-size: .8rem; line-height: 1.8; }
+.equipment-panel__heading { margin: 1.2rem 0 .7rem; font-size: .8rem; letter-spacing: .12em; text-transform: uppercase; color: #accedc; }
+.equipment-card-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .7rem; }
+#device-buff-preset-panel .equipment-card {
+    display: flex; flex-direction: column; align-items: stretch; justify-content: flex-start;
+    gap: .65rem; min-width: 0; width: 100%; height: auto; padding: 1rem;
+    border: 1px solid rgba(120, 170, 215, .3); border-radius: 0;
+    background: linear-gradient(135deg, rgba(26, 49, 67, .55), rgba(5, 14, 25, .8));
+    color: #dce9f4; font-family: inherit; text-align: left; white-space: normal;
+    letter-spacing: normal; text-transform: none; cursor: pointer;
+}
+#device-buff-preset-panel .equipment-card:hover { border-color: #73d9ec; background-color: rgba(41, 94, 117, .25); }
+#device-buff-preset-panel .equipment-card:focus-visible { outline: 2px solid #c2f7ff; outline-offset: 3px; }
+#device-buff-preset-panel .equipment-card[aria-pressed="true"] {
+    border-color: #7de4f3; box-shadow: inset 3px 0 #7de4f3;
+    background: linear-gradient(135deg, rgba(45, 94, 118, .6), rgba(10, 28, 41, .8));
+}
+.equipment-card__heading { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .5rem; }
+.equipment-card__name { min-width: 0; font-size: 1rem; line-height: 1.6; }
+.equipment-card .wiki-title { white-space: normal; }
+.equipment-card__status { font-size: .6rem; text-transform: uppercase; letter-spacing: .1em; color: #9bb5c7; }
+.equipment-card[aria-pressed="true"] .equipment-card__status { color: #aeffff; }
+.equipment-card__description { font-size: .78rem; font-weight: 400; line-height: 1.7; color: #b5c6d6; }
+.equipment-slot small { letter-spacing: normal; }
+.equipment-slot small, .equipment-hint, .equipment-formula p {
+    color: #afbdd0;
+    font-size: .8rem;
+    line-height: 1.6;
+    margin: .35rem 0 0;
+}
+.equipment-formula {
+    grid-column: 1 / -1;
+    padding: 1rem;
+    border: 1px solid rgba(130, 216, 195, .3);
+    border-radius: 12px;
+    background: rgba(26, 76, 67, .12);
+}
+.equipment-formula strong { color: #bfeedd; font-size: .85rem; line-height: 1.6; }
+#equipment-luck-preview { color: #eef4ff; }
+.equipment-roll-notes { padding: .65rem .2rem 0; }
+.equipment-roll-notes #bonus-roll-summary { color: #cde9e5; }
+.changelog-equipment__intro { margin: 0 0 1rem; color: var(--text-secondary); font-size: .85rem; line-height: 1.7; }
+.changelog-equipment__group { margin: 1.2rem 0 .65rem; color: var(--accent-strong); font-size: .8rem; letter-spacing: .08em; text-transform: uppercase; }
+.changelog-equipment__list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .65rem; margin: 0; padding: 0; list-style: none; }
+.changelog-equipment__list > li { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-content: start; align-items: center; gap: .4rem .6rem; min-width: 0; padding: .85rem; border: 1px solid rgb(var(--accent-rgb) / .2); background: rgba(5, 14, 25, .55); }
+.changelog-equipment__name, .changelog-equipment__name .wiki-title { min-width: 0; white-space: normal; }
+.changelog-equipment__status { color: var(--text-tertiary); font-size: .6rem; letter-spacing: .07em; text-transform: uppercase; }
+.changelog-equipment__effect { grid-column: 1 / -1; color: var(--text-secondary); font-size: .78rem; line-height: 1.7; }
+.wiki-title .wiki-ref-Hellborn-Background {
+    background-image: url('https://static.wikia.nocookie.net/sol-rng/images/8/80/HellbornFireBackground.png/revision/latest?cb=20260922121817');
+    background-size: 105% 62%;
+    background-repeat: no-repeat;
+    background-position: 10% 47%;
+}
+@media (max-width: 600px) {
+    .changelog-equipment__list { grid-template-columns: minmax(0, 1fr); }
+    .equipment-card-grid { grid-template-columns: minmax(0, 1fr); }
+    .equipment-tabs .preset-console__tab { padding: .6rem; }
+    .equipment-tabs .preset-console__tab-count { display: none; }
+}

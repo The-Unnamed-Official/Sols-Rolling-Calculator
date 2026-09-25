@@ -3,11 +3,11 @@ globalThis.WikiTitleData = {
   "auras": {
     "Oblivion": {
       "source": "https://sol-rng.fandom.com/wiki/Oblivion",
-      "markup": "<span style=\"display:inline-block;font-family:Fondamento;font-weight:700;font-style:italic\"><span class=\"wiki-ref-TextStroke\" data-text=\"OBLIVION\" style=\"-webkit-text-stroke:2px black\"></span><span style=\"background:linear-gradient(10deg,#331f86 30%, #b449f3 50%, #fd85ff,#fba2ff 65%,#f8b7fb,#fed3ff,#fce8ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;position:relative\">OBLIVION ‎</span></span>"
+      "markup": "<span style=\"-webkit-background-clip: text !important; font-size: 120%; -webkit-text-fill-color: transparent; letter-spacing: .3em; background: linear-gradient(to bottom, #000, #000, #000, #000, #07003b, #0d0250, #4c23e8, #fce0ff, #5427f2, #5427f2, #050031, #000, #000, #0a0248); font-family: Neuton; text-shadow: 0 0 10px #7E18C7; -webkit-text-stroke: 0.2px white\">OBLIVION</span>"
     },
     "Memory": {
       "source": "https://sol-rng.fandom.com/wiki/Memory",
-      "markup": "<span style=\"font-family:Merriweather;font-style:italic;display:inline-block\"><span class=\"wiki-ref-TextStroke\" data-text=\"Memory\" style=\"-webkit-text-stroke:1px #000000\"></span><span style=\"position:relative;-webkit-background-clip:text !important;-webkit-text-fill-color:transparent;background:linear-gradient(to bottom, #1200a0 20%, #341ef1 30%, #5945ff 35%, #7667ff 40%, #6a36ff 50%, #3c0de3 65%, #1f0993 75%, #130565 90%)\">Memory</span></span>"
+      "markup": "<span style=\"-webkit-background-clip: text !important; font-size: 120%; -webkit-text-fill-color: transparent; background: linear-gradient(to bottom, #0c0047 35%, #280c9b 40%, #9b54ff 45%, #ffdbff 60%, #491fa6 40%); font-style: italic; font-family: Playfair Display; -webkit-text-stroke: 0.5px #150573\"><b>MEMORY</b></span>"
     },
     "Neferkhaf": {
       "source": "https://sol-rng.fandom.com/wiki/Neferkhaf",
@@ -35,7 +35,7 @@ globalThis.WikiTitleData = {
     },
     "Hellborn": {
       "source": "https://sol-rng.fandom.com/wiki/Hellborn",
-      "markup": "<span style=\"font-family:Sarpanch\">Hellborn</span>"
+      "markup": "<span class=\"wiki-ref-Hellborn-Background\"><span style=\"background: linear-gradient(to bottom, #0e0000, #040000, #4e0000, #ad0500, #ff0d00); background-clip: text; -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-size: 100%; letter-spacing: .3em; font-family: Playfair Display;filter: drop-shadow(0px 1px 0px white) drop-shadow(0px -.5px 0px white) drop-shadow(1px 0px 0px #ff7522) drop-shadow(-1px 0px 0px #ff7522);\"><b>HELLBORN</b></span></span>"
     },
     "Equinox": {
       "source": "https://sol-rng.fandom.com/wiki/Equinox",
@@ -59,7 +59,7 @@ globalThis.WikiTitleData = {
     },
     "Breakthrough": {
       "source": "https://sol-rng.fandom.com/wiki/Breakthrough_(Aura)",
-      "markup": "<span style=\"background:transparent;background-clip:padding-box;border:.06em solid transparent;border-image:linear-gradient(130deg, #ffffff 1%, transparent 1.5%, transparent 3%, #ffffff 3.5%, #ffffff 5%, transparent 5.5%, transparent 7%, #ffffff 7.5%, #ffffff 9%, #c3cfe4 9.5%, transparent 20%, transparent 94.5%, #ffffff 95%, #ffffff 95.5%, transparent 96%, transparent 96.5%, #ffffff 97%, #ffffff 98%, transparent 98.5%, transparent 99%, #ffffff 99.5%) 1;padding-left:.15em;padding-right:.15em;padding-top:.3em;padding-bottom:.3em\"><span style=\"background:linear-gradient(140deg, #ffffff 4.5%, transparent 5%, transparent 6.5%, #ffffff 7%, #ffffff 7.5%, transparent 8%, transparent 8.5%, #ffffff 9%, #ffffff 9.5%, #bac7dc 10%, transparent 15%, #0a0a0a 25%);background-clip:padding-box;border:.01em solid transparent;border-width:.01em .01em 0 .01em;border-image:linear-gradient(120deg, #ffffff 5%, #a4b1c4 8%, transparent 25%, transparent 80%, #c8d0d1 93%) 1;padding:.1em\"><span style=\"-webkit-background-clip:text !important;-webkit-text-fill-color:transparent;background:linear-gradient(174deg, #ffffff 17%, #0c0c0b 18%, #323a4d 25%, #0d0d0c 30%, #ffffff 31%, #ffffff 33%, #0b0b0a 34%, #0b0b0a 37%, #fefeff 38%, #fefeff 40%, #15181c 41%, #9cb2cf 49%, #0c0d0e 50%, #2d2f37 53%, #0c0c0d 57%, #9bb0ce 58%, #101215 66%, #ffffff 67%);letter-spacing:.2em;-webkit-text-stroke:0.3px #d3e0f6;font-family:Josefin Sans;filter:drop-shadow(.5px 1px 0 #0c0c0b) drop-shadow(.5px 1px 0 #77839d);font-weight:600\"><i>BREAKTHROUGH</i></span></span></span>"
+      "markup": "<span style=\"background: linear-gradient(135deg, white 2%, black 3%, white 4%, black 5%, white 6%, black 7%, #8589ac 8%, #8589ac 92%, black 93%, white 94%, black 95%, white 96%, black 97%, white 98%);\"><span style=\"background-clip: padding-box;border: 1px solid transparent;border-image: linear-gradient(135deg, white 2%, black 3%, white 4%, black 5%, white 6%, black 7%, #8589ac 8%, transparent 30%, transparent 70%, #8589ac 92%, black 93%, white 94%, black 95%, white 96%, black 97%, white 98%) 1;font-family: Montserrat;-webkit-text-fill-color: #ffffff\"><span style=\"background: linear-gradient(to right, transparent 5%, black 25%, black 75%, transparent 95%);\"><span style=\"-webkit-background-clip: text !important; -webkit-text-fill-color: transparent; background: linear-gradient(to bottom, #000, #494c68, #8280a4, #b3b5d5, #f7f9ff, #1c1d23, #252332, #3d3c5b, #4b4671, #9090bb); letter-spacing: .2em; -webkit-text-stroke: 0.3px white; font-family: Montserrat; filter: drop-shadow(.5px 1px 0 #e6e9fc); font-weight: 600\">•  BREAKTHROUGH  •</span></span></span></span>"
     },
     "Y.O.L.K.E.G.G.": {
       "source": "https://sol-rng.fandom.com/wiki/Yolkegg",
@@ -279,7 +279,7 @@ globalThis.WikiTitleData = {
     },
     "Volcanic": {
       "source": "https://sol-rng.fandom.com/wiki/Volcanic",
-      "markup": "<span style=\"font-family:Sarpanch\">Volcanic</span>"
+      "markup": "<span style=\"-webkit-background-clip: text !important; -webkit-text-fill-color: transparent; letter-spacing: 0.1em; background: linear-gradient(to bottom, #fff05b 20%, #ffff69 35%, #fffa93 40%, #ffffac 60%); font-family: Kings; -webkit-text-stroke: 0.5px #ca5711\">Volcanic</span>"
     },
     "Kyawthuite : Remembrance": {
       "source": "https://sol-rng.fandom.com/wiki/Kyawthuite_:_Remembrance",
@@ -555,7 +555,7 @@ globalThis.WikiTitleData = {
     },
     "Virtual : Ultimate": {
       "source": "https://sol-rng.fandom.com/wiki/Virtual_:_Ultimate",
-      "markup": "<span style=\"font-family:Sarpanch\">Virtual : Ultimate</span>"
+      "markup": "<span style=\"background:linear-gradient(to bottom, #f78d6f 30%, #FFFDF7 50%, #C98155 65%); -webkit-background-clip:text !important; -webkit-text-fill-color:transparent; -webkit-text-stroke: .2px #ffe3d6; font-style: bold; font-family: Michroma;\"><b>VIRTUAL//ULTIMATE</b></span>"
     },
     "Aquaria": {
       "source": "https://sol-rng.fandom.com/wiki/Aquaria",
@@ -1359,7 +1359,7 @@ globalThis.WikiTitleData = {
     },
     "Undead": {
       "source": "https://sol-rng.fandom.com/wiki/Undead",
-      "markup": "<span style=\"-webkit-background-clip:text !important;-webkit-text-fill-color:transparent;background:linear-gradient(to bottom, #30d839 30%, #086820 75%);font-family:Rajdhani;-webkit-text-stroke:0.5px black\"><b>Undead</b></span>"
+      "markup": "<span style=\"-webkit-background-clip: text !important; -webkit-text-fill-color: transparent; background: linear-gradient(to bottom, #0d8920 20%, #003e07 35%, #129824 40%, #003003 60%); font-family: Libre Baskerville; -webkit-text-stroke: 0.5px #8effbc\"><b>Undead</b></span>"
     },
     "Snowball": {
       "source": "https://sol-rng.fandom.com/wiki/Snowball",
@@ -1419,7 +1419,7 @@ globalThis.WikiTitleData = {
     },
     "HellFire": {
       "source": "https://sol-rng.fandom.com/wiki/HellFire",
-      "markup": "<span style=\"font-family:Sarpanch\">HellFire</span>"
+      "markup": "<span style=\"display: inline-block; font-size: 170%; font-style: italic; letter-spacing: .175em; font-family: Italianno;\"><span class=\"wiki-ref-TextStroke\" data-text=\"HellFire\" style=\"-webkit-text-stroke: 0.3px black;\"></span><span style=\"position: relative; -webkit-background-clip: text !important; -webkit-text-fill-color: transparent; background: linear-gradient(180deg, #C24334 5%, #cf583f 5%, #ffefdf 35%, #e66349 15%, #ff997b 40%, #fff5e6 55%, #ffe9d6 65%, #6d150e 35%);\">HellFire</span></span>"
     },
     "Bleeding": {
       "source": "https://sol-rng.fandom.com/wiki/Bleeding",
@@ -1629,7 +1629,7 @@ globalThis.WikiTitleData = {
     },
     "Heavenly Device": {
       "source": "https://sol-rng.fandom.com/wiki/Heavenly_Device",
-      "markup": "<b style=\"font-family:Sarpanch;-webkit-text-stroke:5px rgb(0, 0, 0, 0.5);stroke-linejoin:round;paint-order:stroke;color:rgb(255,249,71);padding-top:auto;padding-bottom:auto;padding-left:auto;padding-right:auto\">Heavenly Device</b>"
+      "markup": "<b style=\"font-family:Sarpanch;-webkit-text-stroke:5px rgb(0, 0, 0, 0.5);stroke-linejoin:round;paint-order:stroke;color:rgb(255,249,71);\">Heavenly Device</b>"
     },
     "Singularity Gauntlet": {
       "source": "https://sol-rng.fandom.com/wiki/Singularity_Gauntlet",
@@ -1637,7 +1637,7 @@ globalThis.WikiTitleData = {
     },
     "Pole Light Core Device": {
       "source": "https://sol-rng.fandom.com/wiki/Pole_Light_Core_Device",
-      "markup": "<b style=\"font-family:Sarpanch;-webkit-text-stroke:5px rgb(0, 0, 0, 0.5);stroke-linejoin:round;paint-order:stroke;color:rgb(176, 196, 255);padding-top:auto;padding-bottom:auto;padding-left:auto;padding-right:auto\">Pole Light Core Device</b>"
+      "markup": "<b style=\"font-family:Sarpanch;-webkit-text-stroke:5px rgb(0, 0, 0, 0.5);stroke-linejoin:round;paint-order:stroke;color:rgb(176, 196, 255);\">Pole Light Core Device</b>"
     },
     "Rune of Everything": {
       "source": "https://sol-rng.fandom.com/wiki/Runes#Rune_of_Everything",
@@ -1685,7 +1685,7 @@ globalThis.WikiTitleData = {
     },
     "Soul Master's Talisman": {
       "source": "https://sol-rng.fandom.com/wiki/Talismans#Soul_Master's_Talisman",
-      "markup": "<b style=\"font-family:Sarpanch;-webkit-text-stroke:5px rgb(0, 0, 0, 0.5);stroke-linejoin:round;paint-order:stroke;color:rgb(255,255,255);padding-top:auto;padding-bottom:auto;padding-left:auto;padding-right:auto\">Soul Master's Talisman</b>"
+      "markup": "<b style=\"font-family:Sarpanch;-webkit-text-stroke:5px rgb(0, 0, 0, 0.5);stroke-linejoin:round;paint-order:stroke;color:rgb(255,255,255);\">Soul Master's Talisman</b>"
     },
     "Popping Potion": {
       "source": "https://sol-rng.fandom.com/wiki/Popping_Potion",
@@ -1706,6 +1706,154 @@ globalThis.WikiTitleData = {
     "Godlike!": {
       "source": "https://sol-rng.fandom.com/wiki/Effects",
       "markup": "<b style=\"font-family:Sarpanch;color:#fff947\">Godlike!</b>"
+    },
+    "Luck Glove": {
+      "source": "https://sol-rng.fandom.com/wiki/Luck_Glove",
+      "markup": "<b style=\"font-family:Sarpanch;-webkit-text-stroke:5px rgb(0, 0, 0, 0.5);stroke-linejoin:round;paint-order:stroke;color:rgb(91, 93, 105);\">Luck Glove</b>"
+    },
+    "Desire Glove": {
+      "source": "https://sol-rng.fandom.com/wiki/Desire_Glove",
+      "markup": "<b style=\"font-family:Sarpanch;-webkit-text-stroke:5px rgb(0, 0, 0, 0.5);stroke-linejoin:round;paint-order:stroke;color:rgb(226, 34, 34);\">Desire Glove</b>"
+    },
+    "Solar Device": {
+      "source": "https://sol-rng.fandom.com/wiki/Solar_Device",
+      "markup": "<b style=\"font-family:Sarpanch;-webkit-text-stroke:5px rgb(0, 0, 0, 0.5);stroke-linejoin:round;paint-order:stroke;color:rgb(255, 170, 110);\">Solar Device</b>"
+    },
+    "Eclipse Device": {
+      "source": "https://sol-rng.fandom.com/wiki/Eclipse_Device",
+      "markup": "<b style=\"font-family:Sarpanch;-webkit-text-stroke:5px rgb(0, 0, 0, 0.5);stroke-linejoin:round;paint-order:stroke;color:rgb(213, 115, 61);\">Eclipse Device</b>"
+    },
+    "Exo Gauntlet": {
+      "source": "https://sol-rng.fandom.com/wiki/Exo_Gauntlet",
+      "markup": "<b style=\"font-family:Sarpanch;-webkit-text-stroke:5px rgb(0, 0, 0, 0.5);stroke-linejoin:round;paint-order:stroke;color:rgb(114, 201, 255);\">Exo Gauntlet</b>"
+    },
+    "Windstorm Device": {
+      "source": "https://sol-rng.fandom.com/wiki/Windstorm_Device",
+      "markup": "<b style=\"font-family:Sarpanch;-webkit-text-stroke:5px rgb(0, 0, 0, 0.5);stroke-linejoin:round;paint-order:stroke;color:rgb(93, 164, 165);\">Windstorm Device</b>"
+    },
+    "Subzero Device": {
+      "source": "https://sol-rng.fandom.com/wiki/Subzero_Device",
+      "markup": "<b style=\"font-family:Sarpanch;-webkit-text-stroke:5px rgb(0, 0, 0, 0.5);stroke-linejoin:round;paint-order:stroke;color:rgb(110, 153, 202);\">Subzero Device</b>"
+    },
+    "Frozen Gauntlet": {
+      "source": "https://sol-rng.fandom.com/wiki/Frozen_Gauntlet",
+      "markup": "<b style=\"font-family:Sarpanch;-webkit-text-stroke:5px rgb(0, 0, 0, 0.5);stroke-linejoin:round;paint-order:stroke;color:rgb(72, 215, 255);\">Frozen Gauntlet</b>"
+    },
+    "Shining Star": {
+      "source": "https://sol-rng.fandom.com/wiki/Shining_Star",
+      "markup": "<b style=\"font-family:Sarpanch;-webkit-text-stroke:5px rgb(0, 0, 0, 0.5);stroke-linejoin:round;paint-order:stroke;color:rgb(250, 254, 71);\">Shining Star</b>"
+    },
+    "Galactic Device": {
+      "source": "https://sol-rng.fandom.com/wiki/Galactic_Device",
+      "markup": "<b style=\"font-family:Sarpanch;-webkit-text-stroke:5px rgb(0, 0, 0, 0.5);stroke-linejoin:round;paint-order:stroke;color:rgb(140, 91, 159);\">Galactic Device</b>"
+    },
+    "Volcanic Device": {
+      "source": "https://sol-rng.fandom.com/wiki/Volcanic_Device",
+      "markup": "<b style=\"font-family:Sarpanch;-webkit-text-stroke:5px rgb(0, 0, 0, 0.5);stroke-linejoin:round;paint-order:stroke;color:rgb(255, 67, 1);\">Volcanic Device</b>"
+    },
+    "Exoflex Device": {
+      "source": "https://sol-rng.fandom.com/wiki/Exoflex_Device",
+      "markup": "<b style=\"font-family:Sarpanch;-webkit-text-stroke:5px rgb(0, 0, 0, 0.5);stroke-linejoin:round;paint-order:stroke;color:rgb(255, 255, 255);\">Exoflex Device</b>"
+    },
+    "Hologrammer": {
+      "source": "https://sol-rng.fandom.com/wiki/Hologrammer",
+      "markup": "<b style=\"font-family:Sarpanch;-webkit-text-stroke:5px rgb(0, 0, 0, 0.5);stroke-linejoin:round;paint-order:stroke;color:rgb(167, 249, 246);\">Hologrammer</b>"
+    },
+    "Ragnaröker": {
+      "source": "https://sol-rng.fandom.com/wiki/Ragnar%C3%B6ker",
+      "markup": "<b style=\"font-family:Sarpanch;-webkit-text-stroke:5px rgb(0, 0, 0, 0.5);stroke-linejoin:round;paint-order:stroke;color:rgb(225, 2, 0);\">Ragnaröker</b>"
+    },
+    "Starshaper": {
+      "source": "https://sol-rng.fandom.com/wiki/Starshaper",
+      "markup": "<b style=\"font-family:Sarpanch;-webkit-text-stroke:5px rgb(0, 0, 0, 0.5);stroke-linejoin:round;paint-order:stroke;color:rgb(255, 146, 213);\">Starshaper</b>"
+    },
+    "Neurolyzer": {
+      "source": "https://sol-rng.fandom.com/wiki/Neuralyzer",
+      "markup": "<b style=\"font-family:Sarpanch;-webkit-text-stroke:5px rgb(0, 0, 0, 0.5);stroke-linejoin:round;paint-order:stroke;color:rgb(242, 89, 90);\">Neuralyzer</b>"
+    },
+    "Genesis Drive": {
+      "source": "https://sol-rng.fandom.com/wiki/Genesis_Drive",
+      "markup": "<b style=\"font-family:Sarpanch;-webkit-text-stroke:5px rgb(0, 0, 0, 0.5);stroke-linejoin:round;paint-order:stroke;color:rgb(220, 181, 255);\">Genesis Drive</b>"
+    },
+    "Singularity Device": {
+      "source": "https://sol-rng.fandom.com/wiki/Singularity_Gauntlet",
+      "markup": "<b style=\"font-family:Sarpanch;-webkit-text-stroke:5px rgb(0, 0, 0, 0.5);stroke-linejoin:round;paint-order:stroke;color:rgb(253 173 142);\">Singularity Gauntlet</b>"
+    },
+    "Snow Rider": {
+      "source": "https://sol-rng.fandom.com/wiki/Snow_Rider",
+      "markup": "<b style=\"font-family:Sarpanch;-webkit-text-stroke:5px rgb(0, 0, 0, 0.5);stroke-linejoin:round;paint-order:stroke;color:rgb(255, 106, 108);\">Snow Rider</b>"
+    },
+    "Vampire Hunter": {
+      "source": "https://sol-rng.fandom.com/wiki/Vampire_Hunter",
+      "markup": "<b style=\"font-family:Sarpanch;-webkit-text-stroke:5px rgb(0, 0, 0, 0.5);stroke-linejoin:round;paint-order:stroke;color:rgb(157, 157, 157);\">Vampire Hunter</b>"
+    },
+    "Gemstone Gauntlet": {
+      "source": "https://sol-rng.fandom.com/wiki/Gemstone_Gauntlet",
+      "markup": "<b style=\"font-family:Sarpanch;-webkit-text-stroke:5px rgb(0, 0, 0, 0.5);stroke-linejoin:round;paint-order:stroke;color:rgb(86, 37, 135);\">Gemstone Gauntlet</b>"
+    },
+    "Jackpot Gauntlet": {
+      "source": "https://sol-rng.fandom.com/wiki/Jackpot_Gauntlet",
+      "markup": "<b style=\"font-family:Sarpanch;-webkit-text-stroke:5px rgb(0, 0, 0, 0.5);stroke-linejoin:round;paint-order:stroke;color:rgb(239, 184, 56);\">Jackpot Gauntlet</b>"
+    },
+    "Flesh Device": {
+      "source": "https://sol-rng.fandom.com/wiki/Flesh_Device",
+      "markup": "<b style=\"font-family:Sarpanch;-webkit-text-stroke:5px rgb(0, 0, 0, 0.5);stroke-linejoin:round;paint-order:stroke;color:rgb(93, 89, 217);\">Flesh Device</b>"
+    },
+    "Gravitational Device": {
+      "source": "https://sol-rng.fandom.com/wiki/Gravitational_Device",
+      "markup": "<b style=\"font-family:Sarpanch;-webkit-text-stroke:5px rgb(0, 0, 0, 0.5);stroke-linejoin:round;paint-order:stroke;color:rgb(98, 37, 209);\">Gravitational Device</b>"
+    },
+    "Darkshader": {
+      "source": "https://sol-rng.fandom.com/wiki/Darkshader",
+      "markup": "<b style=\"font-family:Sarpanch;-webkit-text-stroke:5px rgb(0, 0, 0, 0.5);stroke-linejoin:round;paint-order:stroke;color:rgb(101, 16, 247);\">Darkshader</b>"
+    },
+    "The Thing": {
+      "source": "https://sol-rng.fandom.com/wiki/The_Thing",
+      "markup": "<b style=\"font-family:Sarpanch;-webkit-text-stroke:5px rgb(0, 0, 0, 0.5);stroke-linejoin:round;paint-order:stroke;color:rgb(36 18 75);\">The Thing</b>"
+    },
+    "Unfathomable Ruins": {
+      "source": "https://sol-rng.fandom.com/wiki/Unfathomable_Ruins",
+      "markup": "<b style=\"font-family:Sarpanch;-webkit-text-stroke:5px rgb(0, 0, 0, 0.5);stroke-linejoin:round;paint-order:stroke;color:rgb(138,204,75);\">Unfathomable Ruins</b>"
+    },
+    "Present Giver": {
+      "source": "https://sol-rng.fandom.com/wiki/Present_Giver",
+      "markup": "<b style=\"font-family:Sarpanch;-webkit-text-stroke:5px rgb(0, 0, 0, 0.5);stroke-linejoin:round;paint-order:stroke;color:rgb(255, 106, 108);\">Present Giver</b>"
+    },
+    "X-mas Champion": {
+      "source": "https://sol-rng.fandom.com/wiki/X-mas_Champion",
+      "markup": "<b style=\"font-family:Sarpanch;-webkit-text-stroke:5px rgb(0, 0, 0, 0.5);stroke-linejoin:round;paint-order:stroke;color:rgb(255, 201, 74);\">X-mas Champion</b>"
+    },
+    "Tide Gauntlet": {
+      "source": "https://sol-rng.fandom.com/wiki/Tide_Gauntlet",
+      "markup": "<b style=\"font-family:Sarpanch;-webkit-text-stroke:5px rgb(0, 0, 0, 0.5);stroke-linejoin:round;paint-order:stroke;color:rgb(57, 63, 91);\">Tide Gauntlet</b>"
+    },
+    "Blessed Tide Gauntlet": {
+      "source": "https://sol-rng.fandom.com/wiki/Blessed_Tide_Gauntlet",
+      "markup": "<b style=\"font-family:Sarpanch;-webkit-text-stroke:5px rgb(0, 0, 0, 0.5);stroke-linejoin:round;paint-order:stroke;color:rgb(57, 63, 91);\">Blessed Tide Gauntlet</b>"
+    },
+    "Ominous Coffin": {
+      "source": "https://sol-rng.fandom.com/wiki/Ominous_Coffin",
+      "markup": "<b style=\"font-family:Sarpanch;-webkit-text-stroke:5px rgb(0, 0, 0, 0.5);stroke-linejoin:round;paint-order:stroke;color:rgb(210, 1, 0);\">Ominous Coffin</b>"
+    },
+    "Sunstone Talisman": {
+      "source": "https://sol-rng.fandom.com/wiki/Talismans#Sunstone_Talisman",
+      "markup": "<b style=\"font-family:Sarpanch;-webkit-text-stroke:5px rgb(0, 0, 0, 0.5);stroke-linejoin:round;paint-order:stroke;color:rgb(165,39,39);\">Sunstone Talisman</b>"
+    },
+    "Moonstone Talisman": {
+      "source": "https://sol-rng.fandom.com/wiki/Talismans#Moonstone_Talisman",
+      "markup": "<b style=\"font-family:Sarpanch;-webkit-text-stroke:5px rgb(0, 0, 0, 0.5);stroke-linejoin:round;paint-order:stroke;color:rgb(56,27,103);\">Moonstone Talisman</b>"
+    },
+    "Day and Night Talisman": {
+      "source": "https://sol-rng.fandom.com/wiki/Talismans#Day_and_Night_Talisman",
+      "markup": "<b style=\"font-family:Sarpanch;-webkit-text-stroke:5px rgb(0, 0, 0, 0.5);stroke-linejoin:round;paint-order:stroke;color:rgb(147,31,81);\">Day and Night Talisman</b>"
+    },
+    "Overtime Talisman": {
+      "source": "https://sol-rng.fandom.com/wiki/Talismans#Overtime_Talisman",
+      "markup": "<b style=\"font-family:Sarpanch;-webkit-text-stroke:5px rgb(0, 0, 0, 0.5);stroke-linejoin:round;paint-order:stroke;color:rgb(42, 117, 109);\">Overtime Talisman</b>"
+    },
+    "Soul Collector's Talisman": {
+      "source": "https://sol-rng.fandom.com/wiki/Talismans#Soul_Collector's_Talisman",
+      "markup": "<b style=\"font-family:Sarpanch;-webkit-text-stroke:5px rgb(0, 0, 0, 0.5);stroke-linejoin:round;paint-order:stroke;color:rgb(91, 96, 102);\">Soul Collector's Talisman</b>"
     }
   }
 };

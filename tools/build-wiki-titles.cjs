@@ -15,6 +15,7 @@ const reference = JSON.parse(fs.readFileSync(path.join(referenceDirectory, 'wiki
 const itemReference = JSON.parse(fs.readFileSync(path.join(referenceDirectory, 'wiki-item-reference.json'), 'utf8'));
 const main = fs.readFileSync(path.join(root, 'scripts/main.js'), 'utf8');
 const context = { nativeBreakthroughs: () => ({}) };
+vm.runInNewContext(fs.readFileSync(path.join(root, 'scripts/event-data.js'), 'utf8'), context);
 for (const match of main.matchAll(/const\s+(\w+)\s*=\s*('([^'\\]|\\.)*'|"([^"\\]|\\.)*")/g)) {
     try { context[match[1]] = vm.runInNewContext(match[2]); } catch {}
 }
@@ -37,6 +38,8 @@ const aliases = {
     'Atomic : Riboneucleic': 'Atomic : Ribonucleic'
 };
 const sourceByName = new Map(reference.titles.map(title => [normalize(title.name), title]));
+// Reviewed reworks override the older full-wiki snapshot on subsequent builds.
+const overrides = JSON.parse(fs.readFileSync(path.join(__dirname, 'wiki-title-overrides.json'), 'utf8'));
 const usedClasses = new Set();
 const allowedTags = new Set(['span', 'b', 'i', 'big', 'small', 'br']);
 const allowedAttributes = new Set(['style', 'class', 'data-text', 'data-textstroke', 'data-gradient', 'data-colors', 'data-width', 'data-color']);
@@ -109,7 +112,7 @@ function sanitizeMarkup(markup) {
 const auras = {};
 for (const aura of blueprint) {
     const name = aura.name.split(' - ')[0].trim();
-    const source = sourceByName.get(normalize(aliases[name] || name));
+    const source = overrides[name] || sourceByName.get(normalize(aliases[name] || name));
     if (!source) throw new Error(`Missing wiki title: ${name}`);
     auras[name] = { source: source.url, markup: sanitizeMarkup(source.markup) };
 }
@@ -132,6 +135,9 @@ items['Tutorial Potion'] = { source: 'https://sol-rng.fandom.com/wiki/Tutorial_P
 // These are buffs, rather than item-link templates; keep their recognisable in-game palettes.
 items['Candy Corn'] = { source: 'https://sol-rng.fandom.com/wiki/Effects', markup: '<b style="font-family:Sarpanch;background:linear-gradient(to bottom,#fff8de 25%,#ffdd59 45%,#ff8b2b 75%);background-clip:text;-webkit-background-clip:text;color:transparent">Candy Corn</b>' };
 items['Godlike!'] = { source: 'https://sol-rng.fandom.com/wiki/Effects', markup: '<b style="font-family:Sarpanch;color:#fff947">Godlike!</b>' };
+for (const [name, item] of Object.entries(JSON.parse(fs.readFileSync(path.join(__dirname, 'wiki-equipment-reference.json'), 'utf8')))) {
+    items[name] = { source: item.source, markup: sanitizeMarkup(item.markup) };
+}
 const extractedCss = postcss.root();
 const seenRules = new Set();
 const neededAnimations = new Set();
