@@ -64,6 +64,13 @@
 .changelog-equipment__name, .changelog-equipment__name .wiki-title { min-width: 0; white-space: normal; }
 .changelog-equipment__status { color: var(--text-tertiary); font-size: .6rem; letter-spacing: .07em; text-transform: uppercase; }
 .changelog-equipment__effect { grid-column: 1 / -1; color: var(--text-secondary); font-size: .78rem; line-height: 1.7; }
+.equipment-effect { font-weight: 600; }
+.equipment-effect--luck { color: #7fffb0; }
+.equipment-effect--multiplier { color: #caa0ff; }
+.equipment-effect--bonus { color: #82adff; }
+.equipment-effect--cycle { color: #78d8e6; }
+.equipment-effect--reduction { color: #ff8b8b; }
+.equipment-effect--condition { color: #ffbc79; }
 .wiki-title .wiki-ref-Hellborn-Background {
     background-image: url('https://static.wikia.nocookie.net/sol-rng/images/8/80/HellbornFireBackground.png/revision/latest?cb=20260922121817');
     background-size: 105% 62%;

@@ -174,9 +174,11 @@
     <link rel="stylesheet" href="styles/wiki-title-effects.css?v=2.2.0">
     <link rel="stylesheet" href="styles/wiki-titles.css?v=2.2.0">
     <link rel="stylesheet" href="styles/equipment.css?v=2.2.0">
+    <link rel="stylesheet" href="styles/help-footer.css?v=2.2.0">
     <script src="scripts/utils.js?v=2.2.0" defer></script>
     <script src="scripts/runtime.js?v=2.2.0" defer></script>
     <script src="scripts/gear-luck.js?v=2.2.0" defer></script>
+    <script src="scripts/equipment-presentation.js?v=2.2.0" defer></script>
     <script src="scripts/event-data.js?v=2.2.0" defer></script>
     <script src="scripts/simulation-core.js?v=2.2.0" defer></script>
     <script src="scripts/state.js?v=2.2.0" defer></script>
@@ -470,6 +472,7 @@
                         <button class="interface-toggle options-menu__item" id="qualityPreferencesToggle" type="button">Quality Preferences</button>
                         <button class="interface-toggle options-menu__item" id="backgroundRollingButton" type="button" aria-pressed="false">Allow background rolling: Off</button>
                         <button class="interface-toggle options-menu__item" id="trueChanceDisplayButton" type="button" aria-pressed="false">True chance display: Off</button>
+                        <button class="interface-toggle options-menu__item" id="stickyRollButtonToggle" type="button" aria-pressed="true" title="Keep the roll controls visible while scrolling">Sticky roll button: On</button>
                     </div>
                 </div>
             </div>
@@ -1234,7 +1237,7 @@
                                 <small id="equipment-buffs-hint">Add ordinary luck buffs here. Base luck and equipped gear are included automatically.</small>
                             </label>
                             <div class="equipment-formula">
-                                <strong>Luck = (basic luck × basic boost × bonus roll + special luck) × VIP / final multipliers</strong>
+                                <strong>Luck = (basic luck × bonus roll + special luck) × VIP / final multipliers</strong>
                                 <p id="equipment-luck-preview" aria-live="polite"></p>
                                 <p>High-luck potion presets add special luck. Bonus rolls never multiply that potion luck.</p>
                             </div>
@@ -1290,9 +1293,9 @@
         <header class="help-center__header">
             <span class="help-center__header-icon" aria-hidden="true"><i class="fa-solid fa-compass"></i></span>
             <span class="help-center__header-copy">
-                <span class="help-center__eyebrow">Guidance Console // Complete Manual</span>
-                <h2 id="helpCenterTitle">How can I help?</h2>
-                <p id="helpCenterDescription">Search the manual or choose a topic to understand every simulator control.</p>
+                <span class="help-center__eyebrow">Help &amp; guides</span>
+                <h2 id="helpCenterTitle">Make your next roll count</h2>
+                <p id="helpCenterDescription">Start with a short setup guide, or choose one topic. Search for a device, setting or problem.</p>
             </span>
             <button type="button" class="interface-button interface-button--ghost help-center__close" id="helpCenterClose" aria-label="Close Help Center">
                 <i class="fa-solid fa-xmark" aria-hidden="true"></i>
@@ -1309,8 +1312,9 @@
                 <nav class="help-center__nav" id="helpCenterNav" aria-label="Help topic navigation">
                     <button type="button" data-help-target="help-start" aria-current="true"><i class="fa-solid fa-play" aria-hidden="true"></i><span>Start Here</span></button>
                     <button type="button" data-help-target="help-luck"><i class="fa-solid fa-clover" aria-hidden="true"></i><span>Luck & Rolls</span></button>
-                    <button type="button" data-help-target="help-presets"><i class="fa-solid fa-bolt" aria-hidden="true"></i><span>Quick Presets</span></button>
-                    <button type="button" data-help-target="help-items"><i class="fa-solid fa-flask-vial" aria-hidden="true"></i><span>Potions & Items</span></button>
+                    <button type="button" data-help-target="help-presets"><i class="fa-solid fa-bolt" aria-hidden="true"></i><span>Presets</span></button>
+                    <button type="button" data-help-target="help-equipment"><i class="fa-solid fa-microchip" aria-hidden="true"></i><span>Equipment &amp; bonus rolls</span></button>
+                    <button type="button" data-help-target="help-items"><i class="fa-solid fa-flask-vial" aria-hidden="true"></i><span>Potions &amp; stacking</span></button>
                     <button type="button" data-help-target="help-biomes"><i class="fa-solid fa-mountain-sun" aria-hidden="true"></i><span>Biomes & Runes</span></button>
                     <button type="button" data-help-target="help-rules"><i class="fa-solid fa-scale-balanced" aria-hidden="true"></i><span>Biome Rules</span></button>
                     <button type="button" data-help-target="help-methods"><i class="fa-solid fa-dice" aria-hidden="true"></i><span>Rolling Methods</span></button>
@@ -1318,10 +1322,33 @@
                     <button type="button" data-help-target="help-cutscenes"><i class="fa-solid fa-film" aria-hidden="true"></i><span>Cutscenes</span></button>
                     <button type="button" data-help-target="help-results"><i class="fa-solid fa-list-ol" aria-hidden="true"></i><span>Results & Sharing</span></button>
                     <button type="button" data-help-target="help-settings"><i class="fa-solid fa-sliders" aria-hidden="true"></i><span>Settings</span></button>
+                    <button type="button" data-help-target="help-troubleshooting"><i class="fa-solid fa-circle-question" aria-hidden="true"></i><span>Common questions</span></button>
                 </nav>
-                <p class="help-center__sidebar-note"><i class="fa-solid fa-shield-halved" aria-hidden="true"></i> Help actions never change simulation settings unless you use the linked control yourself.</p>
+                <p class="help-center__sidebar-note">Pick a topic to read it here. “Go to” buttons take you to the matching control.</p>
             </aside>
-            <main class="help-center__content" id="helpCenterContent" tabindex="0">
+            <div class="help-center__content" id="helpCenterContent" tabindex="0">
+                <div class="help-search-results"><span id="helpSearchStatus" role="status" aria-live="polite"></span><button type="button" id="helpSearchClear" hidden>Clear search</button></div>
+
+                <article class="help-card help-card--featured" id="help-start" data-help-card data-help-keywords="start beginner setup first simulation roll guide">
+                    <div class="help-card__body">
+                        <span class="help-card__kicker">A quick first run</span>
+                        <h3>Start in four steps</h3>
+                        <ol class="help-start-steps">
+                            <li><strong>Choose your luck.</strong> Leave Luck Total at 1 for a basic run, or choose a potion from the Luck tab.</li>
+                            <li><strong>Build your loadout.</strong> In Devices, choose one right device, one left device and one pocket gear. Every card explains its effect.</li>
+                            <li><strong>Set the run.</strong> Enter a small Roll Amount, choose the biome and time, then enable any events you want to simulate.</li>
+                            <li><strong>Start rolling.</strong> Unnamed’s shows totals when finished. Sol’s-Like shows the sequence live. Both use the same luck rules.</li>
+                        </ol>
+                        <button type="button" class="help-card__jump" data-help-jump=".surface--parameters">Go to Run Parameters <i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i></button>
+                        <div class="help-quick-links" aria-label="Common help topics">
+                            <button type="button" data-help-target="help-equipment">How do bonus rolls work?</button>
+                            <button type="button" data-help-target="help-items">How do I use multiple potions?</button>
+                            <button type="button" data-help-target="help-troubleshooting">Why is an aura missing?</button>
+                        </div>
+                    </div>
+                </article>
+                <details class="help-tour-disclosure" id="helpTourDisclosure">
+                    <summary>Prefer a guided walkthrough? <span>Practice the controls step by step</span></summary>
                 <section class="help-tour" id="helpGuidedTour" aria-labelledby="helpTourTitle">
                     <header class="help-tour__header">
                         <span class="help-tour__identity">
@@ -1368,31 +1395,19 @@
                     </div>
                     <div class="help-tour__steps" id="helpTourSteps" aria-label="Guided practice steps"></div>
                 </section>
-                <article class="help-card help-card--featured" id="help-start" data-help-card data-help-keywords="start beginner setup first simulation roll guide">
-                    <span class="help-card__index">01</span>
-                    <div class="help-card__body">
-                        <span class="help-card__kicker">Recommended path</span>
-                        <h3>Start your first simulation</h3>
-                        <ol>
-                            <li>Enter your <strong>Luck Total</strong> and <strong>Roll Amount</strong>, or load both from Quick Presets.</li>
-                            <li>Choose the biome, rune, time, and any events that should be active.</li>
-                            <li>Select Unnamed's or Sol's-Like processing in the Simulation Console, then press Roll.</li>
-                            <li>Review, search, sort, or share the completed results in the Sequence Monitor.</li>
-                        </ol>
-                        <button type="button" class="help-card__jump" data-help-jump=".surface--parameters">Go to Run Parameters <i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i></button>
-                    </div>
-                </article>
+                </details>
                 <article class="help-card" id="help-luck" data-help-card data-help-keywords="luck total roll amount vip multiplier dorceless blessing">
-                    <span class="help-card__index">02</span>
                     <div class="help-card__body">
-                        <span class="help-card__kicker">Core inputs</span>
-                        <h3>Luck, rolls, and multipliers</h3>
-                        <p><strong>Luck Total</strong> is the base luck used for the run. <strong>Roll Amount</strong> is how many RNG attempts are processed in Single Potion Mode.</p>
+                        <span class="help-card__kicker">Understand the numbers</span>
+                        <h3>Luck Total, bonus rolls and VIP</h3>
+                        <p><strong>Luck Total shows the first roll’s final luck.</strong> When typing a custom value, enter basic luck before equipment and multipliers. The total updates when you leave the field.</p>
+                        <p class="help-card__note" data-equipment-effect-copy><strong>Luck = (basic luck × bonus roll + special potion luck) × final multipliers.</strong> Left-device effects are included in basic luck before special potions are added.</p>
                         <ul>
-                            <li>VIP, Dorcelessness, We're Sorry, YG Blessing, and Astrald's Blessing are optional final multipliers in the Simulation Console.</li>
-                            <li>The reset buttons return the related field to its default value.</li>
-                            <li>True Chance Display can add a calculated “1 in X” line to eligible results without changing the roll.</li>
+                            <li>Equipment and ordinary buffs contribute to basic luck. A high-luck potion, such as Heavenly, contributes special luck.</li>
+                            <li data-equipment-effect-copy>By default, every 10th roll has ×2 bonus luck. Left devices can change both the multiplier and the interval.</li>
+                            <li>VIP and the other final multipliers apply after special potion luck is added. Reset restores the custom luck input; your equipment stays equipped.</li>
                         </ul>
+                        <div class="help-example" data-equipment-effect-copy><strong>Example: <span data-wiki-item="The Thing">The Thing</span> + Heavenly + VIP</strong><p>30 basic luck ×11, then +150,000 special luck, then ×1.3 = <strong>195,429 Luck</strong> on the bonus roll. The potion’s 150,000 is never multiplied by the bonus.</p></div>
                         <button type="button" class="help-card__jump" data-help-jump="#luck-total">Go to Luck Total <i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i></button>
                     </div>
                 </article>
@@ -1410,18 +1425,37 @@
                         <button type="button" class="help-card__jump" data-help-jump=".surface--presets">Go to Quick Presets <i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i></button>
                     </div>
                 </article>
+                <article class="help-card" id="help-equipment" data-help-card data-help-keywords="equipment devices right left pocket gear gemstone darkshader unfathomable ruins flesh thing vampire hunter tide bonus roll luck cycle">
+                    <div class="help-card__body">
+                        <span class="help-card__kicker">Three independent slots</span><h3>Equipment &amp; bonus rolls</h3>
+                        <p>Open <strong>Devices</strong> in the Preset Command Center. Choose one item in each tab: <strong>Right Devices</strong>, <strong>Left Devices</strong> and <strong>Pocket Gear</strong>. The equipped card is highlighted. Choose None to empty that slot.</p>
+                        <ul>
+                            <li>Right devices and pocket gear add luck; some depend on the biome or time. Standard and event devices are listed separately.</li>
+                            <li>Add ordinary buffs in Additional basic buffs. Gear and the starting base luck are included automatically.</li>
+                            <li>Each new simulation starts at roll 1. Cycles carry across potion batches, and pausing preserves your position.</li>
+                        </ul>
+                        <details class="help-detail"><summary>Special device cycles</summary><ul data-equipment-effect-copy>
+                            <li><span data-wiki-item="Gemstone Gauntlet">Gemstone Gauntlet</span>: after 10 rolls, one random +0.00–0.30 luck value applies to the next 10 rolls, then rerolls.</li>
+                            <li><span data-wiki-item="Darkshader">Darkshader</span>: ×2 every 5th roll; the 10 rolls after each 20th roll have ×2.5 luck, or ×5 on bonus rolls.</li>
+                            <li><span data-wiki-item="Unfathomable Ruins">Unfathomable Ruins</span>: 1,000 normal rolls, then 100 rolls at ×14. Ordinary bonus rolls are disabled.</li>
+                            <li><span data-wiki-item="Tide Gauntlet">Tide Gauntlet</span> and <span data-wiki-item="Blessed Tide Gauntlet">Blessed Tide Gauntlet</span>: bonus rolls use native Rainy rarity for eligible auras, without unlocking Rainy-exclusive auras.</li>
+                        </ul></details>
+                        <p class="help-card__note">Description colors: <span class="equipment-effect--luck">luck</span>, <span class="equipment-effect--multiplier">multipliers</span> and <span class="equipment-effect--bonus">bonus rolls</span>. Biomes, events and day/night conditions use their matching sigils. The wording explains every effect as well.</p>
+                        <button type="button" class="help-card__jump" data-help-jump="#preset-bank-device" data-help-preset-bank="device">Go to Devices <i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i></button>
+                    </div>
+                </article>
                 <article class="help-card" id="help-items" data-help-card data-help-keywords="potion item rules single multiple stacking quantity oblivion pumpkin blood tutorial priority device rune incompatible">
                     <span class="help-card__index">04</span>
                     <div class="help-card__body">
                         <span class="help-card__kicker">Item rules</span>
                         <h3>Potions and Multiple Potion Mode</h3>
-                        <p><strong>Single Potion Mode</strong> uses one luck value and roll amount. <strong>Multiple Potion Mode</strong> processes the quantity entered for each potion as ordered batches.</p>
+                        <p><strong>Single Potion Mode</strong> repeats the chosen potion and equipment setup for the entered roll amount. <strong>Multiple Potion Mode</strong> processes the quantity entered for each potion as ordered batches.</p>
                         <ul>
                             <li>With compatible stacking off, each potion keeps its own batch. With stacking on, compatible potion luck is merged per roll.</li>
                             <li>Potions are used in this order: Pump King's Blood, Oblivion, Tutorial Potion, then the remaining potion types.</li>
                             <li>Pump King's Blood, Oblivion, and Tutorial Potion always remain separate. Rune-incompatible potion rolls are processed without the rune before compatible rolls.</li>
                             <li>Red Moon I and Red Moon II are mutually exclusive within a stack. Each can still stack with other compatible potions.</li>
-                            <li>Basic luck includes the base 1, equipment and ordinary buffs. Basic boosts and bonus rolls multiply it before special potion luck is added. VIP, final-luck and biome multipliers apply last.</li>
+                            <li>Basic luck includes the base 1, equipment and ordinary buffs. Device effects and bonus rolls apply before special potion luck is added. VIP, final-luck and biome multipliers apply last.</li>
                         </ul>
                         <button type="button" class="help-card__jump" data-help-jump=".surface--parameters">Go to Potion Loadout <i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i></button>
                     </div>
@@ -1502,7 +1536,9 @@
                     <span class="help-card__index">10</span>
                     <div class="help-card__body">
                         <span class="help-card__kicker">After rolling</span>
-                        <h3>Sequence Monitor, sorting, and sharing</h3>
+                        <h3>Read your roll results</h3>
+                        <p>A multiplier such as <strong>(11x)</strong> appears only when a bonus roll is applied. Ordinary rolls omit (1x). Enable <strong>Settings → True chance display</strong> to show the calculated chance and the luck used on every roll, including ordinary rolls.</p>
+                        <div class="help-example"><strong>True Chance: 1 in 12.5 (11x) · 195,429 Luck</strong><p>Turning True Chance off hides the chance and luck value; (11x) remains. Some fixed-chance auras omit the calculated chance.</p></div>
                         <ul>
                             <li>Search accepts either an aura name or a tier name such as Legendary.</li>
                             <li>Unnamed's results can sort by Rarity or Alphabetical. Sol's-Like also offers Recent to restore exact roll order.</li>
@@ -1514,7 +1550,7 @@
                         <button type="button" class="help-card__jump" data-help-jump=".surface--results">Go to Sequence Monitor <i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i></button>
                     </div>
                 </article>
-                <article class="help-card" id="help-settings" data-help-card data-help-keywords="settings audio mute volume quality performance background rolling true chance reduce glitch animations particles">
+                <article class="help-card" id="help-settings" data-help-card data-help-keywords="settings audio mute volume quality performance background rolling true chance reduce glitch animations particles sticky floating roll button">
                     <span class="help-card__index">11</span>
                     <div class="help-card__body">
                         <span class="help-card__kicker">Preferences</span>
@@ -1523,12 +1559,24 @@
                             <li>Mute controls all sound. Audio Settings separately adjust music, cutscenes, obtain sounds, and UI sounds.</li>
                             <li>Quality Preferences can remove particles, UI animations, shake effects, roll/sigil animation, or reduce/remove glitch effects.</li>
                             <li>Allow Background Rolling keeps active simulations processing when the tab is not focused, which may use more CPU or battery.</li>
-                            <li>True Chance Display adds eligible real-chance context to the feed without modifying results.</li>
+                            <li>True Chance Display adds eligible real-chance context and the luck used on every roll without modifying results.</li>
+                            <li>Turn <strong>Sticky roll button</strong> off to keep the roll controls in the Simulation Console while you scroll. This preference is remembered between visits.</li>
                         </ul>
                     </div>
                 </article>
-                <p class="help-center__empty" id="helpCenterEmpty" hidden>No help topics match that search.</p>
-            </main>
+                <article class="help-card" id="help-troubleshooting" data-help-card data-help-keywords="problem missing aura hidden disabled event halloween summer reset luck changed not showing cannot roll bonus potion">
+                    <div class="help-card__body">
+                        <span class="help-card__kicker">Common questions</span><h3>Find what is affecting your run</h3>
+                        <details class="help-detail" open><summary>Why is an aura missing?</summary><p>Check the biome, time, rune and event requirements first. Then check Settings → Rolling Settings for hidden tiers or individual auras, and clear the result search. Filters change what you see; they do not increase the chance of another aura.</p></details>
+                        <details class="help-detail"><summary>Why did Luck Total change after I typed?</summary><p>The input accepts basic luck. Leaving the field adds equipped gear and applies first-roll device effects and final multipliers. Use Additional basic buffs for ordinary buffs alongside a potion preset.</p></details>
+                        <details class="help-detail"><summary>Why did the bonus barely change my potion luck?</summary><p>The bonus multiplies basic luck before the special potion is added. A 150,000-luck potion is never multiplied by the bonus. This is expected, even with <span data-wiki-item="The Thing">The Thing</span>.</p></details>
+                        <details class="help-detail"><summary>Why is Halloween 2026 disabled?</summary><p>Its data is prepared for a future update, but the event has not been activated. Summer 2026 is no longer on by default; you can still select it for historical simulations.</p></details>
+                        <details class="help-detail"><summary>Why is a live run paused?</summary><p>Check whether a cutscene is playing, whether pause-after-cutscene is enabled, or whether Pause was pressed. Use Resume to continue. Background rolling is controlled separately in Settings.</p></details>
+                        <button type="button" class="help-card__jump" data-help-action="rolling-settings">Open Rolling Settings <i class="fa-solid fa-sliders" aria-hidden="true"></i></button>
+                    </div>
+                </article>
+                <p class="help-center__empty" id="helpCenterEmpty" hidden>No matching topics. Try “bonus”, “potions”, “rarity” or “missing aura”, or clear the search.</p>
+            </div>
         </div>
     </section>
     <button type="button" class="help-tour-resume" id="helpTourResume" hidden>
@@ -1540,21 +1588,26 @@
     </button>
 
     <footer class="surface interface-footer" role="contentinfo">
-        <div class="site-footer__identity">
-            <span class="site-footer__mark" aria-hidden="true"><i class="fa-solid fa-code-branch"></i></span>
-            <div>
-                <p class="site-footer__eyebrow">Project Archive</p>
-                <p class="site-footer__text">&copy; <span id="build-year"></span> The Unnamed. <a class="noClass" target="__blank" href="https://github.com/The-Unnamed-Official/The-Unnamed-Proprietary-License-1.0?tab=License-1-ov-file">The Unnamed Proprietary License 1.0</a>.</p>
+        <header class="site-footer__header">
+            <div class="site-footer__identity">
+                <span class="site-footer__mark" aria-hidden="true"><i class="fa-solid fa-dice"></i></span>
+                <div><p class="site-footer__eyebrow">Made for the Sol’s RNG community</p><h2>Sol’s RNG Rolling Simulator</h2><p class="site-footer__description">Created by <a href="https://discord.com/users/611204110955446301" target="_blank" rel="noopener">not.unnamed</a>, with artwork and media from the contributors below.</p></div>
             </div>
-        </div>
+            <nav class="site-footer__links" aria-label="Project links"><button type="button" data-open-help="help-start">How to use</button><a href="https://github.com/The-Unnamed-Official/Sols-Rolling-Calculator/tree/published" target="_blank" rel="noopener">Project source <i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i></a></nav>
+        </header>
+        <section class="footer-license" aria-labelledby="footerLicenseTitle">
+            <h3 id="footerLicenseTitle"><i class="fa-solid fa-file-lines" aria-hidden="true"></i> Licensing &amp; attribution</h3>
+            <div><h4>Simulator code</h4><p>&copy; <span id="build-year"></span> The Unnamed.</p><a href="https://github.com/The-Unnamed-Official/The-Unnamed-Proprietary-License-1.0?tab=License-1-ov-file" target="_blank" rel="noopener">The Unnamed Proprietary License 1.0 <i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i></a></div>
+            <div><h4>Community artwork</h4><p>Aura and item titles use artwork, fonts, colors and effects adapted from Sol’s RNG Wiki contributors.</p><a href="https://www.fandom.com/licensing" target="_blank" rel="noopener">CC BY-SA, unless otherwise noted <i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i></a><p class="footer-license__note">Original media and contributor links are listed in the credits.</p></div>
+        </section>
         <details class="footer-credits">
             <summary class="footer-credits__summary">
                 <span class="footer-credits__summary-icon" aria-hidden="true"><i class="fa-solid fa-people-group"></i></span>
                 <span class="footer-credits__summary-copy">
-                    <strong>Credits Directory</strong>
-                    <span>Browse the people and media behind the simulator</span>
+                    <strong>People behind the simulator</strong>
+                    <span>Explore cutscenes, music, biome media and wiki artwork</span>
                 </span>
-                <span class="footer-credits__summary-count">26 entries</span>
+                <span class="footer-credits__summary-count">25 contributions</span>
                 <i class="fa-solid fa-chevron-down footer-credits__summary-chevron" aria-hidden="true"></i>
             </summary>
             <div class="footer-credits__panel">
@@ -1580,31 +1633,31 @@
                     <span class="footer-credits__result-count" id="creditsResultCount" role="status" aria-live="polite">25 contributions</span>
                 </div>
                 <ul class="footer-credits__list" id="creditsList">
-                <li class="footer-credits__item footer-credits__item--wiki-artwork" data-credit-category="artwork">Aura and item title artwork, fonts, colors, and effects adapted from <a href="https://sol-rng.fandom.com/wiki/Auras" target="_blank" rel="noopener">Sol's RNG Wiki contributors</a> Community artwork is shared under <a href="https://www.fandom.com/licensing" target="_blank" rel="noopener">CC BY-SA, unless otherwise noted</a></li>
-                <li class="footer-credits__item"><span class="sigil-outline-glitch"">Glitch</span> biome backdrop courtesy of <a href="https://www.youtube.com/watch?v=Efxaiefo3QY" target="_blank" rel="noopener">ComedicChicken</a></li>
-                <li class="footer-credits__item"><span class="changelog-aura-sigil" data-changelog-aura-sigil="Erebus">Erebus</span> cutscene courtesy of <a href="https://www.youtube.com/watch?v=ift10zMOVRk" target="_blank" rel="noopener">4zell</a></li>
-                <li class="footer-credits__item"><span class="changelog-aura-sigil" data-changelog-aura-sigil="Lamenthyr">Lamenthyr</span> cutscene courtesy of <a href="https://www.youtube.com/watch?v=DwEzY_nA054" target="_blank" rel="noopener">Ray</a></li>
-                <li class="footer-credits__item"><span class="changelog-aura-sigil" data-changelog-aura-sigil="Dreammetric">Dreammetric</span> cutscene courtesy of <a href="https://www.youtube.com/watch?v=Qo0P0LYAenQ" target="_blank" rel="noopener">Bocchi</a></li>
-                <li class="footer-credits__item"><span class="changelog-aura-sigil" data-changelog-aura-sigil="Equinox">Equinox</span> cutscene courtesy of <a href="https://discord.com/users/1148667348253933649" target="_blank" rel="noopener">ploqoo</a></li>
-                <li class="footer-credits__item"><span class="changelog-aura-sigil" data-changelog-aura-sigil="Oppression">Oppression</span> cutscene courtesy of <a href="https://www.youtube.com/watch?v=dgqkpBYNxiU" target="_blank" rel="noopener">SorrVriety</a></li>
-                <li class="footer-credits__item"><span class="changelog-aura-sigil" data-changelog-aura-sigil="Oblivion">Oblivion</span> cutscene courtesy of <a href="https://discord.com/users/1008360412632322088" target="_blank" rel="noopener">antigodthesans</a></li>
-                <li class="footer-credits__item"><span class="changelog-aura-sigil" data-changelog-aura-sigil="Neferkhaf">Neferkhaf</span> cutscene courtesy of <a href="https://www.reddit.com/r/SolsRNG/comments/1n3wot3/new_neferkhaf_cutscene/" target="_blank" rel="noopener">Sirothereal</a></li>
-                <li class="footer-credits__item"><span class="changelog-aura-sigil" data-changelog-aura-sigil="Illusionary">Illusionary</span> cutscene courtesy of <a href="https://www.reddit.com/r/SolsRNG/comments/1pall7r/illusionary_cutscene" target="_blank" rel="noopener">Chromm</a> & segyun(person who obtained Illusionary)</li>
-                <li class="footer-credits__item"><span class="changelog-aura-sigil" data-changelog-aura-sigil="Winter Garden">Winter Garden</span> cutscene courtesy of <a href="https://m.youtube.com/watch?v=6JUcTw2ps_w&pp=ygUfd2ludGVyIGdhcmRlbiBzb2xzIHJuZyBjdXRzY2VuZQ%3D%3D" target="_blank" rel="noopener">Ray</a> & <a href="https://sol-rng.fandom.com/wiki/User:MattPlays607#Sol's_RNG" target="_blank" rel="noopener">Matt</a>(person who helped me)</li>
-                <li class="footer-credits__item"><span class="changelog-aura-sigil" data-changelog-aura-sigil="Dream Traveler">Dream Traveler</span> cutscene courtesy of <a href="https://www.youtube.com/watch?v=UOoP3JrsqKg" target="_blank" rel="noopener">floob</a></li>
-                <li class="footer-credits__item"><span class="sigil-outline-cyberspace">Cyberspace</span> song courtesy of <a href="https://open.spotify.com/track/1ZyGEzIDZgwWZucfoCPq9h" target="_blank" rel="noopener">Veens</a></li>
-                <li class="footer-credits__item"><span class="sigil-outline-dreamspace">Dreamspace</span> song courtesy of <a href="https://www.youtube.com/watch?v=nVvKPZ2soyU" target="_blank" rel="noopener">53_Axis</a></li>
-                <li class="footer-credits__item"><span class="biome-sigil--red-full-moon">[ 赤い満月 ]</span> song courtesy of <a href="https://www.youtube.com/watch?v=LLng8n_1eOY" target="_blank" rel="noopener">Derpcat</a></li>
-                <li class="footer-credits__item"><span class="changelog-aura-sigil" data-changelog-aura-sigil="Leviathan">Leviathan</span> cutscene courtesy of <a href="https://discord.com/users/755614816793788468" target="_blank" rel="noopener">@reeseyhi</a></li>
-                <li class="footer-credits__item"><span class="changelog-aura-sigil" data-changelog-aura-sigil="Monarch">Monarch</span> cutscene courtesy of <a href="https://youtu.be/qx8EPFC5vDM" target="_blank" rel="noopener">floob</a></li>
-                <li class="footer-credits__item"><span class="changelog-aura-sigil" data-changelog-aura-sigil="赤月の破片">赤月の破片</span> cutscene courtesy of <a href="https://discord.com/users/1088288687449702470" target="_blank" rel="noopener">carno._.</a></li>
-                <li class="footer-credits__item"><span class="changelog-aura-sigil" data-changelog-aura-sigil="Equinox : You Are An Idiot">Equinox : You Are An Idiot</span> cutscene courtesy of <a href="https://discord.com/users/1060938600264515715" target="_blank" rel="noopener">gold_solsrng</a></li>
-                <li class="footer-credits__item"><span class="changelog-aura-sigil" data-changelog-aura-sigil="A Fool's Experience">A Fool's Experience</span> cutscene courtesy of <a href="https://discord.com/users/1374138224603168929" target="_blank" rel="noopener">fawqz</a></li>
-                <li class="footer-credits__item"><span class="changelog-aura-sigil" data-changelog-aura-sigil="P.U.K.E.K.O.G.O.D.">P.U.K.E.K.O.G.O.D.</span> cutscene courtesy of <a href="https://discord.com/users/462990696182448150" target="_blank" rel="noopener">kutay1000</a></li>
-                <li class="footer-credits__item"><span class="changelog-aura-sigil" data-changelog-aura-sigil="Astraios">Astraios</span> cutscene courtesy of <a href="https://discord.com/users/1010402510994935929" target="_blank" rel="noopener">remixcodeszz11</a></li>
-                <li class="footer-credits__item"><span class="changelog-aura-sigil" data-changelog-aura-sigil="Dream Catcher">Dream Catcher</span> cutscene courtesy of <a href="https://discord.com/users/1169345672047247401" target="_blank" rel="noopener">flopstero</a></li>
-                <li class="footer-credits__item"><span class="changelog-aura-sigil" data-changelog-aura-sigil="Crabtropica">Crabtropica</span> cutscene courtesy of <a href="https://discord.com/users/754022230480126073" target="_blank" rel="noopener">temychh</a></li>
-                <li class="footer-credits__item"><span class="changelog-aura-sigil" data-changelog-aura-sigil="Osteria">Osteria</span> cutscene courtesy of <a href="https://discord.com/users/520694876480733184" target="_blank" rel="noopener">feabrey</a></li>
+                <li class="footer-credits__item footer-credits__item--wiki-artwork" data-credit-category="artwork">Aura and item title artwork, fonts, colors, and effects adapted from <a href="https://sol-rng.fandom.com/wiki/Auras" target="_blank" rel="noopener">Sol's RNG Wiki contributors</a>. Community artwork is shared under <a href="https://www.fandom.com/licensing" target="_blank" rel="noopener">CC BY-SA, unless otherwise noted</a></li>
+                <li class="footer-credits__item"><span class="footer-credits__item-heading"><span class="sigil-outline-glitch">Glitch</span></span><span class="footer-credits__item-source">biome backdrop courtesy of <a href="https://www.youtube.com/watch?v=Efxaiefo3QY" target="_blank" rel="noopener">ComedicChicken</a></span></li>
+                <li class="footer-credits__item"><span class="footer-credits__item-heading"><span class="changelog-aura-sigil" data-changelog-aura-sigil="Erebus">Erebus</span></span><span class="footer-credits__item-source">cutscene courtesy of <a href="https://www.youtube.com/watch?v=ift10zMOVRk" target="_blank" rel="noopener">4zell</a></span></li>
+                <li class="footer-credits__item"><span class="footer-credits__item-heading"><span class="changelog-aura-sigil" data-changelog-aura-sigil="Lamenthyr">Lamenthyr</span></span><span class="footer-credits__item-source">cutscene courtesy of <a href="https://www.youtube.com/watch?v=DwEzY_nA054" target="_blank" rel="noopener">Ray</a></span></li>
+                <li class="footer-credits__item"><span class="footer-credits__item-heading"><span class="changelog-aura-sigil" data-changelog-aura-sigil="Dreammetric">Dreammetric</span></span><span class="footer-credits__item-source">cutscene courtesy of <a href="https://www.youtube.com/watch?v=Qo0P0LYAenQ" target="_blank" rel="noopener">Bocchi</a></span></li>
+                <li class="footer-credits__item"><span class="footer-credits__item-heading"><span class="changelog-aura-sigil" data-changelog-aura-sigil="Equinox">Equinox</span></span><span class="footer-credits__item-source">cutscene courtesy of <a href="https://discord.com/users/1148667348253933649" target="_blank" rel="noopener">ploqoo</a></span></li>
+                <li class="footer-credits__item"><span class="footer-credits__item-heading"><span class="changelog-aura-sigil" data-changelog-aura-sigil="Oppression">Oppression</span></span><span class="footer-credits__item-source">cutscene courtesy of <a href="https://www.youtube.com/watch?v=dgqkpBYNxiU" target="_blank" rel="noopener">SorrVriety</a></span></li>
+                <li class="footer-credits__item"><span class="footer-credits__item-heading"><span class="changelog-aura-sigil" data-changelog-aura-sigil="Oblivion">Oblivion</span></span><span class="footer-credits__item-source">cutscene courtesy of <a href="https://discord.com/users/1008360412632322088" target="_blank" rel="noopener">antigodthesans</a></span></li>
+                <li class="footer-credits__item"><span class="footer-credits__item-heading"><span class="changelog-aura-sigil" data-changelog-aura-sigil="Neferkhaf">Neferkhaf</span></span><span class="footer-credits__item-source">cutscene courtesy of <a href="https://www.reddit.com/r/SolsRNG/comments/1n3wot3/new_neferkhaf_cutscene/" target="_blank" rel="noopener">Sirothereal</a></span></li>
+                <li class="footer-credits__item"><span class="footer-credits__item-heading"><span class="changelog-aura-sigil" data-changelog-aura-sigil="Illusionary">Illusionary</span></span><span class="footer-credits__item-source">cutscene courtesy of <a href="https://www.reddit.com/r/SolsRNG/comments/1pall7r/illusionary_cutscene" target="_blank" rel="noopener">Chromm</a> &amp; segyun (player who obtained Illusionary)</span></li>
+                <li class="footer-credits__item"><span class="footer-credits__item-heading"><span class="changelog-aura-sigil" data-changelog-aura-sigil="Winter Garden">Winter Garden</span></span><span class="footer-credits__item-source">cutscene courtesy of <a href="https://m.youtube.com/watch?v=6JUcTw2ps_w&pp=ygUfd2ludGVyIGdhcmRlbiBzb2xzIHJuZyBjdXRzY2VuZQ%3D%3D" target="_blank" rel="noopener">Ray</a> & <a href="https://sol-rng.fandom.com/wiki/User:MattPlays607#Sol's_RNG" target="_blank" rel="noopener">Matt</a> (additional assistance)</span></li>
+                <li class="footer-credits__item"><span class="footer-credits__item-heading"><span class="changelog-aura-sigil" data-changelog-aura-sigil="Dream Traveler">Dream Traveler</span></span><span class="footer-credits__item-source">cutscene courtesy of <a href="https://www.youtube.com/watch?v=UOoP3JrsqKg" target="_blank" rel="noopener">floob</a></span></li>
+                <li class="footer-credits__item"><span class="footer-credits__item-heading"><span class="sigil-outline-cyberspace">Cyberspace</span></span><span class="footer-credits__item-source">song courtesy of <a href="https://open.spotify.com/track/1ZyGEzIDZgwWZucfoCPq9h" target="_blank" rel="noopener">Veens</a></span></li>
+                <li class="footer-credits__item"><span class="footer-credits__item-heading"><span class="sigil-outline-dreamspace">Dreamspace</span></span><span class="footer-credits__item-source">song courtesy of <a href="https://www.youtube.com/watch?v=nVvKPZ2soyU" target="_blank" rel="noopener">53_Axis</a></span></li>
+                <li class="footer-credits__item"><span class="footer-credits__item-heading"><span class="biome-sigil--red-full-moon">[ 赤い満月 ]</span></span><span class="footer-credits__item-source">song courtesy of <a href="https://www.youtube.com/watch?v=LLng8n_1eOY" target="_blank" rel="noopener">Derpcat</a></span></li>
+                <li class="footer-credits__item"><span class="footer-credits__item-heading"><span class="changelog-aura-sigil" data-changelog-aura-sigil="Leviathan">Leviathan</span></span><span class="footer-credits__item-source">cutscene courtesy of <a href="https://discord.com/users/755614816793788468" target="_blank" rel="noopener">@reeseyhi</a></span></li>
+                <li class="footer-credits__item"><span class="footer-credits__item-heading"><span class="changelog-aura-sigil" data-changelog-aura-sigil="Monarch">Monarch</span></span><span class="footer-credits__item-source">cutscene courtesy of <a href="https://youtu.be/qx8EPFC5vDM" target="_blank" rel="noopener">floob</a></span></li>
+                <li class="footer-credits__item"><span class="footer-credits__item-heading"><span class="changelog-aura-sigil" data-changelog-aura-sigil="赤月の破片">赤月の破片</span></span><span class="footer-credits__item-source">cutscene courtesy of <a href="https://discord.com/users/1088288687449702470" target="_blank" rel="noopener">carno._.</a></span></li>
+                <li class="footer-credits__item"><span class="footer-credits__item-heading"><span class="changelog-aura-sigil" data-changelog-aura-sigil="Equinox : You Are An Idiot">Equinox : You Are An Idiot</span></span><span class="footer-credits__item-source">cutscene courtesy of <a href="https://discord.com/users/1060938600264515715" target="_blank" rel="noopener">gold_solsrng</a></span></li>
+                <li class="footer-credits__item"><span class="footer-credits__item-heading"><span class="changelog-aura-sigil" data-changelog-aura-sigil="A Fool's Experience">A Fool's Experience</span></span><span class="footer-credits__item-source">cutscene courtesy of <a href="https://discord.com/users/1374138224603168929" target="_blank" rel="noopener">fawqz</a></span></li>
+                <li class="footer-credits__item"><span class="footer-credits__item-heading"><span class="changelog-aura-sigil" data-changelog-aura-sigil="P.U.K.E.K.O.G.O.D.">P.U.K.E.K.O.G.O.D.</span></span><span class="footer-credits__item-source">cutscene courtesy of <a href="https://discord.com/users/462990696182448150" target="_blank" rel="noopener">kutay1000</a></span></li>
+                <li class="footer-credits__item"><span class="footer-credits__item-heading"><span class="changelog-aura-sigil" data-changelog-aura-sigil="Astraios">Astraios</span></span><span class="footer-credits__item-source">cutscene courtesy of <a href="https://discord.com/users/1010402510994935929" target="_blank" rel="noopener">remixcodeszz11</a></span></li>
+                <li class="footer-credits__item"><span class="footer-credits__item-heading"><span class="changelog-aura-sigil" data-changelog-aura-sigil="Dream Catcher">Dream Catcher</span></span><span class="footer-credits__item-source">cutscene courtesy of <a href="https://discord.com/users/1169345672047247401" target="_blank" rel="noopener">flopstero</a></span></li>
+                <li class="footer-credits__item"><span class="footer-credits__item-heading"><span class="changelog-aura-sigil" data-changelog-aura-sigil="Crabtropica">Crabtropica</span></span><span class="footer-credits__item-source">cutscene courtesy of <a href="https://discord.com/users/754022230480126073" target="_blank" rel="noopener">temychh</a></span></li>
+                <li class="footer-credits__item"><span class="footer-credits__item-heading"><span class="changelog-aura-sigil" data-changelog-aura-sigil="Osteria">Osteria</span></span><span class="footer-credits__item-source">cutscene courtesy of <a href="https://discord.com/users/520694876480733184" target="_blank" rel="noopener">feabrey</a></span></li>
                 </ul>
                 <p class="footer-credits__empty" id="creditsEmpty" hidden>No matching credits found.</p>
             </div>
@@ -1866,10 +1919,10 @@
     <div id="trueChanceDisplayOverlay" class="cutscene-warning-overlay" hidden aria-hidden="true">
         <div class="cutscene-warning surface surface--modal" role="dialog" aria-modal="true" aria-labelledby="trueChanceDisplayTitle">
             <p class="cutscene-warning__message">
-                <span id="trueChanceDisplayTitle" class="cutscene-warning__note">True chance display</span>: When enabled, rolled auras in your feed include an extra line showing their true "1 in X" chance based on your active luck.
+                <span id="trueChanceDisplayTitle" class="cutscene-warning__note">True chance display</span>: New roll results show their true "1 in X" chance, followed by the roll multiplier and the luck used for that roll.
             </p>
             <p class="cutscene-warning__message cutscene-warning__message--subtle">
-                This is useful if you want exact chance context while reviewing simulation results.
+                Bonus rolls show their multiplier, such as (11x). Ordinary rolls omit (1x). Luck is shown on every new result when this setting is on; turning it off hides the chance and luck.
             </p>
             <div class="cutscene-warning__actions">
                 <button type="button" class="interface-button interface-button--ghost" id="trueChanceDisplayCancel">Nevermind</button>
@@ -2288,9 +2341,9 @@
                         <li class="changelog-release-group">
                             <span class="largeClass">Bonus rolls &amp; luck calculation</span>
                             <ul class="changelog-release-group__list">
-                                <li>Every 10th roll receives ×2 basic luck by default. Left devices change its multiplier, timing and effects in both simulation methods.</li>
-                                <li>Basic luck × bonus roll + special potion luck, then VIP and final multipliers. Bonus rolls never multiply high-luck potions.</li>
-                                <li>Cycles start at roll 1 and continue across potion batches. True Chance appears first, followed by the roll's multiplier, such as (11x) for <span data-wiki-item="The Thing">The Thing</span> or (1.3x) for <span data-wiki-item="Flesh Device">Flesh Device</span> then the luck it was rolled with.</li>
+                                <li data-equipment-effect-copy>Every 10th roll receives ×2 basic luck by default. Left devices change its multiplier, timing and effects in both simulation methods.</li>
+                                <li data-equipment-effect-copy>Basic luck × bonus roll + special potion luck, then VIP and final multipliers. Bonus rolls never multiply high-luck potions.</li>
+                                <li data-equipment-effect-copy>Cycles start at roll 1 and continue across potion batches. True Chance appears first, followed by the multiplier when a bonus roll is applied, such as (11x) for <span data-wiki-item="The Thing">The Thing</span> or (1.3x) for <span data-wiki-item="Flesh Device">Flesh Device</span>, then the luck used for that roll. Ordinary rolls omit (1x); True Chance shows luck on every roll.</li>
                             </ul>
                         </li>
                         <li class="changelog-release-group">
@@ -2305,6 +2358,16 @@
                             <ul class="changelog-release-group__list">
                                 <li><span class="sigil-outline-summer">Summer 2026</span> has ended and is no longer enabled by default. It remains available for historical simulations.</li>
                                 <li>Prepared <span class="sigil-outline-halloween">Halloween 2026</span> event data for future auras. It remains upcoming and disabled by default.</li>
+                            </ul>
+                        </li>
+                        <li class="changelog-release-group">
+                            <span class="largeClass">Clearer descriptions &amp; guides</span>
+                            <ul class="changelog-release-group__list">
+                                <li>Equipment effects use <span class="equipment-effect--luck">green for luck</span>, <span class="equipment-effect--multiplier">purple for multipliers</span> and <span class="equipment-effect--bonus">blue for bonus rolls</span>.</li>
+                                <li>Help Me now presents one topic at a time, with a four-step setup guide, searchable answers, equipment explanations, common questions and an optional walkthrough.</li>
+                                <li>Redesigned the footer with clearer licensing and artwork attribution, useful project links and readable contributor cards with search and category filters.</li>
+                                <li>Added a saved Sticky roll button setting. Turn it off to keep roll controls in their original position while scrolling.</li>
+                                <li>The Unnamed's RNG card have been reworked to become the new Sol's RNG Rolling Simulator Server it has become with the new logo and new features! go say hi :D -> <a href="https://www.discord.gg/m6k7Jagm3v" target="_blank" rel="noopener">Sol's RNG Rolling Simulator's Discord Server</a></li>
                             </ul>
                         </li>
                     </ul>

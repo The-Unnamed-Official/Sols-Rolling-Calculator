@@ -535,6 +535,9 @@ function hydrateVisualSettings() {
         if (typeof parsed.selectiveTrueChanceDisplay === 'boolean') {
             appState.selectiveTrueChanceDisplay = parsed.selectiveTrueChanceDisplay;
         }
+        if (typeof parsed.stickyRollButton === 'boolean') {
+            appState.stickyRollButton = parsed.stickyRollButton;
+        }
 
         ensureQualityPreferences();
         const storedQualityPreferences = parsed.qualityPreferences;
@@ -622,6 +625,7 @@ function persistVisualSettings() {
                 cinematic: FORCE_CUTSCENES_ALWAYS_ON ? true : appState.cinematic,
                 reduceMotion: appState.reduceMotion,
                 selectiveTrueChanceDisplay: Boolean(appState.selectiveTrueChanceDisplay),
+                stickyRollButton: appState.stickyRollButton !== false,
                 qualityPreferences: appState.qualityPreferences
             })
         );
@@ -721,6 +725,17 @@ function setSelectiveTrueChanceDisplayEnabled(enabled, { persistPreference = tru
     if (persistPreference) {
         persistVisualSettings();
     }
+}
+
+function setStickyRollButtonEnabled(enabled, { persistPreference = true } = {}) {
+    appState.stickyRollButton = Boolean(enabled);
+    const button = document.getElementById('stickyRollButtonToggle');
+    if (button) {
+        button.textContent = `Sticky roll button: ${enabled ? 'On' : 'Off'}`;
+        button.setAttribute('aria-pressed', enabled ? 'true' : 'false');
+    }
+    document.dispatchEvent(new Event('sticky-roll-button-change'));
+    if (persistPreference) persistVisualSettings();
 }
 
 function showTrueChanceDisplayOverlay() {
@@ -2096,6 +2111,10 @@ function initializeRollTriggerFloating() {
 
     const updateDock = () => {
         updateFrame = 0;
+        if (appState.stickyRollButton === false) {
+            setFloating(false);
+            return;
+        }
         const activationOffset = Math.max(12, Math.min(18, window.innerWidth * 0.02));
         const anchorTop = dockAnchor.getBoundingClientRect().top;
         const shouldFloat = floating
@@ -2139,6 +2158,7 @@ function initializeRollTriggerFloating() {
     window.addEventListener('scroll', requestDockUpdate, { passive: true });
     window.addEventListener('resize', requestDockUpdate, { passive: true });
     window.addEventListener('orientationchange', requestDockUpdate, { passive: true });
+    document.addEventListener('sticky-roll-button-change', updateDock);
 
     if (typeof ResizeObserver === 'function') {
         const dockResizeObserver = new ResizeObserver(requestDockUpdate);
@@ -4987,7 +5007,7 @@ function syncEquipmentPreview() {
     const bonus = GearLuck.totalLuck(inputs.basic, inputs.special, inputs.finalMultiplier, GearLuck.rollState(equippedGear.left, rule.interval || 1001));
     if (preview) preview.textContent = `Basic luck: ${formatWithCommas(inputs.basic)} · Special luck: ${formatWithCommas(inputs.special)} · First roll: ${formatWithCommas(normal)} · ${rule.interval ? 'Bonus roll' : 'Ruins active'}: ${formatWithCommas(bonus)}`;
     const summary = document.getElementById('bonus-roll-summary');
-    if (summary) summary.textContent = GearLuck.describe(equippedGear.left);
+    if (summary) summary.innerHTML = EquipmentPresentation.format(GearLuck.describe(equippedGear.left));
     const selectionSummary = document.getElementById('equipment-selection-summary');
     if (selectionSummary) selectionSummary.textContent = getEquipmentSummary();
     document.querySelectorAll('[data-equipment-item]').forEach(button => {
@@ -5033,7 +5053,7 @@ function initializeEquipmentControls() {
                 : `Leave the ${slot === 'pocket' ? 'pocket gear' : `${slot} device`} slot empty.`;
             const defaultBonus = slot === 'left' && ['none', 'gemstone', 'jackpot', 'pole-light'].includes(item?.id || 'none')
                 ? ' Default ×2 bonus luck every 10th roll.' : '';
-            button.innerHTML = `<span class="equipment-card__heading"><span class="equipment-card__name">${item ? WikiTitles.item(item.name) : 'None'}</span><span class="equipment-card__status"></span></span><span class="equipment-card__description">${description}${defaultBonus}</span>`;
+            button.innerHTML = `<span class="equipment-card__heading"><span class="equipment-card__name">${item ? WikiTitles.item(item.name) : 'None'}</span><span class="equipment-card__status"></span></span><span class="equipment-card__description">${EquipmentPresentation.format(description + defaultBonus)}</span>`;
             button.addEventListener('click', () => {
                 equippedGear[slot] = item?.id || 'none';
                 recomputeLuckValue();
@@ -5684,8 +5704,7 @@ function formatMultiplePotionBatchResultText(batch) {
     const potionNames = potionConfigs.length > 0
         ? potionConfigs.map(config => config.resultLabel || config.label).join(' + ')
         : 'Potion';
-    const luckValue = Number.isFinite(batch?.luckValue) ? Math.max(0, batch.luckValue) : 0;
-    return `${potionConfigs.length ? `With ${potionNames} · ` : ''}${batch.rollLabel || 'First roll'} (${formatWithCommas(luckValue)} Luck)`;
+    return potionConfigs.length ? `With ${potionNames}` : '';
 }
 
 function formatMultiplePotionBatchResultMarkup(batch) {
@@ -5695,16 +5714,22 @@ function formatMultiplePotionBatchResultMarkup(batch) {
             WikiTitles.item(config.label, config.resultLabel || config.label)
         )).join(' + ')
         : 'Potion';
-    const luckValue = Number.isFinite(batch?.luckValue) ? Math.max(0, batch.luckValue) : 0;
-    return `<span class="tinyClass">${potionConfigs.length ? `With ${potionMarkup} · ` : ''}${batch.rollLabel || 'First roll'} (${formatWithCommas(luckValue)} Luck)</span>`;
+    return potionConfigs.length ? `<span class="tinyClass">With ${potionMarkup}</span>` : '';
 }
 
-function formatRollResultSuffix(trueChanceValue, batch, potionMarkup = '') {
+function formatRollResultDetails(trueChanceValue, batch, showLuck = Boolean(trueChanceValue)) {
     const multiplier = batch?.rollMultiplier || 1;
-    const chance = trueChanceValue ? `True Chance: 1 in ${trueChanceValue} ` : '';
-    const bonus = multiplier !== 1 ? `(${Number(multiplier.toFixed(4))}x)` : '';
-    const gemstone = batch?.gemstoneLuck ? ` (+${batch.gemstoneLuck} Gemstone)` : '';
-    const details = `${chance}${bonus}${gemstone}`.trim();
+    const chance = trueChanceValue ? `True Chance: 1 in ${trueChanceValue}` : '';
+    const bonus = batch?.bonusRollApplied && multiplier !== 1 ? `(${Number(multiplier.toFixed(4))}x)` : '';
+    const details = [chance, bonus].filter(Boolean).join(' ');
+    const luck = showLuck && Number.isFinite(batch?.luckValue)
+        ? `${details ? ' · ' : ''}${formatWithCommas(batch.luckValue)} Luck` : '';
+    const gemstone = showLuck && batch?.gemstoneLuck ? ` (+${batch.gemstoneLuck} Gemstone)` : '';
+    return `${details}${luck}${gemstone}`;
+}
+
+function formatRollResultSuffix(trueChanceValue, batch, potionMarkup = '', showLuck = Boolean(trueChanceValue)) {
+    const details = formatRollResultDetails(trueChanceValue, batch, showLuck);
     const potions = getMultiplePotionBatchResultConfigs(batch).length
         ? ` ${potionMarkup || formatMultiplePotionBatchResultMarkup(batch)}` : '';
     return (details ? ` <span class="tinyClass">${details}</span>` : '') + potions;
@@ -10229,7 +10254,11 @@ function initializeHelpCenter() {
     }
 
     const cards = Array.from(content.querySelectorAll('[data-help-card]'));
-    const navButtons = Array.from(panel.querySelectorAll('[data-help-target]'));
+    const navButtons = Array.from(panel.querySelectorAll('#helpCenterNav [data-help-target]'));
+    const tourDisclosure = document.getElementById('helpTourDisclosure');
+    const searchStatus = document.getElementById('helpSearchStatus');
+    const clearSearchButton = document.getElementById('helpSearchClear');
+    let activeTopic = 'help-start';
     const searchableText = new Map(cards.map(card => [
         card.id,
         `${card.dataset.helpKeywords || ''} ${card.textContent || ''}`.toLocaleLowerCase()
@@ -10430,6 +10459,8 @@ function initializeHelpCenter() {
     };
 
     const startTour = () => {
+        showTopic('help-start');
+        if (tourDisclosure) tourDisclosure.open = true;
         tourActive = true;
         currentTourLesson = 0;
         completedTourLessons.clear();
@@ -10451,6 +10482,19 @@ function initializeHelpCenter() {
                 button.removeAttribute('aria-current');
             }
         });
+    };
+
+    const showTopic = topicId => {
+        activeTopic = topicId;
+        searchInput.value = '';
+        cards.forEach(card => { card.hidden = card.id !== topicId; });
+        navButtons.forEach(button => { button.hidden = false; });
+        setActiveTopic(topicId);
+        if (tourDisclosure) tourDisclosure.hidden = topicId !== 'help-start';
+        emptyState.hidden = true;
+        if (searchStatus) searchStatus.textContent = '';
+        if (clearSearchButton) clearSearchButton.hidden = true;
+        content.scrollTop = 0;
     };
 
     const closeHelpCenter = ({ restoreFocus = true } = {}) => {
@@ -10568,6 +10612,8 @@ function initializeHelpCenter() {
         optionsMenuToggle?.setAttribute('aria-expanded', 'false');
         window.setTimeout(() => {
             openHelpCenter();
+            showTopic('help-start');
+            if (tourDisclosure) tourDisclosure.open = true;
             renderTour();
             guidedTour.scrollIntoView({
                 behavior: prefersReducedMotion() ? 'auto' : 'smooth',
@@ -10578,26 +10624,26 @@ function initializeHelpCenter() {
 
     const applySearch = () => {
         const query = searchInput.value.trim().toLocaleLowerCase();
+        if (!query) { showTopic(activeTopic); return; }
+        const terms = query.split(/\s+/);
         let visibleCount = 0;
-        let firstVisibleId = null;
         cards.forEach(card => {
-            const visible = !query || searchableText.get(card.id).includes(query);
+            const visible = terms.every(term => searchableText.get(card.id).includes(term));
             card.hidden = !visible;
             if (visible) {
                 visibleCount += 1;
-                firstVisibleId ||= card.id;
             }
         });
         navButtons.forEach(button => {
             const target = document.getElementById(button.dataset.helpTarget || '');
             button.hidden = Boolean(target?.hidden);
         });
-        guidedTour.hidden = Boolean(query);
+        if (tourDisclosure) tourDisclosure.hidden = true;
         emptyState.hidden = visibleCount !== 0;
-        if (firstVisibleId) {
-            setActiveTopic(firstVisibleId);
-            content.scrollTop = 0;
-        }
+        setActiveTopic(null);
+        if (searchStatus) searchStatus.textContent = `${visibleCount} ${visibleCount === 1 ? 'topic' : 'topics'} found`;
+        if (clearSearchButton) clearSearchButton.hidden = false;
+        content.scrollTop = 0;
     };
 
     toggle.addEventListener('click', () => {
@@ -10655,6 +10701,10 @@ function initializeHelpCenter() {
     });
     tourResumeButton.addEventListener('click', resumeTour);
     searchInput.addEventListener('input', applySearch);
+    clearSearchButton?.addEventListener('click', () => { showTopic(activeTopic); searchInput.focus(); });
+    document.querySelectorAll('[data-open-help]').forEach(button => {
+        button.addEventListener('click', () => { openHelpCenter(); showTopic(button.dataset.openHelp || 'help-start'); });
+    });
     searchInput.addEventListener('keydown', event => {
         if (event.key === 'Escape' && searchInput.value) {
             event.stopPropagation();
@@ -10663,16 +10713,12 @@ function initializeHelpCenter() {
         }
     });
 
-    navButtons.forEach(button => {
+    panel.querySelectorAll('[data-help-target]').forEach(button => {
         button.addEventListener('click', () => {
             const topicId = button.dataset.helpTarget;
             const card = topicId ? document.getElementById(topicId) : null;
-            if (!card || card.hidden) return;
-            setActiveTopic(topicId);
-            card.scrollIntoView({
-                behavior: prefersReducedMotion() ? 'auto' : 'smooth',
-                block: 'start'
-            });
+            if (!card) return;
+            showTopic(topicId);
         });
     });
 
@@ -10681,6 +10727,7 @@ function initializeHelpCenter() {
         if (jumpButton) {
             const selector = jumpButton.dataset.helpJump;
             const target = selector ? document.querySelector(selector) : null;
+            if (jumpButton.dataset.helpPresetBank) setPresetConsoleBank(jumpButton.dataset.helpPresetBank);
             closeHelpCenter({ restoreFocus: false });
             if (target) {
                 window.setTimeout(() => target.scrollIntoView({
@@ -10707,8 +10754,8 @@ function initializeHelpCenter() {
         }
         if (event.key !== 'Tab') return;
         const focusable = Array.from(panel.querySelectorAll(
-            'button:not([disabled]):not([hidden]), input:not([disabled]), [tabindex]:not([tabindex="-1"])'
-        )).filter(element => !element.closest('[hidden]'));
+            'button:not([disabled]):not([hidden]), input:not([disabled]), a[href], summary, [tabindex]:not([tabindex="-1"])'
+        )).filter(element => !element.closest('[hidden]') && element.getClientRects().length > 0);
         if (focusable.length === 0) return;
         const first = focusable[0];
         const last = focusable[focusable.length - 1];
@@ -10721,6 +10768,7 @@ function initializeHelpCenter() {
         }
     });
     renderTour();
+    showTopic('help-start');
 }
 
 function initializeCreditsDirectory() {
@@ -10738,7 +10786,7 @@ function initializeCreditsDirectory() {
     let activeCategory = 'all';
 
     if (summaryCount) {
-        summaryCount.textContent = `${creditItems.length + 1} entries`;
+        summaryCount.textContent = `${creditItems.length} contributions`;
     }
 
     creditItems.forEach(item => {
@@ -10750,7 +10798,9 @@ function initializeCreditsDirectory() {
         kind.textContent = item.dataset.creditCategory === 'cutscene'
             ? 'Cutscene'
             : (item.dataset.creditCategory === 'artwork' ? 'Artwork' : contributionText.includes('song') ? 'Audio' : 'Biome');
-        item.prepend(kind);
+        const heading = item.querySelector('.footer-credits__item-heading');
+        if (heading) heading.prepend(kind);
+        else item.prepend(kind);
     });
 
     const applyCreditsFilter = () => {
@@ -10769,7 +10819,7 @@ function initializeCreditsDirectory() {
             }
         });
 
-        resultCount.textContent = `${visibleCount} ${visibleCount === 1 ? 'contribution' : 'contributions'}`;
+        resultCount.textContent = `${visibleCount} of ${creditItems.length} contributions`;
         emptyState.hidden = visibleCount !== 0;
     };
 
@@ -12276,6 +12326,7 @@ document.addEventListener('DOMContentLoaded', () => {
     hydrateBackgroundRollingPreference();
     setBackgroundRollingEnabled(backgroundRollingPreference.allowed, { persistPreference: false });
     setSelectiveTrueChanceDisplayEnabled(Boolean(appState.selectiveTrueChanceDisplay), { persistPreference: false });
+    setStickyRollButtonEnabled(appState.stickyRollButton !== false, { persistPreference: false });
     hydrateAuraFilters();
     hydrateAuraTierFilters();
     refreshActiveAuraFilterCounts();
@@ -12308,6 +12359,10 @@ document.addEventListener('DOMContentLoaded', () => {
             showTrueChanceDisplayOverlay();
         });
     }
+
+    document.getElementById('stickyRollButtonToggle')?.addEventListener('click', () => {
+        setStickyRollButtonEnabled(!appState.stickyRollButton);
+    });
 
     initializeOptionsMenu('optionsMenu', 'optionsMenuToggle', 'optionsMenuPanel');
     initializeAuraTierFilterPanel();
@@ -13380,13 +13435,15 @@ function buildResultEntries(
                 && !shouldHideSelectiveTrueChanceForAura(auraName)
                 ? formatRealChanceValue(rarityForRealChance, luckValue)
                 : null;
-            const resultSuffixMarkup = formatRollResultSuffix(realChanceValue, potionBatch, potionSourceMarkup);
+            const showLuck = allowTrueChance && appState.selectiveTrueChanceDisplay;
+            const resultSuffixMarkup = formatRollResultSuffix(realChanceValue, potionBatch, potionSourceMarkup, showLuck);
+            const resultSourceText = [formatRollResultDetails(realChanceValue, potionBatch, showLuck), potionSourceText].filter(Boolean).join(' · ');
             entries.push({
                 markup: `${markup}${resultSuffixMarkup}`,
-                share: potionSourceText ? `${shareText} | ${potionSourceText}` : shareText,
+                share: resultSourceText ? `${shareText} | ${resultSourceText}` : shareText,
                 priority,
                 visual: visualRecord
-                    ? { ...visualRecord, potionSource: potionSourceText || null }
+                    ? { ...visualRecord, potionSource: resultSourceText || null }
                     : null,
                 auraName: auraName || null,
                 tierKey: resolveAuraDisplayTierKey(aura, biome)
@@ -13499,7 +13556,7 @@ function buildLiveRollMarkup(
         && !shouldHideSelectiveTrueChanceForAura(aura.name)
         ? formatRealChanceValue(nativeChance, luckValue)
         : null;
-    const trueChanceMarkup = formatRollResultSuffix(trueChanceValue, potionBatch);
+    const trueChanceMarkup = formatRollResultSuffix(trueChanceValue, potionBatch, '', allowTrueChance && appState.selectiveTrueChanceDisplay);
 
     const tierKey = resolveAuraDisplayTierKey(aura, biome);
     const alphabeticalName = getAuraAlphabeticalSortName(aura.name);
@@ -13882,6 +13939,7 @@ function prepareSimulationBatch(batch, selectionState, eventContext) {
         id: batch.id || null,
         rollLabel: batch.rollLabel || '',
         rollMultiplier: batch.rollMultiplier || 1,
+        bonusRollApplied: Boolean(batch.bonusRollApplied),
         gemstoneLuck: batch.gemstoneLuck || 0,
         variantKey: batch.variantKey,
         potionIds: Array.isArray(batch.potionIds) ? batch.potionIds.slice() : null,
@@ -13925,6 +13983,7 @@ function prepareEquipmentSimulation(definitions, selectionState, eventContext, m
                 vampireHunter,
                 variantKey: batches.length,
                 rollMultiplier: state.bonusMultiplier * state.basicMultiplier,
+                bonusRollApplied: state.bonus,
                 gemstoneLuck: state.extraLuck,
                 rollLabel: labels.join(' · ') || 'Normal roll'
             }, selectionState, eventContext);
