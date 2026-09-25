@@ -41,11 +41,11 @@ globalThis.WikiTitleData = {
       "source": "https://sol-rng.fandom.com/wiki/Equinox",
       "markup": "<span style=\"font-family:Noto Serif TC;display:inline-block;font-style:italic;letter-spacing:.2em;font-weight:bold\"><span class=\"wiki-ref-EquinoxStrokeGradientRework\" data-text=\"『EQUINOX』\" style=\"position:absolute;z-index:0\"></span><span class=\"wiki-ref-EquinoxTransitionRework\" data-text=\"『EQUINOX』\" style=\"position:absolute;z-index:1\"></span><span class=\"wiki-ref-EquinoxPulseEffect\" data-text=\"『EQUINOX』\" style=\"position:absolute;z-index:1\"></span><span class=\"wiki-ref-EquinoxGradientRework\" style=\"position:relative;z-index:0\">『EQUINOX』</span></span>"
     },
-    "Equinox : youareanidiot": {
+    "Equinox : You Are An Idiot": {
       "source": "https://sol-rng.fandom.com/wiki/Equinox_:_You_Are_An_Idiot",
       "markup": "<span style=\"display:inline-block;font-family:Fuzzy Bubbles;font-style:italic;font-weight:bold;white-space:nowrap;animation:wiki-EquinoxYaaiMovement 4s linear infinite\"><span style=\"position:absolute;animation:wiki-EquinoxYaaiStrokeGradient 1.5s linear infinite;-webkit-text-fill-color:transparent\"><span style=\"font-family:Noto Serif TC\">『</span>YOU ARE AN IDIOT<span style=\"font-family:Noto Serif TC\">』</span></span><span style=\"position:relative;animation:wiki-EquinoxYaaiGradient 1.5s linear infinite, wiki-EquinoxYaaiGradientTransition 1.5s linear infinite\"><span style=\"font-family:Noto Serif TC\">『</span>YOU ARE AN IDIOT<span style=\"font-family:Noto Serif TC\">』</span></span></span>"
     },
-    "DreamCatcher": {
+    "Dream Catcher": {
       "source": "https://sol-rng.fandom.com/wiki/Dream_Catcher",
       "markup": "<span style=\"font-family:Parisienne;display:inline-block;font-size:120%\"><span style=\"display:inline-block;font-size:60%;transform:translateX(.3em) translateY(-2em)\"><span class=\"wiki-ref-TextStroke\" data-text=\"dream\" style=\"-webkit-text-stroke:.5px #7064b7\"></span><span style=\"position:absolute;-webkit-background-clip:text !important;-webkit-text-fill-color:transparent;background:linear-gradient(to bottom, #b4a7f5 20%, #fcf9ff 30%, #ffffff 50%)\">dream</span></span><span style=\"display:inline-block\"><span class=\"wiki-ref-TextStroke\" data-text=\"catcher\" style=\"-webkit-text-stroke:1px #7064b7\"></span><span style=\"position:relative;-webkit-background-clip:text !important;-webkit-text-fill-color:transparent;background:linear-gradient(to bottom, #b4a7f5 20%, #fcf9ff 30%, #ffffff 50%)\">catcher</span></span></span>"
     },
