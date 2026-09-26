@@ -4995,8 +4995,9 @@ function getGearLuckInputs(multiple = isMultiplePotionMode()) {
     };
 }
 
-function getEquipmentSummary() {
-    return Object.entries(equippedGear).map(([slot, id]) => `${slot === 'pocket' ? 'Pocket' : slot === 'left' ? 'Left' : 'Right'}: ${GearLuck.find(slot, id)?.name || 'None'}`).join(' · ');
+function getEquipmentSummary({ styled = false } = {}) {
+    const formatName = styled ? EquipmentPresentation.name : EquipmentPresentation.label;
+    return Object.entries(equippedGear).map(([slot, id]) => `${slot === 'pocket' ? 'Pocket' : slot === 'left' ? 'Left' : 'Right'}: ${formatName(GearLuck.find(slot, id))}`).join(' · ');
 }
 
 function syncEquipmentPreview() {
@@ -5005,11 +5006,16 @@ function syncEquipmentPreview() {
     const rule = GearLuck.bonusRule(equippedGear.left);
     const normal = GearLuck.totalLuck(inputs.basic, inputs.special, inputs.finalMultiplier, GearLuck.rollState(equippedGear.left, 1));
     const bonus = GearLuck.totalLuck(inputs.basic, inputs.special, inputs.finalMultiplier, GearLuck.rollState(equippedGear.left, rule.interval || 1001));
-    if (preview) preview.textContent = `Basic luck: ${formatWithCommas(inputs.basic)} · Special luck: ${formatWithCommas(inputs.special)} · First roll: ${formatWithCommas(normal)} · ${rule.interval ? 'Bonus roll' : 'Ruins active'}: ${formatWithCommas(bonus)}`;
+    const cycleLabel = rule.interval ? 'Bonus roll' : equippedGear.left === 'unfathomable' ? 'Ruins active' : null;
+    if (preview) {
+        const cycleClass = rule.interval || !cycleLabel ? 'bonus' : 'multiplier';
+        const cycleText = cycleLabel ? `${cycleLabel}: ${formatWithCommas(bonus)}` : 'No bonus rolls';
+        preview.innerHTML = `<span class="equipment-effect equipment-effect--luck">Basic luck: ${formatWithCommas(inputs.basic)}</span> · <span class="equipment-effect equipment-effect--luck">Special luck: ${formatWithCommas(inputs.special)}</span> · <span class="equipment-effect equipment-effect--cycle">First roll: ${formatWithCommas(normal)}</span> · <span class="equipment-effect equipment-effect--${cycleClass}">${cycleText}</span>`;
+    }
     const summary = document.getElementById('bonus-roll-summary');
     if (summary) summary.innerHTML = EquipmentPresentation.format(GearLuck.describe(equippedGear.left));
     const selectionSummary = document.getElementById('equipment-selection-summary');
-    if (selectionSummary) selectionSummary.textContent = getEquipmentSummary();
+    if (selectionSummary) selectionSummary.innerHTML = getEquipmentSummary({ styled: true });
     document.querySelectorAll('[data-equipment-item]').forEach(button => {
         const active = equippedGear[button.dataset.equipmentSlot] === button.dataset.equipmentItem;
         button.setAttribute('aria-pressed', String(active));
@@ -5053,7 +5059,7 @@ function initializeEquipmentControls() {
                 : `Leave the ${slot === 'pocket' ? 'pocket gear' : `${slot} device`} slot empty.`;
             const defaultBonus = slot === 'left' && ['none', 'gemstone', 'jackpot', 'pole-light'].includes(item?.id || 'none')
                 ? ' Default ×2 bonus luck every 10th roll.' : '';
-            button.innerHTML = `<span class="equipment-card__heading"><span class="equipment-card__name">${item ? WikiTitles.item(item.name) : 'None'}</span><span class="equipment-card__status"></span></span><span class="equipment-card__description">${EquipmentPresentation.format(description + defaultBonus)}</span>`;
+            button.innerHTML = `<span class="equipment-card__heading"><span class="equipment-card__name">${EquipmentPresentation.name(item)}</span><span class="equipment-card__status"></span></span><span class="equipment-card__description">${EquipmentPresentation.format(description + defaultBonus)}</span>`;
             button.addEventListener('click', () => {
                 equippedGear[slot] = item?.id || 'none';
                 recomputeLuckValue();
@@ -5717,11 +5723,16 @@ function formatMultiplePotionBatchResultMarkup(batch) {
     return potionConfigs.length ? `<span class="tinyClass">With ${potionMarkup}</span>` : '';
 }
 
-function formatRollResultDetails(trueChanceValue, batch, showLuck = Boolean(trueChanceValue)) {
-    const multiplier = batch?.rollMultiplier || 1;
+function formatRollEffect(batch, styled = false) {
+    const effect = ['mana-surge', 'darkshader', 'tide'].includes(batch?.rollEffect) ? batch.rollEffect : 'bonus';
+    if (!batch?.bonusRollApplied && !['mana-surge', 'darkshader'].includes(effect)) return '';
+    const label = effect === 'mana-surge' ? '(Mana Surge)' : `(${Number((batch.rollMultiplier || 1).toFixed(4))}x)`;
+    return styled ? `<span class="roll-effect roll-effect--${effect}">${label}</span>` : label;
+}
+
+function formatRollResultDetails(trueChanceValue, batch, showLuck = Boolean(trueChanceValue), { styled = false } = {}) {
     const chance = trueChanceValue ? `True Chance: 1 in ${trueChanceValue}` : '';
-    const bonus = batch?.bonusRollApplied && multiplier !== 1 ? `(${Number(multiplier.toFixed(4))}x)` : '';
-    const details = [chance, bonus].filter(Boolean).join(' ');
+    const details = [chance, formatRollEffect(batch, styled)].filter(Boolean).join(' ');
     const luck = showLuck && Number.isFinite(batch?.luckValue)
         ? `${details ? ' · ' : ''}${formatWithCommas(batch.luckValue)} Luck` : '';
     const gemstone = showLuck && batch?.gemstoneLuck ? ` (+${batch.gemstoneLuck} Gemstone)` : '';
@@ -5729,7 +5740,7 @@ function formatRollResultDetails(trueChanceValue, batch, showLuck = Boolean(true
 }
 
 function formatRollResultSuffix(trueChanceValue, batch, potionMarkup = '', showLuck = Boolean(trueChanceValue)) {
-    const details = formatRollResultDetails(trueChanceValue, batch, showLuck);
+    const details = formatRollResultDetails(trueChanceValue, batch, showLuck, { styled: true });
     const potions = getMultiplePotionBatchResultConfigs(batch).length
         ? ` ${potionMarkup || formatMultiplePotionBatchResultMarkup(batch)}` : '';
     return (details ? ` <span class="tinyClass">${details}</span>` : '') + potions;
@@ -13940,6 +13951,7 @@ function prepareSimulationBatch(batch, selectionState, eventContext) {
         rollLabel: batch.rollLabel || '',
         rollMultiplier: batch.rollMultiplier || 1,
         bonusRollApplied: Boolean(batch.bonusRollApplied),
+        rollEffect: batch.rollEffect || null,
         gemstoneLuck: batch.gemstoneLuck || 0,
         variantKey: batch.variantKey,
         potionIds: Array.isArray(batch.potionIds) ? batch.potionIds.slice() : null,
@@ -13984,6 +13996,9 @@ function prepareEquipmentSimulation(definitions, selectionState, eventContext, m
                 variantKey: batches.length,
                 rollMultiplier: state.bonusMultiplier * state.basicMultiplier,
                 bonusRollApplied: state.bonus,
+                rollEffect: equippedGear.left === 'unfathomable' && state.basicMultiplier > 1 ? 'mana-surge'
+                    : equippedGear.left === 'darkshader' && state.basicMultiplier > 1 ? 'darkshader'
+                    : state.rainyNative ? 'tide' : null,
                 gemstoneLuck: state.extraLuck,
                 rollLabel: labels.join(' · ') || 'Normal roll'
             }, selectionState, eventContext);
@@ -14104,7 +14119,7 @@ function runRollSimulation(options = {}) {
         cancelRollButton.textContent = 'Cancel Roll';
     }
     if (brandMark) {
-        brandMark.classList.add('banner__emblem--spinning');
+        brandMark.classList.toggle('banner__emblem--spinning', total > 10_000_000);
     }
 
     playSoundEffect(audio.roll, 'obtain');

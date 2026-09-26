@@ -1,21 +1,46 @@
 /* Equipment and roll timing. Pure functions shared by previews and simulations. */
 (function (global) {
     'use strict';
-    const gear = (id, name, luck = 0, effect = '', event = false) => Object.freeze({ id, name, luck, effect, event });
+    const deviceTiers = Object.freeze({
+        'luck-glove': 'I', 'desire-glove': 'I', frozen: 'I', gemstone: 'I', solar: 'I', tide: 'I',
+        'shining-star': 'II', aqua: 'II', eclipse: 'II',
+        jackpot: 'III', exo: 'III', windstorm: 'III', flesh: 'III', 'blessed-tide': 'III', 'ominous-coffin': 'III',
+        subzero: 'IV', 'present-giver': 'IV',
+        galactic: 'V', volcanic: 'V', 'vampire-hunter': 'V', 'snow-rider': 'V',
+        exoflex: 'VI', hologrammer: 'VI', 'pump-punch': 'VI',
+        ragnaroker: 'VII',
+        gravitational: 'VIII', darkshader: 'VIII', starshaper: 'VIII', 'xmas-champion': 'VIII',
+        neurolyzer: 'IX', 'pole-light': 'IX',
+        genesis: 'X', 'the-thing': 'X',
+        heavenly: 'XI', unfathomable: 'XI',
+        singularity: 'XII'
+    });
+    const gear = (id, name, luck = 0, effect = '', event = false) => Object.freeze({
+        id, name, luck, effect, event, tier: deviceTiers[id] ? `T-${deviceTiers[id]}` : null
+    });
     const right = Object.freeze([
-        gear('luck-glove', 'Luck Glove', 0.25), gear('desire-glove', 'Desire Glove', 0.4),
-        gear('solar', 'Solar Device', 0.5), gear('eclipse', 'Eclipse Device', 0.5),
-        gear('exo', 'Exo Gauntlet', 1), gear('windstorm', 'Windstorm Device', 1.15),
-        gear('subzero', 'Subzero Device', 1.5), gear('frozen', 'Frozen Gauntlet', 1.5),
+        gear('luck-glove', 'Luck Glove', 0.25),
+        gear('desire-glove', 'Desire Glove', 0.4),
+        gear('solar', 'Solar Device', 0.5),
+        gear('frozen', 'Frozen Gauntlet', 1.5),
+        gear('eclipse', 'Eclipse Device', 0.5),
         gear('shining-star', 'Shining Star', 0.5, '+2.5 luck during Starfall; +0.5 otherwise.'),
-        gear('galactic', 'Galactic Device', 2.5), gear('volcanic', 'Volcanic Device', 2.9),
-        gear('exoflex', 'Exoflex Device', 3.4), gear('hologrammer', 'Hologrammer', 3.95),
+        gear('exo', 'Exo Gauntlet', 1),
+        gear('windstorm', 'Windstorm Device', 1.15),
+        gear('subzero', 'Subzero Device', 1.5),
+        gear('galactic', 'Galactic Device', 2.5),
+        gear('volcanic', 'Volcanic Device', 2.9),
+        gear('exoflex', 'Exoflex Device', 3.4),
+        gear('hologrammer', 'Hologrammer', 3.95),
         gear('ragnaroker', 'Ragnaröker', 4.55, '+4.55 luck, plus +0.45 during Windy, Rainy or Hell.'),
-        gear('starshaper', 'Starshaper', 7), gear('neurolyzer', 'Neurolyzer', 8.5),
-        gear('genesis', 'Genesis Drive', 12), gear('heavenly', 'Heavenly Device', 15),
+        gear('starshaper', 'Starshaper', 7),
+        gear('neurolyzer', 'Neurolyzer', 8.5),
+        gear('genesis', 'Genesis Drive', 12),
+        gear('heavenly', 'Heavenly Device', 15),
         gear('singularity', 'Singularity Device', 22),
+        gear('vampire-hunter', 'Vampire Hunter', 2.4, '+2.4 luck; Halloween aura rarities reduced by 20% in Halloween 2025/2026 biomes and Glitched.', true),
         gear('snow-rider', 'Snow Rider', 3, '', true),
-        gear('vampire-hunter', 'Vampire Hunter', 2.4, '+2.4 luck; Halloween aura rarities reduced by 20% in Halloween 2025/2026 biomes and Glitched.', true)
+        gear('pump-punch', 'Pump Punch', 8, '', true)
     ]);
     const left = Object.freeze([
         gear('gemstone', 'Gemstone Gauntlet', 0, 'After 10 rolls, choose +0.00–0.30 luck (0.01 steps) for the next 10 rolls; reroll every 10 rolls.'),
@@ -26,17 +51,18 @@
         gear('pole-light', 'Pole Light Core Device', 5),
         gear('the-thing', 'The Thing', 0, '×11 bonus luck every 10th roll.'),
         gear('unfathomable', 'Unfathomable Ruins', 0, 'No bonus rolls. 1,000 normal rolls, then 100 rolls with ×14 basic luck; repeats.'),
-        gear('present-giver', 'Present Giver', 0, '×5 bonus luck every 11th roll.', true),
-        gear('xmas-champion', 'X-mas Champion', 0, '×4 bonus luck every 6th roll.', true),
         gear('tide', 'Tide Gauntlet', 0, '×2 every 10th roll, with native Rainy rarity for nonexclusive Rainy auras.', true),
         gear('blessed-tide', 'Blessed Tide Gauntlet', 0, '×3 every 6th roll, with native Rainy rarity for nonexclusive Rainy auras.', true),
-        gear('ominous-coffin', 'Ominous Coffin', 0, '×1.35 basic luck before potions and VIP; normal bonus rolls remain.', true)
+        gear('ominous-coffin', 'Ominous Coffin', 0, '×1.35 basic luck before potions and VIP; no bonus rolls.', true),
+        gear('present-giver', 'Present Giver', 0, '×5 bonus luck every 11th roll.', true),
+        gear('xmas-champion', 'X-mas Champion', 0, '×4 bonus luck every 6th roll.', true),
     ]);
     const pocket = Object.freeze([
         gear('sunstone', 'Sunstone Talisman', 1, '+1 luck during daytime only.'),
         gear('moonstone', 'Moonstone Talisman', 1, '+1 luck during nighttime only.'),
         gear('day-night', 'Day and Night Talisman', 1.25, '+1.25 luck during daytime or nighttime.'),
-        gear('overtime', 'Overtime Talisman', 2), gear('soul-collector', "Soul Collector's Talisman", 4),
+        gear('overtime', 'Overtime Talisman', 2),
+        gear('soul-collector', "Soul Collector's Talisman", 4),
         gear('soul-master', "Soul Master's Talisman", 7.5)
     ]);
     const catalog = Object.freeze({ right, left, pocket });
@@ -56,7 +82,7 @@
     function bonusRule(leftId) {
         const rules = { flesh: [1, 1.3], gravitational: [10, 6], darkshader: [5, 2],
             'the-thing': [10, 11], 'present-giver': [11, 5], 'xmas-champion': [6, 4],
-            'blessed-tide': [6, 3], unfathomable: [0, 1] };
+            'blessed-tide': [6, 3], unfathomable: [0, 1], 'ominous-coffin': [0, 1] };
         const [interval, multiplier] = rules[leftId] || [10, 2];
         return { interval, multiplier };
     }
@@ -72,8 +98,6 @@
     function totalLuck(basic, special, finalMultiplier, state) {
         return ((basic + state.extraLuck) * state.basicMultiplier * state.bonusMultiplier + special) * finalMultiplier;
     }
-    // A bounded schedule keeps trillion-roll runs from allocating per-roll records.
-    // Gemstone holds one random hundredth-step buff throughout each ten-roll block.
     function schedule(leftId) {
         const states = [];
         const indices = new Map();

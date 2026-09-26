@@ -1176,7 +1176,7 @@
                         <button type="button" class="interface-button preset-console__tab" id="preset-tab-device" data-preset-bank-target="device" role="tab" aria-selected="false" aria-controls="preset-bank-device">
                             <span class="preset-console__tab-icon" aria-hidden="true"><i class="fa-solid fa-microchip"></i></span>
                             <span class="preset-console__tab-copy"><strong>Devices</strong><small>Gear & buffs</small></span>
-                            <span class="preset-console__tab-count" aria-hidden="true">40</span>
+                            <span class="preset-console__tab-count" aria-hidden="true">41</span>
                         </button>
                         <button type="button" class="interface-button preset-console__tab" id="preset-tab-roll" data-preset-bank-target="roll" role="tab" aria-selected="false" aria-controls="preset-bank-roll">
                             <span class="preset-console__tab-icon" aria-hidden="true"><i class="fa-solid fa-list-ol"></i></span>
@@ -1219,11 +1219,11 @@
                         <header class="preset-console__bank-header">
                             <span class="preset-console__bank-icon" aria-hidden="true"><i class="fa-solid fa-microchip"></i></span>
                             <span class="preset-console__bank-copy"><h3>Equipment Loadout</h3><span>Equip one right device, one left device and one pocket gear.</span></span>
-                            <span class="preset-console__bank-badge">40 Items</span>
+                            <span class="preset-console__bank-badge">41 Items</span>
                         </header>
                         <div class="equipment-loadout" id="device-buff-preset-panel">
                             <div class="preset-console__tabs equipment-tabs" role="tablist" aria-label="Equipment slots">
-                                <button type="button" class="interface-button preset-console__tab preset-console__tab--active" id="equipment-tab-right" data-equipment-tab="right" role="tab" aria-selected="true" aria-controls="equipment-panel-right"><span class="preset-console__tab-copy"><strong>Right Devices</strong><small>Basic luck</small></span><span class="preset-console__tab-count" aria-hidden="true">21</span></button>
+                                <button type="button" class="interface-button preset-console__tab preset-console__tab--active" id="equipment-tab-right" data-equipment-tab="right" role="tab" aria-selected="true" aria-controls="equipment-panel-right"><span class="preset-console__tab-copy"><strong>Right Devices</strong><small>Basic luck</small></span><span class="preset-console__tab-count" aria-hidden="true">22</span></button>
                                 <button type="button" class="interface-button preset-console__tab" id="equipment-tab-left" data-equipment-tab="left" role="tab" aria-selected="false" aria-controls="equipment-panel-left" tabindex="-1"><span class="preset-console__tab-copy"><strong>Left Devices</strong><small>Bonus & effects</small></span><span class="preset-console__tab-count" aria-hidden="true">13</span></button>
                                 <button type="button" class="interface-button preset-console__tab" id="equipment-tab-pocket" data-equipment-tab="pocket" role="tab" aria-selected="false" aria-controls="equipment-panel-pocket" tabindex="-1"><span class="preset-console__tab-copy"><strong>Pocket Gear</strong><small>Talismans</small></span><span class="preset-console__tab-count" aria-hidden="true">6</span></button>
                             </div>
@@ -1537,7 +1537,7 @@
                     <div class="help-card__body">
                         <span class="help-card__kicker">After rolling</span>
                         <h3>Read your roll results</h3>
-                        <p>A multiplier such as <strong>(11x)</strong> appears only when a bonus roll is applied. Ordinary rolls omit (1x). Enable <strong>Settings → True chance display</strong> to show the calculated chance and the luck used on every roll, including ordinary rolls.</p>
+                        <p>Bonus rolls always show their multiplier, such as <strong>(11x)</strong>, even with True Chance off. Darkshader’s active effect shows a purple <strong>(2.5x)</strong>, or <strong>(5x)</strong> on a bonus roll. Unfathomable Ruins shows <strong>(Mana Surge)</strong> during its active phase, and Tide bonus multipliers use Rainy blue. Ordinary rolls omit (1x). Enable <strong>Settings → True chance display</strong> to show the calculated chance and the luck used on every roll.</p>
                         <div class="help-example"><strong>True Chance: 1 in 12.5 (11x) · 195,429 Luck</strong><p>Turning True Chance off hides the chance and luck value; (11x) remains. Some fixed-chance auras omit the calculated chance.</p></div>
                         <ul>
                             <li>Search accepts either an aura name or a tier name such as Legendary.</li>
@@ -1922,7 +1922,7 @@
                 <span id="trueChanceDisplayTitle" class="cutscene-warning__note">True chance display</span>: New roll results show their true "1 in X" chance, followed by the roll multiplier and the luck used for that roll.
             </p>
             <p class="cutscene-warning__message cutscene-warning__message--subtle">
-                Bonus rolls show their multiplier, such as (11x). Ordinary rolls omit (1x). Luck is shown on every new result when this setting is on; turning it off hides the chance and luck.
+                Bonus rolls always show their multiplier, such as (11x). Active Darkshader rolls show (2.5x) or (5x), and active Unfathomable Ruins rolls show (Mana Surge). These labels remain visible with this setting off. Ordinary rolls omit (1x). Turning this setting off hides only the chance and luck.
             </p>
             <div class="cutscene-warning__actions">
                 <button type="button" class="interface-button interface-button--ghost" id="trueChanceDisplayCancel">Nevermind</button>
@@ -2267,24 +2267,24 @@
                                 <span class="changelog-featured-ui__badge">40 Items</span>
                             </div>
                             <ul class="changelog-release-group__list">
-                                <li>Equip one of 21 right devices, 13 left devices and 6 pocket gears. Three tabs inside Devices show selectable cards with complete effect descriptions, including event equipment.</li>
-                                <li>Reworked 4 equipment options from the old combined presets into individual slots and added 36 more choices. All 40 are listed below with wiki title styling, effects and Added/Reworked labels.</li>
+                                <li>Equip one of 22 right devices, 13 left devices and 6 pocket gears. Three tabs inside Devices show selectable cards with complete effect descriptions, including event equipment.</li>
+                                <li>Reworked 4 equipment options from the old combined presets into individual slots and added 37 more choices. All 41 are listed below with effects and Added/Reworked labels. Right and left devices show their tiers; event devices show their estimated tier as this has not been publicly shared.</li>
                             </ul>
                         </li>
                         <li class="changelog-release-group changelog-equipment" data-changelog-equipment="right">
                             <span class="largeClass">Right devices · reworked &amp; added</span>
-                            <p class="changelog-equipment__intro">21 choices for the right slot: 19 standard devices and 2 event devices.</p>
+                            <p class="changelog-equipment__intro">22 choices for the right slot: 19 standard devices and 3 event devices.</p>
                             <h3 class="changelog-equipment__group">Standard equipment</h3>
                             <ul class="changelog-equipment__list">
                                 <li><span class="changelog-equipment__name" data-wiki-item="Luck Glove">Luck Glove</span><span class="changelog-equipment__status">Added</span><span class="changelog-equipment__effect">+0.25 basic luck.</span></li>
                                 <li><span class="changelog-equipment__name" data-wiki-item="Desire Glove">Desire Glove</span><span class="changelog-equipment__status">Added</span><span class="changelog-equipment__effect">+0.4 basic luck.</span></li>
                                 <li><span class="changelog-equipment__name" data-wiki-item="Solar Device">Solar Device</span><span class="changelog-equipment__status">Added</span><span class="changelog-equipment__effect">+0.5 basic luck.</span></li>
+                                <li><span class="changelog-equipment__name" data-wiki-item="Frozen Gauntlet">Frozen Gauntlet</span><span class="changelog-equipment__status">Added</span><span class="changelog-equipment__effect">+1.5 basic luck.</span></li>
                                 <li><span class="changelog-equipment__name" data-wiki-item="Eclipse Device">Eclipse Device</span><span class="changelog-equipment__status">Added</span><span class="changelog-equipment__effect">+0.5 basic luck.</span></li>
+                                <li><span class="changelog-equipment__name" data-wiki-item="Shining Star">Shining Star</span><span class="changelog-equipment__status">Added</span><span class="changelog-equipment__effect">+2.5 luck during Starfall; +0.5 otherwise.</span></li>
                                 <li><span class="changelog-equipment__name" data-wiki-item="Exo Gauntlet">Exo Gauntlet</span><span class="changelog-equipment__status">Added</span><span class="changelog-equipment__effect">+1 basic luck.</span></li>
                                 <li><span class="changelog-equipment__name" data-wiki-item="Windstorm Device">Windstorm Device</span><span class="changelog-equipment__status">Added</span><span class="changelog-equipment__effect">+1.15 basic luck.</span></li>
                                 <li><span class="changelog-equipment__name" data-wiki-item="Subzero Device">Subzero Device</span><span class="changelog-equipment__status">Added</span><span class="changelog-equipment__effect">+1.5 basic luck.</span></li>
-                                <li><span class="changelog-equipment__name" data-wiki-item="Frozen Gauntlet">Frozen Gauntlet</span><span class="changelog-equipment__status">Added</span><span class="changelog-equipment__effect">+1.5 basic luck.</span></li>
-                                <li><span class="changelog-equipment__name" data-wiki-item="Shining Star">Shining Star</span><span class="changelog-equipment__status">Added</span><span class="changelog-equipment__effect">+2.5 luck during Starfall; +0.5 otherwise.</span></li>
                                 <li><span class="changelog-equipment__name" data-wiki-item="Galactic Device">Galactic Device</span><span class="changelog-equipment__status">Added</span><span class="changelog-equipment__effect">+2.5 basic luck.</span></li>
                                 <li><span class="changelog-equipment__name" data-wiki-item="Volcanic Device">Volcanic Device</span><span class="changelog-equipment__status">Added</span><span class="changelog-equipment__effect">+2.9 basic luck.</span></li>
                                 <li><span class="changelog-equipment__name" data-wiki-item="Exoflex Device">Exoflex Device</span><span class="changelog-equipment__status">Added</span><span class="changelog-equipment__effect">+3.4 basic luck.</span></li>
@@ -2300,6 +2300,7 @@
                             <ul class="changelog-equipment__list">
                                 <li><span class="changelog-equipment__name" data-wiki-item="Snow Rider">Snow Rider</span><span class="changelog-equipment__status">Added</span><span class="changelog-equipment__effect">+3 basic luck.</span></li>
                                 <li><span class="changelog-equipment__name" data-wiki-item="Vampire Hunter">Vampire Hunter</span><span class="changelog-equipment__status">Added</span><span class="changelog-equipment__effect">+2.4 luck; Halloween aura rarities reduced by 20% in Halloween 2025/2026 biomes and Glitched.</span></li>
+                                <li><span class="changelog-equipment__name" data-wiki-item="Pump Punch">Pump Punch</span><span class="changelog-equipment__status">Added</span><span class="changelog-equipment__effect">+8 basic luck.</span></li>
                             </ul>
                         </li>
                         <li class="changelog-release-group changelog-equipment" data-changelog-equipment="left">
@@ -2322,7 +2323,7 @@
                                 <li><span class="changelog-equipment__name" data-wiki-item="X-mas Champion">X-mas Champion</span><span class="changelog-equipment__status">Added</span><span class="changelog-equipment__effect">×4 bonus luck every 6th roll.</span></li>
                                 <li><span class="changelog-equipment__name" data-wiki-item="Tide Gauntlet">Tide Gauntlet</span><span class="changelog-equipment__status">Added</span><span class="changelog-equipment__effect">×2 every 10th roll, with native Rainy rarity for nonexclusive Rainy auras.</span></li>
                                 <li><span class="changelog-equipment__name" data-wiki-item="Blessed Tide Gauntlet">Blessed Tide Gauntlet</span><span class="changelog-equipment__status">Added</span><span class="changelog-equipment__effect">×3 every 6th roll, with native Rainy rarity for nonexclusive Rainy auras.</span></li>
-                                <li><span class="changelog-equipment__name" data-wiki-item="Ominous Coffin">Ominous Coffin</span><span class="changelog-equipment__status">Added</span><span class="changelog-equipment__effect">×1.35 basic luck before potions and VIP; ×2 bonus every 10th roll.</span></li>
+                                <li><span class="changelog-equipment__name" data-wiki-item="Ominous Coffin">Ominous Coffin</span><span class="changelog-equipment__status">Added</span><span class="changelog-equipment__effect">×1.35 basic luck before potions and VIP; no bonus rolls.</span></li>
                             </ul>
                         </li>
                         <li class="changelog-release-group changelog-equipment" data-changelog-equipment="pocket">
@@ -2343,7 +2344,7 @@
                             <ul class="changelog-release-group__list">
                                 <li data-equipment-effect-copy>Every 10th roll receives ×2 basic luck by default. Left devices change its multiplier, timing and effects in both simulation methods.</li>
                                 <li data-equipment-effect-copy>Basic luck × bonus roll + special potion luck, then VIP and final multipliers. Bonus rolls never multiply high-luck potions.</li>
-                                <li data-equipment-effect-copy>Cycles start at roll 1 and continue across potion batches. True Chance appears first, followed by the multiplier when a bonus roll is applied, such as (11x) for <span data-wiki-item="The Thing">The Thing</span> or (1.3x) for <span data-wiki-item="Flesh Device">Flesh Device</span>, then the luck used for that roll. Ordinary rolls omit (1x); True Chance shows luck on every roll.</li>
+                                <li data-equipment-effect-copy>Cycles start at roll 1 and continue across potion batches. True Chance appears first, followed by the multiplier when a bonus roll is applied, such as (11x) for <span data-wiki-item="The Thing">The Thing</span> or (1.3x) for <span data-wiki-item="Flesh Device">Flesh Device</span>, then the luck used for that roll. True Chance shows luck on every roll.</li>
                             </ul>
                         </li>
                         <li class="changelog-release-group">
@@ -2361,13 +2362,15 @@
                             </ul>
                         </li>
                         <li class="changelog-release-group">
-                            <span class="largeClass">Clearer descriptions &amp; guides</span>
+                            <span class="largeClass">QoL content</span>
                             <ul class="changelog-release-group__list">
                                 <li>Equipment effects use <span class="equipment-effect--luck">green for luck</span>, <span class="equipment-effect--multiplier">purple for multipliers</span> and <span class="equipment-effect--bonus">blue for bonus rolls</span>.</li>
                                 <li>Help Me now presents one topic at a time, with a four-step setup guide, searchable answers, equipment explanations, common questions and an optional walkthrough.</li>
                                 <li>Redesigned the footer with clearer licensing and artwork attribution, useful project links and readable contributor cards with search and category filters.</li>
                                 <li>Added a saved Sticky roll button setting. Turn it off to keep roll controls in their original position while scrolling.</li>
                                 <li>The Unnamed's RNG card have been reworked to become the new Sol's RNG Rolling Simulator Server it has become with the new logo and new features! go say hi :D -> <a href="https://www.discord.gg/m6k7Jagm3v" target="_blank" rel="noopener">Sol's RNG Rolling Simulator's Discord Server</a></li>
+                                <li>The top-bar has been slightly changed to scale more fit to look visually better.</li>
+                                <li></li>
                             </ul>
                         </li>
                     </ul>
