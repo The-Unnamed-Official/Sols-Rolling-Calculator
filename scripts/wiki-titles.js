@@ -5,6 +5,9 @@
         '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
     })[character]);
     const data = globalThis.WikiTitleData;
+    const normalize = name => String(name || '').toLowerCase().replace(/[^\p{L}\p{N}]/gu, '') || String(name || '').trim();
+    const auraNames = new Map(Object.keys(data.auras).map(name => [normalize(name), name]));
+    const resolveAuraName = name => data.auras[name] ? name : auraNames.get(normalize(name));
     const wrap = (markup, label, kind, tierClass = '') => {
         const art = markup.replace(/(class="wiki-ref-ColorChange-Illusionary"[^>]*>)([^<]+)(<\/span>)/g,
             (_, open, text, close) => open + [...text].map(letter => `<span>${letter}</span>`).join('') + close);
@@ -19,6 +22,7 @@
         'Archangel Device': 'Heavenly Device', 'Rune of Heavens': 'Rune of Heaven'
     };
     function aura(name, rarity = '', tierClass = 'rarity-tier-basic') {
+        name = resolveAuraName(name);
         const title = data.auras[name];
         if (!title) return '';
         const markup = wrap(title.markup, name, 'aura', tierClass);
@@ -89,5 +93,5 @@
         });
     }
     document.addEventListener('visibilitychange', () => { if (!document.hidden && timer === null && visibleLetters.size) tick(); });
-    globalThis.WikiTitles = Object.freeze({ aura, item, initializeItems, initializeEffects });
+    globalThis.WikiTitles = Object.freeze({ aura, item, resolveAuraName, initializeItems, initializeEffects });
 })();

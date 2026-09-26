@@ -1,0 +1,42 @@
+{
+  "HellFire": {
+    "name": "HellFire",
+    "url": "https://sol-rng.fandom.com/wiki/HellFire",
+    "markup": "<span style=\"display: inline-block; font-size: 170%; font-style: italic; letter-spacing: .175em; font-family: Italianno;\"><span class=\"TextStroke\" data-text=\"HellFire\" style=\"-webkit-text-stroke: 0.3px black;\"></span><span style=\"position: relative; -webkit-background-clip: text !important; -webkit-text-fill-color: transparent; background: linear-gradient(180deg, #C24334 5%, #cf583f 5%, #ffefdf 35%, #e66349 15%, #ff997b 40%, #fff5e6 55%, #ffe9d6 65%, #6d150e 35%);\">HellFire</span></span>"
+  },
+  "Virtual : Ultimate": {
+    "name": "Virtual : Ultimate",
+    "url": "https://sol-rng.fandom.com/wiki/Virtual_:_Ultimate",
+    "markup": "<span style=\"background:linear-gradient(to bottom, #f78d6f 30%, #FFFDF7 50%, #C98155 65%); -webkit-background-clip:text !important; -webkit-text-fill-color:transparent; -webkit-text-stroke: .2px #ffe3d6; font-style: bold; font-family: Michroma;\"><b>VIRTUAL//ULTIMATE</b></span>"
+  },
+  "Volcanic": {
+    "name": "Volcanic",
+    "url": "https://sol-rng.fandom.com/wiki/Volcanic",
+    "markup": "<span style=\"-webkit-background-clip: text !important; -webkit-text-fill-color: transparent; letter-spacing: 0.1em; background: linear-gradient(to bottom, #fff05b 20%, #ffff69 35%, #fffa93 40%, #ffffac 60%); font-family: Kings; -webkit-text-stroke: 0.5px #ca5711\">Volcanic</span>"
+  },
+  "Hellborn": {
+    "name": "Hellborn",
+    "url": "https://sol-rng.fandom.com/wiki/Hellborn",
+    "markup": "<span class=\"Hellborn-Background\"><span style=\"background: linear-gradient(to bottom, #0e0000, #040000, #4e0000, #ad0500, #ff0d00); background-clip: text; -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-size: 100%; letter-spacing: .3em; font-family: Playfair Display;filter: drop-shadow(0px 1px 0px white) drop-shadow(0px -.5px 0px white) drop-shadow(1px 0px 0px #ff7522) drop-shadow(-1px 0px 0px #ff7522);\"><b>HELLBORN</b></span></span>"
+  },
+  "Undead": {
+    "name": "Undead",
+    "url": "https://sol-rng.fandom.com/wiki/Undead",
+    "markup": "<span style=\"-webkit-background-clip: text !important; -webkit-text-fill-color: transparent; background: linear-gradient(to bottom, #0d8920 20%, #003e07 35%, #129824 40%, #003003 60%); font-family: Libre Baskerville; -webkit-text-stroke: 0.5px #8effbc\"><b>Undead</b></span>"
+  },
+  "Memory": {
+    "name": "Memory",
+    "url": "https://sol-rng.fandom.com/wiki/Memory",
+    "markup": "<span style=\"-webkit-background-clip: text !important; font-size: 120%; -webkit-text-fill-color: transparent; background: linear-gradient(to bottom, #0c0047 35%, #280c9b 40%, #9b54ff 45%, #ffdbff 60%, #491fa6 40%); font-style: italic; font-family: Playfair Display; -webkit-text-stroke: 0.5px #150573\"><b>MEMORY</b></span>"
+  },
+  "Oblivion": {
+    "name": "Oblivion",
+    "url": "https://sol-rng.fandom.com/wiki/Oblivion",
+    "markup": "<span style=\"-webkit-background-clip: text !important; font-size: 120%; -webkit-text-fill-color: transparent; letter-spacing: .3em; background: linear-gradient(to bottom, #000, #000, #000, #000, #07003b, #0d0250, #4c23e8, #fce0ff, #5427f2, #5427f2, #050031, #000, #000, #0a0248); font-family: Neuton; text-shadow: 0 0 10px #7E18C7; -webkit-text-stroke: 0.2px white\">OBLIVION</span>"
+  },
+  "Breakthrough": {
+    "name": "Breakthrough",
+    "url": "https://sol-rng.fandom.com/wiki/Breakthrough_(Aura)",
+    "markup": "<span style=\"background: linear-gradient(135deg, white 2%, black 3%, white 4%, black 5%, white 6%, black 7%, #8589ac 8%, #8589ac 92%, black 93%, white 94%, black 95%, white 96%, black 97%, white 98%);\"><span style=\"background-clip: padding-box;border: 1px solid transparent;border-image: linear-gradient(135deg, white 2%, black 3%, white 4%, black 5%, white 6%, black 7%, #8589ac 8%, transparent 30%, transparent 70%, #8589ac 92%, black 93%, white 94%, black 95%, white 96%, black 97%, white 98%) 1;font-family: Montserrat;-webkit-text-fill-color: #ffffff\"><span style=\"background: linear-gradient(to right, transparent 5%, black 25%, black 75%, transparent 95%);\"><span style=\"-webkit-background-clip: text !important; -webkit-text-fill-color: transparent; background: linear-gradient(to bottom, #000, #494c68, #8280a4, #b3b5d5, #f7f9ff, #1c1d23, #252332, #3d3c5b, #4b4671, #9090bb); letter-spacing: .2em; -webkit-text-stroke: 0.3px white; font-family: Montserrat; filter: drop-shadow(.5px 1px 0 #e6e9fc); font-weight: 600\">•  BREAKTHROUGH  •</span></span></span></span>"
+  }
+}

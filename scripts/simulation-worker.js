@@ -50,7 +50,7 @@ self.onmessage = event => {
         })).filter(batch => batch.count > 0);
         const winCounts = new Float64Array(auraCount);
         const breakthroughCounts = new Float64Array(auraCount);
-        const runner = createRunner(batches, winCounts, drawEntropy, breakthroughCounts);
+        const runner = createRunner(batches, winCounts, drawEntropy, breakthroughCounts, message.sequencePlan);
         const continuation = new MessageChannel();
         activeContinuation = continuation;
         let lastProgressAt = performance.now();

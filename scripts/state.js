@@ -59,6 +59,7 @@
         },
         backgroundRolling: false,
         selectiveTrueChanceDisplay: false,
+        stickyRollButton: true,
         videoPlaying: false,
         scrollLock: null,
         auraTierFilters: {
