@@ -527,6 +527,10 @@
     text-transform: none;
 }
 
+.greenClass {
+    color: #79ff96;
+}
+
 .sigil-outline-mastermind {
     font-family: Fondamento;
     font-weight: bold;
