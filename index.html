@@ -33,7 +33,7 @@
             const documentModifiedAt = Number.isFinite(parsedDocumentModifiedAt)
                 ? parsedDocumentModifiedAt
                 : Date.now();
-            const buildCacheKey = '2.2.0';
+            const buildCacheKey = '2.201';
 
             window.appBuildCacheKey = buildCacheKey;
             window.getVersionedAppAssetUrl = path => {
@@ -166,27 +166,27 @@
             });
         })();
     </script>
-    <link rel="stylesheet" href="styles/base.css?v=2.2.0">
-    <link rel="stylesheet" href="styles/layout.css?v=2.2.0">
-    <link rel="stylesheet" href="styles/components.css?v=2.2.0">
-    <link rel="stylesheet" href="styles/utilities.css?v=2.2.0">
-    <link rel="stylesheet" href="styles/wiki-title-fonts.css?v=2.2.0">
-    <link rel="stylesheet" href="styles/wiki-title-effects.css?v=2.2.0">
-    <link rel="stylesheet" href="styles/wiki-titles.css?v=2.2.0">
-    <link rel="stylesheet" href="styles/equipment.css?v=2.2.0">
-    <link rel="stylesheet" href="styles/help-footer.css?v=2.2.0">
-    <script src="scripts/utils.js?v=2.2.0" defer></script>
-    <script src="scripts/runtime.js?v=2.2.0" defer></script>
-    <script src="scripts/gear-luck.js?v=2.2.0" defer></script>
-    <script src="scripts/equipment-presentation.js?v=2.2.0" defer></script>
-    <script src="scripts/event-data.js?v=2.2.0" defer></script>
-    <script src="scripts/simulation-core.js?v=2.2.0" defer></script>
-    <script src="scripts/state.js?v=2.2.0" defer></script>
-    <script src="scripts/media-loader.js?v=2.2.0" defer></script>
-    <script src="scripts/overlays.js?v=2.2.0" defer></script>
-    <script src="scripts/wiki-title-data.js?v=2.2.0" defer></script>
-    <script src="scripts/wiki-titles.js?v=2.2.0" defer></script>
-    <script src="scripts/main.js?v=2.2.0" defer></script>
+    <link rel="stylesheet" href="styles/base.css?v=2.201">
+    <link rel="stylesheet" href="styles/layout.css?v=2.201">
+    <link rel="stylesheet" href="styles/components.css?v=2.201">
+    <link rel="stylesheet" href="styles/utilities.css?v=2.201">
+    <link rel="stylesheet" href="styles/wiki-title-fonts.css?v=2.201">
+    <link rel="stylesheet" href="styles/wiki-title-effects.css?v=2.201">
+    <link rel="stylesheet" href="styles/wiki-titles.css?v=2.201">
+    <link rel="stylesheet" href="styles/equipment.css?v=2.201">
+    <link rel="stylesheet" href="styles/help-footer.css?v=2.201">
+    <script src="scripts/utils.js?v=2.201" defer></script>
+    <script src="scripts/runtime.js?v=2.201" defer></script>
+    <script src="scripts/gear-luck.js?v=2.201" defer></script>
+    <script src="scripts/equipment-presentation.js?v=2.201" defer></script>
+    <script src="scripts/event-data.js?v=2.201" defer></script>
+    <script src="scripts/simulation-core.js?v=2.201" defer></script>
+    <script src="scripts/state.js?v=2.201" defer></script>
+    <script src="scripts/media-loader.js?v=2.201" defer></script>
+    <script src="scripts/overlays.js?v=2.201" defer></script>
+    <script src="scripts/wiki-title-data.js?v=2.201" defer></script>
+    <script src="scripts/wiki-titles.js?v=2.201" defer></script>
+    <script src="scripts/main.js?v=2.201" defer></script>
 </head>
 <body>
     <div class="interface-backdrop" aria-hidden="true">
@@ -423,9 +423,9 @@
                         <h1 class="banner__title">Sol's RNG Rolling Simulator</h1>
                     </div>
                     <div class="banner__subtitle masthead-console__metadata">
-                        <button type="button" class="banner__version-button masthead-console__meta-card masthead-console__meta-card--version masthead-console__version" id="versionInfoButton" aria-haspopup="dialog" aria-expanded="false" data-version-id="v2.2.0">
+                        <button type="button" class="banner__version-button masthead-console__meta-card masthead-console__meta-card--version masthead-console__version" id="versionInfoButton" aria-haspopup="dialog" aria-expanded="false" data-version-id="v2.201">
                             <i class="fa-solid fa-code-branch" aria-hidden="true"></i>
-                            <span><small>Current build</small><strong>Version 2.2</strong></span>
+                            <span><small>Current build</small><strong>Version 2.201</strong></span>
                         </button>
                         <span class="masthead-console__meta-card banner__subtitle-author">
                             <span class="masthead-console__creator-avatar-flip" aria-hidden="true">
@@ -2375,6 +2375,25 @@
                             </ul>
                         </li>
                     </ul>
+                    <section class="changelog-subupdates" aria-labelledby="changelog-subupdates-v220">
+                        <div class="changelog-subupdates__header">
+                            <h3 class="changelog-subupdates__title" id="changelog-subupdates-v220" data-changelog-subupdates-title></h3>
+                        </div>
+                        <div class="changelog-subupdates__grid">
+                            <article class="changelog-subupdate-card">
+                                <header class="changelog-subupdate-card__header">
+                                    <span class="changelog-subupdate-card__version">v2.201</span>
+                                    <span class="changelog-subupdate-card__title changelog-tab__subtitle">Limbo Talisman Fix</span>
+                                    <p class="changelog-subupdate-card__meta">Updated 2026/10/02</p>
+                                </header>
+                                <ul class="changelog-modal__list changelog-modal__list--sub">
+                                    <li>Pocket talisman cards are unavailable in Limbo. An equipped talisman stays selected but inactive until you leave Limbo.</li>
+                                    <p class="credits-text">Thanks to <a href="https://discord.com/users/1008360412632322088" class="subtitleClass" target="_blank" rel="noopener">antigodthesans</a> for reporting this bug!</p>
+                                    <li>New version system just making it simpler and with less dots, dots, dots...</li>
+                                </ul>
+                            </article>
+                        </div>
+                    </section>
                 </section>
                 <section
                     id="changelog-panel-v215"

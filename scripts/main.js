@@ -4997,7 +4997,12 @@ function getGearLuckInputs(multiple = isMultiplePotionMode()) {
 
 function getEquipmentSummary({ styled = false } = {}) {
     const formatName = styled ? EquipmentPresentation.name : EquipmentPresentation.label;
-    return Object.entries(equippedGear).map(([slot, id]) => `${slot === 'pocket' ? 'Pocket' : slot === 'left' ? 'Left' : 'Right'}: ${formatName(GearLuck.find(slot, id))}`).join(' · ');
+    const selection = collectBiomeSelectionState();
+    const limboSelected = (selection.primaryBiome || selection.canonicalBiome) === 'limbo';
+    return Object.entries(equippedGear).map(([slot, id]) => {
+        const inactive = slot === 'pocket' && id !== 'none' && limboSelected ? ' (inactive in Limbo)' : '';
+        return `${slot === 'pocket' ? 'Pocket' : slot === 'left' ? 'Left' : 'Right'}: ${formatName(GearLuck.find(slot, id))}${inactive}`;
+    }).join(' · ');
 }
 
 function syncEquipmentPreview() {
@@ -5016,10 +5021,18 @@ function syncEquipmentPreview() {
     if (summary) summary.innerHTML = EquipmentPresentation.format(GearLuck.describe(equippedGear.left));
     const selectionSummary = document.getElementById('equipment-selection-summary');
     if (selectionSummary) selectionSummary.innerHTML = getEquipmentSummary({ styled: true });
+    const selection = collectBiomeSelectionState();
+    const limboSelected = (selection.primaryBiome || selection.canonicalBiome) === 'limbo';
     document.querySelectorAll('[data-equipment-item]').forEach(button => {
         const active = equippedGear[button.dataset.equipmentSlot] === button.dataset.equipmentItem;
+        const unavailable = button.dataset.equipmentSlot === 'pocket' && button.dataset.equipmentItem !== 'none' && limboSelected;
+        button.disabled = unavailable;
+        if (unavailable) button.title = 'Talismans are unavailable in Limbo.';
+        else button.removeAttribute('title');
         button.setAttribute('aria-pressed', String(active));
-        button.querySelector('.equipment-card__status').textContent = active ? 'Equipped' : 'Equip';
+        button.querySelector('.equipment-card__status').textContent = unavailable
+            ? active ? 'Inactive in Limbo' : 'Unavailable in Limbo'
+            : active ? 'Equipped' : 'Equip';
     });
 }
 
