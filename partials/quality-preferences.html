@@ -1,0 +1,53 @@
+<div id="qualityPreferencesOverlay" class="modal-overlay" hidden>
+        <div class="surface surface--modal filter-modal quality-settings__modal" role="dialog" aria-modal="true" aria-labelledby="qualityPreferencesTitle">
+            <div class="filter-modal__header">
+                <h2 class="filter-modal__title" id="qualityPreferencesTitle">Quality Preferences</h2>
+                <p class="filter-modal__hint">Fine tune visual performance settings and effects.</p>
+            </div>
+            <div class="quality-settings__menu" id="qualityPreferencesMenu" role="menu">
+                <button class="interface-button quality-settings__item" type="button" role="menuitemcheckbox" aria-checked="false" data-quality-option="removeParticles">
+                    <span class="quality-settings__name">Remove particles</span>
+                    <span class="quality-settings__description">Disables floating hearts and other particle visuals.</span>
+                </button>
+                <button class="interface-button quality-settings__item" type="button" role="menuitemcheckbox" aria-checked="false" data-quality-option="disableUiAnimations">
+                    <span class="quality-settings__name">Disable UI Animations</span>
+                    <span class="quality-settings__description">Stops button motion, feature bootups, and interface transitions. Shake-only effects remain separate.</span>
+                </button>
+                <button class="interface-button quality-settings__item" type="button" role="menuitemcheckbox" aria-checked="false" data-quality-option="disableShakes">
+                    <span class="quality-settings__name">Disable Shakes</span>
+                    <span class="quality-settings__description">Disables luck preset shaking and skips the Singularity summon shake and sound.</span>
+                </button>
+                <button class="interface-button quality-settings__item" type="button" role="menuitemcheckbox" aria-checked="false" data-quality-option="disableRollAndSigilAnimations">
+                    <span class="quality-settings__name">Disable roll & sigil animations</span>
+                    <span class="quality-settings__description">Removes roll effect and aura text animation classes.</span>
+                </button>
+                <button class="interface-button quality-settings__item" type="button" role="menuitemcheckbox" aria-checked="false" data-quality-option="reduceGlitchEffects">
+                    <span class="quality-settings__name">Reduce glitch effects</span>
+                    <span class="quality-settings__description">Uses occasional, subtle signal tears instead of the full Glitch biome distortion.</span>
+                </button>
+                <button class="interface-button quality-settings__item" type="button" role="menuitemcheckbox" aria-checked="false" data-quality-option="removeGlitchEffects">
+                    <span class="quality-settings__name">Remove glitch effects</span>
+                    <span class="quality-settings__description">Disables all glitch motion, signal overlays, and glitch audio while preserving the biome theme.</span>
+                </button>
+            </div>
+            <button class="interface-button quality-settings__item quality-settings__aura-switch" type="button" role="switch" aria-checked="true" aria-labelledby="wikiAuraStylesLabel" aria-describedby="wikiAuraStylesDescription" data-quality-option="disableWikiAuraStyles" data-quality-inverted>
+                <span>
+                    <span class="quality-settings__name" id="wikiAuraStylesLabel">Full Aura Style Rework</span>
+                    <span class="quality-settings__description" id="wikiAuraStylesDescription">Use Wiki styling for aura names. Turn off to use tier colors for names too.</span>
+                </span>
+                <span class="quality-settings__switch-track" aria-hidden="true"></span>
+            </button>
+            <section class="aura-directory-settings" aria-labelledby="auraDirectorySettingsTitle">
+                <h3 id="auraDirectorySettingsTitle">Aura directory</h3>
+                <label class="audio-slider" for="auraPageSize">
+                    <div class="audio-slider__label-row"><span class="audio-slider__label" id="auraPageSizeLabel">Auras per page</span><span class="audio-slider__meta"><output class="audio-slider__value" for="auraPageSize" data-aura-page-size-value>18 auras</output></span></div>
+                    <div class="audio-slider__control"><input class="audio-slider__input" type="range" id="auraPageSize" min="9" max="90" step="3" value="18" data-aura-page-size aria-labelledby="auraPageSizeLabel" aria-describedby="auraPageSizeHint"><span class="audio-slider__thumb" aria-hidden="true"></span></div>
+                </label>
+                <div class="aura-directory-settings__limits" aria-hidden="true"><span>9</span><span>90</span></div>
+                <p id="auraPageSizeHint">Choose 9–90 auras per page in steps of 3. Saved for your next visit.</p>
+            </section>
+            <div class="filter-modal__actions">
+                <button type="button" class="interface-button interface-button--ghost filter-modal__close" id="qualityPreferencesClose">Close</button>
+            </div>
+        </div>
+    </div>

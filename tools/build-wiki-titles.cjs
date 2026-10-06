@@ -8,6 +8,7 @@ const deps = process.env.WIKI_STYLE_DEPS || path.resolve(__dirname, '../test-res
 const cheerio = require(path.join(deps, 'cheerio'));
 const postcss = require(path.join(deps, 'postcss'));
 const selectorParser = require(path.join(deps, 'postcss-selector-parser'));
+const titleRepairs = require('../scripts/wiki-title-repairs.js');
 const root = path.resolve(__dirname, '..');
 const referenceDirectory = path.resolve(process.argv[2] || path.join(root, 'test-results'));
 const assetDirectory = path.resolve(process.argv[3]);
@@ -61,7 +62,7 @@ function rewriteAnimations(value) {
 }
 function sanitizeStyle(style) {
     // Parse individual declarations so one invalid wiki gradient does not discard its neighbours.
-    return style.split(';').map(part => {
+    return titleRepairs.repairStyle(style.split(';').map(part => {
         const colon = part.indexOf(':');
         if (colon < 0) return '';
         const property = part.slice(0, colon).trim().toLowerCase();
@@ -74,7 +75,7 @@ function sanitizeStyle(style) {
         if (missingClosers > 0) value += ')'.repeat(missingClosers);
         if (/(^|-)animation/.test(property)) value = rewriteAnimations(value);
         return `${property}:${value}`;
-    }).filter(Boolean).join(';');
+    }).filter(Boolean).join(';'));
 }
 function sanitizeMarkup(markup) {
     const $ = cheerio.load(markup, {}, false);

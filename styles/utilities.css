@@ -49,6 +49,31 @@
     text-shadow: 0 0 14px rgba(183, 245, 245, 0.42), 0 0 3px rgba(18, 30, 36, 0.72);
 }
 
+/* Sol's RNG Wiki: Category:Dimensional tier label and BloatedAnimation. */
+.rarity-tier-dimensional {
+    background: linear-gradient(270deg, #5747f0, #e406e9, #e406e9, #5747f0, #97e6f0, #97e6f0, #5747f0);
+    background-size: 4000% 100%;
+    animation: wiki-BloatedAnimation 4s linear infinite reverse;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+    font-family: Sarpanch, sans-serif;
+    font-weight: 700;
+    letter-spacing: normal;
+    text-transform: uppercase;
+    text-shadow: none;
+    filter: drop-shadow(1px 0 0 black) drop-shadow(0 1px 0 black) drop-shadow(-.5px 0 0 black) drop-shadow(0 -.5px 0 black);
+}
+
+body.quality-no-roll-sigil-animations .rarity-tier-dimensional {
+    animation: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .rarity-tier-dimensional { animation: none; }
+}
+
 .rarity-tier-limbo {
     color: #d7d7d7;
     text-shadow:
@@ -2168,6 +2193,13 @@ body.quality-no-roll-sigil-animations .sigil-glitch-flicker {
         inset 0 1px 0 rgba(255, 255, 255, 0.08),
         0 15px 32px rgba(0, 0, 0, 0.36);
 }
+
+.audio-slider { min-width: 0; display: grid; grid-template-rows: minmax(2.8em, 1fr) 26px; }
+.audio-slider .audio-slider__label-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; min-height: 2.8em; }
+.audio-slider__label { min-width: 0; line-height: 1.4; overflow-wrap: anywhere; }
+.audio-slider__meta { white-space: nowrap; flex-shrink: 0; }
+.audio-slider__value { min-width: calc(4ch + .56em); text-align: right; display: inline-block; }
+.aura-directory-settings .audio-slider__value { min-width: calc(8ch + 1.12em); }
 
 .audio-slider__label-row,
 .audio-switch__label-row {

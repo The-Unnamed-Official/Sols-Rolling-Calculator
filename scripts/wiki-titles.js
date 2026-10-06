@@ -9,6 +9,7 @@
     const auraNames = new Map(Object.keys(data.auras).map(name => [normalize(name), name]));
     const resolveAuraName = name => data.auras[name] ? name : auraNames.get(normalize(name));
     const wrap = (markup, label, kind, tierClass = '') => {
+        markup = globalThis.WikiTitleRepairs?.repairMarkup(markup) || markup;
         const art = markup.replace(/(class="wiki-ref-ColorChange-Illusionary"[^>]*>)([^<]+)(<\/span>)/g,
             (_, open, text, close) => open + [...text].map(letter => `<span>${letter}</span>`).join('') + close);
         const simple = kind === 'item' ? '' : `<span class="wiki-title__plain ${escape(tierClass)}" aria-hidden="true">${escape(label)}</span>`;
@@ -57,29 +58,49 @@
     }
     const visibleLetters = new Set();
     const observedLetters = new WeakSet();
-    const effectSelector = '.wiki-ref-ColorChange-Illusionary';
+    const originalCases = new WeakMap();
+    const effectSelector = '.wiki-ref-ColorChange-Illusionary,.wiki-ref-SwitchingCases';
     let timer = null;
     let visualSeed = 761;
+    let lastColorTick = 0;
+    function randomVisual() {
+        // Separate visual randomness keeps the simulation's random draws untouched.
+        visualSeed = (Math.imul(visualSeed, 1664525) + 1013904223) >>> 0;
+        return visualSeed;
+    }
+    function resetEffect(element) {
+        if (originalCases.has(element)) element.firstChild.nodeValue = originalCases.get(element);
+        else [...element.children].forEach(letter => { letter.style.color = ''; });
+    }
     function tick() {
         timer = null;
-        const disabled = document.hidden || document.body.matches('.quality-no-roll-sigil-animations,.quality-simple-auras');
+        const disabled = document.hidden || matchMedia('(prefers-reduced-motion: reduce)').matches || document.body.matches('.quality-no-roll-sigil-animations,.quality-simple-auras');
+        const now = performance.now();
+        const updateColors = now - lastColorTick >= 100;
+        let switchingCases = false;
         visibleLetters.forEach(element => {
             if (!element.isConnected) { visibility?.unobserve(element); visibleLetters.delete(element); return; }
+            if (disabled) { resetEffect(element); return; }
+            if (originalCases.has(element)) {
+                switchingCases = true;
+                element.firstChild.nodeValue = [...originalCases.get(element)].map(letter => randomVisual() & 0x10000 ? letter.toUpperCase() : letter.toLowerCase()).join('');
+                return;
+            }
+            if (!updateColors) return;
             const letters = [...element.children];
             letters.forEach(letter => { letter.style.color = ''; });
-            if (disabled || Math.floor(performance.now() / 320) % 2) return;
-            // Separate visual randomness keeps the simulation's random draws untouched.
-            visualSeed = (Math.imul(visualSeed, 1664525) + 1013904223) >>> 0;
-            const letter = letters[visualSeed % letters.length];
+            if (Math.floor(now / 320) % 2) return;
+            const letter = letters[randomVisual() % letters.length];
             if (letter) letter.style.color = element.dataset.color || '#0302d2';
         });
-        if (visibleLetters.size && !document.hidden) timer = setTimeout(tick, 100);
+        if (updateColors) lastColorTick = now;
+        if (visibleLetters.size && !disabled) timer = setTimeout(tick, switchingCases ? 50 : 100);
     }
     const visibility = typeof IntersectionObserver === 'function' ? new IntersectionObserver(entries => {
         entries.forEach(({ target, isIntersecting }) => {
             if (!target.isConnected) { visibility.unobserve(target); observedLetters.delete(target); visibleLetters.delete(target); return; }
             if (isIntersecting) visibleLetters.add(target);
-            else { visibleLetters.delete(target); [...target.children].forEach(letter => { letter.style.color = ''; }); }
+            else { visibleLetters.delete(target); resetEffect(target); }
         });
         if (visibleLetters.size && timer === null) tick();
     }) : null;
@@ -89,9 +110,13 @@
         elements.forEach(element => {
             if (observedLetters.has(element)) return;
             observedLetters.add(element);
+            if (element.classList.contains('wiki-ref-SwitchingCases')) originalCases.set(element, element.textContent);
             if (visibility) visibility.observe(element);
         });
     }
-    document.addEventListener('visibilitychange', () => { if (!document.hidden && timer === null && visibleLetters.size) tick(); });
+    function resumeEffects() { if (timer === null && visibleLetters.size) tick(); }
+    document.addEventListener('visibilitychange', resumeEffects);
+    matchMedia('(prefers-reduced-motion: reduce)').addEventListener('change', resumeEffects);
+    new MutationObserver(resumeEffects).observe(document.body, { attributes: true, attributeFilter: ['class'] });
     globalThis.WikiTitles = Object.freeze({ aura, item, resolveAuraName, initializeItems, initializeEffects });
 })();

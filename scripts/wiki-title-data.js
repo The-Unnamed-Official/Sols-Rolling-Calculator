@@ -1441,6 +1441,10 @@ globalThis.WikiTitleData = {
       "source": "https://sol-rng.fandom.com/wiki/Pukeko",
       "markup": "<span style=\"color:#FFFFFF;-webkit-text-stroke:0.02px black;font-family:Noto Sans TC\">pukeko</span>"
     },
+    "[CONTENT DELETED]": {
+      "source": "https://sol-rng.fandom.com/wiki/Content_Deleted",
+      "markup": "<span style=\"font-family:Inconsolata;background:linear-gradient(to bottom, #232a2a, #b6b9c1, #000, #f1f4ef, #7c7d84, #000, #060915);-webkit-background-clip:text !important;-webkit-text-stroke:0.01em white;-webkit-text-fill-color:transparent\"><b>[CONTENT DELETED]</b></span>"
+    },
     "Fault": {
       "source": "https://sol-rng.fandom.com/wiki/Fault",
       "markup": "<span style=\"display:inline-block;font-family:Zekton\"><span class=\"wiki-ref-GradientedTextStroke\" data-textstroke=\"FAULT\" data-gradient=\"0deg\" data-colors=\"rgb(0, 32, 0) 25%, rgb(0, 115, 0) 40%, rgb(0, 148, 0) 55%, rgb(0, 115, 0) 65%, rgb(0, 32, 0) 75%\" data-width=\"2.9\" style=\"background:linear-gradient(0deg, rgb(0, 32, 0) 25%, rgb(0, 115, 0) 40%, rgb(0, 148, 0) 55%, rgb(0, 115, 0) 65%, rgb(0, 32, 0) 75%) text;--data-text:&quot;FAULT&quot;;-webkit-text-fill-color:transparent;-webkit-text-stroke:2.9px transparent;position:absolute;position:absolute;background:linear-gradient(0deg,rgb(0, 32, 0) 25%, rgb(0, 115, 0) 40%, rgb(0, 148, 0) 55%, rgb(0, 115, 0) 65%, rgb(0, 32, 0) 75%);-webkit-background-clip:text!important;-webkit-text-fill-color:transparent;-webkit-text-stroke:2.9px transparent\"></span><span style=\"position:relative;-webkit-background-clip:text !important;-webkit-text-fill-color:transparent;background:linear-gradient(0deg, rgb(112, 210, 112) 20%, rgb(200, 255, 200) 30%, rgb( 225, 255, 255) 50%, rgb(175, 255, 175) 70%, rgb(94, 158, 92) 75%)\">FAULT</span></span>"

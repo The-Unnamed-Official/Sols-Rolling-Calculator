@@ -1,0 +1,16 @@
+<div id="audioSettingsOverlay" class="modal-overlay" hidden>
+    <div class="surface surface--modal audio-modal aura-audio-modal" role="dialog" aria-modal="true" aria-labelledby="audioSettingsTitle">
+        <div class="audio-modal__header"><h2 class="audio-modal__title" id="audioSettingsTitle">Audio Settings</h2><p class="audio-modal__hint">Music follows the biome. Your volumes are shared with the simulator.</p></div>
+        <div class="audio-modal__controls">
+            <div class="audio-modal__grid">
+                <label class="audio-slider" for="audioMusicVolume"><div class="audio-slider__label-row"><span class="audio-slider__label" id="audioMusicVolumeLabel">Background Music</span><span class="audio-slider__meta"><span class="audio-slider__value" data-audio-value="music">50%</span><span class="audio-slider__icon" data-audio-icon="music" aria-hidden="true"><i class="fa-solid fa-volume-high"></i></span></span></div><div class="audio-slider__control"><input type="range" id="audioMusicVolume" class="audio-slider__input" min="0" max="100" value="50" step="1" data-audio-channel="music" aria-labelledby="audioMusicVolumeLabel"><span class="audio-slider__thumb" aria-hidden="true"></span></div></label>
+                <label class="audio-slider" for="audioUiVolume"><div class="audio-slider__label-row"><span class="audio-slider__label" id="audioUiVolumeLabel">UI Sounds</span><span class="audio-slider__meta"><span class="audio-slider__value" data-audio-value="ui">50%</span><span class="audio-slider__icon" data-audio-icon="ui" aria-hidden="true"><i class="fa-solid fa-volume-high"></i></span></span></div><div class="audio-slider__control"><input type="range" id="audioUiVolume" class="audio-slider__input" min="0" max="100" value="50" step="1" data-audio-channel="ui" aria-labelledby="audioUiVolumeLabel"><span class="audio-slider__thumb" aria-hidden="true"></span></div></label>
+            </div>
+            <div class="audio-modal__toggles">
+                <div class="audio-modal__toggle audio-modal__toggle--master"><span class="audio-modal__toggle-copy"><span class="audio-modal__toggle-label">Master Audio</span><span class="audio-modal__toggle-description">Mute or restore every audio channel.</span></span><button class="interface-toggle audio-modal__master-mute" id="masterMuteToggle" type="button" aria-pressed="false">Mute</button></div>
+                <div class="audio-modal__toggle"><span class="audio-modal__toggle-label" id="audioUiToggleLabel">UI Sounds</span><label class="toggle" aria-labelledby="audioUiToggleLabel"><input type="checkbox" id="audioUiToggle" class="toggle__input" checked><span class="toggle__track"></span><span class="toggle__thumb"></span></label></div>
+            </div>
+        </div>
+        <div class="filter-modal__actions audio-modal__actions"><button type="button" class="interface-button interface-button--ghost filter-modal__close" id="audioSettingsClose">Close</button></div>
+    </div>
+</div>

@@ -1,0 +1,44 @@
+.aura-video-player { position: relative; display: block; width: 100%; aspect-ratio: 16 / 9; min-width: 0; min-height: 0; overflow: hidden; isolation: isolate; container-type: inline-size; background: #030710; color: #cdefff; border: 1px solid #326074; }
+.aura-video-player > video { display: block; width: 100%; height: 100%; object-fit: contain; cursor: pointer; }
+.aura-video-player:focus-visible { outline: 2px solid #79e8ff; outline-offset: 2px; }
+.aura-media-frame > .aura-video-player { height: 100%; aspect-ratio: auto; }
+.aura-video-controls { position: absolute; z-index: 3; left: 0; right: 0; bottom: 0; display: grid; gap: 7px; padding: 26px 10px 9px; background: linear-gradient(transparent, rgba(3, 7, 16, .96) 32%); transition: opacity .18s; }
+.aura-video-player.is-playing:not(:hover):not(:focus-within) .aura-video-controls,
+.aura-video-player.is-playing:not(:hover):not(:focus-within) .aura-video-dock__bar { opacity: 0; pointer-events: none; }
+.aura-video-controls__row { display: flex; align-items: center; gap: 7px; min-width: 0; }
+.aura-video-button { display: grid; place-items: center; flex: 0 0 30px; width: 30px; height: 30px; padding: 0; background: transparent; border: 1px solid transparent; color: #79e8ff; font: inherit; cursor: pointer; }
+.aura-video-button:hover, .aura-video-button:focus-visible { border-color: #4fa9c1; background: #142b3c; color: #e0faff; }
+.aura-video-button:focus-visible, .aura-video-speed summary:focus-visible, .aura-video-speed button:focus-visible { outline: 2px solid #79e8ff; outline-offset: -2px; }
+.aura-video-time { flex: 1 0 auto; font-size: 11px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.aura-video-seek { width: 100%; height: 15px; }
+.aura-video-controls .audio-slider__control { height: 15px; }
+.aura-video-controls .audio-slider__input { padding: 0; height: 15px; border-width: 1px; }
+.aura-video-controls .audio-slider__thumb { width: 14px; height: 19px; }
+.aura-video-volume { display: flex; flex-direction: row-reverse; align-items: center; flex: 0 0 auto; gap: 0; width: 30px; overflow: hidden; transition: width .2s; }
+.aura-video-volume:hover, .aura-video-volume:focus-within { width: min(112px, 26cqw); gap: 7px; }
+.aura-video-volume .audio-slider__control { flex: 1; min-width: 0; }
+.aura-video-speed { position: relative; flex: 0 0 auto; font-size: 11px; }
+.aura-video-speed summary { display: grid; place-items: center; width: 34px; min-height: 30px; cursor: pointer; list-style: none; border: 1px solid transparent; font-variant-numeric: tabular-nums; }
+.aura-video-speed summary::-webkit-details-marker { display: none; }
+.aura-video-speed summary:hover, .aura-video-speed[open] summary { background: #142b3c; border-color: #4fa9c1; }
+.aura-video-speed__menu { position: absolute; right: 0; bottom: calc(100% + 9px); display: grid; grid-template-columns: repeat(2, 1fr); gap: 5px; width: 145px; padding: 7px; border: 1px solid #4fa9c1; background: #060d19; box-shadow: 0 6px 22px #000b; }
+.aura-video-speed button { min-height: 28px; border: 1px solid #326074; color: #cdefff; background: #0d1929; font: inherit; cursor: pointer; }
+.aura-video-speed button:hover, .aura-video-speed button[aria-pressed="true"] { border-color: #79e8ff; color: #79e8ff; background: #14364b; }
+.aura-video-status { position: absolute; z-index: 2; top: 50%; left: 50%; max-width: 88%; margin: 0; padding: 10px 15px; transform: translate(-50%, -50%); border: 1px solid #326074; background: #060d19e8; font-size: 12px; line-height: 1.5; text-align: center; pointer-events: none; }
+.aura-video-placeholder { display: grid; align-content: center; justify-items: center; gap: 14px; width: 100%; aspect-ratio: 16 / 9; padding: 16px; border: 1px solid #326074; background: #060d19; font-size: 12px; color: var(--text-secondary); }
+.aura-video-dock { position: fixed; z-index: 10000; width: min(420px, calc(100vw - 24px)); right: 16px; bottom: 16px; border: 1px solid #79e8ff; box-shadow: 0 12px 50px #000c; background: #030710; }
+.aura-video-dock .aura-video-player { width: 100%; height: auto; aspect-ratio: 16 / 9; }
+.aura-video-dock__bar { position: absolute; z-index: 3; inset: 0 0 auto; display: flex; align-items: center; gap: 8px; padding: 7px; background: linear-gradient(#030710e8 65%, transparent); transition: opacity .18s; touch-action: none; cursor: move; }
+.aura-video-dock__title { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 11px; }
+.aura-navigation-frame { position: fixed; z-index: 900; inset: 0; width: 100%; height: 100%; border: 0; background: #070d18; }
+body.aura-video-shell { overflow: hidden; }
+body.aura-video-shell > :not(.aura-navigation-frame):not(.aura-video-dock):not(script) { display: none !important; }
+.aura-video-player:fullscreen, .aura-video-player--expanded, .aura-video-dock .aura-video-player:fullscreen, .aura-video-dock .aura-video-player--expanded { width: 100vw; height: 100dvh; aspect-ratio: auto; border: 0; background: #000; }
+.aura-video-player--expanded { position: fixed; z-index: 11000; inset: 0; }
+.aura-video-player:fullscreen .aura-video-controls, .aura-video-player--expanded .aura-video-controls { padding: 42px max(16px, 3vw) 20px; }
+@container (max-width: 380px) { .aura-video-controls__row { gap: 4px; } .aura-video-button { width: 26px; height: 28px; flex-basis: 26px; } .aura-video-time { font-size: 10px; } .aura-video-volume { width: 26px; } .aura-video-volume:hover, .aura-video-volume:focus-within { width: 23cqw; gap: 5px; } .aura-video-speed summary { width: 30px; } }
+@container (max-width: 290px) { .aura-video-time { font-size: 9px; } .aura-video-controls { padding-left: 6px; padding-right: 6px; } .aura-video-controls__row { gap: 2px; } }
+@container (max-width: 380px) { .aura-video-speed__menu { grid-template-columns: repeat(4, 1fr); width: min(210px, 80cqw); } }
+@media (hover: none) { .aura-video-player.is-playing:not(:hover):not(:focus-within) .aura-video-controls, .aura-video-player.is-playing:not(:hover):not(:focus-within) .aura-video-dock__bar { opacity: 1; pointer-events: auto; } }
+@media (prefers-reduced-motion: reduce) { .aura-video-controls, .aura-video-volume, .aura-video-dock__bar { transition: none; } }
+body.reduce-motion .aura-video-controls, body.quality-no-ui-animations .aura-video-controls, body.reduce-motion .aura-video-volume, body.quality-no-ui-animations .aura-video-volume { transition: none; }

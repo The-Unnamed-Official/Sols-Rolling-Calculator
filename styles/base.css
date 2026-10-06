@@ -1898,7 +1898,7 @@ body.biome--glitch:not(.glitch-effects-enabled) .interface-backdrop {
     position: fixed;
     inset: 0;
     background-color: var(--bg-base);
-    background-image: var(--biome-background, url("../files/images/backgrounds/dayBiomeImage.jpg"));
+    background-image: var(--biome-background, url("../files/images/backgrounds/normalBiomeImage.png"));
     background-position: center top;
     background-repeat: no-repeat;
     background-size: 100% 100%;

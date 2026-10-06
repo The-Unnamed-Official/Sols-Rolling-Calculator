@@ -1251,6 +1251,87 @@
 
 .resource-panel {
     --surface-edge-accent: rgba(157, 226, 255, 0.92);
+    display: flex;
+    flex-direction: column;
+}
+
+.resource-panel > .resource-board {
+    flex-shrink: 0;
+}
+
+/* This footer stays last even when more cards are added to the resource board. */
+.resource-panel > .resource-link--auras {
+    --resource-rgb: 127 227 255;
+    flex-shrink: 0;
+    grid-template-columns: 34px minmax(0, 1fr) 22px;
+    min-height: 62px;
+    padding: 10px 12px;
+    margin-top: auto;
+}
+
+.resource-link--auras .resource-link__icon {
+    width: 34px;
+    height: 34px;
+}
+
+.resource-link--auras .resource-link__icon > i {
+    font-size: 17px;
+}
+
+.resource-link--auras .resource-link__content {
+    gap: 2px;
+}
+
+.resource-link__wiki-label {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    z-index: 2;
+    color: #fff;
+    font-size: 13px;
+    font-weight: 800;
+    letter-spacing: 0.05em;
+    text-shadow: 0 1px 3px #000, 0 0 6px #000, 0 0 10px #000;
+    pointer-events: none;
+}
+
+.aura-page-link,
+.aura-page-link * {
+    cursor: pointer !important;
+}
+
+.aura-page-link {
+    color: inherit;
+    text-decoration: none;
+}
+
+.aura-link-title {
+    position: relative;
+    display: inline-block;
+    max-width: 100%;
+}
+
+/* Keep the underline outside nested, gradient-filled wiki title artwork. */
+.aura-link-title::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -0.12em;
+    height: 1px;
+    background: var(--accent-strong);
+    opacity: 0;
+    pointer-events: none;
+}
+
+.aura-page-link:is(:hover, :focus-visible) .aura-link-title::after {
+    opacity: 1;
+}
+
+.aura-page-link:focus-visible {
+    outline: 1px solid var(--accent);
+    outline-offset: 4px;
 }
 
 .resource-panel__header {
@@ -2906,6 +2987,13 @@ body.quality-no-ui-animations .resource-link__click-value {
     gap: 14px;
     margin-bottom: 14px;
 }
+.feed-sort .interface-select__summary { width: 100%; letter-spacing: .06em; white-space: normal; }
+.feed-sort .interface-select__summary::after { margin-left: auto; }
+.feed-sort .interface-select__menu { left: auto; right: 0; width: max(100%, 280px); max-width: calc(100vw - 32px); }
+.feed-sort:has(.interface-select[open]) { position: relative; z-index: 130; }
+.feed-toolbar:has(.interface-select[open]) { position: relative; z-index: 150; }
+.feed-sort[hidden] { display: none; }
+.banner__version-button[href] { text-decoration: none; }
 
 .feed-share {
     display: flex;
