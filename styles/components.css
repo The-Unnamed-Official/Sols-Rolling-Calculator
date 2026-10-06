@@ -593,6 +593,10 @@ body.quality-no-ui-animations .event-selector-block .form-field__label {
     gap: 6px;
 }
 
+.interface-select__menu > [hidden] {
+    display: none !important;
+}
+
 .interface-select__option-button {
     display: inline-flex;
     align-items: center;
@@ -2980,6 +2984,12 @@ body.quality-no-ui-animations .bloodIIClass {
 .interface-button--ghost {
     --button-background: linear-gradient(180deg, rgb(var(--accent-rgb) / 0.08), rgba(10, 20, 36, 0.7));
 }
+
+.aura-directory-settings { display: grid; gap: 12px; margin-top: 24px; padding: 18px; border: 1px solid var(--surface-border); background: rgba(3, 7, 16, .4); }
+.aura-directory-settings h3 { margin: 0; color: var(--accent-strong); font-size: 12px; text-transform: uppercase; letter-spacing: .1em; }
+.aura-directory-settings output { color: var(--accent-strong); font-variant-numeric: tabular-nums; }
+.aura-directory-settings__limits { display: flex; justify-content: space-between; color: var(--text-secondary); font-size: 10px; margin-top: -10px; }
+.aura-directory-settings p { margin: 0; color: var(--text-secondary); font-size: 11px; line-height: 1.6; }
 
 .control-section--presets {
     display: flex;

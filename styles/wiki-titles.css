@@ -18,12 +18,39 @@
 }
 .wiki-title > span { display: inline-block; }
 .wiki-title > .wiki-title__plain { display: none; }
+.aura-title-frame {
+    position: relative;
+    display: inline-block;
+    max-width: 100%;
+    vertical-align: middle;
+    min-height: 1.65em;
+}
+.aura-title-frame > .wiki-title {
+    position: absolute;
+    width: max-content;
+    max-width: none;
+    transform-origin: top left;
+    white-space: nowrap !important;
+}
+.aura-title-frame .wiki-title__art,
+.aura-title-frame .wiki-title__art * {
+    white-space: nowrap;
+    overflow-wrap: normal;
+    word-break: normal;
+}
+/* The directory contains hundreds of effects; run only those near the viewport. */
+.aura-title-frame[data-aura-title-visibility="paused"] .wiki-title *,
+.aura-title-frame[data-aura-title-visibility="paused"] .wiki-title *::before,
+.aura-title-frame[data-aura-title-visibility="paused"] .wiki-title *::after {
+    animation-play-state: paused !important;
+}
 body.quality-simple-auras .wiki-title:is(.wiki-title--aura, .wiki-title--rarity) {
     font: inherit;
     line-height: inherit;
     white-space: normal;
     color: var(--text-primary, #f5f8ff);
 }
+body.quality-simple-auras .aura-title-frame .wiki-title { font-family: Sarpanch, sans-serif; }
 body.quality-simple-auras .wiki-title:is(.wiki-title--aura, .wiki-title--rarity) > .wiki-title__art { display: none; }
 body.quality-simple-auras .wiki-title > .wiki-title__plain { display: inline; }
 body.quality-simple-auras .wiki-title--aura .wiki-title__art *,
@@ -91,6 +118,8 @@ body.quality-simple-auras .wiki-title--aura .wiki-title__art *::after { animatio
 .quality-settings__aura-switch[aria-checked="true"] .quality-settings__switch-track { background: #267558; border-color: #69ecae; }
 .quality-settings__aura-switch[aria-checked="true"] .quality-settings__switch-track::after { left: 21px; }
 .wiki-title .wiki-ref-GradientedTextStroke::before { content: attr(data-textstroke); }
+/* Animated pseudo-text must paint its gradient across the whole generated name. */
+.wiki-title .wiki-ref-A-t-l-a-s-Title { width: max-content !important; }
 .wiki-item-label {
     background: none !important;
     -webkit-text-fill-color: initial !important;

@@ -1,0 +1,104 @@
+/* Sol’s RNG Wiki contributors, CC BY-SA 3.0; see data/auras/README.md. */
+
+
+.wiki-title .wiki-ref-A-t-l-a-s-Title::after{
+  animation: wiki-A-t-l-a-s-Title 12s ease-in-out infinite;
+  content:"A.T.L.A.S.";
+}
+.wiki-title .wiki-ref-ThaneborneSymbol::before {
+	content: url(https://static.wikia.nocookie.net/sol-rng/images/c/c2/ForThaneborne.gif/revision/latest/scale-to-width-down/44?cb=20251031212643);
+	position: absolute;
+	transform: translate(3.9em, -.6em);
+	z-index: -1;
+	filter: drop-shadow(0px 0px 4px #bda4f4);
+}
+
+.wiki-title .wiki-ref-AbominationTitle::after{
+  animation: wiki-AbominationTitle 1.25s ease-in-out 0s infinite;
+  content:"ABOMINATION";
+}
+       @keyframes wiki-A-t-l-a-s-Title {
+      0%   { content: "A.T.L.A.S.|"; }
+      1.7%   { content: "A.T.L.A.S.|"; }
+      3.4%   { content: "A.T.L.A.S."; }      
+      5.1%   { content: "A.T.L.A.S."; }
+      6.8%   { content: "A.T.L.A.S.|"; }
+      8.5%   { content: "A.T.L.A.S.|"; }
+      10.2%   { content: "A.T.L.A.S."; }      
+      11.9%   { content: "A.T.L.A.S."; }
+      13.6%   { content: "A.T.L.A.S.|"; }
+      15.3%   { content: "A.T.L.A.S.|"; }
+      17%   { content: "A.T.L.A.S."; }      
+      18.7%   { content: "A.T.L.A.S."; }
+      20.4%   { content: "A.T.L.A.S.|"; }
+      22.1%   { content: "A.T.L.A.S.|"; }      
+      23.8%   { content: "A.T.L.A.S|"; }
+      25.5%   { content: "A.T.L.A.|"; }
+      27.2%   { content: "A.T.L.A|"; } 
+      28.9%   { content: "A.T.L.|"; }
+      30.6%   { content: "A.T.L|"; }   
+      32.3%   { content: "A.T.|"; }
+      34%  { content: "A.T|"; }
+      35.7%   { content: "A.|"; } 
+      37.4%   { content: "A|"; }
+      39.1%   { content: "|"; }
+      40.8%   { content: "|"; }
+      42.5%   { content: "A|"; }
+      44.2%   { content: "AT|"; }
+      45.9%   { content: "ATL|"; }
+      47.6%   { content: "ATLA|"; }
+      49.3%   { content: "ATLAS|"; }
+      51%  { content: "ATLAS|"; }
+      52.7%   { content: "ATLAS"; }
+      54.4%   { content: "ATLAS"; }
+      56.1%   { content: "ATLAS|"; }
+      57.8%   { content: "ATLAS|"; }
+      59.5%   { content: "ATLAS"; }
+      61.2%   { content: "ATLAS"; }
+      62.9%   { content: "ATLAS|"; }
+      64.6%   { content: "ATLAS|"; }
+      66.3%   { content: "ATLAS"; }
+      68%   { content: "ATLAS"; }
+      69.7%   { content: "ATLAS|"; }
+      71.4%   { content: "ATLAS|"; }
+      73.1%   { content: "ATLAS|"; }      
+      74.8%   { content: "ATLA|"; }
+      76.5%   { content: "ATL|"; }
+      78.2%   { content: "AT|"; } 
+      79.9%   { content: "A|"; }
+      81.6%   { content: "|"; }
+      83.3%   { content: "|"; }
+      85%   { content: "A|"; }
+      86.7%   { content: "A.|"; }
+      88.4%   { content: "A.T|"; }
+      90.1%   { content: "A.T.|"; }
+      91.8%   { content: "A.T.L|"; }
+      93.5%   { content: "A.T.L.|"; }
+      95.2%   { content: "A.T.L.A|"; }
+      96.9%   { content: "A.T.L.A.|"; }
+      98.6%   { content: "A.T.L.A.S|"; }
+      100%   { content: "A.T.L.A.S.|"; }                                                                                                                                                                                                                             
+    }
+@keyframes wiki-AbominationTitle{
+  0% {content:"ABOMINATION";}
+  5% {content:"a#a%%Na#@on";}
+  10% {content:"%@&min!t##n";}
+  15% {content:"A@o&!!at&o&";}
+  20% {content:"aBOml!@&ion";}
+  25% {content:"ABOmI#!TIO#";}
+  30% {content:"a!o#INA%ioe";}
+  35% {content:"ABOMINA%!#n";}
+  40% {content:"!BOMI#ATIO@";}
+  45% {content:"%B!%IN+T#!%";}
+  50% {content:"a!omiNATlo@";}
+  55% {content:"Ab&mlNA@lo@";}
+  60% {content:"a@!m##A@ioN";}
+  65% {content:"&%O%iNaT#!@";}
+  70% {content:"ab!m@n&i%N";}
+  75% {content:"aBo!l&Atl!N";}
+  80% {content:"ab##i%A@!On";}
+  85% {content:"a#oM@%a&ion";}
+  90% {content:"aBoM%nati#N";}
+  95% {content:"ABOmln#Tl&n";}
+  100% {content:"A&!MlnAT#N";}
+}

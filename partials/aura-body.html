@@ -1,0 +1,7 @@
+<template data-aura-body class="aura-pages">
+    <div class="interface-backdrop" aria-hidden="true"><video class="interface-backdrop__video" muted loop playsinline preload="none" aria-hidden="true"></video><div class="interface-backdrop__veil"></div></div>
+    <audio id="ambientMusic" loop preload="none" data-src="{{assetPrefix}}files/music/dayBiomeMusic.mp3" data-volume="0.10" data-audio-channel="music"></audio>
+    <audio id="clickSoundFx" preload="none" data-src="{{assetPrefix}}files/sounds/actions/SolsClickSound.mp3" data-volume="0.10" data-audio-channel="ui"></audio>
+    <audio id="hoverSoundFx" preload="none" data-src="{{assetPrefix}}files/sounds/actions/SolsHoverSound.mp3" data-volume="0.15" data-audio-channel="ui"></audio>
+</template>
+<template data-aura-shell class="interface-shell directory-shell" data-detail-class="directory-shell--detail"></template>

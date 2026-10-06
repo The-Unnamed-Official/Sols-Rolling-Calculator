@@ -72,7 +72,7 @@
         let rightLuck = rightItem?.luck || 0;
         if (loadout.right === 'shining-star' && biome === 'starfall') rightLuck = 2.5;
         if (loadout.right === 'ragnaroker' && ['windy', 'rainy', 'hell'].includes(biome)) rightLuck += 0.45;
-        let pocketLuck = find('pocket', loadout.pocket)?.luck || 0;
+        let pocketLuck = biome === 'limbo' ? 0 : find('pocket', loadout.pocket)?.luck || 0;
         const day = time === 'day' || biome === 'day';
         const night = time === 'night' || biome === 'night';
         if ((loadout.pocket === 'sunstone' && !day) || (loadout.pocket === 'moonstone' && !night)

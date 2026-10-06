@@ -28,7 +28,8 @@
     color: #dce9f4; font-family: inherit; text-align: left; white-space: normal;
     letter-spacing: normal; text-transform: none; cursor: pointer;
 }
-#device-buff-preset-panel .equipment-card:hover { border-color: #73d9ec; background-color: rgba(41, 94, 117, .25); }
+#device-buff-preset-panel .equipment-card:hover:not(:disabled) { border-color: #73d9ec; background-color: rgba(41, 94, 117, .25); }
+#device-buff-preset-panel .equipment-card:disabled { opacity: .55; cursor: not-allowed; }
 #device-buff-preset-panel .equipment-card:focus-visible { outline: 2px solid #c2f7ff; outline-offset: 3px; }
 #device-buff-preset-panel .equipment-card[aria-pressed="true"] {
     border-color: #7de4f3; box-shadow: inset 3px 0 #7de4f3;

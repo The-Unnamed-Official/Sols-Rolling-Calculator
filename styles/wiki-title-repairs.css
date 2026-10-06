@@ -1,0 +1,111 @@
+/* Additional title effects adapted from Sol's RNG Wiki contributors, CC BY-SA 3.0. */
+.wiki-title .wiki-ref-Hellborn-Background {
+    background-image: url(https://static.wikia.nocookie.net/sol-rng/images/8/80/HellbornFireBackground.png/revision/latest?cb=20260922121817);
+    background-size: 105% 62%;
+    background-repeat: no-repeat;
+    background-position: 10% 47%;
+}
+
+/* Keyframes: MediaWiki:AuraKeyframes.css; names scoped to the local title renderer. */
+@keyframes wiki-GlitchedEggTitle {
+  0%   { font-family: 'Alexandria'; transform: scale(1); }
+  2.7% { font-family: 'Jua'; transform: scale(1); }
+  5.4% { font-family: 'Encode Sans Semi Expanded'; transform: scale(1); }
+  8.1% { font-family: 'Permanent Marker'; transform: scale(0.95); }
+  10.8% { font-family: 'Orbitron'; transform: scale(1); }
+  13.5% { font-family: 'Creepster'; transform: scale(1); }
+  16.2% { font-family: 'Noto Sans'; transform: scale(1); }
+  18.9% { font-family: 'Amethysta'; transform: scale(1); }
+  21.6% { font-family: 'Noto Sans SC'; transform: scale(1); }
+  24.3% { font-family: 'Comme'; transform: scale(1); }
+  27%   { font-family: 'Assistant'; transform: scale(1); }
+  29.7% { font-family: 'Sunflower'; transform: scale(0.92); }
+  32.4% { font-family: 'Encode Sans Semi Expanded'; transform: scale(1); }
+  35.1% { font-family: 'Alumni Sans Pinstripe'; transform: scale(1); }
+  37.8% { font-family: 'Merriweather'; transform: scale(1); }
+  40.5% { font-family: 'Reem Kufi Fun'; transform: scale(1); }
+  43.2% { font-family: 'Alexandria'; transform: scale(1); }
+  45.9% { font-family: 'Bangers'; transform: scale(0.88); }
+  48.6% { font-family: 'Amatic SC'; transform: scale(0.95); }
+  51.3% { font-family: 'Noto Sans SC'; transform: scale(1); }
+  54%   { font-family: 'Amethysta'; transform: scale(1); }
+  56.7% { font-family: 'Luckiest Guy'; transform: scale(0.85); }
+  59.4% { font-family: 'Overpass'; transform: scale(1); }
+  62.1% { font-family: 'Jura'; transform: scale(1); }
+  64.8% { font-family: 'Encode Sans Semi Expanded'; transform: scale(1); }
+  67.5% { font-family: 'Permanent Marker'; transform: scale(0.95); }
+  70.2% { font-family: 'Merriweather'; transform: scale(1); }
+  72.9% { font-family: 'Roboto Mono'; transform: scale(1); }
+  75.6% { font-family: 'Sarpanch'; transform: scale(1); }
+  78.3% { font-family: 'Josefin Sans'; transform: scale(1); }
+  81%   { font-family: 'Sunflower'; transform: scale(0.92); }
+  83.7% { font-family: 'Merriweather'; transform: scale(1); }
+  86.4% { font-family: 'Special Elite'; transform: scale(1); }
+  89.1% { font-family: 'Orbitron'; transform: scale(1); }
+  91.8% { font-family: 'Source Sans Pro'; transform: scale(1); }
+  94.5% { font-family: 'Merriweather'; transform: scale(1); }
+  97.2% { font-family: 'Oswald'; transform: scale(1); }
+  100%  { font-family: 'Alexandria'; transform: scale(1); }
+}
+
+@keyframes wiki-GlitchedEggShadow {
+  0%   { font-family: 'Orbitron'; -webkit-text-stroke: 0.4em black; transform: scale(0.9); }
+  10%  { font-family: 'Sarpanch'; -webkit-text-stroke: 0.4em black; transform: scale(0.9); }
+  20%  { font-family: 'Permanent Marker'; -webkit-text-stroke: 0.4em black; transform: scale(0.95); }
+  30%  { font-family: 'Luckiest Guy'; -webkit-text-stroke: 0.4em black; transform: scale(0.85); }
+  40%  { font-family: 'Bangers'; -webkit-text-stroke: 0.4em black; transform: scale(0.88); }
+  50%  { font-family: 'Roboto Mono'; -webkit-text-stroke: 0.4em black; transform: scale(0.9); }
+  60%  { font-family: 'Jura'; -webkit-text-stroke: 0.4em black; transform: scale(0.9); }
+  70%  { font-family: 'Sarpanch'; -webkit-text-stroke: 0.4em black; transform: scale(0.9); }
+  80%  { font-family: 'Jua'; -webkit-text-stroke: 0.4em black; transform: scale(0.9); }
+  90%  { font-family: 'Merriweather'; -webkit-text-stroke: 0.4em black; transform: scale(0.9); }
+  100% { font-family: 'Orbitron'; -webkit-text-stroke: 0.4em black; transform: scale(0.9); }
+}
+
+@keyframes wiki-GlitchedEggStroke {
+  0%   { -webkit-text-stroke: .04em #FEB6B6; }
+  16%  { -webkit-text-stroke: .04em #FECBB6; }
+  32%  { -webkit-text-stroke: .04em #FEF3B6; }
+  48%  { -webkit-text-stroke: .04em #B9FEB6; }
+  64%  { -webkit-text-stroke: .04em #B6E0FE; }
+  80%  { -webkit-text-stroke: .04em #E1B6FE; }
+  100% { -webkit-text-stroke: .04em #FEB6B6; }
+}
+
+@keyframes wiki-rainbowstroke{
+ 0%{-webkit-text-stroke: 0.5px #E24545;}
+ 9%{-webkit-text-stroke: 0.5px #E29845;}
+ 14%{-webkit-text-stroke: 0.5px #E2DB49;}
+ 17%{-webkit-text-stroke: 0.5px #C8ED46;}
+ 22%{-webkit-text-stroke: 0.5px #AAEF21;}
+ 25%{-webkit-text-stroke: 0.5px #8EDD7C;}
+ 29%{-webkit-text-stroke: 0.5px #81DC95;}
+ 33%{-webkit-text-stroke: 0.5px #81DCBD;}
+ 36%{-webkit-text-stroke: 0.5px #81DCCC;}
+ 39%{-webkit-text-stroke: 0.5px #21D2CD;}
+ 41%{-webkit-text-stroke: 0.5px #49BCD2;}
+ 45%{-webkit-text-stroke: 0.5px #51B4DB;}
+ 48%{-webkit-text-stroke: 0.5px #40A6E5;}
+ 52%{-webkit-text-stroke: 0.5px #4082E5;}
+ 55%{-webkit-text-stroke: 0.5px #406CE5;}
+ 58%{-webkit-text-stroke: 0.5px #4054E5;}
+ 61%{-webkit-text-stroke: 0.5px #4F4AED;}
+ 64%{-webkit-text-stroke: 0.5px #644AED;}
+ 68%{-webkit-text-stroke: 0.5px #734AED;}
+ 72%{-webkit-text-stroke: 0.5px #7C4AED;}
+ 75%{-webkit-text-stroke: 0.5px #9456E9;}
+ 78%{-webkit-text-stroke: 0.5px #AA56E9;}
+ 81%{-webkit-text-stroke: 0.5px #C056E9;}
+ 85%{-webkit-text-stroke: 0.5px #C856E9;}
+ 88%{-webkit-text-stroke: 0.5px #D741E0;}
+ 91%{-webkit-text-stroke: 0.5px #D345C9;}
+ 94%{-webkit-text-stroke: 0.5px #D345A3;}
+ 97%{-webkit-text-stroke: 0.5px #D3458E;}
+ 100%{-webkit-text-stroke: 0.5px #E21D5C;}
+}
+
+/* Gradient motion adapted from the wiki Common.css rainbow2 effect. */
+@keyframes wiki-rainbow_animation {
+    0%, 100% { background-position: 0 0; }
+    50% { background-position: 100% 0; }
+}

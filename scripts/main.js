@@ -79,27 +79,23 @@ const LIVE_ROLL_FEED_BOTTOM_TOLERANCE_PX = 4;
 const ROLL_FEED_SORT_MODE = Object.freeze({
     RECENT: 'recent',
     RARITY: 'rarity',
-    ALPHABETICAL: 'alphabetical'
+    RARITY_ASCENDING: 'rarity-ascending',
+    ALPHABETICAL: 'alphabetical',
+    ALPHABETICAL_DESCENDING: 'alphabetical-descending'
 });
 const ROLL_FEED_SORT_SEQUENCE = Object.freeze([
     ROLL_FEED_SORT_MODE.RECENT,
     ROLL_FEED_SORT_MODE.RARITY,
-    ROLL_FEED_SORT_MODE.ALPHABETICAL
+    ROLL_FEED_SORT_MODE.RARITY_ASCENDING,
+    ROLL_FEED_SORT_MODE.ALPHABETICAL,
+    ROLL_FEED_SORT_MODE.ALPHABETICAL_DESCENDING
 ]);
 const ROLL_FEED_SORT_SEQUENCE_UNNAMED = Object.freeze([
     ROLL_FEED_SORT_MODE.RARITY,
-    ROLL_FEED_SORT_MODE.ALPHABETICAL
+    ROLL_FEED_SORT_MODE.RARITY_ASCENDING,
+    ROLL_FEED_SORT_MODE.ALPHABETICAL,
+    ROLL_FEED_SORT_MODE.ALPHABETICAL_DESCENDING
 ]);
-const ROLL_FEED_SORT_LABELS = Object.freeze({
-    [ROLL_FEED_SORT_MODE.RECENT]: 'Recent',
-    [ROLL_FEED_SORT_MODE.RARITY]: 'Rarity',
-    [ROLL_FEED_SORT_MODE.ALPHABETICAL]: 'Alphabetical'
-});
-const ROLL_FEED_SORT_ICONS = Object.freeze({
-    [ROLL_FEED_SORT_MODE.RECENT]: 'fa-clock-rotate-left',
-    [ROLL_FEED_SORT_MODE.RARITY]: 'fa-gem',
-    [ROLL_FEED_SORT_MODE.ALPHABETICAL]: 'fa-arrow-down-a-z'
-});
 const LEGACY_SOLS_LIKE_SPEED_VALUES = Object.freeze({
     slower: 60,
     standard: SOLS_LIKE_ROLLS_PER_SECOND_DEFAULT,
@@ -3206,8 +3202,30 @@ function queueBackgroundMusicGestureRetry(bgMusic) {
     document.addEventListener('keydown', retry, true);
 }
 
+// The floating aura player survives visits to the simulator. Its audio takes
+// priority over background music, including when a biome changes while rolling.
+let auraFloatingPlaybackActive = false;
+let auraLocalPlaybackActive = false;
+let auraVideoShellActive = false;
+function updateAuraMusicPlayback() {
+    const music = document.getElementById('ambientMusic');
+    if (auraFloatingPlaybackActive || auraLocalPlaybackActive || auraVideoShellActive) music?.pause();
+    else startBackgroundMusic(music);
+}
+document.addEventListener('aura-floating-playback', event => {
+    auraFloatingPlaybackActive = Boolean(event.detail?.active);
+    updateAuraMusicPlayback();
+});
+document.addEventListener('aura-showcase-playback', event => {
+    auraLocalPlaybackActive = Boolean(event.detail?.active);
+    updateAuraMusicPlayback();
+});
+document.addEventListener('aura-video-shell-state', event => {
+    auraVideoShellActive = Boolean(event.detail?.active);
+    updateAuraMusicPlayback();
+});
 function startBackgroundMusic(bgMusic) {
-    if (!bgMusic || !experienceStarted || !isSoundChannelActive('music')) return;
+    if (auraFloatingPlaybackActive || auraLocalPlaybackActive || auraVideoShellActive || !bgMusic || !experienceStarted || !isSoundChannelActive('music')) return;
 
     primeBackgroundMusic(bgMusic);
     const playPromise = bgMusic.play();
@@ -3971,8 +3989,8 @@ if (typeof window !== 'undefined') {
 const biomeAssets = {
     normal: { image: 'files/images/backgrounds/normalBiomeImage.png', music: 'files/music/normalBiomeMusic.mp3' },
     roe: { image: 'files/images/backgrounds/normalBiomeImage.png', music: 'files/music/normalBiomeMusic.mp3' },
-    day: { image: 'files/images/backgrounds/dayBiomeImage.jpg', music: 'files/music/dayBiomeMusic.mp3' },
-    night: { image: 'files/images/backgrounds/nightBiomeImage.jpg', music: 'files/music/nightBiomeMusic.mp3' },
+    day: { image: 'files/images/backgrounds/normalBiomeImage.png', music: 'files/music/dayBiomeMusic.mp3' },
+    night: { image: 'files/images/backgrounds/normalBiomeImageN.png', music: 'files/music/nightBiomeMusic.mp3' },
     rainy: { image: 'files/images/backgrounds/rainyBiomeImage.jpg', music: 'files/music/rainyBiomeMusic.mp3' },
     windy: { image: 'files/images/backgrounds/windyBiomeImage.jpg', music: 'files/music/windyBiomeMusic.mp3' },
     snowy: { image: 'files/images/backgrounds/snowyBiomeImage.jpg', music: 'files/music/winterBiomeMusic.mp3' },
@@ -4721,16 +4739,13 @@ function applyGlitchVisuals(enabled, options = {}) {
     }
 }
 
-function applyBiomeTheme(biome, selectionState = null) {
-    const selection = selectionState || collectBiomeSelectionState();
-    const assetKey = resolveBiomeAssetKey(biome, selection);
-    const assets = biomeAssets[assetKey] || biomeAssets.normal;
-    const isVideoAsset = assets && typeof assets.image === 'string' && /\.(webm|mp4|ogv|ogg)$/i.test(assets.image);
+let biomeBackgroundRequestId = 0;
 
+function applyBiomeBackdrop(image) {
+    const isVideoAsset = BiomeBackground.isVideo(image);
     const root = document.documentElement;
-
-    if (root && assets) {
-        root.style.setProperty('--biome-background', isVideoAsset ? 'none' : `url("${assets.image}")`);
+    if (root) {
+        root.style.setProperty('--biome-background', isVideoAsset ? 'none' : `url("${image}")`);
     }
 
     const backdrop = document.querySelector('.interface-backdrop');
@@ -4741,22 +4756,22 @@ function applyBiomeTheme(biome, selectionState = null) {
             backdrop.style.backgroundImage = 'none';
 
             const currentVideoSrc = backdropVideo.getAttribute('data-current-src');
-            if (currentVideoSrc !== assets.image) {
+            if (currentVideoSrc !== image) {
                 backdropVideo.pause();
                 backdropVideo.removeAttribute('src');
                 backdropVideo.load();
-                backdropVideo.src = assets.image;
+                backdropVideo.src = image;
                 backdropVideo.load();
-                backdropVideo.setAttribute('data-current-src', assets.image);
+                backdropVideo.setAttribute('data-current-src', image);
             }
 
             const playPromise = backdropVideo.play();
             if (playPromise && typeof playPromise.catch === 'function') {
                 playPromise.catch(() => {});
             }
-        } else if (assets) {
+        } else {
             backdrop.classList.remove('interface-backdrop--video-active');
-            backdrop.style.backgroundImage = `url("${assets.image}")`;
+            backdrop.style.backgroundImage = `url("${image}")`;
             if (backdropVideo) {
                 backdropVideo.pause();
                 if (backdropVideo.readyState > 0) {
@@ -4772,6 +4787,19 @@ function applyBiomeTheme(biome, selectionState = null) {
             }
         }
     }
+}
+
+function applyBiomeTheme(biome, selectionState = null) {
+    const selection = selectionState || collectBiomeSelectionState();
+    const assetKey = resolveBiomeAssetKey(biome, selection);
+    const assets = biomeAssets[assetKey] || biomeAssets.normal;
+    const night = selection.timeBiome === 'night' || selection.activeBiomes?.includes('night') || assetKey === 'night';
+    const request = ++biomeBackgroundRequestId;
+    BiomeBackground.setTime(night ? 'night' : 'day');
+    BiomeBackground.resolve(assets.image, { night }).then(image => {
+        // A slower image load must never replace a newer biome/time selection.
+        if (request === biomeBackgroundRequestId) applyBiomeBackdrop(image);
+    });
 
     const bgMusic = document.getElementById('ambientMusic');
     if (bgMusic && assets) {
@@ -4997,7 +5025,12 @@ function getGearLuckInputs(multiple = isMultiplePotionMode()) {
 
 function getEquipmentSummary({ styled = false } = {}) {
     const formatName = styled ? EquipmentPresentation.name : EquipmentPresentation.label;
-    return Object.entries(equippedGear).map(([slot, id]) => `${slot === 'pocket' ? 'Pocket' : slot === 'left' ? 'Left' : 'Right'}: ${formatName(GearLuck.find(slot, id))}`).join(' · ');
+    const selection = collectBiomeSelectionState();
+    const limboSelected = (selection.primaryBiome || selection.canonicalBiome) === 'limbo';
+    return Object.entries(equippedGear).map(([slot, id]) => {
+        const inactive = slot === 'pocket' && id !== 'none' && limboSelected ? ' (inactive in Limbo)' : '';
+        return `${slot === 'pocket' ? 'Pocket' : slot === 'left' ? 'Left' : 'Right'}: ${formatName(GearLuck.find(slot, id))}${inactive}`;
+    }).join(' · ');
 }
 
 function syncEquipmentPreview() {
@@ -5016,10 +5049,18 @@ function syncEquipmentPreview() {
     if (summary) summary.innerHTML = EquipmentPresentation.format(GearLuck.describe(equippedGear.left));
     const selectionSummary = document.getElementById('equipment-selection-summary');
     if (selectionSummary) selectionSummary.innerHTML = getEquipmentSummary({ styled: true });
+    const selection = collectBiomeSelectionState();
+    const limboSelected = (selection.primaryBiome || selection.canonicalBiome) === 'limbo';
     document.querySelectorAll('[data-equipment-item]').forEach(button => {
         const active = equippedGear[button.dataset.equipmentSlot] === button.dataset.equipmentItem;
+        const unavailable = button.dataset.equipmentSlot === 'pocket' && button.dataset.equipmentItem !== 'none' && limboSelected;
+        button.disabled = unavailable;
+        if (unavailable) button.title = 'Talismans are unavailable in Limbo.';
+        else button.removeAttribute('title');
         button.setAttribute('aria-pressed', String(active));
-        button.querySelector('.equipment-card__status').textContent = active ? 'Equipped' : 'Equip';
+        button.querySelector('.equipment-card__status').textContent = unavailable
+            ? active ? 'Inactive in Limbo' : 'Unavailable in Limbo'
+            : active ? 'Equipped' : 'Equip';
     });
 }
 
@@ -5467,6 +5508,8 @@ function setSimulationMethod(method, { playAudio = true } = {}) {
         ? SIMULATION_METHOD.SOLS_LIKE
         : SIMULATION_METHOD.UNNAMED;
     syncSimulationMethodControls();
+    if (rollFeedSortingAvailable) applyRollFeedSort(rollFeedSortMode);
+    else syncRollFeedSortControl();
     if (playAudio) {
         playSoundEffect(clickSoundEffectElement, 'ui');
     }
@@ -7883,6 +7926,11 @@ function formatAuraNameText(aura, overrideName) {
     return baseName;
 }
 
+function formatRollFeedAuraNameMarkup(aura, overrideName, biome = null) {
+    const markup = formatAuraNameMarkup(aura, overrideName, biome);
+    return globalThis.AuraLinks?.wrap(aura?.name || overrideName, markup) || markup;
+}
+
 const layeredTextSigilClasses = ['sigil-outline-lamenthyr', 'sigil-outline-edict', 'sigil-effect-clockwork'];
 const layeredTextSigilSelector = layeredTextSigilClasses.map(className => `.${className}`).join(',');
 
@@ -8537,7 +8585,7 @@ const AURA_BLUEPRINT_SOURCE = Object.freeze([
     { name: "HellFire - 4,776", chance: 4776, breakthroughs: nativeBreakthroughs("hell") },
     { name: "Bleeding - 4,444", chance: 4444 },
     { name: "Sidereum - 4,096", chance: 4096 },
-    // { name: "[CONTENT DELETED] - 4,040", chance: 4040, nativeBiomes: ["glitch"], ignoreLuck: true, fixedRollThreshold: 1 }, Unobtainable until further notice
+    { name: "[CONTENT DELETED] - 4,040", chance: 4040, nativeBiomes: ["glitch"] }, // finally \^o^/
     { name: "Cola - 3,999", chance: 3999 },
     { name: "Flora - 3,700", chance: 3700 },
     { name: "Pukeko - 3,198", chance: 3198 },
@@ -10857,6 +10905,11 @@ document.addEventListener('DOMContentLoaded', setupSimulationMethodControls);
 document.addEventListener('DOMContentLoaded', initializeRollingSettingsPanel);
 document.addEventListener('DOMContentLoaded', setupRollFeedSearch);
 document.addEventListener('DOMContentLoaded', setupRollFeedSorting);
+window.addEventListener('storage', event => {
+    if (event.key !== VISUAL_SETTINGS_STORAGE_KEY) return;
+    hydrateVisualSettings();
+    applyQualityPreferencesState();
+});
 document.addEventListener('DOMContentLoaded', initializePotionSimulationMode);
 document.addEventListener('DOMContentLoaded', setupLuckPresetAdjustmentButtons);
 document.addEventListener('DOMContentLoaded', setupPresetConsoleTabs);
@@ -12075,7 +12128,8 @@ function updateBiomeControlConstraints({ source = null, triggerSync = true } = {
     }
 
     if (triggerSync) {
-        syncActiveBiomeSelection({ forceDispatch: primaryChanged || otherChanged || timeChanged });
+        syncActiveBiomeSelection({ forceDispatch: primaryChanged || otherChanged || timeChanged
+            || source === BIOME_TIME_SELECT_ID || source === BIOME_OTHER_SELECT_ID });
     }
 }
 
@@ -12925,7 +12979,7 @@ function createLiveRollFeed(onNavigate) {
             cursor = element.nextElementSibling;
         }
         observeRollFeedEntries(list);
-        syncAuraTierSeparators(list, '[data-roll-feed-entry]', sortMode === ROLL_FEED_SORT_MODE.RARITY);
+        syncAuraTierSeparators(list, '[data-roll-feed-entry]', isRarityFeedSort(sortMode));
         navigation.hidden = records.length === 0;
         const range = matches.length
             ? `${formatWithCommas(start + 1)}–${formatWithCommas(start + visible.length)} of ${formatWithCommas(matches.length)}`
@@ -12987,14 +13041,7 @@ function createLiveRollFeed(onNavigate) {
             sortMode = mode;
             latest.textContent = mode === ROLL_FEED_SORT_MODE.RECENT ? 'Latest' : 'Last';
             const sortable = records.map(record => ({ ...record.presentation, originalOrder: record.originalOrder, record }));
-            if (mode === ROLL_FEED_SORT_MODE.RARITY) {
-                ordered = sortEntriesInUnnamedResultOrder(sortable).map(item => item.record);
-            } else if (mode === ROLL_FEED_SORT_MODE.ALPHABETICAL) {
-                ordered = sortable.sort((a, b) => rollFeedAlphabeticalCollator.compare(a.alphabeticalName, b.alphabeticalName)
-                    || a.originalOrder - b.originalOrder).map(item => item.record);
-            } else {
-                ordered = records;
-            }
+            ordered = sortRollFeedEntries(sortable, mode).map(item => item.record);
             matches = query ? ordered.filter(record => record.presentation.searchText.includes(query)) : ordered;
             following = false;
             start = 0;
@@ -13103,7 +13150,7 @@ function applyRollFeedSearchFilter(root = feedContainer) {
         entry.hidden = !searchableText.includes(query);
     });
     const resultsList = root.querySelector('.roll-feed__results-list');
-    syncAuraTierSeparators(resultsList, '[data-roll-feed-entry]', rollFeedSortMode === ROLL_FEED_SORT_MODE.RARITY);
+    syncAuraTierSeparators(resultsList, '[data-roll-feed-entry]', isRarityFeedSort(rollFeedSortMode));
 }
 
 function setupRollFeedSearch() {
@@ -13232,43 +13279,51 @@ const rollFeedAlphabeticalCollator = new Intl.Collator(undefined, {
 });
 
 function getRollFeedSortSequence() {
-    return rollFeedSortSupportsRecent
+    return rollFeedSortSupportsRecent && isSolsLikeSimulationMethod()
         ? ROLL_FEED_SORT_SEQUENCE
         : ROLL_FEED_SORT_SEQUENCE_UNNAMED;
 }
 
 function getDefaultRollFeedSortMode() {
-    return rollFeedSortSupportsRecent
+    return getRollFeedSortSequence().includes(ROLL_FEED_SORT_MODE.RECENT)
         ? ROLL_FEED_SORT_MODE.RECENT
         : ROLL_FEED_SORT_MODE.RARITY;
 }
 
-function syncRollFeedSortControl() {
-    const button = document.getElementById('rollFeedSortButton');
-    const label = document.getElementById('rollFeedSortLabel');
-    if (!button) {
-        return;
-    }
+function isRarityFeedSort(mode) {
+    return mode === ROLL_FEED_SORT_MODE.RARITY || mode === ROLL_FEED_SORT_MODE.RARITY_ASCENDING;
+}
 
+function sortRollFeedEntries(records, mode) {
+    if (isRarityFeedSort(mode)) {
+        const ordered = sortEntriesInUnnamedResultOrder(records);
+        return mode === ROLL_FEED_SORT_MODE.RARITY_ASCENDING ? ordered.reverse() : ordered;
+    }
+    if (mode === ROLL_FEED_SORT_MODE.ALPHABETICAL || mode === ROLL_FEED_SORT_MODE.ALPHABETICAL_DESCENDING) {
+        const direction = mode === ROLL_FEED_SORT_MODE.ALPHABETICAL_DESCENDING ? -1 : 1;
+        return [...records].sort((a, b) => direction * rollFeedAlphabeticalCollator.compare(a.alphabeticalName, b.alphabeticalName)
+            || a.originalOrder - b.originalOrder);
+    }
+    return [...records].sort((a, b) => a.originalOrder - b.originalOrder);
+}
+
+function syncRollFeedSortControl() {
+    const select = document.getElementById('rollFeedSortSelect');
+    const control = document.getElementById('rollFeedSortControl');
+    if (!select || !control) return;
     const sortSequence = getRollFeedSortSequence();
     const normalizedMode = sortSequence.includes(rollFeedSortMode)
         ? rollFeedSortMode
         : getDefaultRollFeedSortMode();
-    const modeLabel = ROLL_FEED_SORT_LABELS[normalizedMode];
-    const icon = button.querySelector('i');
-
-    button.hidden = !rollFeedSortingAvailable;
-    button.disabled = !rollFeedSortingAvailable;
-    button.dataset.sortMode = normalizedMode;
-    button.setAttribute('aria-label', `Sort roll feed: ${modeLabel}`);
-    button.setAttribute('title', `Sort roll feed: ${modeLabel}`);
-    if (label) {
-        label.textContent = modeLabel;
-    }
-    if (icon) {
-        Object.values(ROLL_FEED_SORT_ICONS).forEach(className => icon.classList.remove(className));
-        icon.classList.add(ROLL_FEED_SORT_ICONS[normalizedMode]);
-    }
+    rollFeedSortMode = normalizedMode;
+    control.hidden = !rollFeedSortingAvailable;
+    select.disabled = !rollFeedSortingAvailable;
+    select.value = normalizedMode;
+    [...select.options].forEach(option => {
+        option.hidden = !sortSequence.includes(option.value);
+        option.disabled = option.hidden;
+    });
+    globalThis.InterfaceSelects?.refresh('rollFeedSortSelect');
 }
 
 function setRollFeedSortingAvailable(
@@ -13318,20 +13373,7 @@ function applyRollFeedSort(mode = rollFeedSortMode) {
         };
     });
 
-    let orderedRecords;
-    if (normalizedMode === ROLL_FEED_SORT_MODE.RARITY) {
-        orderedRecords = sortEntriesInUnnamedResultOrder(entryRecords);
-    } else if (normalizedMode === ROLL_FEED_SORT_MODE.ALPHABETICAL) {
-        orderedRecords = [...entryRecords].sort((a, b) => {
-            const nameDifference = rollFeedAlphabeticalCollator.compare(
-                a.alphabeticalName,
-                b.alphabeticalName
-            );
-            return nameDifference || a.originalOrder - b.originalOrder;
-        });
-    } else {
-        orderedRecords = [...entryRecords].sort((a, b) => a.originalOrder - b.originalOrder);
-    }
+    const orderedRecords = sortRollFeedEntries(entryRecords, normalizedMode);
 
     const fragment = document.createDocumentFragment();
     orderedRecords.forEach(record => fragment.appendChild(record.element));
@@ -13351,19 +13393,14 @@ function applyRollFeedSort(mode = rollFeedSortMode) {
 }
 
 function setupRollFeedSorting() {
-    const button = document.getElementById('rollFeedSortButton');
-    if (!button) {
-        return;
-    }
-
-    button.addEventListener('click', () => {
+    const select = document.getElementById('rollFeedSortSelect');
+    if (!select) return;
+    globalThis.InterfaceSelects?.initialize('rollFeedSortSelect');
+    select.addEventListener('change', () => {
         if (!rollFeedSortingAvailable) {
             return;
         }
-        const sortSequence = getRollFeedSortSequence();
-        const currentIndex = Math.max(0, sortSequence.indexOf(rollFeedSortMode));
-        const nextMode = sortSequence[(currentIndex + 1) % sortSequence.length];
-        applyRollFeedSort(nextMode);
+        applyRollFeedSort(select.value);
         playSoundEffect(clickSoundEffectElement, 'ui');
     });
 
@@ -13403,13 +13440,13 @@ function buildResultEntries(
         const countClass = [rarityClass, eventSigilClass].filter(Boolean).join(' ');
         const nativeClass = [rarityClass, eventSigilClass].filter(Boolean).join(' ');
         const classAttr = `aura-tier-detail ${rarityClass}`;
-        const formattedName = formatAuraNameMarkup(aura, undefined, biome);
+        const formattedName = formatRollFeedAuraNameMarkup(aura, undefined, biome);
         const formattedTextName = formatAuraNameText(aura);
         const breakthroughStats = breakthroughStatsMap.get(aura.name);
         const isBreakthrough = aura.name.startsWith('Breakthrough');
 
         const formatBreakthroughMarkupWithCount = (nameValue, countValue) =>
-            `${formatAuraNameMarkup(aura, nameValue, biome)}<span class="aura-tier-detail aura-count ${countClass}"> | Times Rolled: ${formatWithCommas(countValue)}</span>`;
+            `${formatRollFeedAuraNameMarkup(aura, nameValue, biome)}<span class="aura-tier-detail aura-count ${countClass}"> | Times Rolled: ${formatWithCommas(countValue)}</span>`;
 
         const eventId = getAuraEventId(aura, { preferEnabled: true });
         const specialClassTokens = specialClass
@@ -13465,7 +13502,7 @@ function buildResultEntries(
             const btName = aura.name.replace(/-\s*[\d,]+/, `- ${formatWithCommas(breakthroughStats.btChance)}`);
             const nativeLabel = isBreakthrough
                 ? formatBreakthroughMarkupWithCount(btName, breakthroughStats.count)
-                : formatAuraNameMarkup(aura, btName, biome);
+                : formatRollFeedAuraNameMarkup(aura, btName, biome);
             const nativeShareName = formatAuraNameText(aura, btName);
             pushVisualEntry(
                 isBreakthrough
@@ -13561,7 +13598,7 @@ function buildLiveRollMarkup(
         ? aura.name.replace(/-\s*[\d,]+/, `- ${formatWithCommas(breakthroughStats.btChance)}`)
         : aura.name;
     const prefix = isNativeRoll ? `<span class="aura-native ${nativeClass}">[Native]</span> ` : '';
-    const formattedName = formatAuraNameMarkup(aura, displayName, biome);
+    const formattedName = formatRollFeedAuraNameMarkup(aura, displayName, biome);
     const trueChanceValue = allowTrueChance
         && appState.selectiveTrueChanceDisplay
         && !shouldHideSelectiveTrueChanceForAura(aura.name)

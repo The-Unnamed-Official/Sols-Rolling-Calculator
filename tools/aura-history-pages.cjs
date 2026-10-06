@@ -1,0 +1,60 @@
+// Each profile embeds its own versions; the viewer preloads their image sources.
+const escape=value=>String(value??'').replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[char]);
+const revisionUrl=(version,revision=version.revisionId)=>version.source+(revision?'?oldid='+revision:'');
+let rich={text:escape,description:version=>escape(version.description)};
+const setRichText=formatter=>{rich=formatter;};
+function gallery(entry,version,index) {
+    if(!version.media.length) return `<aside class="aura-media-viewer aura-media-viewer--empty"><div class="aura-media-stage"><div class="aura-media-empty"><span aria-hidden="true">◇</span><p>No archived image is recorded for this version.</p></div></div><a class="aura-source-link" href="${escape(revisionUrl(version))}" target="_blank" rel="noopener">View the version’s wiki source ↗</a></aside>`;
+    const images=version.media;
+    return `<aside class="aura-media-viewer" data-aura-viewer aria-label="${escape(entry.name+' · '+version.label+' images')}" tabindex="0"><div class="aura-media-heading"><span>Visual archive</span><span class="aura-media-counter" data-image-counter>01 / ${String(images.length).padStart(2,'0')}</span></div><div class="aura-media-stage" data-image-stage>${images.map((item,position)=>{
+        const fallback=item.originalUrl?` data-history-fallback-src="${escape(item.originalUrl)}"`:'';
+        const firstImage=index===0&&position===0;
+        const media=item.mime.startsWith('video/')
+            ? `<video controlslist="nodownload noremoteplayback" disablepictureinpicture disableremoteplayback playsinline preload="none" width="${item.width}" height="${item.height}" data-history-src="${escape(item.url)}"${fallback} aria-label="${escape(entry.name+' · '+item.caption)}"></video>`
+            : `<img ${firstImage?`src="${escape(item.url)}" fetchpriority="high" `:''}data-history-src="${escape(item.url)}"${fallback} alt="${escape(entry.name+' · '+item.caption)}" width="${item.width}" height="${item.height}" loading="eager" decoding="async" referrerpolicy="no-referrer">`;
+        return `<figure class="aura-media-frame" data-image-frame id="aura-image-${index}-${position}"${position?' hidden':''}>${media}<div class="aura-media-error" hidden><p>This preview could not load.</p><button class="interface-button interface-button--ghost" type="button" data-image-retry>Retry image</button></div><figcaption><span>${escape(item.caption)}</span><a href="${escape(item.source)}" target="_blank" rel="noopener">Image source ↗</a></figcaption></figure>`;
+    }).join('')}<div class="aura-media-loading" data-image-loading role="status" hidden>Loading preview…</div></div>${images.length>1?`<div class="aura-media-navigation"><button class="interface-button interface-button--ghost aura-media-arrow" type="button" data-image-step="-1" aria-label="Previous image">←</button><div class="aura-media-choices" aria-label="Choose an image">${images.map((item,position)=>`<button class="aura-media-choice" type="button" data-image-choice="${position}" aria-controls="aura-image-${index}-${position}" aria-pressed="${position===0}" aria-label="Image ${position+1}: ${escape(item.caption)}"><span>${String(position+1).padStart(2,'0')}</span>${escape(item.caption.replace(/\s*\((?:old(?:er|est)?|previous|Era[^)]*|Eon[^)]*)\)/gi,''))}</button>`).join('')}</div><button class="interface-button interface-button--ghost aura-media-arrow" type="button" data-image-step="1" aria-label="Next image">→</button></div>`:''}</aside>`;
+}
+function description(version,id) {
+    const source=revisionUrl(version,version.descriptionRevisionId||version.revisionId);
+    return `<section class="changelog-release-group aura-description" aria-labelledby="${id}-title"><h2 id="${id}-title">${version.descriptionTruncated?'Description excerpt':'Description'}</h2>${version.description?`<blockquote id="${id}-text" data-aura-description>${rich.description(version)}${version.descriptionTruncated?'…':''}</blockquote><button class="interface-button interface-button--ghost aura-description__toggle" type="button" data-description-toggle aria-controls="${id}-text" aria-expanded="false" hidden>Show More</button>`:'<p>No description is recorded for this version.</p>'}<a class="aura-source-link" href="${escape(source)}" target="_blank" rel="noopener">${version.descriptionTruncated?'Read the full description':'View this version’s source'} on Sol’s RNG Wiki ↗</a></section>`;
+}
+function details(version,entry,current=false) {
+    const fields=current ? {
+        tier:entry.tier||version.facts?.tier||'Not recorded',type:entry.kind,
+        availability:/unreleased/i.test(entry.status)?'Unreleased':/removed/i.test(entry.status)?'Removed':/unobtainable/i.test(entry.rarity)&&!entry.exclusive&&!entry.events.length?'Not currently rollable':entry.events.length?'Event limited':entry.exclusive?'Exclusive biome only':/crafted|NPC|Developer/i.test(entry.kind)?'Special obtainment':'Currently obtainable',
+        events:entry.events.join(' / '), music:version.facts?.music,creator:version.facts?.creator
+    } : version.facts||{};
+    const facts=Object.entries(fields).filter(([,value])=>value && !/^N\/A$/i.test(value));
+    const labels={rarity:'Rarity',nativeRarity:'Native rarity',tier:'Tier',required:'Biome / requirement',obtainment:'Obtainment',music:'Soundtrack',creator:'Creator',type:'Aura type',availability:'Availability',events:'Event'};
+    return `<section class="changelog-release-group aura-version-facts" data-aura-details><h2>${current?'Aura details':'Version details'}</h2>${facts.length?`<dl>${facts.map(([field,value])=>`<div><dt>${labels[field]||field}</dt><dd>${field==='tier'&&current?`<span class="rarity-tier-${escape(entry.tierKey)}">${rich.text(value)}</span>`:rich.text(value)}</dd></div>`).join('')}</dl>`:'<p>No separate rarity or obtainment details are recorded for this version.</p>'}<a class="aura-source-link" href="${escape(revisionUrl(version))}" target="_blank" rel="noopener">View ${current?'aura':'archived'} details on the wiki ↗</a></section>`;
+}
+function oldContent(version,index,entry) {
+    return `<header class="aura-version-heading"><h2>${escape(version.label+' version')}</h2>${version.before?`<p>Archived details from before <time datetime="${version.before}">${version.before}</time>.</p>`:''}</header><div class="aura-detail__body">${description(version,'aura-description-version-'+index)}${details(version,entry)}</div>`;
+}
+function soundtrackPlayers(version) {
+    const tracks=version.soundtracks||[];
+    if(!tracks.length) return '';
+    return `<section class="changelog-release-group aura-soundtracks"><h2>Listen to the soundtrack</h2><p class="aura-soundtracks__credit">${rich.text(version.facts?.music||'Aura soundtrack')}</p>${tracks.map((track,index)=>`<div class="aura-soundtrack" data-aura-soundtrack><div class="aura-soundtrack__label"><span>${tracks.length>1?'Track '+(index+1):'Soundtrack'}</span><a class="aura-source-link" href="${escape(track.source)}" target="_blank" rel="noopener">Audio source ↗</a></div><audio preload="none" data-soundtrack-src="${escape(track.url)}"></audio><div class="aura-soundtrack__controls"><button type="button" class="aura-soundtrack__button" data-soundtrack-play aria-label="Play soundtrack" aria-pressed="false"><i class="fa-solid fa-play" aria-hidden="true"></i></button><div class="audio-slider__control aura-soundtrack__seek"><input type="range" class="audio-slider__input" data-soundtrack-seek aria-label="Soundtrack position" min="0" max="100" step="0.1" value="0" disabled><span class="audio-slider__thumb" aria-hidden="true"></span></div><span class="aura-soundtrack__time" data-soundtrack-time>0:00 / --:--</span><div class="aura-soundtrack__volume"><button type="button" class="aura-soundtrack__button" data-soundtrack-mute aria-label="Mute soundtrack"><i class="fa-solid fa-volume-low" aria-hidden="true"></i></button><div class="audio-slider__control"><input type="range" class="audio-slider__input" data-soundtrack-volume aria-label="Soundtrack volume" min="0" max="100" step="1" value="50"><span class="audio-slider__thumb" aria-hidden="true"></span></div></div></div><p class="aura-soundtrack__error" data-soundtrack-error role="status" hidden>Audio could not load. Try again or open the audio source.</p></div>`).join('')}</section>`;
+}
+function showcasePlayers(version) {
+    const recordings=version.showcases||[];
+    if(!recordings.length) return '';
+    return `<section class="aura-showcases" aria-label="Cutscenes and abilities">${['cutscene','ability'].map(kind=>{
+        const videos=recordings.filter(item=>item.kind===kind);
+        if(!videos.length) return '';
+        return `<div class="aura-showcases__group"><h2>${kind==='cutscene'?'Cutscenes':'Ability showcases'}</h2>${videos.map(item=>`<details class="aura-showcase" data-aura-showcase><summary><i class="fa-solid ${kind==='cutscene'?'fa-film':'fa-bolt'}" aria-hidden="true"></i><span>${escape(item.label)}</span><span class="aura-showcase__open" aria-hidden="true">▶</span></summary><div class="aura-showcase__body"><video controlslist="nodownload noremoteplayback" disablepictureinpicture disableremoteplayback playsinline preload="none" data-showcase-src="${escape(item.url)}" aria-label="${escape(kind==='cutscene'?'Cutscene · '+item.label:'Ability showcase · '+item.label)}"></video><p class="aura-showcase__error" data-showcase-error role="status" hidden>This video could not play. <button class="interface-button interface-button--ghost" type="button" data-showcase-retry>Retry video</button> You can also open its source.</p><div class="aura-showcase__sources"><a class="aura-source-link" href="${escape(item.source)}" target="_blank" rel="noopener">Video source ↗</a><a class="aura-source-link" href="${escape(item.articleSource)}" target="_blank" rel="noopener">Wiki details ↗</a></div></div></details>`).join('')}</div>`;
+    }).join('')}</section>`;
+}
+function renderHistory(entry,currentContent,profile,reviewedOn,backgroundFor=()=>entry.background||'',musicFor=()=>'') {
+    if(!profile) throw new Error('Missing media profile: '+entry.title);
+    const multiple=profile.versions.length>1;
+    const tabs=multiple?`<div class="aura-version-selector"><span class="form-field__label" id="aura-versions-label">Version</span><div class="aura-version-tabs" role="tablist" aria-labelledby="aura-versions-label">${profile.versions.map((version,index)=>`<button class="interface-button interface-button--ghost aura-version-tab" role="tab" type="button" id="aura-version-tab-${index}" aria-controls="aura-version-panel-${index}" aria-selected="${index===0}" tabindex="${index===0?'0':'-1'}">${escape(version.label)}</button>`).join('')}</div></div>`:'';
+    const panels=profile.versions.map((version,index)=>{
+        const background=backgroundFor(version);
+        const music=musicFor(background);
+        return `<section class="aura-version-panel" data-aura-panel data-aura-background="${background?'../../'+escape(background):''}" data-aura-music="${music?'../../'+escape(music):''}"${multiple?' role="tabpanel"':''} id="aura-version-panel-${index}"${multiple?` aria-labelledby="aura-version-tab-${index}" tabindex="0"`:''}${index?' hidden':''}><div class="aura-version-visuals">${gallery(entry,version,index)}${showcasePlayers(version)}</div><div class="aura-version-information">${index?oldContent(version,index,entry):currentContent+details(version,entry,true)}${soundtrackPlayers(version)}</div></section>`;
+    }).join('');
+    return `<section class="aura-history" data-aura-profile${multiple?' data-aura-history':''} aria-label="Aura profile${multiple?' versions':''}">${tabs}${panels}<p class="aura-history-attribution">${multiple?'Version':'Image'} references reviewed ${reviewedOn}. Images and descriptions from <a href="${escape(profile.source)}" target="_blank" rel="noopener">Sol’s RNG Wiki</a>; each preview and description links to its source.</p></section>`;
+}
+module.exports={renderHistory,setRichText};

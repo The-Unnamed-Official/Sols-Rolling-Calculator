@@ -6,6 +6,7 @@
     <title>Sol's RNG Rolling Simulator</title>
     <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@7.1.0/css/all.min.css" crossorigin="anonymous">
+    <script src="https://kit.fontawesome.com/0b0c748c56.js" crossorigin="anonymous"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Amatic+SC:wght@400;700&family=Cinzel:wght@400..900&family=Comic+Neue:ital,wght@0,300;0,400;0,700;1,300;1,400;1,700&family=Creepster&family=Fondamento:ital@0;1&family=Fuzzy+Bubbles:wght@400;700&family=Grenze+Gotisch:wght@100..900&family=Italianno&family=Josefin+Sans:ital,wght@0,600;1,600&family=Jura:wght@300..700&family=Kings&family=Luckiest+Guy&family=Merriweather:ital,opsz,wght@0,18..144,300..900;1,18..144,300..900&family=Michroma&family=Noto+Serif+TC:wght@500;600;700&family=Oswald:wght@200..700&family=Overpass:ital,wght@0,100..900;1,100..900&family=Parisienne&family=Patrick+Hand&family=Playfair+Display:wght@500;600;700&family=Press+Start+2P&family=Roboto+Flex:opsz,wght,XOPQ,XTRA,YOPQ,YTDE,YTFI,YTLC,YTUC@8..144,100..1000,96,468,79,-203,738,514,712&family=Roboto+Mono:ital,wght@0,100;1,100&family=Roboto:ital,wght@0,100..900;1,100..900&family=Sarpanch:wght@400;500;600;700&family=Tangerine:wght@400;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
@@ -33,7 +34,7 @@
             const documentModifiedAt = Number.isFinite(parsedDocumentModifiedAt)
                 ? parsedDocumentModifiedAt
                 : Date.now();
-            const buildCacheKey = '2.2.0';
+            const buildCacheKey = '2.205';
 
             window.appBuildCacheKey = buildCacheKey;
             window.getVersionedAppAssetUrl = path => {
@@ -166,27 +167,37 @@
             });
         })();
     </script>
-    <link rel="stylesheet" href="styles/base.css?v=2.2.0">
-    <link rel="stylesheet" href="styles/layout.css?v=2.2.0">
-    <link rel="stylesheet" href="styles/components.css?v=2.2.0">
-    <link rel="stylesheet" href="styles/utilities.css?v=2.2.0">
-    <link rel="stylesheet" href="styles/wiki-title-fonts.css?v=2.2.0">
-    <link rel="stylesheet" href="styles/wiki-title-effects.css?v=2.2.0">
-    <link rel="stylesheet" href="styles/wiki-titles.css?v=2.2.0">
-    <link rel="stylesheet" href="styles/equipment.css?v=2.2.0">
-    <link rel="stylesheet" href="styles/help-footer.css?v=2.2.0">
-    <script src="scripts/utils.js?v=2.2.0" defer></script>
-    <script src="scripts/runtime.js?v=2.2.0" defer></script>
-    <script src="scripts/gear-luck.js?v=2.2.0" defer></script>
-    <script src="scripts/equipment-presentation.js?v=2.2.0" defer></script>
-    <script src="scripts/event-data.js?v=2.2.0" defer></script>
-    <script src="scripts/simulation-core.js?v=2.2.0" defer></script>
-    <script src="scripts/state.js?v=2.2.0" defer></script>
-    <script src="scripts/media-loader.js?v=2.2.0" defer></script>
-    <script src="scripts/overlays.js?v=2.2.0" defer></script>
-    <script src="scripts/wiki-title-data.js?v=2.2.0" defer></script>
-    <script src="scripts/wiki-titles.js?v=2.2.0" defer></script>
-    <script src="scripts/main.js?v=2.2.0" defer></script>
+    <link rel="stylesheet" href="styles/base.css?v=2.205.background2">
+    <link rel="stylesheet" href="styles/layout.css?v=2.205">
+    <link rel="stylesheet" href="styles/components.css?v=2.205">
+    <link rel="stylesheet" href="styles/utilities.css?v=2.205.pages3">
+    <link rel="stylesheet" href="styles/wiki-title-fonts.css?v=2.205">
+    <link rel="stylesheet" href="styles/wiki-title-effects.css?v=2.205">
+    <link rel="stylesheet" href="styles/wiki-title-repairs.css?v=2.205">
+    <link rel="stylesheet" href="styles/wiki-titles.css?v=2.205">
+    <link rel="stylesheet" href="styles/equipment.css?v=2.205">
+    <link rel="stylesheet" href="styles/help-footer.css?v=2.205">
+    <link rel="stylesheet" href="styles/aura-video-player.css?v=2.205.controls3">
+    <script src="scripts/utils.js?v=2.205" defer></script>
+    <script src="scripts/runtime.js?v=2.205" defer></script>
+    <script src="scripts/gear-luck.js?v=2.205" defer></script>
+    <script src="scripts/equipment-presentation.js?v=2.205" defer></script>
+    <script src="scripts/event-data.js?v=2.205" defer></script>
+    <script src="scripts/simulation-core.js?v=2.205" defer></script>
+    <script src="scripts/state.js?v=2.205" defer></script>
+    <script src="scripts/media-loader.js?v=2.205" defer></script>
+    <script src="scripts/overlays.js?v=2.205" defer></script>
+    <script src="scripts/wiki-title-data.js?v=2.205" defer></script>
+    <script src="scripts/wiki-title-repairs.js?v=2.205" defer></script>
+    <script src="scripts/wiki-titles.js?v=2.205" defer></script>
+    <script src="scripts/aura-routes.js?v=2.205" defer></script>
+    <script src="scripts/aura-links.js?v=2.205" defer></script>
+    <script src="scripts/interface-select.js?v=2.205" defer></script>
+    <script src="scripts/aura-title-layout.js?v=2.205" defer></script>
+    <script src="scripts/biome-background.js?v=2.205.background2" defer></script>
+    <script src="scripts/main.js?v=2.205.background2" defer></script>
+    <script src="scripts/aura-video-player.js?v=2.205.controls3" defer></script>
+    <script src="scripts/aura-directory-preferences.js?v=2.205.pages4" defer></script>
 </head>
 <body>
     <div class="interface-backdrop" aria-hidden="true">
@@ -423,9 +434,9 @@
                         <h1 class="banner__title">Sol's RNG Rolling Simulator</h1>
                     </div>
                     <div class="banner__subtitle masthead-console__metadata">
-                        <button type="button" class="banner__version-button masthead-console__meta-card masthead-console__meta-card--version masthead-console__version" id="versionInfoButton" aria-haspopup="dialog" aria-expanded="false" data-version-id="v2.2.0">
+                        <button type="button" class="banner__version-button masthead-console__meta-card masthead-console__meta-card--version masthead-console__version" id="versionInfoButton" aria-haspopup="dialog" aria-expanded="false" data-version-id="v2.205">
                             <i class="fa-solid fa-code-branch" aria-hidden="true"></i>
-                            <span><small>Current build</small><strong>Version 2.2</strong></span>
+                            <span><small>Current build</small><strong>Version 2.205</strong></span>
                         </button>
                         <span class="masthead-console__meta-card banner__subtitle-author">
                             <span class="masthead-console__creator-avatar-flip" aria-hidden="true">
@@ -451,7 +462,7 @@
                                 <small>Game build</small>
                                 <span class="banner__subtitle-game-version">
                                     <a href="https://www.roblox.com/games/15532962292/Sols-RNG" target="_blank" rel="noopener">
-                                        <span class="banner__game-version-name">Sol's RNG Eon 1-28</span>
+                                        <span class="banner__game-version-name">Sol's RNG Eon 1-29</span>
                                     </a>
                                 </span>
                             </span>
@@ -479,11 +490,53 @@
             <span class="masthead-console__status"><i class="fa-solid fa-signal" aria-hidden="true"></i> Systems online</span>
         </header>
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
         <div class="interface-layout">
             <aside class="surface surface--side resource-panel" aria-labelledby="resources-heading">
                 <header class="surface__header resource-panel__header">
                     <div class="resource-panel__heading-row">
-                        <span class="resource-panel__count">6 destinations</span>
+                        <span class="resource-panel__count">7 destinations</span>
                     </div>
                     <h2 class="surface__title" id="resources-heading">Resource Hub</h2>
                     <p class="surface__subtitle">Utilities, projects, and communities selected for Sol's players.</p>
@@ -531,13 +584,14 @@
                             <span class="resource-link__category">Main Community</span>
                             <span class="resource-link__label">The Simulator's Server</span>
                             <span class="resource-link__meta">Join the community and converse with the people!</span>
-                            <span class="resource-link__meta greenClass">There's currently a HUGE giveaway ongoing until the 4th of October!</span>
+                            <!-- <span class="resource-link__meta greenClass">There's currently a HUGE giveaway ongoing until the 4th of October!</span> -->
                         </span>
                         <span class="resource-link__launch" aria-hidden="true"><i class="fa-solid fa-arrow-up-right-from-square"></i></span>
                     </a>
                     <a class="resource-link resource-link--wiki" href="https://sol-rng.fandom.com/wiki/Sol%27s_RNG_Wiki" target="_blank" rel="noopener">
                         <span class="resource-link__icon" aria-hidden="true">
                             <img class="resource-link__image resource-link__image--solswiki" src="files/images/icons/solsWikiLogo.png" alt="" loading="lazy" decoding="async">
+                            <span class="resource-link__wiki-label">WIKI</span>
                         </span>
                         <span class="resource-link__content">
                             <span class="resource-link__category">Wiki</span>
@@ -556,6 +610,14 @@
                         <span class="resource-link__launch" aria-hidden="true"><i class="fa-solid fa-arrow-up-right-from-square"></i></span>
                     </a>
                 </nav>
+                <a class="resource-link resource-link--auras" href="auras/index.html">
+                    <span class="resource-link__icon" aria-hidden="true"><i class="fa-solid fa-book-open"></i></span>
+                    <span class="resource-link__content">
+                        <span class="resource-link__label">Auras</span>
+                        <span class="resource-link__meta">Browse the aura directory</span>
+                    </span>
+                    <span class="resource-link__launch" aria-hidden="true"><i class="fa-solid fa-arrow-right"></i></span>
+                </a>
             </aside>
 
             <main class="surface surface--results feed-console" aria-labelledby="results-heading">
@@ -588,17 +650,20 @@
                             <span class="sr-only">Search rolled auras or tiers</span>
                             <input class="feed-search__input" id="rollFeedSearch" type="search" placeholder="Search auras or tiers..." autocomplete="off" spellcheck="false">
                         </label>
-                        <button
-                            class="interface-button interface-button--minor feed-sort"
-                            id="rollFeedSortButton"
-                            type="button"
-                            aria-label="Sort roll feed: Rarity"
-                            title="Sort roll feed: Rarity"
-                            hidden
-                        >
-                            <i class="fa-solid fa-arrow-down-wide-short" aria-hidden="true"></i>
-                            <span>Sort: <span id="rollFeedSortLabel">Rarity</span></span>
-                        </button>
+                        <div class="form-field feed-sort" id="rollFeedSortControl" hidden>
+                            <label class="sr-only" id="rollFeedSortCaption" for="rollFeedSortSelect">Sort roll feed</label>
+                            <select class="form-field__input form-field__input--native" id="rollFeedSortSelect" tabindex="-1" aria-hidden="true">
+                                <option value="rarity" selected>Rarity · highest to lowest</option>
+                                <option value="rarity-ascending">Rarity · lowest to highest</option>
+                                <option value="alphabetical">Alphabetical · A–Z</option>
+                                <option value="alphabetical-descending">Alphabetical · Z–A</option>
+                                <option value="recent">Recent</option>
+                            </select>
+                            <details class="interface-select interface-select--single" data-select="rollFeedSortSelect">
+                                <summary class="form-field__input interface-select__summary" role="button" aria-labelledby="rollFeedSortCaption" aria-haspopup="listbox" aria-expanded="false">Rarity · highest to lowest</summary>
+                                <div class="interface-select__menu" role="listbox" aria-labelledby="rollFeedSortCaption"></div>
+                            </details>
+                        </div>
                         <div class="feed-share" id="feedShareControls">
                             <button class="interface-button interface-button--minor feed-share__trigger" type="button" id="feedShareButton" aria-haspopup="true" aria-expanded="false" aria-controls="feedShareMenu">Share Result</button>
                             <div class="feed-share__menu" id="feedShareMenu" role="menu" hidden>
@@ -1542,7 +1607,7 @@
                         <div class="help-example"><strong>True Chance: 1 in 12.5 (11x) · 195,429 Luck</strong><p>Turning True Chance off hides the chance and luck value; (11x) remains. Some fixed-chance auras omit the calculated chance.</p></div>
                         <ul>
                             <li>Search accepts either an aura name or a tier name such as Legendary.</li>
-                            <li>Unnamed's results can sort by Rarity or Alphabetical. Sol's-Like also offers Recent to restore exact roll order.</li>
+                            <li>Sort rarity from highest to lowest or lowest to highest, or names A–Z and Z–A. Sol's-Like also offers Recent to restore exact roll order.</li>
                             <li>Sol's-Like displays up to 100 entries at a time. Use Previous and Next to review history, or Latest to follow incoming rolls. Search and sorting include the full run.</li>
                             <li>Share Result exports the currently available summary through the supported text and image options.</li>
                             <li>While live rolling, scrolling upward disables automatic following. Use the down-arrow button to follow the newest rolls again.</li>
@@ -2076,6 +2141,15 @@
                 </span>
                 <span class="quality-settings__switch-track" aria-hidden="true"></span>
             </button>
+            <section class="aura-directory-settings" aria-labelledby="auraDirectorySettingsTitle">
+                <h3 id="auraDirectorySettingsTitle">Aura directory</h3>
+                <label class="audio-slider" for="auraPageSize">
+                    <div class="audio-slider__label-row"><span class="audio-slider__label" id="auraPageSizeLabel">Auras per page</span><span class="audio-slider__meta"><output class="audio-slider__value" for="auraPageSize" data-aura-page-size-value>18 auras</output></span></div>
+                    <div class="audio-slider__control"><input class="audio-slider__input" type="range" id="auraPageSize" min="9" max="90" step="3" value="18" data-aura-page-size aria-labelledby="auraPageSizeLabel" aria-describedby="auraPageSizeHint"><span class="audio-slider__thumb" aria-hidden="true"></span></div>
+                </label>
+                <div class="aura-directory-settings__limits" aria-hidden="true"><span>9</span><span>90</span></div>
+                <p id="auraPageSizeHint">Choose 9–90 auras per page in steps of 3. Saved for your next visit.</p>
+            </section>
             <div class="filter-modal__actions">
                 <button type="button" class="interface-button interface-button--ghost filter-modal__close" id="qualityPreferencesClose">Close</button>
             </div>
@@ -2254,6 +2328,59 @@
             </div>
 
             <div class="changelog-modal__panels" data-changelog-panels>
+                <section id="changelog-panel-v2205" class="changelog-modal__panel" data-changelog-panel="v2.205" data-changelog-label="v2.205" role="tabpanel" tabindex="0" hidden>
+                    <header class="changelog-modal__header">
+                        <h2 class="changelog-modal__title">Version 2.205 Update Notes</h2>
+                        <span class="changelog-tab__subtitle">Aura Directory · Eon 1-29 · Talisman Fix</span>
+                        <p class="changelog-modal__meta">Updated 2026/10/05</p>
+                    </header>
+                    <ul class="changelog-modal__list changelog-modal__list--grouped">
+                        <li class="changelog-release-group changelog-release-group--featured-ui">
+                            <div class="changelog-featured-ui__header">
+                                <span class="changelog-featured-ui__icon" aria-hidden="true"><i class="fa-solid fa-book-open"></i></span>
+                                <span class="changelog-featured-ui__heading"><span class="largeClass">The aura directory</span><span>Every aura. Its rarity, and info.</span></span>
+                                <span class="changelog-featured-ui__badge">New</span>
+                            </div>
+                            <ul class="changelog-release-group__list">
+                                <li>Explore all auras at <a href="auras/index.html">the new Auras page</a>. Sort rarity from highest to lowest or lowest to highest, or names A–Z and Z–A. The Roll Feed offers the same choices.</li>
+                                <li>This includes biome, exclusiveness, event, and tier filters.</li>
+                                <li>Each aura has its own page with its description, rarity, native or exclusive biome, and event or special obtainment details.</li>
+                                <li>Click an aura name in either the roll feed or directory to open its profile. Roll-feed links open in a new tab so rolling can continue.</li>
+                                <li>You can find this page at the bottom of the Resource Hub.</li>
+                                <li>The Wiki logo has been improved to look less like a simple Sol'S RNG logo.</li>
+                            </ul>
+                        </li>
+                        <li class="changelog-release-group">
+                            <div class="changelog-featured-ui__header">
+                                <span class="changelog-featured-ui__icon" aria-hidden="true"><i class="fa-solid fa-bolt"></i></span>
+                                <span class="changelog-featured-ui__heading"><span class="largeClass">Eon 1-29</span><span>Reworked backgrounds and an aura returns to the roll pool.</span></span>
+                                <span class="changelog-featured-ui__badge">Aura</span>
+                            </div>
+                            <ul class="changelog-release-group__list">
+                                <li>Reworked biome backgrounds globally with day and night combinations across the simulator, aura directory, and aura profiles. Nighttime uses each biome's night artwork when available and automatically falls back to its main background.</li>
+                                <li>Made the pre-added aura <span class="changelog-aura-sigil sigil-wiki-aura" data-changelog-aura-sigil="[CONTENT DELETED]">[CONTENT DELETED]</span> FINALLY rollable inside of Glitch.</li>
+                                <a class="tinyClass">Only obtainable in Glitched at 1 in 4,040.</a>
+                            </ul>
+                        </li>
+                        <li class="changelog-release-group">
+                            <div class="changelog-featured-ui__header">
+                                <span class="changelog-featured-ui__icon" aria-hidden="true"><i class="fa-solid fa-toolbox"></i></span>
+                                <span class="changelog-featured-ui__heading"><span class="largeClass">Limbo fix</span><span>Talismans now respects Limbo's restrictions.</span></span>
+                                <span class="changelog-featured-ui__badge">Fix</span>
+                            </div>
+                            <ul class="changelog-release-group__list">
+                                <li>Pocket talisman cards are unavailable in Limbo. An equipped talisman stays selected but inactive until you leave Limbo.</li>
+                            </ul>
+                            <p class="credits-text">Thanks to <a href="https://discord.com/users/1008360412632322088" class="subtitleClass" target="_blank" rel="noopener">antigodthesans</a> for reporting this bug!</p>
+                        </li>
+                        <li class="changelog-release-group">
+                            <span class="largeClass">Version numbering</span>
+                            <ul class="changelog-release-group__list">
+                                <li>New version system just making it simpler and with less dots, dots, dots...</li>
+                            </ul>
+                        </li>
+                    </ul>
+                </section>
                 <section id="changelog-panel-v220" class="changelog-modal__panel" data-changelog-panel="v2.2.0" data-changelog-label="v2.2" role="tabpanel" tabindex="0" hidden>
                     <header class="changelog-modal__header">
                         <h2 class="changelog-modal__title">Version 2.2 Update Notes</h2>
@@ -3578,7 +3705,7 @@
                                 <li>Fixed the name of <span class="changelog-aura-sigil" data-changelog-aura-sigil="Symbiosis">Symbiosis</span> (previously named symbiosis with a non-capital S :sob:)</li>
                                 <li>Some auras have been made <span class="unobtainableClass">Unobtainable</span> until further notice:</li>
                                 <ul>
-                                    <li><span class="sigil-outline-glitch">[CONTENT DELETED]</span></li>
+                                    <li><span class="changelog-aura-sigil sigil-wiki-aura" data-changelog-aura-sigil="[CONTENT DELETED]">[CONTENT DELETED]</span></li>
                                     <li>Sapphire : Peace</li>
                                     <li><span class="rarity-tier-transcendent">Godslayer</span></li>
                                 </ul>
@@ -3840,7 +3967,7 @@
                         <li>Updated all <span class="changelog-aura-sigil sigil-wiki-aura" data-changelog-aura-sigil="Glitch">Glitch</span> auras to appear at the complete top.</li>
                         <li>Added a new aura:</li>
                         <ul>
-                            <li><span class="sigil-outline-glitch">[CONTENT DELETED]</span> <span class="tinyClass">1 in 4,040 - In Glitch (Unaffected by luck)</span>.</li>
+                            <li><span class="changelog-aura-sigil sigil-wiki-aura" data-changelog-aura-sigil="[CONTENT DELETED]">[CONTENT DELETED]</span> <span class="tinyClass">1 in 4,040 - In Glitch (Unaffected by luck)</span>.</li>
                             <ul>
                                 <li class="tinyClass">This aura has not yet been confirmed on obtainment, so this is how it'll stay until further info has been confirmed released.</li>
                             </ul>
