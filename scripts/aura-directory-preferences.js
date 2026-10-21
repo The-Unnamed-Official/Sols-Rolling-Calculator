@@ -1,4 +1,3 @@
-/* The directory page-size slider is shared by home and aura Settings. */
 (() => {
     'use strict';
     const key = 'solsRollingCalculator:auraDirectoryPageSize';

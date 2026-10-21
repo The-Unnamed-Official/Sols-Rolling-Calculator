@@ -1,5 +1,3 @@
-// Generated wiki title artwork; targeted refreshes use tools/refresh-eon130-titles.cjs.
-// Sol’s RNG Wiki contributors, CC BY-SA 3.0; see data/auras/README.md.
 globalThis.WikiTitleData = {
   "auras": {
     "Oblivion": {

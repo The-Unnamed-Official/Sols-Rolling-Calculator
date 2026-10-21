@@ -1,11 +1,10 @@
-// Resolve video metadata through the public MediaWiki API, without downloading videos.
 const fs=require('node:fs');
 const path=require('node:path');
 const {candidates}=require('./aura-showcases.cjs');
 const {article,fileKey}=require('./aura-history-parser.cjs');
 const root=path.resolve(__dirname,'..');
 async function fetchShowcases() {
-    const cache=path.join(root,'test-results/aura-history');
+    const cache=path.join(root,'.cache/aura-history');
     const pages=JSON.parse(fs.readFileSync(path.join(cache,'articles.json'),'utf8'));
     const snapshots=['snapshots.json','gallery-snapshots.json'].flatMap(file=>JSON.parse(fs.readFileSync(path.join(cache,file),'utf8'))).filter(s=>s.page.revisions).map(s=>s.page);
     pages.push(...snapshots);

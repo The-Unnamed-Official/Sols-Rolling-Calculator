@@ -49,7 +49,6 @@
     text-shadow: 0 0 14px rgba(183, 245, 245, 0.42), 0 0 3px rgba(18, 30, 36, 0.72);
 }
 
-/* Sol's RNG Wiki: Category:Dimensional tier label and BloatedAnimation. */
 .rarity-tier-dimensional {
     background: linear-gradient(270deg, #5747f0, #e406e9, #e406e9, #5747f0, #97e6f0, #97e6f0, #5747f0);
     background-size: 4000% 100%;
@@ -2137,6 +2136,13 @@ body.quality-no-roll-sigil-animations .sigil-glitch-flicker {
 
 .cutscene-filter-toggle__aura .sigil-subtitle {
     margin-top: 0.25em;
+}
+
+.cutscene-filter-toggle__aura .aura-tier-detail.rarity-tier-challenged,
+.cutscene-filter-toggle__aura .wiki-title__plain.rarity-tier-challenged {
+    color: #e4def5;
+    background: none;
+    animation: none;
 }
 
 .cutscene-filter-toggle__status {
@@ -5480,7 +5486,6 @@ body.quality-no-ui-animations .help-center__backdrop {
 }
 
 
-/* AUTHOR CARD */
 
 .masthead-console .banner__subtitle-author {
     display: flex;
@@ -7815,7 +7820,6 @@ body.theme-event-april-fools .april-fools-copy {
     }
 }
 
-/* Full Aura Style Rework: the 1B+ set, Ascendant, and the requested special auras. */
 .sigil-wiki-aura {
     display: inline !important;
     position: static !important;
@@ -8878,7 +8882,6 @@ body.reduce-motion .sigil-wiki {
     }
 }
 
-/* V2.027 support QR popup ------------------------------------------------- */
 
 .support-qr-modal {
     width: min(620px, calc(100vw - (var(--modal-padding) * 2)));
@@ -9051,7 +9054,6 @@ body.reduce-motion .sigil-wiki {
     display: inline !important;
 }
 
-/* Eon 1-30 release cards share the square interface frame and biome palettes. */
 .changelog-eon130__overview {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));

@@ -1,10 +1,7 @@
 'use strict';
 
-// Shared deferred source hydration and cutscene preparation lifecycle.
 const CUTSCENE_LOAD_TIMEOUT_MS = 30000;
 
-// Pending release videos must not interrupt rolling. Uploading a file at its
-// declared path is enough to enable it on the next page load.
 document.querySelectorAll('video[data-auto-enable-cutscene]').forEach(async video => {
     const source = video.querySelector('source[data-src]')?.dataset.src;
     if (!source) return;
@@ -13,7 +10,7 @@ document.querySelectorAll('video[data-auto-enable-cutscene]').forEach(async vide
         if (response.ok && /^(?:video\/|application\/octet-stream)/i.test(response.headers.get('content-type') || '')) {
             delete video.dataset.cutscenePending;
         }
-    } catch { /* Keep unavailable cutscenes pending. */ }
+    } catch {   }
 });
 
 function ensureDeferredMediaSource(element) {

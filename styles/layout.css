@@ -1260,7 +1260,6 @@
     flex-shrink: 0;
 }
 
-/* This footer stays last even when more cards are added to the resource board. */
 .resource-panel > .resource-link--auras {
     --resource-rgb: 127 227 255;
     flex-shrink: 0;
@@ -1313,7 +1312,6 @@
     max-width: 100%;
 }
 
-/* Keep the underline outside nested, gradient-filled wiki title artwork. */
 .aura-link-title::after {
     content: '';
     position: absolute;
@@ -3118,7 +3116,6 @@ body.quality-no-ui-animations .resource-link__click-value {
     box-shadow: inset 0 0 18px rgb(var(--accent-rgb) / 0.16);
 }
 
-/* V2.027 console-aligned donation system --------------------------------- */
 
 .support-float,
 .donation-float {

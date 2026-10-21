@@ -106,6 +106,7 @@ const LEGACY_SOLS_LIKE_SPEED_VALUES = Object.freeze({
     'very-fast': 480
 });
 const FORCE_CUTSCENES_ALWAYS_ON = false;
+const ALWAYS_ON_CUTSCENES = new Set(['trolled-cutscene']);
 let reduceMotionPreferenceOverride = null;
 const backgroundRollingPreference = {
     allowed: false,
@@ -113,9 +114,11 @@ const backgroundRollingPreference = {
 };
 const rollingSettingsPreference = {
     solsLikeRollsPerSecond: SOLS_LIKE_ROLLS_PER_SECOND_DEFAULT,
+    fullscreenCutscenes: true,
     cutscenePauseFilters: {},
     cutscenePlaybackFilters: {}
 };
+let cutsceneFullscreenTransition = null;
 let legacyAutoPauseAfterCutscene = null;
 let hasStoredCutscenePlaybackFilters = false;
 let cutscenePlaybackMigrationCompleted = false;
@@ -133,7 +136,6 @@ async function fetchLatestPublishedDeploymentTime() {
     return Number.isNaN(documentModifiedAt.getTime()) ? null : documentModifiedAt;
 }
 
-// Time sync
 async function initializeLatestDeploymentTime() {
     if (!latestDeploymentTimeElement) {
         return;
@@ -439,6 +441,9 @@ function hydrateRollingSettings() {
         const parsed = JSON.parse(raw);
         if (!parsed || typeof parsed !== 'object') {
             return;
+        }
+        if (typeof parsed.fullscreenCutscenes === 'boolean') {
+            rollingSettingsPreference.fullscreenCutscenes = parsed.fullscreenCutscenes;
         }
         if (Number.isFinite(Number(parsed.solsLikeRollsPerSecond))) {
             rollingSettingsPreference.solsLikeRollsPerSecond = normalizeSolsLikeRollsPerSecond(
@@ -794,6 +799,65 @@ const EVENT_BUFF_TOGGLES = Object.freeze({
     astrald: 'astrald-blessing-toggle'
 });
 let radiantForestState = SimulationCore.createRadiantState();
+let radiantMoonSoundMask = 0;
+const radiantMoonSoundQueue = [];
+let stopRadiantMoonSound = null;
+
+function resetRadiantMoonSounds(moons = 0) {
+    radiantMoonSoundMask = Number(moons) & 127;
+    radiantMoonSoundQueue.length = 0;
+    stopRadiantMoonSound?.();
+}
+
+function playNextRadiantMoonSound() {
+    if (stopRadiantMoonSound || !radiantMoonSoundQueue.length) return;
+    const ordinal = radiantMoonSoundQueue.shift();
+    if (!isSoundChannelActive('obtain')) {
+        radiantMoonSoundQueue.length = 0;
+        return;
+    }
+    const audio = document.getElementById(`radiantMoonSound${ordinal}`);
+    if (!audio) return;
+    let finished = false;
+    let timeout;
+    const finish = () => {
+        if (finished) return;
+        finished = true;
+        clearTimeout(timeout);
+        audio.removeEventListener('ended', finish);
+        audio.removeEventListener('error', finish);
+        audio.pause();
+        stopRadiantMoonSound = null;
+        queueMicrotask(playNextRadiantMoonSound);
+    };
+    stopRadiantMoonSound = finish;
+    audio.addEventListener('ended', finish);
+    audio.addEventListener('error', finish);
+    timeout = setTimeout(finish, 30000);
+    ensureDeferredMediaSource(audio);
+    if (audio.error) audio.load();
+    applyMediaGain(audio, { category: 'obtain' });
+    audio.muted = false;
+    audio.currentTime = 0;
+    audio.play().catch(finish);
+}
+
+function syncRadiantMoonSounds(state, active) {
+    const moons = active ? state.moons & 127 : 0;
+    if (moons === radiantMoonSoundMask) return;
+    if ((moons & radiantMoonSoundMask) !== radiantMoonSoundMask) {
+        resetRadiantMoonSounds(moons);
+        return;
+    }
+    const count = mask => mask.toString(2).replaceAll('0', '').length;
+    const previousCount = count(radiantMoonSoundMask);
+    radiantMoonSoundMask = moons;
+    for (let ordinal = previousCount + 1; ordinal <= count(moons); ordinal++) {
+        radiantMoonSoundQueue.push(ordinal);
+    }
+    playNextRadiantMoonSound();
+}
+
 let rememberControlsActive = false;
 const rememberControlState = new Map();
 
@@ -851,6 +915,7 @@ function syncBiomeBuffs(state = radiantForestState) {
     if (refresh) refresh.disabled = simulationActive;
     const biome = document.getElementById(BIOME_PRIMARY_SELECT_ID)?.value;
     const radiantActive = biome === 'radiantForest';
+    syncRadiantMoonSounds(state, radiantActive);
     const sky = document.getElementById('radiantMoons');
     if (sky) sky.hidden = !radiantActive;
     const singularityActive = biome === 'singularity';
@@ -895,7 +960,7 @@ function syncBiomeBuffs(state = radiantForestState) {
         });
     }
     const blessing = panel.querySelector('[data-biome-buff="moonCatch"]');
-    blessing.setAttribute('aria-label', `Cor Lunae's Blessing: ${corLunaeBlessingMultiplier} times total luck. Choose a buff.`);
+    blessing.setAttribute('aria-label', `Cor Lunae's Blessing: ${corLunaeBlessingMultiplier} times final luck. Choose a buff.`);
     panel.querySelectorAll('[data-lunae-multiplier]').forEach(element => element.textContent = `×${corLunaeBlessingMultiplier}`);
     const moons = RADIANT_MOON_NAMES;
     panel.querySelectorAll('[data-radiant-moon]').forEach((element, moon) => {
@@ -941,6 +1006,9 @@ function setupBiomeBuffs() {
     const show = button => {
         clearTimeout(hideTimer);
         tooltip.hidden = !button;
+        if (button?.dataset.biomeBuff !== 'moonCatch') {
+            panel.querySelector('details[data-select="cor-lunae-blessing-dropdown"]').open = false;
+        }
         buttons.forEach(candidate => candidate.setAttribute('aria-expanded', String(candidate === button)));
         panel.querySelectorAll('[data-biome-buff-details]').forEach(details => {
             details.hidden = details.dataset.biomeBuffDetails !== button?.dataset.biomeBuff;
@@ -956,7 +1024,7 @@ function setupBiomeBuffs() {
                 panel.querySelector('[data-dev-buff-variant][aria-pressed="true"]')?.focus();
             }
             if (pinned?.dataset.biomeBuff === 'moonCatch' && event.detail === 0) {
-                panel.querySelector('[data-lunae-choice]')?.focus();
+                panel.querySelector('details[data-select="cor-lunae-blessing-dropdown"] summary')?.focus();
             }
         });
     });
@@ -970,9 +1038,9 @@ function setupBiomeBuffs() {
         });
     });
     panel.querySelector('[data-lunae-choice]')?.addEventListener('change', event => {
-        const step = Number(event.target.value);
-        if (!Number.isInteger(step) || step < 1 || step > 10) return;
-        corLunaeBlessingMultiplier = (100 + step * 2) / 100;
+        const multiplier = Number(event.target.value);
+        if (![...event.target.options].some(option => Number(option.value) === multiplier)) return;
+        corLunaeBlessingMultiplier = multiplier;
         recomputeLuckValue();
     });
     Object.values(EVENT_BUFF_TOGGLES).forEach(id => {
@@ -1006,7 +1074,7 @@ let singularitySummonTimeoutId = null;
 let singularitySummonCleanup = null;
 const DEV_BIOME_IDS = new Set(['anotherRealm', 'edict', 'mastermind', 'fullMoon']);
 let devBiomesEnabled = false;
-const SINGULARITY_LUCK_MULTIPLIER = 1.2;
+const SINGULARITY_LUCK_MULTIPLIER = 1.1;
 const DEV_ADMIN_ABUSE_DEFAULT_VARIANT = 'new';
 const DEV_ADMIN_ABUSE_CONFIGS = Object.freeze({
     anotherRealm: Object.freeze({
@@ -1235,6 +1303,11 @@ function hideAudioSettingsOverlay() {
 }
 
 function syncRollingSettingsControls() {
+    const fullscreenToggle = document.getElementById('rollingFullscreenCutscenesToggle');
+    if (fullscreenToggle) {
+        fullscreenToggle.setAttribute('aria-checked', String(rollingSettingsPreference.fullscreenCutscenes));
+        fullscreenToggle.disabled = Boolean(cutsceneFullscreenTransition);
+    }
     const speedSlider = document.getElementById('solsLikeRollingSpeed');
     const speedOutput = document.getElementById('solsLikeRollingSpeedValue');
     const speedPresetButtons = document.querySelectorAll('[data-sols-like-speed]');
@@ -1327,10 +1400,23 @@ function initializeRollingSettingsPanel() {
     const tierFilterButton = document.getElementById('rollingFilterAuraTiersButton');
     const auraFilterButton = document.getElementById('rollingFilterAurasButton');
     const cutscenePlaybackFilterButton = document.getElementById('rollingCutscenePlaybackFiltersButton');
+    const fullscreenToggle = document.getElementById('rollingFullscreenCutscenesToggle');
     if (!overlay || !openButton) return;
 
     hydrateRollingSettings();
     syncRollingSettingsControls();
+
+    fullscreenToggle?.addEventListener('click', () => {
+        void setCutsceneFullscreen(!rollingSettingsPreference.fullscreenCutscenes);
+    });
+    const reflectFullscreen = () => {
+        if (getFullscreenElement() || cutsceneFullscreenTransition) return;
+        rollingSettingsPreference.fullscreenCutscenes = false;
+        persistRollingSettings();
+        syncRollingSettingsControls();
+    };
+    document.addEventListener('fullscreenchange', reflectFullscreen);
+    document.addEventListener('webkitfullscreenchange', reflectFullscreen);
 
     openButton.addEventListener('click', event => {
         event.preventDefault();
@@ -1481,7 +1567,7 @@ function ensureCutsceneFilterPreferences() {
         if (!Object.prototype.hasOwnProperty.call(pauseFilters, aura.name)) {
             pauseFilters[aura.name] = legacyAutoPauseAfterCutscene === true;
         }
-        if (!Object.prototype.hasOwnProperty.call(playbackFilters, aura.name)) {
+        if (ALWAYS_ON_CUTSCENES.has(aura.cutscene) || !Object.prototype.hasOwnProperty.call(playbackFilters, aura.name)) {
             playbackFilters[aura.name] = true;
         }
     });
@@ -1496,6 +1582,7 @@ function isAuraCutscenePauseEnabled(aura) {
 }
 
 function isAuraCutscenePlaybackEnabled(aura) {
+    if (ALWAYS_ON_CUTSCENES.has(aura?.cutscene)) return true;
     if (!aura?.name) {
         return true;
     }
@@ -1553,7 +1640,7 @@ function initializeCinematicStateFromCutsceneFilters() {
     if (!cutscenePlaybackMigrationCompleted && !hasStoredCutscenePlaybackFilters) {
         const legacyEnabled = appState.cinematic === true;
         getCutsceneAuras().forEach(aura => {
-            rollingSettingsPreference.cutscenePlaybackFilters[aura.name] = legacyEnabled;
+            rollingSettingsPreference.cutscenePlaybackFilters[aura.name] = ALWAYS_ON_CUTSCENES.has(aura.cutscene) || legacyEnabled;
         });
         persistRollingSettings();
     }
@@ -1657,7 +1744,7 @@ function createAuraFilterNameSpan(aura) {
         ? resolveBaseRarityClass(aura)
         : '';
     const nameSpan = document.createElement('span');
-    if (aura && (wikiAuraSigilNames.has(auraName.split(' - ')[0].trim()) || auraName.startsWith('Glitch - '))) {
+    if (aura && (WikiTitles.resolveAuraName(auraName.split(' - ')[0].trim()) || auraName.startsWith('Glitch - '))) {
         nameSpan.innerHTML = formatAuraNameMarkup(aura);
     } else {
         nameSpan.textContent = auraName;
@@ -1683,7 +1770,9 @@ function renderCutsceneFilterButtonLabel(button, aura, enabled, mode) {
 
     const statusSpan = document.createElement('span');
     statusSpan.className = 'cutscene-filter-toggle__status';
-    statusSpan.textContent = `: ${enabled ? 'On' : 'Off'}`;
+    const alwaysOn = mode !== 'pause' && ALWAYS_ON_CUTSCENES.has(aura.cutscene);
+    button.disabled = alwaysOn;
+    statusSpan.textContent = alwaysOn ? ': Always On' : `: ${enabled ? 'On' : 'Off'}`;
 
     const layoutSpan = document.createElement('span');
     layoutSpan.className = 'cutscene-filter-toggle__layout';
@@ -1968,7 +2057,7 @@ function initializeCutsceneFilterPanel(mode) {
     disableAllButton?.addEventListener('click', () => {
         ensureCutsceneFilterPreferences();
         getCutsceneAuras().forEach(aura => {
-            rollingSettingsPreference.cutscenePlaybackFilters[aura.name] = false;
+            rollingSettingsPreference.cutscenePlaybackFilters[aura.name] = ALWAYS_ON_CUTSCENES.has(aura.cutscene);
         });
         syncCutsceneFilterButtons('playback');
         persistRollingSettings();
@@ -1982,7 +2071,7 @@ function initializeCutsceneFilterPanel(mode) {
             return;
         }
         const aura = AURA_BY_NAME.get(button.dataset.auraName) || null;
-        if (!aura) {
+        if (!aura || (!pauseMode && ALWAYS_ON_CUTSCENES.has(aura.cutscene))) {
             return;
         }
         const filters = pauseMode
@@ -3179,8 +3268,6 @@ function playSoundEffect(audioElement, category = 'rolling') {
         return;
     }
 
-    // Browsers do not allow fetch() to read file:// media from an opaque local-file
-    // origin. Direct HTMLAudio playback is supported, so use that path locally.
     if (!canFetchAudioBufferSource(sourceKey)) {
         spawnFallbackPlayer(initialGain);
         return;
@@ -3337,8 +3424,6 @@ function queueBackgroundMusicGestureRetry(bgMusic) {
     document.addEventListener('keydown', retry, true);
 }
 
-// The floating aura player survives visits to the simulator. Its audio takes
-// priority over background music, including when a biome changes while rolling.
 let auraFloatingPlaybackActive = false;
 let auraLocalPlaybackActive = false;
 let auraVideoShellActive = false;
@@ -3675,8 +3760,6 @@ function applyReducedMotionState(enabled) {
         if (!video) {
             return;
         }
-        // Cutscenes are an explicit playback preference. Reduced motion should
-        // trim interface animation without hiding or pausing the selected film.
         if (video.classList?.contains('cutscene-video')) {
             return;
         }
@@ -4935,7 +5018,6 @@ function applyBiomeTheme(biome, selectionState = null) {
     const request = ++biomeBackgroundRequestId;
     BiomeBackground.setTime(night ? 'night' : 'day');
     BiomeBackground.resolve(assets.image, { night }).then(image => {
-        // A slower image load must never replace a newer biome/time selection.
         if (request === biomeBackgroundRequestId) applyBiomeBackdrop(image);
     });
 
@@ -6009,7 +6091,6 @@ function collectMultiplePotionBatches(
         document.querySelectorAll('[data-multi-potion]'),
         input => [input.dataset.multiPotion, input]
     ));
-    // Follow configured potion priority regardless of the input fields' layout.
     MULTI_POTION_CONFIGS.forEach(config => {
         const input = inputsByPotionId.get(config.id);
         if (!input) {
@@ -6729,7 +6810,7 @@ function startPreparedCutscenePlayback(video) {
 function playAuraVideo(videoId, options = {}) {
     const manageAmbient = options.manageAmbient !== false;
     return new Promise(resolve => {
-        if ((!appState.cinematic && !options.force) || !hasCutsceneMediaSource(videoId)) {
+        if ((!appState.cinematic && !options.force && !ALWAYS_ON_CUTSCENES.has(videoId)) || !hasCutsceneMediaSource(videoId)) {
             resolve();
             return;
         }
@@ -7077,7 +7158,6 @@ function playAuraVideo(videoId, options = {}) {
 
         void (async () => {
             try {
-                // Warm the media during the fade; playback starts only after full black.
                 const fade = fadeDuration > 0 ? (() => {
                     fadeAnimation = overlay.animate([{ opacity: 0 }, { opacity: 1 }], {
                         duration: fadeDuration, easing: 'ease-in-out', fill: 'forwards'
@@ -7148,6 +7228,30 @@ async function exitFullscreen() {
     }
 }
 
+function setCutsceneFullscreen(enabled) {
+    if (cutsceneFullscreenTransition) return cutsceneFullscreenTransition;
+    rollingSettingsPreference.fullscreenCutscenes = Boolean(enabled);
+    persistRollingSettings();
+    const operation = enabled
+        ? getFullscreenElement() ? Promise.resolve(true) : requestFullscreen(document.documentElement)
+        : getFullscreenElement() ? exitFullscreen() : Promise.resolve(true);
+    cutsceneFullscreenTransition = operation.then(success => {
+        if (!success) {
+            rollingSettingsPreference.fullscreenCutscenes = Boolean(getFullscreenElement());
+            persistRollingSettings();
+            showAppNotification(enabled
+                ? 'Fullscreen could not open. Cutscenes will fill the page.'
+                : 'Fullscreen could not close. Press Esc to leave.', { id: 'cutscene-fullscreen' });
+        }
+        return success;
+    }).finally(() => {
+        cutsceneFullscreenTransition = null;
+        syncRollingSettingsControls();
+    });
+    syncRollingSettingsControls();
+    return cutsceneFullscreenTransition;
+}
+
 async function playAuraSequence(queue, options = {}) {
     const playableQueue = Array.isArray(queue)
         ? queue.filter(hasCutsceneMediaSource)
@@ -7156,18 +7260,12 @@ async function playAuraSequence(queue, options = {}) {
         return { skippedAll: false };
     }
 
-    const documentElement = typeof document !== 'undefined' ? document.documentElement : null;
-    const wasFullscreen = !!getFullscreenElement();
-    let enteredFullscreen = false;
+    if (cutsceneFullscreenTransition) await cutsceneFullscreenTransition;
 
     const ambientMusic = typeof document !== 'undefined' ? document.getElementById('ambientMusic') : null;
     const shouldResumeAmbient = !!(ambientMusic && !ambientMusic.paused);
     if (ambientMusic && shouldResumeAmbient) {
         ambientMusic.pause();
-    }
-
-    if (!wasFullscreen && documentElement && document.fullscreenEnabled !== false) {
-        enteredFullscreen = await requestFullscreen(documentElement);
     }
 
     let skipRemainingCutscenes = Boolean(options.skipRemaining);
@@ -7181,11 +7279,12 @@ async function playAuraSequence(queue, options = {}) {
     try {
         for (let queueIndex = 0; queueIndex < playableQueue.length; queueIndex++) {
             const videoId = playableQueue[queueIndex];
-            if (!options.force && (!appState.cinematic || skipRemainingCutscenes)) break;
-            // Prioritize the current cutscene before warming one upcoming video.
+            if (skipRemainingCutscenes) break;
+            const force = options.force === true || ALWAYS_ON_CUTSCENES.has(videoId);
+            if (!force && !appState.cinematic) continue;
             const nextVideo = document.getElementById(playableQueue[queueIndex + 1]);
             const result = await playAuraVideo(videoId, {
-                force: options.force === true,
+                force,
                 manageAmbient: false,
                 onSkipAll: skipAllCutscenes,
                 onPlaying: () => {
@@ -7197,9 +7296,6 @@ async function playAuraSequence(queue, options = {}) {
     } finally {
         if (ambientMusic && shouldResumeAmbient && appState.audio.roll) {
             startBackgroundMusic(ambientMusic);
-        }
-        if (!wasFullscreen && enteredFullscreen) {
-            await exitFullscreen();
         }
     }
 
@@ -7720,7 +7816,7 @@ function resolveAuraStyleClass(aura, biome) {
 
     const classes = [];
     const shortName = name.includes(' - ') ? name.split(' - ')[0].trim() : name.trim();
-    if (wikiAuraSigilNames.has(shortName)) return 'sigil-wiki-aura';
+    if (WikiTitles.resolveAuraName(shortName)) return 'sigil-wiki-aura';
     if (name.startsWith('Oblivion')) classes.push('sigil-effect-oblivion');
     if (name.startsWith('Memory')) classes.push('sigil-effect-memory');
     if (name.startsWith('Neferkhaf')) classes.push('sigil-effect-neferkhaf');
@@ -8267,7 +8363,6 @@ function registerGlitchSigils(root) {
 }
 
 function unregisterGlitchSigils(root) {
-    // Sorting moves nodes without removing them from the document.
     if (root.isConnected) return;
     visitGlitchSigils(root, element => {
         glitchSigilVisibilityObserver?.unobserve(element);
@@ -8467,6 +8562,7 @@ function nativeBreakthroughs(...biomes) {
 
 const AURA_BLUEPRINT_SOURCE = Object.freeze([
     ...EventData.halloween26.auras,
+    // { name: "Unnamed Needs Equinox RIGHT NOW!!!!!!!!!!!!! - 2,500,000,000,000,000000", chance: 2500000000000000000, cutscene: "equinox-cutscene" },
     { name: RADIANT_REWARD_AURA_NAME, chance: 1, nativeBiomes: ['radiantForest'], requiresRadiantMoons: true, cutscene: 'tomorrow-cutscene', disableRarityClass: true, tier: 'Challenged+', wikiPending: true },
     { name: "Oblivion", chance: 2000, requiresOblivionPreset: true, ignoreLuck: true, fixedRollThreshold: 1, subtitle: "The Truth Seeker", cutscene: "oblivion-cutscene", disableRarityClass: true },
     { name: "Memory", chance: 200000, requiresOblivionPreset: true, ignoreLuck: true, fixedRollThreshold: 1, subtitle: "The Fallen", cutscene: "memory-cutscene", disableRarityClass: true },
@@ -8478,7 +8574,6 @@ const AURA_BLUEPRINT_SOURCE = Object.freeze([
     { name: MONARCH_AURA_NAME, chance: 3000000000, cutscene: "monarch-cutscene", nativeBiomes: ["corruption", "glitch"], disableNativeOverrideTier: true },
     { name: "Centaurus - 3,000,000,000", chance: 3000000000, breakthroughs: nativeBreakthroughs("incinerator"), cutscene: "centaurus-cutscene" },
     { name: HELLBORN_AURA_NAME, chance: 2644600640, nativeBiomes: ["hell", "glitch"], disableNativeOverrideTier: true, cutscene: "hellborn-cutscene" },
-    // { name: "Unnamed Needs Equinox NOW - 2,500,000,000", chance: 2500000000, cutscene: "equinox-cutscene" },
     { name: "Equinox - 2,500,000,000", chance: 2500000000, cutscene: "equinox-cutscene" },
     { name: "Equinox : youareanidiot - 2,500,000,000", chance: 2500000000, cutscene: "idiot-cutscene" },
     { name: DREAMCATCHER_AURA_NAME, chance: 2222222222, nativeBiomes: ["night"], cutscene: "catcher-cutscene" },
@@ -8678,7 +8773,6 @@ const AURA_BLUEPRINT_SOURCE = Object.freeze([
     { name: "Melodic - 11,300,000", chance: 11300000 },
     { name: EMPTY_AURA_NAME, chance: 11111111, nativeBiomes: ["null", "glitch"] },
     { name: 'True Jade - 10,250,000', chance: 10250000, nativeBiomes: ['radiantForest'], radiantUnlockMask: 1, tier: 'Challenged', wikiPending: true },
-    // { name: "Sapphire : Peace - 11,000,500", chance: 11000500 }, Unobtainable until further notice
     { name: "Moonflower - 10,000,000", chance: 10000000, nativeBiomes: ["pumpkinMoon"] },
     { name: "Starscourge - 10,000,000", chance: 10000000, breakthroughs: nativeBreakthroughs("starfall") },
     { name: "Sharkyn - 10,000,000", chance: 10000000, breakthroughs: nativeBreakthroughs("rainy") },
@@ -8839,7 +8933,7 @@ const AURA_BLUEPRINT_SOURCE = Object.freeze([
     { name: "HellFire - 4,776", chance: 4776, breakthroughs: nativeBreakthroughs("hell") },
     { name: "Bleeding - 4,444", chance: 4444 },
     { name: "Sidereum - 4,096", chance: 4096 },
-    { name: "[CONTENT DELETED] - 4,040", chance: 4040, nativeBiomes: ["glitch"] }, // finally \^o^/
+    { name: "[CONTENT DELETED] - 4,040", chance: 4040, nativeBiomes: ["glitch"] },
     { name: "Cola - 3,999", chance: 3999 },
     { name: "Flora - 3,700", chance: 3700, breakthroughs: nativeBreakthroughs("lostForest") },
     { name: "Pukeko - 3,198", chance: 3198 },
@@ -12400,6 +12494,7 @@ function setTimeBiomeSelection(value) {
 document.addEventListener('DOMContentLoaded', () => {
     initializeSingleSelectControl('vip-dropdown');
     initializeSingleSelectControl('dave-luck-dropdown');
+    initializeSingleSelectControl('cor-lunae-blessing-dropdown');
     initializeSingleSelectControl(BIOME_PRIMARY_SELECT_ID);
     initializeSingleSelectControl(BIOME_OTHER_SELECT_ID);
     initializeSingleSelectControl(BIOME_TIME_SELECT_ID);
@@ -12958,7 +13053,6 @@ function computeStandardEffectiveChance(aura, context) {
         }
     }
 
-    // Tide changes rarity only: it must never unlock Rainy-exclusive auras.
     if (context.rainyNative && !aura.nativeBiomes) {
         const rainyMultiplier = readBreakthroughMultiplier(aura, 'rainy');
         if (rainyMultiplier) effectiveChance = Math.min(effectiveChance, Math.floor(aura.chance / rainyMultiplier));
@@ -13460,8 +13554,6 @@ function sortEntriesInUnnamedResultOrder(sourceEntries) {
         entries.splice(equinoxIndex >= 0 ? equinoxIndex : 0, 0, ...cryogenicEntries);
     }
 
-    // Keep the special group above ordinary results while preserving the rarity
-    // order established by the initial descending-priority sort.
     prependMatches(entry => isPinnedSpecialAuraName(entry.auraName));
     prependMatches(entry => isForcedChallengedPlusAura(entry.auraName));
 
@@ -14008,8 +14100,8 @@ function queueSimulationWork(callback) {
 }
 
 const SIMULATION_WORKER_PATH = typeof window.getVersionedAppAssetUrl === 'function'
-    ? window.getVersionedAppAssetUrl('scripts/simulation-worker.js')
-    : 'scripts/simulation-worker.js';
+    ? window.getVersionedAppAssetUrl('scripts/simulation-worker.js?session=1')
+    : 'scripts/simulation-worker.js?session=1';
 const WORKER_PROGRESS_UPDATE_INTERVAL_MS = 100;
 const WORKER_RESPONSE_TIMEOUT_MS = 10000;
 
@@ -14267,7 +14359,6 @@ function prepareEquipmentSimulation(definitions, selectionState, eventContext, m
             prefix: timing.prefix.map(mapEntry), pattern: timing.pattern.map(mapEntry), heldRandomEvery: timing.heldRandomEvery });
         startRoll += definition.count;
     });
-    // Keep Tomorrow separate from potion and equipment batches in every runner.
     const rewardBatchIndex = actualBiome === 'radiantForest' ? batches.length : null;
     if (rewardBatchIndex !== null) {
         batches.push(prepareSimulationBatch({ count: 1, label: 'Remember', luckValue: 1,
@@ -14374,6 +14465,12 @@ function startRollSimulation(options = {}) {
         return;
     }
 
+    if (rollingSettingsPreference.fullscreenCutscenes && (
+        appState.cinematic || document.getElementById(BIOME_PRIMARY_SELECT_ID)?.value === 'radiantForest'
+    )) {
+        void setCutsceneFullscreen(true);
+    }
+
     const shouldFormatRolls = document.activeElement !== rollCountInput;
     setNumericInputValue(rollCountInput, total, {
         format: shouldFormatRolls,
@@ -14435,7 +14532,6 @@ function startRollSimulation(options = {}) {
         clearFlushedTrollSignatureLayer();
         feedContainer.textContent = 'Rolling could not finish. Please try Start Rolling again.';
     };
-    // Scheduled and async work must release the same controls as a normal finish.
     const guardWork = callback => (...args) => {
         if (runFinished) return;
         try { return Promise.resolve(callback(...args)).catch(failSimulation); }
@@ -14567,6 +14663,7 @@ function startRollSimulation(options = {}) {
         ? (() => {
             let lastProgressValue = null;
             return progress => {
+                globalThis.SessionReturn?.progress(currentRoll, total);
                 const progressValueRounded = Math.floor(progress / PROGRESS_ROUNDING_STEP) * PROGRESS_ROUNDING_STEP;
                 const formattedProgressValue = formatProgressLabel(progressValueRounded);
                 if (formattedProgressValue === lastProgressValue && progress < 100) {
@@ -14801,6 +14898,7 @@ function startRollSimulation(options = {}) {
             auraFilterTiers: getIncludedAuraTierLabels(),
             executionSeconds: Number.isFinite(executionSeconds) ? executionSeconds : 0
         };
+        globalThis.SessionReturn?.save();
     };
 
     const startMainThreadSimulation = () => {
@@ -15079,7 +15177,6 @@ function startRollSimulation(options = {}) {
                     }
                 }
 
-                // Let Remember paint before the next live roll claims Tomorrow.
                 if (radiantRun?.state.moons === 127 && !radiantRun.state.rewardClaimed) break;
                 if ((processedThisFrame & 63) === 0 && performance.now() >= frameDeadline) {
                     break;
@@ -15197,8 +15294,6 @@ function startRollSimulation(options = {}) {
             clearResponseTimeout();
             responseTimeout = window.setTimeout(guardWork(() => {
                 if (activeSimulationWorker !== worker) return;
-                // Background tabs may suspend workers; give them a fresh window
-                // after becoming visible instead of treating suspension as failure.
                 if (document.hidden && !shouldScheduleBackgroundWork()) {
                     armResponseTimeout();
                     return;
@@ -15220,6 +15315,7 @@ function startRollSimulation(options = {}) {
         worker.onmessage = guardWork(async event => {
             if (activeSimulationWorker !== worker) return;
             const message = event.data || {};
+            if (message.winCounts) applySimulationWinCounts(message.winCounts);
             if (radiantRun && message.radiantState) {
                 Object.assign(radiantRun.state, message.radiantState);
                 updateRadiantProgress();

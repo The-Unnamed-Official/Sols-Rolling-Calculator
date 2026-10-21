@@ -1,6 +1,5 @@
 'use strict';
 
-// Imports use the same release identity as the page and worker script.
 const buildQuery = new URL(self.location.href).search;
 importScripts(`utils.js${buildQuery}`, `simulation-core.js${buildQuery}`);
 let activeRunId = 0;
@@ -67,27 +66,24 @@ self.onmessage = event => {
             try {
                 if (cancelRequested) {
                     closeContinuation();
-                    self.postMessage({ type: 'cancelled', currentRoll: runner.currentRoll, radiantState: message.radiant?.state });
+                    self.postMessage({ type: 'cancelled', currentRoll: runner.currentRoll, radiantState: message.radiant?.state, winCounts });
                     return;
                 }
-                // Yield by elapsed time instead of blocking on millions of rolls.
                 runner.runSlice(12, () => performance.now());
                 if (runner.checkpoint) {
                     resumeCheckpoint = () => {
                         resumeCheckpoint = null;
                         continuation.port2.postMessage(null);
                     };
-                    self.postMessage({ type: runner.checkpoint, currentRoll: runner.currentRoll, radiantState: message.radiant.state });
+                    self.postMessage({ type: runner.checkpoint, currentRoll: runner.currentRoll, radiantState: message.radiant.state, winCounts });
                     return;
                 }
                 const now = performance.now();
                 if (!runner.done) {
                     if (now - lastProgressAt >= progressIntervalMs) {
                         lastProgressAt = now;
-                        self.postMessage({ type: 'progress', currentRoll: runner.currentRoll, radiantState: message.radiant?.state });
+                        self.postMessage({ type: 'progress', currentRoll: runner.currentRoll, radiantState: message.radiant?.state, winCounts });
                     }
-                    // Message tasks yield to cancellation without the minimum
-                    // delay browsers impose on chains of nested timers.
                     continuation.port2.postMessage(null);
                     return;
                 }

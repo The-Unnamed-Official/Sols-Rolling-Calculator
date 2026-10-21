@@ -1,4 +1,3 @@
-/* Shared presentation for wiki title art. Probability data stays in main.js. */
 (() => {
     'use strict';
     const escape = value => String(value).replace(/[&<>"']/g, character => ({
@@ -33,7 +32,6 @@
     function item(name, label = name) {
         const title = data.items[itemAliases[name] || name];
         if (!title) return escape(label);
-        // Item references contain styled text only; retain short UI labels inside the same style.
         const template = document.createElement('template');
         template.innerHTML = title.markup;
         const walker = document.createTreeWalker(template.content, NodeFilter.SHOW_TEXT);
@@ -64,7 +62,6 @@
     let visualSeed = 761;
     let lastColorTick = 0;
     function randomVisual() {
-        // Separate visual randomness keeps the simulation's random draws untouched.
         visualSeed = (Math.imul(visualSeed, 1664525) + 1013904223) >>> 0;
         return visualSeed;
     }

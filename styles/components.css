@@ -4837,6 +4837,7 @@ body.quality-no-ui-animations .preset-console__bank {
     inset: 0;
     width: 100vw;
     height: 100vh;
+    height: 100dvh;
     object-fit: cover;
     z-index: 1001;
     border: none;
@@ -4854,22 +4855,6 @@ body.quality-no-ui-animations .preset-console__bank {
 @media (max-width: 600px) {
     .footer-credits__list {
         column-count: 1;
-    }
-}
-
-@media (max-width: 900px) {
-    .cutscene-video {
-        top: 50%;
-        left: 50%;
-        right: auto;
-        bottom: auto;
-        width: auto;
-        height: auto;
-        max-width: 90vw;
-        max-height: 70vh;
-        transform: translate(-50%, -50%);
-        border: 2px solid rgba(127, 227, 255, 0.5);
-        box-shadow: 0 24px 60px rgba(0, 0, 0, 0.65);
     }
 }
 
@@ -5121,7 +5106,6 @@ body.quality-no-ui-animations .preset-console__bank {
         transform: translate(calc(-50% + 4px), calc(-50% + 3px)) rotate(calc(var(--flushed-troll-tilt, 0deg) + 1deg));
     }
 }
-/* Eon 1-30 forest biomes and collection progress. */
 .roll-trigger.roll-trigger--remember {
     color: #edb4f7;
     font-family: Georgia, 'Times New Roman', serif;
@@ -5131,7 +5115,7 @@ body.quality-no-ui-animations .preset-console__bank {
     letter-spacing: 0.02em;
     text-transform: none;
     text-shadow: 0 0 14px #e291ef55;
-    --button-background: linear-gradient(115deg, #45225f, #753b6c, #4e2b77, #7c3b65, #45225f);
+    --button-background: linear-gradient(115deg, rgb(69 34 95 / .7), rgb(117 59 108 / .7), rgb(78 43 119 / .7), rgb(124 59 101 / .7), rgb(69 34 95 / .7));
     --button-border-color: #bd79c9;
     --button-accent: #e3a1ef;
     background: var(--button-background);
@@ -5247,14 +5231,33 @@ body.quality-no-ui-animations .preset-console__bank {
 }
 .biome-buffs__moons { list-style: none; display: grid; gap: 5px; margin: 12px 0; padding: 0; color: #a9a3b8; }
 .radiant-moon--collected { color: #e4d6ff; }
+.session-return {
+    position: fixed;
+    z-index: 1100;
+    left: 50%;
+    bottom: calc(100px + env(safe-area-inset-bottom, 0px));
+    transform: translateX(-50%);
+    width: min(410px, calc(100vw - 32px));
+    padding: 14px;
+    border: 1px solid var(--surface-border);
+    background: var(--surface-overlay-gradient);
+    box-shadow: 0 12px 36px #0008;
+    box-sizing: border-box;
+}
+.session-return[hidden] { display: none; }
+.session-return p { margin: 0 0 10px; color: var(--text-secondary); font-size: 12px; line-height: 1.5; }
+.session-return__actions { display: flex; align-items: stretch; gap: 8px; }
+.session-return__actions > :first-child { flex: 1; min-width: 0; font-size: 12px; padding: 12px; }
+.session-return__dismiss { flex: 0 0 40px; padding: 8px; font-size: 20px; }
+body:has(.modal-overlay:not([hidden]), .cutscene-warning-overlay:not([hidden])) .session-return { visibility: hidden; pointer-events: none; }
 .biome-buffs__refresh { width: 100%; margin-top: 4px; }
-.biome-buffs__choices select {
+.biome-buffs__choices .interface-select__menu {
+    position: relative;
+    top: auto;
     width: 100%;
-    padding: 10px;
-    color: #eee0ff;
-    background: #20172f;
-    border: 1px solid #a188c5;
-    font: inherit;
+    box-sizing: border-box;
+    margin-top: 8px;
+    max-height: min(290px, 40dvh);
 }
 .radiant-moons {
     position: fixed;

@@ -1,7 +1,5 @@
-/* Load the aura pages' common HTML from one editable set of partials. */
 (() => {
     'use strict';
-    // Resolve from this script so nested aura URLs and subdirectory hosting work.
     const root = new URL('../', document.currentScript.src);
     const layout = { publishedAt: null };
     globalThis.AuraPageLayout = layout;
@@ -36,8 +34,6 @@
             audio: 'aura-audio.html'
         };
         if (document.querySelector('[data-aura-fragment="navigation"]')) files.navigation = 'aura-profile-navigation.html';
-        // Classic script includes work in file:// previews, where fetch is blocked.
-        // A missing HTML fragment must not prevent the rest of the UI from loading.
         const entries = await Promise.all(Object.entries(files).map(async ([name, file]) => {
             if (root.protocol === 'file:') return [name, null];
             const controller = new AbortController();
@@ -97,7 +93,6 @@
             if (asset.dataset.auraPage !== document.body.dataset.auraPage) asset.remove();
         });
         const scripts = [...head.querySelectorAll('script[src]')];
-        // Fetch scripts alongside styles, then execute in the listed dependency order.
         scripts.forEach(script => {
             const preload = document.createElement('link');
             preload.rel = 'preload';
@@ -106,8 +101,6 @@
             document.head.append(preload);
             script.remove();
         });
-        // Font imports can be slow or unavailable. Only structural styles block
-        // revealing the page; scripts and the remaining styles load alongside them.
         const stylesReady = [...head.querySelectorAll('link[data-layout-critical]')]
             .map(link => new Promise(resolve => {
                 link.onload = resolve;
@@ -122,8 +115,6 @@
             for (const script of scripts) await loadScript(script);
         })();
         await Promise.all([...stylesReady, scriptsReady]);
-        // Neighboring titles warm in the background. Profiles reveal immediately
-        // after structural assets, while their first image is already downloading.
         if (document.body.dataset.auraPage === 'directory') await new Promise(resolve => {
             const timeout = setTimeout(resolve, 500);
             Promise.resolve(layout.titlesReady).then(() => { clearTimeout(timeout); resolve(); });

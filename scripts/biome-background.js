@@ -1,4 +1,3 @@
-/* Shared day/night artwork lookup for the simulator and every aura page. */
 (() => {
     'use strict';
     const root = new URL('../', document.currentScript.src);
@@ -30,7 +29,6 @@
 
     function available(source) {
         const cached = loads.get(source);
-        // Retry missing artwork after a short interval so newly added files can load.
         if (cached && cached.expires > Date.now()) return cached.promise;
         const entry = { expires: Infinity, promise: null };
         entry.promise = new Promise(resolve => {
@@ -55,7 +53,6 @@
         const match = /^(.*)\.(png|jpe?g|webp|avif)$/i.exec(url.pathname);
         if (!match) return night ? [] : [url.href];
         const stem = match[1] + (night && !match[1].endsWith('N') ? 'N' : '');
-        // PNG replacements take priority over legacy JPGs still in the folder.
         return [...new Set(['png', match[2], ...formats])].map(extension => {
             const candidate = new URL(url);
             candidate.pathname = `${stem}.${extension}`;
@@ -65,8 +62,6 @@
 
     async function resolve(asset, { night = time === 'night' } = {}) {
         const source = new URL(asset || defaultAsset(night ? 'night' : 'day'), document.baseURI).href;
-        // Uploaded artwork also works for animated biomes. Keep the original
-        // video when neither a night image nor a main image has been added.
         if (isVideo(source)) {
             const filename = new URL(source).pathname.split('/').pop().replace(/\.[^.]+$/, '.png');
             const image = new URL(`files/images/backgrounds/${filename}`, root).href;
@@ -76,8 +71,6 @@
             }
             return source;
         }
-        // Explicit night paths (such as the Nighttime aura filter) still fall
-        // back to the same biome's main image, rather than looking for NN.
         const main = new URL(source);
         const image = /^(.*)\.(png|jpe?g|webp|avif)$/i.exec(main.pathname);
         if (image && image[1].endsWith('N')) {
@@ -88,7 +81,6 @@
         for (const candidate of choices) {
             if (await available(candidate)) return candidate;
         }
-        // Keep a valid scene even while a biome's main artwork is still pending.
         const fallback = defaultAsset('day');
         return main.href === fallback ? fallback : resolve(fallback, { night });
     }

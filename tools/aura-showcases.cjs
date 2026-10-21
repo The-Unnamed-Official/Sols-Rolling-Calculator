@@ -1,4 +1,3 @@
-// Only videos explicitly documented under an aura's cutscene or ability section.
 const fs=require('node:fs');
 const path=require('node:path');
 const {templates,plainText}=require('./fetch-aura-wiki.cjs');

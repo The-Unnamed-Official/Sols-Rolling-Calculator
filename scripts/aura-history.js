@@ -1,4 +1,3 @@
-/* Version tabs and a preloaded image viewer shared by every aura profile. */
 (() => {
     'use strict';
     const profile = document.querySelector('[data-aura-profile]');
@@ -24,7 +23,6 @@
             }
             const promise = new Promise(resolve => {
                 const success = async () => {
-                    // Decode hidden previews too, so the transition can paint immediately.
                     if (media.tagName === 'IMG' && media.decode) await media.decode().catch(()=>{});
                     finish(true);
                 };
@@ -142,6 +140,5 @@
             activate(next, true);
         });
     });
-    // Reserve bandwidth for the first visible preview, then warm every version.
     activate(0).then(() => viewers.forEach(viewer => viewer.preload()));
 })();

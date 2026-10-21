@@ -1,4 +1,3 @@
-/* The same rarity bands used by the simulator's plain aura names. */
 (() => {
     const tiers = ['basic', 'epic', 'unique', 'legendary', 'mythic', 'exalted', 'glorious', 'transcendent', 'dimensional', 'challenged', 'challenged-plus', 'event', 'unobtainable', 'dev-exclusive', 'unknown'];
     const labels = { 'challenged-plus': 'Challenged+', 'dev-exclusive': 'Dev Exclusive', unknown: 'Unspecified' };

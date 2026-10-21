@@ -1,4 +1,3 @@
-/* Biome artwork shared by directory filters and individual aura profiles. */
 (() => {
     'use strict';
     const backdrop = document.querySelector('.interface-backdrop');

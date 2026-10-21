@@ -1,4 +1,3 @@
-/* Aura pages share the home page's preference storage and quality controls. */
 (() => {
     'use strict';
     const key = 'solsRollingCalculator:visualSettings';

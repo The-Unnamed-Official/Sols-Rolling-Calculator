@@ -1,4 +1,3 @@
-/* Normalize malformed declarations in attributed wiki title templates. */
 ((global) => {
     'use strict';
     const keyframeNames = ['rainbow_animation', 'rainbowstroke', 'GlitchedEggShadow', 'GlitchedEggTitle', 'GlitchedEggStroke'];

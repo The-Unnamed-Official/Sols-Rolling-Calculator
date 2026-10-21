@@ -1,4 +1,3 @@
-/* Inline soundtrack controls; audio loads only when Play is pressed. */
 (() => {
     'use strict';
     const key='solsRollingCalculator:auraSoundtrackVolume';

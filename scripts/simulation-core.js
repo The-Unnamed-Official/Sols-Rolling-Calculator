@@ -114,8 +114,6 @@ function buildCombinedSimulationSelection(groups) {
 
 
 function indexSelection(selection) {
-    // Dyadic boundaries are exact. Hints only narrow the original binary search;
-    // no weights, random draws, or threshold comparisons are changed.
     const weights = selection.cumulativeWeights;
     if (weights.length < 16) return selection;
     const searchStarts = new Uint32Array(257);
@@ -174,8 +172,6 @@ function radiantUnlockMask(state) {
         | ((moons & 112) === 112 ? 4 : 0);
 }
 
-// Both simulation modes use this selector so collection unlocks take effect on
-// the following roll, including across potion batches and separate runs.
 function createRadiantSelector(config, state, sampleEntropy) {
     const moonBits = new Map(config.moonIndices.map((index, moon) => [index, 1 << moon]));
     return batch => {
@@ -195,7 +191,6 @@ function createRunner(batches, winCounts, sampleEntropy, breakthroughCounts = nu
     const cursor = createRollCursor(batches, sequencePlan);
     const radiantSelect = radiant ? createRadiantSelector(radiant.config, radiant.state, sampleEntropy) : null;
     let checkpoint = null;
-    // Validate mappings once per run, outside the per-roll hot loop.
     const mappings = batches.map(batch => {
         const validIndex = index => Number.isInteger(index) && index >= 0 && index < winCounts.length ? index : -1;
         return {

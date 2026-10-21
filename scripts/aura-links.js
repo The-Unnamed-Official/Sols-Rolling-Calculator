@@ -1,4 +1,3 @@
-/* Local profile links shared by the live and aggregated roll feeds. */
 (() => {
     'use strict';
     const root = new URL('../', document.currentScript.src);
@@ -16,7 +15,6 @@
         template.innerHTML = markup;
         const title = template.content.querySelector('.wiki-title--aura');
         if (title) {
-            // Rarity and subtitle markup remain beside the linked aura name.
             title.outerHTML = link(title.outerHTML);
             return template.innerHTML;
         }

@@ -1,4 +1,3 @@
-/* Equipment and roll timing. Pure functions shared by previews and simulations. */
 (function (global) {
     'use strict';
     const deviceTiers = Object.freeze({

@@ -1,4 +1,3 @@
-/* Custom media controls and a persistent floating player for the aura pages. */
 (() => {
     'use strict';
     const base=new URL('../auras/',document.currentScript.src);
@@ -183,8 +182,6 @@
         return true;
     }
     function restoreRootView() {
-        // Clear ownership first: the departing directory saves its scroll on
-        // pagehide and must not replace the address of the restored profile.
         const previousFrame=frame;frame=null;frameTarget=null;previousFrame?.remove();document.title=initialTitle;document.body.classList.remove('aura-video-shell');event(document,'aura-video-shell-state',{active:false});
     }
     function disposeFloating(pause=true) {
@@ -209,8 +206,6 @@
     function openFloating(player) {
         if(!player.origin.source)return;
         if(floating?.player===player)return;
-        // Give the first browser Back a same-document directory entry too.
-        // Otherwise the browser unloads the player before popstate can run.
         if(shellOwner&&!frame&&!navigationSeeded) {
             const back=destination(document.querySelector('[data-aura-directory-return]')?.href);
             if(back) {const current=location.href,state=history.state;history.replaceState({auraVideoShell:true},'',back.href);history.pushState({...state,auraVideoShell:true},'',current);navigationSeeded=true;}

@@ -1,4 +1,3 @@
-/* Carry a directory return URL only through profiles opened from that directory. */
 (() => {
     'use strict';
     const back=document.querySelector('[data-aura-directory-return]');

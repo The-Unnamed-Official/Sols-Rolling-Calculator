@@ -1,8 +1,7 @@
-/* Keep layered wiki titles together and reserve room for their floating text. */
 (() => {
     'use strict';
     const titles = new Set();
-    const containerSelector = '.aura-card .resource-link__content, .aura-detail__hero h1, [data-roll-feed-entry], .aura-mutation-link .aura-link-title';
+    const containerSelector = '.aura-card .resource-link__content, .aura-detail__hero h1, [data-roll-feed-entry], .aura-mutation-link .aura-link-title, .cutscene-filter-toggle__aura';
     const pending = new Set();
     const containerWidths = new WeakMap();
     const containerTitles = new WeakMap();

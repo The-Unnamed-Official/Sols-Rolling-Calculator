@@ -1,4 +1,3 @@
-/* Lightweight biome music and UI sounds; shares the simulator's saved volumes. */
 (() => {
     'use strict';
     const key = 'solsRollingCalculator:audioSettings';

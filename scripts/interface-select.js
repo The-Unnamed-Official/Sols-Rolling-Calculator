@@ -1,4 +1,3 @@
-/* Shared custom selects use the simulator's existing menu styles and motion. */
 (() => {
     'use strict';
     const widgets = new Map();
@@ -124,8 +123,6 @@
                 : (current + (event.key === 'ArrowDown' ? 1 : -1) + available.length) % available.length;
             available[next].focus();
         });
-        // Clicking a label briefly sends focus to the document before the
-        // browser focuses its checkbox. Keep the menu open during that step.
         details.addEventListener('focusout', event => {
             if (event.relatedTarget && !details.contains(event.relatedTarget)) close();
         });

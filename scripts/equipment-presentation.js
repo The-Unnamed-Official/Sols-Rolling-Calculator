@@ -1,4 +1,3 @@
-/* Shared equipment names, tiers, and effect colors in loadouts, help, and release notes. */
 (() => {
     'use strict';
     const escape = text => String(text).replace(/[&<>"']/g, value => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[value]));

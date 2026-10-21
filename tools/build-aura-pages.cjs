@@ -1,5 +1,3 @@
-// Build the static /auras directory from the wiki snapshot and simulator registry.
-// Refresh references with node tools/fetch-aura-wiki.cjs, then run this file.
 const fs = require('node:fs');
 const path = require('node:path');
 const vm = require('node:vm');
@@ -24,8 +22,6 @@ vm.runInNewContext(read('scripts/wiki-title-data.js') + '\n' + read('scripts/eve
 if (fs.existsSync(path.join(root, 'scripts/directory-title-data.js'))) vm.runInNewContext(read('scripts/directory-title-data.js'), context);
 const main = read('scripts/main.js');
 const home = read('index.html');
-// Read the Run Parameters presentation directly so its order, icons and sigils
-// remain the source of truth for the directory filters.
 const biomePresentation = main.slice(main.indexOf('const BIOME_ICON_OVERRIDES'), main.indexOf('\nfunction getBiomeIconSource'));
 vm.runInNewContext(biomePresentation + '\nglobalThis.biomeIcons = BIOME_ICON_OVERRIDES; globalThis.biomeSigils = BIOME_SIGIL_CLASS_OVERRIDES; globalThis.biomeLabels = BIOME_DISPLAY_LABEL_OVERRIDES;', context);
 const backgroundPresentation = main.slice(main.indexOf('const biomeAssets ='), main.indexOf('\nfunction resolveBiomeAssetKey'));
@@ -47,7 +43,6 @@ function canonicalTitle(title) {
     return key;
 }
 const sourceTitle = source => decodeURIComponent(new URL(source).pathname.slice('/wiki/'.length));
-// Pre-wiki release details stay separate from the attributed wiki snapshot.
 const pages = reference.pages.slice();
 const pageByTitle = new Map(pages.map(page => [wikiKey(page.title), page]));
 const pageByName = new Map(pages.map(page => [normalize(page.title), page]));
@@ -126,7 +121,6 @@ const entries = pages.map(page => {
     const forestBiome = Object.keys(aura?.breakthroughs || {}).find(biome => ['lostForest', 'radiantForest'].includes(biome));
     if (forestBiome) page = { ...page, required: biomeLabel(forestBiome), nativeRarity: odds(Math.max(1, Math.floor(aura.chance / aura.breakthroughs[forestBiome]))) };
     if (nighttimeNative) page = { ...page, required: ['Nighttime', biomeNames.radiantForest].join(' / ') };
-    // Explicit release values take precedence over wiki edits still in progress.
     if (aura && forestBiome) page = { ...page, rarity: odds(aura.chance) };
     const name = styles.get(page.title) || page.title;
     const slug = slugFor(page.title);
@@ -199,7 +193,6 @@ function head(title, description, prefix, canonical) {
 </head>`;
 }
 const titleArt = entry => `<span data-aura-title="${escape(entry.name)}" data-aura-tier="${escape(entry.tierKey)}" data-aura-rarity="${entry.rarityValue ?? ''}">${escape(entry.name)}</span>`;
-// Profiles need one title, rather than downloading both complete title registries.
 const profileTitle = entry => `<script type="application/json" data-aura-title-reference>${JSON.stringify({ [entry.name]: context.WikiTitleData.auras[entry.name] || { markup: escape(entry.name) } }).replace(/</g, '\\u003c')}</script>`;
 const row = (entry, index) => `<li class="aura-row" data-aura-row data-name="${escape(entry.name)}" data-sort-group="${tierContext.AuraTiers.sortGroup(entry.tierKey, entry.kind)}" data-rarity="${entry.rarityValue ?? ''}" data-biomes="${escape(JSON.stringify(entry.biomes))}" data-kind="${escape(entry.kind)}" data-events="${escape(JSON.stringify(entry.events))}" data-tier="${escape(entry.tierKey)}" data-search="${escape([entry.name, entry.title, entry.kind, entry.tierKey, entry.location, ...entry.events].join(' ').toLowerCase())}"><a class="resource-link aura-card aura-page-link" href="./${entry.slug}/" aria-label="${escape(entry.name)} aura details"><span class="resource-link__icon aura-row__index" aria-hidden="true">${String(index + 1).padStart(3, '0')}</span><span class="resource-link__content"><span class="resource-link__category">${escape(entry.kind)} · <span class="rarity-tier-${escape(entry.tierKey)}">${escape(tierContext.AuraTiers.label(entry.tierKey))}</span></span><span class="resource-link__label aura-row__name"><span class="aura-link-title">${titleArt(entry)}</span></span><span class="resource-link__meta aura-row__rarity">${escape(entry.rarityText)}</span>${entry.nativeRarity && !entry.exclusive ? `<span class="resource-link__meta aura-row__native">Native: ${escape(entry.nativeRarity)}</span>` : ''}<span class="resource-link__meta aura-row__location">${rich.text(entry.location)}</span></span><span class="resource-link__launch" aria-hidden="true"><i class="fa-solid fa-arrow-right"></i></span></a></li>`;
 function filter(id, label, all, values) {
@@ -227,7 +220,6 @@ const eventFilters = context.events.flatMap(({ id, label }) => {
     if (!availableEvents.delete(value)) return [];
     return [[value, label, eventPresentation.get(id) || {}]];
 });
-// Retain historical wiki events that are not available in Run Parameters.
 for (const value of [...availableEvents].sort(collator.compare)) {
     const [, label, year] = /^(.*?) (\d{4})$/.exec(value) || ['', value, ''];
     const style = [...eventPresentation.values()].find(presentation => presentation.label === label);
@@ -300,6 +292,6 @@ ${profileTitle(entry)}
 </html>
 `);
 }
-write('scripts/aura-routes.js', '// Generated by tools/build-aura-pages.cjs. Do not edit by hand.\nglobalThis.AuraRoutes = Object.freeze(' + JSON.stringify(routes, null, 2) + ');\n');
+write('scripts/aura-routes.js', 'globalThis.AuraRoutes = Object.freeze(' + JSON.stringify(routes, null, 2) + ');\n');
 write('data/auras/catalogue.json', JSON.stringify(entries, null, 2) + '\n');
 console.log(`Built ${entries.length} aura pages and the directory. Linked all ${context.registry.length} simulator auras.`);

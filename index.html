@@ -169,8 +169,8 @@
     </script>
     <link rel="stylesheet" href="styles/base.css?v=2.210.background2">
     <link rel="stylesheet" href="styles/layout.css?v=2.210">
-    <link rel="stylesheet" href="styles/components.css?v=2.210">
-    <link rel="stylesheet" href="styles/utilities.css?v=2.210.pages3">
+    <link rel="stylesheet" href="styles/components.css?v=2.210.session1">
+    <link rel="stylesheet" href="styles/utilities.css?v=2.210.fullscreen1">
     <link rel="stylesheet" href="styles/wiki-title-fonts.css?v=2.210">
     <link rel="stylesheet" href="styles/wiki-title-effects.css?v=2.210">
     <link rel="stylesheet" href="styles/wiki-title-repairs.css?v=2.210">
@@ -193,9 +193,10 @@
     <script src="scripts/aura-routes.js?v=2.210" defer></script>
     <script src="scripts/aura-links.js?v=2.210" defer></script>
     <script src="scripts/interface-select.js?v=2.210" defer></script>
-    <script src="scripts/aura-title-layout.js?v=2.210" defer></script>
+    <script src="scripts/aura-title-layout.js?v=2.210.fullscreen1" defer></script>
     <script src="scripts/biome-background.js?v=2.210.background2" defer></script>
-    <script src="scripts/main.js?v=2.210.rolling1" defer></script>
+    <script src="scripts/main.js?v=2.210.session1" defer></script>
+    <script src="scripts/session-return.js?v=2.210.session1" defer></script>
     <script src="scripts/aura-video-player.js?v=2.210.controls3" defer></script>
     <script src="scripts/aura-directory-preferences.js?v=2.210.pages4" defer></script>
 </head>
@@ -284,6 +285,13 @@
 
     <audio id="ambientMusic" loop muted preload="none" data-src="files/music/normalBiomeMusic.mp3" type="audio/mpeg" data-volume="0.10" data-audio-channel="music"></audio>
     <audio id="singularitySummonSound" muted preload="none" data-src="files/sounds/other/singularitySummon.mp3" type="audio/mpeg" data-volume="1" data-audio-channel="music"></audio>
+    <audio id="radiantMoonSound1" preload="none" data-src="files/sounds/other/radiantMoon1.mp3" data-volume="0.55" data-audio-channel="obtain"></audio>
+    <audio id="radiantMoonSound2" preload="none" data-src="files/sounds/other/radiantMoon2.mp3" data-volume="0.55" data-audio-channel="obtain"></audio>
+    <audio id="radiantMoonSound3" preload="none" data-src="files/sounds/other/radiantMoon3.mp3" data-volume="0.55" data-audio-channel="obtain"></audio>
+    <audio id="radiantMoonSound4" preload="none" data-src="files/sounds/other/radiantMoon4.mp3" data-volume="0.55" data-audio-channel="obtain"></audio>
+    <audio id="radiantMoonSound5" preload="none" data-src="files/sounds/other/radiantMoon5.mp3" data-volume="0.55" data-audio-channel="obtain"></audio>
+    <audio id="radiantMoonSound6" preload="none" data-src="files/sounds/other/radiantMoon6.mp3" data-volume="0.55" data-audio-channel="obtain"></audio>
+    <audio id="radiantMoonSound7" preload="none" data-src="files/sounds/other/radiantMoon7.mp3" data-volume="0.55" data-audio-channel="obtain"></audio>
     <audio id="rollLoopSound" muted preload="none" data-src="files/sounds/actions/SolsRollSound.mp3" type="audio/mpeg" data-volume="0.10" data-audio-channel="obtain"></audio>
     <audio id="clickSoundFx" muted preload="none" data-src="files/sounds/actions/SolsClickSound.mp3" type="audio/mpeg" data-volume="0.10" data-audio-channel="ui"></audio>
     <audio id="hoverSoundFx" muted preload="none" data-src="files/sounds/actions/SolsHoverSound.mp3" type="audio/mpeg" data-volume="0.15" data-audio-channel="ui"></audio>
@@ -550,7 +558,6 @@
                             <span class="resource-link__category">Main Community</span>
                             <span class="resource-link__label">The Simulator's Server</span>
                             <span class="resource-link__meta">Join the community and converse with the people!</span>
-                            <!-- <span class="resource-link__meta greenClass">There's currently a HUGE giveaway ongoing until the 4th of October!</span> -->
                         </span>
                         <span class="resource-link__launch" aria-hidden="true"><i class="fa-solid fa-arrow-up-right-from-square"></i></span>
                     </a>
@@ -1563,7 +1570,7 @@
                         <span class="help-card__kicker">Cinematic playback</span>
                         <h3>Cutscenes</h3>
                         <ul>
-                            <li>Enable Cutscenes from Settings; fullscreen is recommended for the intended presentation.</li>
+                            <li>Use Fullscreen cutscenes in Rolling Settings to enter fullscreen when rolling starts. Turn it off or press Esc to leave fullscreen.</li>
                             <li>During Sol's-Like rolling, a cutscene pauses rolling and progress at that exact aura, then resumes at the next roll in sequence.</li>
                             <li>Automatically pause rolling after cutscene leaves the run paused until you press Resume yourself.</li>
                             <li>Cutscene controls can skip the current cinematic or all remaining cinematics without restarting the roll sequence.</li>
@@ -2156,6 +2163,13 @@
                         <span>1 roll/ms</span>
                     </div>
                 </div>
+                <button class="interface-button quality-settings__item quality-settings__aura-switch" type="button" role="switch" aria-checked="true" aria-labelledby="rollingFullscreenCutscenesLabel" aria-describedby="rollingFullscreenCutscenesDescription" id="rollingFullscreenCutscenesToggle">
+                    <span>
+                        <span class="quality-settings__name" id="rollingFullscreenCutscenesLabel">Fullscreen cutscenes</span>
+                        <span class="quality-settings__description" id="rollingFullscreenCutscenesDescription">Enter fullscreen when rolling starts and stay fullscreen between cutscenes. Turn this off or press Esc to leave.</span>
+                    </span>
+                    <span class="quality-settings__switch-track" aria-hidden="true"></span>
+                </button>
                 <div class="rolling-settings__filters" aria-labelledby="rollingPauseCutsceneLabel">
                     <div class="rolling-settings__filter-copy">
                         <span class="rolling-settings__label" id="rollingPauseCutsceneLabel">Pause After Cutscenes</span>
@@ -2251,10 +2265,10 @@
                             <small id="cutscenePlaybackStatusCount">0/0</small>
                         </span>
                         <button type="button" class="interface-button interface-button--ghost filter-modal__reset" id="cutscenePlaybackFilterReset">Reset selection</button>
-                        <button type="button" class="interface-button interface-button--ghost filter-modal__reset filter-modal__disable-all" id="cutscenePlaybackFilterDisableAll">Disable All</button>
+                        <button type="button" class="interface-button interface-button--ghost filter-modal__reset filter-modal__disable-all" id="cutscenePlaybackFilterDisableAll">Disable Optional Cutscenes</button>
                     </div>
                 </div>
-                <p class="filter-modal__hint">Turn on the aura cutscenes that should play. The status pill activates automatically when at least one is enabled; turning every cutscene off disables playback entirely.</p>
+                <p class="filter-modal__hint">Choose which aura cutscenes should play. Flushed : Troll is always on and cannot be disabled.</p>
             </div>
             <div class="filter-modal__grid filter-modal__grid--scroll filter-modal__grid--stacked" id="cutscenePlaybackFilterList" data-cutscene-playback-filter-list></div>
             <div class="filter-modal__actions">
@@ -2298,7 +2312,7 @@
                         <span class="changelog-tab__subtitle">Eon 1-30 · Forests, Moons &amp; Memories</span>
                         <p class="changelog-modal__meta">Updated 2026/10/19</p>
                     </header>
-                    <div class="changelog-eon130__overview"><span><strong>2</strong>New biomes</span><span><strong>12</strong>New auras</span><span><strong>7</strong>Radiant Moons</span></div>
+                    <div class="changelog-eon130__overview"><span><strong>2</strong>New biomes</span><span><strong>12</strong>New auras</span><span><strong>11</strong>Buffs</span></div>
                     <ul class="changelog-modal__list changelog-modal__list--grouped">
 
                         <li class="changelog-release-group changelog-eon130__section changelog-eon130__section--radiant">
@@ -2323,7 +2337,7 @@
 
                         <li class="changelog-release-group changelog-eon130__section changelog-eon130__section--buffs">
                             <div class="changelog-featured-ui__header"><span class="changelog-featured-ui__icon" aria-hidden="true"><img src="files/images/icons/lunaeBuff.png" width="34" height="34" alt=""></span><span class="changelog-featured-ui__heading"><span class="largeClass">Active buffs</span><span>Your effects and choices, together at the bottom.</span></span><span class="changelog-featured-ui__badge">Improved</span></div>
-                            <ul class="changelog-release-group__list"><li>Moon Catch is now <strong>Cor Lunae’s Blessing</strong>. Choose one of ten luck multipliers, from ×1.02 to ×1.2 in steps of ×0.02.</li><li>Dorcelessness, We’re Sorry!, YG Blessing, and Astrald’s Blessing now show their own icons while enabled. Hover, focus, or tap any buff for details.</li><li>Singularity gives ×1.2 total luck. Developer biome buffs offer their old and new effects inside the badge details, including Word’s basic and final luck multipliers.</li></ul>
+                            <ul class="changelog-release-group__list"><li>Moon Catch is now <strong>Cor Lunae’s Blessing</strong>. Choose one of ten final luck multipliers, from ×1.01 to ×1.15.</li><li>Dorcelessness, We’re Sorry!, YG Blessing, and Astrald’s Blessing now show their own icons while enabled. Hover, focus, or tap any buff for details.</li><li>Singularity gives ×1.1 final luck. Developer biome buffs offer their old and new effects inside the badge details, including Word’s basic and final luck multipliers.</li></ul>
                         </li>
 
                         <li class="changelog-release-group changelog-eon130__section changelog-eon130__section--cutscenes">
@@ -4253,17 +4267,33 @@
             </div>
             <div data-biome-buff-details="singularity" hidden>
                 <strong class="sigil-outline-singularity">Singularity</strong>
-                <p>×1.2 Total Luck Multiplier while Singularity is active.</p>
+                <p>×1.1 Final Luck Multiplier while Singularity is active.</p>
                 <small>This buff ends when you leave Singularity.</small>
             </div>
             <div data-biome-buff-details="moonCatch" hidden>
                 <strong>Cor Lunae's Blessing</strong>
-                <p><span data-lunae-multiplier>×1.2</span> Total Luck Multiplier while The Radiant Forest is active.</p>
-                <label class="biome-buffs__choices">Choose your blessing
-                    <select data-lunae-choice aria-label="Cor Lunae's Blessing multiplier">
-                        <option value="1">×1.02</option><option value="2">×1.04</option><option value="3">×1.06</option><option value="4">×1.08</option><option value="5">×1.1</option><option value="6">×1.12</option><option value="7">×1.14</option><option value="8">×1.16</option><option value="9">×1.18</option><option value="10" selected>×1.2</option>
-                    </select>
-                </label>
+                <p><span data-lunae-multiplier>×1.15</span> Final Luck Multiplier while The Radiant Forest is active.</p>
+                <div class="biome-buffs__choices form-field form-field--select">
+                    <label class="form-field__label" for="cor-lunae-blessing-dropdown">Choose your blessing</label>
+                    <span class="form-field__select-shell form-field__select-shell--custom">
+                        <select id="cor-lunae-blessing-dropdown" class="form-field__input form-field__input--native" data-lunae-choice aria-label="Cor Lunae's Blessing multiplier" aria-hidden="true" tabindex="-1">
+                            <option value="1.01">×1.01</option>
+                            <option value="1.03">×1.03</option>
+                            <option value="1.04">×1.04</option>
+                            <option value="1.06">×1.06</option>
+                            <option value="1.07">×1.07</option>
+                            <option value="1.09">×1.09</option>
+                            <option value="1.10">×1.10</option>
+                            <option value="1.12">×1.12</option>
+                            <option value="1.13">×1.13</option>
+                            <option value="1.15" selected>×1.15</option>
+                        </select>
+                        <details class="interface-select interface-select--single" data-select="cor-lunae-blessing-dropdown">
+                            <summary class="form-field__input interface-select__summary" role="button" aria-label="Cor Lunae's Blessing multiplier" aria-haspopup="listbox" aria-expanded="false">×1.15</summary>
+                            <div class="interface-select__menu" role="listbox" aria-label="Cor Lunae's Blessing multiplier"></div>
+                        </details>
+                    </span>
+                </div>
                 <small>This biome always forces Night, including nighttime aura multipliers. The blessing ends when you leave.</small>
             </div>
             <div data-biome-buff-details="moons" hidden>
@@ -4307,10 +4337,10 @@
         <button type="button" class="biome-buff biome-buff--dev" data-biome-buff="dev" aria-label="Developer biome Admin Abuse" aria-controls="biomeBuffTooltip" aria-expanded="false" hidden>
             <img src="files/images/icons/anotherRealmBiomeIcon.png" alt="" width="28" height="28"><span data-dev-buff-multiplier>×1.2</span>
         </button>
-        <button type="button" class="biome-buff biome-buff--singularity" data-biome-buff="singularity" aria-label="Singularity: 1.1 times total luck" aria-describedby="biomeBuffTooltip" aria-expanded="false" hidden>
+        <button type="button" class="biome-buff biome-buff--singularity" data-biome-buff="singularity" aria-label="Singularity: 1.1 times final luck" aria-describedby="biomeBuffTooltip" aria-expanded="false" hidden>
             <img src="files/images/icons/singularityLuckBuffIcon.png" alt="" width="28" height="28"><span>×1.1</span>
         </button>
-        <button type="button" class="biome-buff" data-biome-buff="moonCatch" aria-label="Cor Lunae's Blessing: 1.15 times total luck" aria-controls="biomeBuffTooltip" aria-expanded="false" hidden>
+        <button type="button" class="biome-buff" data-biome-buff="moonCatch" aria-label="Cor Lunae's Blessing: 1.15 times final luck" aria-controls="biomeBuffTooltip" aria-expanded="false" hidden>
             <img src="files/images/icons/lunaeBuff.png" alt="" width="28" height="28"><span data-lunae-multiplier>×1.15</span>
         </button>
         <button type="button" class="biome-buff" data-biome-buff="moons" aria-label="Radiant Moon collection progress" aria-describedby="biomeBuffTooltip" aria-expanded="false" hidden>
@@ -4337,6 +4367,13 @@
         <button type="button" class="biome-buff" data-biome-buff="astrald" aria-label="Astrald's Blessing: 1.2 times total luck and Astral Astrald obtainable" aria-controls="biomeBuffTooltip" aria-expanded="false" hidden>
             <img src="files/images/icons/astraldBuff.png" alt="" width="28" height="28"><span>×1.2</span>
         </button>
+    </section>
+    <section class="session-return" id="sessionReturnPrompt" role="region" aria-label="Previous session" hidden>
+        <p>Restore your setup, moon progress and recent results?</p>
+        <div class="session-return__actions">
+            <button type="button" class="interface-button" id="sessionReturnButton">Return to previous session</button>
+            <button type="button" class="interface-button interface-button--ghost session-return__dismiss" id="sessionReturnDismiss" aria-label="Start a new session">×</button>
+        </div>
     </section>
 </body>
 </html>

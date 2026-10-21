@@ -1,4 +1,3 @@
-// Each profile embeds its own versions; the viewer preloads their image sources.
 const escape=value=>String(value??'').replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[char]);
 const revisionUrl=(version,revision=version.revisionId)=>version.source+(revision?'?oldid='+revision:'');
 let rich={text:escape,description:version=>escape(version.description)};
