@@ -785,7 +785,7 @@ const BIOME_OTHER_SELECT_ID = 'biome-other-dropdown';
 const BIOME_TIME_SELECT_ID = 'biome-time-dropdown';
 const DAY_RESTRICTED_BIOMES = new Set(['pumpkinMoon', 'graveyard']);
 const DAY_ONLY_BIOMES = new Set(['blazing']);
-let corLunaeBlessingMultiplier = 1.2;
+let corLunaeBlessingMultiplier = 1.15;
 const RADIANT_MOON_NAMES = Object.freeze(['Jade', 'Jade : Purity', 'Kyawthuite', 'Kyawthuite : Remembrance', 'Twilight : Withering Grace', 'Twilight : Iridescent Memory', 'Twilight']);
 const EVENT_BUFF_TOGGLES = Object.freeze({
     dorcelessness: 'dorcelessness-luck-toggle',
