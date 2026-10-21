@@ -6,10 +6,12 @@
     if(!back||!value) return;
     try {
         const fallback=new URL(back.href), target=new URL(value,document.baseURI);
-        if(target.origin!==fallback.origin||target.pathname!==fallback.pathname||target.username||target.password) return;
+        const directoryPath=path=>path.replace(/\/index(?:\.html)?$/i,'/').replace(/\/?$/,'/');
+        if(target.origin!==fallback.origin||directoryPath(target.pathname)!==directoryPath(fallback.pathname)||target.username||target.password) return;
+        target.pathname=directoryPath(fallback.pathname);
         target.hash='';back.href=target.href;
         document.querySelectorAll('.aura-mutation-link').forEach(link=>{
-            const profile=new URL(link.href);profile.searchParams.set('return',target.pathname+target.search);link.href=profile.href;
+            const profile=new URL(link.href);profile.pathname=directoryPath(profile.pathname);profile.searchParams.set('return',target.pathname+target.search);link.href=profile.href;
         });
     } catch {}
 })();

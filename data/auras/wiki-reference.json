@@ -829,6 +829,27 @@
       "events": []
     },
     {
+      "title": "Artifact",
+      "source": "https://sol-rng.fandom.com/wiki/Artifact",
+      "revisionId": 153691,
+      "description": "A small yet significant pebble, carrying with it what seems to be remains of Magic.",
+      "descriptionTruncated": false,
+      "rarity": "1 in 500,000",
+      "nativeRarity": "1 in 250,000",
+      "tier": "Legendary",
+      "required": "Lost Forest",
+      "obtainment": "",
+      "categories": [
+        "Auras",
+        "Legendary",
+        "Biome-Native"
+      ],
+      "notice": "",
+      "status": "",
+      "exclusive": false,
+      "events": []
+    },
+    {
       "title": "Ascendant",
       "source": "https://sol-rng.fandom.com/wiki/Ascendant",
       "revisionId": 149277,
@@ -4623,6 +4644,27 @@
       "events": [
         "Halloween 2024"
       ]
+    },
+    {
+      "title": "Hasuen",
+      "source": "https://sol-rng.fandom.com/wiki/Hasuen",
+      "revisionId": 153740,
+      "description": "Bound to the chains of grief, listen to the ones whom the bells toll for. The Heart of Earthsong, The Melody of Forevemore \"A life",
+      "descriptionTruncated": true,
+      "rarity": "1 in 485,000,000",
+      "nativeRarity": "1 in 242,500,000",
+      "tier": "Glorious",
+      "required": "Lost Forest",
+      "obtainment": "",
+      "categories": [
+        "Auras",
+        "Glorious",
+        "Biome-Native"
+      ],
+      "notice": "",
+      "status": "",
+      "exclusive": false,
+      "events": []
     },
     {
       "title": "Hatchwarden",
@@ -9707,6 +9749,28 @@
       "events": []
     },
     {
+      "title": "Tree House",
+      "source": "https://sol-rng.fandom.com/wiki/Tree_House",
+      "revisionId": 153729,
+      "description": "“In the heart of a vast and endless forest, where the sun’s golden gaze scarcely touched the earth, a Tree rose taller than all others.",
+      "descriptionTruncated": true,
+      "rarity": "1 in 3,800,000,000",
+      "nativeRarity": "1 in 1,900,000,000",
+      "tier": "Transcendent",
+      "required": "Lost Forest",
+      "obtainment": "",
+      "categories": [
+        "Auras",
+        "Transcendent",
+        "Biome-Native",
+        "Has Abilities"
+      ],
+      "notice": "",
+      "status": "",
+      "exclusive": false,
+      "events": []
+    },
+    {
       "title": "Tropical Isles",
       "source": "https://sol-rng.fandom.com/wiki/Tropical_Isles",
       "revisionId": 152909,
@@ -10153,6 +10217,27 @@
         "April Fool's 2026",
         "April Fools 2026"
       ]
+    },
+    {
+      "title": "Veylune",
+      "source": "https://sol-rng.fandom.com/wiki/Veylune",
+      "revisionId": 153690,
+      "description": "Calmly resting in a place anonymously to others, letting your thoughts relax as the day gets brighter.",
+      "descriptionTruncated": false,
+      "rarity": "1 in 550,000",
+      "nativeRarity": "1 in 275,000",
+      "tier": "Legendary",
+      "required": "Lost Forest",
+      "obtainment": "",
+      "categories": [
+        "Auras",
+        "Legendary",
+        "Biome-Native"
+      ],
+      "notice": "",
+      "status": "",
+      "exclusive": false,
+      "events": []
     },
     {
       "title": "Virtual",

@@ -20,7 +20,8 @@
         if (time) BiomeBackground.setTime(time);
         globalThis.AuraAudio?.setMusic(music);
         const ticket = ++request;
-        const source = await BiomeBackground.resolve(asset);
+        const forcedTime = document.body.dataset.auraForcedTime;
+        const source = await BiomeBackground.resolve(asset, forcedTime ? { night: forcedTime === 'night' } : {});
         if (ticket !== request) return;
         if (source === current) return;
         current = source;

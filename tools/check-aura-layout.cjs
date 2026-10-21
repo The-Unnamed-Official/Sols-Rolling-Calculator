@@ -30,7 +30,10 @@ for (const file of pages) {
     }
     for (const [, url] of html.matchAll(/(?:href|src)="([^"]+)"/g)) {
         if (/^(https?:|#)/.test(url)) continue;
-        assert(fs.existsSync(path.resolve(root, path.dirname(file), url)), `${file}: broken ${url}`);
+        assert.doesNotMatch(url, /(?:^|\/)index(?:\.html)?(?=[?#]|$)/, `${file}: page links use directory URLs`);
+        const target = path.resolve(root, path.dirname(file), url);
+        assert(fs.existsSync(target), `${file}: broken ${url}`);
+        if (fs.statSync(target).isDirectory()) assert(fs.existsSync(path.join(target,'index.html')), `${file}: missing directory entry point for ${url}`);
     }
 }
 const partials = ['header', 'aura-header-controls', 'aura-body', 'aura-head', 'aura-footer', 'aura-profile-navigation', 'quality-preferences', 'aura-audio'];

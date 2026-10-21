@@ -7,17 +7,34 @@ Directory-only wiki title artwork can be refreshed with
 `node tools/fetch-directory-title-art.cjs` (requires `cheerio`, `postcss`, and
 `postcss-selector-parser` in `test-results/wiki-tools/node_modules`, as used
 by the existing wiki title build tool). The directory reuses the simulator's
-shared stylesheets and default biome background. Links explicitly name
-`index.html`. Hosted pages fetch the HTML fragments directly. File previews
+shared stylesheets and default biome background. Page links use clean directory
+URLs such as `/auras/` and `/auras/poseidon/`. Hosted pages fetch the HTML fragments directly. File previews
 and failed HTML requests use the shared `scripts/aura-layout-fragments.js`
 fallback, so styles and controls still load.
+
+Eon 1-30 wiki entries are still being completed. Release definitions marked
+`wikiPending` in `scripts/main.js` generate temporary profiles with confirmed
+roll details. Artifact, Veylune, Hasuen, and Tree House already use the available
+wiki references. After refreshing the snapshot, rebuilding automatically uses
+the new wiki entries for the remaining auras.
+
+The twelve Eon 1-30 title templates were refreshed from
+[Template:Aura](https://sol-rng.fandom.com/wiki/Template:Aura) on October 19,
+2026. Run `node tools/refresh-eon130-titles.cjs` (requires `cheerio` in the
+wiki-tools dependency folder above), then rebuild the aura pages. The refresh
+updates both the simulator title registry and the full compiler's overrides,
+and keeps the wiki's fonts, gradients, outlines, and text positioning. Tree
+House's green gradient, font, and outline were refreshed on October 20, 2026.
+Hasuen currently returns plain text from that template; its title uses that
+published fallback until the wiki supplies styled markup. Imported
+title artwork shares the wiki attribution and CC BY-SA 3.0 license below.
 
 Aura pages fetch their shared HTML through `scripts/aura-page-layout.js`.
 Edit these partials once; the directory and all profiles use the changes on
 their next load without rebuilding or editing any aura HTML files:
 
 - `partials/header.html`: top bar, simulator version, and game build (currently
-  Eon 1-29). The `data-version-id` also supplies the asset cache version and
+  Eon 1-30). The `data-version-id` also supplies the asset cache version and
   footer version; update it together with the visible simulator version.
 - `partials/aura-header-controls.html`: Home and Settings controls.
 - `partials/aura-body.html`: body classes, shell classes, and backdrop.

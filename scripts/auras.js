@@ -86,6 +86,7 @@
     const rarity = row => row.dataset.rarity ? Number(row.dataset.rarity) : -1;
     function syncURL(scroll = 0) {
         const url = new URL(location.href);
+        url.pathname = url.pathname.replace(/\/index(?:\.html)?$/i, '/').replace(/\/?$/, '/');
         const set = (key,value) => { if(value) url.searchParams.set(key,String(value)); else url.searchParams.delete(key); };
         set('q',search.value); set('sort',sort.value==='rarity-ascending'?'':sort.value);
         set('page',page>1?page:''); set('size',pageSize);
@@ -107,7 +108,8 @@
         const biomeOptions = biomes.filter(option => !timeOptions.includes(option));
         const backgroundOption = biomeOptions.length === 1 ? biomeOptions[0]
             : !biomeOptions.length && timeOptions.length === 1 ? timeOptions[0] : null;
-        const time = timeOptions.length === 1 ? (/^Nighttime$/i.test(timeOptions[0].value) ? 'night' : 'day') : '';
+        const time = backgroundOption?.value === 'The Radiant Forest' ? 'night'
+            : timeOptions.length === 1 ? (/^Nighttime$/i.test(timeOptions[0].value) ? 'night' : 'day') : '';
         globalThis.AuraBackground?.show(backgroundOption?.dataset.background || '', backgroundOption?.dataset.music || '', time);
         rows.sort((a, b) => {
             if (sort.value === 'alphabetical') return alphabetical(a, b);

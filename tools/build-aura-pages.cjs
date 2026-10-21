@@ -47,8 +47,10 @@ function canonicalTitle(title) {
     return key;
 }
 const sourceTitle = source => decodeURIComponent(new URL(source).pathname.slice('/wiki/'.length));
-const pageByTitle = new Map(reference.pages.map(page => [wikiKey(page.title), page]));
-const pageByName = new Map(reference.pages.map(page => [normalize(page.title), page]));
+// Pre-wiki release details stay separate from the attributed wiki snapshot.
+const pages = reference.pages.slice();
+const pageByTitle = new Map(pages.map(page => [wikiKey(page.title), page]));
+const pageByName = new Map(pages.map(page => [normalize(page.title), page]));
 const styles = new Map();
 const simulator = new Map();
 const routes = {};
@@ -58,7 +60,18 @@ for (const [name, art] of Object.entries(context.WikiTitleData.auras)) {
 }
 const missing = [];
 for (const aura of context.registry) {
-    const page = pageByName.get(normalize(aura.name));
+    let page = pageByName.get(normalize(aura.name));
+    if (!page && aura.wikiPending) {
+        page = { title: baseName(aura.name), source: '', revisionId: null, description: '', descriptionTruncated: false,
+            rarity: aura.requiresRadiantMoons ? 'Guaranteed after all seven Radiant Moons' : '1 in ' + aura.chance.toLocaleString('en-US'),
+            nativeRarity: '', tier: aura.tier || tierContext.AuraTiers.label(tierContext.AuraTiers.resolve('', aura.chance)), required: 'The Radiant Forest', exclusive: true, events: [], categories: [],
+            obtainment: aura.requiresRadiantMoons ? 'Collect all seven Radiant Moons; guaranteed on the next roll'
+                : aura.radiantUnlockMask ? 'Roll all ' + ({1:'Jade',2:'Kyawthuite',4:'Twilight'})[aura.radiantUnlockMask] + ' variants during this biome to unlock' : '',
+            wikiPending: true };
+        pages.push(page);
+        pageByTitle.set(wikiKey(page.title), page);
+        pageByName.set(normalize(page.title), page);
+    }
     if (!page) { missing.push(aura.name); continue; }
     simulator.set(page.title, aura);
 }
@@ -72,19 +85,22 @@ for (const [id, names] of Object.entries(context.eventLookup)) {
         if (page) auraEvents.set(page.title, [...(auraEvents.get(page.title) || []), eventNames.get(id)]);
     }
 }
-const biomeNames = { glitch: 'Glitched', limbo: 'The Limbo', 'limbo-null': 'Null / The Limbo', dreamspace: 'Dreamspace', cyberspace: 'Cyberspace', oldStarfall: 'Old Starfall', pumpkinMoon: 'Pumpkin Moon', bloodRain: 'Blood Rain', graveyard: 'Graveyard', day: 'Daytime', night: 'Nighttime', blazing: 'Blazing Sun', edict: 'The Citadel Of Orders', fullMoon: '赤い満月', anotherRealm: 'The Hyperspace Realm', mastermind: "The Null's Existence" };
+const biomeNames = { lostForest: 'The Lost Forest', radiantForest: 'The Radiant Forest', glitch: 'Glitched', limbo: 'The Limbo', 'limbo-null': 'Null / The Limbo', dreamspace: 'Dreamspace', cyberspace: 'Cyberspace', oldStarfall: 'Old Starfall', pumpkinMoon: 'Pumpkin Moon', bloodRain: 'Blood Rain', graveyard: 'Graveyard', day: 'Daytime', night: 'Nighttime', blazing: 'Blazing Sun', edict: 'The Citadel Of Orders', fullMoon: '赤い満月', anotherRealm: 'The Hyperspace Realm', mastermind: "The Null's Existence" };
 const biomeLabel = value => biomeNames[value] || value[0].toUpperCase() + value.slice(1);
+const biomeAliases = { lostForest: ['Lost Forest', 'Lost Forest Biome'], radiantForest: ['Radiant Forest', 'Radiant Forest Biome'] };
+const canonicalBiomeLabel = label => String(label || '').replace(/^(?:The )?(Lost Forest|Radiant Forest)(?: Biome)?$/i, (_, name) =>
+    name.toLowerCase() === 'lost forest' ? biomeNames.lostForest : biomeNames.radiantForest);
 const biomeKey = value => value.toLowerCase().replace(/[^\p{L}\p{N}]/gu, '');
 const backgrounds = new Map();
 const musicForBackground = new Map();
 for (const [id, asset] of Object.entries(context.biomeAssets)) {
     musicForBackground.set(asset.image, asset.music);
-    for (const label of [id, biomeLabel(id), context.biomeLabels[id]].filter(Boolean)) backgrounds.set(biomeKey(label), asset.image);
+    for (const label of [id, biomeLabel(id), context.biomeLabels[id], ...(biomeAliases[id] || [])].filter(Boolean)) backgrounds.set(biomeKey(label), asset.image);
 }
 for (const [alias, id] of Object.entries({Day:'day', Night:'night', Glitch:'glitch', Limbo:'limbo'})) backgrounds.set(biomeKey(alias), context.biomeAssets[id].image);
 const backgroundFor = value => String(value || '').split(/\s+or\s+|\s*\/\s*/i).map(label => backgrounds.get(biomeKey(label))).find(Boolean) || '';
 const {createRichText}=require('./aura-rich-text.cjs');
-const rich=createRichText({auras:context.WikiTitleData.auras,items:context.WikiTitleData.items,biomes:Object.entries(context.biomeSigils).map(([id,sigil])=>({sigil,labels:[id[0].toUpperCase()+id.slice(1),biomeLabel(id),context.biomeLabels[id],id==='glitch'?'Glitch':id==='limbo'?'Limbo':id==='day'?'Day':id==='night'?'Night':''].filter(Boolean)}))});
+const rich=createRichText({auras:context.WikiTitleData.auras,items:context.WikiTitleData.items,biomes:Object.entries(context.biomeSigils).map(([id,sigil])=>({sigil,labels:[id[0].toUpperCase()+id.slice(1),biomeLabel(id),context.biomeLabels[id],...(biomeAliases[id]||[]),id==='glitch'?'Glitch':id==='limbo'?'Limbo':id==='day'?'Day':id==='night'?'Night':''].filter(Boolean)}))});
 setRichText(rich);
 const denominator = text => {
     const match = /1\s*(?:in|\/)\s*(\d[\d,]*(?:\.\d+)?(?:e[+-]?\d+)?)/i.exec(text);
@@ -103,17 +119,24 @@ function slugFor(title) {
     usedSlugs.add(slug);
     return slug;
 }
-const entries = reference.pages.map(page => {
+const entries = pages.map(page => {
     const aura = simulator.get(page.title);
+    page = { ...page, required: canonicalBiomeLabel(page.required) };
+    const nighttimeNative = Boolean(aura?.breakthroughs?.night || aura?.nativeBiomes?.includes('night'));
+    const forestBiome = Object.keys(aura?.breakthroughs || {}).find(biome => ['lostForest', 'radiantForest'].includes(biome));
+    if (forestBiome) page = { ...page, required: biomeLabel(forestBiome), nativeRarity: odds(Math.max(1, Math.floor(aura.chance / aura.breakthroughs[forestBiome]))) };
+    if (nighttimeNative) page = { ...page, required: ['Nighttime', biomeNames.radiantForest].join(' / ') };
+    // Explicit release values take precedence over wiki edits still in progress.
+    if (aura && forestBiome) page = { ...page, rarity: odds(aura.chance) };
     const name = styles.get(page.title) || page.title;
     const slug = slugFor(page.title);
     const events = [...new Set((page.events.length ? page.events : (auraEvents.get(page.title) || [])).map(event => event.replace(/April[ '\u2019]*fool(?:[ '\u2019]*s)?/i, 'April Fools')))];
     const hasEvent = events.length && (page.tier === 'Event' || page.categories.some(category => /Event|Limited/i.test(category)) || auraEvents.has(page.title));
-    const rarity = denominator(page.rarity) || denominator(page.nativeRarity) || (aura?.chance ?? null);
+    const rarity = aura?.requiresRadiantMoons ? null : denominator(page.rarity) || denominator(page.nativeRarity) || (aura?.chance ?? null);
     const rarityText = denominator(page.rarity) ? referenceOdds(page.rarity)
         : denominator(page.nativeRarity) ? referenceOdds(page.nativeRarity)
         : aura && /unobtainable/i.test(page.rarity) && hasEvent ? odds(aura.chance) : page.rarity;
-    const nativeBiomes = [...new Set([...(aura?.nativeBiomes || []), ...Object.keys(aura?.breakthroughs || {})])].map(biomeLabel);
+    const nativeBiomes = [...new Set([...(aura?.nativeBiomes || []), ...Object.keys(aura?.breakthroughs || {}), ...(nighttimeNative ? ['radiantForest'] : [])])].map(biomeLabel);
     const biomes = [...new Set([...nativeBiomes, page.required].filter(biome => biome && !/effect|N\/A/i.test(biome)).flatMap(biome => biome.split(/\s+or\s+|\s*\/\s*/i)).map(biome => biome.replace(/\s*\(collection\)/i, '').replace(/^Glitched$/i, 'Glitch').replace(/^The Limbo$/i, 'Limbo').trim()))];
     const tierKey = tierContext.AuraTiers.resolve(page.tier, rarity);
     const effectSource = /\bfrom (.+)/i.exec(page.rarity)?.[1];
@@ -126,7 +149,8 @@ const entries = reference.pages.map(page => {
         : obtainment ? 'Special obtainment' : /unobtainable/i.test(page.rarity) ? 'Unobtainable' : 'Standard';
     for (const alias of [page.title, name, aura?.name].filter(Boolean)) routes[normalize(alias)] = slug;
     const background = biomes.map(backgroundFor).find(Boolean) || '';
-    return { ...page, obtainment, name, slug, rarityValue: rarity, rarityText, tierKey, kind, location, events: hasEvent ? events : [], nativeBiomes, biomes, background, simulatorName: aura?.name || null, simulatorChance: aura?.chance ?? null, ignoreLuck: Boolean(aura?.ignoreLuck) };
+    if (!history.profiles[page.title] && !aura?.wikiPending) throw new Error('Missing audited media profile: ' + page.title);
+    return { ...page, ...(history.profiles[page.title] ? {} : {mediaPending: true}), obtainment, name, slug, rarityValue: rarity, rarityText, tierKey, kind, location, events: hasEvent ? events : [], nativeBiomes, biomes, background, simulatorName: aura?.name || null, simulatorChance: aura?.chance ?? null, ignoreLuck: Boolean(aura?.ignoreLuck) };
 });
 for (const [alias, target] of Object.entries(reference.aliases)) {
     const page = pageByTitle.get(canonicalTitle(target));
@@ -139,8 +163,8 @@ const entryByTitle=new Map(entries.map(entry=>[wikiKey(entry.title),entry]));
 const memberFor=title=>entryByTitle.get(canonicalTitle(wikiKey(title)));
 const parents=new Map();
 for(const entry of entries) {
-    const profile=history.profiles[entry.title];
-    const parent=memberFor(profile.mutationOf);
+    const profile=history.profiles[entry.title] || {};
+    const parent=memberFor(profile?.mutationOf || '');
     if(parent&&parent!==entry) parents.set(entry,parent);
     for(const title of profile.relatedAuras||[]) {
         const child=memberFor(title);
@@ -154,7 +178,7 @@ function mutationNavigation(entry) {
     const base=rootFor(entry),members=families.get(base);
     if(members.length<2) return '';
     const ordered=[base,...members.filter(member=>member!==base)];
-    return `<nav class="aura-mutations" aria-label="Aura mutations"><div class="aura-mutations__heading"><h2>Aura family</h2><span>${ordered.length-1} mutation${ordered.length>2?'s':''}</span></div><div class="aura-mutation-tabs">${ordered.map(member=>`<a class="interface-button interface-button--ghost aura-mutation-link" href="../${member.slug}/index.html" aria-label="${escape(member.name)} ${member===base?'base aura':'mutation'}"${member===entry?' aria-current="page"':''}><span class="aura-link-title">${rich.sigil('aura',member.name)}</span><span class="aura-mutation-kind">${member===base?'Base aura':'Mutation'}</span></a>`).join('')}</div></nav>`;
+    return `<nav class="aura-mutations" aria-label="Aura mutations"><div class="aura-mutations__heading"><h2>Aura family</h2><span>${ordered.length-1} mutation${ordered.length>2?'s':''}</span></div><div class="aura-mutation-tabs">${ordered.map(member=>`<a class="interface-button interface-button--ghost aura-mutation-link" href="../${member.slug}/" aria-label="${escape(member.name)} ${member===base?'base aura':'mutation'}"${member===entry?' aria-current="page"':''}><span class="aura-link-title">${rich.sigil('aura',member.name)}</span><span class="aura-mutation-kind">${member===base?'Base aura':'Mutation'}</span></a>`).join('')}</div></nav>`;
 }
 
 function head(title, description, prefix, canonical) {
@@ -176,8 +200,8 @@ function head(title, description, prefix, canonical) {
 }
 const titleArt = entry => `<span data-aura-title="${escape(entry.name)}" data-aura-tier="${escape(entry.tierKey)}" data-aura-rarity="${entry.rarityValue ?? ''}">${escape(entry.name)}</span>`;
 // Profiles need one title, rather than downloading both complete title registries.
-const profileTitle = entry => `<script type="application/json" data-aura-title-reference>${JSON.stringify({ [entry.name]: context.WikiTitleData.auras[entry.name] }).replace(/</g, '\\u003c')}</script>`;
-const row = (entry, index) => `<li class="aura-row" data-aura-row data-name="${escape(entry.name)}" data-sort-group="${tierContext.AuraTiers.sortGroup(entry.tierKey, entry.kind)}" data-rarity="${entry.rarityValue ?? ''}" data-biomes="${escape(JSON.stringify(entry.biomes))}" data-kind="${escape(entry.kind)}" data-events="${escape(JSON.stringify(entry.events))}" data-tier="${escape(entry.tierKey)}" data-search="${escape([entry.name, entry.title, entry.kind, entry.tierKey, entry.location, ...entry.events].join(' ').toLowerCase())}"><a class="resource-link aura-card aura-page-link" href="./${entry.slug}/index.html" aria-label="${escape(entry.name)} aura details"><span class="resource-link__icon aura-row__index" aria-hidden="true">${String(index + 1).padStart(3, '0')}</span><span class="resource-link__content"><span class="resource-link__category">${escape(entry.kind)} · <span class="rarity-tier-${escape(entry.tierKey)}">${escape(tierContext.AuraTiers.label(entry.tierKey))}</span></span><span class="resource-link__label aura-row__name"><span class="aura-link-title">${titleArt(entry)}</span></span><span class="resource-link__meta aura-row__rarity">${escape(entry.rarityText)}</span><span class="resource-link__meta aura-row__location">${rich.text(entry.location)}</span></span><span class="resource-link__launch" aria-hidden="true"><i class="fa-solid fa-arrow-right"></i></span></a></li>`;
+const profileTitle = entry => `<script type="application/json" data-aura-title-reference>${JSON.stringify({ [entry.name]: context.WikiTitleData.auras[entry.name] || { markup: escape(entry.name) } }).replace(/</g, '\\u003c')}</script>`;
+const row = (entry, index) => `<li class="aura-row" data-aura-row data-name="${escape(entry.name)}" data-sort-group="${tierContext.AuraTiers.sortGroup(entry.tierKey, entry.kind)}" data-rarity="${entry.rarityValue ?? ''}" data-biomes="${escape(JSON.stringify(entry.biomes))}" data-kind="${escape(entry.kind)}" data-events="${escape(JSON.stringify(entry.events))}" data-tier="${escape(entry.tierKey)}" data-search="${escape([entry.name, entry.title, entry.kind, entry.tierKey, entry.location, ...entry.events].join(' ').toLowerCase())}"><a class="resource-link aura-card aura-page-link" href="./${entry.slug}/" aria-label="${escape(entry.name)} aura details"><span class="resource-link__icon aura-row__index" aria-hidden="true">${String(index + 1).padStart(3, '0')}</span><span class="resource-link__content"><span class="resource-link__category">${escape(entry.kind)} · <span class="rarity-tier-${escape(entry.tierKey)}">${escape(tierContext.AuraTiers.label(entry.tierKey))}</span></span><span class="resource-link__label aura-row__name"><span class="aura-link-title">${titleArt(entry)}</span></span><span class="resource-link__meta aura-row__rarity">${escape(entry.rarityText)}</span>${entry.nativeRarity && !entry.exclusive ? `<span class="resource-link__meta aura-row__native">Native: ${escape(entry.nativeRarity)}</span>` : ''}<span class="resource-link__meta aura-row__location">${rich.text(entry.location)}</span></span><span class="resource-link__launch" aria-hidden="true"><i class="fa-solid fa-arrow-right"></i></span></a></li>`;
 function filter(id, label, all, values) {
     return `<div class="form-field directory-filter"><label class="form-field__label" id="${id}-label" for="${id}">${label}</label><select class="form-field__input form-field__input--native" id="${id}" data-aura-filter multiple tabindex="-1" aria-hidden="true"><option value="" selected>${all}</option>${values.map(([value, text, presentation = {}]) => `<option value="${escape(value)}"${Object.entries(presentation).map(([key, content]) => ` data-${key}="${escape(content)}"`).join('')}>${escape(text)}</option>`).join('')}</select><details class="interface-select interface-select--multi" data-select="${id}"><summary class="form-field__input interface-select__summary" role="button" aria-labelledby="${id}-label" aria-haspopup="listbox" aria-expanded="false">${all}</summary><div class="interface-select__menu" role="listbox" aria-multiselectable="true" aria-labelledby="${id}-label"></div></details></div>`;
 }
@@ -219,7 +243,7 @@ const pagination = () => `<nav class="directory-pagination" data-aura-pagination
 write('auras/index.html', `${head('Aura directory', 'Browse every Sol’s RNG aura, sorted by rarity or alphabetically. Discover descriptions, odds, biomes, and event obtainment.', '../', '')}
 <body data-aura-page="directory">
 <div data-aura-shell>
-<header data-aura-fragment="header"><a href="../index.html">Home</a></header>
+<header data-aura-fragment="header"><a href="../">Home</a></header>
 <main id="main-content">
     <section class="surface directory-catalogue" aria-labelledby="directory-title">
         <header class="surface__header"><h1 class="surface__title" id="directory-title">Aura directory</h1><p class="surface__subtitle">Explore every aura, its wiki description, rarity, and where to obtain it.</p></header>
@@ -251,23 +275,23 @@ for (const entry of entries) {
     const rarityLabel = entry.exclusive && denominator(entry.nativeRarity) ? 'Exclusive biome rarity' : entry.events.length && /unobtainable/i.test(entry.rarity) && entry.simulatorChance ? 'Event rarity' : 'Rarity';
     const status = /unobtainable|unreleased|removed/i.test(entry.rarity + ' ' + entry.status) && !entry.exclusive ? `<p class="aura-availability">${escape(entry.rarity)}${entry.events.length && entry.simulatorName ? '. Available through its event settings in the simulator.' : ''}</p>` : '';
     const currentContent = `<div class="aura-detail__body">
-            <section class="changelog-release-group aura-description" aria-labelledby="description-title"><h2 id="description-title">${descriptionTruncated ? 'Description excerpt' : 'Description'}</h2>${descriptionText ? `<blockquote id="aura-description-text" data-aura-description>${rich.description(currentVersion || {description:descriptionText})}${descriptionTruncated ? '…' : ''}</blockquote><button class="interface-button interface-button--ghost aura-description__toggle" type="button" data-description-toggle aria-controls="aura-description-text" aria-expanded="false" hidden>Show More</button>` : '<p>The wiki does not currently record an aura description.</p>'}<a class="aura-source-link" href="${escape(entry.source)}${currentVersion?'?oldid='+currentVersion.revisionId:''}" target="_blank" rel="noopener">${descriptionTruncated ? 'Read the full description' : 'View the source'} on Sol's RNG Wiki ↗</a></section>
+            <section class="changelog-release-group aura-description" aria-labelledby="description-title"><h2 id="description-title">${descriptionTruncated ? 'Description excerpt' : 'Description'}</h2>${descriptionText ? `<blockquote id="aura-description-text" data-aura-description>${rich.description(currentVersion || {description:descriptionText})}${descriptionTruncated ? '…' : ''}</blockquote><button class="interface-button interface-button--ghost aura-description__toggle" type="button" data-description-toggle aria-controls="aura-description-text" aria-expanded="false" hidden>Show More</button>` : '<p>The wiki does not currently record an aura description.</p>'}${entry.wikiPending ? '<p>Wiki details are still in progress. Roll and collection details reflect Eon 1-30.</p>' : `<a class="aura-source-link" href="${escape(entry.source)}${currentVersion?'?oldid='+currentVersion.revisionId:''}" target="_blank" rel="noopener">${descriptionTruncated ? 'Read the full description' : 'View the source'} on Sol's RNG Wiki ↗</a>`}</section>
             <div class="aura-facts"><section class="changelog-release-group aura-fact"><h2>${rarityLabel}</h2><p class="aura-fact__odds">${escape(entry.rarityText)}</p>${entry.nativeRarity && !entry.exclusive ? `<p class="aura-fact__secondary">Native: ${rich.text(entry.nativeRarity)}</p>` : ''}${status}</section><section class="changelog-release-group aura-fact"><h2>${entry.obtainment ? 'How to obtain' : 'Where to roll'}</h2><p>${rich.text(where)}</p>${entry.events.length ? `<div class="aura-event"><h3>Event${entry.events.length > 1 ? 's' : ''}</h3><p>${escape(entry.events.join(' / '))}</p></div>` : ''}${entry.ignoreLuck ? '<p class="aura-fact__secondary">Fixed odds in the simulator; luck does not increase its chance.</p>' : ''}</section></div>
         </div>`;
     write(`auras/${entry.slug}/index.html`, `${head(entry.name, `${entry.name}: ${entry.rarityText}. ${entry.location}. Aura information and wiki description.`, '../../', entry.slug + '/')}
-<body data-aura-page="profile" data-aura-background="${entry.background ? '../../' + escape(entry.background) : ''}" data-aura-music="${entry.background ? '../../' + escape(musicForBackground.get(entry.background)) : ''}">
+<body data-aura-page="profile"${entry.biomes.includes('The Radiant Forest') ? ' data-aura-forced-time="night"' : ''} data-aura-background="${entry.background ? '../../' + escape(entry.background) : ''}" data-aura-music="${entry.background ? '../../' + escape(musicForBackground.get(entry.background)) : ''}">
 ${profileTitle(entry)}
 <div data-aura-shell>
-<header data-aura-fragment="header"><a href="../../index.html">Home</a></header>
+<header data-aura-fragment="header"><a href="../../">Home</a></header>
 <main id="main-content">
-    <nav class="aura-breadcrumb" aria-label="Breadcrumb"><a class="interface-button interface-button--ghost" href="../index.html">Auras</a><span aria-hidden="true">/</span><span aria-current="page">${escape(entry.name)}</span></nav>
+    <nav class="aura-breadcrumb" aria-label="Breadcrumb"><a class="interface-button interface-button--ghost" href="../">Auras</a><span aria-hidden="true">/</span><span aria-current="page">${escape(entry.name)}</span></nav>
     <article class="surface aura-detail">
         <header class="surface__header aura-detail__hero"><p class="resource-link__category">Aura profile / ${escape(entry.tier || entry.kind)}</p><h1>${titleArt(entry)}</h1><span class="surface__subtitle">${escape(entry.kind)}</span></header>
         ${mutationNavigation(entry)}
         ${renderHistory(entry,currentContent,history.profiles[entry.title],history.reviewedOn,version => version.label === 'Current' ? entry.background : backgroundFor(version.facts?.required) || entry.background,background => musicForBackground.get(background)||'')}
-        <footer data-aura-fragment="navigation"><a href="../index.html">← All auras</a><a href="../../index.html">Open simulator ↗</a></footer>
+        <footer data-aura-fragment="navigation"><a href="../">← All auras</a><a href="../../">Open simulator ↗</a></footer>
     </article>
-    <p class="aura-reference">Wiki reference reviewed ${reference.reviewedOn}. ${entry.simulatorName ? 'Roll details also reflect the simulator’s current aura registry.' : ''} <a href="${escape(entry.source)}?oldid=${entry.revisionId}" target="_blank" rel="noopener">Source revision ↗</a></p>
+    <p class="aura-reference">${entry.wikiPending ? 'Wiki details in progress. Eon 1-30 roll details are available in the simulator.' : `Wiki reference reviewed ${reference.reviewedOn}. ${entry.simulatorName ? 'Roll details also reflect the simulator’s current aura registry.' : ''} <a href="${escape(entry.source)}?oldid=${entry.revisionId}" target="_blank" rel="noopener">Source revision ↗</a>`}</p>
 </main>
 <footer data-aura-fragment="footer"><a href="../../data/auras/README.md">Attribution</a></footer>
 </div>

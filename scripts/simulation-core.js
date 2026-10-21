@@ -163,8 +163,38 @@ function createRollCursor(batches, sequencePlan = null) {
     };
 }
 
-function createRunner(batches, winCounts, sampleEntropy, breakthroughCounts = null, sequencePlan = null) {
+function createRadiantState() {
+    return { moons: 0, rewardClaimed: false };
+}
+
+function radiantUnlockMask(state) {
+    const moons = state.moons;
+    return ((moons & 3) === 3 ? 1 : 0)
+        | ((moons & 12) === 12 ? 2 : 0)
+        | ((moons & 112) === 112 ? 4 : 0);
+}
+
+// Both simulation modes use this selector so collection unlocks take effect on
+// the following roll, including across potion batches and separate runs.
+function createRadiantSelector(config, state, sampleEntropy) {
+    const moonBits = new Map(config.moonIndices.map((index, moon) => [index, 1 << moon]));
+    return batch => {
+        if (state.moons === 127 && !state.rewardClaimed) {
+            state.rewardClaimed = true;
+            return { auraIndex: config.rewardIndex, breakthroughIndex: -1 };
+        }
+        const combined = batch.radiantSelections[radiantUnlockMask(state)];
+        const selected = selectWeightedIndex(combined.selection, sampleEntropy());
+        const auraIndex = selected < 0 ? -1 : combined.auraIndices[selected];
+        if (moonBits.has(auraIndex)) state.moons |= moonBits.get(auraIndex);
+        return { auraIndex, breakthroughIndex: selected < 0 ? -1 : combined.breakthroughIndices[selected] };
+    };
+}
+
+function createRunner(batches, winCounts, sampleEntropy, breakthroughCounts = null, sequencePlan = null, radiant = null) {
     const cursor = createRollCursor(batches, sequencePlan);
+    const radiantSelect = radiant ? createRadiantSelector(radiant.config, radiant.state, sampleEntropy) : null;
+    let checkpoint = null;
     // Validate mappings once per run, outside the per-roll hot loop.
     const mappings = batches.map(batch => {
         const validIndex = index => Number.isInteger(index) && index >= 0 && index < winCounts.length ? index : -1;
@@ -176,13 +206,38 @@ function createRunner(batches, winCounts, sampleEntropy, breakthroughCounts = nu
     return {
         get currentRoll() { return cursor.currentRoll; },
         get done() { return cursor.done; },
+        get checkpoint() { return checkpoint; },
         runSlice(budgetMs, now) {
+            checkpoint = null;
             const deadline = now() + budgetMs;
             do {
                 const count = Math.min(4096, cursor.total - cursor.currentRoll);
                 for (let roll = 0; roll < count; roll++) {
-                    const batchIndex = cursor.next(sampleEntropy);
+                    let batchIndex = cursor.next(sampleEntropy);
+                    if (radiant?.state.moons === 127 && !radiant.state.rewardClaimed
+                        && Number.isInteger(radiant.rewardBatchIndex)) {
+                        batchIndex = radiant.rewardBatchIndex;
+                    }
                     const batch = batches[batchIndex];
+                    if (radiantSelect) {
+                        const previousMoons = radiant.state.moons;
+                        const previousReward = radiant.state.rewardClaimed;
+                        const { auraIndex, breakthroughIndex } = radiantSelect(batch);
+                        if (auraIndex >= 0) {
+                            winCounts[auraIndex]++;
+                            batch.winCounts[auraIndex]++;
+                        }
+                        if (breakthroughIndex >= 0) {
+                            batch.breakthroughCounts[breakthroughIndex]++;
+                            if (breakthroughCounts) breakthroughCounts[breakthroughIndex]++;
+                        }
+                        if (radiant.checkpoints) {
+                            if (!previousReward && radiant.state.rewardClaimed) checkpoint = 'radiant-reward';
+                            else if (previousMoons !== 127 && radiant.state.moons === 127) checkpoint = 'radiant-ready';
+                            if (checkpoint) return cursor.currentRoll;
+                        }
+                        continue;
+                    }
                     const selection = batch.combinedSelection.selection;
                     const mapping = mappings[batchIndex];
                     const selected = selectWeightedIndex(selection, sampleEntropy());
@@ -204,5 +259,5 @@ function createRunner(batches, winCounts, sampleEntropy, breakthroughCounts = nu
     };
 }
 
-global.SimulationCore = Object.freeze({ buildWeightedSelection, selectWeightedIndex, buildCumulativeSelectionFromProbabilities, buildCombinedSimulationSelection, createRollCursor, createRunner });
+global.SimulationCore = Object.freeze({ buildWeightedSelection, selectWeightedIndex, buildCumulativeSelectionFromProbabilities, buildCombinedSimulationSelection, createRollCursor, createRunner, createRadiantState, radiantUnlockMask, createRadiantSelector });
 })(globalThis);

@@ -95,8 +95,8 @@
         return { basicMultiplier, bonusMultiplier: bonus ? multiplier : 1, extraLuck,
             bonus, rainyNative: bonus && ['tide', 'blessed-tide'].includes(leftId) };
     }
-    function totalLuck(basic, special, finalMultiplier, state) {
-        return ((basic + state.extraLuck) * state.basicMultiplier * state.bonusMultiplier + special) * finalMultiplier;
+    function totalLuck(basic, special, finalMultiplier, state, basicMultiplier = 1) {
+        return ((basic + state.extraLuck) * basicMultiplier * state.basicMultiplier * state.bonusMultiplier + special) * finalMultiplier;
     }
     function schedule(leftId) {
         const states = [];

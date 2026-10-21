@@ -6,10 +6,10 @@ const root = path.join(__dirname, '..');
 const script = fs.readFileSync(path.join(root, 'scripts/aura-video-player.js'), 'utf8');
 const context = {
     URL, Map, AbortController,
-    location: { href: 'https://example.com/simulator/auras/poseidon/index.html' },
+    location: { href: 'https://example.com/simulator/auras/poseidon/' },
     document: {
         currentScript: { src: 'https://example.com/simulator/scripts/aura-video-player.js' },
-        baseURI: 'https://example.com/simulator/auras/poseidon/index.html',
+        baseURI: 'https://example.com/simulator/auras/poseidon/',
         title: 'Poseidon · Aura profile',
         querySelectorAll: () => [], addEventListener() {}
     },
@@ -19,8 +19,11 @@ context.window = context;
 context.parent = context;
 vm.runInNewContext(script, context);
 const player = context.AuraVideoPlayer;
-for (const route of ['/simulator/', '/simulator/index.html', '/simulator/index.html#versionInfoButton', '/simulator/auras/index.html?q=rainy&page=2&scroll=450', '/simulator/auras/poseidon/index.html?return=%2Fsimulator%2Fauras%2Findex.html']) {
+for (const route of ['/simulator/', '/simulator/#versionInfoButton', '/simulator/auras/?q=rainy&page=2&scroll=450', '/simulator/auras/poseidon/?return=%2Fsimulator%2Fauras%2F']) {
     assert.equal(player.destination(route)?.href, 'https://example.com' + route, 'PiP navigation must include Home and preserve directory context');
+}
+for (const [old, clean] of [['/simulator/index.html#versionInfoButton','/simulator/#versionInfoButton'],['/simulator/auras','/simulator/auras/'],['/simulator/auras/index','/simulator/auras/'],['/simulator/auras/poseidon/index.html?q=jade','/simulator/auras/poseidon/?q=jade']]) {
+    assert.equal(player.destination(old)?.href,'https://example.com'+clean,'PiP navigation canonicalizes existing page links');
 }
 for (const route of ['https://other.example/simulator/auras/index.html', '//other.example/simulator/index.html', 'https://user:pass@example.com/simulator/auras/index.html', '/outside/index.html', '/simulator/auras-other/index.html', 'javascript:alert(1)']) {
     assert.equal(player.destination(route), null, 'Do not navigate an unrelated destination through the persistent player');
@@ -31,9 +34,9 @@ for (const source of ['https://other.example/video.mp4', 'https://static.wikia.n
 }
 assert.equal(player.mediaSource('/simulator/files/video.mp4'), 'https://example.com/simulator/files/video.mp4');
 let count = 0;
-for (const directory of fs.readdirSync(path.join(root, 'auras'), { withFileTypes: true })) {
-    if (!directory.isDirectory()) continue;
-    const html = fs.readFileSync(path.join(root, 'auras', directory.name, 'index.html'), 'utf8');
+const catalogue = JSON.parse(fs.readFileSync(path.join(root, 'data/auras/catalogue.json'), 'utf8'));
+for (const aura of catalogue) {
+    const html = fs.readFileSync(path.join(root, 'auras', aura.slug, 'index.html'), 'utf8');
     for (const match of html.matchAll(/<video\b[^>]*>/g)) {
         const tag = match[0];
         assert(!/\scontrols(?:\s|=|>)/.test(tag), 'Generated aura videos use custom controls');

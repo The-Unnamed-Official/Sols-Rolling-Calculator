@@ -1,11 +1,12 @@
 /* Local profile links shared by the live and aggregated roll feeds. */
 (() => {
     'use strict';
+    const root = new URL('../', document.currentScript.src);
     const normalize = name => String(name || '').replace(/\s+-\s+[\d,]+$/, '').trim().toLowerCase().replace(/[^\p{L}\p{N}★]/gu, '');
     const escape = value => String(value).replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[char]);
     const href = name => {
         const slug = globalThis.AuraRoutes?.[normalize(name)];
-        return slug ? new URL(`auras/${slug}/index.html`, document.baseURI).href : '';
+        return slug ? new URL(`auras/${slug}/`, root).href : '';
     };
     const wrap = (name, markup) => {
         const url = href(name);

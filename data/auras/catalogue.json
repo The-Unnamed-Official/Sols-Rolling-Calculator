@@ -1070,9 +1070,9 @@
     "description": "The meaning carried by a beautiful bouquet of flowers can be many, and its character often changes depending on the color.",
     "descriptionTruncated": false,
     "rarity": "1 in 3,700",
-    "nativeRarity": "",
+    "nativeRarity": "1 in 1,850",
     "tier": "Epic",
-    "required": "",
+    "required": "The Lost Forest",
     "obtainment": "",
     "categories": [
       "Epic",
@@ -1087,11 +1087,15 @@
     "rarityValue": 3700,
     "rarityText": "1 in 3,700",
     "tierKey": "epic",
-    "kind": "Standard",
-    "location": "Any biome",
-    "nativeBiomes": [],
-    "biomes": [],
-    "background": "",
+    "kind": "Biome native",
+    "location": "The Lost Forest",
+    "nativeBiomes": [
+      "The Lost Forest"
+    ],
+    "biomes": [
+      "The Lost Forest"
+    ],
+    "background": "files/images/backgrounds/lostForestBiomeImage.png",
     "simulatorName": "Flora - 3,700",
     "simulatorChance": 3700,
     "ignoreLuck": false
@@ -1241,9 +1245,9 @@
     "description": "Empty",
     "descriptionTruncated": false,
     "rarity": "1 in 5,000",
-    "nativeRarity": "",
+    "nativeRarity": "1 in 2,500",
     "tier": "Epic",
-    "required": "",
+    "required": "The Lost Forest",
     "obtainment": "",
     "categories": [
       "Auras",
@@ -1258,11 +1262,15 @@
     "rarityValue": 5000,
     "rarityText": "1 in 5,000",
     "tierKey": "epic",
-    "kind": "Standard",
-    "location": "Any biome",
-    "nativeBiomes": [],
-    "biomes": [],
-    "background": "",
+    "kind": "Biome native",
+    "location": "The Lost Forest",
+    "nativeBiomes": [
+      "The Lost Forest"
+    ],
+    "biomes": [
+      "The Lost Forest"
+    ],
+    "background": "files/images/backgrounds/lostForestBiomeImage.png",
     "simulatorName": "Flutter - 5,000",
     "simulatorChance": 5000,
     "ignoreLuck": false
@@ -1297,6 +1305,40 @@
     "biomes": [],
     "background": "",
     "simulatorName": "Targeted - 5,000",
+    "simulatorChance": 5000,
+    "ignoreLuck": false
+  },
+  {
+    "title": "Watcher",
+    "source": "",
+    "revisionId": null,
+    "description": "",
+    "descriptionTruncated": false,
+    "rarity": "1 in 5,000",
+    "nativeRarity": "",
+    "tier": "Epic",
+    "required": "The Radiant Forest",
+    "exclusive": true,
+    "events": [],
+    "categories": [],
+    "obtainment": "",
+    "wikiPending": true,
+    "mediaPending": true,
+    "name": "Watcher",
+    "slug": "watcher",
+    "rarityValue": 5000,
+    "rarityText": "1 in 5,000",
+    "tierKey": "epic",
+    "kind": "Biome exclusive",
+    "location": "The Radiant Forest",
+    "nativeBiomes": [
+      "The Radiant Forest"
+    ],
+    "biomes": [
+      "The Radiant Forest"
+    ],
+    "background": "files/images/backgrounds/radiantForestBiomeImage.png",
+    "simulatorName": "Watcher - 5,000",
     "simulatorChance": 5000,
     "ignoreLuck": false
   },
@@ -1401,6 +1443,40 @@
     "biomes": [],
     "background": "",
     "simulatorName": "Doodle - 7,500",
+    "simulatorChance": 7500,
+    "ignoreLuck": false
+  },
+  {
+    "title": "Rekindle",
+    "source": "",
+    "revisionId": null,
+    "description": "",
+    "descriptionTruncated": false,
+    "rarity": "1 in 7,500",
+    "nativeRarity": "",
+    "tier": "Epic",
+    "required": "The Radiant Forest",
+    "exclusive": true,
+    "events": [],
+    "categories": [],
+    "obtainment": "",
+    "wikiPending": true,
+    "mediaPending": true,
+    "name": "Rekindle",
+    "slug": "rekindle",
+    "rarityValue": 7500,
+    "rarityText": "1 in 7,500",
+    "tierKey": "epic",
+    "kind": "Biome exclusive",
+    "location": "The Radiant Forest",
+    "nativeBiomes": [
+      "The Radiant Forest"
+    ],
+    "biomes": [
+      "The Radiant Forest"
+    ],
+    "background": "files/images/backgrounds/radiantForestBiomeImage.png",
+    "simulatorName": "Rekindle - 7,500",
     "simulatorChance": 7500,
     "ignoreLuck": false
   },
@@ -1827,9 +1903,9 @@
     "description": "Empty",
     "descriptionTruncated": false,
     "rarity": "1 in 25,000",
-    "nativeRarity": "",
+    "nativeRarity": "1 in 12,500",
     "tier": "Unique",
-    "required": "",
+    "required": "The Lost Forest",
     "obtainment": "",
     "categories": [
       "Unique",
@@ -1844,11 +1920,15 @@
     "rarityValue": 25000,
     "rarityText": "1 in 25,000",
     "tierKey": "unique",
-    "kind": "Standard",
-    "location": "Any biome",
-    "nativeBiomes": [],
-    "biomes": [],
-    "background": "",
+    "kind": "Biome native",
+    "location": "The Lost Forest",
+    "nativeBiomes": [
+      "The Lost Forest"
+    ],
+    "biomes": [
+      "The Lost Forest"
+    ],
+    "background": "files/images/backgrounds/lostForestBiomeImage.png",
     "simulatorName": "Marsh - 29,000",
     "simulatorChance": 25000,
     "ignoreLuck": false
@@ -1961,7 +2041,7 @@
     "rarity": "1 in 50,000",
     "nativeRarity": "1 in 5,000",
     "tier": "Unique",
-    "required": "Nighttime",
+    "required": "Nighttime / The Radiant Forest",
     "obtainment": "",
     "categories": [
       "Unique",
@@ -1978,12 +2058,14 @@
     "rarityText": "1 in 50,000",
     "tierKey": "unique",
     "kind": "Biome native",
-    "location": "Nighttime",
+    "location": "Nighttime / The Radiant Forest",
     "nativeBiomes": [
-      "Nighttime"
+      "Nighttime",
+      "The Radiant Forest"
     ],
     "biomes": [
-      "Nighttime"
+      "Nighttime",
+      "The Radiant Forest"
     ],
     "background": "files/images/backgrounds/normalBiomeImageN.png",
     "simulatorName": "Lunar - 50,000",
@@ -2699,9 +2781,9 @@
     "description": "This, is the name of a legendary man who approaches ones lost in the vast forest and gives directions. He is kind, and knows the",
     "descriptionTruncated": true,
     "rarity": "1 in 125,000",
-    "nativeRarity": "",
+    "nativeRarity": "1 in 62,500",
     "tier": "Legendary",
-    "required": "",
+    "required": "The Radiant Forest",
     "obtainment": "",
     "categories": [
       "Legendary",
@@ -2716,11 +2798,15 @@
     "rarityValue": 125000,
     "rarityText": "1 in 125,000",
     "tierKey": "legendary",
-    "kind": "Standard",
-    "location": "Any biome",
-    "nativeBiomes": [],
-    "biomes": [],
-    "background": "",
+    "kind": "Biome native",
+    "location": "The Radiant Forest",
+    "nativeBiomes": [
+      "The Radiant Forest"
+    ],
+    "biomes": [
+      "The Radiant Forest"
+    ],
+    "background": "files/images/backgrounds/radiantForestBiomeImage.png",
     "simulatorName": "Jade - 125,000",
     "simulatorChance": 125000,
     "ignoreLuck": false
@@ -2905,9 +2991,9 @@
     "description": "Empty",
     "descriptionTruncated": false,
     "rarity": "1 in 333,333",
-    "nativeRarity": "",
+    "nativeRarity": "1 in 166,666",
     "tier": "Legendary",
-    "required": "",
+    "required": "The Lost Forest",
     "obtainment": "",
     "categories": [
       "Legendary",
@@ -2922,11 +3008,15 @@
     "rarityValue": 333333,
     "rarityText": "1 in 333,333",
     "tierKey": "legendary",
-    "kind": "Standard",
-    "location": "Any biome",
-    "nativeBiomes": [],
-    "biomes": [],
-    "background": "",
+    "kind": "Biome native",
+    "location": "The Lost Forest",
+    "nativeBiomes": [
+      "The Lost Forest"
+    ],
+    "biomes": [
+      "The Lost Forest"
+    ],
+    "background": "files/images/backgrounds/lostForestBiomeImage.png",
     "simulatorName": "Lantern - 333,333",
     "simulatorChance": 333333,
     "ignoreLuck": false
@@ -3075,6 +3165,44 @@
     "ignoreLuck": false
   },
   {
+    "title": "Artifact",
+    "source": "https://sol-rng.fandom.com/wiki/Artifact",
+    "revisionId": 153691,
+    "description": "A small yet significant pebble, carrying with it what seems to be remains of Magic.",
+    "descriptionTruncated": false,
+    "rarity": "1 in 500,000",
+    "nativeRarity": "1 in 250,000",
+    "tier": "Legendary",
+    "required": "The Lost Forest",
+    "obtainment": "",
+    "categories": [
+      "Auras",
+      "Legendary",
+      "Biome-Native"
+    ],
+    "notice": "",
+    "status": "",
+    "exclusive": false,
+    "events": [],
+    "name": "Artifact",
+    "slug": "artifact",
+    "rarityValue": 500000,
+    "rarityText": "1 in 500,000",
+    "tierKey": "legendary",
+    "kind": "Biome native",
+    "location": "The Lost Forest",
+    "nativeBiomes": [
+      "The Lost Forest"
+    ],
+    "biomes": [
+      "The Lost Forest"
+    ],
+    "background": "files/images/backgrounds/lostForestBiomeImage.png",
+    "simulatorName": "Artifact - 500,000",
+    "simulatorChance": 500000,
+    "ignoreLuck": false
+  },
+  {
     "title": "Raven",
     "source": "https://sol-rng.fandom.com/wiki/Raven",
     "revisionId": 150789,
@@ -3110,6 +3238,44 @@
     "background": "files/images/backgrounds/limboImage.jpg",
     "simulatorName": "Raven - 500,000",
     "simulatorChance": 500000,
+    "ignoreLuck": false
+  },
+  {
+    "title": "Veylune",
+    "source": "https://sol-rng.fandom.com/wiki/Veylune",
+    "revisionId": 153690,
+    "description": "Calmly resting in a place anonymously to others, letting your thoughts relax as the day gets brighter.",
+    "descriptionTruncated": false,
+    "rarity": "1 in 555,000",
+    "nativeRarity": "1 in 277,500",
+    "tier": "Legendary",
+    "required": "The Lost Forest",
+    "obtainment": "",
+    "categories": [
+      "Auras",
+      "Legendary",
+      "Biome-Native"
+    ],
+    "notice": "",
+    "status": "",
+    "exclusive": false,
+    "events": [],
+    "name": "Veylune",
+    "slug": "veylune",
+    "rarityValue": 555000,
+    "rarityText": "1 in 555,000",
+    "tierKey": "legendary",
+    "kind": "Biome native",
+    "location": "The Lost Forest",
+    "nativeBiomes": [
+      "The Lost Forest"
+    ],
+    "biomes": [
+      "The Lost Forest"
+    ],
+    "background": "files/images/backgrounds/lostForestBiomeImage.png",
+    "simulatorName": "Veylune - 555,000",
+    "simulatorChance": 555000,
     "ignoreLuck": false
   },
   {
@@ -3190,9 +3356,9 @@
     "description": "Long, long ago, there was a 'boy' who stayed alone in the empty space of a deep cave. He is still waiting for the day",
     "descriptionTruncated": true,
     "rarity": "1 in 850,000",
-    "nativeRarity": "",
+    "nativeRarity": "1 in 425,000",
     "tier": "Legendary",
-    "required": "",
+    "required": "The Radiant Forest",
     "obtainment": "",
     "categories": [
       "Legendary",
@@ -3207,11 +3373,15 @@
     "rarityValue": 850000,
     "rarityText": "1 in 850,000",
     "tierKey": "legendary",
-    "kind": "Standard",
-    "location": "Any biome",
-    "nativeBiomes": [],
-    "biomes": [],
-    "background": "",
+    "kind": "Biome native",
+    "location": "The Radiant Forest",
+    "nativeBiomes": [
+      "The Radiant Forest"
+    ],
+    "biomes": [
+      "The Radiant Forest"
+    ],
+    "background": "files/images/backgrounds/radiantForestBiomeImage.png",
     "simulatorName": "Kyawthuite - 850,000",
     "simulatorChance": 850000,
     "ignoreLuck": false
@@ -3725,9 +3895,9 @@
     "description": "i wanna be the bug!",
     "descriptionTruncated": false,
     "rarity": "1 in 2,000,000",
-    "nativeRarity": "",
+    "nativeRarity": "1 in 1,000,000",
     "tier": "Mythic",
-    "required": "",
+    "required": "The Lost Forest",
     "obtainment": "",
     "categories": [
       "Mythic",
@@ -3742,11 +3912,15 @@
     "rarityValue": 2000000,
     "rarityText": "1 in 2,000,000",
     "tierKey": "mythic",
-    "kind": "Standard",
-    "location": "Any biome",
-    "nativeBiomes": [],
-    "biomes": [],
-    "background": "",
+    "kind": "Biome native",
+    "location": "The Lost Forest",
+    "nativeBiomes": [
+      "The Lost Forest"
+    ],
+    "biomes": [
+      "The Lost Forest"
+    ],
+    "background": "files/images/backgrounds/lostForestBiomeImage.png",
     "simulatorName": "Flutter : Buggify - 2,000,000",
     "simulatorChance": 2000000,
     "ignoreLuck": false
@@ -4360,7 +4534,9 @@
     "tierKey": "mythic",
     "kind": "Biome native",
     "location": "Heaven",
-    "nativeBiomes": [],
+    "nativeBiomes": [
+      "Heaven"
+    ],
     "biomes": [
       "Heaven"
     ],
@@ -4416,7 +4592,7 @@
     "rarity": "1 in 5,000,000",
     "nativeRarity": "1 in 500,000",
     "tier": "Mythic",
-    "required": "Nighttime",
+    "required": "Nighttime / The Radiant Forest",
     "obtainment": "",
     "categories": [
       "Mythic",
@@ -4433,15 +4609,51 @@
     "rarityText": "1 in 5,000,000",
     "tierKey": "mythic",
     "kind": "Biome native",
-    "location": "Nighttime",
+    "location": "Nighttime / The Radiant Forest",
     "nativeBiomes": [
-      "Nighttime"
+      "Nighttime",
+      "The Radiant Forest"
     ],
     "biomes": [
-      "Nighttime"
+      "Nighttime",
+      "The Radiant Forest"
     ],
     "background": "files/images/backgrounds/normalBiomeImageN.png",
     "simulatorName": "Lunar : Full Moon - 5,000,000",
+    "simulatorChance": 5000000,
+    "ignoreLuck": false
+  },
+  {
+    "title": "Moonchild",
+    "source": "",
+    "revisionId": null,
+    "description": "",
+    "descriptionTruncated": false,
+    "rarity": "1 in 5,000,000",
+    "nativeRarity": "",
+    "tier": "Mythic",
+    "required": "The Radiant Forest",
+    "exclusive": true,
+    "events": [],
+    "categories": [],
+    "obtainment": "",
+    "wikiPending": true,
+    "mediaPending": true,
+    "name": "Moonchild",
+    "slug": "moonchild",
+    "rarityValue": 5000000,
+    "rarityText": "1 in 5,000,000",
+    "tierKey": "mythic",
+    "kind": "Biome exclusive",
+    "location": "The Radiant Forest",
+    "nativeBiomes": [
+      "The Radiant Forest"
+    ],
+    "biomes": [
+      "The Radiant Forest"
+    ],
+    "background": "files/images/backgrounds/radiantForestBiomeImage.png",
+    "simulatorName": "Moonchild - 5,000,000",
     "simulatorChance": 5000000,
     "ignoreLuck": false
   },
@@ -4531,7 +4743,7 @@
     "rarity": "1 in 6,000,000",
     "nativeRarity": "1 in 600,000",
     "tier": "Mythic",
-    "required": "Nighttime",
+    "required": "Nighttime / The Radiant Forest",
     "obtainment": "",
     "categories": [
       "Mythic",
@@ -4548,12 +4760,14 @@
     "rarityText": "1 in 6,000,000",
     "tierKey": "mythic",
     "kind": "Biome native",
-    "location": "Nighttime",
+    "location": "Nighttime / The Radiant Forest",
     "nativeBiomes": [
-      "Nighttime"
+      "Nighttime",
+      "The Radiant Forest"
     ],
     "biomes": [
-      "Nighttime"
+      "Nighttime",
+      "The Radiant Forest"
     ],
     "background": "files/images/backgrounds/normalBiomeImageN.png",
     "simulatorName": "Twilight - 6,000,000",
@@ -5207,9 +5421,9 @@
     "description": "This, is the name of a legendary man who approaches ones lost in the vast forest and gives directions. He is kind, and knows the",
     "descriptionTruncated": true,
     "rarity": "1 in 9,250,000",
-    "nativeRarity": "",
+    "nativeRarity": "1 in 4,625,000",
     "tier": "Mythic",
-    "required": "",
+    "required": "The Radiant Forest",
     "obtainment": "",
     "categories": [
       "Auras",
@@ -5224,11 +5438,15 @@
     "rarityValue": 9250000,
     "rarityText": "1 in 9,250,000",
     "tierKey": "mythic",
-    "kind": "Standard",
-    "location": "Any biome",
-    "nativeBiomes": [],
-    "biomes": [],
-    "background": "",
+    "kind": "Biome native",
+    "location": "The Radiant Forest",
+    "nativeBiomes": [
+      "The Radiant Forest"
+    ],
+    "biomes": [
+      "The Radiant Forest"
+    ],
+    "background": "files/images/backgrounds/radiantForestBiomeImage.png",
     "simulatorName": "Jade : Purity - 9,250,000",
     "simulatorChance": 9250000,
     "ignoreLuck": false
@@ -5718,7 +5936,7 @@
     "rarity": "1 in 17,000,000",
     "nativeRarity": "1 in 1,700,000",
     "tier": "Exalted",
-    "required": "Nighttime",
+    "required": "Nighttime / The Radiant Forest",
     "obtainment": "",
     "categories": [
       "Exalted",
@@ -5735,12 +5953,14 @@
     "rarityText": "1 in 17,000,000",
     "tierKey": "exalted",
     "kind": "Biome native",
-    "location": "Nighttime",
+    "location": "Nighttime / The Radiant Forest",
     "nativeBiomes": [
-      "Nighttime"
+      "Nighttime",
+      "The Radiant Forest"
     ],
     "biomes": [
-      "Nighttime"
+      "Nighttime",
+      "The Radiant Forest"
     ],
     "background": "files/images/backgrounds/normalBiomeImageN.png",
     "simulatorName": "Lullaby - 17,000,000",
@@ -6073,9 +6293,9 @@
     "description": "The meaning carried by a beautiful bouquet of flowers can be many, and its character often changes depending on the color.",
     "descriptionTruncated": false,
     "rarity": "1 in 32,800,000",
-    "nativeRarity": "",
+    "nativeRarity": "1 in 16,400,000",
     "tier": "Exalted",
-    "required": "",
+    "required": "The Lost Forest",
     "obtainment": "",
     "categories": [
       "Exalted",
@@ -6090,11 +6310,15 @@
     "rarityValue": 32800000,
     "rarityText": "1 in 32,800,000",
     "tierKey": "exalted",
-    "kind": "Standard",
-    "location": "Any biome",
-    "nativeBiomes": [],
-    "biomes": [],
-    "background": "",
+    "kind": "Biome native",
+    "location": "The Lost Forest",
+    "nativeBiomes": [
+      "The Lost Forest"
+    ],
+    "biomes": [
+      "The Lost Forest"
+    ],
+    "background": "files/images/backgrounds/lostForestBiomeImage.png",
     "simulatorName": "Flora : Florest - 32,800,000",
     "simulatorChance": 32800000,
     "ignoreLuck": false
@@ -6276,6 +6500,40 @@
     "ignoreLuck": false
   },
   {
+    "title": "Cor Lunae",
+    "source": "",
+    "revisionId": null,
+    "description": "",
+    "descriptionTruncated": false,
+    "rarity": "1 in 50,000,000",
+    "nativeRarity": "",
+    "tier": "Exalted",
+    "required": "The Radiant Forest",
+    "exclusive": true,
+    "events": [],
+    "categories": [],
+    "obtainment": "",
+    "wikiPending": true,
+    "mediaPending": true,
+    "name": "Cor Lunae",
+    "slug": "cor-lunae",
+    "rarityValue": 50000000,
+    "rarityText": "1 in 50,000,000",
+    "tierKey": "exalted",
+    "kind": "Biome exclusive",
+    "location": "The Radiant Forest",
+    "nativeBiomes": [
+      "The Radiant Forest"
+    ],
+    "biomes": [
+      "The Radiant Forest"
+    ],
+    "background": "files/images/backgrounds/radiantForestBiomeImage.png",
+    "simulatorName": "Cor Lunae - 50,000,000",
+    "simulatorChance": 50000000,
+    "ignoreLuck": false
+  },
+  {
     "title": "Matrix",
     "source": "https://sol-rng.fandom.com/wiki/Matrix",
     "revisionId": 147040,
@@ -6320,9 +6578,9 @@
     "description": "After the ancient civilization fell, what was once an amplifier for magic had nowhere else to go Decades after the downfall of the civilization all",
     "descriptionTruncated": true,
     "rarity": "1 in 50,000,000",
-    "nativeRarity": "",
+    "nativeRarity": "1 in 25,000,000",
     "tier": "Exalted",
-    "required": "",
+    "required": "The Lost Forest",
     "obtainment": "",
     "categories": [
       "Exalted",
@@ -6338,11 +6596,15 @@
     "rarityValue": 50000000,
     "rarityText": "1 in 50,000,000",
     "tierKey": "exalted",
-    "kind": "Standard",
-    "location": "Any biome",
-    "nativeBiomes": [],
-    "biomes": [],
-    "background": "",
+    "kind": "Biome native",
+    "location": "The Lost Forest",
+    "nativeBiomes": [
+      "The Lost Forest"
+    ],
+    "biomes": [
+      "The Lost Forest"
+    ],
+    "background": "files/images/backgrounds/lostForestBiomeImage.png",
     "simulatorName": "Runic - 50,000,000",
     "simulatorChance": 50000000,
     "ignoreLuck": false
@@ -6389,7 +6651,7 @@
     "rarity": "1 in 60,000,000",
     "nativeRarity": "1 in 6,000,000",
     "tier": "Exalted",
-    "required": "Nighttime",
+    "required": "Nighttime / The Radiant Forest",
     "obtainment": "",
     "categories": [
       "Exalted",
@@ -6406,12 +6668,14 @@
     "rarityText": "1 in 60,000,000",
     "tierKey": "exalted",
     "kind": "Biome native",
-    "location": "Nighttime",
+    "location": "Nighttime / The Radiant Forest",
     "nativeBiomes": [
-      "Nighttime"
+      "Nighttime",
+      "The Radiant Forest"
     ],
     "biomes": [
-      "Nighttime"
+      "Nighttime",
+      "The Radiant Forest"
     ],
     "background": "files/images/backgrounds/normalBiomeImageN.png",
     "simulatorName": "Twilight : Iridescent Memory - 60,000,000",
@@ -6541,7 +6805,7 @@
     "rarity": "1 in 77,000,000",
     "nativeRarity": "1 in 7,700,000",
     "tier": "Exalted",
-    "required": "Nighttime",
+    "required": "Nighttime / The Radiant Forest",
     "obtainment": "",
     "categories": [
       "Exalted",
@@ -6558,12 +6822,14 @@
     "rarityText": "1 in 77,000,000",
     "tierKey": "exalted",
     "kind": "Biome native",
-    "location": "Nighttime",
+    "location": "Nighttime / The Radiant Forest",
     "nativeBiomes": [
-      "Nighttime"
+      "Nighttime",
+      "The Radiant Forest"
     ],
     "biomes": [
-      "Nighttime"
+      "Nighttime",
+      "The Radiant Forest"
     ],
     "background": "files/images/backgrounds/normalBiomeImageN.png",
     "simulatorName": "Melodic : Serenade - 77,000,000",
@@ -6833,9 +7099,9 @@
     "description": "Decades after the downfall of the Ancient Civilization, the magical rune kept pushing, using every last drop of energy it had left. What was once",
     "descriptionTruncated": true,
     "rarity": "1 in 87,388,744",
-    "nativeRarity": "",
+    "nativeRarity": "1 in 43,694,372",
     "tier": "Exalted",
-    "required": "",
+    "required": "The Lost Forest",
     "obtainment": "",
     "categories": [
       "Auras",
@@ -6850,11 +7116,15 @@
     "rarityValue": 87388744,
     "rarityText": "1 in 87,388,744",
     "tierKey": "exalted",
-    "kind": "Standard",
-    "location": "Any biome",
-    "nativeBiomes": [],
-    "biomes": [],
-    "background": "",
+    "kind": "Biome native",
+    "location": "The Lost Forest",
+    "nativeBiomes": [
+      "The Lost Forest"
+    ],
+    "biomes": [
+      "The Lost Forest"
+    ],
+    "background": "files/images/backgrounds/lostForestBiomeImage.png",
     "simulatorName": "Runic : Wilt - 87,388,744",
     "simulatorChance": 87388744,
     "ignoreLuck": false
@@ -7077,9 +7347,9 @@
     "description": "Lily Symbolizes pure whiteness, untainted by anything else. Pure silver petals illuminate the wind and guide lost waves.",
     "descriptionTruncated": false,
     "rarity": "1 in 112,000,000",
-    "nativeRarity": "",
+    "nativeRarity": "1 in 56,000,000",
     "tier": "Glorious",
-    "required": "",
+    "required": "The Lost Forest",
     "obtainment": "",
     "categories": [
       "Glorious",
@@ -7094,11 +7364,15 @@
     "rarityValue": 112000000,
     "rarityText": "1 in 112,000,000",
     "tierKey": "glorious",
-    "kind": "Standard",
-    "location": "Any biome",
-    "nativeBiomes": [],
-    "biomes": [],
-    "background": "",
+    "kind": "Biome native",
+    "location": "The Lost Forest",
+    "nativeBiomes": [
+      "The Lost Forest"
+    ],
+    "biomes": [
+      "The Lost Forest"
+    ],
+    "background": "files/images/backgrounds/lostForestBiomeImage.png",
     "simulatorName": "Lily - 112,000,000",
     "simulatorChance": 112000000,
     "ignoreLuck": false
@@ -7699,7 +7973,7 @@
     "rarity": "1 in 315,000,000",
     "nativeRarity": "1 in 31,500,000",
     "tier": "Glorious",
-    "required": "Nighttime",
+    "required": "Nighttime / The Radiant Forest",
     "obtainment": "",
     "categories": [
       "Auras",
@@ -7716,12 +7990,14 @@
     "rarityText": "1 in 315,000,000",
     "tierKey": "glorious",
     "kind": "Biome native",
-    "location": "Nighttime",
+    "location": "Nighttime / The Radiant Forest",
     "nativeBiomes": [
-      "Nighttime"
+      "Nighttime",
+      "The Radiant Forest"
     ],
     "biomes": [
-      "Nighttime"
+      "Nighttime",
+      "The Radiant Forest"
     ],
     "background": "files/images/backgrounds/normalBiomeImageN.png",
     "simulatorName": "Dreamer - 315,000,000",
@@ -7735,9 +8011,9 @@
     "description": "Empty",
     "descriptionTruncated": false,
     "rarity": "1 in 315,000,000",
-    "nativeRarity": "",
+    "nativeRarity": "1 in 157,500,000",
     "tier": "Glorious",
-    "required": "",
+    "required": "The Lost Forest",
     "obtainment": "",
     "categories": [
       "Auras",
@@ -7752,11 +8028,15 @@
     "rarityValue": 315000000,
     "rarityText": "1 in 315,000,000",
     "tierKey": "glorious",
-    "kind": "Standard",
-    "location": "Any biome",
-    "nativeBiomes": [],
-    "biomes": [],
-    "background": "",
+    "kind": "Biome native",
+    "location": "The Lost Forest",
+    "nativeBiomes": [
+      "The Lost Forest"
+    ],
+    "biomes": [
+      "The Lost Forest"
+    ],
+    "background": "files/images/backgrounds/lostForestBiomeImage.png",
     "simulatorName": "Perpetual - 315,000,000",
     "simulatorChance": 315000000,
     "ignoreLuck": false
@@ -7949,9 +8229,9 @@
     "description": "The meaning carried by a beautiful bouquet of flowers can be many, and its character often changes depending on the color.",
     "descriptionTruncated": false,
     "rarity": "1 in 370,073,730",
-    "nativeRarity": "",
+    "nativeRarity": "1 in 185,036,865",
     "tier": "Glorious",
-    "required": "",
+    "required": "The Lost Forest",
     "obtainment": "",
     "categories": [
       "Auras",
@@ -7966,11 +8246,15 @@
     "rarityValue": 370073730,
     "rarityText": "1 in 370,073,730",
     "tierKey": "glorious",
-    "kind": "Standard",
-    "location": "Any biome",
-    "nativeBiomes": [],
-    "biomes": [],
-    "background": "",
+    "kind": "Biome native",
+    "location": "The Lost Forest",
+    "nativeBiomes": [
+      "The Lost Forest"
+    ],
+    "biomes": [
+      "The Lost Forest"
+    ],
+    "background": "files/images/backgrounds/lostForestBiomeImage.png",
     "simulatorName": "Flora : Evergreen - 370,073,730",
     "simulatorChance": 370073730,
     "ignoreLuck": false
@@ -8096,7 +8380,7 @@
     "rarity": "1 in 422,656,000",
     "nativeRarity": "1 in 42,265,600",
     "tier": "Glorious",
-    "required": "Nighttime",
+    "required": "Nighttime / The Radiant Forest",
     "obtainment": "",
     "categories": [
       "Auras",
@@ -8113,12 +8397,14 @@
     "rarityText": "1 in 422,656,000",
     "tierKey": "glorious",
     "kind": "Biome native",
-    "location": "Nighttime",
+    "location": "Nighttime / The Radiant Forest",
     "nativeBiomes": [
-      "Nighttime"
+      "Nighttime",
+      "The Radiant Forest"
     ],
     "biomes": [
-      "Nighttime"
+      "Nighttime",
+      "The Radiant Forest"
     ],
     "background": "files/images/backgrounds/normalBiomeImageN.png",
     "simulatorName": "Twilight : Withering Grace - 422,656,000",
@@ -8243,9 +8529,9 @@
     "description": "\"Letting Go.\" He answered, to the Fading Memory of her VOICE that seared his palm. To the Fading Memory he'll surrender to forget who she",
     "descriptionTruncated": true,
     "rarity": "1 in 450,000,000",
-    "nativeRarity": "",
+    "nativeRarity": "1 in 225,000,000",
     "tier": "Glorious",
-    "required": "",
+    "required": "The Radiant Forest",
     "obtainment": "",
     "categories": [
       "Auras",
@@ -8260,11 +8546,15 @@
     "rarityValue": 450000000,
     "rarityText": "1 in 450,000,000",
     "tierKey": "glorious",
-    "kind": "Standard",
-    "location": "Any biome",
-    "nativeBiomes": [],
-    "biomes": [],
-    "background": "",
+    "kind": "Biome native",
+    "location": "The Radiant Forest",
+    "nativeBiomes": [
+      "The Radiant Forest"
+    ],
+    "biomes": [
+      "The Radiant Forest"
+    ],
+    "background": "files/images/backgrounds/radiantForestBiomeImage.png",
     "simulatorName": "Kyawthuite : Remembrance - 450,000,000",
     "simulatorChance": 450000000,
     "ignoreLuck": false
@@ -8308,15 +8598,53 @@
     "ignoreLuck": false
   },
   {
+    "title": "Hasuen",
+    "source": "https://sol-rng.fandom.com/wiki/Hasuen",
+    "revisionId": 153740,
+    "description": "Bound to the chains of grief, listen to the ones whom the bells toll for. The Heart of Earthsong, The Melody of Forevemore \"A life",
+    "descriptionTruncated": true,
+    "rarity": "1 in 485,000,000",
+    "nativeRarity": "1 in 242,500,000",
+    "tier": "Glorious",
+    "required": "The Lost Forest",
+    "obtainment": "",
+    "categories": [
+      "Auras",
+      "Glorious",
+      "Biome-Native"
+    ],
+    "notice": "",
+    "status": "",
+    "exclusive": false,
+    "events": [],
+    "name": "Hasuen",
+    "slug": "hasuen",
+    "rarityValue": 485000000,
+    "rarityText": "1 in 485,000,000",
+    "tierKey": "glorious",
+    "kind": "Biome native",
+    "location": "The Lost Forest",
+    "nativeBiomes": [
+      "The Lost Forest"
+    ],
+    "biomes": [
+      "The Lost Forest"
+    ],
+    "background": "files/images/backgrounds/lostForestBiomeImage.png",
+    "simulatorName": "Hasuen - 485,000,000",
+    "simulatorChance": 485000000,
+    "ignoreLuck": false
+  },
+  {
     "title": "Ruins",
     "source": "https://sol-rng.fandom.com/wiki/Ruins",
     "revisionId": 152117,
     "description": "In the ruins of an ancient civilization, destroyed by the destructive rituals and dark sorcery, only a place known as the Sanctuary remains, though it",
     "descriptionTruncated": true,
     "rarity": "1 in 500,000,000",
-    "nativeRarity": "",
+    "nativeRarity": "1 in 250,000,000",
     "tier": "Glorious",
-    "required": "",
+    "required": "The Lost Forest",
     "obtainment": "",
     "categories": [
       "Auras",
@@ -8331,11 +8659,15 @@
     "rarityValue": 500000000,
     "rarityText": "1 in 500,000,000",
     "tierKey": "glorious",
-    "kind": "Standard",
-    "location": "Any biome",
-    "nativeBiomes": [],
-    "biomes": [],
-    "background": "",
+    "kind": "Biome native",
+    "location": "The Lost Forest",
+    "nativeBiomes": [
+      "The Lost Forest"
+    ],
+    "biomes": [
+      "The Lost Forest"
+    ],
+    "background": "files/images/backgrounds/lostForestBiomeImage.png",
     "simulatorName": "Ruins - 500,000,000",
     "simulatorChance": 500000000,
     "ignoreLuck": false
@@ -8676,9 +9008,9 @@
     "description": "Once radiant with sacred beauty, the ancient ruins of the spirits have become a nest for the dead and nightmares, twisted by a fallen lord.",
     "descriptionTruncated": true,
     "rarity": "1 in 800,000,000",
-    "nativeRarity": "",
+    "nativeRarity": "1 in 400,000,000",
     "tier": "Glorious",
-    "required": "",
+    "required": "The Lost Forest",
     "obtainment": "",
     "categories": [
       "Auras",
@@ -8693,11 +9025,15 @@
     "rarityValue": 800000000,
     "rarityText": "1 in 800,000,000",
     "tierKey": "glorious",
-    "kind": "Standard",
-    "location": "Any biome",
-    "nativeBiomes": [],
-    "biomes": [],
-    "background": "",
+    "kind": "Biome native",
+    "location": "The Lost Forest",
+    "nativeBiomes": [
+      "The Lost Forest"
+    ],
+    "biomes": [
+      "The Lost Forest"
+    ],
+    "background": "files/images/backgrounds/lostForestBiomeImage.png",
     "simulatorName": "Ruins : Withered - 800,000,000",
     "simulatorChance": 800000000,
     "ignoreLuck": false
@@ -9072,6 +9408,45 @@
     "background": "",
     "simulatorName": "Equinox - 2,500,000,000",
     "simulatorChance": 2500000000,
+    "ignoreLuck": false
+  },
+  {
+    "title": "Tree House",
+    "source": "https://sol-rng.fandom.com/wiki/Tree_House",
+    "revisionId": 153729,
+    "description": "“In the heart of a vast and endless forest, where the sun’s golden gaze scarcely touched the earth, a Tree rose taller than all others.",
+    "descriptionTruncated": true,
+    "rarity": "1 in 3,800,000,000",
+    "nativeRarity": "1 in 1,900,000,000",
+    "tier": "Transcendent",
+    "required": "The Lost Forest",
+    "obtainment": "",
+    "categories": [
+      "Auras",
+      "Transcendent",
+      "Biome-Native",
+      "Has Abilities"
+    ],
+    "notice": "",
+    "status": "",
+    "exclusive": false,
+    "events": [],
+    "name": "Tree House",
+    "slug": "tree-house",
+    "rarityValue": 3800000000,
+    "rarityText": "1 in 3,800,000,000",
+    "tierKey": "transcendent",
+    "kind": "Biome native",
+    "location": "The Lost Forest",
+    "nativeBiomes": [
+      "The Lost Forest"
+    ],
+    "biomes": [
+      "The Lost Forest"
+    ],
+    "background": "files/images/backgrounds/lostForestBiomeImage.png",
+    "simulatorName": "Tree House - 3,800,000,000",
+    "simulatorChance": 3800000000,
     "ignoreLuck": false
   },
   {
@@ -9496,6 +9871,108 @@
     "ignoreLuck": true
   },
   {
+    "title": "True Kyawthuite",
+    "source": "",
+    "revisionId": null,
+    "description": "",
+    "descriptionTruncated": false,
+    "rarity": "1 in 825,000",
+    "nativeRarity": "",
+    "tier": "Challenged",
+    "required": "The Radiant Forest",
+    "exclusive": true,
+    "events": [],
+    "categories": [],
+    "obtainment": "Roll all Kyawthuite variants during this biome to unlock",
+    "wikiPending": true,
+    "mediaPending": true,
+    "name": "True Kyawthuite",
+    "slug": "true-kyawthuite",
+    "rarityValue": 825000,
+    "rarityText": "1 in 825,000",
+    "tierKey": "challenged",
+    "kind": "Biome exclusive",
+    "location": "Roll all Kyawthuite variants during this biome to unlock · The Radiant Forest",
+    "nativeBiomes": [
+      "The Radiant Forest"
+    ],
+    "biomes": [
+      "The Radiant Forest"
+    ],
+    "background": "files/images/backgrounds/radiantForestBiomeImage.png",
+    "simulatorName": "True Kyawthuite - 825,000",
+    "simulatorChance": 825000,
+    "ignoreLuck": false
+  },
+  {
+    "title": "True Twilight",
+    "source": "",
+    "revisionId": null,
+    "description": "",
+    "descriptionTruncated": false,
+    "rarity": "1 in 6,000,000",
+    "nativeRarity": "",
+    "tier": "Challenged",
+    "required": "The Radiant Forest",
+    "exclusive": true,
+    "events": [],
+    "categories": [],
+    "obtainment": "Roll all Twilight variants during this biome to unlock",
+    "wikiPending": true,
+    "mediaPending": true,
+    "name": "True Twilight",
+    "slug": "true-twilight",
+    "rarityValue": 6000000,
+    "rarityText": "1 in 6,000,000",
+    "tierKey": "challenged",
+    "kind": "Biome exclusive",
+    "location": "Roll all Twilight variants during this biome to unlock · The Radiant Forest",
+    "nativeBiomes": [
+      "The Radiant Forest"
+    ],
+    "biomes": [
+      "The Radiant Forest"
+    ],
+    "background": "files/images/backgrounds/radiantForestBiomeImage.png",
+    "simulatorName": "True Twilight - 6,000,000",
+    "simulatorChance": 6000000,
+    "ignoreLuck": false
+  },
+  {
+    "title": "True Jade",
+    "source": "",
+    "revisionId": null,
+    "description": "",
+    "descriptionTruncated": false,
+    "rarity": "1 in 10,250,000",
+    "nativeRarity": "",
+    "tier": "Challenged",
+    "required": "The Radiant Forest",
+    "exclusive": true,
+    "events": [],
+    "categories": [],
+    "obtainment": "Roll all Jade variants during this biome to unlock",
+    "wikiPending": true,
+    "mediaPending": true,
+    "name": "True Jade",
+    "slug": "true-jade",
+    "rarityValue": 10250000,
+    "rarityText": "1 in 10,250,000",
+    "tierKey": "challenged",
+    "kind": "Biome exclusive",
+    "location": "Roll all Jade variants during this biome to unlock · The Radiant Forest",
+    "nativeBiomes": [
+      "The Radiant Forest"
+    ],
+    "biomes": [
+      "The Radiant Forest"
+    ],
+    "background": "files/images/backgrounds/radiantForestBiomeImage.png",
+    "simulatorName": "True Jade - 10,250,000",
+    "simulatorChance": 10250000,
+    "ignoreLuck": false
+  },
+  {
     "title": "Glitch",
     "source": "https://sol-rng.fandom.com/wiki/Glitch",
     "revisionId": 153019,
@@ -9697,7 +10174,7 @@
     "rarity": "N/A (Unobtainable outside of Nighttime)",
     "nativeRarity": "1 in 2,222,222,222",
     "tier": "Challenged",
-    "required": "Nighttime",
+    "required": "Nighttime / The Radiant Forest",
     "obtainment": "",
     "categories": [
       "Auras",
@@ -9714,12 +10191,14 @@
     "rarityText": "1 in 2,222,222,222",
     "tierKey": "challenged",
     "kind": "Biome exclusive",
-    "location": "Nighttime",
+    "location": "Nighttime / The Radiant Forest",
     "nativeBiomes": [
-      "Nighttime"
+      "Nighttime",
+      "The Radiant Forest"
     ],
     "biomes": [
-      "Nighttime"
+      "Nighttime",
+      "The Radiant Forest"
     ],
     "background": "files/images/backgrounds/normalBiomeImageN.png",
     "simulatorName": "DreamCatcher - 2,222,222,222",
@@ -10031,6 +10510,40 @@
     "background": "files/images/backgrounds/limboImage.jpg",
     "simulatorName": null,
     "simulatorChance": null,
+    "ignoreLuck": false
+  },
+  {
+    "title": "Tomorrow",
+    "source": "",
+    "revisionId": null,
+    "description": "",
+    "descriptionTruncated": false,
+    "rarity": "Guaranteed after all seven Radiant Moons",
+    "nativeRarity": "",
+    "tier": "Challenged+",
+    "required": "The Radiant Forest",
+    "exclusive": true,
+    "events": [],
+    "categories": [],
+    "obtainment": "Collect all seven Radiant Moons; guaranteed on the next roll",
+    "wikiPending": true,
+    "mediaPending": true,
+    "name": "Tomorrow",
+    "slug": "tomorrow",
+    "rarityValue": null,
+    "rarityText": "Guaranteed after all seven Radiant Moons",
+    "tierKey": "challenged-plus",
+    "kind": "Biome exclusive",
+    "location": "Collect all seven Radiant Moons; guaranteed on the next roll · The Radiant Forest",
+    "nativeBiomes": [
+      "The Radiant Forest"
+    ],
+    "biomes": [
+      "The Radiant Forest"
+    ],
+    "background": "files/images/backgrounds/radiantForestBiomeImage.png",
+    "simulatorName": "Tomorrow",
+    "simulatorChance": 1,
     "ignoreLuck": false
   },
   {

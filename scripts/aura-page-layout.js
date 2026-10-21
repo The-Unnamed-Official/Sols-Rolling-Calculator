@@ -68,7 +68,7 @@
             for (const { name, value } of versionButton.attributes) {
                 if (!['type', 'aria-haspopup', 'aria-expanded'].includes(name)) link.setAttribute(name, value);
             }
-            link.href = new URL('index.html#versionInfoButton', root).href;
+            link.href = new URL('#versionInfoButton', root).href;
             link.append(...versionButton.childNodes);
             versionButton.replaceWith(link);
         }

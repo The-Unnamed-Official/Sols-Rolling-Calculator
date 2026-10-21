@@ -14,7 +14,15 @@
     };
     function destination(value) {
         if(typeof value!=='string'||!value)return null;
-        try {const url=new URL(value,base);const page=url.pathname.startsWith(base.pathname)||url.pathname===home.pathname||url.pathname===home.pathname+'index.html';return url.origin===base.origin&&page&&!url.username&&!url.password?url:null;}catch{return null;}
+        try {
+            const url=new URL(value,base);
+            url.pathname=url.pathname.replace(/\/index(?:\.html)?$/i,'/');
+            if(url.pathname===base.pathname.slice(0,-1)||url.pathname===home.pathname.slice(0,-1))url.pathname+='/';
+            const page=url.pathname.startsWith(base.pathname)||url.pathname===home.pathname;
+            if(url.origin!==base.origin||!page||url.username||url.password)return null;
+            if(!url.pathname.endsWith('/')&&!/\.[^/]+$/.test(url.pathname))url.pathname+='/';
+            return url;
+        }catch{return null;}
     }
     function mediaSource(value) {
         try {

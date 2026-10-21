@@ -8,7 +8,8 @@ const catalogue=JSON.parse(read('data/auras/catalogue.json'));
 let profiles=0,tracks=0;
 for(const aura of catalogue) {
     const profile=history.profiles[aura.title],html=read(`auras/${aura.slug}/index.html`);
-    const audio=profile.versions.flatMap(version=>version.soundtracks||[]);
+    assert(profile || aura.mediaPending, `${aura.title}: missing media must be explicitly pending`);
+    const audio=(profile?.versions||[]).flatMap(version=>version.soundtracks||[]);
     if(audio.length) profiles++;
     tracks+=audio.length;
     assert.equal((html.match(/data-aura-soundtrack>/g)||[]).length,audio.length,`${aura.title}: each sourced track needs its own player`);

@@ -1,7 +1,7 @@
 {
   "schemaVersion": 2,
   "reviewedOn": "2026-10-04",
-  "auditedCount": 485,
+  "auditedCount": 489,
   "source": "https://sol-rng.fandom.com/wiki/Template:Auras",
   "profiles": {
     "Arcane": {
@@ -43411,6 +43411,224 @@
           ]
         }
       ]
+    },
+    "Artifact": {
+      "source": "https://sol-rng.fandom.com/wiki/Artifact",
+      "revisionId": 153691,
+      "mutationOf": "",
+      "relatedAuras": [],
+      "versions": [
+        {
+          "id": "current",
+          "label": "Current",
+          "description": "A small yet significant pebble, carrying with it what seems to be remains of Magic.",
+          "descriptionTruncated": false,
+          "media": [
+            {
+              "file": "ArtifactCollection.gif",
+              "caption": "Collection",
+              "url": "https://static.wikia.nocookie.net/sol-rng/images/e/e3/ArtifactCollection.gif/revision/latest/scale-to-width-down/640?cb=20261017090751",
+              "originalUrl": "https://static.wikia.nocookie.net/sol-rng/images/e/e3/ArtifactCollection.gif/revision/latest?cb=20261017090751",
+              "source": "https://sol-rng.fandom.com/wiki/File:ArtifactCollection.gif",
+              "width": 640,
+              "height": 513,
+              "mime": "image/gif",
+              "timestamp": "2026-10-17T09:07:51Z"
+            },
+            {
+              "file": "ArtifactInGame.gif",
+              "caption": "In-game",
+              "url": "https://static.wikia.nocookie.net/sol-rng/images/1/1f/ArtifactInGame.gif/revision/latest/scale-to-width-down/640?cb=20261017082215",
+              "originalUrl": "https://static.wikia.nocookie.net/sol-rng/images/1/1f/ArtifactInGame.gif/revision/latest?cb=20261017082215",
+              "source": "https://sol-rng.fandom.com/wiki/File:ArtifactInGame.gif",
+              "width": 640,
+              "height": 648,
+              "mime": "image/gif",
+              "timestamp": "2026-10-17T08:22:15Z"
+            }
+          ],
+          "facts": {
+            "rarity": "1 in 500,000",
+            "nativeRarity": "1 in 250,000",
+            "tier": "Legendary",
+            "required": "Lost Forest",
+            "obtainment": "",
+            "music": "far - you've somehow angered a seraphim",
+            "creator": "[OA] By @khxlla, @onlyyxyyz"
+          },
+          "revisionId": 153691,
+          "source": "https://sol-rng.fandom.com/wiki/Artifact",
+          "timestamp": "2026-10-17T11:09:01Z",
+          "soundtracks": [],
+          "showcases": []
+        }
+      ]
+    },
+    "Veylune": {
+      "source": "https://sol-rng.fandom.com/wiki/Veylune",
+      "revisionId": 153690,
+      "mutationOf": "",
+      "relatedAuras": [],
+      "versions": [
+        {
+          "id": "current",
+          "label": "Current",
+          "description": "Calmly resting in a place anonymously to others, letting your thoughts relax as the day gets brighter.",
+          "descriptionTruncated": false,
+          "media": [
+            {
+              "file": "Veylune collect.gif",
+              "caption": "Collection",
+              "url": "https://static.wikia.nocookie.net/sol-rng/images/f/f4/Veylune_collect.gif/revision/latest?cb=20261017093600",
+              "source": "https://sol-rng.fandom.com/wiki/File:Veylune_collect.gif",
+              "width": 553,
+              "height": 515,
+              "mime": "image/gif",
+              "timestamp": "2026-10-17T09:36:00Z"
+            },
+            {
+              "file": "VeyluneInGameFix.gif",
+              "caption": "In-game",
+              "url": "https://static.wikia.nocookie.net/sol-rng/images/7/73/VeyluneInGameFix.gif/revision/latest/scale-to-width-down/640?cb=20261017083600",
+              "originalUrl": "https://static.wikia.nocookie.net/sol-rng/images/7/73/VeyluneInGameFix.gif/revision/latest?cb=20261017083600",
+              "source": "https://sol-rng.fandom.com/wiki/File:VeyluneInGameFix.gif",
+              "width": 640,
+              "height": 509,
+              "mime": "image/gif",
+              "timestamp": "2026-10-17T08:36:00Z"
+            }
+          ],
+          "facts": {
+            "rarity": "1 in 550,000",
+            "nativeRarity": "1 in 275,000",
+            "tier": "Legendary",
+            "required": "Lost Forest",
+            "obtainment": "",
+            "music": "Carolin Petit - Live Piano Stories 11 (Tender & Nostalgic) Roblox ID:137428265678876",
+            "creator": "[OA] By @onlyyxyyz, @khxlla"
+          },
+          "revisionId": 153690,
+          "source": "https://sol-rng.fandom.com/wiki/Veylune",
+          "timestamp": "2026-10-17T11:05:55Z",
+          "soundtracks": [],
+          "showcases": []
+        }
+      ]
+    },
+    "Tree House": {
+      "source": "https://sol-rng.fandom.com/wiki/Tree_House",
+      "revisionId": 153729,
+      "mutationOf": "",
+      "relatedAuras": [],
+      "versions": [
+        {
+          "id": "current",
+          "label": "Current",
+          "description": "“In the heart of a vast and endless forest, where the sun’s golden gaze scarcely touched the earth, a Tree rose taller than all others.",
+          "descriptionTruncated": true,
+          "media": [
+            {
+              "file": "TreeHouseCollection.gif",
+              "caption": "Collection",
+              "url": "https://static.wikia.nocookie.net/sol-rng/images/0/08/TreeHouseCollection.gif/revision/latest/scale-to-width-down/640?cb=20261017094027",
+              "originalUrl": "https://static.wikia.nocookie.net/sol-rng/images/0/08/TreeHouseCollection.gif/revision/latest?cb=20261017094027",
+              "source": "https://sol-rng.fandom.com/wiki/File:TreeHouseCollection.gif",
+              "width": 640,
+              "height": 678,
+              "mime": "image/gif",
+              "timestamp": "2026-10-17T09:40:27Z"
+            },
+            {
+              "file": "TreeGardenInGameGG.gif",
+              "caption": "In-game (Day)",
+              "url": "https://static.wikia.nocookie.net/sol-rng/images/e/eb/TreeGardenInGameGG.gif/revision/latest/scale-to-width-down/640?cb=20261017085840",
+              "originalUrl": "https://static.wikia.nocookie.net/sol-rng/images/e/eb/TreeGardenInGameGG.gif/revision/latest?cb=20261017085840",
+              "source": "https://sol-rng.fandom.com/wiki/File:TreeGardenInGameGG.gif",
+              "width": 640,
+              "height": 630,
+              "mime": "image/gif",
+              "timestamp": "2026-10-17T08:58:40Z"
+            },
+            {
+              "file": "TreeHouseInGameNight.gif",
+              "caption": "In-game (Night)",
+              "url": "https://static.wikia.nocookie.net/sol-rng/images/8/8a/TreeHouseInGameNight.gif/revision/latest/scale-to-width-down/640?cb=20261017141528",
+              "originalUrl": "https://static.wikia.nocookie.net/sol-rng/images/8/8a/TreeHouseInGameNight.gif/revision/latest?cb=20261017141528",
+              "source": "https://sol-rng.fandom.com/wiki/File:TreeHouseInGameNight.gif",
+              "width": 640,
+              "height": 618,
+              "mime": "image/gif",
+              "timestamp": "2026-10-17T14:15:28Z"
+            }
+          ],
+          "facts": {
+            "rarity": "1 in 3,800,000,000",
+            "nativeRarity": "1 in 1,900,000,000",
+            "tier": "Transcendent",
+            "required": "Lost Forest",
+            "obtainment": "",
+            "music": "Spade - The Monument",
+            "creator": "[OA] By @Semlers, @StillSkib Concept By @MDP_FILE"
+          },
+          "revisionId": 153729,
+          "source": "https://sol-rng.fandom.com/wiki/Tree_House",
+          "timestamp": "2026-10-17T17:03:31Z",
+          "soundtracks": [],
+          "showcases": []
+        }
+      ]
+    },
+    "Hasuen": {
+      "source": "https://sol-rng.fandom.com/wiki/Hasuen",
+      "revisionId": 153740,
+      "mutationOf": "",
+      "relatedAuras": [],
+      "versions": [
+        {
+          "id": "current",
+          "label": "Current",
+          "description": "Bound to the chains of grief, listen to the ones whom the bells toll for. The Heart of Earthsong, The Melody of Forevemore \"A life",
+          "descriptionTruncated": true,
+          "media": [
+            {
+              "file": "Hausen Collection.gif",
+              "caption": "Collection",
+              "url": "https://static.wikia.nocookie.net/sol-rng/images/c/ca/Hausen_Collection.gif/revision/latest/scale-to-width-down/640?cb=20261017172802",
+              "originalUrl": "https://static.wikia.nocookie.net/sol-rng/images/c/ca/Hausen_Collection.gif/revision/latest?cb=20261017172802",
+              "source": "https://sol-rng.fandom.com/wiki/File:Hausen_Collection.gif",
+              "width": 640,
+              "height": 530,
+              "mime": "image/gif",
+              "timestamp": "2026-10-17T17:28:02Z"
+            },
+            {
+              "file": "Hausen In-game.gif",
+              "caption": "In-game",
+              "url": "https://static.wikia.nocookie.net/sol-rng/images/0/0a/Hausen_In-game.gif/revision/latest/scale-to-width-down/640?cb=20261017172656",
+              "originalUrl": "https://static.wikia.nocookie.net/sol-rng/images/0/0a/Hausen_In-game.gif/revision/latest?cb=20261017172656",
+              "source": "https://sol-rng.fandom.com/wiki/File:Hausen_In-game.gif",
+              "width": 640,
+              "height": 530,
+              "mime": "image/gif",
+              "timestamp": "2026-10-17T17:26:56Z"
+            }
+          ],
+          "facts": {
+            "rarity": "1 in 485,000,000",
+            "nativeRarity": "1 in 242,500,000",
+            "tier": "Glorious",
+            "required": "Lost Forest",
+            "obtainment": "",
+            "music": "aakairo, kvbii - GARDEN OF EVERBLOOMING",
+            "creator": "[OA] By @weatherstationn, @reeseyhi, @khxlla"
+          },
+          "revisionId": 153740,
+          "source": "https://sol-rng.fandom.com/wiki/Hasuen",
+          "timestamp": "2026-10-17T17:37:13Z",
+          "soundtracks": [],
+          "showcases": []
+        }
+      ]
     }
   },
   "audit": [
@@ -47302,6 +47520,34 @@
       "revisionId": 152837,
       "status": "no-documented-older-version",
       "versionCount": 0,
+      "reworkDates": []
+    },
+    {
+      "title": "Artifact",
+      "revisionId": 153691,
+      "status": "current-only",
+      "versionCount": 1,
+      "reworkDates": []
+    },
+    {
+      "title": "Veylune",
+      "revisionId": 153690,
+      "status": "current-only",
+      "versionCount": 1,
+      "reworkDates": []
+    },
+    {
+      "title": "Tree House",
+      "revisionId": 153729,
+      "status": "current-only",
+      "versionCount": 1,
+      "reworkDates": []
+    },
+    {
+      "title": "Hasuen",
+      "revisionId": 153740,
+      "status": "current-only",
+      "versionCount": 1,
       "reworkDates": []
     }
   ]

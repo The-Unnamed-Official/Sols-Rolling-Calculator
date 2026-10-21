@@ -218,6 +218,11 @@
     box-sizing: border-box;
 }
 
+/* All interface controls share the square frames used by the main console. */
+:where(button, input, select, textarea, fieldset, dialog) {
+    border-radius: 0;
+}
+
 html, body {
     margin: 0;
     padding: 0;

@@ -27,7 +27,7 @@ for (const aura of catalogue) {
     const html = read(`auras/${aura.slug}/index.html`);
     const navigation = /<nav class="aura-mutations"[\s\S]*?<\/nav>/.exec(html)?.[0];
     if (!navigation) continue;
-    const members = [...navigation.matchAll(/href="\.\.\/([^/]+)\/index.html"/g)].map(match => match[1]).sort();
+    const members = [...navigation.matchAll(/href="\.\.\/([^/]+)\/"/g)].map(match => match[1]).sort();
     assert.equal((navigation.match(/aria-current="page"/g) || []).length, 1, `${aura.title}: one active family member`);
     assert(members.includes(aura.slug), `${aura.title}: active aura must appear in its family`);
     assert.equal(new Set(members).size, members.length, `${aura.title}: duplicate mutation links`);

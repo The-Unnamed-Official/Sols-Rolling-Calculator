@@ -7,7 +7,7 @@ function header(prefix, home = false) {
     const controls = read(home ? 'partials/home-header-controls.html' : 'partials/aura-header-controls.html');
     let result = read('partials/header.html').replace('{{pageControls}}', controls).replaceAll('{{assetPrefix}}', prefix);
     if (!home) result = result.replace(/<button([^>]*id="versionInfoButton"[^>]*)>([\s\S]*?)<\/button>/,
-        (_, attributes, content) => `<a${attributes.replace(/ type="button"| aria-haspopup="dialog"| aria-expanded="false"/g, '')} href="${prefix}index.html#versionInfoButton">${content}</a>`);
+        (_, attributes, content) => `<a${attributes.replace(/ type="button"| aria-haspopup="dialog"| aria-expanded="false"/g, '')} href="${prefix}#versionInfoButton">${content}</a>`);
     return result;
 }
 function qualityPreferences(home = false) {

@@ -34,7 +34,7 @@
             const documentModifiedAt = Number.isFinite(parsedDocumentModifiedAt)
                 ? parsedDocumentModifiedAt
                 : Date.now();
-            const buildCacheKey = '2.205';
+            const buildCacheKey = '2.210';
 
             window.appBuildCacheKey = buildCacheKey;
             window.getVersionedAppAssetUrl = path => {
@@ -167,37 +167,37 @@
             });
         })();
     </script>
-    <link rel="stylesheet" href="styles/base.css?v=2.205.background2">
-    <link rel="stylesheet" href="styles/layout.css?v=2.205">
-    <link rel="stylesheet" href="styles/components.css?v=2.205">
-    <link rel="stylesheet" href="styles/utilities.css?v=2.205.pages3">
-    <link rel="stylesheet" href="styles/wiki-title-fonts.css?v=2.205">
-    <link rel="stylesheet" href="styles/wiki-title-effects.css?v=2.205">
-    <link rel="stylesheet" href="styles/wiki-title-repairs.css?v=2.205">
-    <link rel="stylesheet" href="styles/wiki-titles.css?v=2.205">
-    <link rel="stylesheet" href="styles/equipment.css?v=2.205">
-    <link rel="stylesheet" href="styles/help-footer.css?v=2.205">
-    <link rel="stylesheet" href="styles/aura-video-player.css?v=2.205.controls3">
-    <script src="scripts/utils.js?v=2.205" defer></script>
-    <script src="scripts/runtime.js?v=2.205" defer></script>
-    <script src="scripts/gear-luck.js?v=2.205" defer></script>
-    <script src="scripts/equipment-presentation.js?v=2.205" defer></script>
-    <script src="scripts/event-data.js?v=2.205" defer></script>
-    <script src="scripts/simulation-core.js?v=2.205" defer></script>
-    <script src="scripts/state.js?v=2.205" defer></script>
-    <script src="scripts/media-loader.js?v=2.205" defer></script>
-    <script src="scripts/overlays.js?v=2.205" defer></script>
-    <script src="scripts/wiki-title-data.js?v=2.205" defer></script>
-    <script src="scripts/wiki-title-repairs.js?v=2.205" defer></script>
-    <script src="scripts/wiki-titles.js?v=2.205" defer></script>
-    <script src="scripts/aura-routes.js?v=2.205" defer></script>
-    <script src="scripts/aura-links.js?v=2.205" defer></script>
-    <script src="scripts/interface-select.js?v=2.205" defer></script>
-    <script src="scripts/aura-title-layout.js?v=2.205" defer></script>
-    <script src="scripts/biome-background.js?v=2.205.background2" defer></script>
-    <script src="scripts/main.js?v=2.205.background2" defer></script>
-    <script src="scripts/aura-video-player.js?v=2.205.controls3" defer></script>
-    <script src="scripts/aura-directory-preferences.js?v=2.205.pages4" defer></script>
+    <link rel="stylesheet" href="styles/base.css?v=2.210.background2">
+    <link rel="stylesheet" href="styles/layout.css?v=2.210">
+    <link rel="stylesheet" href="styles/components.css?v=2.210">
+    <link rel="stylesheet" href="styles/utilities.css?v=2.210.pages3">
+    <link rel="stylesheet" href="styles/wiki-title-fonts.css?v=2.210">
+    <link rel="stylesheet" href="styles/wiki-title-effects.css?v=2.210">
+    <link rel="stylesheet" href="styles/wiki-title-repairs.css?v=2.210">
+    <link rel="stylesheet" href="styles/wiki-titles.css?v=2.210">
+    <link rel="stylesheet" href="styles/equipment.css?v=2.210">
+    <link rel="stylesheet" href="styles/help-footer.css?v=2.210">
+    <link rel="stylesheet" href="styles/aura-video-player.css?v=2.210.controls3">
+    <script src="scripts/utils.js?v=2.210" defer></script>
+    <script src="scripts/runtime.js?v=2.210" defer></script>
+    <script src="scripts/gear-luck.js?v=2.210" defer></script>
+    <script src="scripts/equipment-presentation.js?v=2.210" defer></script>
+    <script src="scripts/event-data.js?v=2.210" defer></script>
+    <script src="scripts/simulation-core.js?v=2.210" defer></script>
+    <script src="scripts/state.js?v=2.210" defer></script>
+    <script src="scripts/media-loader.js?v=2.210" defer></script>
+    <script src="scripts/overlays.js?v=2.210" defer></script>
+    <script src="scripts/wiki-title-data.js?v=2.210" defer></script>
+    <script src="scripts/wiki-title-repairs.js?v=2.210" defer></script>
+    <script src="scripts/wiki-titles.js?v=2.210" defer></script>
+    <script src="scripts/aura-routes.js?v=2.210" defer></script>
+    <script src="scripts/aura-links.js?v=2.210" defer></script>
+    <script src="scripts/interface-select.js?v=2.210" defer></script>
+    <script src="scripts/aura-title-layout.js?v=2.210" defer></script>
+    <script src="scripts/biome-background.js?v=2.210.background2" defer></script>
+    <script src="scripts/main.js?v=2.210.rolling1" defer></script>
+    <script src="scripts/aura-video-player.js?v=2.210.controls3" defer></script>
+    <script src="scripts/aura-directory-preferences.js?v=2.210.pages4" defer></script>
 </head>
 <body>
     <div class="interface-backdrop" aria-hidden="true">
@@ -411,6 +411,14 @@
         <source data-src="files/videos/cutscenes/hellbornCutscene.webm" type="video/webm">
     </video>
 
+    <!-- Add these WEBM files when ready; available files are enabled on page load. -->
+    <video id="tree-house-cutscene" class="cutscene-video" preload="none" data-audio-channel="cutscene">
+        <source data-src="files/videos/cutscenes/treeHouseCutscene.webm" type="video/webm">
+    </video>
+    <video id="tomorrow-cutscene" class="cutscene-video" preload="none" data-audio-channel="cutscene">
+        <source data-src="files/videos/cutscenes/tomorrowCutscene.webm" type="video/webm">
+    </video>
+
     <div id="cinematic-overlay" class="cinematic-overlay" aria-hidden="true">
         <div class="cinematic-overlay__loading" role="status" aria-live="polite">
             <span class="cinematic-overlay__spinner" aria-hidden="true"></span>
@@ -434,9 +442,9 @@
                         <h1 class="banner__title">Sol's RNG Rolling Simulator</h1>
                     </div>
                     <div class="banner__subtitle masthead-console__metadata">
-                        <button type="button" class="banner__version-button masthead-console__meta-card masthead-console__meta-card--version masthead-console__version" id="versionInfoButton" aria-haspopup="dialog" aria-expanded="false" data-version-id="v2.205">
+                        <button type="button" class="banner__version-button masthead-console__meta-card masthead-console__meta-card--version masthead-console__version" id="versionInfoButton" aria-haspopup="dialog" aria-expanded="false" data-version-id="v2.210">
                             <i class="fa-solid fa-code-branch" aria-hidden="true"></i>
-                            <span><small>Current build</small><strong>Version 2.205</strong></span>
+                            <span><small>Current build</small><strong>Version 2.210</strong></span>
                         </button>
                         <span class="masthead-console__meta-card banner__subtitle-author">
                             <span class="masthead-console__creator-avatar-flip" aria-hidden="true">
@@ -462,7 +470,7 @@
                                 <small>Game build</small>
                                 <span class="banner__subtitle-game-version">
                                     <a href="https://www.roblox.com/games/15532962292/Sols-RNG" target="_blank" rel="noopener">
-                                        <span class="banner__game-version-name">Sol's RNG Eon 1-29</span>
+                                        <span class="banner__game-version-name">Sol's RNG Eon 1-30</span>
                                     </a>
                                 </span>
                             </span>
@@ -489,46 +497,6 @@
             </div>
             <span class="masthead-console__status"><i class="fa-solid fa-signal" aria-hidden="true"></i> Systems online</span>
         </header>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -578,7 +546,7 @@
                     </a>
                     <a class="resource-link resource-link--community" href="https://www.discord.gg/m6k7Jagm3v" target="_blank" rel="noopener">
                         <span class="resource-link__icon" aria-hidden="true">
-                            <img class="resource-link__image resource-link__image--unnamedrng" src="files/images/icons/cuteSolsRollingSimulatorLogo.png" alt="" loading="lazy" decoding="async">
+                            <img class="resource-link__image resource-link__image--unnamedrng" src="files/images/icons/spookySolsRollingSimulatorLogo.png" alt="" loading="lazy" decoding="async">
                         </span>
                         <span class="resource-link__content">
                             <span class="resource-link__category">Main Community</span>
@@ -610,7 +578,7 @@
                         <span class="resource-link__launch" aria-hidden="true"><i class="fa-solid fa-arrow-up-right-from-square"></i></span>
                     </a>
                 </nav>
-                <a class="resource-link resource-link--auras" href="auras/index.html">
+                <a class="resource-link resource-link--auras" href="auras/">
                     <span class="resource-link__icon" aria-hidden="true"><i class="fa-solid fa-book-open"></i></span>
                     <span class="resource-link__content">
                         <span class="resource-link__label">Auras</span>
@@ -1031,7 +999,9 @@
                                     <option value="hell">Hell</option>
                                     <option value="heaven">Heaven</option>
                                     <option value="corruption">Corruption</option>
+                                    <option value="lostForest">The Lost Forest</option>
                                     <option value="null">Null</option>
+                                    <option value="radiantForest">The Radiant Forest</option>
                                     <option value="singularity">Singularity</option>
                                     <option value="cyberspace">Cyberspace</option>
                                     <option value="dreamspace">Dreamspace</option>
@@ -1101,7 +1071,9 @@
                             <option value="hell">Hell</option>
                             <option value="heaven">Heaven</option>
                             <option value="corruption">Corruption</option>
+                            <option value="lostForest">The Lost Forest</option>
                             <option value="null">Null</option>
+                            <option value="radiantForest">The Radiant Forest</option>
                             <option value="singularity">Singularity</option>
                             <option value="cyberspace">Cyberspace</option>
                             <option value="dreamspace">Dreamspace</option>
@@ -1203,13 +1175,16 @@
                             </span>
                         </header>
                     <div class="quick-action-group" role="group" aria-label="Quick biome actions">
-                        <button class="interface-button interface-button--ghost" type="button" onclick="setGlitchPreset()"><i class="fa-solid fa-bug-slash" aria-hidden="true"></i><span><span class="sigil-outline-glitch slightSmaller">Glitch</span></span></button>
-                        <button class="interface-button interface-button--ghost" type="button" onclick="setSingularityPreset()"><i class="fa-solid fa-circle-nodes" aria-hidden="true"></i><span><span class="sigil-outline-singularity slightSmaller">Singularity</span></span></button>
-                        <button class="interface-button interface-button--ghost" type="button" onclick="setCyberspacePreset()"><i class="fa-solid fa-microchip" aria-hidden="true"></i><span><span class="sigil-outline-cyberspace slightSmaller">Cyberspace</span></span></button>
-                        <button class="interface-button interface-button--ghost" type="button" onclick="setDreamspacePreset()"><i class="fa-solid fa-cloud-moon" aria-hidden="true"></i><span><span class="sigil-outline-dreamspace slightSmaller">Dreamspace</span></span></button>
-                        <button class="interface-button interface-button--ghost" type="button" onclick="setLimboPreset()"><i class="fa-solid fa-link-slash" aria-hidden="true"></i><span><span class="sigil-outline-limbo slightSmaller">Limbo</span></span></button>
-                        <button class="interface-button interface-button--ghost parameter-console__action--roe" type="button" onclick="setRoePreset()"><i class="fa-solid fa-infinity" aria-hidden="true"></i><span>Use RoE</span></button>
-                        <button class="interface-button interface-button--ghost parameter-console__action--reset" type="button" onclick="resetBiomeChoice()"><i class="fa-solid fa-arrow-rotate-left" aria-hidden="true"></i><span>Reset Biome</span></button>
+                        <button class="interface-button interface-button--ghost" type="button" onclick="setGlitchPreset()"><img class="environment-shortcut__icon" src="files/images/icons/glitchBiomeIcon.png" width="28" height="28" alt=""><span><span class="sigil-outline-glitch slightSmaller">Glitch</span></span></button>
+                        <button class="interface-button interface-button--ghost" type="button" onclick="setRadiantForestPreset()"><img class="environment-shortcut__icon" src="files/images/icons/radiantForestBiomeIcon.png" width="28" height="28" alt=""><span><span class="sigil-outline-radiant-forest">THE RADIANT FOREST</span></span></button>
+                        <button class="interface-button interface-button--ghost" type="button" onclick="setSingularityPreset()"><img class="environment-shortcut__icon" src="files/images/icons/singularityBiomeIcon.png" width="28" height="28" alt=""><span><span class="sigil-outline-singularity slightSmaller">Singularity</span></span></button>
+                        <button class="interface-button interface-button--ghost" type="button" onclick="setCyberspacePreset()"><img class="environment-shortcut__icon" src="files/images/icons/cyberspaceBiomeIcon.png" width="28" height="28" alt=""><span><span class="sigil-outline-cyberspace slightSmaller">Cyberspace</span></span></button>
+                        <button class="interface-button interface-button--ghost" type="button" onclick="setDreamspacePreset()"><img class="environment-shortcut__icon" src="files/images/icons/dreamspaceBiomeIcon.png" width="28" height="28" alt=""><span><span class="sigil-outline-dreamspace slightSmaller">Dreamspace</span></span></button>
+                        <button class="interface-button interface-button--ghost" type="button" onclick="setLimboPreset()"><img class="environment-shortcut__icon" src="files/images/icons/limboBiomeIcon.png" width="28" height="28" alt=""><span><span class="sigil-outline-limbo slightSmaller">Limbo</span></span></button>
+                        <div class="quick-action-group__utilities">
+                            <button class="interface-button interface-button--ghost parameter-console__action--roe" type="button" onclick="setRoePreset()"><img class="environment-shortcut__icon" src="files/images/icons/roeRuneIcon.png" width="28" height="28" alt=""><span>Use RoE</span></button>
+                            <button class="interface-button interface-button--ghost parameter-console__action--reset" type="button" onclick="resetBiomeChoice()"><img class="environment-shortcut__icon" src="files/images/icons/otherBiomeIcon.png" width="28" height="28" alt=""><span>Reset Biome</span></button>
+                        </div>
                     </div>
                     </section>
                 </div>
@@ -1533,7 +1508,7 @@
                         <h3>Biomes, runes, and time</h3>
                         <p>The Environment module combines a primary biome or dimension, an optional rune, and Day or Night.</p>
                         <ul>
-                            <li>Biome shortcuts quickly load Glitch, Singularity, Cyberspace, Dreamspace, or Limbo combinations.</li>
+                            <li>Biome shortcuts quickly load Glitch, The Radiant Forest, Singularity, Cyberspace, Dreamspace, or Limbo combinations.</li>
                             <li>Use RoE enables Rune of Everything without resetting your selected biome or time.</li>
                             <li>Reset Biome returns the environment selection to its normal state.</li>
                             <li>Developer Biomes unlocks the simulator's developer-only environments.</li>
@@ -1711,9 +1686,6 @@
                 <li class="footer-credits__item"><span class="footer-credits__item-heading"><span class="changelog-aura-sigil" data-changelog-aura-sigil="Illusionary">Illusionary</span></span><span class="footer-credits__item-source">cutscene courtesy of <a href="https://www.reddit.com/r/SolsRNG/comments/1pall7r/illusionary_cutscene" target="_blank" rel="noopener">Chromm</a> &amp; segyun (player who obtained Illusionary)</span></li>
                 <li class="footer-credits__item"><span class="footer-credits__item-heading"><span class="changelog-aura-sigil" data-changelog-aura-sigil="Winter Garden">Winter Garden</span></span><span class="footer-credits__item-source">cutscene courtesy of <a href="https://m.youtube.com/watch?v=6JUcTw2ps_w&pp=ygUfd2ludGVyIGdhcmRlbiBzb2xzIHJuZyBjdXRzY2VuZQ%3D%3D" target="_blank" rel="noopener">Ray</a> & <a href="https://sol-rng.fandom.com/wiki/User:MattPlays607#Sol's_RNG" target="_blank" rel="noopener">Matt</a> (additional assistance)</span></li>
                 <li class="footer-credits__item"><span class="footer-credits__item-heading"><span class="changelog-aura-sigil" data-changelog-aura-sigil="Dream Traveler">Dream Traveler</span></span><span class="footer-credits__item-source">cutscene courtesy of <a href="https://www.youtube.com/watch?v=UOoP3JrsqKg" target="_blank" rel="noopener">floob</a></span></li>
-                <li class="footer-credits__item"><span class="footer-credits__item-heading"><span class="sigil-outline-cyberspace">Cyberspace</span></span><span class="footer-credits__item-source">song courtesy of <a href="https://open.spotify.com/track/1ZyGEzIDZgwWZucfoCPq9h" target="_blank" rel="noopener">Veens</a></span></li>
-                <li class="footer-credits__item"><span class="footer-credits__item-heading"><span class="sigil-outline-dreamspace">Dreamspace</span></span><span class="footer-credits__item-source">song courtesy of <a href="https://www.youtube.com/watch?v=nVvKPZ2soyU" target="_blank" rel="noopener">53_Axis</a></span></li>
-                <li class="footer-credits__item"><span class="footer-credits__item-heading"><span class="biome-sigil--red-full-moon">[ 赤い満月 ]</span></span><span class="footer-credits__item-source">song courtesy of <a href="https://www.youtube.com/watch?v=LLng8n_1eOY" target="_blank" rel="noopener">Derpcat</a></span></li>
                 <li class="footer-credits__item"><span class="footer-credits__item-heading"><span class="changelog-aura-sigil" data-changelog-aura-sigil="Leviathan">Leviathan</span></span><span class="footer-credits__item-source">cutscene courtesy of <a href="https://discord.com/users/755614816793788468" target="_blank" rel="noopener">@reeseyhi</a></span></li>
                 <li class="footer-credits__item"><span class="footer-credits__item-heading"><span class="changelog-aura-sigil" data-changelog-aura-sigil="Monarch">Monarch</span></span><span class="footer-credits__item-source">cutscene courtesy of <a href="https://youtu.be/qx8EPFC5vDM" target="_blank" rel="noopener">floob</a></span></li>
                 <li class="footer-credits__item"><span class="footer-credits__item-heading"><span class="changelog-aura-sigil" data-changelog-aura-sigil="赤月の破片">赤月の破片</span></span><span class="footer-credits__item-source">cutscene courtesy of <a href="https://discord.com/users/1088288687449702470" target="_blank" rel="noopener">carno._.</a></span></li>
@@ -1724,6 +1696,11 @@
                 <li class="footer-credits__item"><span class="footer-credits__item-heading"><span class="changelog-aura-sigil" data-changelog-aura-sigil="Dream Catcher">Dream Catcher</span></span><span class="footer-credits__item-source">cutscene courtesy of <a href="https://discord.com/users/1169345672047247401" target="_blank" rel="noopener">flopstero</a></span></li>
                 <li class="footer-credits__item"><span class="footer-credits__item-heading"><span class="changelog-aura-sigil" data-changelog-aura-sigil="Crabtropica">Crabtropica</span></span><span class="footer-credits__item-source">cutscene courtesy of <a href="https://discord.com/users/754022230480126073" target="_blank" rel="noopener">temychh</a></span></li>
                 <li class="footer-credits__item"><span class="footer-credits__item-heading"><span class="changelog-aura-sigil" data-changelog-aura-sigil="Osteria">Osteria</span></span><span class="footer-credits__item-source">cutscene courtesy of <a href="https://discord.com/users/520694876480733184" target="_blank" rel="noopener">feabrey</a></span></li>
+                <li class="footer-credits__item"><span class="footer-credits__item-heading"><span class="changelog-aura-sigil" data-changelog-aura-sigil="Tree House">Tree House</span></span><span class="footer-credits__item-source">cutscene courtesy of <a href="https://discord.com/users/893233296388026409" target="_blank" rel="noopener">fractur_nil</a></span></li>
+                <li class="footer-credits__item"><span class="footer-credits__item-heading"><span class="sigil-outline-cyberspace">Cyberspace</span></span><span class="footer-credits__item-source">song courtesy of <a href="https://open.spotify.com/track/1ZyGEzIDZgwWZucfoCPq9h" target="_blank" rel="noopener">Veens</a></span></li>
+                <li class="footer-credits__item"><span class="footer-credits__item-heading"><span class="sigil-outline-dreamspace">Dreamspace</span></span><span class="footer-credits__item-source">song courtesy of <a href="https://www.youtube.com/watch?v=nVvKPZ2soyU" target="_blank" rel="noopener">53_Axis</a></span></li>
+                <li class="footer-credits__item"><span class="footer-credits__item-heading"><span class="biome-sigil--red-full-moon">[ 赤い満月 ]</span></span><span class="footer-credits__item-source">song courtesy of <a href="https://www.youtube.com/watch?v=LLng8n_1eOY" target="_blank" rel="noopener">Derpcat</a></span></li>
+                <li class="footer-credits__item"><span class="footer-credits__item-heading"><span class="sigil-outline-radiant-forest">The Radiant Forest</span></span><span class="footer-credits__item-source">song courtesy of <a href="https://youtu.be/YdNG_e9aygk" target="_blank" rel="noopener">spade</a></span></li>
                 </ul>
                 <p class="footer-credits__empty" id="creditsEmpty" hidden>No matching credits found.</p>
             </div>
@@ -1893,31 +1870,6 @@
         </div>
     </div>
 
-    <div id="singularityMultiplierOverlay" class="cutscene-warning-overlay" hidden aria-hidden="true">
-        <div class="cutscene-warning surface surface--modal" role="dialog" aria-modal="true" aria-labelledby="singularityMultiplierTitle">
-            <p class="cutscene-warning__message">
-                <span id="singularityMultiplierTitle" class="cutscene-warning__note">Singularity notice</span>: Singularity now grants a <span class="cutscene-warning__ratio">1.1×</span> luck multiplier while it is active.
-            </p>
-            <div class="cutscene-warning__actions">
-                <button type="button" class="interface-button interface-button--minor" id="singularityMultiplierConfirm">Understood</button>
-                <button type="button" class="interface-button interface-button--ghost" id="singularityMultiplierDismiss">Never show again</button>
-            </div>
-        </div>
-    </div>
-
-    <div id="adminAbuseChoiceOverlay" class="cutscene-warning-overlay" hidden aria-hidden="true">
-        <div class="cutscene-warning surface surface--modal" role="dialog" aria-modal="true" aria-labelledby="adminAbuseChoiceTitle">
-            <p class="cutscene-warning__message">
-                <span id="adminAbuseChoiceTitle" class="cutscene-warning__note">Admin Abuse choice</span>:
-                <span id="adminAbuseChoiceBody">Choose which Admin Abuse buff to use.</span>
-            </p>
-            <div class="cutscene-warning__actions">
-                <button type="button" class="interface-button interface-button--minor" id="adminAbuseChoiceNew">Use new buff</button>
-                <button type="button" class="interface-button interface-button--ghost" id="adminAbuseChoiceOld">Use old buff</button>
-            </div>
-        </div>
-    </div>
-
     <div id="biomeConditionOverlay" class="cutscene-warning-overlay" hidden aria-hidden="true">
         <div class="cutscene-warning surface surface--modal" role="dialog" aria-modal="true" aria-labelledby="biomeConditionTitle">
             <p class="cutscene-warning__message">
@@ -2002,6 +1954,7 @@
             <div class="audio-modal__header">
                 <h2 class="audio-modal__title" id="audioSettingsTitle">Audio Settings</h2>
                 <p class="audio-modal__hint">Adjust the volume for each channel independently.</p>
+                <p class="audio-modal__shortcuts"><kbd>Alt</kbd> + <kbd>↑</kbd> / <kbd>↓</kbd> changes all channels by 5%. <kbd>Alt</kbd> + <kbd>M</kbd> mutes or unmutes. Focus a slider and use the arrow keys for individual channels.</p>
             </div>
                 <div class="audio-modal__controls">
                     <div class="audio-modal__grid">
@@ -2084,7 +2037,7 @@
                                 <span class="audio-modal__toggle-label">Master Audio</span>
                                 <span class="audio-modal__toggle-description">Mute or restore every audio channel.</span>
                             </span>
-                            <button class="interface-toggle audio-modal__master-mute" id="masterMuteToggle" type="button" aria-pressed="false">Mute</button>
+                            <button class="interface-toggle audio-modal__master-mute" id="masterMuteToggle" type="button" aria-pressed="false" aria-keyshortcuts="Alt+M">Mute</button>
                         </div>
                         <div class="audio-modal__toggle">
                             <span class="audio-modal__toggle-label" id="audioUiToggleLabel">UI Sounds</span>
@@ -2155,6 +2108,22 @@
             </div>
         </div>
     </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     <div id="rollingSettingsOverlay" class="modal-overlay" hidden>
         <div class="surface surface--modal filter-modal rolling-settings__modal" role="dialog" aria-modal="true" aria-labelledby="rollingSettingsTitle">
@@ -2328,6 +2297,56 @@
             </div>
 
             <div class="changelog-modal__panels" data-changelog-panels>
+                <section id="changelog-panel-v2210" class="changelog-modal__panel changelog-eon130" data-changelog-panel="v2.210" data-changelog-label="v2.210" role="tabpanel" tabindex="0" hidden>
+                    <header class="changelog-modal__header">
+                        <h2 class="changelog-modal__title">Version 2.210 Update Notes</h2>
+                        <span class="changelog-tab__subtitle">Eon 1-30 · Forests, Moons &amp; Memories</span>
+                        <p class="changelog-modal__meta">Updated 2026/10/19</p>
+                    </header>
+                    <div class="changelog-eon130__overview"><span><strong>2</strong>New biomes</span><span><strong>12</strong>New auras</span><span><strong>7</strong>Radiant Moons</span></div>
+                    <ul class="changelog-modal__list changelog-modal__list--grouped">
+
+                        <li class="changelog-release-group changelog-eon130__section changelog-eon130__section--radiant">
+                            <div class="changelog-featured-ui__header"><span class="changelog-featured-ui__icon" aria-hidden="true"><img src="files/images/icons/radiantForestBiomeIcon.png" width="34" height="34" alt=""></span><span class="changelog-featured-ui__heading"><span class="largeClass">The Radiant Forest</span><span>A rare forest beneath an endless night.</span></span><span class="changelog-featured-ui__badge">Rare biome</span></div>
+                            <div class="changelog-eon130__facts"><span>Always Night</span><span>×2 native odds</span><span>Cor Lunae’s Blessing</span></div><ul class="changelog-eon130__auras "><li><a class="changelog-eon130__aura-name" href="auras/watcher/"><span class="changelog-aura-sigil" data-changelog-aura-sigil="Watcher">Watcher</span></a><span>1 in 5,000</span></li><li><a class="changelog-eon130__aura-name" href="auras/rekindle/"><span class="changelog-aura-sigil" data-changelog-aura-sigil="Rekindle">Rekindle</span></a><span>1 in 7,500</span></li><li><a class="changelog-eon130__aura-name" href="auras/moonchild/"><span class="changelog-aura-sigil" data-changelog-aura-sigil="Moonchild">Moonchild</span></a><span>1 in 5,000,000</span></li><li><a class="changelog-eon130__aura-name" href="auras/cor-lunae/"><span class="changelog-aura-sigil" data-changelog-aura-sigil="Cor Lunae">Cor Lunae</span></a><span>1 in 50,000,000</span></li></ul><ul class="changelog-release-group__list"><li>Four exclusive auras join Jade, Jade : Purity, Kyawthuite, and Kyawthuite : Remembrance as forest natives.</li><li>Nighttime auras keep their ×10 native multiplier. The forest’s ×2 does not stack with it.</li></ul>
+                        </li>
+
+                        <li class="changelog-release-group changelog-eon130__section changelog-eon130__section--lost">
+                            <div class="changelog-featured-ui__header"><span class="changelog-featured-ui__icon" aria-hidden="true"><img src="files/images/icons/lostForestBiomeIcon.png" width="34" height="34" alt=""></span><span class="changelog-featured-ui__heading"><span class="largeClass">The Lost Forest</span><span>New auras and a new home for familiar ones.</span></span><span class="changelog-featured-ui__badge">Normal biome</span></div>
+                            <ul class="changelog-eon130__auras "><li><a class="changelog-eon130__aura-name" href="auras/artifact/"><span class="changelog-aura-sigil" data-changelog-aura-sigil="Artifact">Artifact</span></a><span>1 in 500,000</span><small>Native: 1 in 250,000</small></li><li><a class="changelog-eon130__aura-name" href="auras/veylune/"><span class="changelog-aura-sigil" data-changelog-aura-sigil="Veylune">Veylune</span></a><span>1 in 555,000</span><small>Native: 1 in 277,500</small></li><li><a class="changelog-eon130__aura-name" href="auras/hasuen/"><span class="changelog-aura-sigil" data-changelog-aura-sigil="Hasuen">Hasuen</span></a><span>1 in 485,000,000</span><small>Native: 1 in 242,500,000</small></li><li><a class="changelog-eon130__aura-name" href="auras/tree-house/"><span class="changelog-aura-sigil" data-changelog-aura-sigil="Tree House">Tree House</span></a><span>1 in 3,800,000,000</span><small>Native: 1 in 1,900,000,000</small></li></ul><ul class="changelog-release-group__list"><li>The Flora, Runic, Ruins, and Flutter families, plus Marsh, Lantern, Perpetual, and Lily, also gain ×2 native odds here.</li><li>Lost Forest native odds are available through Glitch and Rune of Everything. Radiant Forest exclusives remain separate.</li></ul>
+                        </li>
+
+                        <li class="changelog-release-group changelog-eon130__section changelog-eon130__section--moons">
+                            <div class="changelog-featured-ui__header"><span class="changelog-featured-ui__icon" aria-hidden="true"><span class="changelog-eon130__moon-icon">☾</span></span><span class="changelog-featured-ui__heading"><span class="largeClass">The Seven Radiant Moons</span><span>Seven memories. One Tomorrow.</span></span><span class="changelog-featured-ui__badge">Collection</span></div>
+                            <ol class="changelog-eon130__moons"><li><span>01</span><span><a class="changelog-eon130__aura-name" href="auras/jade/"><span class="changelog-aura-sigil" data-changelog-aura-sigil="Jade">Jade</span></a></span></li><li><span>02</span><span><a class="changelog-eon130__aura-name" href="auras/jade-purity/"><span class="changelog-aura-sigil" data-changelog-aura-sigil="Jade : Purity">Jade : Purity</span></a></span></li><li><span>03</span><span><a class="changelog-eon130__aura-name" href="auras/kyawthuite/"><span class="changelog-aura-sigil" data-changelog-aura-sigil="Kyawthuite">Kyawthuite</span></a></span></li><li><span>04</span><span><a class="changelog-eon130__aura-name" href="auras/kyawthuite-remembrance/"><span class="changelog-aura-sigil" data-changelog-aura-sigil="Kyawthuite : Remembrance">Kyawthuite : Remembrance</span></a><small>Center · Full Moon</small></span></li><li><span>05</span><span><a class="changelog-eon130__aura-name" href="auras/twilight-withering-grace/"><span class="changelog-aura-sigil" data-changelog-aura-sigil="Twilight : Withering Grace">Twilight : Withering Grace</span></a></span></li><li><span>06</span><span><a class="changelog-eon130__aura-name" href="auras/twilight-iridescent-memory/"><span class="changelog-aura-sigil" data-changelog-aura-sigil="Twilight : Iridescent Memory">Twilight : Iridescent Memory</span></a></span></li><li><span>07</span><span><a class="changelog-eon130__aura-name" href="auras/twilight/"><span class="changelog-aura-sigil" data-changelog-aura-sigil="Twilight">Twilight</span></a></span></li></ol><ul class="changelog-release-group__list"><li>Seven dark stars sit at the top center. Each becomes its purple moon phase after you roll its aura, floating gently in a five-second loop.</li><li>Collect all seven in any order to guarantee <a class="changelog-eon130__aura-name" href="auras/tomorrow/"><span class="changelog-aura-sigil" data-changelog-aura-sigil="Tomorrow">Tomorrow</span></a> on your next roll. The button becomes an animated pink and purple <span class="changelog-eon130__remember">Remember</span>.</li><li>Progress carries across runs and simulation methods while you stay in the biome. Leaving clears the collection.</li></ul>
+                        </li>
+
+                        <li class="changelog-release-group changelog-eon130__section changelog-eon130__section--true">
+                            <div class="changelog-featured-ui__header"><span class="changelog-featured-ui__icon" aria-hidden="true"><img src="files/images/icons/jadeBuff.png" width="34" height="34" alt=""></span><span class="changelog-featured-ui__heading"><span class="largeClass">True Auras</span><span>Complete a family to unlock its buff.</span></span><span class="changelog-featured-ui__badge">Challenged</span></div>
+                            <ul class="changelog-eon130__auras changelog-eon130__auras--true"><li><a class="changelog-eon130__aura-name" href="auras/true-jade/"><span class="changelog-aura-sigil" data-changelog-aura-sigil="True Jade">True Jade</span></a><span>1 in 125,000</span></li><li><a class="changelog-eon130__aura-name" href="auras/true-kyawthuite/"><span class="changelog-aura-sigil" data-changelog-aura-sigil="True Kyawthuite">True Kyawthuite</span></a><span>1 in 850,000</span></li><li><a class="changelog-eon130__aura-name" href="auras/true-twilight/"><span class="changelog-aura-sigil" data-changelog-aura-sigil="True Twilight">True Twilight</span></a><span>1 in 6,000,000</span></li></ul><ul class="changelog-release-group__list"><li>Roll both Jade moons, both Kyawthuite moons, or all three Twilight moons to unlock that family’s True Aura.</li><li>True Auras have no cutscenes and do not count as moons. Their icon buffs last until you leave, including after Tomorrow.</li></ul>
+                        </li>
+
+                        <li class="changelog-release-group changelog-eon130__section changelog-eon130__section--buffs">
+                            <div class="changelog-featured-ui__header"><span class="changelog-featured-ui__icon" aria-hidden="true"><img src="files/images/icons/lunaeBuff.png" width="34" height="34" alt=""></span><span class="changelog-featured-ui__heading"><span class="largeClass">Active buffs</span><span>Your effects and choices, together at the bottom.</span></span><span class="changelog-featured-ui__badge">Improved</span></div>
+                            <ul class="changelog-release-group__list"><li>Moon Catch is now <strong>Cor Lunae’s Blessing</strong>. Choose one of ten luck multipliers, from ×1.02 to ×1.2 in steps of ×0.02.</li><li>Dorcelessness, We’re Sorry!, YG Blessing, and Astrald’s Blessing now show their own icons while enabled. Hover, focus, or tap any buff for details.</li><li>Singularity gives ×1.2 total luck. Developer biome buffs offer their old and new effects inside the badge details, including Word’s basic and final luck multipliers.</li></ul>
+                        </li>
+
+                        <li class="changelog-release-group changelog-eon130__section changelog-eon130__section--cutscenes">
+                            <div class="changelog-featured-ui__header"><span class="changelog-featured-ui__icon" aria-hidden="true"><i class="fa-solid fa-eye-slash"></i></span><span class="changelog-featured-ui__heading"><span class="largeClass">Cutscenes &amp; accessibility</span><span>Smoother reveals, quieter controls.</span></span><span class="changelog-featured-ui__badge">QoL</span></div>
+                            <ul class="changelog-release-group__list"><li>The whole screen fades to black before Tomorrow (2 seconds), Breakthrough (5 seconds), and every other billion aura cutscene (1 second). Tomorrow still plays with cutscenes disabled.</li><li>Skip buttons start above the screen. Hover at the top right to slide them down. On phones in either orientation, tap the subtle hidden-eye icon to reveal or hide them. Keyboard focus also reveals the controls.</li><li><kbd>Alt</kbd> + <kbd>↑</kbd> / <kbd>↓</kbd> changes all audio channels by 5%; <kbd>Alt</kbd> + <kbd>M</kbd> mutes or unmutes. Volume changes appear in a top-right notification. Sliders keep their individual arrow-key controls.</li><li>Moon movement, Remember gradients, and control animations respect reduced-motion preferences.</li></ul>
+                        </li>
+
+                        <li class="changelog-release-group changelog-eon130__section changelog-eon130__section--qol">
+                            <div class="changelog-featured-ui__header"><span class="changelog-featured-ui__icon" aria-hidden="true"><i class="fa-solid fa-leaf"></i></span><span class="changelog-featured-ui__heading"><span class="largeClass">Environment &amp; navigation</span><span>Forest scenery and easier browsing.</span></span><span class="changelog-featured-ui__badge">Updated</span></div>
+                            <ul class="changelog-release-group__list"><li>Both forests have their own music and icons. The Lost Forest switches between day and night artwork; The Radiant Forest keeps its night environment.</li><li>New aura titles use the latest available wiki artwork. All twelve aura pages are included.</li><li>Biome shortcuts make setup faster. Clean aura links and remembered directory filters, page, and scroll position make browsing easier.</li><li>Zeus is now native to Heaven: 1 in 900,000 there, or 1 in 4,500,000 through breakthrough.</li></ul>
+                        </li>
+
+                        <li class="changelog-release-group changelog-eon130__section changelog-eon130__section--rolling-fix" id="changelog-rolling-recovery">
+                            <div class="changelog-featured-ui__header"><span class="changelog-featured-ui__icon" aria-hidden="true"><i class="fa-solid fa-wrench"></i></span><span class="changelog-featured-ui__heading"><span class="largeClass">Bug fixes</span><span>Reliable rolling and accurate effects.</span></span><span class="changelog-featured-ui__badge">Fixed</span></div>
+                            <ul class="changelog-release-group__list"><li>Stalled calculations and background workers now recover or restore the controls so you can retry. Cancel Roll also stops an unresponsive calculation.</li><li>Moon progress and the guaranteed next-roll Tomorrow stay consistent across single rolls, bulk runs, and Sol’s-like rolling.</li><li>Buff icons and luck values update with your active selections. True Aura unlocks end correctly when you leave the forest.</li></ul><p class="credits-text">Thanks to <a href="https://discord.com/users/1093918845544190132" class="subtitleClass" target="_blank" rel="noopener">jhtfe</a> for reporting the stuck-rolling bug!</p>
+                        </li>
+                    </ul>
+                </section>
                 <section id="changelog-panel-v2205" class="changelog-modal__panel" data-changelog-panel="v2.205" data-changelog-label="v2.205" role="tabpanel" tabindex="0" hidden>
                     <header class="changelog-modal__header">
                         <h2 class="changelog-modal__title">Version 2.205 Update Notes</h2>
@@ -2342,7 +2361,7 @@
                                 <span class="changelog-featured-ui__badge">New</span>
                             </div>
                             <ul class="changelog-release-group__list">
-                                <li>Explore all auras at <a href="auras/index.html">the new Auras page</a>. Sort rarity from highest to lowest or lowest to highest, or names A–Z and Z–A. The Roll Feed offers the same choices.</li>
+                                <li>Explore all auras at <a href="auras/">the new Auras page</a>. Sort rarity from highest to lowest or lowest to highest, or names A–Z and Z–A. The Roll Feed offers the same choices.</li>
                                 <li>This includes biome, exclusiveness, event, and tier filters.</li>
                                 <li>Each aura has its own page with its description, rarity, native or exclusive biome, and event or special obtainment details.</li>
                                 <li>Click an aura name in either the roll feed or directory to open its profile. Roll-feed links open in a new tab so rolling can continue.</li>
@@ -4213,5 +4232,116 @@
         </div>
     </div>
 
+    <div id="appNotifications" class="app-notifications" role="status" aria-live="polite" aria-atomic="false" aria-relevant="additions text"></div>
+    <section id="radiantMoons" class="radiant-moons" aria-label="The Seven Radiant Moons" hidden>
+        <ol class="radiant-moons__sky">
+            <li class="radiant-moons__moon" data-moon-index="0" style="--moon-index:0" role="img" aria-label="Jade: not yet rolled" title="Jade: not yet rolled"><svg viewBox="0 0 40 40" aria-hidden="true"><defs><mask id="radiant-phase-0"><circle cx="20" cy="20" r="18" fill="white"/><ellipse cx="9" cy="20" rx="24" ry="21" fill="black"/></mask></defs><path class="radiant-moons__unrolled" d="M20 1 Q21 18 39 20 Q21 22 20 39 Q19 22 1 20 Q19 18 20 1Z"/><circle class="radiant-moons__phase" cx="20" cy="20" r="18" fill="currentColor" mask="url(#radiant-phase-0)"/></svg></li>
+            <li class="radiant-moons__moon" data-moon-index="1" style="--moon-index:1" role="img" aria-label="Jade : Purity: not yet rolled" title="Jade : Purity: not yet rolled"><svg viewBox="0 0 40 40" aria-hidden="true"><defs><mask id="radiant-phase-1"><circle cx="20" cy="20" r="18" fill="white"/><rect x="0" y="0" width="20" height="40" fill="black"/></mask></defs><path class="radiant-moons__unrolled" d="M20 1 Q21 18 39 20 Q21 22 20 39 Q19 22 1 20 Q19 18 20 1Z"/><circle class="radiant-moons__phase" cx="20" cy="20" r="18" fill="currentColor" mask="url(#radiant-phase-1)"/></svg></li>
+            <li class="radiant-moons__moon" data-moon-index="2" style="--moon-index:2" role="img" aria-label="Kyawthuite: not yet rolled" title="Kyawthuite: not yet rolled"><svg viewBox="0 0 40 40" aria-hidden="true"><defs><mask id="radiant-phase-2"><circle cx="20" cy="20" r="18" fill="white"/><ellipse cx="0" cy="20" rx="13" ry="18" fill="black"/></mask></defs><path class="radiant-moons__unrolled" d="M20 1 Q21 18 39 20 Q21 22 20 39 Q19 22 1 20 Q19 18 20 1Z"/><circle class="radiant-moons__phase" cx="20" cy="20" r="18" fill="currentColor" mask="url(#radiant-phase-2)"/></svg></li>
+            <li class="radiant-moons__moon" data-moon-index="3" style="--moon-index:3" role="img" aria-label="Kyawthuite : Remembrance: not yet rolled" title="Kyawthuite : Remembrance: not yet rolled"><svg viewBox="0 0 40 40" aria-hidden="true"><defs><mask id="radiant-phase-3"><circle cx="20" cy="20" r="18" fill="white"/></mask></defs><path class="radiant-moons__unrolled" d="M20 1 Q21 18 39 20 Q21 22 20 39 Q19 22 1 20 Q19 18 20 1Z"/><circle class="radiant-moons__phase" cx="20" cy="20" r="18" fill="currentColor" mask="url(#radiant-phase-3)"/></svg></li>
+            <li class="radiant-moons__moon" data-moon-index="4" style="--moon-index:4" role="img" aria-label="Twilight : Withering Grace: not yet rolled" title="Twilight : Withering Grace: not yet rolled"><svg viewBox="0 0 40 40" aria-hidden="true"><defs><mask id="radiant-phase-4"><circle cx="20" cy="20" r="18" fill="white"/><ellipse cx="40" cy="20" rx="13" ry="18" fill="black"/></mask></defs><path class="radiant-moons__unrolled" d="M20 1 Q21 18 39 20 Q21 22 20 39 Q19 22 1 20 Q19 18 20 1Z"/><circle class="radiant-moons__phase" cx="20" cy="20" r="18" fill="currentColor" mask="url(#radiant-phase-4)"/></svg></li>
+            <li class="radiant-moons__moon" data-moon-index="5" style="--moon-index:5" role="img" aria-label="Twilight : Iridescent Memory: not yet rolled" title="Twilight : Iridescent Memory: not yet rolled"><svg viewBox="0 0 40 40" aria-hidden="true"><defs><mask id="radiant-phase-5"><circle cx="20" cy="20" r="18" fill="white"/><rect x="20" y="0" width="20" height="40" fill="black"/></mask></defs><path class="radiant-moons__unrolled" d="M20 1 Q21 18 39 20 Q21 22 20 39 Q19 22 1 20 Q19 18 20 1Z"/><circle class="radiant-moons__phase" cx="20" cy="20" r="18" fill="currentColor" mask="url(#radiant-phase-5)"/></svg></li>
+            <li class="radiant-moons__moon" data-moon-index="6" style="--moon-index:6" role="img" aria-label="Twilight: not yet rolled" title="Twilight: not yet rolled"><svg viewBox="0 0 40 40" aria-hidden="true"><defs><mask id="radiant-phase-6"><circle cx="20" cy="20" r="18" fill="white"/><ellipse cx="31" cy="20" rx="24" ry="21" fill="black"/></mask></defs><path class="radiant-moons__unrolled" d="M20 1 Q21 18 39 20 Q21 22 20 39 Q19 22 1 20 Q19 18 20 1Z"/><circle class="radiant-moons__phase" cx="20" cy="20" r="18" fill="currentColor" mask="url(#radiant-phase-6)"/></svg></li>
+        </ol>
+    </section>
+    <section id="biomeBuffs" class="biome-buffs" aria-label="Active buffs" hidden>
+        <div id="biomeBuffTooltip" class="biome-buffs__tooltip" role="region" aria-label="Biome buff details" hidden>
+            <div data-biome-buff-details="dev" hidden>
+                <strong data-dev-buff-title>Admin Abuse</strong>
+                <p class="biome-buffs__source" data-dev-buff-biome></p>
+                <p data-dev-buff-effect></p>
+                <div class="biome-buffs__choices" data-dev-buff-choices role="group" aria-label="Choose Admin Abuse effect" hidden>
+                    <button type="button" class="interface-button interface-button--ghost" data-dev-buff-variant="new" aria-pressed="true">New buff</button>
+                    <button type="button" class="interface-button interface-button--ghost" data-dev-buff-variant="old" aria-pressed="false">Old buff</button>
+                </div>
+                <small>This effect applies while its developer biome is active.</small>
+            </div>
+            <div data-biome-buff-details="singularity" hidden>
+                <strong class="sigil-outline-singularity">Singularity</strong>
+                <p>×1.2 Total Luck Multiplier while Singularity is active.</p>
+                <small>This buff ends when you leave Singularity.</small>
+            </div>
+            <div data-biome-buff-details="moonCatch" hidden>
+                <strong>Cor Lunae's Blessing</strong>
+                <p><span data-lunae-multiplier>×1.2</span> Total Luck Multiplier while The Radiant Forest is active.</p>
+                <label class="biome-buffs__choices">Choose your blessing
+                    <select data-lunae-choice aria-label="Cor Lunae's Blessing multiplier">
+                        <option value="1">×1.02</option><option value="2">×1.04</option><option value="3">×1.06</option><option value="4">×1.08</option><option value="5">×1.1</option><option value="6">×1.12</option><option value="7">×1.14</option><option value="8">×1.16</option><option value="9">×1.18</option><option value="10" selected>×1.2</option>
+                    </select>
+                </label>
+                <small>This biome always forces Night, including nighttime aura multipliers. The blessing ends when you leave.</small>
+            </div>
+            <div data-biome-buff-details="moons" hidden>
+                <strong>The Seven Radiant Moons</strong>
+                <ol class="biome-buffs__moons" aria-label="Moon collection">
+                    <li data-radiant-moon></li><li data-radiant-moon></li><li data-radiant-moon></li><li data-radiant-moon></li><li data-radiant-moon></li><li data-radiant-moon></li><li data-radiant-moon></li>
+                </ol>
+                <p data-radiant-status role="status"></p>
+                <button type="button" class="interface-button biome-buffs__refresh" data-radiant-refresh>Refresh Buffs</button>
+                <p class="biome-buffs__source">Refresh Buffs clears the moons and True Aura unlocks so you can collect them again.</p>
+                <small>True Auras do not count as moons. Progress and buffs end when you leave this biome.</small>
+            </div>
+            <div data-biome-buff-details="jade" hidden>
+                <strong>True Jade · 1 in 125,000</strong>
+                <p>Obtainment unlocked by rolling Jade and Jade : Purity during this biome.</p>
+                <small>Active until the biome ends. True Jade does not count as a Radiant Moon.</small>
+            </div>
+            <div data-biome-buff-details="kyawthuite" hidden>
+                <strong>True Kyawthuite · 1 in 850,000</strong>
+                <p>Obtainment unlocked by rolling Kyawthuite and Kyawthuite : Remembrance during this biome.</p>
+                <small>Active until the biome ends. True Kyawthuite does not count as a Radiant Moon.</small>
+            </div>
+            <div data-biome-buff-details="twilight" hidden>
+                <strong>True Twilight · 1 in 6,000,000</strong>
+                <p>Obtainment unlocked by rolling Twilight, Twilight : Withering Grace, and Twilight : Iridescent Memory during this biome.</p>
+                <small>Active until the biome ends. True Twilight does not count as a Radiant Moon.</small>
+            </div>
+            <div data-biome-buff-details="dorcelessness" hidden>
+                <strong>Dorcelessness</strong><p>×2 Total Luck Multiplier while Dorcelessness is enabled.</p>
+            </div>
+            <div data-biome-buff-details="sorry" hidden>
+                <strong>We're Sorry!</strong><p>×1.2 Total Luck Multiplier while We're Sorry! is enabled.</p>
+            </div>
+            <div data-biome-buff-details="yg" hidden>
+                <strong>YG Blessing</strong><p>Makes Megaphone obtainable outside Limbo while YG Blessing is enabled.</p>
+            </div>
+            <div data-biome-buff-details="astrald" hidden>
+                <strong>Astrald's Blessing</strong><p>×1.2 Total Luck Multiplier and makes Astral : Astrald obtainable outside Limbo while enabled.</p>
+            </div>
+        </div>
+        <button type="button" class="biome-buff biome-buff--dev" data-biome-buff="dev" aria-label="Developer biome Admin Abuse" aria-controls="biomeBuffTooltip" aria-expanded="false" hidden>
+            <img src="files/images/icons/anotherRealmBiomeIcon.png" alt="" width="28" height="28"><span data-dev-buff-multiplier>×1.2</span>
+        </button>
+        <button type="button" class="biome-buff biome-buff--singularity" data-biome-buff="singularity" aria-label="Singularity: 1.2 times total luck" aria-describedby="biomeBuffTooltip" aria-expanded="false" hidden>
+            <img src="files/images/icons/singularityLuckBuffIcon.png" alt="" width="28" height="28"><span>×1.2</span>
+        </button>
+        <button type="button" class="biome-buff" data-biome-buff="moonCatch" aria-label="Cor Lunae's Blessing: 1.2 times total luck" aria-controls="biomeBuffTooltip" aria-expanded="false" hidden>
+            <img src="files/images/icons/lunaeBuff.png" alt="" width="28" height="28"><span data-lunae-multiplier>×1.2</span>
+        </button>
+        <button type="button" class="biome-buff" data-biome-buff="moons" aria-label="Radiant Moon collection progress" aria-describedby="biomeBuffTooltip" aria-expanded="false" hidden>
+            <span class="biome-buff__symbol" aria-hidden="true">☾</span><span data-radiant-count>0/7</span>
+        </button>
+        <button type="button" class="biome-buff biome-buff--jade" data-biome-buff="jade" data-radiant-unlock="1" aria-label="True Jade obtainment buff" aria-describedby="biomeBuffTooltip" aria-expanded="false" hidden>
+            <img src="files/images/icons/jadeBuff.png" alt="" width="28" height="28"><span>Jade</span>
+        </button>
+        <button type="button" class="biome-buff biome-buff--kyawthuite" data-biome-buff="kyawthuite" data-radiant-unlock="2" aria-label="True Kyawthuite obtainment buff" aria-describedby="biomeBuffTooltip" aria-expanded="false" hidden>
+            <img src="files/images/icons/kyawBuff.png" alt="" width="28" height="28"><span>Kyaw.</span>
+        </button>
+        <button type="button" class="biome-buff biome-buff--twilight" data-biome-buff="twilight" data-radiant-unlock="4" aria-label="True Twilight obtainment buff" aria-describedby="biomeBuffTooltip" aria-expanded="false" hidden>
+            <img src="files/images/icons/twilightBuff.png" alt="" width="28" height="28"><span>Twilight</span>
+        </button>
+        <button type="button" class="biome-buff" data-biome-buff="dorcelessness" aria-label="Dorcelessness: 2 times total luck" aria-controls="biomeBuffTooltip" aria-expanded="false" hidden>
+            <img src="files/images/icons/dorcBuff.png" alt="" width="28" height="28"><span>×2</span>
+        </button>
+        <button type="button" class="biome-buff" data-biome-buff="sorry" aria-label="We're Sorry: 1.2 times total luck" aria-controls="biomeBuffTooltip" aria-expanded="false" hidden>
+            <img src="files/images/icons/sorryBuff.png" alt="" width="28" height="28"><span>×1.2</span>
+        </button>
+        <button type="button" class="biome-buff" data-biome-buff="yg" aria-label="YG Blessing: Megaphone obtainable" aria-controls="biomeBuffTooltip" aria-expanded="false" hidden>
+            <img src="files/images/icons/ygBuff.png" alt="" width="28" height="28"><span>YG</span>
+        </button>
+        <button type="button" class="biome-buff" data-biome-buff="astrald" aria-label="Astrald's Blessing: 1.2 times total luck and Astral Astrald obtainable" aria-controls="biomeBuffTooltip" aria-expanded="false" hidden>
+            <img src="files/images/icons/astraldBuff.png" alt="" width="28" height="28"><span>×1.2</span>
+        </button>
+    </section>
 </body>
 </html>

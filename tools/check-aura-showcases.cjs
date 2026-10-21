@@ -9,7 +9,8 @@ const catalogue=JSON.parse(read('data/auras/catalogue.json'));
 const escape=value=>value.replace(/&/g,'&amp;').replace(/"/g,'&quot;');
 let profiles=0,recordings=0;
 for(const aura of catalogue) {
-    const html=read(`auras/${aura.slug}/index.html`),versions=history.profiles[aura.title].versions;
+    assert(history.profiles[aura.title] || aura.mediaPending, `${aura.title}: missing media must be explicitly pending`);
+    const html=read(`auras/${aura.slug}/index.html`),versions=history.profiles[aura.title]?.versions||[];
     const videos=versions.flatMap(version=>version.showcases||[]);
     if(videos.length) profiles++;
     recordings+=videos.length;

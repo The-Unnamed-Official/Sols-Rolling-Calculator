@@ -7,8 +7,9 @@ const read = file => fs.readFileSync(path.join(root, file), 'utf8');
 const history = JSON.parse(read('data/auras/history.json'));
 const catalogue = JSON.parse(read('data/auras/catalogue.json'));
 const {fileKey} = require('./aura-history-parser.cjs');
-const titles = catalogue.map(aura => aura.title).sort();
-assert.equal(history.auditedCount, catalogue.length);
+const audited = catalogue.filter(aura => !aura.mediaPending);
+const titles = audited.map(aura => aura.title).sort();
+assert.equal(history.auditedCount, audited.length);
 assert.deepEqual(history.audit.map(aura => aura.title).sort(), titles, 'Every aura must be audited exactly once');
 assert(history.audit.every(aura => Number.isInteger(aura.revisionId) && aura.revisionId > 0));
 const validUrl = (url, hostname) => {
@@ -20,6 +21,12 @@ let historicalVersions = 0;
 for (const aura of catalogue) {
     const profile = history.profiles[aura.title];
     const html = read(`auras/${aura.slug}/index.html`);
+    if (aura.mediaPending) {
+        assert(!profile, `${aura.title}: remove the pending flag when the media audit arrives`);
+        assert(html.includes('Wiki images and further details are still in progress.'));
+        assert(html.includes('data-aura-details'), `${aura.title}: release details must remain available`);
+        continue;
+    }
     assert(profile, `${aura.title}: every profile needs media`);
     assert(profile.versions[0].media.length, `${aura.title}: no current aura preview`);
     assert(html.includes('data-aura-viewer'), `${aura.title}: missing image viewer`);
