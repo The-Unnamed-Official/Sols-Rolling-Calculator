@@ -4909,6 +4909,11 @@ body.quality-no-ui-animations .preset-console__bank {
     display: flex;
 }
 
+.cinematic-overlay--awaiting-fullscreen { background: #000; }
+.cinematic-overlay--awaiting-fullscreen .cinematic-overlay__loading { display: none; }
+.cinematic-fullscreen-prompt { position: absolute; z-index: 2; display: grid; justify-items: center; gap: 16px; width: min(420px, calc(100% - 40px)); padding: 24px; color: #eaf8ff; text-align: center; background: rgb(4 12 24 / .96); border: 1px solid rgb(127 227 255 / .45); }
+.cinematic-fullscreen-prompt p { margin: 0; font-size: .85rem; line-height: 1.6; }
+
 .cinematic-overlay--loading {
     z-index: 1002;
 }

@@ -12,7 +12,8 @@
     function stored() { try { const value = JSON.parse(localStorage.getItem(key)||'{}'); return value && typeof value==='object' ? value : {}; } catch { return {}; } }
     function read() {
         const saved = stored();
-        return { musicVolume:Number.isFinite(saved.musicVolume)?clamp(saved.musicVolume):.5,uiVolume:Number.isFinite(saved.uiVolume)?clamp(saved.uiVolume):.5,uiLastVolume:Number.isFinite(saved.uiLastVolume)&&saved.uiLastVolume>0?clamp(saved.uiLastVolume):.5,masterMuted:Boolean(saved.masterMuted) };
+        const level = value => Number.isFinite(value) ? clamp(value) : .5;
+        return {musicVolume:level(saved.musicVolume),uiVolume:level(saved.uiVolume),serverVolume:level(saved.serverVolume??saved.obtainVolume),effectsVolume:level(saved.effectsVolume??saved.cutsceneVolume),cutsceneVolume:level(saved.cutsceneVolume??saved.effectsVolume),masterMuted:Boolean(saved.masterMuted)};
     }
     let settings = read(), activated = Boolean(navigator.userActivation?.hasBeenActive), previousFocus;
     let musicSource = '', soundtrackPlaying = false, showcasePlaying = false, floatingPlaying = false, shellActive = false;
@@ -39,10 +40,9 @@
         });
         const master=overlay.querySelector('#masterMuteToggle');
         master.textContent=settings.masterMuted?'Unmute':'Mute';master.setAttribute('aria-pressed',String(settings.masterMuted));
-        overlay.querySelector('#audioUiToggle').checked=settings.uiVolume>0;
         if(settings.masterMuted||settings.uiVolume===0) {click.pause();hover.pause();}
         playMusic();
-        document.dispatchEvent(new CustomEvent('aura-audio-settings-change', {detail:{masterMuted:settings.masterMuted}}));
+        document.dispatchEvent(new CustomEvent('aura-audio-settings-change', {detail:{...settings}}));
     }
     function persist() { try { localStorage.setItem(key,JSON.stringify({...stored(),...settings})); } catch {} reflect(); }
     function sound(element) {
@@ -75,11 +75,18 @@
     window.addEventListener('storage',event=>{if(event.key===key){settings=read();reflect();}});
     overlay.querySelectorAll('input[type="range"]').forEach(input=>input.addEventListener('input',()=>{
         const channel=input.dataset.audioChannel;settings[channel+'Volume']=clamp(Number(input.value)/100);
-        if(channel==='ui'&&settings.uiVolume>0) settings.uiLastVolume=settings.uiVolume;
         persist();
     }));
-    overlay.querySelector('#audioUiToggle').addEventListener('change',event=>{settings.uiVolume=event.target.checked?settings.uiLastVolume:0;persist();});
     overlay.querySelector('#masterMuteToggle').addEventListener('click',()=>{settings.masterMuted=!settings.masterMuted;persist();});
+    document.addEventListener('keydown',event=>{
+        if(event.defaultPrevented||!event.altKey||event.ctrlKey||event.metaKey||event.shiftKey||event.isComposing||event.target.closest?.('input,textarea,select,[contenteditable]:not([contenteditable="false"]),[role="textbox"],[role="slider"]'))return;
+        if(event.code==='KeyM'){event.preventDefault();if(!event.repeat){settings.masterMuted=!settings.masterMuted;persist();}return;}
+        if(event.key!=='ArrowUp'&&event.key!=='ArrowDown')return;
+        event.preventDefault();const direction=event.key==='ArrowUp'?1:-1;
+        for(const channel of ['music','ui','server','effects','cutscene'])settings[channel+'Volume']=clamp(Math.round(settings[channel+'Volume']*100+direction*5)/100);
+        if(direction>0)settings.masterMuted=false;
+        persist();
+    });
     function close() {
         opener.setAttribute('aria-expanded','false');
         globalThis.concealOverlay(overlay,{onHidden:()=>{document.body.classList.remove('modal-open');previousFocus?.focus();}});
@@ -99,6 +106,6 @@
         if(event.shiftKey&&document.activeElement===first){event.preventDefault();last.focus();}
         else if(!event.shiftKey&&document.activeElement===last){event.preventDefault();first.focus();}
     });
-    globalThis.AuraAudio=Object.freeze({setMusic,getMasterMuted:()=>settings.masterMuted});
+    globalThis.AuraAudio=Object.freeze({setMusic,getMasterMuted:()=>settings.masterMuted,getVolume:channel=>settings.masterMuted?0:settings[channel+'Volume']??1});
     setMusic(document.body.dataset.auraMusic);reflect();
 })();

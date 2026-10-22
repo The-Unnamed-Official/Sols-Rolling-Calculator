@@ -17,7 +17,7 @@
     function reflectVolume() {
         players.forEach(player=>{
             const audio=player.querySelector('audio'),slider=player.querySelector('[data-soundtrack-volume]'),button=player.querySelector('[data-soundtrack-mute]');
-            audio.volume=volume;audio.muted=Boolean(globalThis.AuraAudio?.getMasterMuted());
+            audio.volume=volume*(globalThis.AuraAudio?.getVolume('music')??1);audio.muted=Boolean(globalThis.AuraAudio?.getMasterMuted());
             slider.value=Math.round(volume*100);slider.setAttribute('aria-valuetext',slider.value+' percent');progress(slider,volume*100);
             button.setAttribute('aria-label',volume?'Mute soundtrack':'Unmute soundtrack');
             button.querySelector('i').className='fa-solid '+(volume===0?'fa-volume-xmark':volume>.66?'fa-volume-high':volume>.33?'fa-volume-low':'fa-volume-off');

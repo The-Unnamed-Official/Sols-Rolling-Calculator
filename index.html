@@ -169,8 +169,8 @@
     </script>
     <link rel="stylesheet" href="styles/base.css?v=2.210.background2">
     <link rel="stylesheet" href="styles/layout.css?v=2.210">
-    <link rel="stylesheet" href="styles/components.css?v=2.210.session1">
-    <link rel="stylesheet" href="styles/utilities.css?v=2.210.fullscreen1">
+    <link rel="stylesheet" href="styles/components.css?v=2.210.cutscene3">
+    <link rel="stylesheet" href="styles/utilities.css?v=2.210.cutscene3">
     <link rel="stylesheet" href="styles/wiki-title-fonts.css?v=2.210">
     <link rel="stylesheet" href="styles/wiki-title-effects.css?v=2.210">
     <link rel="stylesheet" href="styles/wiki-title-repairs.css?v=2.210">
@@ -184,7 +184,7 @@
     <script src="scripts/equipment-presentation.js?v=2.210" defer></script>
     <script src="scripts/event-data.js?v=2.210" defer></script>
     <script src="scripts/simulation-core.js?v=2.210" defer></script>
-    <script src="scripts/state.js?v=2.210" defer></script>
+    <script src="scripts/state.js?v=2.210.cutscene3" defer></script>
     <script src="scripts/media-loader.js?v=2.210" defer></script>
     <script src="scripts/overlays.js?v=2.210" defer></script>
     <script src="scripts/wiki-title-data.js?v=2.210" defer></script>
@@ -195,9 +195,9 @@
     <script src="scripts/interface-select.js?v=2.210" defer></script>
     <script src="scripts/aura-title-layout.js?v=2.210.fullscreen1" defer></script>
     <script src="scripts/biome-background.js?v=2.210.background2" defer></script>
-    <script src="scripts/main.js?v=2.210.session1" defer></script>
+    <script src="scripts/main.js?v=2.210.cutscene3" defer></script>
     <script src="scripts/session-return.js?v=2.210.session1" defer></script>
-    <script src="scripts/aura-video-player.js?v=2.210.controls3" defer></script>
+    <script src="scripts/aura-video-player.js?v=2.210.cutscene3" defer></script>
     <script src="scripts/aura-directory-preferences.js?v=2.210.pages4" defer></script>
 </head>
 <body>
@@ -284,25 +284,25 @@
     <div class="snow-field" id="snowField" aria-hidden="true"></div>
 
     <audio id="ambientMusic" loop muted preload="none" data-src="files/music/normalBiomeMusic.mp3" type="audio/mpeg" data-volume="0.10" data-audio-channel="music"></audio>
-    <audio id="singularitySummonSound" muted preload="none" data-src="files/sounds/other/singularitySummon.mp3" type="audio/mpeg" data-volume="1" data-audio-channel="music"></audio>
-    <audio id="radiantMoonSound1" preload="none" data-src="files/sounds/other/radiantMoon1.mp3" data-volume="0.55" data-audio-channel="obtain"></audio>
-    <audio id="radiantMoonSound2" preload="none" data-src="files/sounds/other/radiantMoon2.mp3" data-volume="0.55" data-audio-channel="obtain"></audio>
-    <audio id="radiantMoonSound3" preload="none" data-src="files/sounds/other/radiantMoon3.mp3" data-volume="0.55" data-audio-channel="obtain"></audio>
-    <audio id="radiantMoonSound4" preload="none" data-src="files/sounds/other/radiantMoon4.mp3" data-volume="0.55" data-audio-channel="obtain"></audio>
-    <audio id="radiantMoonSound5" preload="none" data-src="files/sounds/other/radiantMoon5.mp3" data-volume="0.55" data-audio-channel="obtain"></audio>
-    <audio id="radiantMoonSound6" preload="none" data-src="files/sounds/other/radiantMoon6.mp3" data-volume="0.55" data-audio-channel="obtain"></audio>
-    <audio id="radiantMoonSound7" preload="none" data-src="files/sounds/other/radiantMoon7.mp3" data-volume="0.55" data-audio-channel="obtain"></audio>
-    <audio id="rollLoopSound" muted preload="none" data-src="files/sounds/actions/SolsRollSound.mp3" type="audio/mpeg" data-volume="0.10" data-audio-channel="obtain"></audio>
+    <audio id="singularitySummonSound" muted preload="none" data-src="files/sounds/other/singularitySummon.mp3" type="audio/mpeg" data-volume="1" data-audio-channel="effects"></audio>
+    <audio id="radiantMoonSound1" preload="none" data-src="files/sounds/other/radiantMoon1.mp3" data-volume="0.55" data-audio-channel="effects"></audio>
+    <audio id="radiantMoonSound2" preload="none" data-src="files/sounds/other/radiantMoon2.mp3" data-volume="0.55" data-audio-channel="effects"></audio>
+    <audio id="radiantMoonSound3" preload="none" data-src="files/sounds/other/radiantMoon3.mp3" data-volume="0.55" data-audio-channel="effects"></audio>
+    <audio id="radiantMoonSound4" preload="none" data-src="files/sounds/other/radiantMoon4.mp3" data-volume="0.55" data-audio-channel="effects"></audio>
+    <audio id="radiantMoonSound5" preload="none" data-src="files/sounds/other/radiantMoon5.mp3" data-volume="0.55" data-audio-channel="effects"></audio>
+    <audio id="radiantMoonSound6" preload="none" data-src="files/sounds/other/radiantMoon6.mp3" data-volume="0.55" data-audio-channel="effects"></audio>
+    <audio id="radiantMoonSound7" preload="none" data-src="files/sounds/other/radiantMoon7.mp3" data-volume="0.55" data-audio-channel="effects"></audio>
+    <audio id="rollLoopSound" muted preload="none" data-src="files/sounds/actions/SolsRollSound.mp3" type="audio/mpeg" data-volume="0.10" data-audio-channel="ui"></audio>
     <audio id="clickSoundFx" muted preload="none" data-src="files/sounds/actions/SolsClickSound.mp3" type="audio/mpeg" data-volume="0.10" data-audio-channel="ui"></audio>
     <audio id="hoverSoundFx" muted preload="none" data-src="files/sounds/actions/SolsHoverSound.mp3" type="audio/mpeg" data-volume="0.15" data-audio-channel="ui"></audio>
-    <audio id="thousandSound" muted preload="none" data-src="files/sounds/rolling/1_000Roll.ogg" type="audio/ogg" data-volume="0.25" data-audio-channel="obtain"></audio>
-    <audio id="tenThousandSound" muted preload="none" data-src="files/sounds/rolling/10_000Roll.ogg" type="audio/ogg" data-volume="0.10" data-audio-channel="obtain"></audio>
-    <audio id="hundredThousandSound" muted preload="none" data-src="files/sounds/rolling/100_000Roll.ogg" type="audio/ogg" data-volume="0.07" data-audio-channel="obtain"></audio>
-    <audio id="tenMillionSound" muted preload="none" data-src="files/sounds/rolling/10_000_000Roll.ogg" type="audio/ogg" data-volume="0.25" data-audio-channel="obtain"></audio>
-    <audio id="hundredMillionSound" muted preload="none" data-src="files/sounds/rolling/100_000_000Roll.ogg" type="audio/ogg" data-volume="0.25" data-audio-channel="obtain"></audio>
-    <audio id="hundredMillionlimboSound" muted preload="none" data-src="files/sounds/rolling/100_000_000LimboRoll.mp3" type="audio/mpeg" data-boost="6.7" data-audio-channel="obtain"></audio>
-    <audio id="explosionSoundFx" muted preload="none" data-src="files/sounds/actions/explosionSound.mp3" type="audio/mpeg" data-volume="0.25" data-audio-channel="obtain"></audio>
-    <audio id="qbearMeowSoundFx" muted preload="none" data-src="files/sounds/other/qbearMeow.mp3" type="audio/mpeg" data-volume="0.55" data-audio-channel="ui"></audio>
+    <audio id="thousandSound" muted preload="none" data-src="files/sounds/rolling/1_000Roll.ogg" type="audio/ogg" data-volume="0.25" data-audio-channel="server"></audio>
+    <audio id="tenThousandSound" muted preload="none" data-src="files/sounds/rolling/10_000Roll.ogg" type="audio/ogg" data-volume="0.10" data-audio-channel="server"></audio>
+    <audio id="hundredThousandSound" muted preload="none" data-src="files/sounds/rolling/100_000Roll.ogg" type="audio/ogg" data-volume="0.07" data-audio-channel="server"></audio>
+    <audio id="tenMillionSound" muted preload="none" data-src="files/sounds/rolling/10_000_000Roll.ogg" type="audio/ogg" data-volume="0.25" data-audio-channel="server"></audio>
+    <audio id="hundredMillionSound" muted preload="none" data-src="files/sounds/rolling/100_000_000Roll.ogg" type="audio/ogg" data-volume="0.25" data-audio-channel="server"></audio>
+    <audio id="hundredMillionlimboSound" muted preload="none" data-src="files/sounds/rolling/100_000_000LimboRoll.mp3" type="audio/mpeg" data-boost="6.7" data-audio-channel="server"></audio>
+    <audio id="explosionSoundFx" muted preload="none" data-src="files/sounds/actions/explosionSound.mp3" type="audio/mpeg" data-volume="0.25" data-audio-channel="effects"></audio>
+    <audio id="qbearMeowSoundFx" muted preload="none" data-src="files/sounds/other/qbearMeow.mp3" type="audio/mpeg" data-volume="0.55" data-audio-channel="effects"></audio>
 
     <video id="oblivion-cutscene" class="cutscene-video" preload="none" data-audio-channel="cutscene">
         <source data-src="files/videos/cutscenes/oblivionCutscene.webm" type="video/webm">
@@ -664,7 +664,7 @@
                         <small>Exact sequence preserved</small>
                     </header>
                     <div class="feed__viewport-shell">
-                        <div class="feed__viewport" id="simulation-feed" role="status" aria-live="polite">
+                        <div class="feed__viewport" id="simulation-feed" role="status" aria-live="polite" tabindex="0" aria-label="Roll feed">
                             Configure your parameters and launch a simulation to see results.
                         </div>
                         <button
@@ -1958,105 +1958,75 @@
         <div class="surface surface--modal audio-modal" role="dialog" aria-modal="true" aria-labelledby="audioSettingsTitle">
             <div class="audio-modal__header">
                 <h2 class="audio-modal__title" id="audioSettingsTitle">Audio Settings</h2>
-                <p class="audio-modal__hint">Adjust the volume for each channel independently.</p>
+                <p class="audio-modal__hint">Adjust music, UI, obtainment messages, and sound effects independently.</p>
                 <p class="audio-modal__shortcuts"><kbd>Alt</kbd> + <kbd>↑</kbd> / <kbd>↓</kbd> changes all channels by 5%. <kbd>Alt</kbd> + <kbd>M</kbd> mutes or unmutes. Focus a slider and use the arrow keys for individual channels.</p>
             </div>
-                <div class="audio-modal__controls">
-                    <div class="audio-modal__grid">
-                        <label class="audio-slider" for="audioMusicVolume">
-                            <div class="audio-slider__label-row">
-                                <span class="audio-slider__label">Background Music</span>
-                                <span class="audio-slider__meta">
-                                    <span class="audio-slider__value" data-audio-value="music">50%</span>
-                                    <span class="audio-slider__icon" data-audio-icon="music" aria-hidden="true">
-                                        <i class="fa-solid fa-volume-high"></i>
-                                    </span>
-                                </span>
-                            </div>
-                            <div class="audio-slider__control">
-                                <input
-                                    type="range"
-                                    id="audioMusicVolume"
-                                    class="audio-slider__input"
-                                    min="0"
-                                    max="100"
-                                    value="50"
-                                    step="1"
-                                    data-audio-channel="music"
-                                >
-                                <span class="audio-slider__thumb" aria-hidden="true"></span>
-                            </div>
-                        </label>
-                        <label class="audio-slider" for="audioCutsceneVolume">
-                            <div class="audio-slider__label-row">
-                                <span class="audio-slider__label">Cutscene Sounds</span>
-                                <span class="audio-slider__meta">
-                                    <span class="audio-slider__value" data-audio-value="cutscene">50%</span>
-                                    <span class="audio-slider__icon" data-audio-icon="cutscene" aria-hidden="true">
-                                        <i class="fa-solid fa-volume-high"></i>
-                                    </span>
-                                </span>
-                            </div>
-                            <div class="audio-slider__control">
-                                <input
-                                    type="range"
-                                    id="audioCutsceneVolume"
-                                    class="audio-slider__input"
-                                    min="0"
-                                    max="100"
-                                    value="50"
-                                    step="1"
-                                    data-audio-channel="cutscene"
-                                >
-                                <span class="audio-slider__thumb" aria-hidden="true"></span>
-                            </div>
-                        </label>
-                        <label class="audio-slider" for="audioObtainVolume">
-                            <div class="audio-slider__label-row">
-                                <span class="audio-slider__label">Obtain Sounds</span>
-                                <span class="audio-slider__meta">
-                                    <span class="audio-slider__value" data-audio-value="obtain">50%</span>
-                                    <span class="audio-slider__icon" data-audio-icon="obtain" aria-hidden="true">
-                                        <i class="fa-solid fa-volume-high"></i>
-                                    </span>
-                                </span>
-                            </div>
-                            <div class="audio-slider__control">
-                                <input
-                                    type="range"
-                                    id="audioObtainVolume"
-                                    class="audio-slider__input"
-                                    min="0"
-                                    max="100"
-                                    value="50"
-                                    step="1"
-                                    data-audio-channel="obtain"
-                                >
-                                <span class="audio-slider__thumb" aria-hidden="true"></span>
-                            </div>
-                        </label>
-                    </div>
-                    <div class="audio-modal__toggles">
-                        <div class="audio-modal__toggle audio-modal__toggle--master">
-                            <span class="audio-modal__toggle-copy">
-                                <span class="audio-modal__toggle-label">Master Audio</span>
-                                <span class="audio-modal__toggle-description">Mute or restore every audio channel.</span>
-                            </span>
-                            <button class="interface-toggle audio-modal__master-mute" id="masterMuteToggle" type="button" aria-pressed="false" aria-keyshortcuts="Alt+M">Mute</button>
+            <div class="audio-modal__controls">
+                <div class="audio-modal__grid">
+                    <label class="audio-slider" for="audioMusicVolume">
+                        <div class="audio-slider__label-row">
+                            <span class="audio-slider__label" id="audioMusicVolumeLabel">Background Music</span>
+                            <span class="audio-slider__meta"><span class="audio-slider__value" data-audio-value="music">50%</span><span class="audio-slider__icon" data-audio-icon="music" aria-hidden="true"><i class="fa-solid fa-volume-high"></i></span></span>
                         </div>
-                        <div class="audio-modal__toggle">
-                            <span class="audio-modal__toggle-label" id="audioUiToggleLabel">UI Sounds</span>
-                            <label class="toggle" aria-labelledby="audioUiToggleLabel">
-                                <input type="checkbox" id="audioUiToggle" class="toggle__input" checked>
-                                <span class="toggle__track"></span>
-                                <span class="toggle__thumb"></span>
+                        <div class="audio-slider__control">
+                            <input type="range" id="audioMusicVolume" class="audio-slider__input" min="0" max="100" value="50" step="1" data-audio-channel="music" aria-labelledby="audioMusicVolumeLabel">
+                            <span class="audio-slider__thumb" aria-hidden="true"></span>
+                        </div>
+                    </label>
+                    <label class="audio-slider" for="audioUiVolume">
+                        <div class="audio-slider__label-row">
+                            <span class="audio-slider__label" id="audioUiVolumeLabel">UI</span>
+                            <span class="audio-slider__meta"><span class="audio-slider__value" data-audio-value="ui">50%</span><span class="audio-slider__icon" data-audio-icon="ui" aria-hidden="true"><i class="fa-solid fa-volume-high"></i></span></span>
+                        </div>
+                        <div class="audio-slider__control">
+                            <input type="range" id="audioUiVolume" class="audio-slider__input" min="0" max="100" value="50" step="1" data-audio-channel="ui" aria-labelledby="audioUiVolumeLabel">
+                            <span class="audio-slider__thumb" aria-hidden="true"></span>
+                        </div>
+                    </label>
+                    <label class="audio-slider" for="audioServerVolume">
+                        <div class="audio-slider__label-row">
+                            <span class="audio-slider__label" id="audioServerVolumeLabel">Server Messages</span>
+                            <span class="audio-slider__meta"><span class="audio-slider__value" data-audio-value="server">50%</span><span class="audio-slider__icon" data-audio-icon="server" aria-hidden="true"><i class="fa-solid fa-volume-high"></i></span></span>
+                        </div>
+                        <div class="audio-slider__control">
+                            <input type="range" id="audioServerVolume" class="audio-slider__input" min="0" max="100" value="50" step="1" data-audio-channel="server" aria-labelledby="audioServerVolumeLabel">
+                            <span class="audio-slider__thumb" aria-hidden="true"></span>
+                        </div>
+                    </label>
+                    <section class="audio-slider audio-slider--effects" aria-labelledby="audioEffectsTitle">
+                        <span class="audio-slider__label" id="audioEffectsTitle">Sound Effects</span>
+                        <div class="audio-effects__sliders">
+                            <label class="audio-effects__channel" for="audioEffectsVolume">
+                                <span class="audio-slider__label-row">
+                                    <span class="audio-slider__label" id="audioEffectsVolumeLabel">Other</span>
+                                    <span class="audio-slider__meta"><span class="audio-slider__value" data-audio-value="effects">50%</span><span class="audio-slider__icon" data-audio-icon="effects" aria-hidden="true"><i class="fa-solid fa-volume-high"></i></span></span>
+                                </span>
+                                <span class="audio-slider__control">
+                                    <input type="range" id="audioEffectsVolume" class="audio-slider__input" min="0" max="100" value="50" step="1" data-audio-channel="effects" aria-labelledby="audioEffectsTitle audioEffectsVolumeLabel">
+                                    <span class="audio-slider__thumb" aria-hidden="true"></span>
+                                </span>
+                            </label>
+                            <label class="audio-effects__channel" for="audioCutsceneVolume">
+                                <span class="audio-slider__label-row">
+                                    <span class="audio-slider__label" id="audioCutsceneVolumeLabel">Cutscenes</span>
+                                    <span class="audio-slider__meta"><span class="audio-slider__value" data-audio-value="cutscene">50%</span><span class="audio-slider__icon" data-audio-icon="cutscene" aria-hidden="true"><i class="fa-solid fa-volume-high"></i></span></span>
+                                </span>
+                                <span class="audio-slider__control">
+                                    <input type="range" id="audioCutsceneVolume" class="audio-slider__input" min="0" max="100" value="50" step="1" data-audio-channel="cutscene" aria-labelledby="audioEffectsTitle audioCutsceneVolumeLabel">
+                                    <span class="audio-slider__thumb" aria-hidden="true"></span>
+                                </span>
                             </label>
                         </div>
+                    </section>
+                </div>
+                <div class="audio-modal__toggles">
+                    <div class="audio-modal__toggle audio-modal__toggle--master">
+                        <span class="audio-modal__toggle-copy"><span class="audio-modal__toggle-label">Master Audio</span><span class="audio-modal__toggle-description">Mute or restore every audio channel.</span></span>
+                        <button class="interface-toggle audio-modal__master-mute" id="masterMuteToggle" type="button" aria-pressed="false" aria-keyshortcuts="Alt+M">Mute</button>
                     </div>
                 </div>
-                <div class="filter-modal__actions audio-modal__actions">
-                    <button type="button" class="interface-button interface-button--ghost filter-modal__close" id="audioSettingsClose">Close</button>
-                </div>
+            </div>
+            <div class="filter-modal__actions audio-modal__actions"><button type="button" class="interface-button interface-button--ghost filter-modal__close" id="audioSettingsClose">Close</button></div>
         </div>
     </div>
 
@@ -2166,7 +2136,7 @@
                 <button class="interface-button quality-settings__item quality-settings__aura-switch" type="button" role="switch" aria-checked="true" aria-labelledby="rollingFullscreenCutscenesLabel" aria-describedby="rollingFullscreenCutscenesDescription" id="rollingFullscreenCutscenesToggle">
                     <span>
                         <span class="quality-settings__name" id="rollingFullscreenCutscenesLabel">Fullscreen cutscenes</span>
-                        <span class="quality-settings__description" id="rollingFullscreenCutscenesDescription">Enter fullscreen when rolling starts and stay fullscreen between cutscenes. Turn this off or press Esc to leave.</span>
+                        <span class="quality-settings__description" id="rollingFullscreenCutscenesDescription">Enter fullscreen for cutscenes, then return afterward. Tap Play fullscreen if your browser requires it. If you were already fullscreen, stay fullscreen.</span>
                     </span>
                     <span class="quality-settings__switch-track" aria-hidden="true"></span>
                 </button>
@@ -2310,7 +2280,7 @@
                     <header class="changelog-modal__header">
                         <h2 class="changelog-modal__title">Version 2.210 Update Notes</h2>
                         <span class="changelog-tab__subtitle">Eon 1-30 · Forests, Moons &amp; Memories</span>
-                        <p class="changelog-modal__meta">Updated 2026/10/19</p>
+                        <p class="changelog-modal__meta">Updated 2026/10/21</p>
                     </header>
                     <div class="changelog-eon130__overview"><span><strong>2</strong>New biomes</span><span><strong>12</strong>New auras</span><span><strong>11</strong>Buffs</span></div>
                     <ul class="changelog-modal__list changelog-modal__list--grouped">
@@ -2327,7 +2297,7 @@
 
                         <li class="changelog-release-group changelog-eon130__section changelog-eon130__section--moons">
                             <div class="changelog-featured-ui__header"><span class="changelog-featured-ui__icon" aria-hidden="true"><span class="changelog-eon130__moon-icon">☾</span></span><span class="changelog-featured-ui__heading"><span class="largeClass">The Seven Radiant Moons</span><span>Seven memories. One Tomorrow.</span></span><span class="changelog-featured-ui__badge">Collection</span></div>
-                            <ol class="changelog-eon130__moons"><li><span>01</span><span><a class="changelog-eon130__aura-name" href="auras/jade/"><span class="changelog-aura-sigil" data-changelog-aura-sigil="Jade">Jade</span></a></span></li><li><span>02</span><span><a class="changelog-eon130__aura-name" href="auras/jade-purity/"><span class="changelog-aura-sigil" data-changelog-aura-sigil="Jade : Purity">Jade : Purity</span></a></span></li><li><span>03</span><span><a class="changelog-eon130__aura-name" href="auras/kyawthuite/"><span class="changelog-aura-sigil" data-changelog-aura-sigil="Kyawthuite">Kyawthuite</span></a></span></li><li><span>04</span><span><a class="changelog-eon130__aura-name" href="auras/kyawthuite-remembrance/"><span class="changelog-aura-sigil" data-changelog-aura-sigil="Kyawthuite : Remembrance">Kyawthuite : Remembrance</span></a><small>Center · Full Moon</small></span></li><li><span>05</span><span><a class="changelog-eon130__aura-name" href="auras/twilight-withering-grace/"><span class="changelog-aura-sigil" data-changelog-aura-sigil="Twilight : Withering Grace">Twilight : Withering Grace</span></a></span></li><li><span>06</span><span><a class="changelog-eon130__aura-name" href="auras/twilight-iridescent-memory/"><span class="changelog-aura-sigil" data-changelog-aura-sigil="Twilight : Iridescent Memory">Twilight : Iridescent Memory</span></a></span></li><li><span>07</span><span><a class="changelog-eon130__aura-name" href="auras/twilight/"><span class="changelog-aura-sigil" data-changelog-aura-sigil="Twilight">Twilight</span></a></span></li></ol><ul class="changelog-release-group__list"><li>Seven dark stars sit at the top center. Each becomes its purple moon phase after you roll its aura, floating gently in a five-second loop.</li><li>Collect all seven in any order to guarantee <a class="changelog-eon130__aura-name" href="auras/tomorrow/"><span class="changelog-aura-sigil" data-changelog-aura-sigil="Tomorrow">Tomorrow</span></a> on your next roll. The button becomes an animated pink and purple <span class="changelog-eon130__remember">Remember</span>.</li><li>Progress carries across runs and simulation methods while you stay in the biome. Leaving clears the collection.</li></ul>
+                            <ol class="changelog-eon130__moons"><li><span>01</span><span><a class="changelog-eon130__aura-name" href="auras/jade/"><span class="changelog-aura-sigil" data-changelog-aura-sigil="Jade">Jade</span></a></span></li><li><span>02</span><span><a class="changelog-eon130__aura-name" href="auras/jade-purity/"><span class="changelog-aura-sigil" data-changelog-aura-sigil="Jade : Purity">Jade : Purity</span></a></span></li><li><span>03</span><span><a class="changelog-eon130__aura-name" href="auras/kyawthuite/"><span class="changelog-aura-sigil" data-changelog-aura-sigil="Kyawthuite">Kyawthuite</span></a></span></li><li><span>04</span><span><a class="changelog-eon130__aura-name" href="auras/kyawthuite-remembrance/"><span class="changelog-aura-sigil" data-changelog-aura-sigil="Kyawthuite : Remembrance">Kyawthuite : Remembrance</span></a><small>Center · Full Moon</small></span></li><li><span>05</span><span><a class="changelog-eon130__aura-name" href="auras/twilight-withering-grace/"><span class="changelog-aura-sigil" data-changelog-aura-sigil="Twilight : Withering Grace">Twilight : Withering Grace</span></a></span></li><li><span>06</span><span><a class="changelog-eon130__aura-name" href="auras/twilight-iridescent-memory/"><span class="changelog-aura-sigil" data-changelog-aura-sigil="Twilight : Iridescent Memory">Twilight : Iridescent Memory</span></a></span></li><li><span>07</span><span><a class="changelog-eon130__aura-name" href="auras/twilight/"><span class="changelog-aura-sigil" data-changelog-aura-sigil="Twilight">Twilight</span></a></span></li></ol><ul class="changelog-release-group__list"><li>Seven dark stars sit at the top center. Each becomes its purple moon phase after you roll its aura, floating gently in a five-second loop.</li><li>Collect all seven in any order to guarantee <a class="changelog-eon130__aura-name" href="auras/tomorrow/"><span class="changelog-aura-sigil" data-changelog-aura-sigil="Tomorrow">Tomorrow</span></a> on your next roll. The button becomes an animated pink and purple <span class="changelog-eon130__remember">Remember</span>.</li><li>Progress carries across runs and simulation methods while you stay in the biome. Leaving clears the collection.</li><li>Each newly collected moon plays the next Radiant Moon sound, from the first through the seventh, regardless of which aura you collect first. Repeated moons do not replay a collection sound.</li><li>The Remember button now has a 70% opaque background.</li></ul>
                         </li>
 
                         <li class="changelog-release-group changelog-eon130__section changelog-eon130__section--true">
@@ -2337,12 +2307,22 @@
 
                         <li class="changelog-release-group changelog-eon130__section changelog-eon130__section--buffs">
                             <div class="changelog-featured-ui__header"><span class="changelog-featured-ui__icon" aria-hidden="true"><img src="files/images/icons/lunaeBuff.png" width="34" height="34" alt=""></span><span class="changelog-featured-ui__heading"><span class="largeClass">Active buffs</span><span>Your effects and choices, together at the bottom.</span></span><span class="changelog-featured-ui__badge">Improved</span></div>
-                            <ul class="changelog-release-group__list"><li>Moon Catch is now <strong>Cor Lunae’s Blessing</strong>. Choose one of ten final luck multipliers, from ×1.01 to ×1.15.</li><li>Dorcelessness, We’re Sorry!, YG Blessing, and Astrald’s Blessing now show their own icons while enabled. Hover, focus, or tap any buff for details.</li><li>Singularity gives ×1.1 final luck. Developer biome buffs offer their old and new effects inside the badge details, including Word’s basic and final luck multipliers.</li></ul>
+                            <ul class="changelog-release-group__list"><li>Moon Catch is now <strong>Cor Lunae’s Blessing</strong>. Choose one of ten final luck multipliers, from ×1.01 at the first stack to ×1.06 at four stacks and ×1.15 at ten stacks. The menu now matches the other dropdowns and has one arrow.</li><li>Dorcelessness, We’re Sorry!, YG Blessing, and Astrald’s Blessing now show their own icons while enabled. Hover, focus, or tap any buff for details.</li><li>Singularity gives ×1.1 final luck. Developer biome buffs offer their old and new effects inside the badge details, including Word’s basic and final luck multipliers.</li></ul>
                         </li>
 
                         <li class="changelog-release-group changelog-eon130__section changelog-eon130__section--cutscenes">
                             <div class="changelog-featured-ui__header"><span class="changelog-featured-ui__icon" aria-hidden="true"><i class="fa-solid fa-eye-slash"></i></span><span class="changelog-featured-ui__heading"><span class="largeClass">Cutscenes &amp; accessibility</span><span>Smoother reveals, quieter controls.</span></span><span class="changelog-featured-ui__badge">QoL</span></div>
-                            <ul class="changelog-release-group__list"><li>The whole screen fades to black before Tomorrow (2 seconds), Breakthrough (5 seconds), and every other billion aura cutscene (1 second). Tomorrow still plays with cutscenes disabled.</li><li>Skip buttons start above the screen. Hover at the top right to slide them down. On phones in either orientation, tap the subtle hidden-eye icon to reveal or hide them. Keyboard focus also reveals the controls.</li><li><kbd>Alt</kbd> + <kbd>↑</kbd> / <kbd>↓</kbd> changes all audio channels by 5%; <kbd>Alt</kbd> + <kbd>M</kbd> mutes or unmutes. Volume changes appear in a top-right notification. Sliders keep their individual arrow-key controls.</li><li>Moon movement, Remember gradients, and control animations respect reduced-motion preferences.</li></ul>
+                            <ul class="changelog-release-group__list"><li>The whole screen fades to black before Tomorrow (2 seconds), Breakthrough (5 seconds), and every other billion aura cutscene (1 second). Tomorrow still plays with cutscenes disabled.</li><li>The <strong>Fullscreen Cutscenes</strong> switch in Rolling Settings saves your preference without changing the page. Fullscreen opens only for cutscenes and closes afterward only if the cutscene opened it. Delayed cutscenes show a Play fullscreen button when the browser needs a fresh tap, with native video fullscreen support on Safari. If you were already fullscreen, you stay fullscreen. Turning the switch off keeps cutscenes in the page. Mobile cutscenes fill the viewport in both orientations.</li><li>Flushed : Troll’s cutscene is always on and is hidden from both cutscene filter lists and their counts.</li><li>Skip buttons start above the screen. Hover at the top right to slide them down. On phones in either orientation, tap the subtle hidden-eye icon to reveal or hide them. Keyboard focus also reveals the controls.</li><li>Press <kbd>Space</kbd> to skip the current cutscene or <kbd>Shift</kbd> + <kbd>Space</kbd> to skip all remaining cutscenes. Both shortcuts also work before playback starts.</li><li><kbd>Alt</kbd> + <kbd>↑</kbd> / <kbd>↓</kbd> changes all audio channels by 5%; <kbd>Alt</kbd> + <kbd>M</kbd> mutes or unmutes. Volume changes appear in a top-right notification. Sliders keep their individual arrow-key controls.</li><li>Moon movement, Remember gradients, and control animations respect reduced-motion preferences.</li></ul>
+                        </li>
+
+                        <li class="changelog-release-group changelog-eon130__section changelog-eon130__section--audio">
+                            <div class="changelog-featured-ui__header"><span class="changelog-featured-ui__icon" aria-hidden="true"><i class="fa-solid fa-sliders"></i></span><span class="changelog-featured-ui__heading"><span class="largeClass">Audio controls</span><span>Control the sounds you want to hear.</span></span><span class="changelog-featured-ui__badge">Reworked</span></div>
+                            <ul class="changelog-release-group__list"><li>Audio Settings now has four cards: <strong>Background Music</strong>, <strong>UI</strong>, <strong>Server Messages</strong>, and <strong>Sound Effects</strong>.</li><li>UI controls clicks, hovers, and roll clicks. Server Messages controls aura obtainment sounds. The Sound Effects card has two independent sliders: <strong>Other</strong> on the left controls explosions, Qbear’s meow, the seven Radiant Moon sounds, and the Singularity summon; <strong>Cutscenes</strong> on the right controls only cutscene audio.</li><li>The same controls appear on aura pages. Volumes carry between pages, preserve existing preferences, and update audio already playing. Master mute and volume shortcuts cover every slider.</li></ul>
+                        </li>
+
+                        <li class="changelog-release-group changelog-eon130__section changelog-eon130__section--session">
+                            <div class="changelog-featured-ui__header"><span class="changelog-featured-ui__icon" aria-hidden="true"><i class="fa-solid fa-clock-rotate-left"></i></span><span class="changelog-featured-ui__heading"><span class="largeClass">Return to previous session</span><span>Pick up where you left off.</span></span><span class="changelog-featured-ui__badge">New</span></div>
+                            <ul class="changelog-release-group__list"><li>Refresh or reopen the calculator within 15 minutes of your last activity to see a return button centered 100px above the bottom of the screen.</li><li>Choose to restore your calculator setup, results, roll counts, and Radiant Moon progress. Interrupted rolls return stopped so you can decide when to roll again.</li><li>Restoring moon progress does not replay collection sounds. The prompt only appears when there is recent activity to restore.</li></ul>
                         </li>
 
                         <li class="changelog-release-group changelog-eon130__section changelog-eon130__section--qol">
@@ -2352,7 +2332,7 @@
 
                         <li class="changelog-release-group changelog-eon130__section changelog-eon130__section--rolling-fix" id="changelog-rolling-recovery">
                             <div class="changelog-featured-ui__header"><span class="changelog-featured-ui__icon" aria-hidden="true"><i class="fa-solid fa-wrench"></i></span><span class="changelog-featured-ui__heading"><span class="largeClass">Bug fixes</span><span>Reliable rolling and accurate effects.</span></span><span class="changelog-featured-ui__badge">Fixed</span></div>
-                            <ul class="changelog-release-group__list"><li>Stalled calculations and background workers now recover or restore the controls so you can retry. Cancel Roll also stops an unresponsive calculation.</li><li>Moon progress and the guaranteed next-roll Tomorrow stay consistent across single rolls, bulk runs, and Sol’s-like rolling.</li><li>Buff icons and luck values update with your active selections. True Aura unlocks end correctly when you leave the forest.</li></ul><p class="credits-text">Thanks to <a href="https://discord.com/users/1093918845544190132" class="subtitleClass" target="_blank" rel="noopener">jhtfe</a> for reporting the stuck-rolling bug!</p>
+                            <ul class="changelog-release-group__list"><li>Stalled calculations and background workers now recover or restore the controls so you can retry. Cancel Roll also stops an unresponsive calculation.</li><li>Moon progress and the guaranteed next-roll Tomorrow stay consistent across single rolls, bulk runs, and Sol’s-like rolling.</li><li>Buff icons and luck values update with your active selections. True Aura unlocks end correctly when you leave the forest.</li><li>Sol’s-like roll feed auto-scroll stays on through incoming rolls, layout changes, and page resizing. Manually scrolling inside the feed pauses following; Follow newest rolls restores it.</li><li>Dreamcatcher’s cutscene label now uses the correct aura title and fits inside its button without the dark, clipped text.</li><li>Removed unused testing files and source comments, keeping the version comment beside the main page title.</li></ul><p class="credits-text">Thanks to <a href="https://discord.com/users/1093918845544190132" class="subtitleClass" target="_blank" rel="noopener">jhtfe</a> for reporting the stuck-rolling bug!</p>
                         </li>
                     </ul>
                 </section>

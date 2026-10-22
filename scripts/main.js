@@ -78,7 +78,6 @@ const ROLLING_SETTINGS_STORAGE_KEY = 'solsRollingCalculator:rollingSettings:v1';
 const SOLS_LIKE_ROLLS_PER_SECOND_MIN = 1;
 const SOLS_LIKE_ROLLS_PER_SECOND_MAX = 1000;
 const SOLS_LIKE_ROLLS_PER_SECOND_DEFAULT = 120;
-const LIVE_ROLL_FEED_BOTTOM_TOLERANCE_PX = 4;
 const ROLL_FEED_SORT_MODE = Object.freeze({
     RECENT: 'recent',
     RARITY: 'rarity',
@@ -119,6 +118,9 @@ const rollingSettingsPreference = {
     cutscenePlaybackFilters: {}
 };
 let cutsceneFullscreenTransition = null;
+let cutsceneFullscreenOwned = false;
+let cutsceneFullscreenDismissed = false;
+let cutsceneNativeFullscreenVideo = null;
 let legacyAutoPauseAfterCutscene = null;
 let hasStoredCutscenePlaybackFilters = false;
 let cutscenePlaybackMigrationCompleted = false;
@@ -329,29 +331,23 @@ function hydrateAudioSettings() {
         if (Number.isFinite(parsed.musicVolume)) {
             appState.audio.musicVolume = clamp01(parsed.musicVolume);
         }
-        if (Number.isFinite(parsed.cutsceneVolume)) {
-            appState.audio.cutsceneVolume = clamp01(parsed.cutsceneVolume);
-        }
-        if (Number.isFinite(parsed.obtainVolume)) {
-            appState.audio.obtainVolume = clamp01(parsed.obtainVolume);
-        }
+        const effectsVolume = parsed.effectsVolume ?? parsed.cutsceneVolume;
+        const cutsceneVolume = parsed.cutsceneVolume ?? parsed.effectsVolume;
+        const serverVolume = parsed.serverVolume ?? parsed.obtainVolume;
+        if (Number.isFinite(effectsVolume)) appState.audio.effectsVolume = clamp01(effectsVolume);
+        if (Number.isFinite(cutsceneVolume)) appState.audio.cutsceneVolume = clamp01(cutsceneVolume);
+        if (Number.isFinite(serverVolume)) appState.audio.serverVolume = clamp01(serverVolume);
         if (Number.isFinite(parsed.uiVolume)) {
             appState.audio.uiVolume = clamp01(parsed.uiVolume);
-        }
-        if (Number.isFinite(parsed.uiLastVolume)) {
-            appState.audio.uiLastVolume = clamp01(parsed.uiLastVolume);
-        }
-        if (Number.isFinite(parsed.obtainLastVolume)) {
-            appState.audio.obtainLastVolume = clamp01(parsed.obtainLastVolume);
         }
         if (typeof parsed.masterMuted === 'boolean') {
             appState.audio.masterMuted = parsed.masterMuted;
         }
 
         appState.audio.ui = (appState.audio.uiVolume ?? 0) > 0;
-        appState.audio.obtain = (appState.audio.obtainVolume ?? 0) > 0;
-        appState.audio.roll = (appState.audio.obtainVolume ?? 0) > 0
+        appState.audio.roll = (appState.audio.serverVolume ?? 0) > 0
             || (appState.audio.musicVolume ?? 0) > 0
+            || (appState.audio.effectsVolume ?? 0) > 0
             || (appState.audio.cutsceneVolume ?? 0) > 0;
     } catch (error) {
     }
@@ -604,11 +600,10 @@ function persistAudioSettings() {
             AUDIO_SETTINGS_STORAGE_KEY,
             JSON.stringify({
                 musicVolume: appState.audio.musicVolume,
+                effectsVolume: appState.audio.effectsVolume,
                 cutsceneVolume: appState.audio.cutsceneVolume,
-                obtainVolume: appState.audio.obtainVolume,
+                serverVolume: appState.audio.serverVolume,
                 uiVolume: appState.audio.uiVolume,
-                uiLastVolume: appState.audio.uiLastVolume,
-                obtainLastVolume: appState.audio.obtainLastVolume,
                 masterMuted: appState.audio.masterMuted
             })
         );
@@ -812,7 +807,7 @@ function resetRadiantMoonSounds(moons = 0) {
 function playNextRadiantMoonSound() {
     if (stopRadiantMoonSound || !radiantMoonSoundQueue.length) return;
     const ordinal = radiantMoonSoundQueue.shift();
-    if (!isSoundChannelActive('obtain')) {
+    if (!isSoundChannelActive('effects')) {
         radiantMoonSoundQueue.length = 0;
         return;
     }
@@ -836,7 +831,7 @@ function playNextRadiantMoonSound() {
     timeout = setTimeout(finish, 30000);
     ensureDeferredMediaSource(audio);
     if (audio.error) audio.load();
-    applyMediaGain(audio, { category: 'obtain' });
+    applyMediaGain(audio, { category: 'effects' });
     audio.muted = false;
     audio.currentTime = 0;
     audio.play().catch(finish);
@@ -1231,14 +1226,9 @@ function resolveRuneConfiguration(value) {
 function applyChannelVolumeToElements(channel) {
     if (typeof document === 'undefined') return;
 
-    let category = 'obtain';
-    if (channel === 'ui') {
-        category = 'ui';
-    } else if (channel === 'cutscene') {
-        category = 'cutscene';
-    } else if (channel === 'music') {
-        category = 'music';
-    }
+    appState.audio.activeSounds.forEach(sound => {
+        if (sound.category === channel) sound.gainNode.gain.value = sound.baseGain * getChannelVolumeMultiplier(channel);
+    });
 
     if (!experienceStarted) {
         if (channel === 'music') {
@@ -1250,20 +1240,17 @@ function applyChannelVolumeToElements(channel) {
         return;
     }
 
-    const selector = `[data-audio-channel="${channel}"]`;
+    const selector = `audio[data-audio-channel="${channel}"], video[data-audio-channel="${channel}"]`;
     document.querySelectorAll(selector).forEach(element => {
         if (channel === 'music' && element.id === 'ambientMusic') {
             return;
         }
-        applyMediaGain(element, { category });
+        applyMediaGain(element, { category: channel });
     });
 
     if (channel === 'music') {
         const bgMusic = document.getElementById('ambientMusic');
         synchronizeBackgroundRouting(bgMusic);
-        if (!isSoundChannelActive('music')) {
-            stopSingularitySummonSequence();
-        }
     }
 }
 
@@ -1410,10 +1397,10 @@ function initializeRollingSettingsPanel() {
         void setCutsceneFullscreen(!rollingSettingsPreference.fullscreenCutscenes);
     });
     const reflectFullscreen = () => {
-        if (getFullscreenElement() || cutsceneFullscreenTransition) return;
-        rollingSettingsPreference.fullscreenCutscenes = false;
-        persistRollingSettings();
-        syncRollingSettingsControls();
+        if (cutsceneFullscreenOwned && !getFullscreenElement() && !cutsceneFullscreenTransition) {
+            cutsceneFullscreenOwned = false;
+            cutsceneFullscreenDismissed = true;
+        }
     };
     document.addEventListener('fullscreenchange', reflectFullscreen);
     document.addEventListener('webkitfullscreenchange', reflectFullscreen);
@@ -1560,6 +1547,10 @@ function getCutsceneAuras() {
         .sort(compareAurasByDisplayTierThenChance);
 }
 
+function getSelectableCutsceneAuras() {
+    return getCutsceneAuras().filter(aura => !ALWAYS_ON_CUTSCENES.has(aura.cutscene));
+}
+
 function ensureCutsceneFilterPreferences() {
     const pauseFilters = rollingSettingsPreference.cutscenePauseFilters;
     const playbackFilters = rollingSettingsPreference.cutscenePlaybackFilters;
@@ -1575,6 +1566,7 @@ function ensureCutsceneFilterPreferences() {
 }
 
 function isAuraCutscenePauseEnabled(aura) {
+    if (ALWAYS_ON_CUTSCENES.has(aura?.cutscene)) return false;
     if (!aura?.name) {
         return false;
     }
@@ -1596,7 +1588,7 @@ function hasAnyCutscenePlaybackEnabled() {
 }
 
 function syncCutscenePlaybackStatusPill() {
-    const cutsceneAuras = getCutsceneAuras();
+    const cutsceneAuras = getSelectableCutsceneAuras();
     const playbackCount = cutsceneAuras.filter(isAuraCutscenePlaybackEnabled).length;
     const total = cutsceneAuras.length;
     const active = playbackCount > 0;
@@ -1651,7 +1643,7 @@ function initializeCinematicStateFromCutsceneFilters() {
 
 function syncCutsceneFilterLauncherLabels() {
     ensureCutsceneFilterPreferences();
-    const cutsceneAuras = getCutsceneAuras();
+    const cutsceneAuras = getSelectableCutsceneAuras();
     const total = cutsceneAuras.length;
     const pauseCount = cutsceneAuras.filter(isAuraCutscenePauseEnabled).length;
     const playbackCount = cutsceneAuras.filter(isAuraCutscenePlaybackEnabled).length;
@@ -1793,7 +1785,7 @@ function populateCutsceneFilterList(mode) {
 
     ensureCutsceneFilterPreferences();
     const fragment = document.createDocumentFragment();
-    getCutsceneAuras().forEach(aura => {
+    getSelectableCutsceneAuras().forEach(aura => {
         const button = document.createElement('button');
         const enabled = pauseMode
             ? isAuraCutscenePauseEnabled(aura)
@@ -2207,13 +2199,6 @@ function updateAudioSliderLabel(channel, percentValue) {
     }
 }
 
-function updateUiToggleStatus() {
-    const uiToggle = document.getElementById('audioUiToggle');
-    if (uiToggle) {
-        uiToggle.checked = appState.audio.ui;
-    }
-}
-
 const appNotificationEntries = new Map();
 function showAppNotification(message, { id = 'general', duration = 2800 } = {}) {
     const region = document.getElementById('appNotifications');
@@ -2257,7 +2242,7 @@ function initializeAudioKeyboardShortcuts() {
         if (event.key !== 'ArrowUp' && event.key !== 'ArrowDown') return;
         event.preventDefault();
         const direction = event.key === 'ArrowUp' ? 1 : -1;
-        const channels = ['music', 'cutscene', 'obtain', 'ui'];
+        const channels = ['music', 'ui', 'server', 'effects', 'cutscene'];
         channels.forEach(channel => {
             const percent = Math.round(clamp01(appState.audio[`${channel}Volume`]) * 100);
             setChannelVolume(channel, (percent + direction * 5) / 100, { persist: false });
@@ -2265,68 +2250,38 @@ function initializeAudioKeyboardShortcuts() {
         if (direction > 0 && appState.audio.masterMuted) setMasterMuteState(false, { persist: false });
         persistAudioSettings();
         const levels = channels.map(channel => `${Math.round(appState.audio[`${channel}Volume`] * 100)}%`);
-        showAppNotification(`Volume ${direction > 0 ? 'up' : 'down'} · Music ${levels[0]} · Cutscenes ${levels[1]} · Obtain ${levels[2]} · Interface ${levels[3]}${appState.audio.masterMuted ? ' · Muted' : ''}`, { id: 'volume' });
+        showAppNotification(`Volume ${direction > 0 ? 'up' : 'down'} · Music ${levels[0]} · UI ${levels[1]} · Server Messages ${levels[2]} · Other Effects ${levels[3]} · Cutscenes ${levels[4]}${appState.audio.masterMuted ? ' · Muted' : ''}`, { id: 'volume' });
     });
 }
 
 function setChannelVolume(channel, normalized, { persist = true, notify = false } = {}) {
+    if (!['music', 'ui', 'server', 'effects', 'cutscene'].includes(channel)) return;
     const value = clamp01(normalized);
-    if (channel === 'ui') {
-        appState.audio.uiVolume = value;
-        if (value > 0) {
-            appState.audio.uiLastVolume = value;
-        }
-        appState.audio.ui = value > 0;
-        updateUiToggleStatus();
-    } else if (channel === 'cutscene') {
-        appState.audio.cutsceneVolume = value;
-    } else if (channel === 'music') {
-        appState.audio.musicVolume = value;
-    } else {
-        appState.audio.obtainVolume = value;
-        if (value > 0) {
-            appState.audio.obtainLastVolume = value;
-        }
-        appState.audio.obtain = value > 0;
-    }
+    appState.audio[`${channel}Volume`] = value;
+    appState.audio.ui = appState.audio.uiVolume > 0;
 
-    const rollingActive = (appState.audio.obtainVolume ?? 0) > 0
+    const rollingActive = (appState.audio.serverVolume ?? 0) > 0
         || (appState.audio.musicVolume ?? 0) > 0
+        || (appState.audio.effectsVolume ?? 0) > 0
         || (appState.audio.cutsceneVolume ?? 0) > 0;
     appState.audio.roll = rollingActive;
 
     updateAudioSliderLabel(channel, value * 100);
     applyChannelVolumeToElements(channel);
+    document.dispatchEvent(new CustomEvent('aura-audio-settings-change'));
 
-    if (experienceStarted && (channel === 'music' || channel === 'cutscene' || channel === 'obtain')) {
+    if (experienceStarted) {
         resumeAudioEngine();
-        const selector = `[data-audio-channel="${channel}"]`;
-        document.querySelectorAll(selector).forEach(element => {
-            element.muted = false;
-            if (typeof element.removeAttribute === 'function') {
-                element.removeAttribute('muted');
-            }
-        });
         if (channel === 'music' && value > 0 && !appState.audio.masterMuted) {
             startBackgroundMusic(document.getElementById('ambientMusic'));
         }
-    }
-
-    if (experienceStarted && channel === 'ui') {
-        resumeAudioEngine();
-        document.querySelectorAll('[data-audio-channel="ui"]').forEach(element => {
-            element.muted = false;
-            if (typeof element.removeAttribute === 'function') {
-                element.removeAttribute('muted');
-            }
-        });
     }
 
     if (persist) {
         persistAudioSettings();
     }
     if (notify) {
-        const label = { music: 'Music', cutscene: 'Cutscenes', obtain: 'Obtain sounds', ui: 'Interface sounds' }[channel] || 'Audio';
+        const label = { music: 'Background Music', ui: 'UI', server: 'Server Messages', effects: 'Other Sound Effects', cutscene: 'Cutscene Sounds' }[channel];
         showAppNotification(`${label} · ${Math.round(value * 100)}%${appState.audio.masterMuted ? ' · Muted' : ''}`, { id: 'volume' });
     }
 }
@@ -2339,15 +2294,8 @@ function initializeAudioSettingsPanel() {
 
     const inputs = Array.from(overlay.querySelectorAll('.audio-slider__input'));
     inputs.forEach(input => {
-        const channel = input.dataset.audioChannel || 'obtain';
-        let defaultValue = appState.audio.obtainVolume;
-        if (channel === 'ui') {
-            defaultValue = appState.audio.uiVolume;
-        } else if (channel === 'cutscene') {
-            defaultValue = appState.audio.cutsceneVolume;
-        } else if (channel === 'music') {
-            defaultValue = appState.audio.musicVolume;
-        }
+        const channel = input.dataset.audioChannel;
+        const defaultValue = appState.audio[`${channel}Volume`];
         const percent = Math.round(clamp01(defaultValue) * 100);
         input.value = percent;
         syncAudioSliderVisual(input, percent);
@@ -2370,15 +2318,6 @@ function initializeAudioSettingsPanel() {
             hideAudioSettingsOverlay();
         }
     });
-
-    const uiToggle = document.getElementById('audioUiToggle');
-    if (uiToggle) {
-        uiToggle.checked = appState.audio.ui;
-
-        uiToggle.addEventListener('change', () => {
-            toggleInterfaceAudio();
-        });
-    }
 
     openButton.addEventListener('click', event => {
         event.preventDefault();
@@ -3103,13 +3042,19 @@ function canUseMediaElementSource(element) {
     }
 }
 
-function getChannelVolumeMultiplier(category = 'obtain') {
+function getChannelVolumeMultiplier(category = 'server') {
     if (appState.audio.masterMuted) return 0;
     if (category === 'ui') return clamp01(appState.audio.uiVolume ?? 1);
+    if (category === 'effects') return clamp01(appState.audio.effectsVolume ?? 1);
     if (category === 'cutscene') return clamp01(appState.audio.cutsceneVolume ?? 1);
     if (category === 'music') return clamp01(appState.audio.musicVolume ?? 1);
-    return clamp01(appState.audio.obtainVolume ?? 1);
+    return clamp01(appState.audio.serverVolume ?? 1);
 }
+
+globalThis.AuraAudio = Object.freeze({
+    getMasterMuted: () => appState.audio.masterMuted,
+    getVolume: getChannelVolumeMultiplier
+});
 
 function resolveBaseGain(element, fallback = 1) {
     const dataset = element?.dataset || {};
@@ -3140,7 +3085,7 @@ function resolveBaseGain(element, fallback = 1) {
     return fallback;
 }
 
-function applyMediaGain(element, { category = 'obtain', fallbackGain } = {}) {
+function applyMediaGain(element, { category = element?.dataset.audioChannel || 'server', fallbackGain } = {}) {
     if (!element) return;
 
     const baseGain = resolveBaseGain(element, fallbackGain ?? 1);
@@ -3187,11 +3132,10 @@ function isSoundChannelActive(category) {
     const channelVolume = getChannelVolumeMultiplier(category);
     if (channelVolume <= 0) return false;
     if (category === 'ui') return appState.audio.ui;
-    if (category === 'cutscene') return appState.audio.roll;
     return appState.audio.roll;
 }
 
-function playSoundEffect(audioElement, category = 'rolling') {
+function playSoundEffect(audioElement, category = audioElement?.dataset.audioChannel || 'effects') {
     if (!audioElement) return;
 
     const resolvePlaybackGain = () => {
@@ -3223,6 +3167,7 @@ function playSoundEffect(audioElement, category = 'rolling') {
 
         const fallbackPlayer = audioElement.cloneNode(true);
         fallbackPlayer.removeAttribute('id');
+        fallbackPlayer.dataset.audioChannel = category;
         fallbackPlayer.src = sourceUrl;
         fallbackPlayer.currentTime = 0;
         fallbackPlayer.muted = false;
@@ -3312,8 +3257,11 @@ function playSoundEffect(audioElement, category = 'rolling') {
         source.buffer = buffer;
         const gainNode = context.createGain();
         gainNode.gain.value = currentGain;
+        const activeSound = { category, gainNode, baseGain: resolveBaseGain(audioElement, category === 'ui' ? 0.3 : 1) };
+        appState.audio.activeSounds.add(activeSound);
         source.connect(gainNode).connect(context.destination);
         source.onended = () => {
+            appState.audio.activeSounds.delete(activeSound);
             source.disconnect();
             gainNode.disconnect();
         };
@@ -3515,7 +3463,7 @@ function stopSingularitySummonSequence({ resetAudio = true } = {}) {
 
 function playSingularitySummonSequence(bgMusic, { expectedMusicSrc, onComplete } = {}) {
     const summonSound = getSingularitySummonSound();
-    if (!summonSound || !isSoundChannelActive('music') || areShakeEffectsDisabled()) {
+    if (!summonSound || !isSoundChannelActive('effects') || areShakeEffectsDisabled()) {
         if (typeof onComplete === 'function') {
             onComplete();
         }
@@ -3543,7 +3491,7 @@ function playSingularitySummonSequence(bgMusic, { expectedMusicSrc, onComplete }
         console.warn('Unable to rewind Singularity summon sound', error);
     }
 
-    applyMediaGain(summonSound, { category: 'music', fallbackGain: 0.35 });
+    applyMediaGain(summonSound, { category: 'effects', fallbackGain: 0.35 });
     setSingularitySummonVisualActive(true);
 
     const cleanup = () => {
@@ -3626,7 +3574,8 @@ function setMasterMuteState(isMuted, { force = false, persist = true } = {}) {
         clearPendingBackgroundMusicGestureRetry();
     }
 
-    ['music', 'obtain', 'cutscene', 'ui'].forEach(channel => applyChannelVolumeToElements(channel));
+    ['music', 'ui', 'server', 'effects', 'cutscene'].forEach(channel => applyChannelVolumeToElements(channel));
+    document.dispatchEvent(new CustomEvent('aura-audio-settings-change'));
 
     if (!isMuted) {
         resumeAudioEngine();
@@ -3643,62 +3592,6 @@ function setMasterMuteState(isMuted, { force = false, persist = true } = {}) {
 function toggleMasterMute() {
     setMasterMuteState(!appState.audio.masterMuted);
     showAppNotification(appState.audio.masterMuted ? 'All audio muted' : 'Audio unmuted', { id: 'volume' });
-}
-
-function toggleRollingAudio() {
-    appState.audio.roll = !appState.audio.roll;
-    const bgMusic = document.getElementById('ambientMusic');
-    const soundToggle = document.getElementById('rollAudioToggle');
-    if (bgMusic && !bgMusic.getAttribute('data-current-src')) {
-        const pendingSrc = bgMusic.getAttribute('src') || bgMusic.dataset?.src || bgMusic.currentSrc;
-        if (pendingSrc) {
-            bgMusic.setAttribute('data-current-src', pendingSrc);
-        }
-    }
-
-    if (appState.audio.roll) {
-        resumeAudioEngine();
-        playSoundEffect(clickSoundEffectElement, 'ui');
-        if (bgMusic && experienceStarted) {
-            primeBackgroundMusic(bgMusic);
-            if (glitchPresentationEnabled) {
-                updateGlitchAudioControls(shouldUseGlitchBaseEffect());
-            }
-            startBackgroundMusic(bgMusic);
-        }
-        applyChannelVolumeToElements('music');
-        applyChannelVolumeToElements('obtain');
-    } else if (bgMusic) {
-        stopSingularitySummonSequence();
-        bgMusic.muted = true;
-        if (typeof bgMusic.setAttribute === 'function') {
-            bgMusic.setAttribute('muted', '');
-        }
-        bgMusic.pause();
-        bgMusic.currentTime = 0;
-    }
-
-    if (soundToggle) {
-        soundToggle.textContent = appState.audio.roll ? 'Audio: On' : 'Audio: Off';
-        soundToggle.setAttribute('aria-pressed', appState.audio.roll);
-    }
-}
-
-function toggleInterfaceAudio() {
-    const enableUi = !appState.audio.ui;
-    const restoredVolume = appState.audio.uiLastVolume > 0 ? appState.audio.uiLastVolume : DEFAULT_AUDIO_LEVEL;
-    setChannelVolume('ui', enableUi ? restoredVolume : 0, { notify: true });
-    resumeAudioEngine();
-
-    const uiSoundToggle = document.getElementById('uiAudioToggle');
-    if (uiSoundToggle) {
-        uiSoundToggle.textContent = appState.audio.ui ? 'UI Sound: On' : 'UI Sound: Off';
-        uiSoundToggle.setAttribute('aria-pressed', appState.audio.ui);
-    }
-
-    if (appState.audio.ui) {
-        playSoundEffect(clickSoundEffectElement, 'ui');
-    }
 }
 
 function isGlitchBiomeSelected() {
@@ -6873,6 +6766,10 @@ function playAuraVideo(videoId, options = {}) {
         } else if (skipAllButton.parentElement !== actions) {
             actions.appendChild(skipAllButton);
         }
+        skipButton.setAttribute('aria-keyshortcuts', 'Space');
+        skipButton.title = 'Skip cutscene (Space)';
+        skipAllButton.setAttribute('aria-keyshortcuts', 'Shift+Space');
+        skipAllButton.title = 'Skip all remaining cutscenes (Shift+Space)';
         controls.classList.remove('skip-cinematic-controls--open');
         revealButton.setAttribute('aria-expanded', 'false');
         revealButton.setAttribute('aria-label', 'Show cutscene controls');
@@ -6890,9 +6787,7 @@ function playAuraVideo(videoId, options = {}) {
 
         ensureDeferredMediaSource(video);
 
-        if (appState.audio.roll) {
-            applyMediaGain(video, { category: 'cutscene' });
-        }
+        applyMediaGain(video, { category: 'cutscene' });
 
         appState.videoPlaying = true;
         const bgMusic = manageAmbient ? document.getElementById('ambientMusic') : null;
@@ -6923,6 +6818,7 @@ function playAuraVideo(videoId, options = {}) {
         overlay.dataset.fadeDuration = String(fadeDuration);
         overlay.classList.add('cinematic-overlay--loading');
         overlay.style.display = 'flex';
+        const fullscreenAttempt = enterCutsceneFullscreen(video);
         overlay.setAttribute('aria-hidden', 'false');
         video.style.display = 'none';
         controls.style.display = 'flex';
@@ -6942,7 +6838,7 @@ function playAuraVideo(videoId, options = {}) {
                 paddingRight: previousPadding
             };
         }
-        video.muted = !appState.audio.roll;
+        video.muted = !isSoundChannelActive('cutscene');
 
         let cleanedUp = false;
         let playbackStarted = false;
@@ -6953,13 +6849,21 @@ function playAuraVideo(videoId, options = {}) {
         let lastPlaybackTime = 0;
         let lastProgressAt = Date.now();
         let fadeAnimation = null;
+        let fullscreenPrompt = null;
+        let cancelFullscreenPrompt = () => {};
         const previousFocus = document.activeElement;
         const handleControlsKeydown = event => {
+            if ((event.code === 'Space' || event.key === ' ') && !event.altKey && !event.ctrlKey && !event.metaKey && !event.isComposing) {
+                event.preventDefault();
+                event.stopImmediatePropagation();
+                if (!event.repeat) (event.shiftKey ? skipAllButton : skipButton).click();
+                return;
+            }
             if (event.key === 'Tab') {
-                const focusable = [revealButton, skipButton, skipAllButton].filter(button => getComputedStyle(button).display !== 'none');
+                const focusable = [fullscreenPrompt?.querySelector('button'), revealButton, skipButton, skipAllButton].filter(button => button && getComputedStyle(button).display !== 'none');
                 const first = focusable[0];
                 const last = focusable[focusable.length - 1];
-                if (!controls.contains(document.activeElement) || (event.shiftKey && document.activeElement === first) || (!event.shiftKey && document.activeElement === last)) {
+                if ((!controls.contains(document.activeElement) && !fullscreenPrompt?.contains(document.activeElement)) || (event.shiftKey && document.activeElement === first) || (!event.shiftKey && document.activeElement === last)) {
                     event.preventDefault();
                     (event.shiftKey ? last : first)?.focus({ preventScroll: true });
                 }
@@ -6974,7 +6878,44 @@ function playAuraVideo(videoId, options = {}) {
                 previousFocus?.focus({ preventScroll: true });
             }
         };
-        document.addEventListener('keydown', handleControlsKeydown);
+        document.addEventListener('keydown', handleControlsKeydown, true);
+
+        const awaitFullscreenGesture = () => new Promise(resolveFullscreen => {
+            fullscreenPrompt = document.createElement('div');
+            fullscreenPrompt.className = 'cinematic-fullscreen-prompt';
+            fullscreenPrompt.setAttribute('role', 'group');
+            fullscreenPrompt.setAttribute('aria-label', 'Start fullscreen cutscene');
+            const button = document.createElement('button');
+            button.type = 'button';
+            button.className = 'interface-button';
+            button.textContent = 'Play fullscreen';
+            const hint = document.createElement('p');
+            hint.textContent = 'Tap or press Enter to begin. Space skips; Shift+Space skips all.';
+            let continueInPage = false;
+            const finish = () => {
+                fullscreenPrompt?.remove();
+                fullscreenPrompt = null;
+                overlay.classList.remove('cinematic-overlay--awaiting-fullscreen');
+                cancelFullscreenPrompt = () => {};
+                resolveFullscreen();
+            };
+            cancelFullscreenPrompt = finish;
+            button.addEventListener('click', async () => {
+                if (continueInPage) { finish(); return; }
+                const result = enterCutsceneFullscreen(video);
+                button.disabled = true;
+                if (await result) { finish(); return; }
+                if (cleanedUp) return;
+                button.disabled = false;
+                button.textContent = 'Play in page';
+                hint.textContent = 'This browser blocked fullscreen. Continue in the page, or use Space to skip.';
+                continueInPage = true;
+            });
+            fullscreenPrompt.append(button, hint);
+            overlay.appendChild(fullscreenPrompt);
+            overlay.classList.add('cinematic-overlay--awaiting-fullscreen');
+            button.focus({ preventScroll: true });
+        });
 
         const safelyResetVideo = () => {
             try {
@@ -6992,6 +6933,7 @@ function playAuraVideo(videoId, options = {}) {
             video.removeEventListener('error', handlePlaybackError);
             video.removeEventListener('timeupdate', handlePlaybackProgress);
             video.removeEventListener('playing', handlePlaying);
+            video.removeEventListener('webkitendfullscreen', handleNativeFullscreenEnd);
             document.removeEventListener('visibilitychange', handleVisibilityChange);
             window.removeEventListener('pagehide', handlePageHide);
         };
@@ -6999,6 +6941,8 @@ function playAuraVideo(videoId, options = {}) {
         const cleanup = (result = 'finished') => {
             if (cleanedUp) return;
             cleanedUp = true;
+            const promptHadFocus = fullscreenPrompt?.contains(document.activeElement);
+            cancelFullscreenPrompt();
             fadeAnimation?.cancel();
             if (watchdogIntervalId !== null) {
                 window.clearInterval(watchdogIntervalId);
@@ -7018,8 +6962,8 @@ function playAuraVideo(videoId, options = {}) {
             }
             controls.style.display = 'none';
             controls.classList.remove('skip-cinematic-controls--open');
-            document.removeEventListener('keydown', handleControlsKeydown);
-            if (controls.contains(document.activeElement) && previousFocus?.isConnected) {
+            document.removeEventListener('keydown', handleControlsKeydown, true);
+            if ((promptHadFocus || controls.contains(document.activeElement)) && previousFocus?.isConnected) {
                 previousFocus.focus({ preventScroll: true });
             }
             skipButton.style.display = 'none';
@@ -7041,6 +6985,11 @@ function playAuraVideo(videoId, options = {}) {
 
         function handleEnded() {
             cleanup();
+        }
+
+        function handleNativeFullscreenEnd() {
+            cutsceneFullscreenDismissed = true;
+            cleanup('skipped');
         }
 
         function handlePlaying() {
@@ -7145,6 +7094,7 @@ function playAuraVideo(videoId, options = {}) {
         video.addEventListener('error', handlePlaybackError);
         video.addEventListener('timeupdate', handlePlaybackProgress);
         video.addEventListener('playing', handlePlaying);
+        video.addEventListener('webkitendfullscreen', handleNativeFullscreenEnd);
         document.addEventListener('visibilitychange', handleVisibilityChange);
         window.addEventListener('pagehide', handlePageHide);
 
@@ -7158,13 +7108,19 @@ function playAuraVideo(videoId, options = {}) {
 
         void (async () => {
             try {
+                const [, fullscreenEntered] = await Promise.all([prepareCutsceneVideo(video), fullscreenAttempt]);
+                if (cleanedUp) return;
+                if (rollingSettingsPreference.fullscreenCutscenes && !fullscreenEntered && !getFullscreenElement() && !cutsceneFullscreenDismissed) {
+                    await awaitFullscreenGesture();
+                    if (cleanedUp) return;
+                }
                 const fade = fadeDuration > 0 ? (() => {
                     fadeAnimation = overlay.animate([{ opacity: 0 }, { opacity: 1 }], {
                         duration: fadeDuration, easing: 'ease-in-out', fill: 'forwards'
                     });
                     return fadeAnimation.finished;
                 })() : Promise.resolve();
-                await Promise.all([prepareCutsceneVideo(video), fade]);
+                await fade;
                 if (cleanedUp) return;
                 overlay.classList.remove('cinematic-overlay--fading');
                 safelyResetVideo();
@@ -7188,6 +7144,7 @@ function getFullscreenElement() {
         || document.webkitFullscreenElement
         || document.mozFullScreenElement
         || document.msFullscreenElement
+        || (cutsceneNativeFullscreenVideo?.webkitDisplayingFullscreen ? cutsceneNativeFullscreenVideo : null)
         || null;
 }
 
@@ -7211,6 +7168,13 @@ async function requestFullscreen(element) {
 
 async function exitFullscreen() {
     if (typeof document === 'undefined') return false;
+    if (cutsceneNativeFullscreenVideo?.webkitDisplayingFullscreen) {
+        try {
+            cutsceneNativeFullscreenVideo.webkitExitFullscreen();
+            cutsceneNativeFullscreenVideo = null;
+            return true;
+        } catch { return false; }
+    }
     if (!getFullscreenElement()) return false;
     const method = document.exitFullscreen
         || document.webkitExitFullscreen
@@ -7229,20 +7193,35 @@ async function exitFullscreen() {
 }
 
 function setCutsceneFullscreen(enabled) {
-    if (cutsceneFullscreenTransition) return cutsceneFullscreenTransition;
     rollingSettingsPreference.fullscreenCutscenes = Boolean(enabled);
     persistRollingSettings();
-    const operation = enabled
-        ? getFullscreenElement() ? Promise.resolve(true) : requestFullscreen(document.documentElement)
-        : getFullscreenElement() ? exitFullscreen() : Promise.resolve(true);
+    syncRollingSettingsControls();
+    if (!enabled) return releaseCutsceneFullscreen();
+    return Promise.resolve(true);
+}
+
+function enterCutsceneFullscreen(video) {
+    if (getFullscreenElement()) return Promise.resolve(true);
+    if (!rollingSettingsPreference.fullscreenCutscenes || !appState.videoPlaying || cutsceneFullscreenDismissed) {
+        return Promise.resolve(false);
+    }
+    if (cutsceneFullscreenTransition) return cutsceneFullscreenTransition;
+    const root = document.documentElement;
+    const documentFullscreenSupported = document.fullscreenEnabled !== false && Boolean(root.requestFullscreen || root.webkitRequestFullscreen || root.mozRequestFullScreen || root.msRequestFullscreen);
+    let operation;
+    if (documentFullscreenSupported) {
+        operation = requestFullscreen(root);
+    } else if (video?.readyState >= 1 && typeof video.webkitEnterFullscreen === 'function' && video.webkitSupportsFullscreen !== false) {
+        try {
+            video.webkitEnterFullscreen();
+            cutsceneNativeFullscreenVideo = video;
+            operation = Promise.resolve(true);
+        } catch { operation = Promise.resolve(false); }
+    } else {
+        operation = Promise.resolve(false);
+    }
     cutsceneFullscreenTransition = operation.then(success => {
-        if (!success) {
-            rollingSettingsPreference.fullscreenCutscenes = Boolean(getFullscreenElement());
-            persistRollingSettings();
-            showAppNotification(enabled
-                ? 'Fullscreen could not open. Cutscenes will fill the page.'
-                : 'Fullscreen could not close. Press Esc to leave.', { id: 'cutscene-fullscreen' });
-        }
+        cutsceneFullscreenOwned = success && Boolean(getFullscreenElement() || cutsceneNativeFullscreenVideo);
         return success;
     }).finally(() => {
         cutsceneFullscreenTransition = null;
@@ -7250,6 +7229,14 @@ function setCutsceneFullscreen(enabled) {
     });
     syncRollingSettingsControls();
     return cutsceneFullscreenTransition;
+}
+
+async function releaseCutsceneFullscreen({ preserveFullscreen = false } = {}) {
+    if (cutsceneFullscreenTransition) await cutsceneFullscreenTransition;
+    if (!cutsceneFullscreenOwned) return;
+    cutsceneFullscreenOwned = false;
+    if (!preserveFullscreen && getFullscreenElement()) await exitFullscreen();
+    cutsceneNativeFullscreenVideo = null;
 }
 
 async function playAuraSequence(queue, options = {}) {
@@ -7261,6 +7248,8 @@ async function playAuraSequence(queue, options = {}) {
     }
 
     if (cutsceneFullscreenTransition) await cutsceneFullscreenTransition;
+    const wasFullscreenAtStart = Boolean(getFullscreenElement());
+    cutsceneFullscreenDismissed = false;
 
     const ambientMusic = typeof document !== 'undefined' ? document.getElementById('ambientMusic') : null;
     const shouldResumeAmbient = !!(ambientMusic && !ambientMusic.paused);
@@ -7294,6 +7283,7 @@ async function playAuraSequence(queue, options = {}) {
             if (result === 'skipped-all') break;
         }
     } finally {
+        await releaseCutsceneFullscreen({ preserveFullscreen: wasFullscreenAtStart });
         if (ambientMusic && shouldResumeAmbient && appState.audio.roll) {
             startBackgroundMusic(ambientMusic);
         }
@@ -11247,6 +11237,14 @@ document.addEventListener('DOMContentLoaded', initializeRollingSettingsPanel);
 document.addEventListener('DOMContentLoaded', setupRollFeedSearch);
 document.addEventListener('DOMContentLoaded', setupRollFeedSorting);
 window.addEventListener('storage', event => {
+    if (event.key === AUDIO_SETTINGS_STORAGE_KEY) {
+        hydrateAudioSettings();
+        ['music', 'ui', 'server', 'effects', 'cutscene'].forEach(channel => {
+            setChannelVolume(channel, appState.audio[`${channel}Volume`], { persist: false });
+        });
+        setMasterMuteState(appState.audio.masterMuted, { force: true, persist: false });
+        return;
+    }
     if (event.key !== VISUAL_SETTINGS_STORAGE_KEY) return;
     hydrateVisualSettings();
     applyQualityPreferencesState();
@@ -11379,7 +11377,7 @@ function setupFortePixelatedSecret() {
         fortePixelatedSecretState.clickCount = 0;
         spawnFortePixelatedSecretMessage();
         temporarilyRevealQbearMeowedMessage(trigger);
-        playSoundEffect(qbearMeowSoundEffectElement, 'ui');
+        playSoundEffect(qbearMeowSoundEffectElement, 'effects');
     };
 
     trigger.addEventListener('click', activateSecret);
@@ -13265,6 +13263,79 @@ function createLiveRollFeed(onNavigate) {
     const latest = document.getElementById('rollFeedHistoryLatest');
     latest.textContent = 'Latest';
     const lastStart = () => Math.max(0, matches.length - LIVE_ROLL_FEED_PAGE_SIZE);
+    let followFrame = null;
+    let touchY = null;
+    let destroyed = false;
+
+    function pinToLatest() {
+        if (following && !destroyed) feedContainer.scrollTop = feedContainer.scrollHeight;
+    }
+
+    function scheduleFollowScroll() {
+        if (!following || destroyed || followFrame !== null) return;
+        followFrame = requestAnimationFrame(() => {
+            followFrame = null;
+            pinToLatest();
+        });
+    }
+
+    function stopFollowing() {
+        if (!following || destroyed) return;
+        following = false;
+        latest.disabled = false;
+        onNavigate();
+    }
+
+    function canScroll(direction) {
+        if (direction < 0) return feedContainer.scrollTop > 0;
+        return feedContainer.scrollTop + feedContainer.clientHeight < feedContainer.scrollHeight - 1;
+    }
+
+    function handleWheel(event) {
+        if (event.isTrusted && !event.ctrlKey && event.deltaY !== 0 && canScroll(event.deltaY)) stopFollowing();
+    }
+
+    function handleTouchStart(event) {
+        if (event.isTrusted) touchY = event.touches.length === 1 ? event.touches[0].clientY : null;
+    }
+
+    function handleTouchMove(event) {
+        if (!event.isTrusted || touchY === null || event.touches.length !== 1) return;
+        const delta = touchY - event.touches[0].clientY;
+        if (Math.abs(delta) > 4 && canScroll(delta)) stopFollowing();
+    }
+
+    function handleTouchEnd() { touchY = null; }
+
+    function handleScrollKey(event) {
+        if (!event.isTrusted || event.defaultPrevented || event.altKey || event.ctrlKey || event.metaKey) return;
+        if (event.target.closest?.('input, textarea, select, button, a, [contenteditable]:not([contenteditable="false"])')) return;
+        const direction = ['ArrowUp', 'PageUp', 'Home'].includes(event.key) || (event.key === ' ' && event.shiftKey)
+            ? -1 : ['ArrowDown', 'PageDown', 'End', ' '].includes(event.key) ? 1 : 0;
+        if (direction && canScroll(direction)) stopFollowing();
+    }
+
+    function handleScrollbarPointer(event) {
+        if (!event.isTrusted || event.pointerType !== 'mouse' || feedContainer.scrollHeight <= feedContainer.clientHeight) return;
+        const bounds = feedContainer.getBoundingClientRect();
+        const scale = bounds.width / feedContainer.offsetWidth;
+        const contentRight = bounds.left + (feedContainer.clientLeft + feedContainer.clientWidth) * scale;
+        const middleScroll = event.button === 1 && !event.target.closest?.('a, button');
+        const scrollbarScroll = event.button === 0 && event.target === feedContainer && event.clientX >= contentRight && event.clientX < bounds.right - feedContainer.clientLeft * scale;
+        if (middleScroll || scrollbarScroll) stopFollowing();
+    }
+
+    feedContainer.addEventListener('scroll', scheduleFollowScroll, { passive: true });
+    feedContainer.addEventListener('wheel', handleWheel, { passive: true });
+    feedContainer.addEventListener('touchstart', handleTouchStart, { passive: true });
+    feedContainer.addEventListener('touchmove', handleTouchMove, { passive: true });
+    feedContainer.addEventListener('touchend', handleTouchEnd, { passive: true });
+    feedContainer.addEventListener('touchcancel', handleTouchEnd, { passive: true });
+    feedContainer.addEventListener('keydown', handleScrollKey);
+    feedContainer.addEventListener('pointerdown', handleScrollbarPointer, { passive: true });
+    const resizeObserver = typeof ResizeObserver === 'function' ? new ResizeObserver(scheduleFollowScroll) : null;
+    resizeObserver?.observe(list);
+    resizeObserver?.observe(feedContainer);
 
     function render() {
         list.querySelectorAll(':scope > .aura-tier-separator').forEach(heading => heading.remove());
@@ -13315,7 +13386,8 @@ function createLiveRollFeed(onNavigate) {
     function followLatest() {
         following = true;
         render();
-        feedContainer.scrollTop = feedContainer.scrollHeight;
+        pinToLatest();
+        scheduleFollowScroll();
         onNavigate();
     }
     first.addEventListener('click', showFirst);
@@ -13326,10 +13398,6 @@ function createLiveRollFeed(onNavigate) {
     return {
         get length() { return records.length; },
         get following() { return following; },
-        updateFollowing(atBottom) {
-            following = atBottom && start === lastStart();
-            latest.disabled = following;
-        },
         followLatest,
         append(entries) {
             for (const record of entries) {
@@ -13337,7 +13405,8 @@ function createLiveRollFeed(onNavigate) {
                 if (query && record.presentation.searchText.includes(query)) matches.push(record);
             }
             render();
-            if (following) feedContainer.scrollTop = feedContainer.scrollHeight;
+            pinToLatest();
+            scheduleFollowScroll();
         },
         search() {
             const nextQuery = getRollFeedSearchQuery();
@@ -13347,6 +13416,7 @@ function createLiveRollFeed(onNavigate) {
             start = 0;
             render();
             feedContainer.scrollTop = following ? feedContainer.scrollHeight : 0;
+            scheduleFollowScroll();
         },
         sort(mode) {
             sortMode = mode;
@@ -13358,8 +13428,20 @@ function createLiveRollFeed(onNavigate) {
             start = 0;
             render();
             feedContainer.scrollTop = 0;
+            onNavigate();
         },
         destroy() {
+            destroyed = true;
+            if (followFrame !== null) cancelAnimationFrame(followFrame);
+            resizeObserver?.disconnect();
+            feedContainer.removeEventListener('scroll', scheduleFollowScroll);
+            feedContainer.removeEventListener('wheel', handleWheel);
+            feedContainer.removeEventListener('touchstart', handleTouchStart);
+            feedContainer.removeEventListener('touchmove', handleTouchMove);
+            feedContainer.removeEventListener('touchend', handleTouchEnd);
+            feedContainer.removeEventListener('touchcancel', handleTouchEnd);
+            feedContainer.removeEventListener('keydown', handleScrollKey);
+            feedContainer.removeEventListener('pointerdown', handleScrollbarPointer);
             first.removeEventListener('click', showFirst);
             previous.removeEventListener('click', showPrevious);
             next.removeEventListener('click', showNext);
@@ -14465,12 +14547,6 @@ function startRollSimulation(options = {}) {
         return;
     }
 
-    if (rollingSettingsPreference.fullscreenCutscenes && (
-        appState.cinematic || document.getElementById(BIOME_PRIMARY_SELECT_ID)?.value === 'radiantForest'
-    )) {
-        void setCutsceneFullscreen(true);
-    }
-
     const shouldFormatRolls = document.activeElement !== rollCountInput;
     setNumericInputValue(rollCountInput, total, {
         format: shouldFormatRolls,
@@ -14552,9 +14628,9 @@ function startRollSimulation(options = {}) {
         brandMark.classList.toggle('banner__emblem--spinning', total > 10_000_000);
     }
 
-    playSoundEffect(audio.roll, 'obtain');
+    playSoundEffect(audio.roll, 'ui');
     if (total >= 10000000) {
-        playSoundEffect(audio.explosion, 'obtain');
+        playSoundEffect(audio.explosion, 'effects');
     }
 
     let parsedLuck = isMultiplePotionRun
@@ -14727,18 +14803,18 @@ function startRollSimulation(options = {}) {
 
         if (highestChance >= 99999999) {
             if (biome === 'limbo') {
-                playSoundEffect(audio.m100limbo, 'obtain');
+                playSoundEffect(audio.m100limbo, 'server');
             } else {
-                playSoundEffect(audio.m100, 'obtain');
+                playSoundEffect(audio.m100, 'server');
             }
         } else if (highestChance >= 10000000) {
-            playSoundEffect(audio.m10, 'obtain');
+            playSoundEffect(audio.m10, 'server');
         } else if (highestChance >= 1000000) {
-            playSoundEffect(audio.k100, 'obtain');
+            playSoundEffect(audio.k100, 'server');
         } else if (highestChance >= 100000) {
-            playSoundEffect(audio.k10, 'obtain');
+            playSoundEffect(audio.k10, 'server');
         } else if (highestChance >= 1000) {
-            playSoundEffect(audio.k1, 'obtain');
+            playSoundEffect(audio.k1, 'server');
         }
 
         const biomeLabel = resolveSelectionLabel(
@@ -14960,11 +15036,6 @@ function startRollSimulation(options = {}) {
         const liveMarkupTemplate = document.createElement('template');
         const liveEntryTemplates = new Map();
 
-        const getLiveFeedDistanceFromBottom = () => Math.max(
-            0,
-            feedContainer.scrollHeight - feedContainer.clientHeight - feedContainer.scrollTop
-        );
-
         const syncLiveFeedFollowControl = () => {
             if (!followRollFeedButton) {
                 return;
@@ -14972,15 +15043,8 @@ function startRollSimulation(options = {}) {
             followRollFeedButton.hidden = !simulationActive || liveRunStopped || liveRollFeed.following;
         };
 
-        const handleLiveFeedScroll = () => {
-            liveRollFeed.updateFollowing(getLiveFeedDistanceFromBottom() <= LIVE_ROLL_FEED_BOTTOM_TOLERANCE_PX);
-            syncLiveFeedFollowControl();
-        };
-
         liveRollFeed = createLiveRollFeed(syncLiveFeedFollowControl);
-        feedContainer.addEventListener('scroll', handleLiveFeedScroll, { passive: true });
         cleanupLiveFeedFollowControl = () => {
-            feedContainer.removeEventListener('scroll', handleLiveFeedScroll);
             if (followRollFeedButton) {
                 followRollFeedButton.hidden = true;
             }

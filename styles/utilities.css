@@ -2223,6 +2223,13 @@ body.quality-no-roll-sigil-animations .sigil-glitch-flicker {
 .audio-slider__label { min-width: 0; line-height: 1.4; overflow-wrap: anywhere; }
 .audio-slider__meta { white-space: nowrap; flex-shrink: 0; }
 .audio-slider__value { min-width: calc(4ch + .56em); text-align: right; display: inline-block; }
+.audio-slider--effects { grid-template-rows: auto 1fr; }
+.audio-effects__sliders { position: relative; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.audio-effects__channel { min-width: 0; display: grid; grid-template-rows: 1fr 26px; gap: 10px; }
+.audio-effects__sliders::before { content: ""; position: absolute; top: 0; bottom: 0; left: 50%; border-left: 1px solid rgb(120 200 255 / .2); pointer-events: none; }
+.audio-slider--effects .audio-slider__label-row { grid-template-columns: 1fr; gap: 4px; align-content: start; letter-spacing: .08em; }
+.audio-slider--effects > .audio-slider__label { font-weight: 600; letter-spacing: .14em; }
+.audio-effects__channel .audio-slider__meta { justify-self: start; }
 .aura-directory-settings .audio-slider__value { min-width: calc(8ch + 1.12em); }
 
 .audio-slider__label-row,
@@ -3722,7 +3729,7 @@ body.quality-no-ui-animations .audio-slider__input::-moz-range-thumb {
 }
 
 .audio-modal__grid {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 10px;
 }
 
