@@ -2138,13 +2138,6 @@ body.quality-no-roll-sigil-animations .sigil-glitch-flicker {
     margin-top: 0.25em;
 }
 
-.cutscene-filter-toggle__aura .aura-tier-detail.rarity-tier-challenged,
-.cutscene-filter-toggle__aura .wiki-title__plain.rarity-tier-challenged {
-    color: #e4def5;
-    background: none;
-    animation: none;
-}
-
 .cutscene-filter-toggle__status {
     justify-self: end;
     white-space: nowrap;

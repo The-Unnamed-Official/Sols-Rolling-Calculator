@@ -92,7 +92,7 @@
   "Hasuen": {
     "name": "Hasuen",
     "url": "https://sol-rng.fandom.com/wiki/Hasuen",
-    "markup": "Hasuen"
+    "markup": "<span style=\"display:inline-block;font-family:Italianno,cursive;font-size:165%;font-weight:700;letter-spacing:0.08em;line-height:1.1;padding:0.04em 0.12em 0.08em 0.04em;background:linear-gradient(175deg,#c6ff30 0%,#dcff83 15%,#f4ffe8 31%,#fffefa 48%,#fff6ff 63%,#efbce9 83%,#fff0fa 100%);background-clip:text;-webkit-background-clip:text!important;color:#f7fff0;-webkit-text-fill-color:transparent\">Hasuen</span>"
   },
   "Veylune": {
     "name": "Veylune",

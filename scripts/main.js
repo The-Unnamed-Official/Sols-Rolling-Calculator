@@ -7576,6 +7576,7 @@ function isForcedChallengedAura(auraName) {
         'Meta',
         'Gravitational : Point Zero',
         'DreamCatcher',
+        'Dream Catcher',
         'Projection',
         'Neferkhaf',
         '赤月の破片',
