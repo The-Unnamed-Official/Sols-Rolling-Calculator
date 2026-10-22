@@ -1,4 +1,3 @@
-// Preserve attributed wiki text styling without allowing executable HTML or CSS.
 const {fields,plainText}=require('./fetch-aura-wiki.cjs');
 const {tabbers}=require('./aura-history-parser.cjs');
 const {repairMarkup}=require('../scripts/wiki-title-repairs.js');
@@ -46,7 +45,6 @@ function createRichText({auras={},items={},biomes=[]}) {
         const tokens=[];
         const hold=html=>{const token='\u0000'+tokens.length+'\u0000';tokens.push(html);return token;};
         let source=String(input).replace(/<!--[\s\S]*?-->|<(?:script|style|iframe)\b[^>]*>[\s\S]*?<\/(?:script|style|iframe)>|<ref\b[^>]*>[\s\S]*?<\/ref>/gi,'');
-        // Balanced templates support nested references without evaluating wiki code.
         for(let start=source.indexOf('{{');start>=0;start=source.indexOf('{{')) {
             let depth=0,end=-1;
             for(let index=start;index<source.length-1;index++) {
@@ -74,7 +72,6 @@ function createRichText({auras={},items={},biomes=[]}) {
             const classes=(/\bclass\s*=\s*(?:"([^"]*)"|'([^']*)')/i.exec(tag)?.slice(1).find(Boolean)||'').split(/\s+/).filter(name=>/^(?:sigil-|biome-sigil--|rarity-tier-)[a-z0-9-]+$/i.test(name)).join(' ');
             return hold(closing?`</${allowed}>`:`<${allowed}${classes?' class="'+escape(classes)+'"':''}${css?' style="'+escape(css)+'"':''}>`);
         });
-        // Decode text entities before escaping; protected tags cannot be reinterpreted.
         source=source.replace(/&nbsp;|&#160;/g,' ').replace(/&amp;/g,'&').replace(/&quot;/g,'"').replace(/&#39;|&apos;/g,"'").replace(/&lt;/g,'<').replace(/&gt;/g,'>');
         const expand=html=>html.replace(/\u0000(\d+)\u0000/g,(_,index)=>tokens[index]===undefined?'':expand(tokens[index]));
         return expand(source.split(/(\u0000\d+\u0000)/).map(part=>/^\u0000\d+\u0000$/.test(part)?part:text(part.replace(/\s+/g,' '))).join(''));

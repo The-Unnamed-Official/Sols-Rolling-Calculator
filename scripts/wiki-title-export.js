@@ -1,4 +1,3 @@
-/* Export the same DOM title artwork, including pseudo-element outlines and fonts. */
 (() => {
     'use strict';
     const requests = new Map();
@@ -57,7 +56,6 @@
             candidates.filter(rule => distance(rule) === closest).forEach(rule => selected.add(rule.rule));
         }
         const embedded = await Promise.allSettled([...selected].map(async rule => {
-            // A font face can offer multiple formats; embedding the first URL is sufficient.
             const url = /url\(['"]?([^)'"\s]+)['"]?\)/.exec(rule)?.[1];
             if (!url) return '';
             const data = await get(url, true);

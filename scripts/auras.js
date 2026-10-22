@@ -1,4 +1,3 @@
-/* Progressive enhancement for the static aura directory and profile pages. */
 (() => {
     'use strict';
     function styleTitles(root) { root.querySelectorAll('[data-aura-title]:not([data-aura-title-rendered])').forEach(element => {
@@ -76,7 +75,6 @@
         const validValues = values.filter(value => value && [...select.options].some(option => option.value === value));
         [...select.options].forEach(option => { option.selected = option.value ? validValues.includes(option.value) : !validValues.length; });
     });
-    // Remove the previous global session cache; plain directory links always start fresh.
     try { sessionStorage.removeItem('solsRollingCalculator:auraDirectory'); } catch {}
     globalThis.InterfaceSelects?.initialize('aura-sort');
     filters.forEach(select => globalThis.InterfaceSelects?.initialize(select.id));
@@ -86,6 +84,7 @@
     const rarity = row => row.dataset.rarity ? Number(row.dataset.rarity) : -1;
     function syncURL(scroll = 0) {
         const url = new URL(location.href);
+        url.pathname = url.pathname.replace(/\/index(?:\.html)?$/i, '/').replace(/\/?$/, '/');
         const set = (key,value) => { if(value) url.searchParams.set(key,String(value)); else url.searchParams.delete(key); };
         set('q',search.value); set('sort',sort.value==='rarity-ascending'?'':sort.value);
         set('page',page>1?page:''); set('size',pageSize);
@@ -101,20 +100,18 @@
     function update({restore=false} = {}) {
         const selections = new Map(filters.map(select => [select.id, [...select.selectedOptions].map(option => option.value).filter(Boolean)]));
         const biomes = [...document.getElementById('aura-biome').selectedOptions].filter(option => option.value);
-        // A biome plus Daytime/Nighttime is one visual combination. Other
-        // multi-biome filters use the shared day/night scene.
         const timeOptions = biomes.filter(option => /^(?:Daytime|Nighttime)$/i.test(option.value));
         const biomeOptions = biomes.filter(option => !timeOptions.includes(option));
         const backgroundOption = biomeOptions.length === 1 ? biomeOptions[0]
             : !biomeOptions.length && timeOptions.length === 1 ? timeOptions[0] : null;
-        const time = timeOptions.length === 1 ? (/^Nighttime$/i.test(timeOptions[0].value) ? 'night' : 'day') : '';
+        const time = backgroundOption?.value === 'The Radiant Forest' ? 'night'
+            : timeOptions.length === 1 ? (/^Nighttime$/i.test(timeOptions[0].value) ? 'night' : 'day') : '';
         globalThis.AuraBackground?.show(backgroundOption?.dataset.background || '', backgroundOption?.dataset.music || '', time);
         rows.sort((a, b) => {
             if (sort.value === 'alphabetical') return alphabetical(a, b);
             if (sort.value === 'alphabetical-descending') return alphabetical(b, a);
             const groupDifference = Number(a.dataset.sortGroup) - Number(b.dataset.sortGroup);
             if (groupDifference) return sort.value === 'rarity-ascending' ? groupDifference : -groupDifference;
-            // Auras without numerical odds stay at the end in either direction.
             if (!a.dataset.rarity || !b.dataset.rarity) return Boolean(b.dataset.rarity) - Boolean(a.dataset.rarity) || alphabetical(a, b);
             const difference = sort.value === 'rarity-ascending' ? rarity(a) - rarity(b) : rarity(b) - rarity(a);
             return difference || alphabetical(a, b);
@@ -223,7 +220,6 @@
         window.addEventListener('keydown',cancelKey);
         const restore=()=>{if(!cancelled)window.scrollTo(0,savedScroll);};
         Promise.resolve(globalThis.AuraPageLayout?.ready).then(()=>requestAnimationFrame(restore));
-        // Font fitting can change card heights after the initial styled paint.
         Promise.all([globalThis.AuraPageLayout?.ready,globalThis.AuraPageLayout?.titlesReady]).then(()=>requestAnimationFrame(()=>{
             restore();
             window.removeEventListener('wheel',cancel);window.removeEventListener('touchstart',cancel);

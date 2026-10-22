@@ -1,5 +1,3 @@
-// Refresh the directory's attributed wiki excerpts through the public MediaWiki API.
-// node tools/fetch-aura-wiki.cjs
 const fs = require('node:fs');
 const path = require('node:path');
 const vm = require('node:vm');
@@ -132,7 +130,6 @@ async function refresh() {
     const all = [...titles];
     for (let index = 0; index < all.length; index += 50) batches.push(all.slice(index, index + 50));
     const pages = new Map(), aliases = {};
-    // A bounded request pool avoids issuing hundreds of requests to individual articles.
     for (let index = 0; index < batches.length; index += 3) {
         const results = await Promise.all(batches.slice(index, index + 3).map(query));
         for (const result of results) {

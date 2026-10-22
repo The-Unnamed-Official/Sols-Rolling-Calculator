@@ -1,4 +1,3 @@
-/* Wiki showcase videos fetch only after their disclosure is opened. */
 (() => {
     'use strict';
     const showcases=[...document.querySelectorAll('[data-aura-showcase]')];

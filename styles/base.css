@@ -218,6 +218,10 @@
     box-sizing: border-box;
 }
 
+:where(button, input, select, textarea, fieldset, dialog) {
+    border-radius: 0;
+}
+
 html, body {
     margin: 0;
     padding: 0;

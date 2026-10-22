@@ -1,9 +1,8 @@
-// Resolve audio uploads through the public wiki API; never guess media URLs.
 const fs=require('node:fs');
 const path=require('node:path');
 const {article,fileKey}=require('./aura-history-parser.cjs');
 const root=path.resolve(__dirname,'..');
-const cache=path.join(root,'test-results/aura-history');
+const cache=path.join(root,'.cache/aura-history');
 async function fetchSoundtracks() {
     const pages=JSON.parse(fs.readFileSync(path.join(cache,'articles.json'),'utf8'));
     for(const file of ['snapshots.json','gallery-snapshots.json']) pages.push(...JSON.parse(fs.readFileSync(path.join(cache,file),'utf8')).filter(s=>s.page.revisions).map(s=>s.page));

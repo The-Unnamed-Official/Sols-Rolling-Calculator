@@ -1,7 +1,6 @@
 (function (global) {
     'use strict';
 
-    // Coalesce writes and invalidate queued work when its owner finishes.
     function createFrameCommit(commit) {
         let handle = null;
         let latest;

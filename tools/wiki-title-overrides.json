@@ -43,5 +43,65 @@
     "name": "Breakthrough",
     "url": "https://sol-rng.fandom.com/wiki/Breakthrough_(Aura)",
     "markup": "<span style=\"background: linear-gradient(135deg, white 2%, black 3%, white 4%, black 5%, white 6%, black 7%, #8589ac 8%, #8589ac 92%, black 93%, white 94%, black 95%, white 96%, black 97%, white 98%);\"><span style=\"background-clip: padding-box;border: 1px solid transparent;border-image: linear-gradient(135deg, white 2%, black 3%, white 4%, black 5%, white 6%, black 7%, #8589ac 8%, transparent 30%, transparent 70%, #8589ac 92%, black 93%, white 94%, black 95%, white 96%, black 97%, white 98%) 1;font-family: Montserrat;-webkit-text-fill-color: #ffffff\"><span style=\"background: linear-gradient(to right, transparent 5%, black 25%, black 75%, transparent 95%);\"><span style=\"-webkit-background-clip: text !important; -webkit-text-fill-color: transparent; background: linear-gradient(to bottom, #000, #494c68, #8280a4, #b3b5d5, #f7f9ff, #1c1d23, #252332, #3d3c5b, #4b4671, #9090bb); letter-spacing: .2em; -webkit-text-stroke: 0.3px white; font-family: Montserrat; filter: drop-shadow(.5px 1px 0 #e6e9fc); font-weight: 600\">•  BREAKTHROUGH  •</span></span></span></span>"
+  },
+  "Watcher": {
+    "name": "Watcher",
+    "url": "https://sol-rng.fandom.com/wiki/Watcher",
+    "markup": "<span style=\"-webkit-background-clip: text !important; -webkit-text-fill-color: transparent; background: linear-gradient(90deg, #4886c4, #3673d3, #1442A3, #001C8F); font-family: Fondamento; font-style: italic; -webkit-text-stroke: 0.1px white\">Watcher</span>"
+  },
+  "Rekindle": {
+    "name": "Rekindle",
+    "url": "https://sol-rng.fandom.com/wiki/Rekindle",
+    "markup": "<span style=\"-webkit-background-clip: text !important; -webkit-text-fill-color: transparent; background: linear-gradient(to bottom, #efedee, #f3ede7, #f9ede2, #fff5e2, #cbb09c, #c7af98); font-family: Dancing Script; font-size: 150%; font-style: bold; font-weight: 400; -webkit-text-stroke: 0.2px #917868\">Rekindle</span>"
+  },
+  "Moonchild": {
+    "name": "Moonchild",
+    "url": "https://sol-rng.fandom.com/wiki/Moonchild",
+    "markup": "<span style=\"background: linear-gradient(to bottom, #5e74a5, #405190, #181d61, #181b59, #091137); letter-spacing: .4em; -webkit-background-clip:text !important; -webkit-text-fill-color:transparent; font-family: Playfair Display; font-style: bold; -webkit-text-stroke: .01em white\"><b>MOONCHILD</b></span>"
+  },
+  "Cor Lunae": {
+    "name": "Cor Lunae",
+    "url": "https://sol-rng.fandom.com/wiki/Cor_Lunae",
+    "markup": "<span style=\"background: linear-gradient(178deg, #a8afdf 20%, #abb7dd 30%, #e0e7f0 50%, #9aa3cc 55%, #4a5575 60%); -webkit-background-clip:text !important; -webkit-text-fill-color:transparent; font-family: Great Vibes; font-style: bold; font-size: 120%; -webkit-text-stroke: .01em #5c6284\">Cor Lunae</span>"
+  },
+  "True Jade": {
+    "name": "True Jade",
+    "url": "https://sol-rng.fandom.com/wiki/True_Jade",
+    "markup": "<span style=\"display: inline-block;font-weight: bold;\"><span style=\"position: absolute; transform: scale(0.4) translate(-.2em, -2em);-webkit-background-clip: text !important; -webkit-text-fill-color: transparent; background: linear-gradient(180deg, #0e5838, #1e8a61, #66efc6, #d4fffb); filter: drop-shadow(2.5px 1px 0px black);font-family: Accanthis ADF Std; -webkit-text-stroke: .03em black; font-size: 100%;\">- true -</span><span style=\"-webkit-background-clip: text !important; -webkit-text-fill-color: transparent; background: linear-gradient(185deg, #0e5838, #1e8a61, #66efc6, #d4fffb); -webkit-text-stroke: .03em black; font-size: 130%; font-style: bold; position: relative; font-family: Accanthis ADF Std;\"><b>Jade</b></span></span>"
+  },
+  "True Kyawthuite": {
+    "name": "True Kyawthuite",
+    "url": "https://sol-rng.fandom.com/wiki/True_Kyawthuite",
+    "markup": "<span style=\"display: inline-block;font-weight: bold;\"><span style=\"position: absolute; transform: scale(1) translate(2.3em, -1em);-webkit-background-clip: text !important; -webkit-text-fill-color: transparent; background: linear-gradient(to bottom, #fed2b8, #c56e48, #fce4c8, #a14823); font-family: Italianno;\">- true -</span><span style=\"-webkit-background-clip: text !important; -webkit-text-fill-color: transparent; background: linear-gradient(to bottom, #fed2b8, #fed2b8, #c56e48, #fce4c8, #a14823); font-size: 130%; font-style: bold; position: relative; letter-spacing: 0.2em; font-family: Italianno;\">Kyawthuite</span></span>"
+  },
+  "True Twilight": {
+    "name": "True Twilight",
+    "url": "https://sol-rng.fandom.com/wiki/True_Twilight",
+    "markup": "<span style=\"display: inline-block;font-weight: bold;\"><span style=\"position: absolute; transform: scale(0.5) translate(1.5em, -1em);-webkit-background-clip: text !important; -webkit-text-fill-color: transparent; background: linear-gradient(180deg, #e4daf2, #f9eaff, #f6e5fe, #e2d3ff); font-family: Great Vibes;\">True</span><span style=\"-webkit-background-clip: text !important; -webkit-text-fill-color: transparent; background: linear-gradient(185deg, #e4daf2, #f9eaff, #f6e5fe, #e2d3ff); font-size: 130%; font-style: bold; position: relative; font-family: Italianno;\">Twilight</span></span>"
+  },
+  "Tomorrow": {
+    "name": "Tomorrow",
+    "url": "https://sol-rng.fandom.com/wiki/Tomorrow",
+    "markup": "<span style=\"-webkit-background-clip: text !important; -webkit-text-fill-color: transparent; background: linear-gradient(180deg, #aeb1d5 40%, #f3f2fd 45%, #d6d6ff 50%); font-family: Great Vibes; font-size: 150%; -webkit-text-stroke: 0.01px white; letter-spacing: 0.2em;\">Tomorrow.</span>"
+  },
+  "Tree House": {
+    "name": "Tree House",
+    "url": "https://sol-rng.fandom.com/wiki/Tree_House",
+    "markup": "<span style=\"-webkit-background-clip: text !important; -webkit-text-fill-color: transparent; background: linear-gradient(to bottom, #ccff90 10%, #d9fed8 15%, #7afdab 20%, #35be42 40%, #b9ffc9 50%, #47c146 65%, #7cfd92 80%); font-style: bold; font-size: 130%; font-family: Accanthis ADF Std; -webkit-text-stroke: .02em #13911C;\">Tree House</span>"
+  },
+  "Hasuen": {
+    "name": "Hasuen",
+    "url": "https://sol-rng.fandom.com/wiki/Hasuen",
+    "markup": "<span style=\"display:inline-block;font-family:Italianno,cursive;font-size:165%;font-weight:700;letter-spacing:0.08em;line-height:1.1;padding:0.04em 0.12em 0.08em 0.04em;background:linear-gradient(175deg,#c6ff30 0%,#dcff83 15%,#f4ffe8 31%,#fffefa 48%,#fff6ff 63%,#efbce9 83%,#fff0fa 100%);background-clip:text;-webkit-background-clip:text!important;color:#f7fff0;-webkit-text-fill-color:transparent\">Hasuen</span>"
+  },
+  "Veylune": {
+    "name": "Veylune",
+    "url": "https://sol-rng.fandom.com/wiki/Veylune",
+    "markup": "<span style=\"-webkit-background-clip: text !important; -webkit-text-fill-color: transparent; background: linear-gradient(to bottom, #fffbe9, #fff6e8, #ffffff, #d4ffff, #a0ffff, #a0ffff); font-family: Caveat; font-size:150%; -webkit-text-stroke: 0.1px cyan\"><b>- Veylune -</b></span>"
+  },
+  "Artifact": {
+    "name": "Artifact",
+    "url": "https://sol-rng.fandom.com/wiki/Artifact",
+    "markup": "<span style=\"-webkit-background-clip: text !important; -webkit-text-fill-color: transparent; background: linear-gradient(to bottom, #b3f1c1 15%, #8cfa97 17%, #80f68d 20%, #4fd360 30%, #3bb84c 35%, #32a944 45%, #2d9f3e 50%, #15761f 60%, #003500 70%); font-family: Kings\"><b>Artifact</b></span>"
   }
 }

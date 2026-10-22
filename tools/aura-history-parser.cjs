@@ -1,4 +1,3 @@
-// Extract documented aura versions, keeping concepts and other auras out of the gallery.
 const { templates, fields, plainText, extract } = require('./fetch-aura-wiki.cjs');
 const normalize = text => text.replace(/_/g, ' ').trim().toLowerCase().replace(/[^\p{L}\p{N}]/gu, '');
 const fileKey = file => { const name=file.replace(/_/g,' ').replace(/[\u200e\u200f]/g,'').trim();return (name[0]?.toUpperCase()||'')+name.slice(1); };
@@ -27,7 +26,6 @@ function gallery(text, fromInfobox = true) {
         if (/^placeholder\./i.test(match[1].trim())) continue;
         const caption = plainText((match[2]||'Aura preview').replace(/^\{\{!\}\}/,''));
         if (excluded.test(caption)) continue;
-        // General galleries contain other auras; only explicitly historical media qualify.
         if (!fromInfobox && !historical.test(caption)) continue;
         result.push({ file: match[1].trim().replace(/_/g,' '), caption, originalCaption: (match[2]||'').trim() });
     }
@@ -77,14 +75,10 @@ function article(page) {
     const text = page.revisions?.[0]?.slots.main.content || '';
     const infobox = fields(templates(text,'(?:New)?Aura[ _]?Infobox')[0]||'');
     const media = gallery(infobox.image1||'');
-    // A number of developer and removed auras use a bare file or [[File:...]],
-    // rather than a gallery. These are real profile previews too.
     if (!media.length) {
         const file = /^\s*(?:\[\[(?:File:|Image:))?([^|\[\]<>]+\.(?:gif|png|jpe?g|webp|mp4|webm))(?:\|[^\]]*)?(?:\]\])?\s*$/i.exec(infobox.image1||'')?.[1];
         if (file && !/^Placeholder\./i.test(file)) media.push({file:file.trim().replace(/_/g,' '),caption:'Aura preview',originalCaption:''});
     }
-    // An unreleased aura may only have a submission. Label it accurately rather
-    // than inventing an in-game view or substituting another aura's picture.
     if (!media.length && /submission/i.test(infobox.image1||'')) {
         const file = /(?:File:)?([^|\n<>]+\.(?:gif|png|jpe?g|webp))\s*\|Submission/i.exec(infobox.image1)?.[1];
         if (file) media.push({file:file.trim().replace(/_/g,' '),caption:'Submission concept · unreleased',originalCaption:'Submission',concept:true});
@@ -102,10 +96,6 @@ function article(page) {
         if (!groups.has(label)) groups.set(label,[]);
         groups.get(label).push(item);
     }
-    // Infobox version labels are the authoritative mapping. General galleries
-    // often use "old" for several different eras, so guessing a stage by its
-    // position mixes up appearances. Only revision-matched previews are added
-    // outside this list by the history compiler.
     const musicVersions=tabbers(infobox.music_name||infobox.music||'').filter(tab=>historical.test(tab.label)).map(tab=>({label:versionLabel(tab.label),music:plainText(tab.content).split(/\s+/).slice(0,25).join(' '),musicMarkup:tab.content}));
     const profileText=text.split(/==\s*Profile\s*==/i)[1]?.split(/\n===/)[0]||text.slice(0,6000);
     const mutationOf=/(?:mutation|variant|mutated version)\s+(?:of|from)\s+(?:\[\[(?:[^|\]]+\|)?\s*)?\{\{\s*Aura\s*\|\s*([^|}]+)/i.exec(profileText)?.[1]?.trim()||'';

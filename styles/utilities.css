@@ -49,7 +49,6 @@
     text-shadow: 0 0 14px rgba(183, 245, 245, 0.42), 0 0 3px rgba(18, 30, 36, 0.72);
 }
 
-/* Sol's RNG Wiki: Category:Dimensional tier label and BloatedAnimation. */
 .rarity-tier-dimensional {
     background: linear-gradient(270deg, #5747f0, #e406e9, #e406e9, #5747f0, #97e6f0, #97e6f0, #5747f0);
     background-size: 4000% 100%;
@@ -129,7 +128,9 @@ body.quality-no-roll-sigil-animations .rarity-tier-dimensional {
 .sigil-outline-dreamspace,
 .sigil-outline-cyberspace,
 .sigil-outline-singularity,
-.sigil-outline-limbo {
+.sigil-outline-limbo,
+.sigil-outline-lost-forest,
+.sigil-outline-radiant-forest {
     color: var(--biome-sigil-fill) !important;
     -webkit-text-fill-color: var(--biome-sigil-fill) !important;
     -webkit-text-stroke: clamp(1px, 0.095em, 1.9px) var(--biome-sigil-outline);
@@ -270,6 +271,22 @@ body.quality-no-roll-sigil-animations .rarity-tier-dimensional {
     --biome-sigil-edge: #555;
     --biome-sigil-accent: rgba(240, 240, 240, 0.8);
     --biome-sigil-depth: rgba(0, 0, 0, 0.92);
+}
+
+.sigil-outline-lost-forest {
+    --biome-sigil-fill: #eaf5ff;
+    --biome-sigil-outline: #01811b;
+    --biome-sigil-edge: #026a40;
+    --biome-sigil-accent: rgba(13, 95, 6, 0.92);
+    --biome-sigil-depth: rgba(5, 50, 2, 0.86);
+}
+
+.sigil-outline-radiant-forest {
+    --biome-sigil-fill: #eaf5ff;
+    --biome-sigil-outline: #9613c5;
+    --biome-sigil-edge: #69077a;
+    --biome-sigil-accent: rgba(230, 88, 255, 0.92);
+    --biome-sigil-depth: rgba(65, 5, 68, 0.86);
 }
 
 .sigil-outline-edict {
@@ -2199,6 +2216,13 @@ body.quality-no-roll-sigil-animations .sigil-glitch-flicker {
 .audio-slider__label { min-width: 0; line-height: 1.4; overflow-wrap: anywhere; }
 .audio-slider__meta { white-space: nowrap; flex-shrink: 0; }
 .audio-slider__value { min-width: calc(4ch + .56em); text-align: right; display: inline-block; }
+.audio-slider--effects { grid-template-rows: auto 1fr; }
+.audio-effects__sliders { position: relative; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.audio-effects__channel { min-width: 0; display: grid; grid-template-rows: 1fr 26px; gap: 10px; }
+.audio-effects__sliders::before { content: ""; position: absolute; top: 0; bottom: 0; left: 50%; border-left: 1px solid rgb(120 200 255 / .2); pointer-events: none; }
+.audio-slider--effects .audio-slider__label-row { grid-template-columns: 1fr; gap: 4px; align-content: start; letter-spacing: .08em; }
+.audio-slider--effects > .audio-slider__label { font-weight: 600; letter-spacing: .14em; }
+.audio-effects__channel .audio-slider__meta { justify-self: start; }
 .aura-directory-settings .audio-slider__value { min-width: calc(8ch + 1.12em); }
 
 .audio-slider__label-row,
@@ -3698,7 +3722,7 @@ body.quality-no-ui-animations .audio-slider__input::-moz-range-thumb {
 }
 
 .audio-modal__grid {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 10px;
 }
 
@@ -4499,19 +4523,19 @@ body {
     }
 
     .parameter-console__module--actions .quick-action-group {
-        grid-template-columns: minmax(0, 1fr);
+        grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 
     .parameter-console__module--actions .quick-action-group .interface-button {
-        justify-content: flex-start;
+        justify-content: center;
         min-height: 50px;
         padding-inline: 12px;
-        text-align: left;
+        text-align: center;
     }
 
     .parameter-console__module--actions .quick-action-group .interface-button > span {
         flex: 1 1 auto;
-        text-align: left;
+        text-align: center;
     }
 
     .multi-potion-field {
@@ -5462,7 +5486,6 @@ body.quality-no-ui-animations .help-center__backdrop {
 }
 
 
-/* AUTHOR CARD */
 
 .masthead-console .banner__subtitle-author {
     display: flex;
@@ -6353,27 +6376,33 @@ body.quality-no-ui-animations .help-center__backdrop {
         letter-spacing: 0.07em;
     }
 
-    .parameter-console__module--actions .quick-action-group .interface-button:last-child {
-        grid-column: 1 / -1;
-    }
 }
 
 @container biome-shortcuts (max-width: 340px) {
     .parameter-console__module--actions .quick-action-group {
-        grid-template-columns: minmax(0, 1fr);
+        grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 
     .parameter-console__module--actions .quick-action-group .interface-button,
     .parameter-console__module--actions .quick-action-group .interface-button:last-child {
         grid-column: auto;
-        justify-content: flex-start;
+        justify-content: center;
         min-height: 50px;
-        text-align: left;
+        text-align: center;
+    }
+
+    .parameter-console__module--actions .quick-action-group > .interface-button {
+        flex-direction: column;
     }
 
     .parameter-console__module--actions .quick-action-group .interface-button > span {
         flex: 1 1 auto;
-        text-align: left;
+        text-align: center;
+    }
+
+    .parameter-console__module--actions .quick-action-group .interface-button > span > [class*="sigil-outline-"] {
+        font-size: 13px;
+        letter-spacing: 0.01em;
     }
 }
 
@@ -7791,7 +7820,6 @@ body.theme-event-april-fools .april-fools-copy {
     }
 }
 
-/* Full Aura Style Rework: the 1B+ set, Ascendant, and the requested special auras. */
 .sigil-wiki-aura {
     display: inline !important;
     position: static !important;
@@ -8854,7 +8882,6 @@ body.reduce-motion .sigil-wiki {
     }
 }
 
-/* V2.027 support QR popup ------------------------------------------------- */
 
 .support-qr-modal {
     width: min(620px, calc(100vw - (var(--modal-padding) * 2)));
@@ -9025,4 +9052,112 @@ body.reduce-motion .sigil-wiki {
 
 .footer-credits__item.footer-credits__item--wiki-artwork a {
     display: inline !important;
+}
+
+.changelog-eon130__overview {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+    margin-bottom: 16px;
+}
+
+.changelog-eon130__overview > span {
+    display: grid;
+    gap: 4px;
+    padding: 12px 8px;
+    border: 1px solid rgb(var(--accent-rgb) / 0.25);
+    background: rgb(var(--accent-rgb) / 0.05);
+    color: var(--text-secondary);
+    text-align: center;
+    font-size: 10px;
+}
+
+.changelog-eon130__overview strong { color: #bcecff; font-size: 20px; }
+.changelog-eon130__section { --release-rgb: 121 215 255; --release-title: #c4efff; }
+.changelog-eon130__section--radiant { --release-rgb: 188 71 255; --release-title: #bc47ff; }
+.changelog-eon130__section--lost { --release-rgb: 112 255 112; --release-title: #70ff70; }
+.changelog-eon130__section--moons { --release-rgb: 157 216 255; --release-title: #bde9ff; }
+.changelog-eon130__section--true { --release-rgb: 126 244 201; --release-title: #a2f5da; }
+.changelog-eon130__section--buffs { --release-rgb: 255 201 105; --release-title: #ffda9b; }
+.changelog-eon130__section--pending { --release-rgb: 189 163 114; --release-title: #dac6a2; }
+
+.changelog-eon130__section {
+    min-width: 0;
+    border-color: rgb(var(--release-rgb) / 0.3);
+    border-left-color: rgb(var(--release-rgb) / 0.8);
+    background: linear-gradient(110deg, rgb(var(--release-rgb) / 0.08), transparent 65%), rgba(5, 12, 24, 0.65);
+    box-shadow: inset 3px 0 0 rgb(var(--release-rgb) / 0.15);
+}
+
+.changelog-eon130__section .changelog-featured-ui__header { border-bottom-color: rgb(var(--release-rgb) / 0.22); }
+.changelog-eon130__section .changelog-featured-ui__heading .largeClass { color: var(--release-title); }
+.changelog-eon130__section .changelog-featured-ui__icon,
+.changelog-eon130__section .changelog-featured-ui__badge {
+    color: var(--release-title);
+    border-color: rgb(var(--release-rgb) / 0.4);
+    background: rgb(var(--release-rgb) / 0.07);
+    box-shadow: none;
+}
+
+.changelog-eon130__section .changelog-featured-ui__icon img { width: 34px; height: 34px; object-fit: contain; }
+.changelog-eon130__section .changelog-release-group__list > li::marker { color: rgb(var(--release-rgb) / 0.8); }
+.changelog-eon130__section > p { margin: 12px 0; color: var(--text-secondary); }
+.changelog-eon130__facts { display: flex; flex-wrap: wrap; gap: 6px; }
+.changelog-eon130__facts > span {
+    padding: 5px 8px;
+    color: var(--release-title);
+    border: 1px solid rgb(var(--release-rgb) / 0.3);
+    background: rgb(var(--release-rgb) / 0.05);
+    font-size: 10px;
+}
+
+.changelog-eon130__auras,
+.changelog-eon130__moons,
+.changelog-eon130__natives {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+    margin: 12px 0;
+    padding: 0;
+    list-style: none;
+}
+
+.changelog-eon130__auras > li {
+    display: grid;
+    align-content: start;
+    gap: 4px;
+    min-width: 0;
+    padding: 10px;
+    border: 1px solid rgb(var(--release-rgb) / 0.23);
+    background: rgba(3, 8, 17, 0.55);
+}
+
+.changelog-eon130__auras > li > span { color: var(--text-primary); font-size: 11px; }
+.changelog-eon130__auras small { color: var(--release-title); font-size: 10px; }
+.changelog-eon130__aura-name { color: inherit; overflow-wrap: anywhere; text-decoration-color: rgb(var(--release-rgb) / 0.45); text-underline-offset: 3px; }
+.changelog-eon130__aura-name:hover,
+.changelog-eon130__aura-name:focus-visible { color: var(--release-title); text-decoration: underline; }
+.changelog-eon130__auras .changelog-eon130__aura-name { font-size: 13px; font-weight: 700; }
+.changelog-eon130 .changelog-aura-sigil { margin: 0; max-width: 100%; }
+.changelog-eon130__aura-name .wiki-title { max-width: 100%; font-size: inherit; white-space: normal; }
+.changelog-eon130__natives { gap: 5px 12px; color: #c8e4cd; font-size: 11px; }
+.changelog-eon130__moons > li { display: flex; align-items: center; gap: 9px; padding: 8px; border: 1px solid rgb(var(--release-rgb) / 0.18); }
+.changelog-eon130__moons > li > :first-child { color: #a5c7ff; font-size: 17px; }
+.changelog-eon130__moons > li > :last-child { min-width: 0; font-size: 11px; }
+.changelog-eon130__moons > li:last-child { grid-column: 1 / -1; }
+.changelog-eon130__moons small { display: block; color: #b3a0ee; font-size: 9px; }
+.changelog-eon130__moon-icon { font-size: 29px; line-height: 1; }
+.changelog-eon130__remember { color: #edb4f7; font: italic 700 1.15em Georgia, serif; text-shadow: 0 0 8px #bf7edb80; }
+.changelog-eon130__auras--true { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+
+@media (max-width: 520px) {
+    .changelog-eon130__auras,
+    .changelog-eon130__moons { grid-template-columns: minmax(0, 1fr); }
+    .changelog-eon130__natives { column-gap: 8px; font-size: 10px; }
+    .changelog-eon130__section .changelog-featured-ui__header { grid-template-columns: 36px minmax(0, 1fr); gap: 8px; }
+    .changelog-eon130__section .changelog-featured-ui__icon { width: 36px; }
+    .changelog-eon130__section .changelog-featured-ui__icon img { width: 30px; height: 30px; }
+    .changelog-eon130__section .changelog-featured-ui__badge { grid-column: 2; justify-self: start; }
+    .changelog-eon130__overview { gap: 5px; }
+    .changelog-eon130__overview > span { font-size: 9px; padding-inline: 4px; }
 }

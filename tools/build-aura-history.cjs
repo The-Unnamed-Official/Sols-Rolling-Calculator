@@ -1,4 +1,3 @@
-// Compile attributable, per-version records from the audited wiki sources.
 const fs=require('node:fs');
 const path=require('node:path');
 const {article,fileKey:key}=require('./aura-history-parser.cjs');
@@ -7,9 +6,7 @@ const {soundtracks,currentMusic}=require('./aura-soundtracks.cjs');
 const {showcases}=require('./aura-showcases.cjs');
 const musicFor=a=>a.infobox.music_name||a.infobox.music||'';
 const root=path.resolve(__dirname,'..');
-const read=file=>JSON.parse(fs.readFileSync(path.join(root,'test-results/aura-history',file),'utf8'));
-// MediaWiki only folds the first character of a file title. InGame and Ingame
-// are different uploads; lowercasing the whole name swaps historical previews.
+const read=file=>JSON.parse(fs.readFileSync(path.join(root,'.cache/aura-history',file),'utf8'));
 function facts(a) {
     const music=plainText(currentMusic(musicFor(a))).split(/\s+/).slice(0,25).join(' ');
     return {rarity:a.rarity,nativeRarity:a.nativeRarity,tier:a.tier,required:a.required,obtainment:a.obtainment,music,creator:plainText(a.infobox.creator||'')};
@@ -28,8 +25,6 @@ function buildHistory() {
     for(const a of pages) {
         const ownSnapshots=snapshots.filter(snapshot=>snapshot.title===a.title);
         const groups=a.images.map(group=>({...group,media:group.media.map(item=>mediaItem(item,mediaLookup.get(key(item.file)))).filter(Boolean)}));
-        // The first gallery group is the wiki's main appearance, including galleries
-        // whose main group is named for an era rather than literally "Current".
         let currentGroup=groups[0];
         const pastGroups=groups.filter(group=>group!==currentGroup && group.media.length);
         const allowedCurrent=overrides[a.title]?.currentFiles;
@@ -51,7 +46,6 @@ function buildHistory() {
                 facts:snapshot?facts(snapshot.art):null,revisionId:snapshot?.art.revisionId||a.revisionId,source:a.source,
                 timestamp:snapshot?.art.timestamp||null,before:snapshot?.before||null,descriptionRecorded:Boolean(snapshot),sourceKind:snapshot?'revision':'gallery'});
         }
-        // Explicit overrides resolve differing gallery/quote version labels.
         for(const description of a.descriptionVersions) {
             const mappedLabel=overrides[a.title]?.descriptions?.[description.label]||description.label;
             let version=versions.slice(1).find(version=>version.label===mappedLabel);
@@ -74,13 +68,9 @@ function buildHistory() {
                 if(!existing.descriptionRecorded) Object.assign(existing,{description:snapshot.art.description,descriptionMarkup:snapshot.art.descriptionMarkup,descriptionTruncated:snapshot.art.descriptionTruncated,descriptionRecorded:true});
                 continue;
             }
-            // Never present a current upload as a historical appearance.
             const distinct=preview.filter(item=>!current.media.some(image=>image.url===item.url));
             if(!distinct.length && !snapshot.art.description) continue;
             const sameDescription=versions.some(version=>version.description===snapshot.art.description);
-            // Editors sometimes update an article before the game's dated rework.
-            // Such a revision contains the new appearance already, not an older
-            // version. Never duplicate it as a historical preview.
             const previousFacts=facts(snapshot.art);
             const changedDetails=['rarity','nativeRarity','music'].some(field=>previousFacts[field] && current.facts[field] && previousFacts[field]!==current.facts[field]);
             if(!distinct.length && sameDescription && !changedDetails) continue;
@@ -101,7 +91,6 @@ function buildHistory() {
                 description:predecessor.description,descriptionMarkup:predecessor.descriptionMarkup,descriptionTruncated:predecessor.descriptionTruncated,descriptionRecorded:true,
                 facts:{tier:'Developer exclusive'},revisionId:predecessor.revisionId,source:predecessor.source,sourceKind:'predecessor'});
         }
-        // A lone image labelled "original" is not evidence of a second version.
         const hasHistory=versions.length>1;
         profiles[a.title]={source:a.source,revisionId:a.revisionId,mutationOf:a.mutationOf,relatedAuras:a.relatedAuras,versions};
         audit.push({title:a.title,revisionId:a.revisionId,status:hasHistory?'archived-versions':a.reworkDates.length?'rework-without-recoverable-version':'no-documented-older-version',versionCount:versions.length-1,reworkDates:a.reworkDates});

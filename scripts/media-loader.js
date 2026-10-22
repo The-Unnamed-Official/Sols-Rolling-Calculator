@@ -1,7 +1,17 @@
 'use strict';
 
-// Shared deferred source hydration and cutscene preparation lifecycle.
 const CUTSCENE_LOAD_TIMEOUT_MS = 30000;
+
+document.querySelectorAll('video[data-auto-enable-cutscene]').forEach(async video => {
+    const source = video.querySelector('source[data-src]')?.dataset.src;
+    if (!source) return;
+    try {
+        const response = await fetch(source, { method: 'HEAD', cache: 'no-store' });
+        if (response.ok && /^(?:video\/|application\/octet-stream)/i.test(response.headers.get('content-type') || '')) {
+            delete video.dataset.cutscenePending;
+        }
+    } catch {   }
+});
 
 function ensureDeferredMediaSource(element) {
     if (!element) {

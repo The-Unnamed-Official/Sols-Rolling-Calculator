@@ -18,6 +18,9 @@ let cancelRollRequested = false;
 let experienceStarted = false;
 let activeSimulationWorker = null;
 let activeSolLikeSimulationController = null;
+let activeSimulationFailureHandler = null;
+let activeSimulationCancelHandler = null;
+let simulationRunId = 0;
 let lastSimulationSummary = null;
 let rollFeedSortMode = 'rarity';
 let rollFeedSortingAvailable = false;
@@ -75,7 +78,6 @@ const ROLLING_SETTINGS_STORAGE_KEY = 'solsRollingCalculator:rollingSettings:v1';
 const SOLS_LIKE_ROLLS_PER_SECOND_MIN = 1;
 const SOLS_LIKE_ROLLS_PER_SECOND_MAX = 1000;
 const SOLS_LIKE_ROLLS_PER_SECOND_DEFAULT = 120;
-const LIVE_ROLL_FEED_BOTTOM_TOLERANCE_PX = 4;
 const ROLL_FEED_SORT_MODE = Object.freeze({
     RECENT: 'recent',
     RARITY: 'rarity',
@@ -103,6 +105,7 @@ const LEGACY_SOLS_LIKE_SPEED_VALUES = Object.freeze({
     'very-fast': 480
 });
 const FORCE_CUTSCENES_ALWAYS_ON = false;
+const ALWAYS_ON_CUTSCENES = new Set(['trolled-cutscene']);
 let reduceMotionPreferenceOverride = null;
 const backgroundRollingPreference = {
     allowed: false,
@@ -110,9 +113,14 @@ const backgroundRollingPreference = {
 };
 const rollingSettingsPreference = {
     solsLikeRollsPerSecond: SOLS_LIKE_ROLLS_PER_SECOND_DEFAULT,
+    fullscreenCutscenes: true,
     cutscenePauseFilters: {},
     cutscenePlaybackFilters: {}
 };
+let cutsceneFullscreenTransition = null;
+let cutsceneFullscreenOwned = false;
+let cutsceneFullscreenDismissed = false;
+let cutsceneNativeFullscreenVideo = null;
 let legacyAutoPauseAfterCutscene = null;
 let hasStoredCutscenePlaybackFilters = false;
 let cutscenePlaybackMigrationCompleted = false;
@@ -130,7 +138,6 @@ async function fetchLatestPublishedDeploymentTime() {
     return Number.isNaN(documentModifiedAt.getTime()) ? null : documentModifiedAt;
 }
 
-// Time sync
 async function initializeLatestDeploymentTime() {
     if (!latestDeploymentTimeElement) {
         return;
@@ -324,29 +331,23 @@ function hydrateAudioSettings() {
         if (Number.isFinite(parsed.musicVolume)) {
             appState.audio.musicVolume = clamp01(parsed.musicVolume);
         }
-        if (Number.isFinite(parsed.cutsceneVolume)) {
-            appState.audio.cutsceneVolume = clamp01(parsed.cutsceneVolume);
-        }
-        if (Number.isFinite(parsed.obtainVolume)) {
-            appState.audio.obtainVolume = clamp01(parsed.obtainVolume);
-        }
+        const effectsVolume = parsed.effectsVolume ?? parsed.cutsceneVolume;
+        const cutsceneVolume = parsed.cutsceneVolume ?? parsed.effectsVolume;
+        const serverVolume = parsed.serverVolume ?? parsed.obtainVolume;
+        if (Number.isFinite(effectsVolume)) appState.audio.effectsVolume = clamp01(effectsVolume);
+        if (Number.isFinite(cutsceneVolume)) appState.audio.cutsceneVolume = clamp01(cutsceneVolume);
+        if (Number.isFinite(serverVolume)) appState.audio.serverVolume = clamp01(serverVolume);
         if (Number.isFinite(parsed.uiVolume)) {
             appState.audio.uiVolume = clamp01(parsed.uiVolume);
-        }
-        if (Number.isFinite(parsed.uiLastVolume)) {
-            appState.audio.uiLastVolume = clamp01(parsed.uiLastVolume);
-        }
-        if (Number.isFinite(parsed.obtainLastVolume)) {
-            appState.audio.obtainLastVolume = clamp01(parsed.obtainLastVolume);
         }
         if (typeof parsed.masterMuted === 'boolean') {
             appState.audio.masterMuted = parsed.masterMuted;
         }
 
         appState.audio.ui = (appState.audio.uiVolume ?? 0) > 0;
-        appState.audio.obtain = (appState.audio.obtainVolume ?? 0) > 0;
-        appState.audio.roll = (appState.audio.obtainVolume ?? 0) > 0
+        appState.audio.roll = (appState.audio.serverVolume ?? 0) > 0
             || (appState.audio.musicVolume ?? 0) > 0
+            || (appState.audio.effectsVolume ?? 0) > 0
             || (appState.audio.cutsceneVolume ?? 0) > 0;
     } catch (error) {
     }
@@ -436,6 +437,9 @@ function hydrateRollingSettings() {
         const parsed = JSON.parse(raw);
         if (!parsed || typeof parsed !== 'object') {
             return;
+        }
+        if (typeof parsed.fullscreenCutscenes === 'boolean') {
+            rollingSettingsPreference.fullscreenCutscenes = parsed.fullscreenCutscenes;
         }
         if (Number.isFinite(Number(parsed.solsLikeRollsPerSecond))) {
             rollingSettingsPreference.solsLikeRollsPerSecond = normalizeSolsLikeRollsPerSecond(
@@ -596,11 +600,10 @@ function persistAudioSettings() {
             AUDIO_SETTINGS_STORAGE_KEY,
             JSON.stringify({
                 musicVolume: appState.audio.musicVolume,
+                effectsVolume: appState.audio.effectsVolume,
                 cutsceneVolume: appState.audio.cutsceneVolume,
-                obtainVolume: appState.audio.obtainVolume,
+                serverVolume: appState.audio.serverVolume,
                 uiVolume: appState.audio.uiVolume,
-                uiLastVolume: appState.audio.uiLastVolume,
-                obtainLastVolume: appState.audio.obtainLastVolume,
                 masterMuted: appState.audio.masterMuted
             })
         );
@@ -782,8 +785,282 @@ const BIOME_OTHER_SELECT_ID = 'biome-other-dropdown';
 const BIOME_TIME_SELECT_ID = 'biome-time-dropdown';
 const DAY_RESTRICTED_BIOMES = new Set(['pumpkinMoon', 'graveyard']);
 const DAY_ONLY_BIOMES = new Set(['blazing']);
+let corLunaeBlessingMultiplier = 1.15;
+const RADIANT_MOON_NAMES = Object.freeze(['Jade', 'Jade : Purity', 'Kyawthuite', 'Kyawthuite : Remembrance', 'Twilight : Withering Grace', 'Twilight : Iridescent Memory', 'Twilight']);
+const EVENT_BUFF_TOGGLES = Object.freeze({
+    dorcelessness: 'dorcelessness-luck-toggle',
+    sorry: 'sorry-luck-toggle',
+    yg: 'yg-blessing-toggle',
+    astrald: 'astrald-blessing-toggle'
+});
+let radiantForestState = SimulationCore.createRadiantState();
+let radiantMoonSoundMask = 0;
+const radiantMoonSoundQueue = [];
+let stopRadiantMoonSound = null;
+
+function resetRadiantMoonSounds(moons = 0) {
+    radiantMoonSoundMask = Number(moons) & 127;
+    radiantMoonSoundQueue.length = 0;
+    stopRadiantMoonSound?.();
+}
+
+function playNextRadiantMoonSound() {
+    if (stopRadiantMoonSound || !radiantMoonSoundQueue.length) return;
+    const ordinal = radiantMoonSoundQueue.shift();
+    if (!isSoundChannelActive('effects')) {
+        radiantMoonSoundQueue.length = 0;
+        return;
+    }
+    const audio = document.getElementById(`radiantMoonSound${ordinal}`);
+    if (!audio) return;
+    let finished = false;
+    let timeout;
+    const finish = () => {
+        if (finished) return;
+        finished = true;
+        clearTimeout(timeout);
+        audio.removeEventListener('ended', finish);
+        audio.removeEventListener('error', finish);
+        audio.pause();
+        stopRadiantMoonSound = null;
+        queueMicrotask(playNextRadiantMoonSound);
+    };
+    stopRadiantMoonSound = finish;
+    audio.addEventListener('ended', finish);
+    audio.addEventListener('error', finish);
+    timeout = setTimeout(finish, 30000);
+    ensureDeferredMediaSource(audio);
+    if (audio.error) audio.load();
+    applyMediaGain(audio, { category: 'effects' });
+    audio.muted = false;
+    audio.currentTime = 0;
+    audio.play().catch(finish);
+}
+
+function syncRadiantMoonSounds(state, active) {
+    const moons = active ? state.moons & 127 : 0;
+    if (moons === radiantMoonSoundMask) return;
+    if ((moons & radiantMoonSoundMask) !== radiantMoonSoundMask) {
+        resetRadiantMoonSounds(moons);
+        return;
+    }
+    const count = mask => mask.toString(2).replaceAll('0', '').length;
+    const previousCount = count(radiantMoonSoundMask);
+    radiantMoonSoundMask = moons;
+    for (let ordinal = previousCount + 1; ordinal <= count(moons); ordinal++) {
+        radiantMoonSoundQueue.push(ordinal);
+    }
+    playNextRadiantMoonSound();
+}
+
+let rememberControlsActive = false;
+const rememberControlState = new Map();
+
+function isRememberRoll() {
+    return document.getElementById(BIOME_PRIMARY_SELECT_ID)?.value === 'radiantForest'
+        && radiantForestState.moons === 127 && !radiantForestState.rewardClaimed;
+}
+
+function syncRememberRollControls() {
+    const remember = isRememberRoll();
+    if (remember) {
+        document.querySelectorAll('#luck-total, #luck-preset-panel button, [data-multi-potion], [data-potion-mode], #multiPotionStackToggle').forEach(control => {
+            if (!rememberControlState.has(control)) {
+                rememberControlState.set(control, { disabled: control.disabled, title: control.getAttribute('title') });
+            }
+            control.disabled = true;
+            control.title = 'Remember uses 1× luck. Potions are unavailable for this roll.';
+        });
+    } else if (rememberControlState.size) {
+        rememberControlState.forEach((previous, control) => {
+            control.disabled = previous.disabled;
+            if (previous.title === null) control.removeAttribute('title');
+            else control.title = previous.title;
+        });
+        rememberControlState.clear();
+        const limbo = document.getElementById(BIOME_PRIMARY_SELECT_ID)?.value === 'limbo';
+        syncLuckPotionPresetAvailability(limbo);
+        syncMultiplePotionModeAvailability(limbo);
+    }
+    if (rememberControlsActive !== remember) {
+        rememberControlsActive = remember;
+        recomputeLuckValue();
+    }
+}
+
+function syncRadiantRollLabel() {
+    const button = document.querySelector('.roll-trigger');
+    if (!button) return;
+    const remember = isRememberRoll();
+    const label = remember ? 'Remember' : isSolsLikeSimulationMethod() ? 'Roll' : 'Start Rolling';
+    if (button.textContent !== label || (remember && !button.querySelector('.roll-trigger__memory'))) {
+        if (remember) button.innerHTML = '<span class="roll-trigger__memory">Remember</span>';
+        else button.textContent = label;
+    }
+    button.classList.toggle('roll-trigger--remember', remember);
+    if (simulationActive) button.style.opacity = remember ? '1' : '0.5';
+}
+
+function syncBiomeBuffs(state = radiantForestState) {
+    syncRememberRollControls();
+    syncRadiantRollLabel();
+    const panel = document.getElementById('biomeBuffs');
+    if (!panel) return;
+    const refresh = panel.querySelector('[data-radiant-refresh]');
+    if (refresh) refresh.disabled = simulationActive;
+    const biome = document.getElementById(BIOME_PRIMARY_SELECT_ID)?.value;
+    const radiantActive = biome === 'radiantForest';
+    syncRadiantMoonSounds(state, radiantActive);
+    const sky = document.getElementById('radiantMoons');
+    if (sky) sky.hidden = !radiantActive;
+    const singularityActive = biome === 'singularity';
+    const devConfig = getDevAdminAbuseConfig(biome);
+    const devVariant = getSelectedDevAdminAbuseVariant(biome);
+    const eventBuffs = Object.fromEntries(Object.entries(EVENT_BUFF_TOGGLES).map(([buff, id]) => [buff, Boolean(document.getElementById(id)?.checked)]));
+    panel.hidden = !radiantActive && !singularityActive && !devConfig && !Object.values(eventBuffs).some(Boolean);
+    if (panel.dataset.biome !== biome || panel.hidden) {
+        panel.dispatchEvent(new Event('biome-buffs-reset'));
+    }
+    panel.dataset.biome = biome;
+    if (panel.hidden) return;
+    const progressKey = `${biome}:${devVariant}:${state.moons}:${state.rewardClaimed}:${corLunaeBlessingMultiplier}:${Object.values(eventBuffs).join(',')}`;
+    if (panel.dataset.progress === progressKey) return;
+    panel.dataset.progress = progressKey;
+    panel.classList.toggle('biome-buffs--singularity', singularityActive);
+    panel.querySelectorAll('[data-biome-buff]').forEach(button => {
+        button.hidden = button.dataset.biomeBuff in eventBuffs ? !eventBuffs[button.dataset.biomeBuff]
+            : button.dataset.biomeBuff === 'dev' ? !devConfig
+            : button.dataset.biomeBuff === 'singularity' ? !singularityActive : !radiantActive;
+    });
+    if (devConfig) {
+        const label = `${devConfig.abuseLabel} Admin Abuse`;
+        const multiplier = getDevAdminAbuseMultiplier(biome);
+        const basicMultiplier = getDevAdminAbuseBasicMultiplier(biome);
+        const effect = basicMultiplier !== 1
+            ? `×${basicMultiplier} Basic Luck Multiplier · ×${multiplier} Final Luck Multiplier`
+            : `×${multiplier} Total Luck Multiplier`;
+        const button = panel.querySelector('[data-biome-buff="dev"]');
+        button.setAttribute('aria-label', `${label}: ${effect}. View effect${devConfig.variants ? ' and choose a buff' : ''}.`);
+        button.querySelector('img').src = `files/images/icons/${biome}Buff.png`;
+        panel.querySelector('[data-dev-buff-multiplier]').textContent = `×${multiplier}`;
+        panel.querySelector('[data-dev-buff-title]').textContent = label;
+        panel.querySelector('[data-dev-buff-biome]').textContent = BIOME_DISPLAY_LABEL_OVERRIDES[biome] || devConfig.biomeLabel;
+        panel.querySelector('[data-dev-buff-effect]').textContent = `${effect}${devVariant ? ` · ${devVariant === 'old' ? 'Old' : 'New'} buff selected` : ''}.`;
+        panel.querySelector('[data-dev-buff-choices]').hidden = !devConfig.variants;
+        panel.querySelectorAll('[data-dev-buff-variant]').forEach(choice => {
+            const variant = devConfig.variants?.[choice.dataset.devBuffVariant];
+            choice.textContent = variant ? `${variant.label} · ${variant.basicMultiplier
+                ? `×${variant.basicMultiplier} basic · ×${variant.multiplier} final` : `×${variant.multiplier}`}` : '';
+            choice.setAttribute('aria-pressed', String(choice.dataset.devBuffVariant === devVariant));
+        });
+    }
+    const blessing = panel.querySelector('[data-biome-buff="moonCatch"]');
+    blessing.setAttribute('aria-label', `Cor Lunae's Blessing: ${corLunaeBlessingMultiplier} times final luck. Choose a buff.`);
+    panel.querySelectorAll('[data-lunae-multiplier]').forEach(element => element.textContent = `×${corLunaeBlessingMultiplier}`);
+    const moons = RADIANT_MOON_NAMES;
+    panel.querySelectorAll('[data-radiant-moon]').forEach((element, moon) => {
+        const collected = Boolean(state.moons & (1 << moon));
+        element.textContent = `${collected ? '●' : '○'} ${moon + 1}. ${moons[moon]}${moon === 3 ? ' (Center)' : ''}`;
+        element.classList.toggle('radiant-moon--collected', collected);
+    });
+    sky?.querySelectorAll('[data-moon-index]').forEach(element => {
+        const index = Number(element.dataset.moonIndex);
+        const collected = Boolean(state.moons & (1 << index));
+        element.classList.toggle('radiant-moons__moon--collected', collected);
+        const label = `${moons[index]}: ${collected ? 'collected' : 'not yet rolled'}`;
+        element.setAttribute('aria-label', label);
+        element.title = label;
+    });
+    const unlocked = SimulationCore.radiantUnlockMask(state);
+    panel.querySelector('[data-radiant-count]').textContent = `${moons.filter((_, index) => state.moons & (1 << index)).length}/7`;
+    panel.querySelector('[data-biome-buff="moons"]').classList.toggle('biome-buff--ready', state.moons === 127 && !state.rewardClaimed);
+    panel.querySelectorAll('[data-radiant-unlock]').forEach(button => {
+        button.hidden = !radiantActive || !(unlocked & Number(button.dataset.radiantUnlock));
+    });
+    panel.querySelector('[data-radiant-status]').textContent = state.rewardClaimed
+        ? 'Tomorrow obtained. True Aura buffs remain active until the biome ends.'
+        : state.moons === 127 ? 'Remember — Tomorrow is guaranteed on the next roll at 1× luck. Potions are unavailable.'
+        : `${moons.filter((_, index) => state.moons & (1 << index)).length} / 7 moons collected. Collect them in any order.`;
+    const expanded = panel.querySelector('[data-biome-buff][aria-expanded="true"]');
+    if (expanded?.hidden) panel.dispatchEvent(new Event('biome-buffs-reset'));
+}
+
+function setupBiomeBuffs() {
+    const panel = document.getElementById('biomeBuffs');
+    if (!panel) return;
+    const tooltip = document.getElementById('biomeBuffTooltip');
+    const buttons = [...panel.querySelectorAll('[data-biome-buff]')];
+    let pinned = null;
+    let hideTimer;
+    panel.querySelector('[data-radiant-refresh]')?.addEventListener('click', () => {
+        if (simulationActive || isAuraCutscenePlaybackActive()
+            || document.getElementById(BIOME_PRIMARY_SELECT_ID)?.value !== 'radiantForest') return;
+        radiantForestState = SimulationCore.createRadiantState();
+        recomputeLuckValue();
+    });
+    const show = button => {
+        clearTimeout(hideTimer);
+        tooltip.hidden = !button;
+        if (button?.dataset.biomeBuff !== 'moonCatch') {
+            panel.querySelector('details[data-select="cor-lunae-blessing-dropdown"]').open = false;
+        }
+        buttons.forEach(candidate => candidate.setAttribute('aria-expanded', String(candidate === button)));
+        panel.querySelectorAll('[data-biome-buff-details]').forEach(details => {
+            details.hidden = details.dataset.biomeBuffDetails !== button?.dataset.biomeBuff;
+        });
+    };
+    buttons.forEach(button => {
+        button.addEventListener('pointerenter', event => { if (event.pointerType !== 'touch') show(button); });
+        button.addEventListener('focus', () => show(button));
+        button.addEventListener('click', event => {
+            pinned = pinned === button ? null : button;
+            show(pinned);
+            if (pinned?.dataset.biomeBuff === 'dev' && event.detail === 0) {
+                panel.querySelector('[data-dev-buff-variant][aria-pressed="true"]')?.focus();
+            }
+            if (pinned?.dataset.biomeBuff === 'moonCatch' && event.detail === 0) {
+                panel.querySelector('details[data-select="cor-lunae-blessing-dropdown"] summary')?.focus();
+            }
+        });
+    });
+    panel.querySelectorAll('[data-dev-buff-variant]').forEach(choice => {
+        choice.addEventListener('click', () => {
+            const biome = document.getElementById(BIOME_PRIMARY_SELECT_ID)?.value;
+            if (!getDevAdminAbuseConfig(biome)?.variants?.[choice.dataset.devBuffVariant]) return;
+            devAdminAbuseVariantSelections[biome] = choice.dataset.devBuffVariant;
+            recomputeLuckValue();
+            syncBiomeBuffs();
+        });
+    });
+    panel.querySelector('[data-lunae-choice]')?.addEventListener('change', event => {
+        const multiplier = Number(event.target.value);
+        if (![...event.target.options].some(option => Number(option.value) === multiplier)) return;
+        corLunaeBlessingMultiplier = multiplier;
+        recomputeLuckValue();
+    });
+    Object.values(EVENT_BUFF_TOGGLES).forEach(id => {
+        document.getElementById(id)?.addEventListener('change', () => queueMicrotask(() => syncBiomeBuffs()));
+    });
+    panel.addEventListener('biome-buffs-reset', () => { pinned = null; show(null); });
+    panel.addEventListener('pointerenter', () => clearTimeout(hideTimer));
+    panel.addEventListener('pointerleave', () => { hideTimer = setTimeout(() => show(pinned), 160); });
+    panel.addEventListener('focusout', event => { if (!panel.contains(event.relatedTarget)) show(pinned); });
+    document.addEventListener('pointerdown', event => {
+        if (!panel.contains(event.target)) { pinned = null; show(null); }
+    });
+    document.addEventListener('keydown', event => {
+        if (event.key === 'Escape') {
+            const restoreFocus = tooltip.contains(document.activeElement);
+            const expanded = buttons.find(button => button.getAttribute('aria-expanded') === 'true');
+            pinned = null;
+            if (restoreFocus) expanded?.focus({ preventScroll: true });
+            show(null);
+        }
+    });
+    document.getElementById('roll-total')?.addEventListener('input', () => queueMicrotask(() => syncBiomeBuffs()));
+    syncBiomeBuffs();
+}
 const CYBERSPACE_ILLUSIONARY_WARNING_STORAGE_KEY = 'solsRollingCalculator:hideCyberspaceIllusionaryWarning';
-const SINGULARITY_MULTIPLIER_WARNING_STORAGE_KEY = 'solsRollingCalculator:hideSingularityMultiplierWarning';
 const SINGULARITY_SUMMON_SOUND_ID = 'singularitySummonSound';
 const SINGULARITY_SUMMON_FALLBACK_DURATION_MS = 12500;
 let lastPrimaryBiomeSelection = null;
@@ -823,18 +1100,24 @@ const DEV_ADMIN_ABUSE_CONFIGS = Object.freeze({
         defaultVariant: DEV_ADMIN_ABUSE_DEFAULT_VARIANT
     }),
     edict: Object.freeze({
-        biomeLabel: 'Edict',
+        biomeLabel: 'The Citadel of Orders',
         abuseLabel: 'Word',
-        multiplier: 1.2
+        variants: Object.freeze({
+            new: Object.freeze({ label: 'New Word Admin Abuse', multiplier: 1.5, basicMultiplier: 1.5 }),
+            old: Object.freeze({ label: 'Old Word Admin Abuse', multiplier: 1.2 })
+        }),
+        defaultVariant: DEV_ADMIN_ABUSE_DEFAULT_VARIANT
     })
 });
 const devAdminAbuseVariantSelections = {
     anotherRealm: DEV_ADMIN_ABUSE_DEFAULT_VARIANT,
     fullMoon: DEV_ADMIN_ABUSE_DEFAULT_VARIANT,
-    mastermind: DEV_ADMIN_ABUSE_DEFAULT_VARIANT
+    mastermind: DEV_ADMIN_ABUSE_DEFAULT_VARIANT,
+    edict: DEV_ADMIN_ABUSE_DEFAULT_VARIANT
 };
 
 const ROE_NATIVE_BIOMES = Object.freeze([
+    'lostForest',
     'windy',
     'snowy',
     'rainy',
@@ -943,14 +1226,9 @@ function resolveRuneConfiguration(value) {
 function applyChannelVolumeToElements(channel) {
     if (typeof document === 'undefined') return;
 
-    let category = 'obtain';
-    if (channel === 'ui') {
-        category = 'ui';
-    } else if (channel === 'cutscene') {
-        category = 'cutscene';
-    } else if (channel === 'music') {
-        category = 'music';
-    }
+    appState.audio.activeSounds.forEach(sound => {
+        if (sound.category === channel) sound.gainNode.gain.value = sound.baseGain * getChannelVolumeMultiplier(channel);
+    });
 
     if (!experienceStarted) {
         if (channel === 'music') {
@@ -962,20 +1240,17 @@ function applyChannelVolumeToElements(channel) {
         return;
     }
 
-    const selector = `[data-audio-channel="${channel}"]`;
+    const selector = `audio[data-audio-channel="${channel}"], video[data-audio-channel="${channel}"]`;
     document.querySelectorAll(selector).forEach(element => {
         if (channel === 'music' && element.id === 'ambientMusic') {
             return;
         }
-        applyMediaGain(element, { category });
+        applyMediaGain(element, { category: channel });
     });
 
     if (channel === 'music') {
         const bgMusic = document.getElementById('ambientMusic');
         synchronizeBackgroundRouting(bgMusic);
-        if (!isSoundChannelActive('music')) {
-            stopSingularitySummonSequence();
-        }
     }
 }
 
@@ -1015,6 +1290,11 @@ function hideAudioSettingsOverlay() {
 }
 
 function syncRollingSettingsControls() {
+    const fullscreenToggle = document.getElementById('rollingFullscreenCutscenesToggle');
+    if (fullscreenToggle) {
+        fullscreenToggle.setAttribute('aria-checked', String(rollingSettingsPreference.fullscreenCutscenes));
+        fullscreenToggle.disabled = Boolean(cutsceneFullscreenTransition);
+    }
     const speedSlider = document.getElementById('solsLikeRollingSpeed');
     const speedOutput = document.getElementById('solsLikeRollingSpeedValue');
     const speedPresetButtons = document.querySelectorAll('[data-sols-like-speed]');
@@ -1107,10 +1387,23 @@ function initializeRollingSettingsPanel() {
     const tierFilterButton = document.getElementById('rollingFilterAuraTiersButton');
     const auraFilterButton = document.getElementById('rollingFilterAurasButton');
     const cutscenePlaybackFilterButton = document.getElementById('rollingCutscenePlaybackFiltersButton');
+    const fullscreenToggle = document.getElementById('rollingFullscreenCutscenesToggle');
     if (!overlay || !openButton) return;
 
     hydrateRollingSettings();
     syncRollingSettingsControls();
+
+    fullscreenToggle?.addEventListener('click', () => {
+        void setCutsceneFullscreen(!rollingSettingsPreference.fullscreenCutscenes);
+    });
+    const reflectFullscreen = () => {
+        if (cutsceneFullscreenOwned && !getFullscreenElement() && !cutsceneFullscreenTransition) {
+            cutsceneFullscreenOwned = false;
+            cutsceneFullscreenDismissed = true;
+        }
+    };
+    document.addEventListener('fullscreenchange', reflectFullscreen);
+    document.addEventListener('webkitfullscreenchange', reflectFullscreen);
 
     openButton.addEventListener('click', event => {
         event.preventDefault();
@@ -1254,6 +1547,10 @@ function getCutsceneAuras() {
         .sort(compareAurasByDisplayTierThenChance);
 }
 
+function getSelectableCutsceneAuras() {
+    return getCutsceneAuras().filter(aura => !ALWAYS_ON_CUTSCENES.has(aura.cutscene));
+}
+
 function ensureCutsceneFilterPreferences() {
     const pauseFilters = rollingSettingsPreference.cutscenePauseFilters;
     const playbackFilters = rollingSettingsPreference.cutscenePlaybackFilters;
@@ -1261,7 +1558,7 @@ function ensureCutsceneFilterPreferences() {
         if (!Object.prototype.hasOwnProperty.call(pauseFilters, aura.name)) {
             pauseFilters[aura.name] = legacyAutoPauseAfterCutscene === true;
         }
-        if (!Object.prototype.hasOwnProperty.call(playbackFilters, aura.name)) {
+        if (ALWAYS_ON_CUTSCENES.has(aura.cutscene) || !Object.prototype.hasOwnProperty.call(playbackFilters, aura.name)) {
             playbackFilters[aura.name] = true;
         }
     });
@@ -1269,6 +1566,7 @@ function ensureCutsceneFilterPreferences() {
 }
 
 function isAuraCutscenePauseEnabled(aura) {
+    if (ALWAYS_ON_CUTSCENES.has(aura?.cutscene)) return false;
     if (!aura?.name) {
         return false;
     }
@@ -1276,6 +1574,7 @@ function isAuraCutscenePauseEnabled(aura) {
 }
 
 function isAuraCutscenePlaybackEnabled(aura) {
+    if (ALWAYS_ON_CUTSCENES.has(aura?.cutscene)) return true;
     if (!aura?.name) {
         return true;
     }
@@ -1289,7 +1588,7 @@ function hasAnyCutscenePlaybackEnabled() {
 }
 
 function syncCutscenePlaybackStatusPill() {
-    const cutsceneAuras = getCutsceneAuras();
+    const cutsceneAuras = getSelectableCutsceneAuras();
     const playbackCount = cutsceneAuras.filter(isAuraCutscenePlaybackEnabled).length;
     const total = cutsceneAuras.length;
     const active = playbackCount > 0;
@@ -1333,7 +1632,7 @@ function initializeCinematicStateFromCutsceneFilters() {
     if (!cutscenePlaybackMigrationCompleted && !hasStoredCutscenePlaybackFilters) {
         const legacyEnabled = appState.cinematic === true;
         getCutsceneAuras().forEach(aura => {
-            rollingSettingsPreference.cutscenePlaybackFilters[aura.name] = legacyEnabled;
+            rollingSettingsPreference.cutscenePlaybackFilters[aura.name] = ALWAYS_ON_CUTSCENES.has(aura.cutscene) || legacyEnabled;
         });
         persistRollingSettings();
     }
@@ -1344,7 +1643,7 @@ function initializeCinematicStateFromCutsceneFilters() {
 
 function syncCutsceneFilterLauncherLabels() {
     ensureCutsceneFilterPreferences();
-    const cutsceneAuras = getCutsceneAuras();
+    const cutsceneAuras = getSelectableCutsceneAuras();
     const total = cutsceneAuras.length;
     const pauseCount = cutsceneAuras.filter(isAuraCutscenePauseEnabled).length;
     const playbackCount = cutsceneAuras.filter(isAuraCutscenePlaybackEnabled).length;
@@ -1437,7 +1736,7 @@ function createAuraFilterNameSpan(aura) {
         ? resolveBaseRarityClass(aura)
         : '';
     const nameSpan = document.createElement('span');
-    if (aura && (wikiAuraSigilNames.has(auraName.split(' - ')[0].trim()) || auraName.startsWith('Glitch - '))) {
+    if (aura && (WikiTitles.resolveAuraName(auraName.split(' - ')[0].trim()) || auraName.startsWith('Glitch - '))) {
         nameSpan.innerHTML = formatAuraNameMarkup(aura);
     } else {
         nameSpan.textContent = auraName;
@@ -1463,7 +1762,9 @@ function renderCutsceneFilterButtonLabel(button, aura, enabled, mode) {
 
     const statusSpan = document.createElement('span');
     statusSpan.className = 'cutscene-filter-toggle__status';
-    statusSpan.textContent = `: ${enabled ? 'On' : 'Off'}`;
+    const alwaysOn = mode !== 'pause' && ALWAYS_ON_CUTSCENES.has(aura.cutscene);
+    button.disabled = alwaysOn;
+    statusSpan.textContent = alwaysOn ? ': Always On' : `: ${enabled ? 'On' : 'Off'}`;
 
     const layoutSpan = document.createElement('span');
     layoutSpan.className = 'cutscene-filter-toggle__layout';
@@ -1484,7 +1785,7 @@ function populateCutsceneFilterList(mode) {
 
     ensureCutsceneFilterPreferences();
     const fragment = document.createDocumentFragment();
-    getCutsceneAuras().forEach(aura => {
+    getSelectableCutsceneAuras().forEach(aura => {
         const button = document.createElement('button');
         const enabled = pauseMode
             ? isAuraCutscenePauseEnabled(aura)
@@ -1748,7 +2049,7 @@ function initializeCutsceneFilterPanel(mode) {
     disableAllButton?.addEventListener('click', () => {
         ensureCutsceneFilterPreferences();
         getCutsceneAuras().forEach(aura => {
-            rollingSettingsPreference.cutscenePlaybackFilters[aura.name] = false;
+            rollingSettingsPreference.cutscenePlaybackFilters[aura.name] = ALWAYS_ON_CUTSCENES.has(aura.cutscene);
         });
         syncCutsceneFilterButtons('playback');
         persistRollingSettings();
@@ -1762,7 +2063,7 @@ function initializeCutsceneFilterPanel(mode) {
             return;
         }
         const aura = AURA_BY_NAME.get(button.dataset.auraName) || null;
-        if (!aura) {
+        if (!aura || (!pauseMode && ALWAYS_ON_CUTSCENES.has(aura.cutscene))) {
             return;
         }
         const filters = pauseMode
@@ -1878,6 +2179,8 @@ function updateAudioSliderLabel(channel, percentValue) {
     const input = overlay.querySelector(`.audio-slider__input[data-audio-channel="${channel}"]`);
     if (input) {
         const clamped = clamp01(percentValue / 100);
+        input.value = String(Math.round(clamped * 100));
+        input.setAttribute('aria-valuetext', `${Math.round(clamped * 100)} percent`);
         syncAudioSliderVisual(input, clamped * 100);
     }
 
@@ -1896,68 +2199,90 @@ function updateAudioSliderLabel(channel, percentValue) {
     }
 }
 
-function updateUiToggleStatus() {
-    const uiToggle = document.getElementById('audioUiToggle');
-    if (uiToggle) {
-        uiToggle.checked = appState.audio.ui;
+const appNotificationEntries = new Map();
+function showAppNotification(message, { id = 'general', duration = 2800 } = {}) {
+    const region = document.getElementById('appNotifications');
+    if (!region) return;
+    let entry = appNotificationEntries.get(id);
+    if (!entry) {
+        if (appNotificationEntries.size >= 3) {
+            const [oldestId, oldest] = appNotificationEntries.entries().next().value;
+            clearTimeout(oldest.hideTimer);
+            clearTimeout(oldest.removeTimer);
+            oldest.element.remove();
+            appNotificationEntries.delete(oldestId);
+        }
+        entry = { element: document.createElement('div') };
+        entry.element.className = 'app-notification';
+        appNotificationEntries.set(id, entry);
+        region.appendChild(entry.element);
     }
+    clearTimeout(entry.hideTimer);
+    clearTimeout(entry.removeTimer);
+    entry.element.textContent = message;
+    requestAnimationFrame(() => entry.element.classList.add('app-notification--visible'));
+    entry.hideTimer = setTimeout(() => {
+        entry.element.classList.remove('app-notification--visible');
+        entry.removeTimer = setTimeout(() => {
+            entry.element.remove();
+            appNotificationEntries.delete(id);
+        }, 300);
+    }, duration);
 }
 
-function setChannelVolume(channel, normalized, { persist = true } = {}) {
-    const value = clamp01(normalized);
-    if (channel === 'ui') {
-        appState.audio.uiVolume = value;
-        if (value > 0) {
-            appState.audio.uiLastVolume = value;
+function initializeAudioKeyboardShortcuts() {
+    document.addEventListener('keydown', event => {
+        if (event.defaultPrevented || !event.altKey || event.ctrlKey || event.metaKey || event.shiftKey || event.isComposing) return;
+        if (event.target.closest?.('input, textarea, select, [contenteditable]:not([contenteditable="false"]), [role="textbox"], [role="slider"]')) return;
+        if (event.code === 'KeyM') {
+            event.preventDefault();
+            if (!event.repeat) toggleMasterMute();
+            return;
         }
-        appState.audio.ui = value > 0;
-        updateUiToggleStatus();
-    } else if (channel === 'cutscene') {
-        appState.audio.cutsceneVolume = value;
-    } else if (channel === 'music') {
-        appState.audio.musicVolume = value;
-    } else {
-        appState.audio.obtainVolume = value;
-        if (value > 0) {
-            appState.audio.obtainLastVolume = value;
-        }
-        appState.audio.obtain = value > 0;
-    }
+        if (event.key !== 'ArrowUp' && event.key !== 'ArrowDown') return;
+        event.preventDefault();
+        const direction = event.key === 'ArrowUp' ? 1 : -1;
+        const channels = ['music', 'ui', 'server', 'effects', 'cutscene'];
+        channels.forEach(channel => {
+            const percent = Math.round(clamp01(appState.audio[`${channel}Volume`]) * 100);
+            setChannelVolume(channel, (percent + direction * 5) / 100, { persist: false });
+        });
+        if (direction > 0 && appState.audio.masterMuted) setMasterMuteState(false, { persist: false });
+        persistAudioSettings();
+        const levels = channels.map(channel => `${Math.round(appState.audio[`${channel}Volume`] * 100)}%`);
+        showAppNotification(`Volume ${direction > 0 ? 'up' : 'down'} · Music ${levels[0]} · UI ${levels[1]} · Server Messages ${levels[2]} · Other Effects ${levels[3]} · Cutscenes ${levels[4]}${appState.audio.masterMuted ? ' · Muted' : ''}`, { id: 'volume' });
+    });
+}
 
-    const rollingActive = (appState.audio.obtainVolume ?? 0) > 0
+function setChannelVolume(channel, normalized, { persist = true, notify = false } = {}) {
+    if (!['music', 'ui', 'server', 'effects', 'cutscene'].includes(channel)) return;
+    const value = clamp01(normalized);
+    appState.audio[`${channel}Volume`] = value;
+    appState.audio.ui = appState.audio.uiVolume > 0;
+
+    const rollingActive = (appState.audio.serverVolume ?? 0) > 0
         || (appState.audio.musicVolume ?? 0) > 0
+        || (appState.audio.effectsVolume ?? 0) > 0
         || (appState.audio.cutsceneVolume ?? 0) > 0;
     appState.audio.roll = rollingActive;
 
     updateAudioSliderLabel(channel, value * 100);
     applyChannelVolumeToElements(channel);
+    document.dispatchEvent(new CustomEvent('aura-audio-settings-change'));
 
-    if (experienceStarted && (channel === 'music' || channel === 'cutscene' || channel === 'obtain')) {
+    if (experienceStarted) {
         resumeAudioEngine();
-        const selector = `[data-audio-channel="${channel}"]`;
-        document.querySelectorAll(selector).forEach(element => {
-            element.muted = false;
-            if (typeof element.removeAttribute === 'function') {
-                element.removeAttribute('muted');
-            }
-        });
         if (channel === 'music' && value > 0 && !appState.audio.masterMuted) {
             startBackgroundMusic(document.getElementById('ambientMusic'));
         }
     }
 
-    if (experienceStarted && channel === 'ui') {
-        resumeAudioEngine();
-        document.querySelectorAll('[data-audio-channel="ui"]').forEach(element => {
-            element.muted = false;
-            if (typeof element.removeAttribute === 'function') {
-                element.removeAttribute('muted');
-            }
-        });
-    }
-
     if (persist) {
         persistAudioSettings();
+    }
+    if (notify) {
+        const label = { music: 'Background Music', ui: 'UI', server: 'Server Messages', effects: 'Other Sound Effects', cutscene: 'Cutscene Sounds' }[channel];
+        showAppNotification(`${label} · ${Math.round(value * 100)}%${appState.audio.masterMuted ? ' · Muted' : ''}`, { id: 'volume' });
     }
 }
 
@@ -1969,15 +2294,8 @@ function initializeAudioSettingsPanel() {
 
     const inputs = Array.from(overlay.querySelectorAll('.audio-slider__input'));
     inputs.forEach(input => {
-        const channel = input.dataset.audioChannel || 'obtain';
-        let defaultValue = appState.audio.obtainVolume;
-        if (channel === 'ui') {
-            defaultValue = appState.audio.uiVolume;
-        } else if (channel === 'cutscene') {
-            defaultValue = appState.audio.cutsceneVolume;
-        } else if (channel === 'music') {
-            defaultValue = appState.audio.musicVolume;
-        }
+        const channel = input.dataset.audioChannel;
+        const defaultValue = appState.audio[`${channel}Volume`];
         const percent = Math.round(clamp01(defaultValue) * 100);
         input.value = percent;
         syncAudioSliderVisual(input, percent);
@@ -1985,7 +2303,7 @@ function initializeAudioSettingsPanel() {
 
         input.addEventListener('input', () => {
             const normalized = clamp01(Number.parseFloat(input.value) / 100);
-            setChannelVolume(channel, normalized);
+            setChannelVolume(channel, normalized, { notify: true });
         });
     });
 
@@ -2000,15 +2318,6 @@ function initializeAudioSettingsPanel() {
             hideAudioSettingsOverlay();
         }
     });
-
-    const uiToggle = document.getElementById('audioUiToggle');
-    if (uiToggle) {
-        uiToggle.checked = appState.audio.ui;
-
-        uiToggle.addEventListener('change', () => {
-            toggleInterfaceAudio();
-        });
-    }
 
     openButton.addEventListener('click', event => {
         event.preventDefault();
@@ -2526,84 +2835,6 @@ const cyberspaceIllusionaryWarningManager = (() => {
     };
 })();
 
-const singularityMultiplierWarningManager = (() => {
-    let suppressed = null;
-
-    const getOverlay = () => document.getElementById('singularityMultiplierOverlay');
-
-    function readSuppressedPreference() {
-        if (suppressed !== null) {
-            return suppressed;
-        }
-
-        if (typeof window === 'undefined') {
-            suppressed = false;
-            return suppressed;
-        }
-
-        try {
-            suppressed = window.localStorage.getItem(SINGULARITY_MULTIPLIER_WARNING_STORAGE_KEY) === 'true';
-        } catch (error) {
-            suppressed = false;
-        }
-
-        return suppressed;
-    }
-
-    function focusPrimaryAction() {
-        const confirmButton = document.getElementById('singularityMultiplierConfirm');
-        if (!confirmButton || typeof confirmButton.focus !== 'function') {
-            return;
-        }
-
-        try {
-            confirmButton.focus({ preventScroll: true });
-        } catch (error) {
-            confirmButton.focus();
-        }
-    }
-
-    return {
-        isSuppressed() {
-            return readSuppressedPreference();
-        },
-        show() {
-            if (readSuppressedPreference()) {
-                return false;
-            }
-
-            const overlay = getOverlay();
-            if (!overlay) {
-                return false;
-            }
-
-            if (!overlay.hasAttribute('hidden')) {
-                return true;
-            }
-
-            revealOverlay(overlay);
-            focusPrimaryAction();
-            return true;
-        },
-        hide() {
-            concealOverlay(getOverlay());
-        },
-        suppress() {
-            suppressed = true;
-            if (typeof window !== 'undefined') {
-                try {
-                    window.localStorage.setItem(SINGULARITY_MULTIPLIER_WARNING_STORAGE_KEY, 'true');
-                } catch (error) {
-                }
-            }
-            this.hide();
-        },
-        isVisible() {
-            const overlay = getOverlay();
-            return Boolean(overlay && !overlay.hasAttribute('hidden'));
-        }
-    };
-})();
 
 function formatLuckMultiplierLabel(multiplier) {
     const numericMultiplier = Number(multiplier);
@@ -2639,6 +2870,12 @@ function getDevAdminAbuseMultiplier(biomeId) {
 
     const selectedVariant = getSelectedDevAdminAbuseVariant(biomeId);
     return config.variants?.[selectedVariant]?.multiplier || 1;
+}
+
+function getDevAdminAbuseBasicMultiplier(biomeId) {
+    const config = getDevAdminAbuseConfig(biomeId);
+    const variant = getSelectedDevAdminAbuseVariant(biomeId);
+    return config?.variants?.[variant]?.basicMultiplier || 1;
 }
 
 function getDevAdminAbuseMultipliers(biomeId) {
@@ -2696,80 +2933,6 @@ function getSingularityLuckMultiplier(biomeId) {
 function isDevAdminAbuseBiomeActive(biomeId) {
     return Boolean(getDevAdminAbuseConfig(biomeId));
 }
-
-const adminAbuseChoiceManager = (() => {
-    let pendingBiomeId = null;
-
-    const getOverlay = () => document.getElementById('adminAbuseChoiceOverlay');
-
-    function focusPrimaryAction() {
-        const button = document.getElementById('adminAbuseChoiceNew');
-        if (!button || typeof button.focus !== 'function') {
-            return;
-        }
-
-        try {
-            button.focus({ preventScroll: true });
-        } catch (error) {
-            button.focus();
-        }
-    }
-
-    function applyVariant(variantKey) {
-        if (!pendingBiomeId) {
-            return;
-        }
-
-        const config = getDevAdminAbuseConfig(pendingBiomeId);
-        if (config?.variants?.[variantKey]) {
-            devAdminAbuseVariantSelections[pendingBiomeId] = variantKey;
-            recomputeLuckValue();
-        }
-    }
-
-    return {
-        show(biomeId) {
-            const config = getDevAdminAbuseConfig(biomeId);
-            if (!config || !config.variants) {
-                return false;
-            }
-
-            pendingBiomeId = biomeId;
-            const overlay = getOverlay();
-            const title = document.getElementById('adminAbuseChoiceTitle');
-            const body = document.getElementById('adminAbuseChoiceBody');
-            const newButton = document.getElementById('adminAbuseChoiceNew');
-            const oldButton = document.getElementById('adminAbuseChoiceOld');
-            const newVariant = config.variants.new;
-            const oldVariant = config.variants.old;
-
-            if (!overlay || !title || !body || !newButton || !oldButton || !newVariant || !oldVariant) {
-                return false;
-            }
-
-            title.textContent = `${config.abuseLabel} Admin Abuse`;
-            body.textContent = `${config.biomeLabel} applies ${config.abuseLabel} Admin Abuse. Choose the new ${formatLuckMultiplierLabel(newVariant.multiplier)} buff or the old ${formatLuckMultiplierLabel(oldVariant.multiplier)} buff.`;
-            newButton.textContent = `${newVariant.label} (${formatLuckMultiplierLabel(newVariant.multiplier)})`;
-            oldButton.textContent = `${oldVariant.label} (${formatLuckMultiplierLabel(oldVariant.multiplier)})`;
-
-            revealOverlay(overlay);
-            focusPrimaryAction();
-            return true;
-        },
-        choose(variantKey) {
-            applyVariant(variantKey);
-            this.hide();
-        },
-        hide() {
-            pendingBiomeId = null;
-            concealOverlay(getOverlay());
-        },
-        isVisible() {
-            const overlay = getOverlay();
-            return Boolean(overlay && !overlay.hasAttribute('hidden'));
-        }
-    };
-})();
 
 const glitchUiState = {
     loopTimeoutId: null,
@@ -2879,13 +3042,19 @@ function canUseMediaElementSource(element) {
     }
 }
 
-function getChannelVolumeMultiplier(category = 'obtain') {
+function getChannelVolumeMultiplier(category = 'server') {
     if (appState.audio.masterMuted) return 0;
     if (category === 'ui') return clamp01(appState.audio.uiVolume ?? 1);
+    if (category === 'effects') return clamp01(appState.audio.effectsVolume ?? 1);
     if (category === 'cutscene') return clamp01(appState.audio.cutsceneVolume ?? 1);
     if (category === 'music') return clamp01(appState.audio.musicVolume ?? 1);
-    return clamp01(appState.audio.obtainVolume ?? 1);
+    return clamp01(appState.audio.serverVolume ?? 1);
 }
+
+globalThis.AuraAudio = Object.freeze({
+    getMasterMuted: () => appState.audio.masterMuted,
+    getVolume: getChannelVolumeMultiplier
+});
 
 function resolveBaseGain(element, fallback = 1) {
     const dataset = element?.dataset || {};
@@ -2916,7 +3085,7 @@ function resolveBaseGain(element, fallback = 1) {
     return fallback;
 }
 
-function applyMediaGain(element, { category = 'obtain', fallbackGain } = {}) {
+function applyMediaGain(element, { category = element?.dataset.audioChannel || 'server', fallbackGain } = {}) {
     if (!element) return;
 
     const baseGain = resolveBaseGain(element, fallbackGain ?? 1);
@@ -2963,11 +3132,10 @@ function isSoundChannelActive(category) {
     const channelVolume = getChannelVolumeMultiplier(category);
     if (channelVolume <= 0) return false;
     if (category === 'ui') return appState.audio.ui;
-    if (category === 'cutscene') return appState.audio.roll;
     return appState.audio.roll;
 }
 
-function playSoundEffect(audioElement, category = 'rolling') {
+function playSoundEffect(audioElement, category = audioElement?.dataset.audioChannel || 'effects') {
     if (!audioElement) return;
 
     const resolvePlaybackGain = () => {
@@ -2999,6 +3167,7 @@ function playSoundEffect(audioElement, category = 'rolling') {
 
         const fallbackPlayer = audioElement.cloneNode(true);
         fallbackPlayer.removeAttribute('id');
+        fallbackPlayer.dataset.audioChannel = category;
         fallbackPlayer.src = sourceUrl;
         fallbackPlayer.currentTime = 0;
         fallbackPlayer.muted = false;
@@ -3044,8 +3213,6 @@ function playSoundEffect(audioElement, category = 'rolling') {
         return;
     }
 
-    // Browsers do not allow fetch() to read file:// media from an opaque local-file
-    // origin. Direct HTMLAudio playback is supported, so use that path locally.
     if (!canFetchAudioBufferSource(sourceKey)) {
         spawnFallbackPlayer(initialGain);
         return;
@@ -3090,8 +3257,11 @@ function playSoundEffect(audioElement, category = 'rolling') {
         source.buffer = buffer;
         const gainNode = context.createGain();
         gainNode.gain.value = currentGain;
+        const activeSound = { category, gainNode, baseGain: resolveBaseGain(audioElement, category === 'ui' ? 0.3 : 1) };
+        appState.audio.activeSounds.add(activeSound);
         source.connect(gainNode).connect(context.destination);
         source.onended = () => {
+            appState.audio.activeSounds.delete(activeSound);
             source.disconnect();
             gainNode.disconnect();
         };
@@ -3202,8 +3372,6 @@ function queueBackgroundMusicGestureRetry(bgMusic) {
     document.addEventListener('keydown', retry, true);
 }
 
-// The floating aura player survives visits to the simulator. Its audio takes
-// priority over background music, including when a biome changes while rolling.
 let auraFloatingPlaybackActive = false;
 let auraLocalPlaybackActive = false;
 let auraVideoShellActive = false;
@@ -3295,7 +3463,7 @@ function stopSingularitySummonSequence({ resetAudio = true } = {}) {
 
 function playSingularitySummonSequence(bgMusic, { expectedMusicSrc, onComplete } = {}) {
     const summonSound = getSingularitySummonSound();
-    if (!summonSound || !isSoundChannelActive('music') || areShakeEffectsDisabled()) {
+    if (!summonSound || !isSoundChannelActive('effects') || areShakeEffectsDisabled()) {
         if (typeof onComplete === 'function') {
             onComplete();
         }
@@ -3323,7 +3491,7 @@ function playSingularitySummonSequence(bgMusic, { expectedMusicSrc, onComplete }
         console.warn('Unable to rewind Singularity summon sound', error);
     }
 
-    applyMediaGain(summonSound, { category: 'music', fallbackGain: 0.35 });
+    applyMediaGain(summonSound, { category: 'effects', fallbackGain: 0.35 });
     setSingularitySummonVisualActive(true);
 
     const cleanup = () => {
@@ -3406,7 +3574,8 @@ function setMasterMuteState(isMuted, { force = false, persist = true } = {}) {
         clearPendingBackgroundMusicGestureRetry();
     }
 
-    ['music', 'obtain', 'cutscene', 'ui'].forEach(channel => applyChannelVolumeToElements(channel));
+    ['music', 'ui', 'server', 'effects', 'cutscene'].forEach(channel => applyChannelVolumeToElements(channel));
+    document.dispatchEvent(new CustomEvent('aura-audio-settings-change'));
 
     if (!isMuted) {
         resumeAudioEngine();
@@ -3422,62 +3591,7 @@ function setMasterMuteState(isMuted, { force = false, persist = true } = {}) {
 
 function toggleMasterMute() {
     setMasterMuteState(!appState.audio.masterMuted);
-}
-
-function toggleRollingAudio() {
-    appState.audio.roll = !appState.audio.roll;
-    const bgMusic = document.getElementById('ambientMusic');
-    const soundToggle = document.getElementById('rollAudioToggle');
-    if (bgMusic && !bgMusic.getAttribute('data-current-src')) {
-        const pendingSrc = bgMusic.getAttribute('src') || bgMusic.dataset?.src || bgMusic.currentSrc;
-        if (pendingSrc) {
-            bgMusic.setAttribute('data-current-src', pendingSrc);
-        }
-    }
-
-    if (appState.audio.roll) {
-        resumeAudioEngine();
-        playSoundEffect(clickSoundEffectElement, 'ui');
-        if (bgMusic && experienceStarted) {
-            primeBackgroundMusic(bgMusic);
-            if (glitchPresentationEnabled) {
-                updateGlitchAudioControls(shouldUseGlitchBaseEffect());
-            }
-            startBackgroundMusic(bgMusic);
-        }
-        applyChannelVolumeToElements('music');
-        applyChannelVolumeToElements('obtain');
-    } else if (bgMusic) {
-        stopSingularitySummonSequence();
-        bgMusic.muted = true;
-        if (typeof bgMusic.setAttribute === 'function') {
-            bgMusic.setAttribute('muted', '');
-        }
-        bgMusic.pause();
-        bgMusic.currentTime = 0;
-    }
-
-    if (soundToggle) {
-        soundToggle.textContent = appState.audio.roll ? 'Audio: On' : 'Audio: Off';
-        soundToggle.setAttribute('aria-pressed', appState.audio.roll);
-    }
-}
-
-function toggleInterfaceAudio() {
-    const enableUi = !appState.audio.ui;
-    const restoredVolume = appState.audio.uiLastVolume > 0 ? appState.audio.uiLastVolume : DEFAULT_AUDIO_LEVEL;
-    setChannelVolume('ui', enableUi ? restoredVolume : 0);
-    resumeAudioEngine();
-
-    const uiSoundToggle = document.getElementById('uiAudioToggle');
-    if (uiSoundToggle) {
-        uiSoundToggle.textContent = appState.audio.ui ? 'UI Sound: On' : 'UI Sound: Off';
-        uiSoundToggle.setAttribute('aria-pressed', appState.audio.ui);
-    }
-
-    if (appState.audio.ui) {
-        playSoundEffect(clickSoundEffectElement, 'ui');
-    }
+    showAppNotification(appState.audio.masterMuted ? 'All audio muted' : 'Audio unmuted', { id: 'volume' });
 }
 
 function isGlitchBiomeSelected() {
@@ -3539,8 +3653,6 @@ function applyReducedMotionState(enabled) {
         if (!video) {
             return;
         }
-        // Cutscenes are an explicit playback preference. Reduced motion should
-        // trim interface animation without hiding or pausing the selected film.
         if (video.classList?.contains('cutscene-video')) {
             return;
         }
@@ -3987,6 +4099,8 @@ if (typeof window !== 'undefined') {
 }
 
 const biomeAssets = {
+    lostForest: { image: 'files/images/backgrounds/lostForestBiomeImage.png', music: 'files/music/lostForestBiomeMusic.mp3' },
+    radiantForest: { image: 'files/images/backgrounds/radiantForestBiomeImage.png', music: 'files/music/radiantForestBiomeMusic.mp3' },
     normal: { image: 'files/images/backgrounds/normalBiomeImage.png', music: 'files/music/normalBiomeMusic.mp3' },
     roe: { image: 'files/images/backgrounds/normalBiomeImage.png', music: 'files/music/normalBiomeMusic.mp3' },
     day: { image: 'files/images/backgrounds/normalBiomeImage.png', music: 'files/music/dayBiomeMusic.mp3' },
@@ -4797,7 +4911,6 @@ function applyBiomeTheme(biome, selectionState = null) {
     const request = ++biomeBackgroundRequestId;
     BiomeBackground.setTime(night ? 'night' : 'day');
     BiomeBackground.resolve(assets.image, { night }).then(image => {
-        // A slower image load must never replace a newer biome/time selection.
         if (request === biomeBackgroundRequestId) applyBiomeBackdrop(image);
     });
 
@@ -5019,6 +5132,7 @@ function getGearLuckInputs(multiple = isMultiplePotionMode()) {
         basic: GearLuck.basicLuck(equippedGear, multiple ? 1 : Math.max(0, baseLuck - singleSpecialLuck), additionalBasicBuffs,
             selection.primaryBiome || selection.canonicalBiome, selection.timeBiome),
         special: multiple ? 0 : singleSpecialLuck,
+        basicMultiplier: getDevAdminAbuseBasicMultiplier(selection.primaryBiome || selection.canonicalBiome),
         finalMultiplier: getLuckMultiplierTotal(getActiveLuckMultipliers())
     };
 }
@@ -5037,13 +5151,14 @@ function syncEquipmentPreview() {
     const inputs = getGearLuckInputs();
     const preview = document.getElementById('equipment-luck-preview');
     const rule = GearLuck.bonusRule(equippedGear.left);
-    const normal = GearLuck.totalLuck(inputs.basic, inputs.special, inputs.finalMultiplier, GearLuck.rollState(equippedGear.left, 1));
-    const bonus = GearLuck.totalLuck(inputs.basic, inputs.special, inputs.finalMultiplier, GearLuck.rollState(equippedGear.left, rule.interval || 1001));
+    const normal = isRememberRoll() ? 1 : GearLuck.totalLuck(inputs.basic, inputs.special, inputs.finalMultiplier, GearLuck.rollState(equippedGear.left, 1), inputs.basicMultiplier);
+    const bonus = isRememberRoll() ? 1 : GearLuck.totalLuck(inputs.basic, inputs.special, inputs.finalMultiplier, GearLuck.rollState(equippedGear.left, rule.interval || 1001), inputs.basicMultiplier);
     const cycleLabel = rule.interval ? 'Bonus roll' : equippedGear.left === 'unfathomable' ? 'Ruins active' : null;
     if (preview) {
         const cycleClass = rule.interval || !cycleLabel ? 'bonus' : 'multiplier';
         const cycleText = cycleLabel ? `${cycleLabel}: ${formatWithCommas(bonus)}` : 'No bonus rolls';
-        preview.innerHTML = `<span class="equipment-effect equipment-effect--luck">Basic luck: ${formatWithCommas(inputs.basic)}</span> · <span class="equipment-effect equipment-effect--luck">Special luck: ${formatWithCommas(inputs.special)}</span> · <span class="equipment-effect equipment-effect--cycle">First roll: ${formatWithCommas(normal)}</span> · <span class="equipment-effect equipment-effect--${cycleClass}">${cycleText}</span>`;
+        preview.innerHTML = `<span class="equipment-effect equipment-effect--luck">Basic luck: ${formatWithCommas(inputs.basic * inputs.basicMultiplier)}</span> · <span class="equipment-effect equipment-effect--luck">Special luck: ${formatWithCommas(inputs.special)}</span> · <span class="equipment-effect equipment-effect--cycle">First roll: ${formatWithCommas(normal)}</span> · <span class="equipment-effect equipment-effect--${cycleClass}">${cycleText}</span>`;
+        if (isRememberRoll()) preview.textContent = 'Remember: 1× luck · No potions or equipment bonuses';
     }
     const summary = document.getElementById('bonus-roll-summary');
     if (summary) summary.innerHTML = EquipmentPresentation.format(GearLuck.describe(equippedGear.left));
@@ -5339,6 +5454,7 @@ function resetLuckPresetAnimations() {
 }
 
 function applyLuckValue(value, options = {}) {
+    if (isRememberRoll()) return;
     const normalizedOptions = { ...options };
 
     if (normalizedOptions.luckSource) {
@@ -5442,6 +5558,7 @@ function getActiveLuckMultipliers() {
         axisOld: devAdminAbuseMultipliers.axisOld,
         word: devAdminAbuseMultipliers.word,
         singularity: getSingularityLuckMultiplier(biomeValue),
+        moonCatch: biomeValue === 'radiantForest' ? corLunaeBlessingMultiplier : 1,
         dorcelessness: controls.dorcelessness && controls.dorcelessness.checked ? 2 : 1,
         dave: isLimboBiome && controls.dave ? parseFloat(controls.dave.value) || 1 : 1
     };
@@ -5477,7 +5594,7 @@ function syncSimulationMethodControls() {
 
     document.body?.classList.toggle('simulation-method--sols-like', solsLikeSelected);
     if (rollTriggerButton && !simulationActive) {
-        rollTriggerButton.textContent = solsLikeSelected ? 'Roll' : 'Start Rolling';
+        syncRadiantRollLabel();
     }
     if (splitControl) {
         splitControl.classList.toggle('roll-split-control--active', solsLikeSelected);
@@ -5497,6 +5614,7 @@ function syncSimulationMethodControls() {
         }
     }
     syncRollingSettingsControls();
+    syncBiomeBuffs();
 }
 
 function setSimulationMethod(method, { playAudio = true } = {}) {
@@ -5718,14 +5836,16 @@ function getMultiplePotionLuckState() {
     return {
         deviceLuckBonus: inputs.basic,
         leftDevice: equippedGear.left,
+        basicLuckMultiplier: inputs.basicMultiplier,
         finalLuckMultiplier: inputs.finalMultiplier
     };
 }
 
 function calculateMultiplePotionLuck(basePotionLuck, luckState = getMultiplePotionLuckState()) {
+    if (isRememberRoll()) return 1;
     const normalizedPotionLuck = Number.isFinite(basePotionLuck) ? Math.max(0, basePotionLuck) : 0;
     return GearLuck.totalLuck(luckState.deviceLuckBonus, normalizedPotionLuck, luckState.finalLuckMultiplier,
-        GearLuck.rollState(luckState.leftDevice, 1));
+        GearLuck.rollState(luckState.leftDevice, 1), luckState.basicLuckMultiplier);
 }
 
 function createMultiplePotionBatch(config, count, luckState) {
@@ -5735,6 +5855,7 @@ function createMultiplePotionBatch(config, count, luckState) {
         baseLuck: config.luck,
         luckValue: calculateMultiplePotionLuck(config.luck, luckState),
         deviceLuckBonus: luckState.deviceLuckBonus,
+        basicLuckMultiplier: luckState.basicLuckMultiplier,
         finalLuckMultiplier: luckState.finalLuckMultiplier
     };
 }
@@ -5826,6 +5947,7 @@ function stackCompatiblePotionBatches(batches, luckState) {
             baseLuck,
             luckValue: calculateMultiplePotionLuck(baseLuck, luckState),
             deviceLuckBonus: luckState.deviceLuckBonus,
+            basicLuckMultiplier: luckState.basicLuckMultiplier,
             finalLuckMultiplier: luckState.finalLuckMultiplier,
             potionIds,
             potionLabels,
@@ -5862,7 +5984,6 @@ function collectMultiplePotionBatches(
         document.querySelectorAll('[data-multi-potion]'),
         input => [input.dataset.multiPotion, input]
     ));
-    // Follow configured potion priority regardless of the input fields' layout.
     MULTI_POTION_CONFIGS.forEach(config => {
         const input = inputsByPotionId.get(config.id);
         if (!input) {
@@ -5949,6 +6070,7 @@ function syncMultiplePotionTotal() {
         }
     }
 
+    syncBiomeBuffs();
     return total;
 }
 
@@ -5972,6 +6094,7 @@ function syncMultiplePotionModeAvailability(isLimboSelected) {
 }
 
 function setPotionSimulationMode(mode, { playAudio = true } = {}) {
+    if (isRememberRoll()) return;
     const normalizedMode = mode === POTION_SIMULATION_MODE.MULTIPLE
         ? POTION_SIMULATION_MODE.MULTIPLE
         : POTION_SIMULATION_MODE.SINGLE;
@@ -6082,6 +6205,7 @@ function syncLastLuckMultipliers(multipliers) {
 }
 
 function applyLuckDelta(presetValue, options = {}) {
+    if (isRememberRoll()) return;
     const numericPresetValue = Number(presetValue);
     if (!Number.isFinite(numericPresetValue) || numericPresetValue === 0) {
         return;
@@ -6278,6 +6402,7 @@ function applyRollPreset(value) {
     }
 
     setNumericInputValue(rollField, value, { format: true, min: 1, max: 1000000000000 });
+    syncBiomeBuffs();
     playSoundEffect(clickSoundEffectElement, 'ui');
 }
 
@@ -6358,8 +6483,8 @@ function recomputeLuckValue() {
 
     const multipliers = getActiveLuckMultipliers();
     const gearInputs = getGearLuckInputs(false);
-    currentLuck = GearLuck.totalLuck(gearInputs.basic, gearInputs.special, gearInputs.finalMultiplier,
-        GearLuck.rollState(equippedGear.left, 1));
+    currentLuck = isRememberRoll() ? 1 : GearLuck.totalLuck(gearInputs.basic, gearInputs.special, gearInputs.finalMultiplier,
+        GearLuck.rollState(equippedGear.left, 1), gearInputs.basicMultiplier);
     syncLastLuckMultipliers(multipliers);
 
     if (luckField) {
@@ -6372,6 +6497,7 @@ function recomputeLuckValue() {
     if (isMultiplePotionMode()) {
         syncMultiplePotionTotal();
     }
+    syncBiomeBuffs();
 }
 
 function resetLuckFields() {
@@ -6395,6 +6521,7 @@ function resetRollCount() {
         setNumericInputValue(rollField, 1, { format: shouldFormat, min: 1, max: 1000000000000 });
     }
     playSoundEffect(clickSoundEffectElement, 'ui');
+    syncBiomeBuffs();
 }
 
 function setGlitchPreset() {
@@ -6417,6 +6544,14 @@ function setSingularityPreset() {
     setPrimaryBiomeSelection('singularity');
     setOtherBiomeSelection('none');
     setTimeBiomeSelection('none');
+    playSoundEffect(clickSoundEffectElement, 'ui');
+    updateBiomeControlConstraints({ source: BIOME_PRIMARY_SELECT_ID });
+}
+
+function setRadiantForestPreset() {
+    setPrimaryBiomeSelection('radiantForest');
+    setOtherBiomeSelection('none');
+    setTimeBiomeSelection('night');
     playSoundEffect(clickSoundEffectElement, 'ui');
     updateBiomeControlConstraints({ source: BIOME_PRIMARY_SELECT_ID });
 }
@@ -6514,12 +6649,19 @@ function isAuraCutscenePlaybackActive() {
 
 function hasCutsceneMediaSource(videoId) {
     if (typeof document === 'undefined') return false;
+    if (['true-jade-cutscene', 'true-kyawthuite-cutscene', 'true-twilight-cutscene'].includes(videoId)) return false;
     const video = document.getElementById(videoId);
     if (!video || video.dataset.cutscenePending === 'true') return false;
     if (video.getAttribute('src') || video.dataset.src) return true;
     return Array.from(video.querySelectorAll('source')).some(source => (
         Boolean(source.getAttribute('src')) || Boolean(source.dataset.src)
     ));
+}
+
+function getAuraCutsceneFadeDuration(videoId) {
+    if (videoId === 'tomorrow-cutscene') return 2000;
+    if (videoId === 'breakthrough-cutscene') return 5000;
+    return (CUTSCENE_AURA_LOOKUP.get(videoId)?.chance || 0) >= 1000000000 ? 1000 : 0;
 }
 
 function startPreparedCutscenePlayback(video) {
@@ -6561,7 +6703,7 @@ function startPreparedCutscenePlayback(video) {
 function playAuraVideo(videoId, options = {}) {
     const manageAmbient = options.manageAmbient !== false;
     return new Promise(resolve => {
-        if (!appState.cinematic || !hasCutsceneMediaSource(videoId)) {
+        if ((!appState.cinematic && !options.force && !ALWAYS_ON_CUTSCENES.has(videoId)) || !hasCutsceneMediaSource(videoId)) {
             resolve();
             return;
         }
@@ -6582,6 +6724,25 @@ function playAuraVideo(videoId, options = {}) {
             document.body.appendChild(controls);
         }
 
+        let revealButton = document.getElementById('reveal-cinematic-controls');
+        if (!revealButton) {
+            revealButton = document.createElement('button');
+            revealButton.type = 'button';
+            revealButton.id = 'reveal-cinematic-controls';
+            revealButton.className = 'skip-cinematic-reveal';
+            revealButton.setAttribute('aria-label', 'Show cutscene controls');
+            revealButton.setAttribute('aria-controls', 'skip-cinematic-actions');
+            revealButton.innerHTML = '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m3 3 18 18M10.6 10.6a2 2 0 0 0 2.8 2.8M9.5 5.3A10.7 10.7 0 0 1 12 5c6 0 10 7 10 7a18.5 18.5 0 0 1-3 3.7M6.5 6.5A20.2 20.2 0 0 0 2 12s4 7 10 7a11 11 0 0 0 5.5-1.5"/></svg>';
+            controls.appendChild(revealButton);
+        }
+        let actions = document.getElementById('skip-cinematic-actions');
+        if (!actions) {
+            actions = document.createElement('div');
+            actions.id = 'skip-cinematic-actions';
+            actions.className = 'skip-cinematic-actions';
+            controls.appendChild(actions);
+        }
+
         let skipButton = document.getElementById('skip-cinematic-button');
         if (!skipButton) {
             skipButton = document.createElement('button');
@@ -6589,9 +6750,9 @@ function playAuraVideo(videoId, options = {}) {
             skipButton.id = 'skip-cinematic-button';
             skipButton.className = 'skip-cinematic-button';
             skipButton.textContent = 'Skip cutscene';
-            controls.appendChild(skipButton);
-        } else if (skipButton.parentElement !== controls) {
-            controls.appendChild(skipButton);
+            actions.appendChild(skipButton);
+        } else if (skipButton.parentElement !== actions) {
+            actions.appendChild(skipButton);
         }
 
         let skipAllButton = document.getElementById('skip-all-cinematic-button');
@@ -6601,12 +6762,22 @@ function playAuraVideo(videoId, options = {}) {
             skipAllButton.id = 'skip-all-cinematic-button';
             skipAllButton.className = 'skip-cinematic-button skip-cinematic-button--all';
             skipAllButton.textContent = 'Skip All Cutscenes';
-            controls.appendChild(skipAllButton);
-        } else if (skipAllButton.parentElement !== controls) {
-            controls.appendChild(skipAllButton);
+            actions.appendChild(skipAllButton);
+        } else if (skipAllButton.parentElement !== actions) {
+            actions.appendChild(skipAllButton);
         }
-        controls.appendChild(skipButton);
-        controls.appendChild(skipAllButton);
+        skipButton.setAttribute('aria-keyshortcuts', 'Space');
+        skipButton.title = 'Skip cutscene (Space)';
+        skipAllButton.setAttribute('aria-keyshortcuts', 'Shift+Space');
+        skipAllButton.title = 'Skip all remaining cutscenes (Shift+Space)';
+        controls.classList.remove('skip-cinematic-controls--open');
+        revealButton.setAttribute('aria-expanded', 'false');
+        revealButton.setAttribute('aria-label', 'Show cutscene controls');
+        revealButton.onclick = () => {
+            const open = controls.classList.toggle('skip-cinematic-controls--open');
+            revealButton.setAttribute('aria-expanded', String(open));
+            revealButton.setAttribute('aria-label', `${open ? 'Hide' : 'Show'} cutscene controls`);
+        };
 
         const video = document.getElementById(videoId);
         if (!video) {
@@ -6616,9 +6787,7 @@ function playAuraVideo(videoId, options = {}) {
 
         ensureDeferredMediaSource(video);
 
-        if (appState.audio.roll) {
-            applyMediaGain(video, { category: 'cutscene' });
-        }
+        applyMediaGain(video, { category: 'cutscene' });
 
         appState.videoPlaying = true;
         const bgMusic = manageAmbient ? document.getElementById('ambientMusic') : null;
@@ -6643,8 +6812,13 @@ function playAuraVideo(videoId, options = {}) {
             overlay.appendChild(loadingStatus);
         }
 
+        const fadeDuration = getAuraCutsceneFadeDuration(videoId);
+        overlay.classList.toggle('cinematic-overlay--blackout', fadeDuration > 0);
+        overlay.classList.toggle('cinematic-overlay--fading', fadeDuration > 0);
+        overlay.dataset.fadeDuration = String(fadeDuration);
         overlay.classList.add('cinematic-overlay--loading');
         overlay.style.display = 'flex';
+        const fullscreenAttempt = enterCutsceneFullscreen(video);
         overlay.setAttribute('aria-hidden', 'false');
         video.style.display = 'none';
         controls.style.display = 'flex';
@@ -6664,7 +6838,7 @@ function playAuraVideo(videoId, options = {}) {
                 paddingRight: previousPadding
             };
         }
-        video.muted = !appState.audio.roll;
+        video.muted = !isSoundChannelActive('cutscene');
 
         let cleanedUp = false;
         let playbackStarted = false;
@@ -6674,6 +6848,74 @@ function playAuraVideo(videoId, options = {}) {
         let watchdogIntervalId = null;
         let lastPlaybackTime = 0;
         let lastProgressAt = Date.now();
+        let fadeAnimation = null;
+        let fullscreenPrompt = null;
+        let cancelFullscreenPrompt = () => {};
+        const previousFocus = document.activeElement;
+        const handleControlsKeydown = event => {
+            if ((event.code === 'Space' || event.key === ' ') && !event.altKey && !event.ctrlKey && !event.metaKey && !event.isComposing) {
+                event.preventDefault();
+                event.stopImmediatePropagation();
+                if (!event.repeat) (event.shiftKey ? skipAllButton : skipButton).click();
+                return;
+            }
+            if (event.key === 'Tab') {
+                const focusable = [fullscreenPrompt?.querySelector('button'), revealButton, skipButton, skipAllButton].filter(button => button && getComputedStyle(button).display !== 'none');
+                const first = focusable[0];
+                const last = focusable[focusable.length - 1];
+                if ((!controls.contains(document.activeElement) && !fullscreenPrompt?.contains(document.activeElement)) || (event.shiftKey && document.activeElement === first) || (!event.shiftKey && document.activeElement === last)) {
+                    event.preventDefault();
+                    (event.shiftKey ? last : first)?.focus({ preventScroll: true });
+                }
+                return;
+            }
+            if (event.key !== 'Escape') return;
+            controls.classList.remove('skip-cinematic-controls--open');
+            revealButton.setAttribute('aria-expanded', 'false');
+            revealButton.setAttribute('aria-label', 'Show cutscene controls');
+            if (controls.contains(document.activeElement)) {
+                document.activeElement.blur();
+                previousFocus?.focus({ preventScroll: true });
+            }
+        };
+        document.addEventListener('keydown', handleControlsKeydown, true);
+
+        const awaitFullscreenGesture = () => new Promise(resolveFullscreen => {
+            fullscreenPrompt = document.createElement('div');
+            fullscreenPrompt.className = 'cinematic-fullscreen-prompt';
+            fullscreenPrompt.setAttribute('role', 'group');
+            fullscreenPrompt.setAttribute('aria-label', 'Start fullscreen cutscene');
+            const button = document.createElement('button');
+            button.type = 'button';
+            button.className = 'interface-button';
+            button.textContent = 'Play fullscreen';
+            const hint = document.createElement('p');
+            hint.textContent = 'Tap or press Enter to begin. Space skips; Shift+Space skips all.';
+            let continueInPage = false;
+            const finish = () => {
+                fullscreenPrompt?.remove();
+                fullscreenPrompt = null;
+                overlay.classList.remove('cinematic-overlay--awaiting-fullscreen');
+                cancelFullscreenPrompt = () => {};
+                resolveFullscreen();
+            };
+            cancelFullscreenPrompt = finish;
+            button.addEventListener('click', async () => {
+                if (continueInPage) { finish(); return; }
+                const result = enterCutsceneFullscreen(video);
+                button.disabled = true;
+                if (await result) { finish(); return; }
+                if (cleanedUp) return;
+                button.disabled = false;
+                button.textContent = 'Play in page';
+                hint.textContent = 'This browser blocked fullscreen. Continue in the page, or use Space to skip.';
+                continueInPage = true;
+            });
+            fullscreenPrompt.append(button, hint);
+            overlay.appendChild(fullscreenPrompt);
+            overlay.classList.add('cinematic-overlay--awaiting-fullscreen');
+            button.focus({ preventScroll: true });
+        });
 
         const safelyResetVideo = () => {
             try {
@@ -6691,6 +6933,7 @@ function playAuraVideo(videoId, options = {}) {
             video.removeEventListener('error', handlePlaybackError);
             video.removeEventListener('timeupdate', handlePlaybackProgress);
             video.removeEventListener('playing', handlePlaying);
+            video.removeEventListener('webkitendfullscreen', handleNativeFullscreenEnd);
             document.removeEventListener('visibilitychange', handleVisibilityChange);
             window.removeEventListener('pagehide', handlePageHide);
         };
@@ -6698,6 +6941,9 @@ function playAuraVideo(videoId, options = {}) {
         const cleanup = (result = 'finished') => {
             if (cleanedUp) return;
             cleanedUp = true;
+            const promptHadFocus = fullscreenPrompt?.contains(document.activeElement);
+            cancelFullscreenPrompt();
+            fadeAnimation?.cancel();
             if (watchdogIntervalId !== null) {
                 window.clearInterval(watchdogIntervalId);
                 watchdogIntervalId = null;
@@ -6710,10 +6956,16 @@ function playAuraVideo(videoId, options = {}) {
             overlay.setAttribute('aria-hidden', 'true');
             overlay.classList.remove('cinematic-overlay--loading');
             overlay.classList.remove('cinematic-overlay--first-person');
+            overlay.classList.remove('cinematic-overlay--fading', 'cinematic-overlay--blackout');
             if (document.body) {
                 document.body.classList.remove('first-person-cutscene-active');
             }
             controls.style.display = 'none';
+            controls.classList.remove('skip-cinematic-controls--open');
+            document.removeEventListener('keydown', handleControlsKeydown, true);
+            if ((promptHadFocus || controls.contains(document.activeElement)) && previousFocus?.isConnected) {
+                previousFocus.focus({ preventScroll: true });
+            }
             skipButton.style.display = 'none';
             skipAllButton.style.display = 'none';
             if (appState.scrollLock && document.body) {
@@ -6727,11 +6979,17 @@ function playAuraVideo(videoId, options = {}) {
             }
             skipButton.onclick = null;
             skipAllButton.onclick = null;
+            revealButton.onclick = null;
             resolve(result);
         };
 
         function handleEnded() {
             cleanup();
+        }
+
+        function handleNativeFullscreenEnd() {
+            cutsceneFullscreenDismissed = true;
+            cleanup('skipped');
         }
 
         function handlePlaying() {
@@ -6836,6 +7094,7 @@ function playAuraVideo(videoId, options = {}) {
         video.addEventListener('error', handlePlaybackError);
         video.addEventListener('timeupdate', handlePlaybackProgress);
         video.addEventListener('playing', handlePlaying);
+        video.addEventListener('webkitendfullscreen', handleNativeFullscreenEnd);
         document.addEventListener('visibilitychange', handleVisibilityChange);
         window.addEventListener('pagehide', handlePageHide);
 
@@ -6849,8 +7108,21 @@ function playAuraVideo(videoId, options = {}) {
 
         void (async () => {
             try {
-                await prepareCutsceneVideo(video);
+                const [, fullscreenEntered] = await Promise.all([prepareCutsceneVideo(video), fullscreenAttempt]);
                 if (cleanedUp) return;
+                if (rollingSettingsPreference.fullscreenCutscenes && !fullscreenEntered && !getFullscreenElement() && !cutsceneFullscreenDismissed) {
+                    await awaitFullscreenGesture();
+                    if (cleanedUp) return;
+                }
+                const fade = fadeDuration > 0 ? (() => {
+                    fadeAnimation = overlay.animate([{ opacity: 0 }, { opacity: 1 }], {
+                        duration: fadeDuration, easing: 'ease-in-out', fill: 'forwards'
+                    });
+                    return fadeAnimation.finished;
+                })() : Promise.resolve();
+                await fade;
+                if (cleanedUp) return;
+                overlay.classList.remove('cinematic-overlay--fading');
                 safelyResetVideo();
                 video.style.display = 'block';
                 await startPreparedCutscenePlayback(video);
@@ -6872,6 +7144,7 @@ function getFullscreenElement() {
         || document.webkitFullscreenElement
         || document.mozFullScreenElement
         || document.msFullscreenElement
+        || (cutsceneNativeFullscreenVideo?.webkitDisplayingFullscreen ? cutsceneNativeFullscreenVideo : null)
         || null;
 }
 
@@ -6895,6 +7168,13 @@ async function requestFullscreen(element) {
 
 async function exitFullscreen() {
     if (typeof document === 'undefined') return false;
+    if (cutsceneNativeFullscreenVideo?.webkitDisplayingFullscreen) {
+        try {
+            cutsceneNativeFullscreenVideo.webkitExitFullscreen();
+            cutsceneNativeFullscreenVideo = null;
+            return true;
+        } catch { return false; }
+    }
     if (!getFullscreenElement()) return false;
     const method = document.exitFullscreen
         || document.webkitExitFullscreen
@@ -6912,6 +7192,53 @@ async function exitFullscreen() {
     }
 }
 
+function setCutsceneFullscreen(enabled) {
+    rollingSettingsPreference.fullscreenCutscenes = Boolean(enabled);
+    persistRollingSettings();
+    syncRollingSettingsControls();
+    if (!enabled) return releaseCutsceneFullscreen();
+    return Promise.resolve(true);
+}
+
+function enterCutsceneFullscreen(video) {
+    if (getFullscreenElement()) return Promise.resolve(true);
+    if (!rollingSettingsPreference.fullscreenCutscenes || !appState.videoPlaying || cutsceneFullscreenDismissed) {
+        return Promise.resolve(false);
+    }
+    if (cutsceneFullscreenTransition) return cutsceneFullscreenTransition;
+    const root = document.documentElement;
+    const documentFullscreenSupported = document.fullscreenEnabled !== false && Boolean(root.requestFullscreen || root.webkitRequestFullscreen || root.mozRequestFullScreen || root.msRequestFullscreen);
+    let operation;
+    if (documentFullscreenSupported) {
+        operation = requestFullscreen(root);
+    } else if (video?.readyState >= 1 && typeof video.webkitEnterFullscreen === 'function' && video.webkitSupportsFullscreen !== false) {
+        try {
+            video.webkitEnterFullscreen();
+            cutsceneNativeFullscreenVideo = video;
+            operation = Promise.resolve(true);
+        } catch { operation = Promise.resolve(false); }
+    } else {
+        operation = Promise.resolve(false);
+    }
+    cutsceneFullscreenTransition = operation.then(success => {
+        cutsceneFullscreenOwned = success && Boolean(getFullscreenElement() || cutsceneNativeFullscreenVideo);
+        return success;
+    }).finally(() => {
+        cutsceneFullscreenTransition = null;
+        syncRollingSettingsControls();
+    });
+    syncRollingSettingsControls();
+    return cutsceneFullscreenTransition;
+}
+
+async function releaseCutsceneFullscreen({ preserveFullscreen = false } = {}) {
+    if (cutsceneFullscreenTransition) await cutsceneFullscreenTransition;
+    if (!cutsceneFullscreenOwned) return;
+    cutsceneFullscreenOwned = false;
+    if (!preserveFullscreen && getFullscreenElement()) await exitFullscreen();
+    cutsceneNativeFullscreenVideo = null;
+}
+
 async function playAuraSequence(queue, options = {}) {
     const playableQueue = Array.isArray(queue)
         ? queue.filter(hasCutsceneMediaSource)
@@ -6920,18 +7247,14 @@ async function playAuraSequence(queue, options = {}) {
         return { skippedAll: false };
     }
 
-    const documentElement = typeof document !== 'undefined' ? document.documentElement : null;
-    const wasFullscreen = !!getFullscreenElement();
-    let enteredFullscreen = false;
+    if (cutsceneFullscreenTransition) await cutsceneFullscreenTransition;
+    const wasFullscreenAtStart = Boolean(getFullscreenElement());
+    cutsceneFullscreenDismissed = false;
 
     const ambientMusic = typeof document !== 'undefined' ? document.getElementById('ambientMusic') : null;
     const shouldResumeAmbient = !!(ambientMusic && !ambientMusic.paused);
     if (ambientMusic && shouldResumeAmbient) {
         ambientMusic.pause();
-    }
-
-    if (!wasFullscreen && documentElement && document.fullscreenEnabled !== false) {
-        enteredFullscreen = await requestFullscreen(documentElement);
     }
 
     let skipRemainingCutscenes = Boolean(options.skipRemaining);
@@ -6945,10 +7268,12 @@ async function playAuraSequence(queue, options = {}) {
     try {
         for (let queueIndex = 0; queueIndex < playableQueue.length; queueIndex++) {
             const videoId = playableQueue[queueIndex];
-            if (!appState.cinematic || skipRemainingCutscenes) break;
-            // Prioritize the current cutscene before warming one upcoming video.
+            if (skipRemainingCutscenes) break;
+            const force = options.force === true || ALWAYS_ON_CUTSCENES.has(videoId);
+            if (!force && !appState.cinematic) continue;
             const nextVideo = document.getElementById(playableQueue[queueIndex + 1]);
             const result = await playAuraVideo(videoId, {
+                force,
                 manageAmbient: false,
                 onSkipAll: skipAllCutscenes,
                 onPlaying: () => {
@@ -6958,11 +7283,9 @@ async function playAuraSequence(queue, options = {}) {
             if (result === 'skipped-all') break;
         }
     } finally {
+        await releaseCutsceneFullscreen({ preserveFullscreen: wasFullscreenAtStart });
         if (ambientMusic && shouldResumeAmbient && appState.audio.roll) {
             startBackgroundMusic(ambientMusic);
-        }
-        if (!wasFullscreen && enteredFullscreen) {
-            await exitFullscreen();
         }
     }
 
@@ -7230,7 +7553,8 @@ function normalizeAuraTierName(auraName) {
 
 function isForcedChallengedPlusAura(auraName) {
     const normalizedAuraName = normalizeAuraTierName(auraName);
-    return ['Oppression', 'Monarch', 'Hellborn', 'Illusionary', 'Dreammetric', 'Astraios', 'Oblivion'].includes(normalizedAuraName);
+    return normalizedAuraName === RADIANT_REWARD_AURA_NAME
+        || ['Oppression', 'Monarch', 'Hellborn', 'Illusionary', 'Dreammetric', 'Astraios', 'Oblivion'].includes(normalizedAuraName);
 }
 
 function getForcedStandardAuraTierKey(auraName) {
@@ -7252,9 +7576,11 @@ function isForcedChallengedAura(auraName) {
         'Meta',
         'Gravitational : Point Zero',
         'DreamCatcher',
+        'Dream Catcher',
         'Projection',
         'Neferkhaf',
-        '赤月の破片'
+        '赤月の破片',
+        'True Jade', 'True Kyawthuite', 'True Twilight'
     ].includes(normalizedAuraName);
 }
 
@@ -7481,7 +7807,7 @@ function resolveAuraStyleClass(aura, biome) {
 
     const classes = [];
     const shortName = name.includes(' - ') ? name.split(' - ')[0].trim() : name.trim();
-    if (wikiAuraSigilNames.has(shortName)) return 'sigil-wiki-aura';
+    if (WikiTitles.resolveAuraName(shortName)) return 'sigil-wiki-aura';
     if (name.startsWith('Oblivion')) classes.push('sigil-effect-oblivion');
     if (name.startsWith('Memory')) classes.push('sigil-effect-memory');
     if (name.startsWith('Neferkhaf')) classes.push('sigil-effect-neferkhaf');
@@ -8028,7 +8354,6 @@ function registerGlitchSigils(root) {
 }
 
 function unregisterGlitchSigils(root) {
-    // Sorting moves nodes without removing them from the document.
     if (root.isConnected) return;
     visitGlitchSigils(root, element => {
         glitchSigilVisibilityObserver?.unobserve(element);
@@ -8193,8 +8518,11 @@ const MONARCH_AURA_NAME = "Monarch - 3,000,000,000";
 const HELLBORN_AURA_NAME = "Hellborn - 2,644,600,640";
 const DREAMCATCHER_AURA_NAME = "DreamCatcher - 2,222,222,222";
 const EMPTY_AURA_NAME = 'Empty - 11,111,111'
+const RADIANT_REWARD_AURA_NAME = 'Tomorrow';
 
 const NATIVE_BREAKTHROUGH_MULTIPLIERS = Object.freeze({
+    lostForest: 2,
+    radiantForest: 2,
     cyberspace: 2,
     blazing: 2,
     incinerator: 2,
@@ -8225,16 +8553,18 @@ function nativeBreakthroughs(...biomes) {
 
 const AURA_BLUEPRINT_SOURCE = Object.freeze([
     ...EventData.halloween26.auras,
+    // { name: "Unnamed Needs Equinox RIGHT NOW!!!!!!!!!!!!! - 2,500,000,000,000,000000", chance: 2500000000000000000, cutscene: "equinox-cutscene" },
+    { name: RADIANT_REWARD_AURA_NAME, chance: 1, nativeBiomes: ['radiantForest'], requiresRadiantMoons: true, cutscene: 'tomorrow-cutscene', disableRarityClass: true, tier: 'Challenged+', wikiPending: true },
     { name: "Oblivion", chance: 2000, requiresOblivionPreset: true, ignoreLuck: true, fixedRollThreshold: 1, subtitle: "The Truth Seeker", cutscene: "oblivion-cutscene", disableRarityClass: true },
     { name: "Memory", chance: 200000, requiresOblivionPreset: true, ignoreLuck: true, fixedRollThreshold: 1, subtitle: "The Fallen", cutscene: "memory-cutscene", disableRarityClass: true },
     { name: "Neferkhaf", chance: 1000, requiresDunePreset: true, ignoreLuck: true, fixedRollThreshold: 1, subtitle: "The Crawler", cutscene: "neferkhaf-cutscene", disableRarityClass: true },
     { name: "赤月の破片", chance: 1000, requiresBloodPreset: true, ignoreLuck: true, fixedRollThreshold: 1, subtitle: "Fragments Of The Crimson Moon", cutscene: "blood-cutscene", disableRarityClass: true },
     { name: "Illusionary - 10,000,000", chance: 10000000, nativeBiomes: ["cyberspace"], ignoreLuck: true, fixedRollThreshold: 1, cutscene: "illusionary-cutscene" },
     { name: "Meta - 10,000", chance: 10000, nativeBiomes: ["cyberspace"], ignoreLuck: true, fixedRollThreshold: 1 },
+    { name: 'Tree House - 3,800,000,000', chance: 3800000000, breakthroughs: nativeBreakthroughs('lostForest'), cutscene: 'tree-house-cutscene' },
     { name: MONARCH_AURA_NAME, chance: 3000000000, cutscene: "monarch-cutscene", nativeBiomes: ["corruption", "glitch"], disableNativeOverrideTier: true },
     { name: "Centaurus - 3,000,000,000", chance: 3000000000, breakthroughs: nativeBreakthroughs("incinerator"), cutscene: "centaurus-cutscene" },
     { name: HELLBORN_AURA_NAME, chance: 2644600640, nativeBiomes: ["hell", "glitch"], disableNativeOverrideTier: true, cutscene: "hellborn-cutscene" },
-    // { name: "Unnamed Needs Equinox NOW - 2,500,000,000", chance: 2500000000, cutscene: "equinox-cutscene" },
     { name: "Equinox - 2,500,000,000", chance: 2500000000, cutscene: "equinox-cutscene" },
     { name: "Equinox : youareanidiot - 2,500,000,000", chance: 2500000000, cutscene: "idiot-cutscene" },
     { name: DREAMCATCHER_AURA_NAME, chance: 2222222222, nativeBiomes: ["night"], cutscene: "catcher-cutscene" },
@@ -8268,7 +8598,7 @@ const AURA_BLUEPRINT_SOURCE = Object.freeze([
     { name: "Aegis - 825,000,000", chance: 825000000, breakthroughs: nativeBreakthroughs("cyberspace"), nativeBiomes: ["cyberspace"] },
     { name: "Aegis : Watergun - 825,000,000", chance: 825000000, breakthroughs: nativeBreakthroughs("blazing") },
     { name: "Apostolos : Veil - 800,000,000", chance: 800000000, nativeBiomes: ["graveyard", "pumpkinMoon"] },
-    { name: "Ruins : Withered - 800,000,000", chance: 800000000 },
+    { name: "Ruins : Withered - 800,000,000", chance: 800000000, breakthroughs: nativeBreakthroughs("lostForest") },
     { name: "Virtual : Full Control - 80,000,000", chance: 80000000, breakthroughs: nativeBreakthroughs("cyberspace"), nativeBiomes: ["cyberspace"] },
     { name: "Parol - 760,000,000", chance: 760000000, breakthroughs: nativeBreakthroughs("aurora") },
     { name: "Sovereign - 750,000,000", chance: 750000000 },
@@ -8295,10 +8625,11 @@ const AURA_BLUEPRINT_SOURCE = Object.freeze([
     { name: "Atlas : Yuletide - 510,000,000", chance: 510000000, breakthroughs: nativeBreakthroughs("snowy") },
     { name: "Matrix : Overdrive - 503,000,000", chance: 503000000, breakthroughs: nativeBreakthroughs("cyberspace"), nativeBiomes: ["cyberspace"] },
     { name: "Life Guard : On-Duty - 600,000,000", chance: 600000000, breakthroughs: nativeBreakthroughs("incinerator") },
-    { name: "Ruins - 500,000,000", chance: 500000000 },
+    { name: "Ruins - 500,000,000", chance: 500000000, breakthroughs: nativeBreakthroughs("lostForest") },
+    { name: 'Hasuen - 485,000,000', chance: 485000000, breakthroughs: nativeBreakthroughs('lostForest') },
     { name: "Volcanic - 480,000,000", chance: 480000000, breakthroughs: nativeBreakthroughs("hell") },
     { name: "Phantasma - 462,600,000", chance: 462600000, nativeBiomes: ["glitch", "pumpkinMoon"] },
-    { name: "Kyawthuite : Remembrance - 450,000,000", chance: 450000000 },
+    { name: "Kyawthuite : Remembrance - 450,000,000", chance: 450000000, breakthroughs: nativeBreakthroughs("radiantForest") },
     { name: "unknown - 444,444,444", chance: 444444444, nativeBiomes: ["limbo"] },
     { name: "Apostolos - 444,000,000", chance: 444000000 },
     { name: "Afterparty - 440,000,000", chance: 440000000, nativeBiomes: ["glitch", "graveyard"] },
@@ -8315,13 +8646,13 @@ const AURA_BLUEPRINT_SOURCE = Object.freeze([
     { name: "Eggsistance - 307,777,777", chance: 307777777 },
     { name: "CHILLSEAR - 375,000,000", chance: 375000000, breakthroughs: nativeBreakthroughs("snowy") },
     { name: "Symphony : Bloomed - 375,000,000", chance: 375000000 },
-    { name: "Flora : Evergreen - 370,073,730", chance: 370073730 },
+    { name: "Flora : Evergreen - 370,073,730", chance: 370073730, breakthroughs: nativeBreakthroughs("lostForest") },
     { name: "Atlas - 360,000,000", chance: 360000000, breakthroughs: nativeBreakthroughs("sandstorm") },
     { name: "Archangel - 350,000,000", chance: 350000000, breakthroughs: nativeBreakthroughs("heaven") },
     { name: "Jazz : Orchestra - 336,870,912", chance: 336870912 },
     { name: "Dreammetric - 320,000,000", chance: 320000000, nativeBiomes: ["dreamspace"], cutscene: "dreammetric-cutscene" },
     { name: "LOTUSFALL - 320,000,000", chance: 320000000 },
-    { name: "Perpetual - 315,000,000", chance: 315000000 },
+    { name: "Perpetual - 315,000,000", chance: 315000000, breakthroughs: nativeBreakthroughs("lostForest") },
     { name: "Dreamer - 315,000,000", chance: 315000000, breakthroughs: nativeBreakthroughs("night") },
     { name: "Maelstrom - 309,999,999", chance: 309999999, breakthroughs: nativeBreakthroughs("windy") },
     { name: "Manta - 300,000,000", chance: 300000000, breakthroughs: nativeBreakthroughs("blazing") },
@@ -8350,7 +8681,7 @@ const AURA_BLUEPRINT_SOURCE = Object.freeze([
     { name: "Sharkyn : Hammerhead - 120,000,000", chance: 120000000, breakthroughs: nativeBreakthroughs("rainy") },
     { name: "Crimson - 120,000,000", chance: 120000000, nativeBiomes: ["glitch", "bloodRain"] },
     { name: "Abominable - 120,000,000", chance: 120000000, breakthroughs: nativeBreakthroughs("snowy") },
-    { name: "Lily - 112,000,000", chance: 112000000 },
+    { name: "Lily - 112,000,000", chance: 112000000, breakthroughs: nativeBreakthroughs('lostForest') },
     { name: "Bubble : Cascade - 110,000,000", chance: 110000000, breakthroughs: nativeBreakthroughs("incinerator") },
     { name: "Spectraflow - 100,000,000", chance: 100000000 },
     { name: "Starscourge : Radiant - 100,000,000", chance: 100000000, breakthroughs: nativeBreakthroughs("starfall") },
@@ -8360,7 +8691,7 @@ const AURA_BLUEPRINT_SOURCE = Object.freeze([
     { name: "Express - 90,000,000", chance: 90000000, breakthroughs: nativeBreakthroughs("snowy") },
     { name: "Grief - 88,250,000", chance: 88250000, nativeBiomes: ["glitch", "graveyard"] },
     { name: "Bloodgarden - 88,000,000", chance: 88000000, nativeBiomes: ["glitch", "bloodRain"] },
-    { name: "Runic : Wilt - 87,388,744", chance: 87388744 },
+    { name: "Runic : Wilt - 87,388,744", chance: 87388744, breakthroughs: nativeBreakthroughs("lostForest") },
     { name: "Virtual : Worldwide - 87,500,000", chance: 87500000, breakthroughs: nativeBreakthroughs("cyberspace"), nativeBiomes: ["cyberspace"] },
     { name: "Hellbound - 85,000,000", chance: 85000000, breakthroughs: nativeBreakthroughs("hell") },
     { name: "Harnessed : Elements - 85,000,000", chance: 85000000 },
@@ -8383,9 +8714,10 @@ const AURA_BLUEPRINT_SOURCE = Object.freeze([
     { name: "Bayview - 60,000,000", chance: 60000000, breakthroughs: nativeBreakthroughs("incinerator") },
     { name: "Twilight : Iridescent Memory - 60,000,000", chance: 60000000, breakthroughs: nativeBreakthroughs("night") },
     { name: "Vacation - 58,620,000", chance: 58620000, breakthroughs: nativeBreakthroughs("incinerator") },
+    { name: 'Cor Lunae - 50,000,000', chance: 50000000, nativeBiomes: ['radiantForest'], wikiPending: true },
     { name: "Goose Rave - 50,000,000", chance: 50000000, breakthroughs: nativeBreakthroughs("incinerator") },
     { name: "Matrix - 50,000,000", chance: 50000000, breakthroughs: nativeBreakthroughs("cyberspace"), nativeBiomes: ["cyberspace"] },
-    { name: "Runic - 50,000,000", chance: 50000000 },
+    { name: "Runic - 50,000,000", chance: 50000000, breakthroughs: nativeBreakthroughs("lostForest") },
     { name: "Exotic : APEX - 49,999,500", chance: 49999500 },
     { name: "Santa Frost - 45,000,000", chance: 45000000, breakthroughs: nativeBreakthroughs("snowy") },
     { name: "North Pole - 45,000,000", chance: 45000000, breakthroughs: nativeBreakthroughs("aurora") },
@@ -8399,7 +8731,7 @@ const AURA_BLUEPRINT_SOURCE = Object.freeze([
     { name: "Ethereal - 35,000,000", chance: 35000000 },
     { name: "Coconut - 34,720,000", chance: 34720000, breakthroughs: nativeBreakthroughs("incinerator") },
     { name: "Aether : Dissapointment - 33,333,330", chance: 33333330, breakthroughs: nativeBreakthroughs("heaven") },
-    { name: "Flora : Florest - 32,800,000", chance: 32800000 },
+    { name: "Flora : Florest - 32,800,000", chance: 32800000, breakthroughs: nativeBreakthroughs("lostForest") },
     { name: "Headless : Horseman - 32,000,000", chance: 32000000, nativeBiomes: ["glitch", "pumpkinMoon"] },
     { name: "Pukeko : Jumping - 31,980,000", chance: 31980000 },
     { name: "Innovator - 30,000,000", chance: 30000000 },
@@ -8431,14 +8763,14 @@ const AURA_BLUEPRINT_SOURCE = Object.freeze([
     { name: "Sailor - 12,000,000", chance: 12000000, breakthroughs: nativeBreakthroughs("rainy") },
     { name: "Melodic - 11,300,000", chance: 11300000 },
     { name: EMPTY_AURA_NAME, chance: 11111111, nativeBiomes: ["null", "glitch"] },
-    // { name: "Sapphire : Peace - 11,000,500", chance: 11000500 }, Unobtainable until further notice
+    { name: 'True Jade - 10,250,000', chance: 10250000, nativeBiomes: ['radiantForest'], radiantUnlockMask: 1, tier: 'Challenged', wikiPending: true },
     { name: "Moonflower - 10,000,000", chance: 10000000, nativeBiomes: ["pumpkinMoon"] },
     { name: "Starscourge - 10,000,000", chance: 10000000, breakthroughs: nativeBreakthroughs("starfall") },
     { name: "Sharkyn - 10,000,000", chance: 10000000, breakthroughs: nativeBreakthroughs("rainy") },
     { name: "Guardian - 10,000,000", chance: 10000000 },
     { name: "Lost Soul : Wander - 9,400,000", chance: 9400000, breakthroughs: nativeBreakthroughs("aurora") },
     { name: "Amethyst - 9,333,700", chance: 9333700 },
-    { name: "Jade : Purity - 9,250,000", chance: 9250000 },
+    { name: "Jade : Purity - 9,250,000", chance: 9250000, breakthroughs: nativeBreakthroughs("radiantForest") },
     { name: "Stargazer - 9,200,000", chance: 9200000, breakthroughs: nativeBreakthroughs("starfall") },
     { name: "Helios - 9,000,000", chance: 9000000 },
     { name: "Nihility - 9,000,000", chance: 9000000, breakthroughs: nativeBreakthroughs("null", "limbo"), nativeBiomes: ["limbo-null"] },
@@ -8458,14 +8790,16 @@ const AURA_BLUEPRINT_SOURCE = Object.freeze([
     { name: "Hades - 6,666,666", chance: 6666666, breakthroughs: nativeBreakthroughs("hell") },
     { name: "Origin - 6,500,000", chance: 6500000 },
     { name: "Astronaut - 6,117,196", chance:  6117196, nativeBiomes: ["singularity"] },
+    { name: 'True Twilight - 6,000,000', chance: 6000000, nativeBiomes: ['radiantForest'], radiantUnlockMask: 4, tier: 'Challenged', wikiPending: true },
     { name: "Vital - 6,000,000", chance: 6000000, nativeBiomes: ["pumpkinMoon"] },
     { name: "Twilight - 6,000,000", chance: 6000000, breakthroughs: nativeBreakthroughs("night") },
     { name: "Anima - 5,730,000", chance: 5730000, nativeBiomes: ["limbo"] },
+    { name: 'Moonchild - 5,000,000', chance: 5000000, nativeBiomes: ['radiantForest'], wikiPending: true },
     { name: "Galaxy - 5,000,000", chance: 5000000, breakthroughs: nativeBreakthroughs("singularity") },
     { name: "Lunar : Full Moon - 5,000,000", chance: 5000000, breakthroughs: nativeBreakthroughs("night") },
     { name: "Solar : Solstice - 5,000,000", chance: 5000000, breakthroughs: nativeBreakthroughs("day") },
     { name: "Jack Frost - 4,700,000", chance: 4700000, breakthroughs: nativeBreakthroughs("aurora") },
-    { name: "Zeus - 4,500,000", chance: 4500000 },
+    { name: "Zeus - 4,500,000", chance: 4500000, breakthroughs: nativeBreakthroughs("heaven") },
     { name: "Shucks - 4,460,000", chance: 4460000, nativeBiomes: ["glitch", "bloodRain"] },
     { name: "Aquatic : Flame - 4,000,000", chance: 4000000 },
     { name: "Metabytes - 4,000,000", chance: 4000000, breakthroughs: nativeBreakthroughs("cyberspace"), nativeBiomes: ["cyberspace"] },
@@ -8491,7 +8825,7 @@ const AURA_BLUEPRINT_SOURCE = Object.freeze([
     { name: "Bounded : Unbound - 2,000,000", chance: 2000000 },
     { name: "Bounded : Kidnapped - 2,000,000", chance: 2000000 },
     { name: "Gravitational - 2,000,000", chance: 2000000 },
-    { name: "Flutter : Buggify - 2,000,000", chance: 2000000 },
+    { name: "Flutter : Buggify - 2,000,000", chance: 2000000, breakthroughs: nativeBreakthroughs('lostForest') },
     { name: "Player : Respawn - 1,999,999", chance: 1999999, breakthroughs: nativeBreakthroughs("cyberspace"), nativeBiomes: ["cyberspace"] },
     { name: "Beach Ball - 1,938,000", chance: 1938000, breakthroughs: nativeBreakthroughs("incinerator") },
     { name: "Archmage - 1,766,000", chance: 1766000 },
@@ -8508,7 +8842,8 @@ const AURA_BLUEPRINT_SOURCE = Object.freeze([
     { name: "ゴシック - 1,000,001", chance: 1000001, nativeBiomes: ["limbo"] },
     { name: "Arcane - 1,000,000", chance: 1000000 },
     { name: "Starlight : Kunzite - 1,000,000", chance: 1000000, breakthroughs: nativeBreakthroughs("starfall") },
-    { name: "Kyawthuite - 850,000", chance: 850000 },
+    { name: "Kyawthuite - 850,000", chance: 850000, breakthroughs: nativeBreakthroughs("radiantForest") },
+    { name: 'True Kyawthuite - 825,000', chance: 825000, nativeBiomes: ['radiantForest'], radiantUnlockMask: 2, tier: 'Challenged', wikiPending: true },
     { name: "Verdict - 700,000", chance: 700000, nativeBiomes: ["edict"], cutscene: "verdict-cutscene" },
     { name: "Burger - 676,767", chance: 676767 },
     { name: "紅月を求めし者 - 666,666", chance: 666666, nativeBiomes: ["fullMoon"] },
@@ -8516,15 +8851,17 @@ const AURA_BLUEPRINT_SOURCE = Object.freeze([
     { name: "Warlock - 666,000", chance: 666000 },
     { name: "Floaty - 600,000", chance: 600000, breakthroughs: nativeBreakthroughs("incinerator") },
     { name: "Pump : Trickster - 600,000", chance: 600000, nativeBiomes: ["glitch", "pumpkinMoon"] },
+    { name: 'Veylune - 555,000', chance: 555000, breakthroughs: nativeBreakthroughs('lostForest') },
     { name: "Prowler - 540,000", chance: 540000, nativeBiomes: ["anotherRealm"], cutscene: "prowler-cutscene" },
     { name: "Clockwork - 530,000", chance: 530000, nativeBiomes: ["mastermind"], cutscene: "clockwork-cutscene" },
+    { name: 'Artifact - 500,000', chance: 500000, breakthroughs: nativeBreakthroughs('lostForest') },
     { name: "Raven - 500,000", chance: 500000, nativeBiomes: ["limbo"] },
     { name: "Hope - 488,725", chance: 488725, breakthroughs: nativeBreakthroughs("heaven") },
     { name: "紅月の観測者 - 444,444", chance: 444444, nativeBiomes: ["fullMoon"] },
     { name: "Terror - 400,000", chance: 400000 },
     { name: "Celestial - 350,000", chance: 350000 },
     { name: "Vortex - 399,999", chance: 399999, breakthroughs: nativeBreakthroughs("windy") },
-    { name: "Lantern - 333,333", chance: 333333 },
+    { name: "Lantern - 333,333", chance: 333333, breakthroughs: nativeBreakthroughs("lostForest") },
     { name: "Watermelon - 320,000", chance: 320000 },
     { name: "Attorney - 270,000", chance: 270000, nativeBiomes: ["edict"], cutscene: "attorney-cutscene" },
     { name: "Astral : Astrald - 267,000", chance: 267000, requiresAstraldBlessing: true  },
@@ -8536,7 +8873,7 @@ const AURA_BLUEPRINT_SOURCE = Object.freeze([
     { name: "Aether - 180,000", chance: 180000 },
     { name: "Jazz - 160,000", chance: 160000 },
     { name: "Spectre - 140,000", chance: 140000 },
-    { name: "Jade - 125,000", chance: 125000 },
+    { name: "Jade - 125,000", chance: 125000, breakthroughs: nativeBreakthroughs("radiantForest") },
     { name: "Divinus : Angel - 120,000", chance: 120000, breakthroughs: nativeBreakthroughs("heaven") },
     { name: "Comet - 120,000", chance: 120000, breakthroughs: nativeBreakthroughs("singularity") },
     { name: "Diaboli : Void - 100,400", chance: 100400 },
@@ -8560,7 +8897,7 @@ const AURA_BLUEPRINT_SOURCE = Object.freeze([
     { name: "Watt - 32,768", chance: 32768 },
     { name: "Buoyant - 32,000", chance: 32000, breakthroughs: nativeBreakthroughs("incinerator") },
     { name: "Copper - 29,000", chance: 29000 },
-    { name: "Marsh - 29,000", chance: 25000 },
+    { name: "Marsh - 29,000", chance: 25000, breakthroughs: nativeBreakthroughs("lostForest") },
     { name: "Gilded : Crowned - 20,000", chance: 20000, breakthroughs: nativeBreakthroughs("sandstorm") },
     { name: "Powered - 16,384", chance: 16384 },
     { name: "LEAK - 14,000", chance: 14000 },
@@ -8575,19 +8912,21 @@ const AURA_BLUEPRINT_SOURCE = Object.freeze([
     { name: "Honey - 8,335", chance: 8335 },
     { name: "Quartz - 8,192", chance: 8192 },
     { name: "Raft - 8,000", chance: 8000, breakthroughs: nativeBreakthroughs("incinerator") },
+    { name: 'Rekindle - 7,500', chance: 7500, nativeBiomes: ['radiantForest'], wikiPending: true },
     { name: "Doodle - 7,500", chance: 7500 },
     { name: "Hazard - 7,000", chance: 7000, breakthroughs: nativeBreakthroughs("corruption") },
     { name: "Flushed : Heart Eye - 6,900", chance: 6900 },
     { name: "Flushed - 6,900", chance: 6900 },
     { name: MEGAPHONE_AURA_NAME, chance: 5000, requiresYgBlessing: true },
+    { name: 'Watcher - 5,000', chance: 5000, nativeBiomes: ['radiantForest'], wikiPending: true },
     { name: "Targeted - 5,000", chance: 5000 },
-    { name: "Flutter - 5,000", chance: 5000 },
+    { name: "Flutter - 5,000", chance: 5000, breakthroughs: nativeBreakthroughs('lostForest') },
     { name: "HellFire - 4,776", chance: 4776, breakthroughs: nativeBreakthroughs("hell") },
     { name: "Bleeding - 4,444", chance: 4444 },
     { name: "Sidereum - 4,096", chance: 4096 },
-    { name: "[CONTENT DELETED] - 4,040", chance: 4040, nativeBiomes: ["glitch"] }, // finally \^o^/
+    { name: "[CONTENT DELETED] - 4,040", chance: 4040, nativeBiomes: ["glitch"] },
     { name: "Cola - 3,999", chance: 3999 },
-    { name: "Flora - 3,700", chance: 3700 },
+    { name: "Flora - 3,700", chance: 3700, breakthroughs: nativeBreakthroughs("lostForest") },
     { name: "Pukeko - 3,198", chance: 3198 },
     { name: "Fault - 3,000", chance: 3000, nativeBiomes: ["glitch"] },
     { name: "Player - 3,000", chance: 3000, breakthroughs: nativeBreakthroughs("cyberspace"), nativeBiomes: ["cyberspace"] },
@@ -8680,6 +9019,10 @@ function createAuraRegistry(definitions) {
 const AURA_REGISTRY = createAuraRegistry(AURA_BLUEPRINT_SOURCE);
 const AURA_BY_NAME = new Map(AURA_REGISTRY.map(aura => [aura.name, aura]));
 const AURA_BY_CANONICAL_NAME = new Map(AURA_REGISTRY.map(aura => [aura.name.split(' - ')[0].trim(), aura]));
+const RADIANT_FOREST_CONFIG = Object.freeze({
+    moonIndices: ['Jade', 'Jade : Purity', 'Kyawthuite', 'Kyawthuite : Remembrance', 'Twilight : Withering Grace', 'Twilight : Iridescent Memory', 'Twilight'].map(name => AURA_BY_CANONICAL_NAME.get(name).index),
+    rewardIndex: AURA_BY_NAME.get(RADIANT_REWARD_AURA_NAME).index
+});
 initializeAuraFilters(AURA_REGISTRY);
 
 const auraWinCounts = new Float64Array(AURA_REGISTRY.length);
@@ -9181,8 +9524,10 @@ function getAuraEventId(aura, { preferEnabled = false, enabledSet = null } = {})
 }
 
 const CUTSCENE_PRIORITY_SEQUENCE = [
-            "trolled-cutscene", "illusionary-cutscene", "dreammetric-cutscene", "oppression-cutscene", "oblivion-cutscene", "memory-cutscene",
-            "neferkhaf-cutscene", "blood-cutscene", "monarch-cutscene", "centaurus-cutscene", "idiot-cutscene", "hellborn-cutscene", "equinox-cutscene", "catcher-cutscene",
+            "trolled-cutscene",
+            'tomorrow-cutscene', "illusionary-cutscene", "dreammetric-cutscene", "oppression-cutscene", "oblivion-cutscene",
+            "memory-cutscene", "neferkhaf-cutscene", "blood-cutscene",
+            'tree-house-cutscene', "monarch-cutscene", "centaurus-cutscene", "hellborn-cutscene", "idiot-cutscene", "equinox-cutscene", "catcher-cutscene",
             "dream-traveler-cutscene", "skyFestival-cutscene", "breakthrough-cutscene", "yolk-cutscene", "astraios-cutscene",
             "leviathan-cutscene", "winter-garden-cutscene", "taverna-cutscene", "crabtropica-cutscene", "erebus-cutscene", "luminosity-cutscene", "eggis-cutscene", "godslayer-cutscene",
             "pixelation-cutscene", "nyctophobia-cutscene", "solsLoadingScreen-cutscene", "pukekoGod-cutscene", "frostveil-cutscene",
@@ -9413,19 +9758,6 @@ document.addEventListener('keydown', event => {
             return;
         }
 
-        const singularityOverlay = document.getElementById('singularityMultiplierOverlay');
-        const singularityOverlayVisible = singularityOverlay && !singularityOverlay.hasAttribute('hidden');
-        if (singularityOverlayVisible) {
-            singularityMultiplierWarningManager.hide();
-            return;
-        }
-
-        const adminAbuseChoiceOverlay = document.getElementById('adminAbuseChoiceOverlay');
-        const adminAbuseChoiceOverlayVisible = adminAbuseChoiceOverlay && !adminAbuseChoiceOverlay.hasAttribute('hidden');
-        if (adminAbuseChoiceOverlayVisible) {
-            adminAbuseChoiceManager.hide();
-            return;
-        }
         closeOpenSelectMenus(null, { focusSummary: true });
     }
 });
@@ -10906,6 +11238,14 @@ document.addEventListener('DOMContentLoaded', initializeRollingSettingsPanel);
 document.addEventListener('DOMContentLoaded', setupRollFeedSearch);
 document.addEventListener('DOMContentLoaded', setupRollFeedSorting);
 window.addEventListener('storage', event => {
+    if (event.key === AUDIO_SETTINGS_STORAGE_KEY) {
+        hydrateAudioSettings();
+        ['music', 'ui', 'server', 'effects', 'cutscene'].forEach(channel => {
+            setChannelVolume(channel, appState.audio[`${channel}Volume`], { persist: false });
+        });
+        setMasterMuteState(appState.audio.masterMuted, { force: true, persist: false });
+        return;
+    }
     if (event.key !== VISUAL_SETTINGS_STORAGE_KEY) return;
     hydrateVisualSettings();
     applyQualityPreferencesState();
@@ -11038,7 +11378,7 @@ function setupFortePixelatedSecret() {
         fortePixelatedSecretState.clickCount = 0;
         spawnFortePixelatedSecretMessage();
         temporarilyRevealQbearMeowedMessage(trigger);
-        playSoundEffect(qbearMeowSoundEffectElement, 'ui');
+        playSoundEffect(qbearMeowSoundEffectElement, 'effects');
     };
 
     trigger.addEventListener('click', activateSecret);
@@ -11312,52 +11652,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    const singularityConfirm = document.getElementById('singularityMultiplierConfirm');
-    if (singularityConfirm) {
-        singularityConfirm.addEventListener('click', () => {
-            singularityMultiplierWarningManager.hide();
-        });
-    }
-
-    const singularityDismiss = document.getElementById('singularityMultiplierDismiss');
-    if (singularityDismiss) {
-        singularityDismiss.addEventListener('click', () => {
-            singularityMultiplierWarningManager.suppress();
-        });
-    }
-
-    const singularityOverlay = document.getElementById('singularityMultiplierOverlay');
-    if (singularityOverlay) {
-        singularityOverlay.addEventListener('click', event => {
-            if (event.target === singularityOverlay) {
-                singularityMultiplierWarningManager.hide();
-            }
-        });
-    }
-
-    const adminAbuseChoiceNew = document.getElementById('adminAbuseChoiceNew');
-    if (adminAbuseChoiceNew) {
-        adminAbuseChoiceNew.addEventListener('click', () => {
-            adminAbuseChoiceManager.choose('new');
-        });
-    }
-
-    const adminAbuseChoiceOld = document.getElementById('adminAbuseChoiceOld');
-    if (adminAbuseChoiceOld) {
-        adminAbuseChoiceOld.addEventListener('click', () => {
-            adminAbuseChoiceManager.choose('old');
-        });
-    }
-
-    const adminAbuseChoiceOverlay = document.getElementById('adminAbuseChoiceOverlay');
-    if (adminAbuseChoiceOverlay) {
-        adminAbuseChoiceOverlay.addEventListener('click', event => {
-            if (event.target === adminAbuseChoiceOverlay) {
-                adminAbuseChoiceManager.hide();
-            }
-        });
-    }
-
     const rollConfirm = document.getElementById('rollWarningConfirm');
     if (rollConfirm) {
         rollConfirm.addEventListener('click', () => {
@@ -11441,16 +11735,19 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 const BIOME_ICON_OVERRIDES = {
+    lostForest: 'files/images/icons/lostForestBiomeIcon.png',
+    radiantForest: 'files/images/icons/radiantForestBiomeIcon.png',
     none: 'files/images/icons/otherBiomeIcon.png',
     normal: 'files/images/icons/otherBiomeIcon.png',
     day: 'files/images/icons/otherBiomeIcon.png',
     night: 'files/images/icons/otherBiomeIcon.png',
     aurora: 'files/images/icons/auroraBiomeIcon.png',
     incinerator: 'files/images/icons/blazingBiomeIcon.png',
-    edict: 'files/images/icons/heavenBiomeIcon.png'
 };
 
 const BIOME_SIGIL_CLASS_OVERRIDES = Object.freeze({
+    lostForest: 'sigil-outline-lost-forest',
+    radiantForest: 'sigil-outline-radiant-forest',
     day: 'sigil-outline-day',
     night: 'sigil-outline-night',
     windy: 'sigil-outline-windy',
@@ -11749,7 +12046,7 @@ function collectBiomeSelectionState() {
 
     const primaryBiome = primarySelect ? (primarySelect.value || 'normal') : 'normal';
     const runeValue = otherSelect ? (otherSelect.value || 'none') : 'none';
-    const timeBiome = timeSelect ? (timeSelect.value || 'none') : 'none';
+    const timeBiome = primaryBiome === 'radiantForest' ? 'night' : timeSelect ? (timeSelect.value || 'none') : 'none';
 
     const runeConfig = resolveRuneConfiguration(runeValue);
     const runeBiome = (() => {
@@ -11888,6 +12185,12 @@ function updateBiomeControlConstraints({ source = null, triggerSync = true } = {
     let primaryChanged = false;
     let otherChanged = false;
     let timeChanged = false;
+
+    const radiantSelected = primarySelect.value === 'radiantForest';
+    if (radiantSelected && timeSelect.value !== 'night') {
+        timeSelect.value = 'night';
+        timeChanged = true;
+    }
 
     const selectedRuneConfig = resolveRuneConfiguration(otherSelect.value);
     const specialPotionBlocksRunes =
@@ -12063,7 +12366,12 @@ function updateBiomeControlConstraints({ source = null, triggerSync = true } = {
     Array.from(timeSelect.options).forEach(option => {
         let disabled = false;
         let title = '';
-        if (limboSelected) {
+        if (primarySelect.value === 'radiantForest') {
+            disabled = option.value !== 'night';
+            title = 'The Radiant Forest forces Night.';
+            option.dataset.conditionMessage = title;
+            option.dataset.conditionLabel = option.textContent?.trim() || 'Time';
+        } else if (limboSelected) {
             disabled = true;
             title = 'Time is locked to Day while Limbo is selected.';
             option.dataset.conditionMessage = title;
@@ -12102,14 +12410,9 @@ function updateBiomeControlConstraints({ source = null, triggerSync = true } = {
 
     const currentPrimarySelection = primarySelect.value;
     if (currentPrimarySelection !== lastPrimaryBiomeSelection) {
+        if (lastPrimaryBiomeSelection === 'radiantForest') radiantForestState = SimulationCore.createRadiantState();
         if (currentPrimarySelection === 'cyberspace' && !cyberspaceIllusionaryWarningManager.isSuppressed()) {
             cyberspaceIllusionaryWarningManager.show();
-        }
-        if (currentPrimarySelection === 'singularity' && !singularityMultiplierWarningManager.isSuppressed()) {
-            singularityMultiplierWarningManager.show();
-        }
-        if (currentPrimarySelection === 'anotherRealm' || currentPrimarySelection === 'mastermind' || currentPrimarySelection === 'fullMoon') {
-            adminAbuseChoiceManager.show(currentPrimarySelection);
         }
         const unmetRequirements = EVENT_BIOME_CONDITION_MESSAGES[currentPrimarySelection]
             && !biomeEventRequirementsMet(currentPrimarySelection);
@@ -12118,6 +12421,7 @@ function updateBiomeControlConstraints({ source = null, triggerSync = true } = {
         }
         lastPrimaryBiomeSelection = currentPrimarySelection;
     }
+    syncBiomeBuffs();
 
     refreshCustomSelect(BIOME_PRIMARY_SELECT_ID);
     refreshCustomSelect(BIOME_OTHER_SELECT_ID);
@@ -12189,12 +12493,14 @@ function setTimeBiomeSelection(value) {
 document.addEventListener('DOMContentLoaded', () => {
     initializeSingleSelectControl('vip-dropdown');
     initializeSingleSelectControl('dave-luck-dropdown');
+    initializeSingleSelectControl('cor-lunae-blessing-dropdown');
     initializeSingleSelectControl(BIOME_PRIMARY_SELECT_ID);
     initializeSingleSelectControl(BIOME_OTHER_SELECT_ID);
     initializeSingleSelectControl(BIOME_TIME_SELECT_ID);
 });
 
 document.addEventListener('DOMContentLoaded', setupBiomeControlDependencies);
+document.addEventListener('DOMContentLoaded', setupBiomeBuffs);
 
 document.addEventListener('DOMContentLoaded', () => {
     hydrateAudioSettings();
@@ -12317,6 +12623,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (luckField) {
         luckField.addEventListener('input', () => {
+            if (isRememberRoll()) { recomputeLuckValue(); return; }
             const raw = luckField.dataset.rawValue ?? '';
             const parsed = raw ? Number.parseFloat(raw) : NaN;
             const normalized = Number.isFinite(parsed) && parsed > 0 ? Math.max(0, parsed) : 0;
@@ -12326,7 +12633,7 @@ document.addEventListener('DOMContentLoaded', () => {
             clearActiveLuckPotionPresets({ syncBiomeConstraints: false });
             const multipliers = getActiveLuckMultipliers();
             const inputs = getGearLuckInputs(false);
-            currentLuck = GearLuck.totalLuck(inputs.basic, inputs.special, inputs.finalMultiplier, GearLuck.rollState(equippedGear.left, 1));
+            currentLuck = GearLuck.totalLuck(inputs.basic, inputs.special, inputs.finalMultiplier, GearLuck.rollState(equippedGear.left, 1), inputs.basicMultiplier);
             syncLastLuckMultipliers(multipliers);
             syncLuckVisualEffects(currentLuck);
             syncEquipmentPreview();
@@ -12341,6 +12648,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     setupShareInterface();
     initializeAudioSettingsPanel();
+    initializeAudioKeyboardShortcuts();
     const masterMuteToggle = document.getElementById('masterMuteToggle');
     if (masterMuteToggle) {
         masterMuteToggle.addEventListener('click', toggleMasterMute);
@@ -12469,7 +12777,7 @@ for (const aura of AURA_REGISTRY) {
 }
 
 const LIMBO_NATIVE_FILTER = ['limbo', 'limbo-null'];
-const GLITCH_BREAKTHROUGH_EXCLUSION_SET = new Set(['day', 'night', 'aurora', 'singularity', 'incinerator']);
+const GLITCH_BREAKTHROUGH_EXCLUSION_SET = new Set(['day', 'night', 'aurora', 'singularity', 'radiantForest', 'incinerator']);
 const NULL_BIOME_FILTER = new Set(['null', 'limbo-null']);
 const LEVIATHAN_ALLOWED_BIOMES = new Set(['rainy', 'glitch']);
 const MONARCH_ALLOWED_BIOMES = new Set(['corruption', 'glitch']);
@@ -12744,7 +13052,6 @@ function computeStandardEffectiveChance(aura, context) {
         }
     }
 
-    // Tide changes rarity only: it must never unlock Rainy-exclusive auras.
     if (context.rainyNative && !aura.nativeBiomes) {
         const rainyMultiplier = readBreakthroughMultiplier(aura, 'rainy');
         if (rainyMultiplier) effectiveChance = Math.min(effectiveChance, Math.floor(aura.chance / rainyMultiplier));
@@ -12756,6 +13063,9 @@ function computeStandardEffectiveChance(aura, context) {
 }
 
 function determineAuraEffectiveChance(aura, context) {
+    if (aura.requiresRadiantMoons) return Infinity;
+    if (aura.radiantUnlockMask && (context.biome !== 'radiantForest'
+        || !((context.radiantUnlockMask || 0) & aura.radiantUnlockMask))) return Infinity;
     let forceStandardEvaluation = false;
 
     if (aura?.name === BREAKTHROUGH_AURA_NAME) {
@@ -12954,6 +13264,79 @@ function createLiveRollFeed(onNavigate) {
     const latest = document.getElementById('rollFeedHistoryLatest');
     latest.textContent = 'Latest';
     const lastStart = () => Math.max(0, matches.length - LIVE_ROLL_FEED_PAGE_SIZE);
+    let followFrame = null;
+    let touchY = null;
+    let destroyed = false;
+
+    function pinToLatest() {
+        if (following && !destroyed) feedContainer.scrollTop = feedContainer.scrollHeight;
+    }
+
+    function scheduleFollowScroll() {
+        if (!following || destroyed || followFrame !== null) return;
+        followFrame = requestAnimationFrame(() => {
+            followFrame = null;
+            pinToLatest();
+        });
+    }
+
+    function stopFollowing() {
+        if (!following || destroyed) return;
+        following = false;
+        latest.disabled = false;
+        onNavigate();
+    }
+
+    function canScroll(direction) {
+        if (direction < 0) return feedContainer.scrollTop > 0;
+        return feedContainer.scrollTop + feedContainer.clientHeight < feedContainer.scrollHeight - 1;
+    }
+
+    function handleWheel(event) {
+        if (event.isTrusted && !event.ctrlKey && event.deltaY !== 0 && canScroll(event.deltaY)) stopFollowing();
+    }
+
+    function handleTouchStart(event) {
+        if (event.isTrusted) touchY = event.touches.length === 1 ? event.touches[0].clientY : null;
+    }
+
+    function handleTouchMove(event) {
+        if (!event.isTrusted || touchY === null || event.touches.length !== 1) return;
+        const delta = touchY - event.touches[0].clientY;
+        if (Math.abs(delta) > 4 && canScroll(delta)) stopFollowing();
+    }
+
+    function handleTouchEnd() { touchY = null; }
+
+    function handleScrollKey(event) {
+        if (!event.isTrusted || event.defaultPrevented || event.altKey || event.ctrlKey || event.metaKey) return;
+        if (event.target.closest?.('input, textarea, select, button, a, [contenteditable]:not([contenteditable="false"])')) return;
+        const direction = ['ArrowUp', 'PageUp', 'Home'].includes(event.key) || (event.key === ' ' && event.shiftKey)
+            ? -1 : ['ArrowDown', 'PageDown', 'End', ' '].includes(event.key) ? 1 : 0;
+        if (direction && canScroll(direction)) stopFollowing();
+    }
+
+    function handleScrollbarPointer(event) {
+        if (!event.isTrusted || event.pointerType !== 'mouse' || feedContainer.scrollHeight <= feedContainer.clientHeight) return;
+        const bounds = feedContainer.getBoundingClientRect();
+        const scale = bounds.width / feedContainer.offsetWidth;
+        const contentRight = bounds.left + (feedContainer.clientLeft + feedContainer.clientWidth) * scale;
+        const middleScroll = event.button === 1 && !event.target.closest?.('a, button');
+        const scrollbarScroll = event.button === 0 && event.target === feedContainer && event.clientX >= contentRight && event.clientX < bounds.right - feedContainer.clientLeft * scale;
+        if (middleScroll || scrollbarScroll) stopFollowing();
+    }
+
+    feedContainer.addEventListener('scroll', scheduleFollowScroll, { passive: true });
+    feedContainer.addEventListener('wheel', handleWheel, { passive: true });
+    feedContainer.addEventListener('touchstart', handleTouchStart, { passive: true });
+    feedContainer.addEventListener('touchmove', handleTouchMove, { passive: true });
+    feedContainer.addEventListener('touchend', handleTouchEnd, { passive: true });
+    feedContainer.addEventListener('touchcancel', handleTouchEnd, { passive: true });
+    feedContainer.addEventListener('keydown', handleScrollKey);
+    feedContainer.addEventListener('pointerdown', handleScrollbarPointer, { passive: true });
+    const resizeObserver = typeof ResizeObserver === 'function' ? new ResizeObserver(scheduleFollowScroll) : null;
+    resizeObserver?.observe(list);
+    resizeObserver?.observe(feedContainer);
 
     function render() {
         list.querySelectorAll(':scope > .aura-tier-separator').forEach(heading => heading.remove());
@@ -13004,7 +13387,8 @@ function createLiveRollFeed(onNavigate) {
     function followLatest() {
         following = true;
         render();
-        feedContainer.scrollTop = feedContainer.scrollHeight;
+        pinToLatest();
+        scheduleFollowScroll();
         onNavigate();
     }
     first.addEventListener('click', showFirst);
@@ -13015,10 +13399,6 @@ function createLiveRollFeed(onNavigate) {
     return {
         get length() { return records.length; },
         get following() { return following; },
-        updateFollowing(atBottom) {
-            following = atBottom && start === lastStart();
-            latest.disabled = following;
-        },
         followLatest,
         append(entries) {
             for (const record of entries) {
@@ -13026,7 +13406,8 @@ function createLiveRollFeed(onNavigate) {
                 if (query && record.presentation.searchText.includes(query)) matches.push(record);
             }
             render();
-            if (following) feedContainer.scrollTop = feedContainer.scrollHeight;
+            pinToLatest();
+            scheduleFollowScroll();
         },
         search() {
             const nextQuery = getRollFeedSearchQuery();
@@ -13036,6 +13417,7 @@ function createLiveRollFeed(onNavigate) {
             start = 0;
             render();
             feedContainer.scrollTop = following ? feedContainer.scrollHeight : 0;
+            scheduleFollowScroll();
         },
         sort(mode) {
             sortMode = mode;
@@ -13047,8 +13429,20 @@ function createLiveRollFeed(onNavigate) {
             start = 0;
             render();
             feedContainer.scrollTop = 0;
+            onNavigate();
         },
         destroy() {
+            destroyed = true;
+            if (followFrame !== null) cancelAnimationFrame(followFrame);
+            resizeObserver?.disconnect();
+            feedContainer.removeEventListener('scroll', scheduleFollowScroll);
+            feedContainer.removeEventListener('wheel', handleWheel);
+            feedContainer.removeEventListener('touchstart', handleTouchStart);
+            feedContainer.removeEventListener('touchmove', handleTouchMove);
+            feedContainer.removeEventListener('touchend', handleTouchEnd);
+            feedContainer.removeEventListener('touchcancel', handleTouchEnd);
+            feedContainer.removeEventListener('keydown', handleScrollKey);
+            feedContainer.removeEventListener('pointerdown', handleScrollbarPointer);
             first.removeEventListener('click', showFirst);
             previous.removeEventListener('click', showPrevious);
             next.removeEventListener('click', showNext);
@@ -13243,8 +13637,6 @@ function sortEntriesInUnnamedResultOrder(sourceEntries) {
         entries.splice(equinoxIndex >= 0 ? equinoxIndex : 0, 0, ...cryogenicEntries);
     }
 
-    // Keep the special group above ordinary results while preserving the rarity
-    // order established by the initial descending-priority sort.
     prependMatches(entry => isPinnedSpecialAuraName(entry.auraName));
     prependMatches(entry => isForcedChallengedPlusAura(entry.auraName));
 
@@ -13747,17 +14139,12 @@ function requestRollCancellation() {
     }
 
     cancelRollRequested = true;
-    if (activeSimulationWorker) {
-        activeSimulationWorker.postMessage({ type: 'cancel' });
-    }
     const { cancelRollButton } = uiHandles;
     if (cancelRollButton) {
         cancelRollButton.disabled = true;
         cancelRollButton.textContent = 'Cancelling...';
     }
-    if (activeSolLikeSimulationController) {
-        activeSolLikeSimulationController.cancel();
-    }
+    activeSimulationCancelHandler?.();
 }
 
 function setupRollCancellationControl() {
@@ -13796,9 +14183,10 @@ function queueSimulationWork(callback) {
 }
 
 const SIMULATION_WORKER_PATH = typeof window.getVersionedAppAssetUrl === 'function'
-    ? window.getVersionedAppAssetUrl('scripts/simulation-worker.js')
-    : 'scripts/simulation-worker.js';
+    ? window.getVersionedAppAssetUrl('scripts/simulation-worker.js?session=1')
+    : 'scripts/simulation-worker.js?session=1';
 const WORKER_PROGRESS_UPDATE_INTERVAL_MS = 100;
+const WORKER_RESPONSE_TIMEOUT_MS = 10000;
 
 function terminateActiveSimulationWorker() {
     if (!activeSimulationWorker) {
@@ -13910,6 +14298,7 @@ function prepareSimulationBatch(batch, selectionState, eventContext) {
     });
     evaluationContext.rainyNative = Boolean(batch.rainyNative);
     evaluationContext.vampireHunter = Boolean(batch.vampireHunter);
+    evaluationContext.radiantUnlockMask = batch.radiantUnlockMask || 0;
     const computedAuras = buildComputedAuraEntries(
         AURA_REGISTRY,
         evaluationContext,
@@ -13983,6 +14372,11 @@ function prepareSimulationBatch(batch, selectionState, eventContext) {
         }
     ]);
 
+    const radiantSelections = selectionState.primaryBiome === 'radiantForest' && batch.radiantUnlockMask === undefined
+        ? Array.from({ length: 8 }, (_, mask) => mask === 0 ? combinedSelection
+            : prepareSimulationBatch({ ...batch, radiantUnlockMask: mask }, selectionState, eventContext).combinedSelection)
+        : null;
+
     return {
         id: batch.id || null,
         rollLabel: batch.rollLabel || '',
@@ -14000,6 +14394,7 @@ function prepareSimulationBatch(batch, selectionState, eventContext) {
         breakthroughStatsMap,
         breakthroughStatsByAuraIndex,
         combinedSelection,
+        radiantSelections,
         prerollAuraIndices,
         prerollAuraRatios,
         lucklessCandidateConfig,
@@ -14027,7 +14422,7 @@ function prepareEquipmentSimulation(definitions, selectionState, eventContext, m
             if (state.rainyNative) labels.push('Rainy rarity');
             const batch = prepareSimulationBatch({
                 ...definition,
-                luckValue: GearLuck.totalLuck(inputs.basic, multiple ? definition.baseLuck : inputs.special, inputs.finalMultiplier, state),
+                luckValue: GearLuck.totalLuck(inputs.basic, multiple ? definition.baseLuck : inputs.special, inputs.finalMultiplier, state, inputs.basicMultiplier),
                 rainyNative: state.rainyNative,
                 vampireHunter,
                 variantKey: batches.length,
@@ -14047,10 +14442,27 @@ function prepareEquipmentSimulation(definitions, selectionState, eventContext, m
             prefix: timing.prefix.map(mapEntry), pattern: timing.pattern.map(mapEntry), heldRandomEvery: timing.heldRandomEvery });
         startRoll += definition.count;
     });
-    return { batches, sequencePlan };
+    const rewardBatchIndex = actualBiome === 'radiantForest' ? batches.length : null;
+    if (rewardBatchIndex !== null) {
+        batches.push(prepareSimulationBatch({ count: 1, label: 'Remember', luckValue: 1,
+            variantKey: batches.length, rollLabel: 'Remember', radiantUnlockMask: 0 }, selectionState, eventContext));
+    }
+    return { batches, sequencePlan, rewardBatchIndex };
 }
 
 function runRollSimulation(options = {}) {
+    try {
+        startRollSimulation(options);
+    } catch (error) {
+        if (activeSimulationFailureHandler) activeSimulationFailureHandler(error);
+        else {
+            console.warn('Unable to start rolling.', error);
+            if (feedContainer) feedContainer.textContent = 'Rolling could not start. Please try Start Rolling again.';
+        }
+    }
+}
+
+function startRollSimulation(options = {}) {
     if (simulationActive || isAuraCutscenePlaybackActive()) return;
 
     if (!feedContainer) {
@@ -14090,7 +14502,8 @@ function runRollSimulation(options = {}) {
         ? Number.parseInt(options.totalOverride, 10)
         : null;
 
-    const isMultiplePotionRun = isMultiplePotionMode();
+    const rememberRun = isRememberRoll();
+    const isMultiplePotionRun = !rememberRun && isMultiplePotionMode();
     const solsLikeRun = isSolsLikeSimulationMethod();
     const selectedPotionStackingEnabled = isMultiplePotionRun && isMultiplePotionStackingEnabled();
     const selectedPotionBatches = isMultiplePotionRun
@@ -14116,6 +14529,7 @@ function runRollSimulation(options = {}) {
         total = 1;
     }
     total = Math.max(1, Math.floor(total));
+    if (rememberRun) total = 1;
 
     if (!bypassRotationPrompt && rotationPromptManager.shouldPrompt()) {
         rotationPromptManager.prompt(() => runRollSimulation({
@@ -14145,6 +14559,62 @@ function runRollSimulation(options = {}) {
         resetMode: true,
         supportsRecent: solsLikeRun
     });
+    const runId = ++simulationRunId;
+    let runFinished = false;
+    let progressCommit = null;
+    let cleanupLiveFeedFollowControl = null;
+    let cleanupWorker = null;
+    const cleanupSimulation = () => {
+        if (runFinished) return false;
+        runFinished = true;
+        cleanupWorker?.();
+        cleanupWorker = null;
+        progressCommit?.dispose();
+        terminateActiveSimulationWorker();
+        cleanupLiveFeedFollowControl?.();
+        cleanupLiveFeedFollowControl = null;
+        activeSolLikeSimulationController = null;
+        activeSimulationFailureHandler = null;
+        activeSimulationCancelHandler = null;
+        if (progressPanel) {
+            progressPanel.style.display = 'none';
+            progressPanel.classList.remove('loading-indicator--active', 'loading-indicator--paused');
+            delete progressPanel.dataset.loadingIndicator;
+        }
+        rollTriggerButton.disabled = false;
+        rollTriggerButton.style.opacity = '1';
+        brandMark?.classList.remove('banner__emblem--spinning', 'banner__emblem--simulation-paused');
+        if (pauseRollButton) {
+            pauseRollButton.classList.remove('roll-pause--paused');
+            pauseRollButton.setAttribute('aria-label', 'Pause rolling');
+            pauseRollButton.setAttribute('title', 'Pause rolling');
+            pauseRollButton.innerHTML = '<i class="fa-solid fa-pause" aria-hidden="true"></i>';
+        }
+        if (cancelRollButton) {
+            cancelRollButton.hidden = true;
+            cancelRollButton.disabled = false;
+            cancelRollButton.textContent = 'Cancel Roll';
+        }
+        simulationActive = false;
+        cancelRollRequested = false;
+        syncSimulationMethodControls();
+        return true;
+    };
+    const failSimulation = error => {
+        if (runId !== simulationRunId) return;
+        console.warn('Rolling could not finish.', error);
+        cleanupSimulation();
+        lastSimulationSummary = null;
+        clearHarvesterCurseLayer();
+        clearFlushedTrollSignatureLayer();
+        feedContainer.textContent = 'Rolling could not finish. Please try Start Rolling again.';
+    };
+    const guardWork = callback => (...args) => {
+        if (runFinished) return;
+        try { return Promise.resolve(callback(...args)).catch(failSimulation); }
+        catch (error) { failSimulation(error); }
+    };
+    activeSimulationFailureHandler = failSimulation;
     simulationActive = true;
     cancelRollRequested = false;
     rollTriggerButton.disabled = true;
@@ -14159,9 +14629,9 @@ function runRollSimulation(options = {}) {
         brandMark.classList.toggle('banner__emblem--spinning', total > 10_000_000);
     }
 
-    playSoundEffect(audio.roll, 'obtain');
+    playSoundEffect(audio.roll, 'ui');
     if (total >= 10000000) {
-        playSoundEffect(audio.explosion, 'obtain');
+        playSoundEffect(audio.explosion, 'effects');
     }
 
     let parsedLuck = isMultiplePotionRun
@@ -14180,6 +14650,14 @@ function runRollSimulation(options = {}) {
     const primaryBiome = selectionState.primaryBiome;
     const runeValue = selectionState.runeValue;
     const timeBiome = selectionState.timeBiome;
+
+    const radiantRun = primaryBiome === 'radiantForest'
+        ? { config: RADIANT_FOREST_CONFIG, state: radiantForestState, checkpoints: true }
+        : null;
+    const initialRadiantState = radiantRun ? { ...radiantRun.state } : null;
+    const updateRadiantProgress = () => {
+        if (radiantRun && radiantRun.state === radiantForestState) syncBiomeBuffs();
+    };
 
     const eventSnapshot = enabledEvents.size > 0 ? new Set(enabledEvents) : null;
     const isEventAuraEnabled = aura => {
@@ -14235,7 +14713,7 @@ function runRollSimulation(options = {}) {
         }
     }
 
-    const { batches: simulationBatches, sequencePlan } = prepareEquipmentSimulation(
+    const { batches: simulationBatches, sequencePlan, rewardBatchIndex } = prepareEquipmentSimulation(
         simulationBatchDefinitions,
         selectionState,
         {
@@ -14244,13 +14722,25 @@ function runRollSimulation(options = {}) {
         },
         isMultiplePotionRun
     );
+    if (radiantRun) radiantRun.rewardBatchIndex = rewardBatchIndex;
     const cutscenesEnabled = appState.cinematic === true;
+    let tomorrowCutsceneHandled = false;
+    const playTomorrowCutscene = async () => {
+        if (tomorrowCutsceneHandled) return;
+        tomorrowCutsceneHandled = true;
+        const aura = AURA_BY_NAME.get(RADIANT_REWARD_AURA_NAME);
+        await playAuraSequence([aura.cutscene], { force: true });
+    };
+    const paintRemember = () => new Promise(resolve => {
+        queueAnimationFrame(() => queueAnimationFrame(resolve));
+    });
 
-    const queueAnimationFrame = callback => queueSimulationWork(callback);
+    const queueAnimationFrame = callback => queueSimulationWork(guardWork(callback));
     const updateProgress = showProgress
         ? (() => {
             let lastProgressValue = null;
             return progress => {
+                globalThis.SessionReturn?.progress(currentRoll, total);
                 const progressValueRounded = Math.floor(progress / PROGRESS_ROUNDING_STEP) * PROGRESS_ROUNDING_STEP;
                 const formattedProgressValue = formatProgressLabel(progressValueRounded);
                 if (formattedProgressValue === lastProgressValue && progress < 100) {
@@ -14265,43 +14755,14 @@ function runRollSimulation(options = {}) {
         : null;
 
     let currentRoll = 0;
-    let cleanupLiveFeedFollowControl = null;
 
     const sampleEntropy = (typeof drawEntropy === 'function') ? drawEntropy : Math.random;
 
-    const progressCommit = AppRuntime.createFrameCommit(progress => updateProgress?.(progress));
+    progressCommit = AppRuntime.createFrameCommit(progress => updateProgress?.(progress));
     const finalizeSimulation = (cancelled, completedRolls = total) => {
-        progressCommit.dispose();
-        terminateActiveSimulationWorker();
-        cleanupLiveFeedFollowControl?.();
-        cleanupLiveFeedFollowControl = null;
-        activeSolLikeSimulationController = null;
-        if (progressPanel) {
-            progressPanel.style.display = 'none';
-            progressPanel.classList.remove('loading-indicator--active');
-            progressPanel.classList.remove('loading-indicator--paused');
-            delete progressPanel.dataset.loadingIndicator;
-        }
-        rollTriggerButton.disabled = false;
-        rollTriggerButton.style.opacity = '1';
-        if (brandMark) {
-            brandMark.classList.remove('banner__emblem--spinning');
-            brandMark.classList.remove('banner__emblem--simulation-paused');
-        }
-        if (pauseRollButton) {
-            pauseRollButton.classList.remove('roll-pause--paused');
-            pauseRollButton.setAttribute('aria-label', 'Pause rolling');
-            pauseRollButton.setAttribute('title', 'Pause rolling');
-            pauseRollButton.innerHTML = '<i class="fa-solid fa-pause" aria-hidden="true"></i>';
-        }
-        if (cancelRollButton) {
-            cancelRollButton.hidden = true;
-            cancelRollButton.disabled = false;
-            cancelRollButton.textContent = 'Cancel Roll';
-        }
-        simulationActive = false;
-        cancelRollRequested = false;
-        syncSimulationMethodControls();
+        if (runFinished) return;
+        updateRadiantProgress();
+        cleanupSimulation();
 
         if (cancelled) {
             if (solsLikeRun && completedRolls > 0) {
@@ -14325,7 +14786,7 @@ function runRollSimulation(options = {}) {
             const cutsceneQueue = [];
             for (const videoId of CUTSCENE_PRIORITY_SEQUENCE) {
                 const aura = CUTSCENE_AURA_LOOKUP.get(videoId);
-                if (aura && readAuraWinCount(aura) > 0 && !shouldSkipAuraCutscene(aura, biome)) {
+                if (aura && !aura.requiresRadiantMoons && readAuraWinCount(aura) > 0 && !shouldSkipAuraCutscene(aura, biome)) {
                     cutsceneQueue.push(videoId);
                 }
             }
@@ -14343,18 +14804,18 @@ function runRollSimulation(options = {}) {
 
         if (highestChance >= 99999999) {
             if (biome === 'limbo') {
-                playSoundEffect(audio.m100limbo, 'obtain');
+                playSoundEffect(audio.m100limbo, 'server');
             } else {
-                playSoundEffect(audio.m100, 'obtain');
+                playSoundEffect(audio.m100, 'server');
             }
         } else if (highestChance >= 10000000) {
-            playSoundEffect(audio.m10, 'obtain');
+            playSoundEffect(audio.m10, 'server');
         } else if (highestChance >= 1000000) {
-            playSoundEffect(audio.k100, 'obtain');
+            playSoundEffect(audio.k100, 'server');
         } else if (highestChance >= 100000) {
-            playSoundEffect(audio.k10, 'obtain');
+            playSoundEffect(audio.k10, 'server');
         } else if (highestChance >= 1000) {
-            playSoundEffect(audio.k1, 'obtain');
+            playSoundEffect(audio.k1, 'server');
         }
 
         const biomeLabel = resolveSelectionLabel(
@@ -14514,16 +14975,26 @@ function runRollSimulation(options = {}) {
             auraFilterTiers: getIncludedAuraTierLabels(),
             executionSeconds: Number.isFinite(executionSeconds) ? executionSeconds : 0
         };
+        globalThis.SessionReturn?.save();
     };
 
     const startMainThreadSimulation = () => {
-        const runner = SimulationCore.createRunner(simulationBatches, auraWinCounts, sampleEntropy, null, sequencePlan);
-        function processRollSequence() {
+        const runner = SimulationCore.createRunner(simulationBatches, auraWinCounts, sampleEntropy, null, sequencePlan, radiantRun);
+        async function processRollSequence() {
             if (cancelRollRequested) {
                 finalizeSimulation(true, currentRoll);
                 return;
             }
             currentRoll = runner.runSlice(8, () => performance.now());
+            updateRadiantProgress();
+
+            if (runner.checkpoint === 'radiant-ready' && !runner.done) await paintRemember();
+            if (runner.checkpoint === 'radiant-reward' && !cancelRollRequested) await playTomorrowCutscene();
+            if (runFinished) return;
+            if (cancelRollRequested) {
+                finalizeSimulation(true, currentRoll);
+                return;
+            }
 
             if (updateProgress) {
                 const progress = (currentRoll / total) * 100;
@@ -14541,7 +15012,7 @@ function runRollSimulation(options = {}) {
             finalizeSimulation(false, currentRoll);
         }
 
-        if (total <= 4096) processRollSequence();
+        if (total <= 4096) guardWork(processRollSequence)();
         else queueAnimationFrame(processRollSequence);
     };
 
@@ -14553,6 +15024,7 @@ function runRollSimulation(options = {}) {
         );
         const maxFrameDuration = shouldScheduleBackgroundWork() ? 20 : 12;
         const liveCursor = SimulationCore.createRollCursor(simulationBatches, sequencePlan);
+        const radiantSelect = radiantRun ? SimulationCore.createRadiantSelector(radiantRun.config, radiantRun.state, sampleEntropy) : null;
         let currentBatchIndex = 0;
         let manualPaused = false;
         let cutsceneActive = false;
@@ -14565,11 +15037,6 @@ function runRollSimulation(options = {}) {
         const liveMarkupTemplate = document.createElement('template');
         const liveEntryTemplates = new Map();
 
-        const getLiveFeedDistanceFromBottom = () => Math.max(
-            0,
-            feedContainer.scrollHeight - feedContainer.clientHeight - feedContainer.scrollTop
-        );
-
         const syncLiveFeedFollowControl = () => {
             if (!followRollFeedButton) {
                 return;
@@ -14577,15 +15044,8 @@ function runRollSimulation(options = {}) {
             followRollFeedButton.hidden = !simulationActive || liveRunStopped || liveRollFeed.following;
         };
 
-        const handleLiveFeedScroll = () => {
-            liveRollFeed.updateFollowing(getLiveFeedDistanceFromBottom() <= LIVE_ROLL_FEED_BOTTOM_TOLERANCE_PX);
-            syncLiveFeedFollowControl();
-        };
-
         liveRollFeed = createLiveRollFeed(syncLiveFeedFollowControl);
-        feedContainer.addEventListener('scroll', handleLiveFeedScroll, { passive: true });
         cleanupLiveFeedFollowControl = () => {
-            feedContainer.removeEventListener('scroll', handleLiveFeedScroll);
             if (followRollFeedButton) {
                 followRollFeedButton.hidden = true;
             }
@@ -14626,25 +15086,25 @@ function runRollSimulation(options = {}) {
 
         const performSingleLiveRoll = () => {
             currentBatchIndex = liveCursor.next(sampleEntropy);
+            if (radiantRun?.state.moons === 127 && !radiantRun.state.rewardClaimed) {
+                currentBatchIndex = radiantRun.rewardBatchIndex;
+            }
             const activeBatch = simulationBatches[currentBatchIndex];
             if (!activeBatch) {
                 return null;
             }
 
             const combinedSelectionConfig = activeBatch.combinedSelection;
-            const selectedIndex = selectWeightedIndex(combinedSelectionConfig.selection, sampleEntropy());
-            if (selectedIndex === -1) {
-                return null;
-            }
-
-            const auraIndex = combinedSelectionConfig.auraIndices[selectedIndex];
+            const radiantResult = radiantSelect ? radiantSelect(activeBatch) : null;
+            const selectedIndex = radiantSelect ? -1 : selectWeightedIndex(combinedSelectionConfig.selection, sampleEntropy());
+            const auraIndex = radiantResult ? radiantResult.auraIndex : selectedIndex < 0 ? -1 : combinedSelectionConfig.auraIndices[selectedIndex];
             if (!(Number.isInteger(auraIndex) && auraIndex >= 0 && auraIndex < AURA_REGISTRY.length)) {
                 return null;
             }
 
             auraWinCounts[auraIndex] += 1;
             activeBatch.winCounts[auraIndex] += 1;
-            const breakthroughIndex = combinedSelectionConfig.breakthroughIndices[selectedIndex];
+            const breakthroughIndex = radiantResult ? radiantResult.breakthroughIndex : combinedSelectionConfig.breakthroughIndices[selectedIndex];
             const isNativeRoll = Number.isInteger(breakthroughIndex)
                 && breakthroughIndex >= 0
                 && breakthroughIndex < activeBatch.breakthroughCounts.length;
@@ -14682,11 +15142,11 @@ function runRollSimulation(options = {}) {
             workScheduled = true;
             const runScheduledWork = () => {
                 workScheduled = false;
-                processLiveRollSequence();
+                return processLiveRollSequence();
             };
             const waitUntilNextRoll = nextRollDueAt - performance.now();
             if (waitUntilNextRoll > 20 && typeof window.setTimeout === 'function') {
-                window.setTimeout(runScheduledWork, waitUntilNextRoll);
+                window.setTimeout(guardWork(runScheduledWork), waitUntilNextRoll);
             } else {
                 queueAnimationFrame(runScheduledWork);
             }
@@ -14770,18 +15230,19 @@ function runRollSimulation(options = {}) {
                         }
                     }
 
-                    if (
+                    if (aura.requiresRadiantMoons || (
                         cutscenesEnabled
                         && !skipRemainingCutscenes
                         && aura.cutscene
                         && !shouldSkipAuraCutscene(aura, biome)
-                    ) {
+                    )) {
                         pendingCutsceneId = aura.cutscene;
                         pendingCutsceneAura = aura;
                         break;
                     }
                 }
 
+                if (radiantRun?.state.moons === 127 && !radiantRun.state.rewardClaimed) break;
                 if ((processedThisFrame & 63) === 0 && performance.now() >= frameDeadline) {
                     break;
                 }
@@ -14789,6 +15250,7 @@ function runRollSimulation(options = {}) {
 
             nextRollDueAt += processedThisFrame * rollIntervalMs;
             appendLiveMarkup(markupList);
+            updateRadiantProgress();
             if (updateProgress) {
                 updateProgress(total > 0 ? (currentRoll / total) * 100 : 100);
             }
@@ -14796,12 +15258,14 @@ function runRollSimulation(options = {}) {
             if (pendingCutsceneId && !cancelRollRequested) {
                 cutsceneActive = true;
                 syncPausePresentation();
-                await playAuraSequence([pendingCutsceneId], {
+                if (pendingCutsceneAura.requiresRadiantMoons) await playTomorrowCutscene();
+                else await playAuraSequence([pendingCutsceneId], {
                     skipRemaining: skipRemainingCutscenes,
                     onSkipAll: () => {
                         skipRemainingCutscenes = true;
                     }
                 });
+                if (runFinished) return;
                 cutsceneActive = false;
                 nextRollDueAt = performance.now() + getCurrentRollIntervalMs();
                 if (
@@ -14866,94 +15330,132 @@ function runRollSimulation(options = {}) {
 
     const startWorkerSimulation = () => {
         const worker = createSimulationWorker();
-        if (!worker) {
-            return false;
-        }
-
+        if (!worker) return false;
         activeSimulationWorker = worker;
-
-        worker.onmessage = event => {
-            if (activeSimulationWorker !== worker) {
-                return;
-            }
-
-            const message = event.data || {};
-            if (message.type === 'progress') {
-                const workerRollCount = Number.isFinite(message.currentRoll) ? message.currentRoll : currentRoll;
-                currentRoll = workerRollCount;
-                if (updateProgress) {
-                    const progress = total > 0 ? (workerRollCount / total) * 100 : 100;
-                    progressCommit.schedule(progress);
-                }
-                return;
-            }
-
-            if (message.type === 'complete') {
-                currentRoll = Number.isFinite(message.currentRoll) ? message.currentRoll : total;
-                applySimulationWinCounts(message.winCounts);
-                applySimulationBatchCounts(
-                    simulationBatches,
-                    message.batchWinCounts,
-                    message.batchBreakthroughCounts
-                );
-                if (updateProgress) {
-                    progressCommit.schedule(100);
-                }
-                finalizeSimulation(false, currentRoll);
-                return;
-            }
-
-            if (message.type === 'cancelled') {
-                currentRoll = Number.isFinite(message.currentRoll) ? message.currentRoll : currentRoll;
-                finalizeSimulation(true, currentRoll);
-                return;
-            }
-
-            if (message.type === 'error') {
-                console.warn('Simulation worker reported an error, falling back to main thread execution.', message.error || null);
-                terminateActiveSimulationWorker();
-                resetAuraRollState(AURA_REGISTRY);
-                currentRoll = 0;
-                startMainThreadSimulation();
-            }
+        let responseTimeout = null;
+        let waitingForCutscene = false;
+        const clearResponseTimeout = () => {
+            if (responseTimeout !== null) window.clearTimeout(responseTimeout);
+            responseTimeout = null;
         };
-
-        worker.onerror = error => {
-            if (activeSimulationWorker !== worker) {
-                return;
-            }
-
-            console.warn('Simulation worker crashed, falling back to main thread execution.', error);
+        const recoverWorker = error => {
+            if (activeSimulationWorker !== worker || runFinished) return;
+            console.warn('Simulation worker unavailable; continuing on the main thread.', error);
+            cleanupWorker?.();
+            cleanupWorker = null;
             terminateActiveSimulationWorker();
             if (cancelRollRequested) {
                 finalizeSimulation(true, currentRoll);
                 return;
             }
             resetAuraRollState(AURA_REGISTRY);
+            if (radiantRun) Object.assign(radiantRun.state, initialRadiantState);
             currentRoll = 0;
-            startMainThreadSimulation();
+            progressCommit.schedule(0);
+            updateRadiantProgress();
+            guardWork(startMainThreadSimulation)();
         };
-
-        worker.postMessage({
-            type: 'start',
-            total,
-            auraCount: AURA_REGISTRY.length,
-            progressIntervalMs: WORKER_PROGRESS_UPDATE_INTERVAL_MS,
-            sequencePlan,
-            batches: simulationBatches.map(batch => ({
-                total: batch.count,
-                prerollAuraIndices: batch.prerollAuraIndices,
-                prerollAuraRatios: batch.prerollAuraRatios,
-                lucklessAuraIndices: batch.lucklessCandidateConfig.auraIndices,
-                lucklessAuraRatios: batch.lucklessCandidateConfig.ratios,
-                lucklessBreakthroughIndices: batch.lucklessCandidateConfig.breakthroughIndices,
-                luckAffectedAuraIndices: batch.luckAffectedCandidateConfig.auraIndices,
-                luckAffectedAuraRatios: batch.luckAffectedCandidateConfig.ratios,
-                luckAffectedBreakthroughIndices: batch.luckAffectedCandidateConfig.breakthroughIndices
-            }))
+        const armResponseTimeout = () => {
+            clearResponseTimeout();
+            responseTimeout = window.setTimeout(guardWork(() => {
+                if (activeSimulationWorker !== worker) return;
+                if (document.hidden && !shouldScheduleBackgroundWork()) {
+                    armResponseTimeout();
+                    return;
+                }
+                recoverWorker(new Error('The calculation worker stopped responding.'));
+            }), WORKER_RESPONSE_TIMEOUT_MS);
+        };
+        const resumeVisibleWorker = () => {
+            if (!document.hidden && !waitingForCutscene && activeSimulationWorker === worker) armResponseTimeout();
+        };
+        cleanupWorker = () => {
+            clearResponseTimeout();
+            document.removeEventListener('visibilitychange', resumeVisibleWorker);
+            worker.onmessage = null;
+            worker.onerror = null;
+            worker.onmessageerror = null;
+        };
+        document.addEventListener('visibilitychange', resumeVisibleWorker);
+        worker.onmessage = guardWork(async event => {
+            if (activeSimulationWorker !== worker) return;
+            const message = event.data || {};
+            if (message.winCounts) applySimulationWinCounts(message.winCounts);
+            if (radiantRun && message.radiantState) {
+                Object.assign(radiantRun.state, message.radiantState);
+                updateRadiantProgress();
+            }
+            if (message.type === 'radiant-ready' || message.type === 'radiant-reward') {
+                currentRoll = message.currentRoll;
+                waitingForCutscene = true;
+                clearResponseTimeout();
+                if (message.type === 'radiant-ready') await paintRemember();
+                else if (!cancelRollRequested) await playTomorrowCutscene();
+                if (runFinished || activeSimulationWorker !== worker) return;
+                waitingForCutscene = false;
+                armResponseTimeout();
+                try { worker.postMessage({ type: 'resume' }); }
+                catch (error) { recoverWorker(error); }
+                return;
+            }
+            if (message.type === 'progress') {
+                const workerRollCount = Number.isFinite(message.currentRoll) ? message.currentRoll : currentRoll;
+                if (workerRollCount > currentRoll) armResponseTimeout();
+                currentRoll = workerRollCount;
+                if (updateProgress) progressCommit.schedule(total > 0 ? (workerRollCount / total) * 100 : 100);
+                return;
+            }
+            if (message.type === 'complete') {
+                currentRoll = Number.isFinite(message.currentRoll) ? message.currentRoll : total;
+                applySimulationWinCounts(message.winCounts);
+                applySimulationBatchCounts(simulationBatches, message.batchWinCounts, message.batchBreakthroughCounts);
+                if (updateProgress) progressCommit.schedule(100);
+                finalizeSimulation(false, currentRoll);
+                return;
+            }
+            if (message.type === 'cancelled') {
+                currentRoll = Number.isFinite(message.currentRoll) ? message.currentRoll : currentRoll;
+                finalizeSimulation(true, currentRoll);
+                return;
+            }
+            if (message.type === 'error') recoverWorker(message.error || new Error('The calculation worker failed.'));
         });
-
+        worker.onerror = guardWork(error => {
+            error.preventDefault?.();
+            recoverWorker(error);
+        });
+        worker.onmessageerror = guardWork(() => recoverWorker(new Error('The calculation worker returned an unreadable message.')));
+        armResponseTimeout();
+        try {
+            worker.postMessage({
+                type: 'start',
+                total,
+                auraCount: AURA_REGISTRY.length,
+                progressIntervalMs: WORKER_PROGRESS_UPDATE_INTERVAL_MS,
+                sequencePlan,
+                radiant: radiantRun,
+                batches: simulationBatches.map(batch => ({
+                    total: batch.count,
+                    radiantSelections: batch.radiantSelections,
+                    prerollAuraIndices: batch.prerollAuraIndices,
+                    prerollAuraRatios: batch.prerollAuraRatios,
+                    lucklessAuraIndices: batch.lucklessCandidateConfig.auraIndices,
+                    lucklessAuraRatios: batch.lucklessCandidateConfig.ratios,
+                    lucklessBreakthroughIndices: batch.lucklessCandidateConfig.breakthroughIndices,
+                    luckAffectedAuraIndices: batch.luckAffectedCandidateConfig.auraIndices,
+                    luckAffectedAuraRatios: batch.luckAffectedCandidateConfig.ratios,
+                    luckAffectedBreakthroughIndices: batch.luckAffectedCandidateConfig.breakthroughIndices
+                }))
+            });
+        } catch (error) {
+            recoverWorker(error);
+        }
         return true;
+    };
+
+    activeSimulationCancelHandler = () => {
+        if (solsLikeRun) activeSolLikeSimulationController?.cancel();
+        else finalizeSimulation(true, currentRoll);
     };
 
     if (solsLikeRun) {

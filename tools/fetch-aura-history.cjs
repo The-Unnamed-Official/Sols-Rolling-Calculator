@@ -1,9 +1,7 @@
-// Audit every directory aura through the public MediaWiki API.
-// Raw source cache is local; the reviewed history snapshot is build input.
 const fs = require('node:fs');
 const path = require('node:path');
 const root = path.resolve(__dirname, '..');
-const cache = path.join(root, 'test-results/aura-history');
+const cache = path.join(root, '.cache/aura-history');
 fs.mkdirSync(cache, { recursive: true });
 async function api(parameters) {
     const url = 'https://sol-rng.fandom.com/api.php?' + new URLSearchParams({format:'json', formatversion:'2', ...parameters});
@@ -65,8 +63,6 @@ async function fetchGallerySnapshots(pages,media) {
             const preceding=a.images[index];
             const dates=preceding.media.map(item=>media[item.file]?.timestamp).filter(Boolean).sort();
             if(!dates.length) return null;
-            // Step back before the replacement uploads. File-gallery matching below
-            // determines whether that revision actually describes this appearance.
             const cutoff=new Date(Date.parse(dates[0])-2*86400000).toISOString();
             return{page,label:group.label,cutoff};
         }).filter(Boolean);
@@ -134,7 +130,6 @@ async function refresh() {
         const files=[...new Set([...parsed,...snapshots.filter(s=>s.page.revisions).map(s=>article(s.page))].flatMap(p=>p.images.flatMap(g=>g.media.slice(0,4).map(m=>m.file))))].sort();
         const media=await fetchMedia(files);
         const gallerySnapshots=await fetchGallerySnapshots(pages,media);
-        // Additional old filenames may appear only in older article revisions.
         const extras=[...new Set(gallerySnapshots.filter(s=>s.page.revisions).map(s=>article(s.page)).flatMap(p=>p.images.flatMap(g=>g.media.slice(0,4).map(m=>m.file))))].filter(file=>!media[file]);
         Object.assign(media,await fetchMedia(extras));
         fs.writeFileSync(path.join(cache,'media.json'),JSON.stringify(media,null,2));

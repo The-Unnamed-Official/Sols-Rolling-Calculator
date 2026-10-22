@@ -1,13 +1,14 @@
 'use strict';
 
-// Imports use the same release identity as the page and worker script.
 const buildQuery = new URL(self.location.href).search;
 importScripts(`utils.js${buildQuery}`, `simulation-core.js${buildQuery}`);
 let activeRunId = 0;
 let cancelRequested = false;
 let activeContinuation = null;
+let resumeCheckpoint = null;
 
 function closeContinuation() {
+    resumeCheckpoint = null;
     if (!activeContinuation) return;
     activeContinuation.port1.close();
     activeContinuation.port2.close();
@@ -18,6 +19,11 @@ self.onmessage = event => {
     const message = event.data || {};
     if (message.type === 'cancel') {
         cancelRequested = true;
+        resumeCheckpoint?.();
+        return;
+    }
+    if (message.type === 'resume') {
+        resumeCheckpoint?.();
         return;
     }
     if (message.type !== 'start') return;
@@ -37,6 +43,7 @@ self.onmessage = event => {
             count: Number.isFinite(batch.total) && batch.total > 0 ? Math.floor(batch.total) : 0,
             winCounts: new Float64Array(auraCount),
             breakthroughCounts: new Float64Array(auraCount),
+            radiantSelections: batch.radiantSelections || null,
             combinedSelection: buildCombinedSimulationSelection([
                 { selection: buildWeightedSelection(array(batch.prerollAuraRatios)),
                     auraIndices: array(batch.prerollAuraIndices) },
@@ -50,7 +57,7 @@ self.onmessage = event => {
         })).filter(batch => batch.count > 0);
         const winCounts = new Float64Array(auraCount);
         const breakthroughCounts = new Float64Array(auraCount);
-        const runner = createRunner(batches, winCounts, drawEntropy, breakthroughCounts, message.sequencePlan);
+        const runner = createRunner(batches, winCounts, drawEntropy, breakthroughCounts, message.sequencePlan, message.radiant);
         const continuation = new MessageChannel();
         activeContinuation = continuation;
         let lastProgressAt = performance.now();
@@ -59,19 +66,24 @@ self.onmessage = event => {
             try {
                 if (cancelRequested) {
                     closeContinuation();
-                    self.postMessage({ type: 'cancelled', currentRoll: runner.currentRoll });
+                    self.postMessage({ type: 'cancelled', currentRoll: runner.currentRoll, radiantState: message.radiant?.state, winCounts });
                     return;
                 }
-                // Yield by elapsed time instead of blocking on millions of rolls.
                 runner.runSlice(12, () => performance.now());
+                if (runner.checkpoint) {
+                    resumeCheckpoint = () => {
+                        resumeCheckpoint = null;
+                        continuation.port2.postMessage(null);
+                    };
+                    self.postMessage({ type: runner.checkpoint, currentRoll: runner.currentRoll, radiantState: message.radiant.state, winCounts });
+                    return;
+                }
                 const now = performance.now();
                 if (!runner.done) {
                     if (now - lastProgressAt >= progressIntervalMs) {
                         lastProgressAt = now;
-                        self.postMessage({ type: 'progress', currentRoll: runner.currentRoll });
+                        self.postMessage({ type: 'progress', currentRoll: runner.currentRoll, radiantState: message.radiant?.state, winCounts });
                     }
-                    // Message tasks yield to cancellation without the minimum
-                    // delay browsers impose on chains of nested timers.
                     continuation.port2.postMessage(null);
                     return;
                 }
@@ -80,6 +92,7 @@ self.onmessage = event => {
                 closeContinuation();
                 self.postMessage({
                     type: 'complete', currentRoll: runner.currentRoll,
+                    radiantState: message.radiant?.state,
                     winCounts, breakthroughCounts, batchWinCounts, batchBreakthroughCounts
                 }, [winCounts, breakthroughCounts, ...batchWinCounts, ...batchBreakthroughCounts]
                     .map(counts => counts.buffer));

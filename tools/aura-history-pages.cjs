@@ -1,4 +1,3 @@
-// Each profile embeds its own versions; the viewer preloads their image sources.
 const escape=value=>String(value??'').replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[char]);
 const revisionUrl=(version,revision=version.revisionId)=>version.source+(revision?'?oldid='+revision:'');
 let rich={text:escape,description:version=>escape(version.description)};
@@ -47,7 +46,11 @@ function showcasePlayers(version) {
     }).join('')}</section>`;
 }
 function renderHistory(entry,currentContent,profile,reviewedOn,backgroundFor=()=>entry.background||'',musicFor=()=>'') {
-    if(!profile) throw new Error('Missing media profile: '+entry.title);
+    if(!profile && !entry.mediaPending) throw new Error('Missing media profile: '+entry.title);
+    if(!profile) {
+        const tier=entry.tier||'Not recorded';
+        return `<section class="aura-history" data-aura-profile aria-label="Aura profile"><div class="aura-version-panel" data-aura-panel><div class="aura-version-information">${currentContent}<section class="changelog-release-group aura-version-facts" data-aura-details><h2>Aura details</h2><dl><div><dt>Tier</dt><dd>${escape(tier)}</dd></div><div><dt>Availability</dt><dd>Currently obtainable</dd></div></dl><p>Wiki images and further details are still in progress.</p></section></div></div></section>`;
+    }
     const multiple=profile.versions.length>1;
     const tabs=multiple?`<div class="aura-version-selector"><span class="form-field__label" id="aura-versions-label">Version</span><div class="aura-version-tabs" role="tablist" aria-labelledby="aura-versions-label">${profile.versions.map((version,index)=>`<button class="interface-button interface-button--ghost aura-version-tab" role="tab" type="button" id="aura-version-tab-${index}" aria-controls="aura-version-panel-${index}" aria-selected="${index===0}" tabindex="${index===0?'0':'-1'}">${escape(version.label)}</button>`).join('')}</div></div>`:'';
     const panels=profile.versions.map((version,index)=>{

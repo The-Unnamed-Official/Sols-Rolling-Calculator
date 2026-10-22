@@ -7,7 +7,7 @@
     min-width: 0;
     padding: 1rem;
     border: 1px solid rgba(120, 170, 215, .22);
-    border-radius: 12px;
+    border-radius: 0;
     background: rgba(6, 16, 30, .5);
     align-content: start;
 }
@@ -57,7 +57,7 @@
     grid-column: 1 / -1;
     padding: 1rem;
     border: 1px solid rgba(130, 216, 195, .3);
-    border-radius: 12px;
+    border-radius: 0;
     background: rgba(26, 76, 67, .12);
 }
 .equipment-formula strong { color: #bfeedd; font-size: .85rem; line-height: 1.6; }
