@@ -1,8 +1,11 @@
 <div id="qualityPreferencesOverlay" class="modal-overlay" hidden>
         <div class="surface surface--modal filter-modal quality-settings__modal" role="dialog" aria-modal="true" aria-labelledby="qualityPreferencesTitle">
             <div class="filter-modal__header">
-                <h2 class="filter-modal__title" id="qualityPreferencesTitle">Quality Preferences</h2>
-                <p class="filter-modal__hint">Fine tune visual performance settings and effects.</p>
+                <div class="filter-modal__header-row">
+                    <h2 class="filter-modal__title" id="qualityPreferencesTitle">Preferences</h2>
+                    <button type="button" class="interface-button interface-button--ghost filter-modal__reset" id="resetAppCacheButton" aria-describedby="resetAppCacheStatus">Reset Cache</button>
+                </div>
+                <p class="filter-modal__hint" id="resetAppCacheStatus" role="status">Fine tune visual performance settings and effects. Reset Cache reloads app files while keeping your saved preferences and session.</p>
             </div>
             <div class="quality-settings__menu" id="qualityPreferencesMenu" role="menu">
                 <button class="interface-button quality-settings__item" type="button" role="menuitemcheckbox" aria-checked="false" data-quality-option="removeParticles">

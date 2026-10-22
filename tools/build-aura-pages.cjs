@@ -246,7 +246,7 @@ write('auras/index.html', `${head('Aura directory', 'Browse every Sol’s RNG au
         <ol class="resource-board aura-list" id="aura-list">${entries.map(row).join('\n')}</ol>
         ${pagination()}
         <p class="directory-empty" id="aura-empty" hidden>No auras found. Try another name, biome, or event.</p>
-        <p class="directory-note">Rarity sorting follows the wiki’s tier groups, then odds within each group. Challenged auras stay together even when their effect or biome odds are small. Odds shown are base rarity, or native odds for biome exclusive auras. Crafted, event, and other special auras are included for reference. Change auras per page in Settings → Quality Preferences.</p>
+        <p class="directory-note">Rarity sorting follows the wiki’s tier groups, then odds within each group. Challenged auras stay together even when their effect or biome odds are small. Odds shown are base rarity, or native odds for biome exclusive auras. Crafted, event, and other special auras are included for reference. Change auras per page in Settings → Preferences.</p>
     </section>
 </main>
 <footer data-aura-fragment="footer"><a href="../data/auras/README.md">Attribution</a></footer>

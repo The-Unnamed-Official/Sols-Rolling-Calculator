@@ -6661,7 +6661,7 @@ function hasCutsceneMediaSource(videoId) {
 function getAuraCutsceneFadeDuration(videoId) {
     if (videoId === 'tomorrow-cutscene') return 2000;
     if (videoId === 'breakthrough-cutscene') return 5000;
-    return (CUTSCENE_AURA_LOOKUP.get(videoId)?.chance || 0) >= 1000000000 ? 1000 : 0;
+    return 1000;
 }
 
 function startPreparedCutscenePlayback(video) {
@@ -6817,10 +6817,13 @@ function playAuraVideo(videoId, options = {}) {
         overlay.classList.toggle('cinematic-overlay--fading', fadeDuration > 0);
         overlay.dataset.fadeDuration = String(fadeDuration);
         overlay.classList.add('cinematic-overlay--loading');
-        overlay.style.display = 'flex';
-        const fullscreenAttempt = enterCutsceneFullscreen(video);
-        overlay.setAttribute('aria-hidden', 'false');
+        // The overlay must already be transparent when it first becomes visible.
+        // Media loading and fullscreen changes must never paint an opaque frame
+        // before the fade starts.
+        overlay.style.opacity = '0';
         video.style.display = 'none';
+        overlay.style.display = 'flex';
+        overlay.setAttribute('aria-hidden', 'false');
         controls.style.display = 'flex';
         skipButton.style.display = 'block';
         skipAllButton.style.display = 'block';
@@ -6943,7 +6946,9 @@ function playAuraVideo(videoId, options = {}) {
             cleanedUp = true;
             const promptHadFocus = fullscreenPrompt?.contains(document.activeElement);
             cancelFullscreenPrompt();
+            overlay.style.display = 'none';
             fadeAnimation?.cancel();
+            overlay.style.opacity = '0';
             if (watchdogIntervalId !== null) {
                 window.clearInterval(watchdogIntervalId);
                 watchdogIntervalId = null;
@@ -6952,7 +6957,6 @@ function playAuraVideo(videoId, options = {}) {
             appState.videoPlaying = false;
             safelyResetVideo();
             video.style.display = 'none';
-            overlay.style.display = 'none';
             overlay.setAttribute('aria-hidden', 'true');
             overlay.classList.remove('cinematic-overlay--loading');
             overlay.classList.remove('cinematic-overlay--first-person');
@@ -7108,21 +7112,26 @@ function playAuraVideo(videoId, options = {}) {
 
         void (async () => {
             try {
-                const [, fullscreenEntered] = await Promise.all([prepareCutsceneVideo(video), fullscreenAttempt]);
+                fadeAnimation = overlay.animate([{ opacity: 0 }, { opacity: 1 }], {
+                    duration: fadeDuration, easing: 'ease-in-out', fill: 'forwards'
+                });
+                const fade = fadeAnimation.finished.then(() => {
+                    if (cleanedUp) return;
+                    // Keep the blackout in place while a slow video finishes
+                    // loading, or while the browser switches into fullscreen.
+                    overlay.style.opacity = '1';
+                    fadeAnimation.cancel();
+                    fadeAnimation = null;
+                    overlay.classList.remove('cinematic-overlay--fading');
+                });
+                await Promise.all([prepareCutsceneVideo(video), fade]);
+                if (cleanedUp) return;
+                const fullscreenEntered = await enterCutsceneFullscreen(video);
                 if (cleanedUp) return;
                 if (rollingSettingsPreference.fullscreenCutscenes && !fullscreenEntered && !getFullscreenElement() && !cutsceneFullscreenDismissed) {
                     await awaitFullscreenGesture();
                     if (cleanedUp) return;
                 }
-                const fade = fadeDuration > 0 ? (() => {
-                    fadeAnimation = overlay.animate([{ opacity: 0 }, { opacity: 1 }], {
-                        duration: fadeDuration, easing: 'ease-in-out', fill: 'forwards'
-                    });
-                    return fadeAnimation.finished;
-                })() : Promise.resolve();
-                await fade;
-                if (cleanedUp) return;
-                overlay.classList.remove('cinematic-overlay--fading');
                 safelyResetVideo();
                 video.style.display = 'block';
                 await startPreparedCutscenePlayback(video);
@@ -10162,7 +10171,7 @@ function setupChangelogTabs() {
                 const versionElement = card.querySelector('.changelog-subupdate-card__version');
                 const versionLabel = versionElement ? versionElement.textContent.trim() : 'Sub-update';
                 const detailNodes = Array.from(card.querySelectorAll(
-                    '.changelog-subupdate-card__title, .changelog-subupdate-card__meta, .changelog-modal__intro, .changelog-modal__list--sub'
+                    '.changelog-subupdate-card__title, .changelog-subupdate-card__meta, .changelog-modal__intro, .changelog-modal__list--sub, :scope > p'
                 ));
                 card.dataset.subupdateInitialized = 'true';
                 card.dataset.subupdateLabel = versionLabel;
@@ -10191,7 +10200,7 @@ function setupChangelogTabs() {
                         const otherLabel = otherCard.dataset.subupdateLabel || 'Sub-update';
                         otherCard.setAttribute('aria-label', `Open ${otherLabel} sub-update`);
                         otherCard.querySelectorAll(
-                            '.changelog-subupdate-card__title, .changelog-subupdate-card__meta, .changelog-modal__intro, .changelog-modal__list--sub'
+                            '.changelog-subupdate-card__title, .changelog-subupdate-card__meta, .changelog-modal__intro, .changelog-modal__list--sub, :scope > p'
                         ).forEach(node => {
                             node.setAttribute('aria-hidden', 'true');
                         });
@@ -12624,8 +12633,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (luckField) {
         luckField.addEventListener('input', () => {
             if (isRememberRoll()) { recomputeLuckValue(); return; }
-            const raw = luckField.dataset.rawValue ?? '';
-            const parsed = raw ? Number.parseFloat(raw) : NaN;
+            const parsed = getNumericInputValue(luckField, { min: 0 });
             const normalized = Number.isFinite(parsed) && parsed > 0 ? Math.max(0, parsed) : 0;
             baseLuck = normalized;
             singleSpecialLuck = 0;
@@ -14450,8 +14458,10 @@ function prepareEquipmentSimulation(definitions, selectionState, eventContext, m
     return { batches, sequencePlan, rewardBatchIndex };
 }
 
-function runRollSimulation(options = {}) {
+async function runRollSimulation(options = {}) {
     try {
+        // Finish the build check before starting a run from a restored/cached page.
+        await window.appBuildMetadataPromise;
         startRollSimulation(options);
     } catch (error) {
         if (activeSimulationFailureHandler) activeSimulationFailureHandler(error);
