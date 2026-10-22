@@ -68,7 +68,11 @@
         return randomToolkit.decimal(min, max);
     }
 
-    const decimalFormatter = new Intl.NumberFormat('en-US');
+    const decimalFormatter = new Intl.NumberFormat('en-US', { maximumFractionDigits: 2 });
+    const numericInputFormatter = new Intl.NumberFormat('en-US', {
+        useGrouping: false,
+        maximumFractionDigits: 2
+    });
     const formatWithCommas = value => decimalFormatter.format(value);
 
     function sanitizeNumericInput(value) {
@@ -96,15 +100,8 @@
         if (!rawValue) {
             return '';
         }
-        const trimmed = rawValue.endsWith('.') ? rawValue.slice(0, -1) : rawValue;
-        if (!trimmed) {
-            return '';
-        }
-        const [integerPart = '0', fractionPart = ''] = trimmed.split('.');
-        const parsedInteger = Number.parseInt(integerPart, 10);
-        const safeInteger = Number.isFinite(parsedInteger) ? parsedInteger : 0;
-        const formattedInteger = formatWithCommas(safeInteger);
-        return fractionPart ? `${formattedInteger}.${fractionPart}` : formattedInteger;
+        const numeric = Number.parseFloat(rawValue);
+        return Number.isFinite(numeric) ? formatWithCommas(numeric) : '';
     }
 
     function humanizeIdentifier(value) {
@@ -168,9 +165,9 @@
         if (Number.isFinite(max)) {
             value = Math.min(max, value);
         }
-        const raw = sanitizeNumericInput(value.toString());
-        input.dataset.rawValue = raw;
-        input.value = format ? formatSanitizedNumericString(raw) : raw;
+        // Keep the original precision for calculations; round only the text.
+        input.dataset.rawValue = String(value);
+        input.value = format ? formatWithCommas(value) : numericInputFormatter.format(value);
     }
 
     function getNumericInputValue(input, { min = null, max = null } = {}) {
@@ -199,19 +196,32 @@
             return;
         }
 
-        const sanitizeToDataset = () => {
-            const sanitized = sanitizeNumericInput(input.value);
+        let lastEditValue = '';
+        let lastDisplayedValue = '';
+        const sanitizeToDataset = (event = {}) => {
+            let sanitized = sanitizeNumericInput(input.value);
+            // Keep appended digits in the full edit even after its displayed
+            // fraction has rounded, e.g. typing 12.13581 must stay 12.14.
+            if (event.inputType === 'insertText' && /^[0-9]+$/.test(event.data || '')
+                && input.value === lastDisplayedValue + event.data
+                && (lastEditValue.split('.')[1]?.length || 0) > 2) {
+                sanitized = lastEditValue + event.data;
+            }
             input.dataset.rawValue = sanitized;
-            input.value = sanitized;
+            const numeric = Number.parseFloat(sanitized);
+            input.value = (sanitized.split('.')[1]?.length || 0) > 2 && Number.isFinite(numeric)
+                ? numericInputFormatter.format(numeric) : sanitized;
+            lastEditValue = sanitized;
+            lastDisplayedValue = input.value;
         };
 
-        input.addEventListener('input', () => {
-            sanitizeToDataset();
-        });
+        input.addEventListener('input', sanitizeToDataset);
 
         input.addEventListener('focus', () => {
             const raw = input.dataset.rawValue ?? '';
-            input.value = raw;
+            const numeric = raw ? Number.parseFloat(raw) : NaN;
+            input.value = Number.isFinite(numeric) ? numericInputFormatter.format(numeric) : '';
+            lastEditValue = lastDisplayedValue = input.value;
         });
 
         input.addEventListener('blur', () => {

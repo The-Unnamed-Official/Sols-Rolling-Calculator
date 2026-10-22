@@ -960,7 +960,8 @@
 }
 
 #audioSettingsButton,
-#rollingSettingsButton {
+#rollingSettingsButton,
+#qualityPreferencesToggle {
     text-align: center;
 }
 

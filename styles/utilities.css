@@ -2956,6 +2956,10 @@ body.quality-no-ui-animations .audio-slider__input::-moz-range-thumb {
     transition: max-height 0.28s ease, opacity 0.22s ease, transform 0.28s ease;
 }
 
+.changelog-subupdate-card:not(.changelog-subupdate-card--open) > p {
+    display: none;
+}
+
 .changelog-subupdate-card > .changelog-modal__intro,
 .changelog-subupdate-card .changelog-modal__list--sub {
     margin-top: 0;
@@ -3715,6 +3719,16 @@ body.quality-no-ui-animations .audio-slider__input::-moz-range-thumb {
 
 .quality-settings__modal {
     width: min(760px, calc(100vw - (var(--modal-padding) * 2)));
+}
+
+.quality-settings__modal .filter-modal__header-row {
+    flex-direction: row;
+    align-items: center;
+}
+
+.quality-settings__modal #resetAppCacheButton {
+    width: auto;
+    flex-shrink: 0;
 }
 
 .rolling-settings__modal {

@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sol's RNG Rolling Simulator</title> <!-- 2.210 -->
+    <title>Sol's RNG Rolling Simulator</title> <!-- 2.211 -->
+    <meta name="app-build" content="2.211.preferences1">
     <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@7.1.0/css/all.min.css" crossorigin="anonymous">
     <script src="https://kit.fontawesome.com/0b0c748c56.js" crossorigin="anonymous"></script>
@@ -34,7 +35,7 @@
             const documentModifiedAt = Number.isFinite(parsedDocumentModifiedAt)
                 ? parsedDocumentModifiedAt
                 : Date.now();
-            const buildCacheKey = '2.210';
+            const buildCacheKey = '2.211.preferences1';
 
             window.appBuildCacheKey = buildCacheKey;
             window.getVersionedAppAssetUrl = path => {
@@ -66,36 +67,6 @@
                 return new Promise(() => {});
             };
 
-            const removeLegacyApplicationCaches = async () => {
-                const migrationKey = 'solsRollingCalculator:cacheMigration:2.1.0';
-                try {
-                    if (localStorage.getItem(migrationKey) === 'done') return;
-                } catch (_) {}
-                const cleanupTasks = [];
-                const appScope = new URL('./', document.baseURI).href;
-                let removedControllingWorker = false;
-
-                if ('serviceWorker' in navigator) {
-                    cleanupTasks.push(
-                        navigator.serviceWorker.getRegistrations().then(registrations => Promise.all(
-                            registrations.filter(registration => registration.scope === appScope)
-                                .map(async registration => {
-                                    const controlled = registration.active?.scriptURL === navigator.serviceWorker.controller?.scriptURL;
-                                    const removed = await registration.unregister();
-                                    if (controlled && removed) removedControllingWorker = true;
-                                })
-                        ))
-                    );
-                }
-
-                await Promise.allSettled(cleanupTasks);
-                try { localStorage.setItem(migrationKey, 'done'); } catch (_) {}
-
-                if (removedControllingWorker && isHostedPage) {
-                    return navigateToFreshBuild(Date.now());
-                }
-            };
-
             let buildMetadataRequest = null;
             const requestLatestBuildMetadata = () => {
                 if (buildMetadataRequest) {
@@ -113,16 +84,24 @@
                     const metadataUrl = new URL(window.location.href);
                     metadataUrl.hash = '';
                     metadataUrl.searchParams.delete(BUILD_QUERY_PARAMETER);
-                    metadataUrl.searchParams.set(
-                        CACHE_CHECK_QUERY_PARAMETER,
-                        `${Date.now()}-${Math.random().toString(36).slice(2)}`
-                    );
+                    metadataUrl.searchParams.set(CACHE_CHECK_QUERY_PARAMETER, '1');
 
-                    const response = await fetch(metadataUrl.href, {
-                        method: 'HEAD',
-                        cache: 'no-store',
-                        credentials: 'same-origin'
-                    });
+                    // Revalidate the HTML without clearing stored assets or preferences.
+                    // Build IDs work even when a host omits or reuses Last-Modified.
+                    const controller = new AbortController();
+                    const timeout = window.setTimeout(() => controller.abort(), 5000);
+                    let response;
+                    let latestHtml;
+                    try {
+                        response = await fetch(metadataUrl.href, {
+                            cache: 'no-cache',
+                            credentials: 'same-origin',
+                            signal: controller.signal
+                        });
+                        if (response.ok) latestHtml = await response.text();
+                    } finally {
+                        window.clearTimeout(timeout);
+                    }
                     if (!response.ok) {
                         throw new Error(`Build metadata request failed with status ${response.status}.`);
                     }
@@ -133,8 +112,13 @@
                         ? parsedPublishedAt
                         : documentModifiedAt;
 
-                    if (publishedAt > documentModifiedAt) {
-                        return navigateToFreshBuild(Math.trunc(publishedAt));
+                    const latestBuild = latestHtml.match(/<meta\s+name="app-build"\s+content="([\w.-]+)"/i)?.[1]
+                        || latestHtml.match(/const buildCacheKey = '([\w.-]+)'/)?.[1];
+                    if (latestBuild && latestBuild !== buildCacheKey) {
+                        if (new URL(window.location.href).searchParams.get(BUILD_QUERY_PARAMETER) === latestBuild) {
+                            throw new Error('The host returned an outdated page. Use Preferences → Reset Cache to reload app files.');
+                        }
+                        return navigateToFreshBuild(latestBuild);
                     }
 
                     cleanBuildQueryParameter();
@@ -158,8 +142,7 @@
                 return buildMetadataRequest;
             };
 
-            window.appBuildMetadataPromise = removeLegacyApplicationCaches()
-                .then(requestLatestBuildMetadata);
+            window.appBuildMetadataPromise = requestLatestBuildMetadata();
             window.addEventListener('pageshow', event => {
                 if (event.persisted) {
                     window.appBuildMetadataPromise = requestLatestBuildMetadata();
@@ -167,38 +150,39 @@
             });
         })();
     </script>
-    <link rel="stylesheet" href="styles/base.css?v=2.210.background2">
-    <link rel="stylesheet" href="styles/layout.css?v=2.210">
-    <link rel="stylesheet" href="styles/components.css?v=2.210.cutscene3">
-    <link rel="stylesheet" href="styles/utilities.css?v=2.210.cutscene4">
-    <link rel="stylesheet" href="styles/wiki-title-fonts.css?v=2.210">
-    <link rel="stylesheet" href="styles/wiki-title-effects.css?v=2.210">
-    <link rel="stylesheet" href="styles/wiki-title-repairs.css?v=2.210">
-    <link rel="stylesheet" href="styles/wiki-titles.css?v=2.210">
-    <link rel="stylesheet" href="styles/equipment.css?v=2.210">
-    <link rel="stylesheet" href="styles/help-footer.css?v=2.210">
-    <link rel="stylesheet" href="styles/aura-video-player.css?v=2.210.controls3">
-    <script src="scripts/utils.js?v=2.210" defer></script>
-    <script src="scripts/runtime.js?v=2.210" defer></script>
-    <script src="scripts/gear-luck.js?v=2.210" defer></script>
-    <script src="scripts/equipment-presentation.js?v=2.210" defer></script>
-    <script src="scripts/event-data.js?v=2.210" defer></script>
-    <script src="scripts/simulation-core.js?v=2.210" defer></script>
-    <script src="scripts/state.js?v=2.210.cutscene3" defer></script>
-    <script src="scripts/media-loader.js?v=2.210" defer></script>
-    <script src="scripts/overlays.js?v=2.210" defer></script>
-    <script src="scripts/wiki-title-data.js?v=2.210" defer></script>
-    <script src="scripts/wiki-title-repairs.js?v=2.210" defer></script>
-    <script src="scripts/wiki-titles.js?v=2.210" defer></script>
-    <script src="scripts/aura-routes.js?v=2.210" defer></script>
-    <script src="scripts/aura-links.js?v=2.210" defer></script>
-    <script src="scripts/interface-select.js?v=2.210" defer></script>
-    <script src="scripts/aura-title-layout.js?v=2.210.fullscreen1" defer></script>
-    <script src="scripts/biome-background.js?v=2.210.background2" defer></script>
-    <script src="scripts/main.js?v=2.210.cutscene4" defer></script>
-    <script src="scripts/session-return.js?v=2.210.session1" defer></script>
-    <script src="scripts/aura-video-player.js?v=2.210.cutscene3" defer></script>
-    <script src="scripts/aura-directory-preferences.js?v=2.210.pages4" defer></script>
+    <link rel="stylesheet" href="styles/base.css?v=2.211.background2">
+    <link rel="stylesheet" href="styles/layout.css?v=2.211.preferences1">
+    <link rel="stylesheet" href="styles/components.css?v=2.211.transitions1">
+    <link rel="stylesheet" href="styles/utilities.css?v=2.211.changelog1">
+    <link rel="stylesheet" href="styles/wiki-title-fonts.css?v=2.211">
+    <link rel="stylesheet" href="styles/wiki-title-effects.css?v=2.211">
+    <link rel="stylesheet" href="styles/wiki-title-repairs.css?v=2.211">
+    <link rel="stylesheet" href="styles/wiki-titles.css?v=2.211">
+    <link rel="stylesheet" href="styles/equipment.css?v=2.211">
+    <link rel="stylesheet" href="styles/help-footer.css?v=2.211">
+    <link rel="stylesheet" href="styles/aura-video-player.css?v=2.211.controls3">
+    <script src="scripts/utils.js?v=2.211.transitions1" defer></script>
+    <script src="scripts/runtime.js?v=2.211" defer></script>
+    <script src="scripts/app-cache.js?v=2.211" defer></script>
+    <script src="scripts/gear-luck.js?v=2.211" defer></script>
+    <script src="scripts/equipment-presentation.js?v=2.211" defer></script>
+    <script src="scripts/event-data.js?v=2.211" defer></script>
+    <script src="scripts/simulation-core.js?v=2.211" defer></script>
+    <script src="scripts/state.js?v=2.211.cutscene3" defer></script>
+    <script src="scripts/media-loader.js?v=2.211" defer></script>
+    <script src="scripts/overlays.js?v=2.211" defer></script>
+    <script src="scripts/wiki-title-data.js?v=2.211" defer></script>
+    <script src="scripts/wiki-title-repairs.js?v=2.211" defer></script>
+    <script src="scripts/wiki-titles.js?v=2.211" defer></script>
+    <script src="scripts/aura-routes.js?v=2.211" defer></script>
+    <script src="scripts/aura-links.js?v=2.211" defer></script>
+    <script src="scripts/interface-select.js?v=2.211" defer></script>
+    <script src="scripts/aura-title-layout.js?v=2.211.fullscreen1" defer></script>
+    <script src="scripts/biome-background.js?v=2.211.background2" defer></script>
+    <script src="scripts/main.js?v=2.211.changelog1" defer></script>
+    <script src="scripts/session-return.js?v=2.211.session1" defer></script>
+    <script src="scripts/aura-video-player.js?v=2.211.cutscene3" defer></script>
+    <script src="scripts/aura-directory-preferences.js?v=2.211.pages4" defer></script>
 </head>
 <body>
     <div class="interface-backdrop" aria-hidden="true">
@@ -448,9 +432,9 @@
                         <h1 class="banner__title">Sol's RNG Rolling Simulator</h1>
                     </div>
                     <div class="banner__subtitle masthead-console__metadata">
-                        <button type="button" class="banner__version-button masthead-console__meta-card masthead-console__meta-card--version masthead-console__version" id="versionInfoButton" aria-haspopup="dialog" aria-expanded="false" data-version-id="v2.210">
+                        <button type="button" class="banner__version-button masthead-console__meta-card masthead-console__meta-card--version masthead-console__version" id="versionInfoButton" aria-haspopup="dialog" aria-expanded="false" data-version-id="v2.211">
                             <i class="fa-solid fa-code-branch" aria-hidden="true"></i>
-                            <span><small>Current build</small><strong>Version 2.210</strong></span>
+                            <span><small>Current build</small><strong>Version 2.211</strong></span>
                         </button>
                         <span class="masthead-console__meta-card banner__subtitle-author">
                             <span class="masthead-console__creator-avatar-flip" aria-hidden="true">
@@ -494,15 +478,17 @@
                     <div class="options-menu__surface" id="optionsMenuPanel" aria-labelledby="optionsMenuToggle">
                         <button class="interface-toggle options-menu__item" id="audioSettingsButton" type="button">Audio</button>
                         <button class="interface-toggle options-menu__item" id="rollingSettingsButton" type="button">Rolling Settings</button>
-                        <button class="interface-toggle options-menu__item" id="qualityPreferencesToggle" type="button">Quality Preferences</button>
+                        <button class="interface-toggle options-menu__item" id="qualityPreferencesToggle" type="button">Preferences</button>
                         <button class="interface-toggle options-menu__item" id="backgroundRollingButton" type="button" aria-pressed="false">Allow background rolling: Off</button>
                         <button class="interface-toggle options-menu__item" id="trueChanceDisplayButton" type="button" aria-pressed="false">True chance display: Off</button>
                         <button class="interface-toggle options-menu__item" id="stickyRollButtonToggle" type="button" aria-pressed="true" title="Keep the roll controls visible while scrolling">Sticky roll button: On</button>
                     </div>
                 </div>
+
             </div>
             <span class="masthead-console__status"><i class="fa-solid fa-signal" aria-hidden="true"></i> Systems online</span>
         </header>
+
 
 
 
@@ -1603,7 +1589,7 @@
                         <h3>Audio, quality, and advanced settings</h3>
                         <ul>
                             <li>Mute controls all sound. Audio Settings separately adjust music, cutscenes, obtain sounds, and UI sounds.</li>
-                            <li>Quality Preferences can remove particles, UI animations, shake effects, roll/sigil animation, or reduce/remove glitch effects.</li>
+                            <li>Preferences can remove particles, UI animations, shake effects, roll/sigil animation, or reduce/remove glitch effects.</li>
                             <li>Allow Background Rolling keeps active simulations processing when the tab is not focused, which may use more CPU or battery.</li>
                             <li>True Chance Display adds eligible real-chance context and the luck used on every roll without modifying results.</li>
                             <li>Turn <strong>Sticky roll button</strong> off to keep the roll controls in the Simulation Console while you scroll. This preference is remembered between visits.</li>
@@ -2034,8 +2020,11 @@
     <div id="qualityPreferencesOverlay" class="modal-overlay" hidden>
         <div class="surface surface--modal filter-modal quality-settings__modal" role="dialog" aria-modal="true" aria-labelledby="qualityPreferencesTitle">
             <div class="filter-modal__header">
-                <h2 class="filter-modal__title" id="qualityPreferencesTitle">Quality Preferences</h2>
-                <p class="filter-modal__hint">Fine tune visual performance settings and effects.</p>
+                <div class="filter-modal__header-row">
+                    <h2 class="filter-modal__title" id="qualityPreferencesTitle">Preferences</h2>
+                    <button type="button" class="interface-button interface-button--ghost filter-modal__reset" id="resetAppCacheButton" aria-describedby="resetAppCacheStatus">Reset Cache</button>
+                </div>
+                <p class="filter-modal__hint" id="resetAppCacheStatus" role="status">Fine tune visual performance settings and effects. Reset Cache reloads app files while keeping your saved preferences and session.</p>
             </div>
             <div class="quality-settings__menu" id="qualityPreferencesMenu" role="menu">
                 <button class="interface-button quality-settings__item" type="button" role="menuitemcheckbox" aria-checked="false" data-quality-option="removeParticles">
@@ -2084,6 +2073,7 @@
             </div>
         </div>
     </div>
+
     <div id="rollingSettingsOverlay" class="modal-overlay" hidden>
         <div class="surface surface--modal filter-modal rolling-settings__modal" role="dialog" aria-modal="true" aria-labelledby="rollingSettingsTitle">
             <div class="filter-modal__header">
@@ -2320,6 +2310,27 @@
                             <ul class="changelog-release-group__list"><li>Fixed rolling freezes, moon tracking, and feed auto-scroll.</li><p class="credits-text">Thanks, <a href="https://discord.com/users/1093918845544190132" class="subtitleClass" target="_blank" rel="noopener">jhtfe</a>, for reporting the rolling freeze.</p><li>Fixed <span class="changelog-aura-sigil" data-changelog-aura-sigil="Dream Catcher">Dreamcatcher</span>’s label.</li><li>Manually added <span class="changelog-aura-sigil" data-changelog-aura-sigil="Hasuen">Hasuen</span>’s title and remembered aura directory filters.</li><li><span class="changelog-aura-sigil" data-changelog-aura-sigil="Zeus">Zeus</span> now has native odds in <span class="sigil-outline-heaven">Heaven</span>.</li></ul>
                         </li>
                     </ul>
+                    <section class="changelog-subupdates" aria-labelledby="changelog-subupdates-v2210">
+                        <div class="changelog-subupdates__header">
+                            <h3 class="changelog-subupdates__title" id="changelog-subupdates-v2210" data-changelog-subupdates-title></h3>
+                        </div>
+                        <div class="changelog-subupdates__grid">
+                            <article class="changelog-subupdate-card">
+                                <header class="changelog-subupdate-card__header">
+                                    <span class="changelog-subupdate-card__version">v2.211</span>
+                                    <span class="changelog-subupdate-card__title changelog-tab__subtitle">Decimal rounding &amp; reliable refreshes</span>
+                                    <p class="changelog-subupdate-card__meta">Updated 2026/10/22</p>
+                                </header>
+                                <ul class="changelog-modal__list changelog-modal__list--sub">
+                                    <li>Numeric inputs and calculated luck totals display at most two decimal places. For example, 12.13581 displays as 12.14 while calculations keep their full precision.</li>
+                                    <li>Cutscenes now fade smoothly from the paused roll into black while the video loads, then start playback without a sudden black flash before the fade.</li>
+                                    <li>Normal refreshes check the published build before rolling and load updated app files without automatically clearing the cache or saved settings.</li>
+                                    <li>Renamed Quality Preferences to Preferences and added Reset Cache at the top right. Use it to reload app files while keeping your preferences and recent session.</li>
+                                </ul>
+                                <p class="credits-text">Thanks to <a href="https://discord.com/users/1327300393226604630" class="subtitleClass" target="_blank" rel="noopener">lvmi.01</a> for reporting the “Rolling could not finish” issue.</p>
+                            </article>
+                        </div>
+                    </section>
                 </section>
                 <section id="changelog-panel-v2205" class="changelog-modal__panel" data-changelog-panel="v2.205" data-changelog-label="v2.205" role="tabpanel" tabindex="0" hidden>
                     <header class="changelog-modal__header">
@@ -4272,12 +4283,12 @@
                 <small>True Auras do not count as moons. Progress and buffs end when you leave this biome.</small>
             </div>
             <div data-biome-buff-details="jade" hidden>
-                <strong>True Jade · 1 in 125,000</strong>
+                <strong>True Jade · 1 in 10,250,000</strong>
                 <p>Obtainment unlocked by rolling Jade and Jade : Purity during this biome.</p>
                 <small>Active until the biome ends. True Jade does not count as a Radiant Moon.</small>
             </div>
             <div data-biome-buff-details="kyawthuite" hidden>
-                <strong>True Kyawthuite · 1 in 850,000</strong>
+                <strong>True Kyawthuite · 1 in 825,000</strong>
                 <p>Obtainment unlocked by rolling Kyawthuite and Kyawthuite : Remembrance during this biome.</p>
                 <small>Active until the biome ends. True Kyawthuite does not count as a Radiant Moon.</small>
             </div>
