@@ -4260,6 +4260,22 @@ body.quality-no-ui-animations .control-section--cta--floating {
     font-size: 0.75rem;
 }
 
+.roll-feed-error {
+    margin-top: 1rem;
+    font-size: 0.75em;
+    user-select: text;
+}
+
+.roll-feed-error summary {
+    cursor: pointer;
+}
+
+.roll-feed-error pre {
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    font: inherit;
+}
+
 .live-roll-feed__entry {
     display: block;
     padding-block: 2px;
