@@ -2963,7 +2963,12 @@ function getAudioContextHandle() {
     if (!appState.audio.context) {
         const AudioContextClass = window.AudioContext || window.webkitAudioContext;
         if (!AudioContextClass) return null;
-        appState.audio.context = new AudioContextClass();
+        try {
+            appState.audio.context = new AudioContextClass();
+        } catch (error) {
+            console.warn('Web Audio unavailable; using media playback instead.', error);
+            return null;
+        }
     }
     return appState.audio.context;
 }
@@ -3138,6 +3143,15 @@ function isSoundChannelActive(category) {
 function playSoundEffect(audioElement, category = audioElement?.dataset.audioChannel || 'effects') {
     if (!audioElement) return;
 
+    // Sound is optional: a device/media error must not abort the calculation.
+    try {
+        startSoundEffectPlayback(audioElement, category);
+    } catch (error) {
+        console.warn('Unable to play sound effect.', error);
+    }
+}
+
+function startSoundEffectPlayback(audioElement, category) {
     const resolvePlaybackGain = () => {
         if (!isSoundChannelActive(category)) return 0;
         const baseGain = resolveBaseGain(audioElement, category === 'ui' ? 0.3 : 1);
@@ -3266,7 +3280,7 @@ function playSoundEffect(audioElement, category = audioElement?.dataset.audioCha
             gainNode.disconnect();
         };
         source.start(0);
-    });
+    }).catch(error => console.warn('Unable to play sound effect.', error));
 }
 
 function computeBackgroundMusicBase(bgMusic) {
@@ -14196,6 +14210,39 @@ const SIMULATION_WORKER_PATH = typeof window.getVersionedAppAssetUrl === 'functi
 const WORKER_PROGRESS_UPDATE_INTERVAL_MS = 100;
 const WORKER_RESPONSE_TIMEOUT_MS = 10000;
 
+function createSimulationProgressCommit(commit) {
+    if (typeof AppRuntime !== 'undefined' && typeof AppRuntime.createFrameCommit === 'function') {
+        return AppRuntime.createFrameCommit(commit);
+    }
+
+    // A failed optional runtime download must not prevent rolling.
+    let disposed = false;
+    return {
+        schedule(value) { if (!disposed) commit(value); },
+        dispose() { disposed = true; }
+    };
+}
+
+function renderSimulationFailure(error, { stage = 'starting', rolls, method } = {}) {
+    if (!feedContainer) return;
+    feedContainer.textContent = 'Rolling could not finish. Please try Start Rolling again.';
+    const details = document.createElement('details');
+    details.className = 'roll-feed-error';
+    const summary = document.createElement('summary');
+    summary.textContent = 'Error details';
+    const info = document.createElement('pre');
+    info.textContent = [
+        `Build: ${window.appBuildCacheKey || 'unknown'}`,
+        `Stage: ${stage}`,
+        `Error: ${error?.name || 'Error'}: ${error?.message || String(error)}`,
+        `Rolls: ${rolls ?? 'unknown'}`,
+        `Method: ${method || 'unknown'}`,
+        `Browser: ${navigator.userAgent || 'unknown'}`
+    ].join('\n');
+    details.append(summary, info);
+    feedContainer.appendChild(details);
+}
+
 function terminateActiveSimulationWorker() {
     if (!activeSimulationWorker) {
         return;
@@ -14467,7 +14514,7 @@ async function runRollSimulation(options = {}) {
         if (activeSimulationFailureHandler) activeSimulationFailureHandler(error);
         else {
             console.warn('Unable to start rolling.', error);
-            if (feedContainer) feedContainer.textContent = 'Rolling could not start. Please try Start Rolling again.';
+            renderSimulationFailure(error);
         }
     }
 }
@@ -14571,6 +14618,7 @@ function startRollSimulation(options = {}) {
     });
     const runId = ++simulationRunId;
     let runFinished = false;
+    let runStage = 'preparing';
     let progressCommit = null;
     let cleanupLiveFeedFollowControl = null;
     let cleanupWorker = null;
@@ -14617,7 +14665,7 @@ function startRollSimulation(options = {}) {
         lastSimulationSummary = null;
         clearHarvesterCurseLayer();
         clearFlushedTrollSignatureLayer();
-        feedContainer.textContent = 'Rolling could not finish. Please try Start Rolling again.';
+        renderSimulationFailure(error, { stage: runStage, rolls: total, method: solsLikeRun ? "Sol's-Like" : 'Unnamed' });
     };
     const guardWork = callback => (...args) => {
         if (runFinished) return;
@@ -14768,7 +14816,7 @@ function startRollSimulation(options = {}) {
 
     const sampleEntropy = (typeof drawEntropy === 'function') ? drawEntropy : Math.random;
 
-    progressCommit = AppRuntime.createFrameCommit(progress => updateProgress?.(progress));
+    progressCommit = createSimulationProgressCommit(progress => updateProgress?.(progress));
     const finalizeSimulation = (cancelled, completedRolls = total) => {
         if (runFinished) return;
         updateRadiantProgress();
@@ -14789,6 +14837,7 @@ function startRollSimulation(options = {}) {
             return;
         }
 
+        runStage = 'building results';
         const endTime = performance.now();
         const executionTime = ((endTime - startTime) / 1000).toFixed(0);
 
@@ -15468,6 +15517,7 @@ function startRollSimulation(options = {}) {
         else finalizeSimulation(true, currentRoll);
     };
 
+    runStage = solsLikeRun ? 'streaming rolls' : 'calculating rolls';
     if (solsLikeRun) {
         startSolsLikeMainThreadSimulation();
     } else if (total <= 4096 || !startWorkerSimulation()) {
