@@ -1,0 +1,14 @@
+{
+  "name": "sols-rolling-calculator",
+  "private": true,
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "test": "node --test",
+    "test:browser:install": "playwright install chromium --only-shell"
+  },
+  "devDependencies": {
+    "playwright": "1.62.1"
+  }
+}
