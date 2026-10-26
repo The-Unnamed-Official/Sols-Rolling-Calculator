@@ -13618,6 +13618,7 @@ function isPinnedSpecialAuraName(auraName) {
     return isForcedChallengedPlusAura(auraName)
         || isExactMetaAuraName(auraName)
         || isPinnedDreamspaceStarName(auraName)
+        || ['Projection', 'Gravitational : Point Zero'].includes(normalizeAuraTierName(auraName))
         || auraName.startsWith('Fault')
         || auraName.startsWith('[CONTENT DELETED]')
         || auraName.startsWith('Glitch')
