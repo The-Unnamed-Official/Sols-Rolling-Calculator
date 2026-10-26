@@ -4926,11 +4926,6 @@ body.quality-no-ui-animations .preset-console__bank {
     display: flex;
 }
 
-.cinematic-overlay--awaiting-fullscreen { background: #000; }
-.cinematic-overlay--awaiting-fullscreen .cinematic-overlay__loading { display: none; }
-.cinematic-fullscreen-prompt { position: absolute; z-index: 2; display: grid; justify-items: center; gap: 16px; width: min(420px, calc(100% - 40px)); padding: 24px; color: #eaf8ff; text-align: center; background: rgb(4 12 24 / .96); border: 1px solid rgb(127 227 255 / .45); }
-.cinematic-fullscreen-prompt p { margin: 0; font-size: .85rem; line-height: 1.6; }
-
 .cinematic-overlay--loading {
     z-index: 1002;
 }
@@ -5198,6 +5193,8 @@ body.quality-no-ui-animations .preset-console__bank {
     pointer-events: auto;
 }
 .biome-buff img { object-fit: contain; }
+.biome-buffs__reset { flex-basis: 82px; width: 82px; }
+.biome-buffs__reset > i { font-size: 18px; }
 .biome-buff span { font-size: 10px; line-height: 13px; font-weight: 700; }
 .biome-buff .biome-buff__symbol { font-size: 26px; line-height: 28px; }
 .biome-buff:hover, .biome-buff[aria-expanded="true"], .biome-buff:focus-visible { border-color: var(--accent-strong); background: var(--surface-overlay-gradient); }

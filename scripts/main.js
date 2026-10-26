@@ -917,7 +917,8 @@ function syncBiomeBuffs(state = radiantForestState) {
     const devConfig = getDevAdminAbuseConfig(biome);
     const devVariant = getSelectedDevAdminAbuseVariant(biome);
     const eventBuffs = Object.fromEntries(Object.entries(EVENT_BUFF_TOGGLES).map(([buff, id]) => [buff, Boolean(document.getElementById(id)?.checked)]));
-    panel.hidden = !radiantActive && !singularityActive && !devConfig && !Object.values(eventBuffs).some(Boolean);
+    panel.hidden = !radiantActive && !singularityActive && !devConfig
+        && !Object.values(eventBuffs).some(Boolean) && !hasLuckPresets();
     if (panel.dataset.biome !== biome || panel.hidden) {
         panel.dispatchEvent(new Event('biome-buffs-reset'));
     }
@@ -5908,17 +5909,19 @@ function formatRollEffect(batch, styled = false) {
     return styled ? `<span class="roll-effect roll-effect--${effect}">${label}</span>` : label;
 }
 
-function formatRollResultDetails(trueChanceValue, batch, showLuck = Boolean(trueChanceValue), { styled = false } = {}) {
+function formatRollResultDetails(trueChanceValue, batch, showLuck = Boolean(trueChanceValue), { styled = false, aura = null } = {}) {
+    if (isFixedLuckResultAura(aura)) return '1 Luck';
+    const includeLuck = showLuck || getMultiplePotionBatchResultConfigs(batch).length > 0;
     const chance = trueChanceValue ? `True Chance: 1 in ${trueChanceValue}` : '';
     const details = [chance, formatRollEffect(batch, styled)].filter(Boolean).join(' ');
-    const luck = showLuck && Number.isFinite(batch?.luckValue)
+    const luck = includeLuck && Number.isFinite(batch?.luckValue)
         ? `${details ? ' · ' : ''}${formatWithCommas(batch.luckValue)} Luck` : '';
-    const gemstone = showLuck && batch?.gemstoneLuck ? ` (+${batch.gemstoneLuck} Gemstone)` : '';
+    const gemstone = includeLuck && batch?.gemstoneLuck ? ` (+${batch.gemstoneLuck} Gemstone)` : '';
     return `${details}${luck}${gemstone}`;
 }
 
-function formatRollResultSuffix(trueChanceValue, batch, potionMarkup = '', showLuck = Boolean(trueChanceValue)) {
-    const details = formatRollResultDetails(trueChanceValue, batch, showLuck, { styled: true });
+function formatRollResultSuffix(trueChanceValue, batch, potionMarkup = '', showLuck = Boolean(trueChanceValue), aura = null) {
+    const details = formatRollResultDetails(trueChanceValue, batch, showLuck, { styled: true, aura });
     const potions = getMultiplePotionBatchResultConfigs(batch).length
         ? ` ${potionMarkup || formatMultiplePotionBatchResultMarkup(batch)}` : '';
     return (details ? ` <span class="tinyClass">${details}</span>` : '') + potions;
@@ -6514,7 +6517,41 @@ function recomputeLuckValue() {
     syncBiomeBuffs();
 }
 
-function resetLuckFields() {
+function hasLuckPresets() {
+    return baseLuck !== 1 || singleSpecialLuck > 0 || additionalBasicBuffs > 0
+        || Object.values(equippedGear).some(id => id !== 'none')
+        || ['vip-dropdown', 'dave-luck-dropdown'].some(id => Number(document.getElementById(id)?.value || 1) !== 1)
+        || Array.from(document.querySelectorAll('[data-multi-potion]')).some(input => getNumericInputValue(input, { min: 0 }) > 0);
+}
+
+function resetAllLuckPresets() {
+    Object.keys(equippedGear).forEach(slot => { equippedGear[slot] = 'none'; });
+    additionalBasicBuffs = 0;
+    setNumericInputValue(document.getElementById('equipment-basic-buffs'), 0, { format: true, min: 0 });
+    ['vip-dropdown', 'dave-luck-dropdown'].forEach(id => {
+        const select = document.getElementById(id);
+        if (select) select.value = '1';
+        refreshCustomSelect(id);
+    });
+    Object.values(EVENT_BUFF_TOGGLES).forEach(id => {
+        const toggle = document.getElementById(id);
+        if (toggle) toggle.checked = false;
+    });
+    document.querySelectorAll('[data-multi-potion]').forEach(input => {
+        setNumericInputValue(input, 0, { format: true, min: 0 });
+    });
+    setLuckSelectionSource(LUCK_SELECTION_SOURCE.MANUAL);
+    clearActiveLuckPotionPresets({ syncBiomeConstraints: false });
+    updateBiomeControlConstraints({ triggerSync: false });
+    resetLuckFields();
+    globalThis.SessionReturn?.save();
+}
+
+function resetLuckFields(event) {
+    if (event?.shiftKey) {
+        resetAllLuckPresets();
+        return;
+    }
     const luckInput = document.getElementById('luck-total');
     baseLuck = 1;
     singleSpecialLuck = 0;
@@ -6866,8 +6903,6 @@ function playAuraVideo(videoId, options = {}) {
         let lastPlaybackTime = 0;
         let lastProgressAt = Date.now();
         let fadeAnimation = null;
-        let fullscreenPrompt = null;
-        let cancelFullscreenPrompt = () => {};
         const previousFocus = document.activeElement;
         const handleControlsKeydown = event => {
             if ((event.code === 'Space' || event.key === ' ') && !event.altKey && !event.ctrlKey && !event.metaKey && !event.isComposing) {
@@ -6877,10 +6912,10 @@ function playAuraVideo(videoId, options = {}) {
                 return;
             }
             if (event.key === 'Tab') {
-                const focusable = [fullscreenPrompt?.querySelector('button'), revealButton, skipButton, skipAllButton].filter(button => button && getComputedStyle(button).display !== 'none');
+                const focusable = [revealButton, skipButton, skipAllButton].filter(button => button && getComputedStyle(button).display !== 'none');
                 const first = focusable[0];
                 const last = focusable[focusable.length - 1];
-                if ((!controls.contains(document.activeElement) && !fullscreenPrompt?.contains(document.activeElement)) || (event.shiftKey && document.activeElement === first) || (!event.shiftKey && document.activeElement === last)) {
+                if (!controls.contains(document.activeElement) || (event.shiftKey && document.activeElement === first) || (!event.shiftKey && document.activeElement === last)) {
                     event.preventDefault();
                     (event.shiftKey ? last : first)?.focus({ preventScroll: true });
                 }
@@ -6896,43 +6931,6 @@ function playAuraVideo(videoId, options = {}) {
             }
         };
         document.addEventListener('keydown', handleControlsKeydown, true);
-
-        const awaitFullscreenGesture = () => new Promise(resolveFullscreen => {
-            fullscreenPrompt = document.createElement('div');
-            fullscreenPrompt.className = 'cinematic-fullscreen-prompt';
-            fullscreenPrompt.setAttribute('role', 'group');
-            fullscreenPrompt.setAttribute('aria-label', 'Start fullscreen cutscene');
-            const button = document.createElement('button');
-            button.type = 'button';
-            button.className = 'interface-button';
-            button.textContent = 'Play fullscreen';
-            const hint = document.createElement('p');
-            hint.textContent = 'Tap or press Enter to begin. Space skips; Shift+Space skips all.';
-            let continueInPage = false;
-            const finish = () => {
-                fullscreenPrompt?.remove();
-                fullscreenPrompt = null;
-                overlay.classList.remove('cinematic-overlay--awaiting-fullscreen');
-                cancelFullscreenPrompt = () => {};
-                resolveFullscreen();
-            };
-            cancelFullscreenPrompt = finish;
-            button.addEventListener('click', async () => {
-                if (continueInPage) { finish(); return; }
-                const result = enterCutsceneFullscreen(video);
-                button.disabled = true;
-                if (await result) { finish(); return; }
-                if (cleanedUp) return;
-                button.disabled = false;
-                button.textContent = 'Play in page';
-                hint.textContent = 'This browser blocked fullscreen. Continue in the page, or use Space to skip.';
-                continueInPage = true;
-            });
-            fullscreenPrompt.append(button, hint);
-            overlay.appendChild(fullscreenPrompt);
-            overlay.classList.add('cinematic-overlay--awaiting-fullscreen');
-            button.focus({ preventScroll: true });
-        });
 
         const safelyResetVideo = () => {
             try {
@@ -6958,8 +6956,6 @@ function playAuraVideo(videoId, options = {}) {
         const cleanup = (result = 'finished') => {
             if (cleanedUp) return;
             cleanedUp = true;
-            const promptHadFocus = fullscreenPrompt?.contains(document.activeElement);
-            cancelFullscreenPrompt();
             overlay.style.display = 'none';
             fadeAnimation?.cancel();
             overlay.style.opacity = '0';
@@ -6981,7 +6977,7 @@ function playAuraVideo(videoId, options = {}) {
             controls.style.display = 'none';
             controls.classList.remove('skip-cinematic-controls--open');
             document.removeEventListener('keydown', handleControlsKeydown, true);
-            if ((promptHadFocus || controls.contains(document.activeElement)) && previousFocus?.isConnected) {
+            if (controls.contains(document.activeElement) && previousFocus?.isConnected) {
                 previousFocus.focus({ preventScroll: true });
             }
             skipButton.style.display = 'none';
@@ -7140,12 +7136,10 @@ function playAuraVideo(videoId, options = {}) {
                 });
                 await Promise.all([prepareCutsceneVideo(video), fade]);
                 if (cleanedUp) return;
-                const fullscreenEntered = await enterCutsceneFullscreen(video);
+                // Fullscreen is best effort: browser restrictions must never
+                // interrupt automatic cutscene playback with another prompt.
+                await enterCutsceneFullscreen(video);
                 if (cleanedUp) return;
-                if (rollingSettingsPreference.fullscreenCutscenes && !fullscreenEntered && !getFullscreenElement() && !cutsceneFullscreenDismissed) {
-                    await awaitFullscreenGesture();
-                    if (cleanedUp) return;
-                }
                 safelyResetVideo();
                 video.style.display = 'block';
                 await startPreparedCutscenePlayback(video);
@@ -12956,6 +12950,11 @@ function isCyberspaceExclusiveLucklessAura(aura) {
     return isIllusionaryAura(aura) || isExactMetaAuraName(aura.name);
 }
 
+function isFixedLuckResultAura(aura) {
+    return isCyberspaceExclusiveLucklessAura(aura)
+        || aura?.name?.trim().split(' - ')[0] === 'Cryogenic';
+}
+
 function computeLimboEffectiveChance(aura, context) {
     if (aura.requiresOblivionPreset || aura.requiresDunePreset || aura.requiresBloodPreset) return Infinity;
     if (!context.eventChecker(aura)) return Infinity;
@@ -13898,8 +13897,8 @@ function buildResultEntries(
                 ? formatRealChanceValue(rarityForRealChance, luckValue)
                 : null;
             const showLuck = allowTrueChance && appState.selectiveTrueChanceDisplay;
-            const resultSuffixMarkup = formatRollResultSuffix(realChanceValue, potionBatch, potionSourceMarkup, showLuck);
-            const resultSourceText = [formatRollResultDetails(realChanceValue, potionBatch, showLuck), potionSourceText].filter(Boolean).join(' · ');
+            const resultSuffixMarkup = formatRollResultSuffix(realChanceValue, potionBatch, potionSourceMarkup, showLuck, aura);
+            const resultSourceText = [formatRollResultDetails(realChanceValue, potionBatch, showLuck, { aura }), potionSourceText].filter(Boolean).join(' · ');
             entries.push({
                 markup: `${markup}${resultSuffixMarkup}`,
                 share: resultSourceText ? `${shareText} | ${resultSourceText}` : shareText,
@@ -13988,6 +13987,37 @@ function buildResultEntries(
     return { markupList, feedRecords, shareRecords, shareVisualRecords };
 }
 
+function mergeFixedLuckResultBatches(batches) {
+    const fixedLuckAuras = AURA_REGISTRY.filter(isFixedLuckResultAura);
+    const resultBatches = batches.map(batch => ({
+        ...batch,
+        winCounts: batch.winCounts.slice(),
+        breakthroughStatsMap: new Map(batch.breakthroughStatsMap)
+    }));
+    const batchesByPotion = new Map();
+    for (const batch of resultBatches) {
+        const potionKey = getMultiplePotionBatchResultConfigs(batch).map(config => config.id).sort().join('+');
+        const firstBatch = batchesByPotion.get(potionKey);
+        if (!firstBatch) {
+            batchesByPotion.set(potionKey, batch);
+            continue;
+        }
+        for (const aura of fixedLuckAuras) {
+            firstBatch.winCounts[aura.index] += batch.winCounts[aura.index];
+            batch.winCounts[aura.index] = 0;
+            const stats = batch.breakthroughStatsMap.get(aura.name);
+            if (stats) {
+                const firstStats = firstBatch.breakthroughStatsMap.get(aura.name);
+                firstBatch.breakthroughStatsMap.set(aura.name, {
+                    ...stats,
+                    count: (firstStats?.count || 0) + stats.count
+                });
+            }
+        }
+    }
+    return resultBatches;
+}
+
 function buildLiveRollMarkup(
     aura,
     rollNumber,
@@ -14018,7 +14048,7 @@ function buildLiveRollMarkup(
         && !shouldHideSelectiveTrueChanceForAura(aura.name)
         ? formatRealChanceValue(nativeChance, luckValue)
         : null;
-    const trueChanceMarkup = formatRollResultSuffix(trueChanceValue, potionBatch, '', allowTrueChance && appState.selectiveTrueChanceDisplay);
+    const trueChanceMarkup = formatRollResultSuffix(trueChanceValue, potionBatch, '', allowTrueChance && appState.selectiveTrueChanceDisplay, aura);
 
     const tierKey = resolveAuraDisplayTierKey(aura, biome);
     const alphabeticalName = getAuraAlphabeticalSortName(aura.name);
@@ -14817,8 +14847,30 @@ function startRollSimulation(options = {}) {
     const sampleEntropy = (typeof drawEntropy === 'function') ? drawEntropy : Math.random;
 
     progressCommit = createSimulationProgressCommit(progress => updateProgress?.(progress));
+    let resultCutscenesStarted = false;
+    let calculationFinishedAt = null;
     const finalizeSimulation = (cancelled, completedRolls = total) => {
         if (runFinished) return;
+        calculationFinishedAt ??= performance.now();
+        if (!cancelled && cutscenesEnabled && !solsLikeRun && !resultCutscenesStarted) {
+            resultCutscenesStarted = true;
+            const cutsceneQueue = CUTSCENE_PRIORITY_SEQUENCE.filter(videoId => {
+                const aura = CUTSCENE_AURA_LOOKUP.get(videoId);
+                return aura && !aura.requiresRadiantMoons && readAuraWinCount(aura) > 0
+                    && !shouldSkipAuraCutscene(aura, biome);
+            });
+            if (cutsceneQueue.length > 0) {
+                runStage = 'playing cutscenes';
+                cleanupWorker?.();
+                cleanupWorker = null;
+                terminateActiveSimulationWorker();
+                void playAuraSequence(cutsceneQueue).then(
+                    guardWork(() => finalizeSimulation(cancelRollRequested, completedRolls)),
+                    failSimulation
+                );
+                return;
+            }
+        }
         updateRadiantProgress();
         cleanupSimulation();
 
@@ -14838,21 +14890,7 @@ function startRollSimulation(options = {}) {
         }
 
         runStage = 'building results';
-        const endTime = performance.now();
-        const executionTime = ((endTime - startTime) / 1000).toFixed(0);
-
-        if (cutscenesEnabled && !solsLikeRun) {
-            const cutsceneQueue = [];
-            for (const videoId of CUTSCENE_PRIORITY_SEQUENCE) {
-                const aura = CUTSCENE_AURA_LOOKUP.get(videoId);
-                if (aura && !aura.requiresRadiantMoons && readAuraWinCount(aura) > 0 && !shouldSkipAuraCutscene(aura, biome)) {
-                    cutsceneQueue.push(videoId);
-                }
-            }
-            if (cutsceneQueue.length > 0) {
-                playAuraSequence(cutsceneQueue);
-            }
-        }
+        const executionTime = ((calculationFinishedAt - startTime) / 1000).toFixed(0);
 
         let highestChance = 0;
         for (const aura of AURA_REGISTRY) {
@@ -14930,7 +14968,7 @@ function startRollSimulation(options = {}) {
             `Included Aura Tiers: ${auraFilterSummaryText}<br><br>`
         ];
 
-        const resultCollections = simulationBatches.map(batch => buildResultEntries(
+        const resultCollections = mergeFixedLuckResultBatches(simulationBatches).map(batch => buildResultEntries(
             AURA_REGISTRY,
             biome,
             batch.breakthroughStatsMap,
@@ -15244,6 +15282,7 @@ function startRollSimulation(options = {}) {
             let processedThisFrame = 0;
             let pendingCutsceneId = null;
             let pendingCutsceneAura = null;
+            let pendingCutsceneEntry = null;
 
             while (currentRoll < total && processedThisFrame < rollsDue) {
                 const rollResult = performSingleLiveRoll();
@@ -15252,6 +15291,12 @@ function startRollSimulation(options = {}) {
 
                 if (rollResult?.aura) {
                     const aura = rollResult.aura;
+                    const shouldPlayCutscene = aura.requiresRadiantMoons || (
+                        cutscenesEnabled
+                        && !skipRemainingCutscenes
+                        && aura.cutscene
+                        && !shouldSkipAuraCutscene(aura, biome)
+                    );
                     const breakthroughStats = rollResult.potionBatch.breakthroughStatsByAuraIndex[aura.index];
                     if (!shouldHideAuraFromRollFeed(aura, biome)) {
                         const templateKey = currentBatchIndex + ':' + aura.index + ':'
@@ -15285,16 +15330,13 @@ function startRollSimulation(options = {}) {
                             }
                         }
                         if (template) {
-                            markupList.push({ presentation: template, originalOrder: currentRoll });
+                            const entry = { presentation: template, originalOrder: currentRoll };
+                            if (shouldPlayCutscene) pendingCutsceneEntry = entry;
+                            else markupList.push(entry);
                         }
                     }
 
-                    if (aura.requiresRadiantMoons || (
-                        cutscenesEnabled
-                        && !skipRemainingCutscenes
-                        && aura.cutscene
-                        && !shouldSkipAuraCutscene(aura, biome)
-                    )) {
+                    if (shouldPlayCutscene) {
                         pendingCutsceneId = aura.cutscene;
                         pendingCutsceneAura = aura;
                         break;
@@ -15325,6 +15367,7 @@ function startRollSimulation(options = {}) {
                     }
                 });
                 if (runFinished) return;
+                if (pendingCutsceneEntry) appendLiveMarkup([pendingCutsceneEntry]);
                 cutsceneActive = false;
                 nextRollDueAt = performance.now() + getCurrentRollIntervalMs();
                 if (
