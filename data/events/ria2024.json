@@ -1,0 +1,16 @@
+{
+  "id": "ria24",
+  "label": "RIA 2024",
+  "order": 3,
+  "theme": "default",
+  "sigilClass": "sigil-outline-innovator",
+  "status": "ended",
+  "defaultEnabled": false,
+  "auras": [
+    {
+      "name": "Innovator - 30,000,000",
+      "chance": 30000000
+    }
+  ],
+  "biomes": []
+}

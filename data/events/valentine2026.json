@@ -1,0 +1,16 @@
+{
+  "id": "valentine26",
+  "label": "Valentine 2026",
+  "order": 10,
+  "theme": "valentine",
+  "sigilClass": "sigil-outline-valentine-2026",
+  "status": "ended",
+  "defaultEnabled": false,
+  "auras": [
+    {
+      "name": "Symphony : Bloomed - 375,000,000",
+      "chance": 375000000
+    }
+  ],
+  "biomes": []
+}

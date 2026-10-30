@@ -1,0 +1,58 @@
+{
+  "id": "easter26",
+  "label": "Easter 2026",
+  "order": 11,
+  "theme": "easter",
+  "sigilClass": "sigil-outline-easter-2026",
+  "status": "ended",
+  "defaultEnabled": false,
+  "auras": [
+    {
+      "name": "Hatchwarden - 40,000,000",
+      "chance": 40000000
+    },
+    {
+      "name": "Emperor - 80,000,000",
+      "chance": 80000000
+    },
+    {
+      "name": "Eggsistance - 307,777,777",
+      "chance": 307777777
+    },
+    {
+      "name": "Revive - 645,000,000",
+      "chance": 645000000
+    },
+    {
+      "name": "Eggore - 700,000,000",
+      "chance": 700000000
+    },
+    {
+      "name": "Eostre - 1,000,000,000",
+      "chance": 1000000000,
+      "cutscene": "eostre-cutscene"
+    },
+    {
+      "name": "Aegis : Eggis - 1,150,000,000",
+      "chance": 1150000000,
+      "breakthroughs": {
+        "cyberspace": 2
+      },
+      "nativeBiomes": [
+        "cyberspace"
+      ],
+      "cutscene": "eggis-cutscene"
+    },
+    {
+      "name": "Y.O.L.K.E.G.G. - 1,790,909,090",
+      "chance": 1790909090,
+      "cutscene": "yolk-cutscene"
+    },
+    {
+      "name": "Sky Festival - 2,000,000,000",
+      "chance": 2000000000,
+      "cutscene": "skyFestival-cutscene"
+    }
+  ],
+  "biomes": []
+}

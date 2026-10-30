@@ -1,7 +1,16 @@
 {
   "id": "halloween26",
   "label": "Halloween 2026",
-  "status": "upcoming",
-  "defaultEnabled": false,
-  "auras": []
+  "order": 14,
+  "theme": "halloween",
+  "sigilClass": "sigil-outline-blood",
+  "status": "active",
+  "defaultEnabled": true,
+  "auras": [],
+  "biomes": [
+    "graveyard",
+    "pumpkinMoon",
+    "bloodRain"
+  ],
+  "glitchEligible": true
 }

@@ -1,0 +1,99 @@
+{
+  "id": "aprilFools26",
+  "label": "April Fools 2026",
+  "order": 12,
+  "theme": "april-fools",
+  "sigilClass": "sigil-outline-april",
+  "status": "ended",
+  "defaultEnabled": false,
+  "auras": [
+    {
+      "name": "Bloated.exe - 67,676,767",
+      "chance": 67676767
+    },
+    {
+      "name": "Burger - 676,767",
+      "chance": 676767
+    },
+    {
+      "name": "Bounded : Kidnapped - 2,000,000",
+      "chance": 2000000
+    },
+    {
+      "name": "Aether : Dissapointment - 33,333,330",
+      "chance": 33333330,
+      "breakthroughs": {
+        "heaven": 5
+      }
+    },
+    {
+      "name": "StarRider : yourdidit - 1,234,567",
+      "chance": 1234567,
+      "breakthroughs": {
+        "starfall": 5
+      }
+    },
+    {
+      "name": "Very Small Sewage Rat That's About 3.082 Studs Long - 20,070,629",
+      "chance": 20070629
+    },
+    {
+      "name": "Pukeko : Jumping - 31,980,000",
+      "chance": 31980000
+    },
+    {
+      "name": "Doodle : Abyssal Hunter - 400,000,000",
+      "chance": 400000000
+    },
+    {
+      "name": "Lumenpool : Ramenpool - 630,000,000",
+      "chance": 630000000,
+      "breakthroughs": {
+        "rainy": 4
+      }
+    },
+    {
+      "name": "Equinox : youareanidiot - 2,500,000,000",
+      "chance": 2500000000,
+      "cutscene": "idiot-cutscene"
+    },
+    {
+      "name": "Pukeko - 3,198",
+      "chance": 3198
+    },
+    {
+      "name": "Flushed : Troll - 1,000,000",
+      "chance": 1000000,
+      "cutscene": "trolled-cutscene"
+    },
+    {
+      "name": "Impeached : ImCrine - 250,000,000",
+      "chance": 250000000,
+      "breakthroughs": {
+        "corruption": 5
+      }
+    },
+    {
+      "name": "Surfer : Symphony - 600,000,000",
+      "chance": 600000000
+    },
+    {
+      "name": "Workshop : System - 650,000,000",
+      "chance": 650000000,
+      "breakthroughs": {
+        "aurora": 2
+      }
+    },
+    {
+      "name": "P.U.K.E.K.O.G.O.D. - 1,000,000,000",
+      "chance": 1000000000,
+      "cutscene": "pukekoGod-cutscene"
+    },
+    {
+      "name": "A Fool's Experience - 1,000,000,000",
+      "chance": 1000000000,
+      "cutscene": "solsLoadingScreen-cutscene"
+    }
+  ],
+  "biomes": []
+}

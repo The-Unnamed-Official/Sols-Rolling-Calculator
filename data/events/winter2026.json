@@ -1,0 +1,145 @@
+{
+  "id": "winter26",
+  "label": "Winter 2026",
+  "order": 9,
+  "theme": "winter",
+  "sigilClass": "sigil-outline-winter-2026",
+  "status": "ended",
+  "defaultEnabled": false,
+  "auras": [
+    {
+      "name": "Snowball - 10,000",
+      "chance": 10000,
+      "breakthroughs": {
+        "aurora": 2
+      }
+    },
+    {
+      "name": "Star Rider : Snowflake - 240,000",
+      "chance": 240000,
+      "breakthroughs": {
+        "aurora": 2
+      }
+    },
+    {
+      "name": "Gingerbread - 3,750,000",
+      "chance": 3750000,
+      "breakthroughs": {
+        "aurora": 2
+      }
+    },
+    {
+      "name": "Jack Frost - 4,700,000",
+      "chance": 4700000,
+      "breakthroughs": {
+        "aurora": 2
+      }
+    },
+    {
+      "name": "Lost Soul : Wander - 9,400,000",
+      "chance": 9400000,
+      "breakthroughs": {
+        "aurora": 2
+      }
+    },
+    {
+      "name": "Frostwood - 24,500,000",
+      "chance": 24500000,
+      "breakthroughs": {
+        "aurora": 2
+      }
+    },
+    {
+      "name": "North Pole - 45,000,000",
+      "chance": 45000000,
+      "breakthroughs": {
+        "aurora": 2
+      }
+    },
+    {
+      "name": "Skyburst - 60,000,000",
+      "chance": 60000000,
+      "breakthroughs": {
+        "aurora": 2
+      }
+    },
+    {
+      "name": "Encase - 230,000,000",
+      "chance": 230000000,
+      "breakthroughs": {
+        "aurora": 2
+      }
+    },
+    {
+      "name": "Cryofang - 380,000,000",
+      "chance": 380000000,
+      "breakthroughs": {
+        "aurora": 2
+      }
+    },
+    {
+      "name": "Northern - 405,000,000",
+      "chance": 405000000,
+      "breakthroughs": {
+        "aurora": 2
+      }
+    },
+    {
+      "name": "EveNight - 424,000,000",
+      "chance": 424000000,
+      "breakthroughs": {
+        "aurora": 2
+      }
+    },
+    {
+      "name": "Workshop - 700,000,000",
+      "chance": 700000000,
+      "breakthroughs": {
+        "aurora": 2
+      }
+    },
+    {
+      "name": "Parol - 760,000,000",
+      "chance": 760000000,
+      "breakthroughs": {
+        "aurora": 2
+      }
+    },
+    {
+      "name": "Sovereign : Frostveil - 1,000,000,000",
+      "chance": 1000000000,
+      "breakthroughs": {
+        "aurora": 2
+      },
+      "cutscene": "frostveil-cutscene"
+    },
+    {
+      "name": "Winter Garden - 1,450,012,025",
+      "chance": 1450012025,
+      "breakthroughs": {
+        "aurora": 2
+      },
+      "cutscene": "winter-garden-cutscene"
+    },
+    {
+      "name": "Dream Traveler - 2,025,012,025",
+      "chance": 2025012025,
+      "breakthroughs": {
+        "aurora": 2
+      },
+      "cutscene": "dream-traveler-cutscene"
+    },
+    {
+      "name": "Cryogenic - 250,000",
+      "chance": 250000,
+      "nativeBiomes": [
+        "aurora"
+      ],
+      "ignoreLuck": true,
+      "fixedRollThreshold": 1
+    }
+  ],
+  "biomes": [
+    "aurora"
+  ]
+}

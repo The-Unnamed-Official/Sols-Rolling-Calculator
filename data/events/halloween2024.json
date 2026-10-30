@@ -1,0 +1,87 @@
+{
+  "id": "halloween24",
+  "label": "Halloween 2024",
+  "order": 4,
+  "theme": "halloween",
+  "sigilClass": "sigil-outline-halloween",
+  "status": "ended",
+  "defaultEnabled": false,
+  "auras": [
+    {
+      "name": "Apostolos : Veil - 800,000,000",
+      "chance": 800000000,
+      "nativeBiomes": [
+        "graveyard",
+        "pumpkinMoon"
+      ]
+    },
+    {
+      "name": "Harvester - 666,000,000",
+      "chance": 666000000,
+      "nativeBiomes": [
+        "graveyard"
+      ]
+    },
+    {
+      "name": "Nightmare Sky - 190,000,000",
+      "chance": 190000000,
+      "nativeBiomes": [
+        "pumpkinMoon"
+      ]
+    },
+    {
+      "name": "Dullahan - 72,000,000",
+      "chance": 72000000,
+      "nativeBiomes": [
+        "graveyard"
+      ]
+    },
+    {
+      "name": "Soul Hunter - 40,000,000",
+      "chance": 40000000,
+      "nativeBiomes": [
+        "graveyard"
+      ]
+    },
+    {
+      "name": "Cryptfire - 21,000,000",
+      "chance": 21000000,
+      "nativeBiomes": [
+        "graveyard"
+      ]
+    },
+    {
+      "name": "Moonflower - 10,000,000",
+      "chance": 10000000,
+      "nativeBiomes": [
+        "pumpkinMoon"
+      ]
+    },
+    {
+      "name": "Vital - 6,000,000",
+      "chance": 6000000,
+      "nativeBiomes": [
+        "pumpkinMoon"
+      ]
+    },
+    {
+      "name": "Lunar : Nightfall - 3,000,000",
+      "chance": 3000000,
+      "nativeBiomes": [
+        "graveyard"
+      ]
+    },
+    {
+      "name": "Pump - 200,000",
+      "chance": 200000,
+      "nativeBiomes": [
+        "pumpkinMoon"
+      ]
+    }
+  ],
+  "biomes": [
+    "graveyard",
+    "pumpkinMoon"
+  ],
+  "glitchEligible": true
+}

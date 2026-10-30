@@ -1,0 +1,76 @@
+.pumpkin-decoration { position: fixed; right: 22px; bottom: 100px; z-index: 25; }
+.pumpkin-decoration[hidden] { display: none; }
+body:has(#event-selector[open]) .pumpkin-decoration { visibility: hidden; }
+.pumpkin-decoration button { display: flex; flex-direction: column; align-items: center; gap: 7px; padding: 0; background: none; border: 0; color: #eac9a1; font: inherit; cursor: pointer; }
+.pumpkin-decoration img { width: 100px; height: auto; filter: drop-shadow(0 7px 8px #0009) drop-shadow(0 0 16px #e88f2333); transition: transform .2s ease; }
+.pumpkin-decoration button > span:not([aria-hidden]) { font-size: .61rem; letter-spacing: .025em; background: #101c28eb; padding: 6px 9px; border: 1px solid #c78a494d; }
+.pumpkin-decoration button:hover img { transform: translateY(-3px) rotate(-3deg); }
+.pumpkin-decoration button:focus-visible { outline: 2px solid #ffc26b; outline-offset: 6px; }
+body.pumpkin-carver-open { overflow: hidden; }
+dialog.pumpkin-carver { color: #d8e7f1; width: min(900px, calc(100vw - 28px)); max-width: 900px; max-height: calc(100dvh - 28px); margin: auto; padding: 0 24px 22px; overflow-y: auto; overscroll-behavior: contain; box-sizing: border-box; border: 1px solid #b8794580; background: radial-gradient(ellipse at 30% 40%, #62322424, transparent 65%), linear-gradient(145deg, #152130, #0a131f 75%); box-shadow: 0 20px 100px #000b, 0 0 60px #c0611420; }
+dialog.pumpkin-carver:not([open]) { display: none; }
+.pumpkin-carver::backdrop { background: #030911df; backdrop-filter: blur(7px); }
+.pumpkin-carver > .popup-console__rail { margin: 0 -24px 18px; padding: 12px 24px; color: #e8bb7d; border-bottom: 1px solid #e9a24d33; background: #e59a350a; }
+.pumpkin-carver__header { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+.pumpkin-carver__header h2 { margin: 5px 0 8px; font-size: clamp(1.25rem, 4vw, 1.8rem); letter-spacing: .03em; font-weight: 600; color: #ffdcac; }
+.pumpkin-carver__eyebrow { color: #d7aa75; font-size: .6rem; letter-spacing: .12em; text-transform: uppercase; }
+.pumpkin-carver__close { font-size: 1.6rem; min-width: 44px; min-height: 44px; padding: 0; }
+#pumpkin-carver-hint { margin: 0 0 18px; color: #a6bacb; font-size: .75rem; line-height: 1.6; }
+.pumpkin-carver__workbench { display: grid; grid-template-columns: minmax(0, 1fr) 190px; gap: 18px; align-items: start; }
+.pumpkin-carver__canvas-panel { min-width: 0; border: 1px solid #9ba9ba30; background: radial-gradient(ellipse at 50% 62%, #e0751014, transparent 70%), repeating-linear-gradient(0deg, transparent 0 39px, #d4a87505 39px 40px), repeating-linear-gradient(90deg, transparent 0 39px, #d4a87505 39px 40px), #060e1880; }
+.pumpkin-carver__canvas-label, .pumpkin-carver__canvas-caption { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 6px; padding: 10px 14px; color: #8299ac; font-size: .56rem; letter-spacing: .05em; }
+.pumpkin-carver__canvas-label { border-top: 2px solid #df9a59; border-bottom: 1px solid #9ba9ba1a; text-transform: uppercase; }
+.pumpkin-carver__canvas-label > span:last-child { color: #f1bc79; }
+.pumpkin-carver__canvas-caption { border-top: 1px solid #9ba9ba1a; }
+.pumpkin-carver__canvas-caption b { font-weight: 600; color: #f5c481; }
+.pumpkin-carver__stage { position: relative; width: min(100%, calc((100dvh - 350px) * 1.18)); min-width: min(230px, 100%); aspect-ratio: 900 / 762; margin: 12px auto; }
+.pumpkin-carver__stage::before { content: ''; position: absolute; inset: 20% 10% 0; background: radial-gradient(ellipse at 50% 70%, #ef881828, transparent 68%); pointer-events: none; }
+#pumpkin-canvas { position: relative; display: block; width: 100%; height: 100%; cursor: crosshair; touch-action: none; user-select: none; -webkit-user-select: none; filter: drop-shadow(0 16px 14px #0009); }
+#pumpkin-canvas:focus-visible { outline: 1px dashed #e3b67a9c; outline-offset: -2px; }
+.pumpkin-carver__toolbox h3 { margin: 0 0 14px; padding: 12px 0; border-bottom: 1px solid #be8f5e33; color: #d3ad7f; font-size: .62rem; letter-spacing: .07em; font-weight: 600; text-transform: uppercase; }
+.pumpkin-carver__freehand { display: flex; gap: 10px; padding: 11px; border: 1px solid #df9a5940; border-left: 2px solid #df9a59; background: #dc9b5d09; }
+.pumpkin-carver__freehand > span { color: #efb672; font-size: 1.3rem; }
+.pumpkin-carver__freehand strong { display: block; color: #edc58f; font-size: .76rem; font-weight: 600; }
+.pumpkin-carver__freehand small { display: block; margin-top: 4px; color: #91a7b9; font-size: .63rem; line-height: 1.6; }
+.pumpkin-carver__shapes { display: grid; gap: 8px; margin-top: 18px; }
+.pumpkin-carver__shapes > span { color: #93a8b9; font-size: .59rem; text-transform: uppercase; letter-spacing: .1em; margin-bottom: 2px; }
+.pumpkin-carver__shapes button { display: flex; align-items: center; gap: 12px; padding: 10px 12px; min-height: 48px; font-size: .69rem; text-align: left; color: #d9bf9c; background: #d99e5506; border: 1px solid #bda07c33; }
+.pumpkin-carver__shapes button:hover { border-color: #edb87699; background: #d99e5514; }
+.pumpkin-carver__shapes svg { flex: 0 0 36px; width: 36px; height: 27px; fill: #ffc75a; stroke: #9e5d23; stroke-width: 1.5; filter: drop-shadow(0 0 5px #edaf2433); }
+.pumpkin-carver__keyboard { color: #8fa5b7; font-size: .61rem; line-height: 1.8; margin-top: 18px; padding-top: 12px; border-top: 1px solid #9ba9ba26; }
+.pumpkin-carver__keyboard summary { cursor: pointer; color: #bdc9d3; }
+.pumpkin-carver__keyboard p { margin: 8px 0 0; }
+.pumpkin-carver__status { color: #c6ac88; min-height: 1.6em; font-size: .65rem; margin: 12px 0 16px; padding-left: 10px; border-left: 2px solid #b68a5155; line-height: 1.7; }
+.pumpkin-carver__footer { position: sticky; bottom: -22px; z-index: 2; display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: -22px; padding: 16px 0 22px; border-top: 1px solid #be8f5e33; background: #0c1622f7; }
+.pumpkin-carver__actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.pumpkin-carver__footer button { min-height: 42px; font-size: .71rem; }
+.pumpkin-carver__save { display: flex; align-items: center; gap: 14px; }
+.pumpkin-carver__save small { max-width: 120px; color: #8fa5b7; font-size: .57rem; line-height: 1.7; text-align: right; }
+#pumpkin-done { color: #26190c; border-color: #fbd194; background: linear-gradient(135deg, #ffe1a5, #eba75e); box-shadow: 0 0 20px #eb9a2920; }
+.pumpkin-carver button:focus-visible, .pumpkin-carver summary:focus-visible { outline: 2px solid #ffd18a; outline-offset: 3px; }
+@media (max-width: 680px) {
+    .pumpkin-decoration { right: 10px; bottom: 100px; }
+    .pumpkin-decoration img { width: 66px; }
+    .pumpkin-decoration button > span:not([aria-hidden]) { font-size: .54rem; padding: 5px 6px; }
+    dialog.pumpkin-carver { padding: 0 16px 18px; }
+    .pumpkin-carver > .popup-console__rail { margin-left: -16px; margin-right: -16px; padding: 10px 16px; }
+    .pumpkin-carver__workbench { grid-template-columns: minmax(0, 1fr); gap: 12px; }
+    .pumpkin-carver__stage { width: min(100%, calc((100dvh - 470px) * 1.18)); min-width: min(210px, 100%); }
+    .pumpkin-carver__toolbox { display: grid; grid-template-columns: 1fr; }
+    .pumpkin-carver__toolbox h3, .pumpkin-carver__freehand { display: none; }
+    .pumpkin-carver__shapes { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 7px; margin: 0; }
+    .pumpkin-carver__shapes > span { grid-column: 1 / -1; }
+    .pumpkin-carver__shapes button { flex-direction: column; justify-content: center; gap: 3px; padding: 7px 4px; font-size: .59rem; }
+    .pumpkin-carver__shapes svg { flex-basis: auto; width: 32px; height: 22px; }
+    .pumpkin-carver__keyboard { margin-top: 12px; padding-top: 8px; }
+    .pumpkin-carver__footer { bottom: -18px; gap: 6px; margin-bottom: -18px; padding: 12px 0 18px; }
+    .pumpkin-carver__actions { flex-wrap: nowrap; gap: 6px; }
+    .pumpkin-carver__footer button { font-size: .6rem; padding-inline: 8px; letter-spacing: .08em; white-space: nowrap; }
+    .pumpkin-carver__save { margin-left: auto; }
+    .pumpkin-carver__save small { display: none; }
+    .pumpkin-carver__status { margin-bottom: 12px; font-size: .6rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .pumpkin-decoration img { transition: none; }
+}
+.reduce-motion .pumpkin-decoration img, .quality-no-ui-animations .pumpkin-decoration img { transition: none; }

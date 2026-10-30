@@ -8475,7 +8475,9 @@
     "tierKey": "glorious",
     "kind": "Biome native",
     "location": "The Citadel Of Orders",
-    "nativeBiomes": [],
+    "nativeBiomes": [
+      "The Citadel Of Orders"
+    ],
     "biomes": [
       "The Citadel Of Orders"
     ],

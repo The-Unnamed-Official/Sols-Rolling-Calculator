@@ -1,0 +1,28 @@
+{
+  "id": "summer25",
+  "label": "Summer 2025",
+  "order": 7,
+  "theme": "summer",
+  "sigilClass": "sigil-outline-summer",
+  "status": "ended",
+  "defaultEnabled": false,
+  "auras": [
+    {
+      "name": "Aegis : Watergun - 825,000,000",
+      "chance": 825000000,
+      "breakthroughs": {
+        "blazing": 2
+      }
+    },
+    {
+      "name": "Manta - 300,000,000",
+      "chance": 300000000,
+      "breakthroughs": {
+        "blazing": 2
+      }
+    }
+  ],
+  "biomes": [
+    "blazing"
+  ]
+}

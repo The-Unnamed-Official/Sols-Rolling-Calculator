@@ -6,5 +6,11 @@
   },
   "devDependencies": {
     "playwright": "1.62.1"
+  },
+  "scripts": {
+    "build:events": "node tools/build/build-event-data.cjs",
+    "build:auras": "node tools/build/build-aura-pages.cjs",
+    "build": "node tools/build/build-event-data.cjs && node tools/build/build-aura-pages.cjs",
+    "test": "node --test tools/tests/*.test.cjs"
   }
 }

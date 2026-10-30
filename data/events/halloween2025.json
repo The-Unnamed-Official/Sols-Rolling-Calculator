@@ -1,0 +1,219 @@
+{
+  "id": "halloween25",
+  "label": "Halloween 2025",
+  "order": 8,
+  "theme": "halloween",
+  "sigilClass": "sigil-outline-blood",
+  "status": "ended",
+  "defaultEnabled": false,
+  "auras": [
+    {
+      "name": "Pump : Trickster - 600,000",
+      "chance": 600000,
+      "nativeBiomes": [
+        "glitch",
+        "pumpkinMoon"
+      ]
+    },
+    {
+      "name": "Headless - 3,200,000",
+      "chance": 3200000,
+      "nativeBiomes": [
+        "glitch",
+        "graveyard"
+      ]
+    },
+    {
+      "name": "Oni - 6,666,666",
+      "chance": 6666666,
+      "nativeBiomes": [
+        "glitch",
+        "bloodRain"
+      ]
+    },
+    {
+      "name": "Headless : Horseman - 32,000,000",
+      "chance": 32000000,
+      "nativeBiomes": [
+        "glitch",
+        "pumpkinMoon"
+      ]
+    },
+    {
+      "name": "Sinister - 15,000,000",
+      "chance": 15000000,
+      "nativeBiomes": [
+        "glitch",
+        "pumpkinMoon"
+      ]
+    },
+    {
+      "name": "Accursed - 82,000,000",
+      "chance": 82000000,
+      "nativeBiomes": [
+        "glitch",
+        "bloodRain"
+      ]
+    },
+    {
+      "name": "Phantasma - 462,600,000",
+      "chance": 462600000,
+      "nativeBiomes": [
+        "glitch",
+        "pumpkinMoon"
+      ]
+    },
+    {
+      "name": "Apocalypse - 624,000,000",
+      "chance": 624000000,
+      "nativeBiomes": [
+        "glitch",
+        "graveyard"
+      ]
+    },
+    {
+      "name": "Wraithlight - 695,000,000",
+      "chance": 695000000,
+      "nativeBiomes": [
+        "glitch",
+        "bloodRain"
+      ]
+    },
+    {
+      "name": "Malediction - 730,000,000",
+      "chance": 730000000,
+      "nativeBiomes": [
+        "glitch",
+        "bloodRain"
+      ]
+    },
+    {
+      "name": "Banshee - 730,000,000",
+      "chance": 730000000,
+      "nativeBiomes": [
+        "glitch",
+        "graveyard"
+      ]
+    },
+    {
+      "name": "Ravage - 930,000,000",
+      "chance": 930000000,
+      "nativeBiomes": [
+        "glitch",
+        "graveyard"
+      ]
+    },
+    {
+      "name": "Arachnophobia - 940,000,000",
+      "chance": 940000000,
+      "nativeBiomes": [
+        "glitch",
+        "pumpkinMoon"
+      ]
+    },
+    {
+      "name": "Lamenthyr - 1,000,000,000",
+      "chance": 1000000000,
+      "nativeBiomes": [
+        "glitch",
+        "bloodRain"
+      ],
+      "cutscene": "lamenthyr-cutscene"
+    },
+    {
+      "name": "Erebus - 1,200,000,000",
+      "chance": 1200000000,
+      "nativeBiomes": [
+        "glitch",
+        "bloodRain"
+      ],
+      "cutscene": "erebus-cutscene"
+    },
+    {
+      "name": "Grief - 88,250,000",
+      "chance": 88250000,
+      "nativeBiomes": [
+        "glitch",
+        "graveyard"
+      ]
+    },
+    {
+      "name": "Graveborn - 290,000,000",
+      "chance": 290000000,
+      "nativeBiomes": [
+        "glitch",
+        "graveyard"
+      ]
+    },
+    {
+      "name": "Celestial : Wicked - 1,500,000",
+      "chance": 1500000,
+      "nativeBiomes": [
+        "glitch",
+        "pumpkinMoon"
+      ]
+    },
+    {
+      "name": "Reaper - 66,000,000",
+      "chance": 66000000,
+      "nativeBiomes": [
+        "glitch",
+        "bloodRain"
+      ]
+    },
+    {
+      "name": "Shucks - 4,460,000",
+      "chance": 4460000,
+      "nativeBiomes": [
+        "glitch",
+        "bloodRain"
+      ]
+    },
+    {
+      "name": "Bloodgarden - 88,000,000",
+      "chance": 88000000,
+      "nativeBiomes": [
+        "glitch",
+        "bloodRain"
+      ]
+    },
+    {
+      "name": "Werewolf - 3,600,000",
+      "chance": 3600000,
+      "nativeBiomes": [
+        "glitch",
+        "graveyard"
+      ]
+    },
+    {
+      "name": "Crimson - 120,000,000",
+      "chance": 120000000,
+      "nativeBiomes": [
+        "glitch",
+        "bloodRain"
+      ]
+    },
+    {
+      "name": "Lunar : Cultist - 2,000,000",
+      "chance": 2000000,
+      "nativeBiomes": [
+        "glitch",
+        "graveyard"
+      ]
+    },
+    {
+      "name": "Afterparty - 440,000,000",
+      "chance": 440000000,
+      "nativeBiomes": [
+        "glitch",
+        "graveyard"
+      ]
+    }
+  ],
+  "biomes": [
+    "graveyard",
+    "pumpkinMoon",
+    "bloodRain"
+  ],
+  "glitchEligible": true
+}
