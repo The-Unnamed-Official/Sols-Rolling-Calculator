@@ -1,0 +1,173 @@
+{
+  "id": "summer26",
+  "label": "Summer 2026",
+  "order": 13,
+  "theme": "summer",
+  "sigilClass": "sigil-outline-summer",
+  "status": "ended",
+  "defaultEnabled": false,
+  "auras": [
+    {
+      "name": "Floaty - 600,000",
+      "chance": 600000,
+      "breakthroughs": {
+        "incinerator": 2
+      }
+    },
+    {
+      "name": "Beach Ball - 1,938,000",
+      "chance": 1938000,
+      "breakthroughs": {
+        "incinerator": 2
+      }
+    },
+    {
+      "name": "Nostalgia - 20,270,000",
+      "chance": 20270000,
+      "breakthroughs": {
+        "incinerator": 2
+      }
+    },
+    {
+      "name": "Goose Rave - 50,000,000",
+      "chance": 50000000,
+      "breakthroughs": {
+        "incinerator": 2
+      }
+    },
+    {
+      "name": "Vacation - 58,620,000",
+      "chance": 58620000,
+      "breakthroughs": {
+        "incinerator": 2
+      }
+    },
+    {
+      "name": "Bayview - 60,000,000",
+      "chance": 60000000,
+      "breakthroughs": {
+        "incinerator": 2
+      }
+    },
+    {
+      "name": "Pool Party - 972,000,000",
+      "chance": 972000000,
+      "breakthroughs": {
+        "incinerator": 2
+      }
+    },
+    {
+      "name": "Heatstroke - 83,430",
+      "chance": 83430,
+      "breakthroughs": {
+        "incinerator": 2
+      }
+    },
+    {
+      "name": "Vendor - 17,500,000",
+      "chance": 17500000,
+      "breakthroughs": {
+        "incinerator": 2
+      }
+    },
+    {
+      "name": "Fruitpunch - 45,000,000",
+      "chance": 45000000,
+      "breakthroughs": {
+        "incinerator": 2
+      }
+    },
+    {
+      "name": "Bubble : Cascade - 110,000,000",
+      "chance": 110000000,
+      "breakthroughs": {
+        "incinerator": 2
+      }
+    },
+    {
+      "name": "Osteria - 1,444,444,444",
+      "chance": 1444444444,
+      "breakthroughs": {
+        "incinerator": 2
+      },
+      "cutscene": "taverna-cutscene"
+    },
+    {
+      "name": "Centaurus - 3,000,000,000",
+      "chance": 3000000000,
+      "breakthroughs": {
+        "incinerator": 2
+      },
+      "cutscene": "centaurus-cutscene"
+    },
+    {
+      "name": "Raft - 8,000",
+      "chance": 8000,
+      "breakthroughs": {
+        "incinerator": 2
+      }
+    },
+    {
+      "name": "Buoyant - 32,000",
+      "chance": 32000,
+      "breakthroughs": {
+        "incinerator": 2
+      }
+    },
+    {
+      "name": "Breeze - 80,000",
+      "chance": 80000,
+      "breakthroughs": {
+        "incinerator": 2
+      }
+    },
+    {
+      "name": "Watermelon : Summersnack - 3,200,000",
+      "chance": 3200000,
+      "breakthroughs": {
+        "incinerator": 2
+      }
+    },
+    {
+      "name": "Coconut - 34,720,000",
+      "chance": 34720000,
+      "breakthroughs": {
+        "incinerator": 2
+      }
+    },
+    {
+      "name": "Life Guard : On-Duty - 600,000,000",
+      "chance": 600000000,
+      "breakthroughs": {
+        "incinerator": 2
+      }
+    },
+    {
+      "name": "Tropical Isles - 730,000,000",
+      "chance": 730000000,
+      "breakthroughs": {
+        "incinerator": 2
+      }
+    },
+    {
+      "name": "Crabtropica - 1,334,221,000",
+      "chance": 1334221000,
+      "breakthroughs": {
+        "incinerator": 2
+      },
+      "cutscene": "crabtropica-cutscene"
+    }
+  ],
+  "additionalAuraNames": [
+    "Devil - 666,666"
+  ],
+  "biomes": [
+    "blazing",
+    "incinerator"
+  ],
+  "auraBiomes": [
+    "blazing",
+    "incinerator",
+    "glitch"
+  ]
+}

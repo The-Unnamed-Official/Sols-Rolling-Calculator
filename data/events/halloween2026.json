@@ -1,7 +1,121 @@
 {
   "id": "halloween26",
   "label": "Halloween 2026",
-  "status": "upcoming",
-  "defaultEnabled": false,
-  "auras": []
+  "order": 14,
+  "theme": "halloween",
+  "sigilClass": "sigil-outline-blood",
+  "status": "active",
+  "defaultEnabled": true,
+  "auras": [
+    {
+      "name": "Ghost - 10,414,606",
+      "chance": 10414606,
+      "nativeBiomes": [
+        "glitch",
+        "graveyard"
+      ]
+    },
+    {
+      "name": "Former Garden - 63,000,000",
+      "chance": 63000000,
+      "nativeBiomes": [
+        "glitch",
+        "bloodRain"
+      ]
+    },
+    {
+      "name": "Flushed : Pumpkinity - 69,000",
+      "chance": 69000,
+      "nativeBiomes": [
+        "glitch",
+        "pumpkinMoon"
+      ]
+    },
+    {
+      "name": "Acropolis - 466,666,666",
+      "chance": 466666666,
+      "nativeBiomes": [
+        "glitch",
+        "graveyard"
+      ]
+    },
+    {
+      "name": "Enchanted - 445,000",
+      "chance": 445000,
+      "nativeBiomes": [
+        "glitch",
+        "pumpkinMoon"
+      ]
+    },
+    {
+      "name": "Hanahaki - 66,000,000",
+      "chance": 66000000,
+      "nativeBiomes": [
+        "glitch",
+        "bloodRain"
+      ]
+    },
+    {
+      "name": "Cauldron - 24,000,000",
+      "chance": 24000000,
+      "nativeBiomes": [
+        "glitch",
+        "pumpkinMoon"
+      ]
+    },
+    {
+      "name": "Rejoice - 700,000,000",
+      "chance": 700000000,
+      "nativeBiomes": [
+        "glitch",
+        "bloodRain"
+      ]
+    },
+    {
+      "name": "Harvester : Necromancy - 225,000,000",
+      "chance": 225000000,
+      "nativeBiomes": [
+        "glitch",
+        "bloodRain"
+      ]
+    },
+    {
+      "name": "Embercrypt - 9,700,000",
+      "chance": 9700000,
+      "nativeBiomes": [
+        "glitch",
+        "pumpkinMoon"
+      ]
+    },
+    {
+      "name": "Cruor - 333,333,333",
+      "chance": 333333333,
+      "nativeBiomes": [
+        "glitch",
+        "bloodRain"
+      ]
+    },
+    {
+      "name": "Lost Soul : Styx - 2,000,000",
+      "chance": 2000000,
+      "nativeBiomes": [
+        "glitch",
+        "pumpkinMoon"
+      ]
+    },
+    {
+      "name": "Gaze - 977,000,000",
+      "chance": 977000000,
+      "nativeBiomes": [
+        "glitch",
+        "graveyard"
+      ]
+    }
+  ],
+  "biomes": [
+    "graveyard",
+    "pumpkinMoon",
+    "bloodRain"
+  ],
+  "glitchEligible": true
 }

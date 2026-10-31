@@ -1,0 +1,29 @@
+{
+  "id": "aprilFools25",
+  "label": "April Fools 2025",
+  "order": 6,
+  "theme": "april-fools",
+  "sigilClass": "sigil-outline-april",
+  "status": "ended",
+  "defaultEnabled": false,
+  "auras": [
+    {
+      "name": "Glock : the glock of the sky - 170,000,000",
+      "chance": 170000000
+    },
+    {
+      "name": "Origin : Onion - 8,000,000",
+      "chance": 8000000
+    },
+    {
+      "name": "Flushed : Troll - 1,000,000",
+      "chance": 1000000,
+      "cutscene": "trolled-cutscene"
+    },
+    {
+      "name": "Pukeko - 3,198",
+      "chance": 3198
+    }
+  ],
+  "biomes": []
+}

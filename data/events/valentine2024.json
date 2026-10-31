@@ -1,0 +1,20 @@
+{
+  "id": "valentine24",
+  "label": "Valentine 2024",
+  "order": 0,
+  "theme": "valentine",
+  "sigilClass": "sigil-outline-valentine-2024",
+  "status": "ended",
+  "defaultEnabled": false,
+  "auras": [
+    {
+      "name": "Divinus : Love - 32",
+      "chance": 32
+    },
+    {
+      "name": "Flushed : Heart Eye - 6,900",
+      "chance": 6900
+    }
+  ],
+  "biomes": []
+}

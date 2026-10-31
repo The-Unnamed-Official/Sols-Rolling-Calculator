@@ -1,0 +1,28 @@
+{
+  "id": "summer24",
+  "label": "Summer 2024",
+  "order": 2,
+  "theme": "summer",
+  "sigilClass": "sigil-outline-summer",
+  "status": "ended",
+  "defaultEnabled": false,
+  "auras": [
+    {
+      "name": "Star Rider : Starfish Rider - 250,000",
+      "chance": 250000,
+      "breakthroughs": {}
+    },
+    {
+      "name": "Watermelon - 320,000",
+      "chance": 320000
+    },
+    {
+      "name": "Surfer : Shard Surfer - 225,000,000",
+      "chance": 225000000,
+      "breakthroughs": {
+        "snowy": 3
+      }
+    }
+  ],
+  "biomes": []
+}

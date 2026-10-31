@@ -1,0 +1,27 @@
+{
+  "id": "aprilFools24",
+  "label": "April Fools 2024",
+  "order": 1,
+  "theme": "april-fools",
+  "sigilClass": "sigil-outline-april",
+  "status": "ended",
+  "defaultEnabled": false,
+  "auras": [
+    {
+      "name": "Undefined : Defined - 2,222,000",
+      "chance": 2222000,
+      "breakthroughs": {
+        "null": 1000
+      }
+    },
+    {
+      "name": "Chromatic : Kromat1k - 40,000,000",
+      "chance": 40000000
+    },
+    {
+      "name": "Impeached : I'm Peach - 400,000,000",
+      "chance": 400000000
+    }
+  ],
+  "biomes": []
+}

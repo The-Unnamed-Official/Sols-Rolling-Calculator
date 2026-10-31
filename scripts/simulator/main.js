@@ -1,0 +1,15689 @@
+let feedContainer = document.getElementById('simulation-feed');
+let luckField = document.getElementById('luck-total');
+const pageBody = document.body;
+const reduceMotionToggleButton = document.getElementById('reduceMotionToggle');
+const versionInfoButton = document.getElementById('versionInfoButton');
+const latestDeploymentTimeElement = document.getElementById('latestDeploymentTime');
+const clickSoundEffectElement = document.getElementById('clickSoundFx');
+const qbearMeowSoundEffectElement = document.getElementById('qbearMeowSoundFx');
+const fortePixelatedSecretState = {
+    clickCount: 0,
+    threshold: 13,
+    revealTimeoutId: null
+};
+const cachedVideoElements = Array.from(document.querySelectorAll('video'));
+const LATEST_UPDATE_LABEL_SUFFIX = ' (Latest Update)';
+let simulationActive = false;
+let cancelRollRequested = false;
+let experienceStarted = false;
+let activeSimulationWorker = null;
+let activeSolLikeSimulationController = null;
+let activeSimulationFailureHandler = null;
+let activeSimulationCancelHandler = null;
+let simulationRunId = 0;
+let lastSimulationSummary = null;
+let rollFeedSortMode = 'rarity';
+let rollFeedSortingAvailable = false;
+let rollFeedSortSupportsRecent = false;
+let activeAuraFilterCount = 0;
+let activeAuraTierFilterCount = 0;
+let shareFeedbackTimerId = null;
+let imageShareModeRequester = null;
+const MAX_IMAGE_SHARE_ENTRIES = 50;
+let imageShareInProgress = false;
+let imageShareAbortController = null;
+const versionChangelogOverlayState = {
+    escapeHandler: null,
+    lastFocusedElement: null,
+    tabsInitialized: false
+};
+
+const audioOverlayState = {
+    lastFocusedElement: null
+};
+
+const auraFilterOverlayState = {
+    lastFocusedElement: null
+};
+
+const auraDetailFilterOverlayState = {
+    lastFocusedElement: null
+};
+
+const cutscenePauseFilterOverlayState = {
+    lastFocusedElement: null
+};
+
+const cutscenePlaybackFilterOverlayState = {
+    lastFocusedElement: null
+};
+
+const qualityPreferencesOverlayState = {
+    lastFocusedElement: null
+};
+
+const rollingSettingsOverlayState = {
+    lastFocusedElement: null
+};
+
+const trueChanceDisplayOverlayState = {
+    lastFocusedElement: null
+};
+
+const CHANGELOG_VERSION_STORAGE_KEY = 'solsRollingCalculator:lastSeenChangelogVersion';
+const BACKGROUND_ROLLING_STORAGE_KEY = 'solsRollingCalculator:backgroundRollingPreference';
+const AUDIO_SETTINGS_STORAGE_KEY = 'solsRollingCalculator:audioSettings';
+const AURA_FILTERS_STORAGE_KEY = 'solsRollingCalculator:auraFilters';
+const VISUAL_SETTINGS_STORAGE_KEY = 'solsRollingCalculator:visualSettings';
+const PERFORMANCE_DEFAULTS_STORAGE_KEY = 'solsRollingCalculator:performanceDefaults:v2';
+const AURA_TIER_FILTERS_STORAGE_KEY = 'solsRollingCalculator:auraTierFilters';
+const ROLLING_SETTINGS_STORAGE_KEY = 'solsRollingCalculator:rollingSettings:v1';
+const SOLS_LIKE_ROLLS_PER_SECOND_MIN = 1;
+const SOLS_LIKE_ROLLS_PER_SECOND_MAX = 1000;
+const SOLS_LIKE_ROLLS_PER_SECOND_DEFAULT = 120;
+const ROLL_FEED_SORT_MODE = Object.freeze({
+    RECENT: 'recent',
+    RARITY: 'rarity',
+    RARITY_ASCENDING: 'rarity-ascending',
+    ALPHABETICAL: 'alphabetical',
+    ALPHABETICAL_DESCENDING: 'alphabetical-descending'
+});
+const ROLL_FEED_SORT_SEQUENCE = Object.freeze([
+    ROLL_FEED_SORT_MODE.RECENT,
+    ROLL_FEED_SORT_MODE.RARITY,
+    ROLL_FEED_SORT_MODE.RARITY_ASCENDING,
+    ROLL_FEED_SORT_MODE.ALPHABETICAL,
+    ROLL_FEED_SORT_MODE.ALPHABETICAL_DESCENDING
+]);
+const ROLL_FEED_SORT_SEQUENCE_UNNAMED = Object.freeze([
+    ROLL_FEED_SORT_MODE.RARITY,
+    ROLL_FEED_SORT_MODE.RARITY_ASCENDING,
+    ROLL_FEED_SORT_MODE.ALPHABETICAL,
+    ROLL_FEED_SORT_MODE.ALPHABETICAL_DESCENDING
+]);
+const LEGACY_SOLS_LIKE_SPEED_VALUES = Object.freeze({
+    slower: 60,
+    standard: SOLS_LIKE_ROLLS_PER_SECOND_DEFAULT,
+    fast: 240,
+    'very-fast': 480
+});
+const FORCE_CUTSCENES_ALWAYS_ON = false;
+const ALWAYS_ON_CUTSCENES = new Set(['trolled-cutscene']);
+let reduceMotionPreferenceOverride = null;
+const backgroundRollingPreference = {
+    allowed: false,
+    suppressPrompt: false
+};
+const rollingSettingsPreference = {
+    solsLikeRollsPerSecond: SOLS_LIKE_ROLLS_PER_SECOND_DEFAULT,
+    fullscreenCutscenes: false,
+    cutscenePauseFilters: {},
+    cutscenePlaybackFilters: {}
+};
+let cutsceneFullscreenTransition = null;
+let cutsceneFullscreenOwned = false;
+let cutsceneFullscreenDismissed = false;
+let cutsceneNativeFullscreenVideo = null;
+let legacyAutoPauseAfterCutscene = null;
+let hasStoredCutscenePlaybackFilters = false;
+let cutscenePlaybackMigrationCompleted = false;
+
+async function fetchLatestPublishedDeploymentTime() {
+    if (window.appBuildMetadataPromise) {
+        const buildMetadata = await window.appBuildMetadataPromise;
+        const publishedAt = buildMetadata?.publishedAt;
+        if (publishedAt instanceof Date && !Number.isNaN(publishedAt.getTime())) {
+            return publishedAt;
+        }
+    }
+
+    const documentModifiedAt = new Date(document.lastModified);
+    return Number.isNaN(documentModifiedAt.getTime()) ? null : documentModifiedAt;
+}
+
+async function initializeLatestDeploymentTime() {
+    if (!latestDeploymentTimeElement) {
+        return;
+    }
+
+    try {
+        const deploymentTime = await fetchLatestPublishedDeploymentTime();
+        if (!deploymentTime) {
+            throw new Error('No published build time was found.');
+        }
+
+        const formatter = new Intl.DateTimeFormat(undefined, {
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit',
+            timeZoneName: 'short'
+        });
+        const localTimeZone = formatter.resolvedOptions().timeZone;
+
+        latestDeploymentTimeElement.dateTime = deploymentTime.toISOString();
+        latestDeploymentTimeElement.textContent = formatter.format(deploymentTime);
+        latestDeploymentTimeElement.title = localTimeZone
+            ? `Latest published build, shown in your local timezone (${localTimeZone})`
+            : 'Latest published build, shown in your local timezone';
+    } catch (error) {
+        latestDeploymentTimeElement.textContent = 'Time unavailable';
+        latestDeploymentTimeElement.removeAttribute('datetime');
+        latestDeploymentTimeElement.title = 'Unable to retrieve the latest published build time.';
+        console.warn('Unable to load the latest published build time.', error);
+    }
+}
+
+const QUALITY_PREFERENCE_KEYS = Object.freeze([
+    'removeParticles',
+    'disableUiAnimations',
+    'disableShakes',
+    'disableRollAndSigilAnimations',
+    'reduceGlitchEffects',
+    'removeGlitchEffects',
+    'disableWikiAuraStyles'
+]);
+
+const PERFORMANCE_FIRST_QUALITY_DEFAULTS = Object.freeze({
+    removeParticles: false,
+    disableUiAnimations: false,
+    disableShakes: false,
+    disableRollAndSigilAnimations: false,
+    reduceGlitchEffects: false,
+    removeGlitchEffects: false,
+    disableWikiAuraStyles: false
+});
+
+if (FORCE_CUTSCENES_ALWAYS_ON && typeof appState === 'object') {
+    appState.cinematic = true;
+}
+
+function ensureQualityPreferences() {
+    if (!appState || !appState.qualityPreferences || typeof appState.qualityPreferences !== 'object') {
+        appState.qualityPreferences = {};
+    }
+
+    QUALITY_PREFERENCE_KEYS.forEach(key => {
+        if (typeof appState.qualityPreferences[key] !== 'boolean') {
+            appState.qualityPreferences[key] = Boolean(PERFORMANCE_FIRST_QUALITY_DEFAULTS[key]);
+        }
+    });
+}
+
+function applyLatestUpdateBadgeToChangelogTabs(tabs) {
+    if (!Array.isArray(tabs) || !tabs.length) {
+        return;
+    }
+
+    let badgeAssigned = false;
+
+    tabs.forEach(tab => {
+        if (!tab) {
+            return;
+        }
+
+        const titleNode = tab.querySelector('.changelog-tab__title');
+        const labelTarget = titleNode || tab;
+        const baseLabel = tab.dataset.baseLabel
+            || labelTarget.textContent.replace(/\s*\(Latest Update\)\s*$/i, '').trim();
+        tab.dataset.baseLabel = baseLabel;
+
+        if (!badgeAssigned) {
+            labelTarget.textContent = `${baseLabel}${LATEST_UPDATE_LABEL_SUFFIX}`;
+            badgeAssigned = true;
+        } else {
+            labelTarget.textContent = baseLabel;
+        }
+    });
+}
+
+function getCurrentChangelogVersionId() {
+    const trigger = versionInfoButton || document.getElementById('versionInfoButton');
+    if (!trigger) {
+        return null;
+    }
+
+    const explicitId = trigger.getAttribute('data-version-id');
+    if (explicitId) {
+        return explicitId;
+    }
+
+    const label = trigger.textContent;
+    return label ? label.trim() : null;
+}
+
+function maybeShowChangelogOnFirstVisit() {
+    const versionId = getCurrentChangelogVersionId();
+    if (!versionId) {
+        return;
+    }
+
+    let storage;
+    try {
+        storage = window.localStorage;
+    } catch (error) {
+        storage = null;
+    }
+
+    if (!storage) {
+        return;
+    }
+
+    const storedVersionId = storage.getItem(CHANGELOG_VERSION_STORAGE_KEY);
+    if (storedVersionId === versionId) {
+        return;
+    }
+
+    showVersionChangelogOverlay();
+
+    try {
+        storage.setItem(CHANGELOG_VERSION_STORAGE_KEY, versionId);
+    } catch (error) {
+    }
+}
+
+function hydrateBackgroundRollingPreference() {
+    if (typeof window === 'undefined') {
+        return;
+    }
+
+    try {
+        const raw = window.localStorage.getItem(BACKGROUND_ROLLING_STORAGE_KEY);
+        if (!raw) {
+            return;
+        }
+        const parsed = JSON.parse(raw);
+        if (parsed && typeof parsed === 'object') {
+            backgroundRollingPreference.allowed = Boolean(parsed.allowed);
+            backgroundRollingPreference.suppressPrompt = Boolean(parsed.suppressPrompt);
+        }
+    } catch (error) {
+    }
+}
+
+function persistBackgroundRollingPreference() {
+    if (typeof window === 'undefined') {
+        return;
+    }
+
+    try {
+        window.localStorage.setItem(
+            BACKGROUND_ROLLING_STORAGE_KEY,
+            JSON.stringify(backgroundRollingPreference)
+        );
+    } catch (error) {
+    }
+}
+
+function hydrateAudioSettings() {
+    if (typeof window === 'undefined') {
+        return;
+    }
+
+    try {
+        const raw = window.localStorage.getItem(AUDIO_SETTINGS_STORAGE_KEY);
+        if (!raw) {
+            return;
+        }
+        const parsed = JSON.parse(raw);
+        if (!parsed || typeof parsed !== 'object') {
+            return;
+        }
+
+        if (Number.isFinite(parsed.musicVolume)) {
+            appState.audio.musicVolume = clamp01(parsed.musicVolume);
+        }
+        const effectsVolume = parsed.effectsVolume ?? parsed.cutsceneVolume;
+        const cutsceneVolume = parsed.cutsceneVolume ?? parsed.effectsVolume;
+        const serverVolume = parsed.serverVolume ?? parsed.obtainVolume;
+        if (Number.isFinite(effectsVolume)) appState.audio.effectsVolume = clamp01(effectsVolume);
+        if (Number.isFinite(cutsceneVolume)) appState.audio.cutsceneVolume = clamp01(cutsceneVolume);
+        if (Number.isFinite(serverVolume)) appState.audio.serverVolume = clamp01(serverVolume);
+        if (Number.isFinite(parsed.uiVolume)) {
+            appState.audio.uiVolume = clamp01(parsed.uiVolume);
+        }
+        if (typeof parsed.masterMuted === 'boolean') {
+            appState.audio.masterMuted = parsed.masterMuted;
+        }
+
+        appState.audio.ui = (appState.audio.uiVolume ?? 0) > 0;
+        appState.audio.roll = (appState.audio.serverVolume ?? 0) > 0
+            || (appState.audio.musicVolume ?? 0) > 0
+            || (appState.audio.effectsVolume ?? 0) > 0
+            || (appState.audio.cutsceneVolume ?? 0) > 0;
+    } catch (error) {
+    }
+}
+
+function hydrateAuraFilters() {
+    if (typeof window === 'undefined' || !appState) {
+        return;
+    }
+
+    try {
+        const raw = window.localStorage.getItem(AURA_FILTERS_STORAGE_KEY);
+        if (!raw) {
+            return;
+        }
+        const parsed = JSON.parse(raw);
+        if (!parsed || typeof parsed !== 'object') {
+            return;
+        }
+        if (!appState.auraFilters || typeof appState.auraFilters !== 'object') {
+            appState.auraFilters = {};
+        }
+        Object.entries(parsed).forEach(([auraName, value]) => {
+            if (typeof auraName === 'string') {
+                appState.auraFilters[auraName] = Boolean(value);
+            }
+        });
+    } catch (error) {
+    }
+}
+
+function hydrateAuraTierFilters() {
+    if (typeof window === 'undefined' || !appState) {
+        return;
+    }
+
+    try {
+        const raw = window.localStorage.getItem(AURA_TIER_FILTERS_STORAGE_KEY);
+        if (!raw) {
+            return;
+        }
+        const parsed = JSON.parse(raw);
+        if (!parsed || typeof parsed !== 'object') {
+            return;
+        }
+        if (!appState.auraTierFilters || typeof appState.auraTierFilters !== 'object') {
+            appState.auraTierFilters = {};
+        }
+        Object.entries(parsed).forEach(([tierKey, value]) => {
+            if (typeof tierKey === 'string') {
+                appState.auraTierFilters[tierKey] = Boolean(value);
+            }
+        });
+    } catch (error) {
+    }
+}
+
+function countEnabledAuraFilters(filters) {
+    if (!filters || typeof filters !== 'object') {
+        return 0;
+    }
+
+    let enabledCount = 0;
+    Object.values(filters).forEach(value => {
+        if (value) {
+            enabledCount += 1;
+        }
+    });
+    return enabledCount;
+}
+
+function refreshActiveAuraFilterCounts() {
+    activeAuraFilterCount = countEnabledAuraFilters(appState?.auraFilters);
+    activeAuraTierFilterCount = countEnabledAuraFilters(appState?.auraTierFilters);
+}
+
+function hydrateRollingSettings() {
+    if (typeof window === 'undefined') {
+        return;
+    }
+
+    try {
+        const raw = window.localStorage.getItem(ROLLING_SETTINGS_STORAGE_KEY);
+        if (!raw) {
+            return;
+        }
+        const parsed = JSON.parse(raw);
+        if (!parsed || typeof parsed !== 'object') {
+            return;
+        }
+        if (typeof parsed.fullscreenCutscenes === 'boolean') {
+            rollingSettingsPreference.fullscreenCutscenes = parsed.fullscreenCutscenes;
+        }
+        if (Number.isFinite(Number(parsed.solsLikeRollsPerSecond))) {
+            rollingSettingsPreference.solsLikeRollsPerSecond = normalizeSolsLikeRollsPerSecond(
+                parsed.solsLikeRollsPerSecond
+            );
+        } else if (Object.prototype.hasOwnProperty.call(LEGACY_SOLS_LIKE_SPEED_VALUES, parsed.solsLikeSpeed)) {
+            rollingSettingsPreference.solsLikeRollsPerSecond = LEGACY_SOLS_LIKE_SPEED_VALUES[parsed.solsLikeSpeed];
+        }
+        if (parsed.cutscenePauseFilters && typeof parsed.cutscenePauseFilters === 'object') {
+            Object.entries(parsed.cutscenePauseFilters).forEach(([auraName, value]) => {
+                if (typeof auraName === 'string' && typeof value === 'boolean') {
+                    rollingSettingsPreference.cutscenePauseFilters[auraName] = value;
+                }
+            });
+        } else if (typeof parsed.autoPauseAfterCutscene === 'boolean') {
+            legacyAutoPauseAfterCutscene = parsed.autoPauseAfterCutscene;
+        }
+        if (parsed.cutscenePlaybackFilters && typeof parsed.cutscenePlaybackFilters === 'object') {
+            hasStoredCutscenePlaybackFilters = true;
+            Object.entries(parsed.cutscenePlaybackFilters).forEach(([auraName, value]) => {
+                if (typeof auraName === 'string' && typeof value === 'boolean') {
+                    rollingSettingsPreference.cutscenePlaybackFilters[auraName] = value;
+                }
+            });
+        }
+        ensureCutsceneFilterPreferences();
+    } catch (error) {
+    }
+}
+
+function normalizeSolsLikeRollsPerSecond(value) {
+    const numericValue = Number.parseInt(value, 10);
+    if (!Number.isFinite(numericValue)) {
+        return SOLS_LIKE_ROLLS_PER_SECOND_DEFAULT;
+    }
+    return Math.min(
+        SOLS_LIKE_ROLLS_PER_SECOND_MAX,
+        Math.max(SOLS_LIKE_ROLLS_PER_SECOND_MIN, numericValue)
+    );
+}
+
+function formatSolsLikeRollingSpeed(value) {
+    const rollsPerSecond = normalizeSolsLikeRollsPerSecond(value);
+    const millisecondsPerRoll = 1000 / rollsPerSecond;
+    const delayText = Number.isInteger(millisecondsPerRoll)
+        ? millisecondsPerRoll.toFixed(0)
+        : millisecondsPerRoll >= 100
+        ? millisecondsPerRoll.toFixed(0)
+        : millisecondsPerRoll >= 10
+            ? millisecondsPerRoll.toFixed(1)
+            : millisecondsPerRoll.toFixed(2);
+    return `${formatWithCommas(rollsPerSecond)} ${rollsPerSecond === 1 ? 'roll' : 'rolls'}/s · ${delayText} ms/roll`;
+}
+
+function persistRollingSettings() {
+    if (typeof window === 'undefined') {
+        return;
+    }
+
+    try {
+        window.localStorage.setItem(
+            ROLLING_SETTINGS_STORAGE_KEY,
+            JSON.stringify(rollingSettingsPreference)
+        );
+    } catch (error) {
+    }
+}
+
+function hydrateVisualSettings() {
+    if (typeof window === 'undefined' || !appState) {
+        return;
+    }
+
+    try {
+        const raw = window.localStorage.getItem(VISUAL_SETTINGS_STORAGE_KEY);
+        if (!raw) {
+            return;
+        }
+        const parsed = JSON.parse(raw);
+        if (!parsed || typeof parsed !== 'object') {
+            return;
+        }
+        if (typeof parsed.glitch === 'boolean') {
+            appState.glitch = parsed.glitch;
+        }
+        if (!FORCE_CUTSCENES_ALWAYS_ON && typeof parsed.cinematic === 'boolean') {
+            appState.cinematic = parsed.cinematic;
+        }
+        if (typeof parsed.reduceMotion === 'boolean') {
+            appState.reduceMotion = parsed.reduceMotion;
+            reduceMotionPreferenceOverride = parsed.reduceMotion;
+        }
+        if (typeof parsed.selectiveTrueChanceDisplay === 'boolean') {
+            appState.selectiveTrueChanceDisplay = parsed.selectiveTrueChanceDisplay;
+        }
+        if (typeof parsed.stickyRollButton === 'boolean') {
+            appState.stickyRollButton = parsed.stickyRollButton;
+        }
+
+        ensureQualityPreferences();
+        const storedQualityPreferences = parsed.qualityPreferences;
+        if (storedQualityPreferences && typeof storedQualityPreferences === 'object') {
+            QUALITY_PREFERENCE_KEYS.forEach(key => {
+                if (typeof storedQualityPreferences[key] === 'boolean') {
+                    appState.qualityPreferences[key] = storedQualityPreferences[key];
+                }
+            });
+            if (
+                typeof storedQualityPreferences.disableUiAnimations !== 'boolean'
+                && typeof storedQualityPreferences.disableButtonAnimations === 'boolean'
+            ) {
+                appState.qualityPreferences.disableUiAnimations = storedQualityPreferences.disableButtonAnimations;
+            }
+        }
+    } catch (error) {
+    } finally {
+        if (FORCE_CUTSCENES_ALWAYS_ON) {
+            appState.cinematic = true;
+        }
+    }
+}
+
+function persistAuraFilters() {
+    if (typeof window === 'undefined' || !appState || !appState.auraFilters) {
+        return;
+    }
+
+    try {
+        window.localStorage.setItem(
+            AURA_FILTERS_STORAGE_KEY,
+            JSON.stringify(appState.auraFilters)
+        );
+    } catch (error) {
+    }
+}
+
+function persistAuraTierFilters() {
+    if (typeof window === 'undefined' || !appState || !appState.auraTierFilters) {
+        return;
+    }
+
+    try {
+        window.localStorage.setItem(
+            AURA_TIER_FILTERS_STORAGE_KEY,
+            JSON.stringify(appState.auraTierFilters)
+        );
+    } catch (error) {
+    }
+}
+
+function persistAudioSettings() {
+    if (typeof window === 'undefined') {
+        return;
+    }
+
+    try {
+        window.localStorage.setItem(
+            AUDIO_SETTINGS_STORAGE_KEY,
+            JSON.stringify({
+                musicVolume: appState.audio.musicVolume,
+                effectsVolume: appState.audio.effectsVolume,
+                cutsceneVolume: appState.audio.cutsceneVolume,
+                serverVolume: appState.audio.serverVolume,
+                uiVolume: appState.audio.uiVolume,
+                masterMuted: appState.audio.masterMuted
+            })
+        );
+    } catch (error) {
+    }
+}
+
+function persistVisualSettings() {
+    if (typeof window === 'undefined' || !appState) {
+        return;
+    }
+
+    try {
+        window.localStorage.setItem(
+            VISUAL_SETTINGS_STORAGE_KEY,
+            JSON.stringify({
+                glitch: appState.glitch,
+                cinematic: FORCE_CUTSCENES_ALWAYS_ON ? true : appState.cinematic,
+                reduceMotion: appState.reduceMotion,
+                selectiveTrueChanceDisplay: Boolean(appState.selectiveTrueChanceDisplay),
+                stickyRollButton: appState.stickyRollButton !== false,
+                qualityPreferences: appState.qualityPreferences
+            })
+        );
+    } catch (error) {
+    }
+}
+
+function applyPerformanceFirstDefaults() {
+    if (typeof window === 'undefined' || !appState) {
+        return;
+    }
+
+    ensureQualityPreferences();
+
+    let storage = null;
+    try {
+        storage = window.localStorage;
+        if (storage.getItem(PERFORMANCE_DEFAULTS_STORAGE_KEY) === '1') {
+            return;
+        }
+    } catch (error) {
+        storage = null;
+    }
+
+    Object.entries(PERFORMANCE_FIRST_QUALITY_DEFAULTS).forEach(([key, value]) => {
+        appState.qualityPreferences[key] = value;
+    });
+
+    if (appState.qualityPreferences.removeGlitchEffects) {
+        appState.qualityPreferences.reduceGlitchEffects = false;
+    }
+
+    persistVisualSettings();
+
+    try {
+        storage?.setItem(PERFORMANCE_DEFAULTS_STORAGE_KEY, '1');
+    } catch (error) {
+    }
+}
+
+function setBackgroundRollingEnabled(enabled, { persistPreference = true } = {}) {
+    if (typeof appState === 'object') {
+        appState.backgroundRolling = Boolean(enabled);
+    }
+
+    backgroundRollingPreference.allowed = Boolean(enabled);
+
+    const button = document.getElementById('backgroundRollingButton');
+    if (button) {
+        button.textContent = `Allow background rolling: ${enabled ? 'On' : 'Off'}`;
+        button.setAttribute('aria-pressed', enabled ? 'true' : 'false');
+    }
+
+    if (persistPreference) {
+        persistBackgroundRollingPreference();
+    }
+}
+
+function showBackgroundRollingOverlay() {
+    const overlay = document.getElementById('backgroundRollingOverlay');
+    if (!overlay) {
+        return;
+    }
+
+    revealOverlay(overlay);
+
+    const applyButton = document.getElementById('backgroundRollingApply');
+    if (applyButton && typeof applyButton.focus === 'function') {
+        try {
+            applyButton.focus({ preventScroll: true });
+        } catch (error) {
+            applyButton.focus();
+        }
+    }
+}
+
+function hideBackgroundRollingOverlay() {
+    const overlay = document.getElementById('backgroundRollingOverlay');
+    if (!overlay) {
+        return;
+    }
+
+    concealOverlay(overlay);
+}
+
+function setSelectiveTrueChanceDisplayEnabled(enabled, { persistPreference = true } = {}) {
+    if (typeof appState === 'object') {
+        appState.selectiveTrueChanceDisplay = Boolean(enabled);
+    }
+
+    const button = document.getElementById('trueChanceDisplayButton');
+    if (button) {
+        button.textContent = `True chance display: ${enabled ? 'On' : 'Off'}`;
+        button.setAttribute('aria-pressed', enabled ? 'true' : 'false');
+    }
+
+    if (persistPreference) {
+        persistVisualSettings();
+    }
+}
+
+function setStickyRollButtonEnabled(enabled, { persistPreference = true } = {}) {
+    appState.stickyRollButton = Boolean(enabled);
+    const button = document.getElementById('stickyRollButtonToggle');
+    if (button) {
+        button.textContent = `Sticky roll button: ${enabled ? 'On' : 'Off'}`;
+        button.setAttribute('aria-pressed', enabled ? 'true' : 'false');
+    }
+    document.dispatchEvent(new Event('sticky-roll-button-change'));
+    if (persistPreference) persistVisualSettings();
+}
+
+function showTrueChanceDisplayOverlay() {
+    const overlay = document.getElementById('trueChanceDisplayOverlay');
+    if (!overlay) {
+        return;
+    }
+
+    trueChanceDisplayOverlayState.lastFocusedElement = document.activeElement instanceof HTMLElement
+        ? document.activeElement
+        : null;
+    revealOverlay(overlay);
+
+    const enableButton = document.getElementById('trueChanceDisplayEnable');
+    if (enableButton && typeof enableButton.focus === 'function') {
+        try {
+            enableButton.focus({ preventScroll: true });
+        } catch (error) {
+            enableButton.focus();
+        }
+    }
+}
+
+function hideTrueChanceDisplayOverlay() {
+    const overlay = document.getElementById('trueChanceDisplayOverlay');
+    if (!overlay) {
+        return;
+    }
+
+    concealOverlay(overlay);
+
+    const target = trueChanceDisplayOverlayState.lastFocusedElement;
+    trueChanceDisplayOverlayState.lastFocusedElement = null;
+    if (target && typeof target.focus === 'function') {
+        try {
+            target.focus({ preventScroll: true });
+        } catch (error) {
+            target.focus();
+        }
+    }
+}
+
+
+const selectWidgetRegistry = new Map();
+
+const BIOME_PRIMARY_SELECT_ID = 'biome-primary-dropdown';
+const BIOME_OTHER_SELECT_ID = 'biome-other-dropdown';
+const BIOME_TIME_SELECT_ID = 'biome-time-dropdown';
+const DAY_RESTRICTED_BIOMES = new Set(['pumpkinMoon', 'graveyard']);
+const DAY_ONLY_BIOMES = new Set(['blazing']);
+let corLunaeBlessingMultiplier = 1.15;
+const RADIANT_MOON_NAMES = Object.freeze(['Jade', 'Jade : Purity', 'Kyawthuite', 'Kyawthuite : Remembrance', 'Twilight : Withering Grace', 'Twilight : Iridescent Memory', 'Twilight']);
+const EVENT_BUFF_TOGGLES = Object.freeze({
+    dorcelessness: 'dorcelessness-luck-toggle',
+    sorry: 'sorry-luck-toggle',
+    yg: 'yg-blessing-toggle',
+    astrald: 'astrald-blessing-toggle'
+});
+let radiantForestState = SimulationCore.createRadiantState();
+let radiantMoonSoundMask = 0;
+const radiantMoonSoundQueue = [];
+let stopRadiantMoonSound = null;
+
+function resetRadiantMoonSounds(moons = 0) {
+    radiantMoonSoundMask = Number(moons) & 127;
+    radiantMoonSoundQueue.length = 0;
+    stopRadiantMoonSound?.();
+}
+
+function playNextRadiantMoonSound() {
+    if (stopRadiantMoonSound || !radiantMoonSoundQueue.length) return;
+    const ordinal = radiantMoonSoundQueue.shift();
+    if (!isSoundChannelActive('effects')) {
+        radiantMoonSoundQueue.length = 0;
+        return;
+    }
+    const audio = document.getElementById(`radiantMoonSound${ordinal}`);
+    if (!audio) return;
+    let finished = false;
+    let timeout;
+    const finish = () => {
+        if (finished) return;
+        finished = true;
+        clearTimeout(timeout);
+        audio.removeEventListener('ended', finish);
+        audio.removeEventListener('error', finish);
+        audio.pause();
+        stopRadiantMoonSound = null;
+        queueMicrotask(playNextRadiantMoonSound);
+    };
+    stopRadiantMoonSound = finish;
+    audio.addEventListener('ended', finish);
+    audio.addEventListener('error', finish);
+    timeout = setTimeout(finish, 30000);
+    ensureDeferredMediaSource(audio);
+    if (audio.error) audio.load();
+    applyMediaGain(audio, { category: 'effects' });
+    audio.muted = false;
+    audio.currentTime = 0;
+    audio.play().catch(finish);
+}
+
+function syncRadiantMoonSounds(state, active) {
+    const moons = active ? state.moons & 127 : 0;
+    if (moons === radiantMoonSoundMask) return;
+    if ((moons & radiantMoonSoundMask) !== radiantMoonSoundMask) {
+        resetRadiantMoonSounds(moons);
+        return;
+    }
+    const count = mask => mask.toString(2).replaceAll('0', '').length;
+    const previousCount = count(radiantMoonSoundMask);
+    radiantMoonSoundMask = moons;
+    for (let ordinal = previousCount + 1; ordinal <= count(moons); ordinal++) {
+        radiantMoonSoundQueue.push(ordinal);
+    }
+    playNextRadiantMoonSound();
+}
+
+let rememberControlsActive = false;
+const rememberControlState = new Map();
+
+function isRememberRoll() {
+    return document.getElementById(BIOME_PRIMARY_SELECT_ID)?.value === 'radiantForest'
+        && radiantForestState.moons === 127 && !radiantForestState.rewardClaimed;
+}
+
+function syncRememberRollControls() {
+    const remember = isRememberRoll();
+    if (remember) {
+        document.querySelectorAll('#luck-total, #luck-preset-panel button, [data-multi-potion], [data-potion-mode], #multiPotionStackToggle').forEach(control => {
+            if (!rememberControlState.has(control)) {
+                rememberControlState.set(control, { disabled: control.disabled, title: control.getAttribute('title') });
+            }
+            control.disabled = true;
+            control.title = 'Remember uses 1× luck. Potions are unavailable for this roll.';
+        });
+    } else if (rememberControlState.size) {
+        rememberControlState.forEach((previous, control) => {
+            control.disabled = previous.disabled;
+            if (previous.title === null) control.removeAttribute('title');
+            else control.title = previous.title;
+        });
+        rememberControlState.clear();
+        const limbo = document.getElementById(BIOME_PRIMARY_SELECT_ID)?.value === 'limbo';
+        syncLuckPotionPresetAvailability(limbo);
+        syncMultiplePotionModeAvailability(limbo);
+    }
+    if (rememberControlsActive !== remember) {
+        rememberControlsActive = remember;
+        recomputeLuckValue();
+    }
+}
+
+function syncRadiantRollLabel() {
+    const button = document.querySelector('.roll-trigger');
+    if (!button) return;
+    const remember = isRememberRoll();
+    const label = remember ? 'Remember' : isSolsLikeSimulationMethod() ? 'Roll' : 'Start Rolling';
+    if (button.textContent !== label || (remember && !button.querySelector('.roll-trigger__memory'))) {
+        if (remember) button.innerHTML = '<span class="roll-trigger__memory">Remember</span>';
+        else button.textContent = label;
+    }
+    button.classList.toggle('roll-trigger--remember', remember);
+    if (simulationActive) button.style.opacity = remember ? '1' : '0.5';
+}
+
+function syncBiomeBuffs(state = radiantForestState) {
+    syncRememberRollControls();
+    syncRadiantRollLabel();
+    const panel = document.getElementById('biomeBuffs');
+    if (!panel) return;
+    const refresh = panel.querySelector('[data-radiant-refresh]');
+    if (refresh) refresh.disabled = simulationActive;
+    const biome = document.getElementById(BIOME_PRIMARY_SELECT_ID)?.value;
+    const radiantActive = biome === 'radiantForest';
+    syncRadiantMoonSounds(state, radiantActive);
+    const sky = document.getElementById('radiantMoons');
+    if (sky) sky.hidden = !radiantActive;
+    const singularityActive = biome === 'singularity';
+    const devConfig = getDevAdminAbuseConfig(biome);
+    const devVariant = getSelectedDevAdminAbuseVariant(biome);
+    const eventBuffs = Object.fromEntries(Object.entries(EVENT_BUFF_TOGGLES).map(([buff, id]) => [buff, Boolean(document.getElementById(id)?.checked)]));
+    panel.hidden = !radiantActive && !singularityActive && !devConfig
+        && !Object.values(eventBuffs).some(Boolean) && !hasLuckPresets();
+    if (panel.dataset.biome !== biome || panel.hidden) {
+        panel.dispatchEvent(new Event('biome-buffs-reset'));
+    }
+    panel.dataset.biome = biome;
+    if (panel.hidden) return;
+    const progressKey = `${biome}:${devVariant}:${state.moons}:${state.rewardClaimed}:${corLunaeBlessingMultiplier}:${Object.values(eventBuffs).join(',')}`;
+    if (panel.dataset.progress === progressKey) return;
+    panel.dataset.progress = progressKey;
+    panel.classList.toggle('biome-buffs--singularity', singularityActive);
+    panel.querySelectorAll('[data-biome-buff]').forEach(button => {
+        button.hidden = button.dataset.biomeBuff in eventBuffs ? !eventBuffs[button.dataset.biomeBuff]
+            : button.dataset.biomeBuff === 'dev' ? !devConfig
+            : button.dataset.biomeBuff === 'singularity' ? !singularityActive : !radiantActive;
+    });
+    if (devConfig) {
+        const label = `${devConfig.abuseLabel} Admin Abuse`;
+        const multiplier = getDevAdminAbuseMultiplier(biome);
+        const basicMultiplier = getDevAdminAbuseBasicMultiplier(biome);
+        const effect = basicMultiplier !== 1
+            ? `×${basicMultiplier} Basic Luck Multiplier · ×${multiplier} Final Luck Multiplier`
+            : `×${multiplier} Total Luck Multiplier`;
+        const button = panel.querySelector('[data-biome-buff="dev"]');
+        button.setAttribute('aria-label', `${label}: ${effect}. View effect${devConfig.variants ? ' and choose a buff' : ''}.`);
+        button.querySelector('img').src = `files/images/icons/buffs/${biome}Buff.png`;
+        panel.querySelector('[data-dev-buff-multiplier]').textContent = `×${multiplier}`;
+        panel.querySelector('[data-dev-buff-title]').textContent = label;
+        panel.querySelector('[data-dev-buff-biome]').textContent = BIOME_DISPLAY_LABEL_OVERRIDES[biome] || devConfig.biomeLabel;
+        panel.querySelector('[data-dev-buff-effect]').textContent = `${effect}${devVariant ? ` · ${devVariant === 'old' ? 'Old' : 'New'} buff selected` : ''}.`;
+        panel.querySelector('[data-dev-buff-choices]').hidden = !devConfig.variants;
+        panel.querySelectorAll('[data-dev-buff-variant]').forEach(choice => {
+            const variant = devConfig.variants?.[choice.dataset.devBuffVariant];
+            choice.textContent = variant ? `${variant.label} · ${variant.basicMultiplier
+                ? `×${variant.basicMultiplier} basic · ×${variant.multiplier} final` : `×${variant.multiplier}`}` : '';
+            choice.setAttribute('aria-pressed', String(choice.dataset.devBuffVariant === devVariant));
+        });
+    }
+    const blessing = panel.querySelector('[data-biome-buff="moonCatch"]');
+    blessing.setAttribute('aria-label', `Cor Lunae's Blessing: ${corLunaeBlessingMultiplier} times final luck. Choose a buff.`);
+    panel.querySelectorAll('[data-lunae-multiplier]').forEach(element => element.textContent = `×${corLunaeBlessingMultiplier}`);
+    const moons = RADIANT_MOON_NAMES;
+    panel.querySelectorAll('[data-radiant-moon]').forEach((element, moon) => {
+        const collected = Boolean(state.moons & (1 << moon));
+        element.textContent = `${collected ? '●' : '○'} ${moon + 1}. ${moons[moon]}${moon === 3 ? ' (Center)' : ''}`;
+        element.classList.toggle('radiant-moon--collected', collected);
+    });
+    sky?.querySelectorAll('[data-moon-index]').forEach(element => {
+        const index = Number(element.dataset.moonIndex);
+        const collected = Boolean(state.moons & (1 << index));
+        element.classList.toggle('radiant-moons__moon--collected', collected);
+        const label = `${moons[index]}: ${collected ? 'collected' : 'not yet rolled'}`;
+        element.setAttribute('aria-label', label);
+        element.title = label;
+    });
+    const unlocked = SimulationCore.radiantUnlockMask(state);
+    panel.querySelector('[data-radiant-count]').textContent = `${moons.filter((_, index) => state.moons & (1 << index)).length}/7`;
+    panel.querySelector('[data-biome-buff="moons"]').classList.toggle('biome-buff--ready', state.moons === 127 && !state.rewardClaimed);
+    panel.querySelectorAll('[data-radiant-unlock]').forEach(button => {
+        button.hidden = !radiantActive || !(unlocked & Number(button.dataset.radiantUnlock));
+    });
+    panel.querySelector('[data-radiant-status]').textContent = state.rewardClaimed
+        ? 'Tomorrow obtained. True Aura buffs remain active until the biome ends.'
+        : state.moons === 127 ? 'Remember — Tomorrow is guaranteed on the next roll at 1× luck. Potions are unavailable.'
+        : `${moons.filter((_, index) => state.moons & (1 << index)).length} / 7 moons collected. Collect them in any order.`;
+    const expanded = panel.querySelector('[data-biome-buff][aria-expanded="true"]');
+    if (expanded?.hidden) panel.dispatchEvent(new Event('biome-buffs-reset'));
+}
+
+function setupBiomeBuffs() {
+    const panel = document.getElementById('biomeBuffs');
+    if (!panel) return;
+    const tooltip = document.getElementById('biomeBuffTooltip');
+    const buttons = [...panel.querySelectorAll('[data-biome-buff]')];
+    let pinned = null;
+    let hideTimer;
+    panel.querySelector('[data-radiant-refresh]')?.addEventListener('click', () => {
+        if (simulationActive || isAuraCutscenePlaybackActive()
+            || document.getElementById(BIOME_PRIMARY_SELECT_ID)?.value !== 'radiantForest') return;
+        radiantForestState = SimulationCore.createRadiantState();
+        recomputeLuckValue();
+    });
+    const show = button => {
+        clearTimeout(hideTimer);
+        tooltip.hidden = !button;
+        if (button?.dataset.biomeBuff !== 'moonCatch') {
+            panel.querySelector('details[data-select="cor-lunae-blessing-dropdown"]').open = false;
+        }
+        buttons.forEach(candidate => candidate.setAttribute('aria-expanded', String(candidate === button)));
+        panel.querySelectorAll('[data-biome-buff-details]').forEach(details => {
+            details.hidden = details.dataset.biomeBuffDetails !== button?.dataset.biomeBuff;
+        });
+    };
+    buttons.forEach(button => {
+        button.addEventListener('pointerenter', event => { if (event.pointerType !== 'touch') show(button); });
+        button.addEventListener('focus', () => show(button));
+        button.addEventListener('click', event => {
+            pinned = pinned === button ? null : button;
+            show(pinned);
+            if (pinned?.dataset.biomeBuff === 'dev' && event.detail === 0) {
+                panel.querySelector('[data-dev-buff-variant][aria-pressed="true"]')?.focus();
+            }
+            if (pinned?.dataset.biomeBuff === 'moonCatch' && event.detail === 0) {
+                panel.querySelector('details[data-select="cor-lunae-blessing-dropdown"] summary')?.focus();
+            }
+        });
+    });
+    panel.querySelectorAll('[data-dev-buff-variant]').forEach(choice => {
+        choice.addEventListener('click', () => {
+            const biome = document.getElementById(BIOME_PRIMARY_SELECT_ID)?.value;
+            if (!getDevAdminAbuseConfig(biome)?.variants?.[choice.dataset.devBuffVariant]) return;
+            devAdminAbuseVariantSelections[biome] = choice.dataset.devBuffVariant;
+            recomputeLuckValue();
+            syncBiomeBuffs();
+        });
+    });
+    panel.querySelector('[data-lunae-choice]')?.addEventListener('change', event => {
+        const multiplier = Number(event.target.value);
+        if (![...event.target.options].some(option => Number(option.value) === multiplier)) return;
+        corLunaeBlessingMultiplier = multiplier;
+        recomputeLuckValue();
+    });
+    Object.values(EVENT_BUFF_TOGGLES).forEach(id => {
+        document.getElementById(id)?.addEventListener('change', () => queueMicrotask(() => syncBiomeBuffs()));
+    });
+    panel.addEventListener('biome-buffs-reset', () => { pinned = null; show(null); });
+    panel.addEventListener('pointerenter', () => clearTimeout(hideTimer));
+    panel.addEventListener('pointerleave', () => { hideTimer = setTimeout(() => show(pinned), 160); });
+    panel.addEventListener('focusout', event => { if (!panel.contains(event.relatedTarget)) show(pinned); });
+    document.addEventListener('pointerdown', event => {
+        if (!panel.contains(event.target)) { pinned = null; show(null); }
+    });
+    document.addEventListener('keydown', event => {
+        if (event.key === 'Escape') {
+            const restoreFocus = tooltip.contains(document.activeElement);
+            const expanded = buttons.find(button => button.getAttribute('aria-expanded') === 'true');
+            pinned = null;
+            if (restoreFocus) expanded?.focus({ preventScroll: true });
+            show(null);
+        }
+    });
+    document.getElementById('roll-total')?.addEventListener('input', () => queueMicrotask(() => syncBiomeBuffs()));
+    syncBiomeBuffs();
+}
+const CYBERSPACE_ILLUSIONARY_WARNING_STORAGE_KEY = 'solsRollingCalculator:hideCyberspaceIllusionaryWarning';
+const SINGULARITY_SUMMON_SOUND_ID = 'singularitySummonSound';
+const SINGULARITY_SUMMON_FALLBACK_DURATION_MS = 12500;
+let lastPrimaryBiomeSelection = null;
+let singularitySummonSequenceId = 0;
+let singularitySummonTimeoutId = null;
+let singularitySummonCleanup = null;
+const DEV_BIOME_IDS = new Set(['anotherRealm', 'edict', 'mastermind', 'fullMoon']);
+let devBiomesEnabled = false;
+const SINGULARITY_LUCK_MULTIPLIER = 1.1;
+const DEV_ADMIN_ABUSE_DEFAULT_VARIANT = 'new';
+const DEV_ADMIN_ABUSE_CONFIGS = Object.freeze({
+    anotherRealm: Object.freeze({
+        biomeLabel: 'Another Realm',
+        abuseLabel: 'Xyz',
+        variants: Object.freeze({
+            new: Object.freeze({ label: 'New Xyz Admin Abuse', multiplier: 1.2 }),
+            old: Object.freeze({ label: 'Old Xyz Admin Abuse', multiplier: 2 })
+        }),
+        defaultVariant: DEV_ADMIN_ABUSE_DEFAULT_VARIANT
+    }),
+    mastermind: Object.freeze({
+        biomeLabel: 'Mastermind',
+        abuseLabel: 'Axis',
+        variants: Object.freeze({
+            new: Object.freeze({ label: 'New Axis Admin Abuse', multiplier: 1.2 }),
+            old: Object.freeze({ label: 'Old Axis Admin Abuse', multiplier: 2 })
+        }),
+        defaultVariant: DEV_ADMIN_ABUSE_DEFAULT_VARIANT
+    }),
+    fullMoon: Object.freeze({
+        biomeLabel: 'The Red Full Moon',
+        abuseLabel: 'XC',
+        variants: Object.freeze({
+            new: Object.freeze({ label: 'New XC Admin Abuse', multiplier: 1.5 }),
+            old: Object.freeze({ label: 'Old XC Admin Abuse', multiplier: 2 })
+        }),
+        defaultVariant: DEV_ADMIN_ABUSE_DEFAULT_VARIANT
+    }),
+    edict: Object.freeze({
+        biomeLabel: 'The Citadel of Orders',
+        abuseLabel: 'Word',
+        variants: Object.freeze({
+            new: Object.freeze({ label: 'New Word Admin Abuse', multiplier: 1.5, basicMultiplier: 1.5 }),
+            old: Object.freeze({ label: 'Old Word Admin Abuse', multiplier: 1.2 })
+        }),
+        defaultVariant: DEV_ADMIN_ABUSE_DEFAULT_VARIANT
+    })
+});
+const devAdminAbuseVariantSelections = {
+    anotherRealm: DEV_ADMIN_ABUSE_DEFAULT_VARIANT,
+    fullMoon: DEV_ADMIN_ABUSE_DEFAULT_VARIANT,
+    mastermind: DEV_ADMIN_ABUSE_DEFAULT_VARIANT,
+    edict: DEV_ADMIN_ABUSE_DEFAULT_VARIANT
+};
+
+const ROE_NATIVE_BIOMES = Object.freeze([
+    'lostForest',
+    'windy',
+    'snowy',
+    'rainy',
+    'sandstorm',
+    'starfall',
+    'hell',
+    'heaven',
+    'corruption',
+    'null'
+]);
+
+const RUNE_CONFIGURATION = Object.freeze({
+    windyRune: Object.freeze({
+        canonicalBiome: 'windy',
+        themeBiome: 'windy',
+        activeBiomes: Object.freeze(['windy']),
+        breakthroughBiomes: Object.freeze(['windy']),
+        icon: 'files/images/icons/runes/windyRuneIcon.png'
+    }),
+    snowyRune: Object.freeze({
+        canonicalBiome: 'snowy',
+        themeBiome: 'snowy',
+        activeBiomes: Object.freeze(['snowy']),
+        breakthroughBiomes: Object.freeze(['snowy']),
+        icon: 'files/images/icons/runes/snowyRuneIcon.png'
+    }),
+    rainyRune: Object.freeze({
+        canonicalBiome: 'rainy',
+        themeBiome: 'rainy',
+        activeBiomes: Object.freeze(['rainy']),
+        breakthroughBiomes: Object.freeze(['rainy']),
+        icon: 'files/images/icons/runes/rainyRuneIcon.png'
+    }),
+    sandstormRune: Object.freeze({
+        canonicalBiome: 'sandstorm',
+        themeBiome: 'sandstorm',
+        activeBiomes: Object.freeze(['sandstorm']),
+        breakthroughBiomes: Object.freeze(['sandstorm']),
+        icon: 'files/images/icons/runes/sandstormRuneIcon.png'
+    }),
+    starfallRune: Object.freeze({
+        canonicalBiome: 'starfall',
+        themeBiome: 'starfall',
+        activeBiomes: Object.freeze(['starfall']),
+        breakthroughBiomes: Object.freeze(['starfall']),
+        icon: 'files/images/icons/runes/starfallRuneIcon.png'
+    }),
+    hellRune: Object.freeze({
+        canonicalBiome: 'hell',
+        themeBiome: 'hell',
+        activeBiomes: Object.freeze(['hell']),
+        breakthroughBiomes: Object.freeze(['hell']),
+        icon: 'files/images/icons/runes/hellRuneIcon.png'
+    }),
+    heavenRune: Object.freeze({
+        canonicalBiome: 'heaven',
+        themeBiome: 'heaven',
+        activeBiomes: Object.freeze(['heaven']),
+        breakthroughBiomes: Object.freeze(['heaven']),
+        icon: 'files/images/icons/runes/heavenRuneIcon.png'
+    }),
+    corruptionRune: Object.freeze({
+        canonicalBiome: 'corruption',
+        themeBiome: 'corruption',
+        activeBiomes: Object.freeze(['corruption']),
+        breakthroughBiomes: Object.freeze(['corruption']),
+        icon: 'files/images/icons/runes/corruptionRuneIcon.png'
+    }),
+    nullRune: Object.freeze({
+        canonicalBiome: 'null',
+        themeBiome: 'null',
+        activeBiomes: Object.freeze(['null', 'limbo-null']),
+        breakthroughBiomes: Object.freeze(['null', 'limbo-null']),
+        icon: 'files/images/icons/runes/nullRuneIcon.png'
+    }),
+    eclipseRune: Object.freeze({
+        canonicalBiome: 'night',
+        themeBiome: 'night',
+        activeBiomes: Object.freeze(['day', 'night']),
+        breakthroughBiomes: Object.freeze(['day', 'night']),
+        icon: 'files/images/icons/runes/eclipseRuneIcon.png'
+    }),
+    roe: Object.freeze({
+        canonicalBiome: 'roe',
+        themeBiome: 'roe',
+        activeBiomes: ROE_NATIVE_BIOMES,
+        breakthroughBiomes: ROE_NATIVE_BIOMES,
+        icon: 'files/images/icons/runes/roeRuneIcon.png',
+        glitchLike: true,
+        exclusivityBiome: 'glitch'
+    })
+});
+
+function resolveRuneConfiguration(value) {
+    if (!value) {
+        return null;
+    }
+    return Object.prototype.hasOwnProperty.call(RUNE_CONFIGURATION, value)
+        ? RUNE_CONFIGURATION[value]
+        : null;
+}
+
+
+function applyChannelVolumeToElements(channel) {
+    if (typeof document === 'undefined') return;
+
+    appState.audio.activeSounds.forEach(sound => {
+        if (sound.category === channel) sound.gainNode.gain.value = sound.baseGain * getChannelVolumeMultiplier(channel);
+    });
+
+    if (!experienceStarted) {
+        if (channel === 'music') {
+            const bgMusic = document.getElementById('ambientMusic');
+            if (bgMusic) {
+                bgMusic.volume = computeEffectiveBackgroundVolume(bgMusic);
+            }
+        }
+        return;
+    }
+
+    const selector = `audio[data-audio-channel="${channel}"], video[data-audio-channel="${channel}"]`;
+    document.querySelectorAll(selector).forEach(element => {
+        if (channel === 'music' && element.id === 'ambientMusic') {
+            return;
+        }
+        applyMediaGain(element, { category: channel });
+    });
+
+    if (channel === 'music') {
+        const bgMusic = document.getElementById('ambientMusic');
+        synchronizeBackgroundRouting(bgMusic);
+    }
+}
+
+function showAudioSettingsOverlay() {
+    const overlay = document.getElementById('audioSettingsOverlay');
+    if (!overlay) return;
+
+    audioOverlayState.lastFocusedElement = document.activeElement;
+    revealOverlay(overlay);
+    overlay.querySelectorAll('.audio-slider__input').forEach(input => {
+        syncAudioSliderVisual(input, Number.parseFloat(input.value));
+    });
+
+    const firstInput = overlay.querySelector('.audio-slider__input');
+    if (firstInput && typeof firstInput.focus === 'function') {
+        try {
+            firstInput.focus({ preventScroll: true });
+        } catch (error) {
+            firstInput.focus();
+        }
+    }
+}
+
+function hideAudioSettingsOverlay() {
+    const overlay = document.getElementById('audioSettingsOverlay');
+    if (!overlay) return;
+
+    concealOverlay(overlay, {
+        onHidden: () => {
+            const last = audioOverlayState.lastFocusedElement;
+            if (last && typeof last.focus === 'function') {
+                last.focus({ preventScroll: true });
+            }
+            audioOverlayState.lastFocusedElement = null;
+        }
+    });
+}
+
+function syncRollingSettingsControls() {
+    const fullscreenToggle = document.getElementById('rollingFullscreenCutscenesToggle');
+    if (fullscreenToggle) {
+        fullscreenToggle.setAttribute('aria-checked', String(rollingSettingsPreference.fullscreenCutscenes));
+        fullscreenToggle.disabled = Boolean(cutsceneFullscreenTransition);
+    }
+    const speedSlider = document.getElementById('solsLikeRollingSpeed');
+    const speedOutput = document.getElementById('solsLikeRollingSpeedValue');
+    const speedPresetButtons = document.querySelectorAll('[data-sols-like-speed]');
+    const speedEditableWhilePaused = Boolean(
+        simulationActive
+        && isSolsLikeSimulationMethod()
+        && activeSolLikeSimulationController?.isPaused?.()
+    );
+
+    if (speedSlider) {
+        const rollsPerSecond = normalizeSolsLikeRollsPerSecond(
+            rollingSettingsPreference.solsLikeRollsPerSecond
+        );
+        const sliderProgress = (
+            (rollsPerSecond - SOLS_LIKE_ROLLS_PER_SECOND_MIN)
+            / (SOLS_LIKE_ROLLS_PER_SECOND_MAX - SOLS_LIKE_ROLLS_PER_SECOND_MIN)
+        ) * 100;
+        speedSlider.value = String(rollsPerSecond);
+        speedSlider.style.setProperty('--rolling-speed-progress', `${sliderProgress}%`);
+        speedSlider.disabled = simulationActive && !speedEditableWhilePaused;
+        if (speedOutput) {
+            speedOutput.textContent = formatSolsLikeRollingSpeed(rollsPerSecond);
+        }
+        speedPresetButtons.forEach(button => {
+            const presetSpeed = normalizeSolsLikeRollsPerSecond(button.dataset.solsLikeSpeed);
+            const selected = presetSpeed === rollsPerSecond;
+            button.setAttribute('aria-pressed', selected ? 'true' : 'false');
+            button.disabled = speedSlider.disabled;
+        });
+    }
+    syncCutsceneFilterLauncherLabels();
+}
+
+function showRollingSettingsOverlay() {
+    const overlay = document.getElementById('rollingSettingsOverlay');
+    if (!overlay) return;
+
+    rollingSettingsOverlayState.lastFocusedElement = document.activeElement;
+    syncRollingSettingsControls();
+    revealOverlay(overlay);
+
+    const firstControl = overlay.querySelector('select:not(:disabled), input:not(:disabled), button:not(:disabled)');
+    if (firstControl && typeof firstControl.focus === 'function') {
+        try {
+            firstControl.focus({ preventScroll: true });
+        } catch (error) {
+            firstControl.focus();
+        }
+    }
+}
+
+function hideRollingSettingsOverlay() {
+    const overlay = document.getElementById('rollingSettingsOverlay');
+    if (!overlay) return;
+
+    concealOverlay(overlay, {
+        onHidden: () => {
+            const last = rollingSettingsOverlayState.lastFocusedElement;
+            if (last && typeof last.focus === 'function') {
+                last.focus({ preventScroll: true });
+            }
+            rollingSettingsOverlayState.lastFocusedElement = null;
+        }
+    });
+}
+
+function markRollingSettingsChildDialogOpen() {
+    const overlay = document.getElementById('rollingSettingsOverlay');
+    if (overlay && !overlay.hasAttribute('hidden')) {
+        overlay.setAttribute('aria-hidden', 'true');
+    }
+}
+
+function restoreRollingSettingsAfterChildDialog(lastFocusedElement) {
+    const rollingOverlay = lastFocusedElement instanceof Element
+        ? lastFocusedElement.closest('#rollingSettingsOverlay')
+        : null;
+    if (rollingOverlay && !rollingOverlay.hasAttribute('hidden')) {
+        rollingOverlay.removeAttribute('aria-hidden');
+    }
+}
+
+function initializeRollingSettingsPanel() {
+    const overlay = document.getElementById('rollingSettingsOverlay');
+    const openButton = document.getElementById('rollingSettingsButton');
+    const closeButton = document.getElementById('rollingSettingsClose');
+    const speedSlider = document.getElementById('solsLikeRollingSpeed');
+    const speedPresetButtons = document.querySelectorAll('[data-sols-like-speed]');
+    const pauseCutsceneFilterButton = document.getElementById('rollingPauseCutsceneFiltersButton');
+    const tierFilterButton = document.getElementById('rollingFilterAuraTiersButton');
+    const auraFilterButton = document.getElementById('rollingFilterAurasButton');
+    const cutscenePlaybackFilterButton = document.getElementById('rollingCutscenePlaybackFiltersButton');
+    const fullscreenToggle = document.getElementById('rollingFullscreenCutscenesToggle');
+    if (!overlay || !openButton) return;
+
+    hydrateRollingSettings();
+    syncRollingSettingsControls();
+
+    fullscreenToggle?.addEventListener('click', () => {
+        void setCutsceneFullscreen(!rollingSettingsPreference.fullscreenCutscenes);
+    });
+    const reflectFullscreen = () => {
+        if (cutsceneFullscreenOwned && !getFullscreenElement() && !cutsceneFullscreenTransition) {
+            cutsceneFullscreenOwned = false;
+            cutsceneFullscreenDismissed = true;
+        }
+    };
+    document.addEventListener('fullscreenchange', reflectFullscreen);
+    document.addEventListener('webkitfullscreenchange', reflectFullscreen);
+
+    openButton.addEventListener('click', event => {
+        event.preventDefault();
+        const optionsMenu = document.getElementById('optionsMenu');
+        const optionsMenuToggle = document.getElementById('optionsMenuToggle');
+        optionsMenu?.classList.remove('options-menu--open');
+        optionsMenuToggle?.setAttribute('aria-expanded', 'false');
+        showRollingSettingsOverlay();
+    });
+
+    closeButton?.addEventListener('click', hideRollingSettingsOverlay);
+    overlay.addEventListener('click', event => {
+        if (event.target === overlay) {
+            hideRollingSettingsOverlay();
+        }
+    });
+    overlay.addEventListener('keydown', event => {
+        if (event.key === 'Escape') {
+            hideRollingSettingsOverlay();
+        }
+    });
+
+    speedSlider?.addEventListener('input', () => {
+        rollingSettingsPreference.solsLikeRollsPerSecond = normalizeSolsLikeRollsPerSecond(
+            speedSlider.value
+        );
+        syncRollingSettingsControls();
+    });
+    speedSlider?.addEventListener('change', () => {
+        rollingSettingsPreference.solsLikeRollsPerSecond = normalizeSolsLikeRollsPerSecond(
+            speedSlider.value
+        );
+        syncRollingSettingsControls();
+        persistRollingSettings();
+    });
+    speedPresetButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            if (button.disabled) return;
+            rollingSettingsPreference.solsLikeRollsPerSecond = normalizeSolsLikeRollsPerSecond(
+                button.dataset.solsLikeSpeed
+            );
+            syncRollingSettingsControls();
+            persistRollingSettings();
+        });
+    });
+
+    pauseCutsceneFilterButton?.addEventListener('click', () => {
+        markRollingSettingsChildDialogOpen();
+        showCutscenePauseFilterOverlay();
+    });
+
+    tierFilterButton?.addEventListener('click', () => {
+        markRollingSettingsChildDialogOpen();
+        showAuraFilterOverlay();
+    });
+    auraFilterButton?.addEventListener('click', () => {
+        markRollingSettingsChildDialogOpen();
+        showAuraDetailFilterOverlay();
+    });
+    cutscenePlaybackFilterButton?.addEventListener('click', () => {
+        markRollingSettingsChildDialogOpen();
+        showCutscenePlaybackFilterOverlay();
+    });
+}
+
+function showAuraFilterOverlay() {
+    const overlay = document.getElementById('auraFilterOverlay');
+    if (!overlay) return;
+
+    auraFilterOverlayState.lastFocusedElement = document.activeElement;
+    syncAuraTierFilterButtons();
+    revealOverlay(overlay);
+
+    const firstButton = overlay.querySelector('.filter-tier-toggle');
+    if (firstButton && typeof firstButton.focus === 'function') {
+        try {
+            firstButton.focus({ preventScroll: true });
+        } catch (error) {
+            firstButton.focus();
+        }
+    }
+}
+
+function hideAuraFilterOverlay() {
+    const overlay = document.getElementById('auraFilterOverlay');
+    if (!overlay) return;
+
+    concealOverlay(overlay, {
+        onHidden: () => {
+            const last = auraFilterOverlayState.lastFocusedElement;
+            restoreRollingSettingsAfterChildDialog(last);
+            if (last && typeof last.focus === 'function') {
+                last.focus({ preventScroll: true });
+            }
+            auraFilterOverlayState.lastFocusedElement = null;
+        }
+    });
+}
+
+function showAuraDetailFilterOverlay() {
+    const overlay = document.getElementById('auraDetailFilterOverlay');
+    if (!overlay) return;
+
+    auraDetailFilterOverlayState.lastFocusedElement = document.activeElement;
+    populateAuraFilterList();
+    syncAuraFilterButtons();
+    revealOverlay(overlay);
+
+    const firstButton = overlay.querySelector('.filter-aura-toggle');
+    if (firstButton && typeof firstButton.focus === 'function') {
+        try {
+            firstButton.focus({ preventScroll: true });
+        } catch (error) {
+            firstButton.focus();
+        }
+    }
+}
+
+function hideAuraDetailFilterOverlay() {
+    const overlay = document.getElementById('auraDetailFilterOverlay');
+    if (!overlay) return;
+
+    concealOverlay(overlay, {
+        onHidden: () => {
+            const last = auraDetailFilterOverlayState.lastFocusedElement;
+            restoreRollingSettingsAfterChildDialog(last);
+            if (last && typeof last.focus === 'function') {
+                last.focus({ preventScroll: true });
+            }
+            auraDetailFilterOverlayState.lastFocusedElement = null;
+        }
+    });
+}
+
+function getCutsceneAuras() {
+    if (!Array.isArray(AURA_REGISTRY)) {
+        return [];
+    }
+    return AURA_REGISTRY
+        .filter(aura => typeof aura?.cutscene === 'string' && aura.cutscene.length > 0)
+        .sort(compareAurasByDisplayTierThenChance);
+}
+
+function getSelectableCutsceneAuras() {
+    return getCutsceneAuras().filter(aura => !ALWAYS_ON_CUTSCENES.has(aura.cutscene));
+}
+
+function ensureCutsceneFilterPreferences() {
+    const pauseFilters = rollingSettingsPreference.cutscenePauseFilters;
+    const playbackFilters = rollingSettingsPreference.cutscenePlaybackFilters;
+    getCutsceneAuras().forEach(aura => {
+        if (!Object.prototype.hasOwnProperty.call(pauseFilters, aura.name)) {
+            pauseFilters[aura.name] = legacyAutoPauseAfterCutscene === true;
+        }
+        if (ALWAYS_ON_CUTSCENES.has(aura.cutscene) || !Object.prototype.hasOwnProperty.call(playbackFilters, aura.name)) {
+            playbackFilters[aura.name] = true;
+        }
+    });
+    legacyAutoPauseAfterCutscene = null;
+}
+
+function isAuraCutscenePauseEnabled(aura) {
+    if (ALWAYS_ON_CUTSCENES.has(aura?.cutscene)) return false;
+    if (!aura?.name) {
+        return false;
+    }
+    return rollingSettingsPreference.cutscenePauseFilters[aura.name] === true;
+}
+
+function isAuraCutscenePlaybackEnabled(aura) {
+    if (ALWAYS_ON_CUTSCENES.has(aura?.cutscene)) return true;
+    if (!aura?.name) {
+        return true;
+    }
+    const filters = rollingSettingsPreference.cutscenePlaybackFilters;
+    return !Object.prototype.hasOwnProperty.call(filters, aura.name) || filters[aura.name] !== false;
+}
+
+function hasAnyCutscenePlaybackEnabled() {
+    ensureCutsceneFilterPreferences();
+    return getCutsceneAuras().some(isAuraCutscenePlaybackEnabled);
+}
+
+function syncCutscenePlaybackStatusPill() {
+    const cutsceneAuras = getSelectableCutsceneAuras();
+    const playbackCount = cutsceneAuras.filter(isAuraCutscenePlaybackEnabled).length;
+    const total = cutsceneAuras.length;
+    const active = playbackCount > 0;
+    const status = document.getElementById('cutscenePlaybackStatus');
+    const count = document.getElementById('cutscenePlaybackStatusCount');
+    if (status) {
+        status.dataset.active = active ? 'true' : 'false';
+        status.setAttribute(
+            'aria-label',
+            active
+                ? `Enabled cutscenes active: ${playbackCount} of ${total} selected`
+                : `Enabled cutscenes disabled: 0 of ${total} selected`
+        );
+    }
+    if (count) {
+        count.textContent = `${playbackCount}/${total}`;
+    }
+}
+
+function syncCinematicStateFromCutsceneFilters({ showEnableWarning = false } = {}) {
+    const enabled = hasAnyCutscenePlaybackEnabled();
+    appState.cinematic = enabled;
+    syncCutscenePlaybackStatusPill();
+
+    if (enabled && showEnableWarning) {
+        cutsceneWarningManager.show();
+    }
+    if (!enabled) {
+        cutsceneWarningManager.hide();
+        const skipButton = document.getElementById('skip-cinematic-button');
+        if (skipButton && skipButton.style.display !== 'none') {
+            skipButton.click();
+        }
+    }
+    persistVisualSettings();
+}
+
+function initializeCinematicStateFromCutsceneFilters() {
+    ensureCutsceneFilterPreferences();
+    if (!cutscenePlaybackMigrationCompleted && !hasStoredCutscenePlaybackFilters) {
+        const legacyEnabled = appState.cinematic === true;
+        getCutsceneAuras().forEach(aura => {
+            rollingSettingsPreference.cutscenePlaybackFilters[aura.name] = ALWAYS_ON_CUTSCENES.has(aura.cutscene) || legacyEnabled;
+        });
+        persistRollingSettings();
+    }
+    cutscenePlaybackMigrationCompleted = true;
+    syncCinematicStateFromCutsceneFilters();
+    syncCutsceneFilterLauncherLabels();
+}
+
+function syncCutsceneFilterLauncherLabels() {
+    ensureCutsceneFilterPreferences();
+    const cutsceneAuras = getSelectableCutsceneAuras();
+    const total = cutsceneAuras.length;
+    const pauseCount = cutsceneAuras.filter(isAuraCutscenePauseEnabled).length;
+    const playbackCount = cutsceneAuras.filter(isAuraCutscenePlaybackEnabled).length;
+    const pauseButton = document.getElementById('rollingPauseCutsceneFiltersButton');
+    const playbackButton = document.getElementById('rollingCutscenePlaybackFiltersButton');
+    if (pauseButton) {
+        pauseButton.textContent = `Pause Cutscenes (${pauseCount}/${total})`;
+    }
+    if (playbackButton) {
+        playbackButton.textContent = `Filter Cutscenes (${playbackCount}/${total} play)`;
+    }
+    syncCutscenePlaybackStatusPill();
+}
+
+function showCutscenePauseFilterOverlay() {
+    const overlay = document.getElementById('cutscenePauseFilterOverlay');
+    if (!overlay) return;
+
+    cutscenePauseFilterOverlayState.lastFocusedElement = document.activeElement;
+    populateCutsceneFilterList('pause');
+    syncCutsceneFilterButtons('pause');
+    revealOverlay(overlay);
+
+    const firstButton = overlay.querySelector('.cutscene-pause-toggle');
+    if (firstButton && typeof firstButton.focus === 'function') {
+        try {
+            firstButton.focus({ preventScroll: true });
+        } catch (error) {
+            firstButton.focus();
+        }
+    }
+}
+
+function hideCutscenePauseFilterOverlay() {
+    const overlay = document.getElementById('cutscenePauseFilterOverlay');
+    if (!overlay) return;
+
+    concealOverlay(overlay, {
+        onHidden: () => {
+            const last = cutscenePauseFilterOverlayState.lastFocusedElement;
+            restoreRollingSettingsAfterChildDialog(last);
+            if (last && typeof last.focus === 'function') {
+                last.focus({ preventScroll: true });
+            }
+            cutscenePauseFilterOverlayState.lastFocusedElement = null;
+        }
+    });
+}
+
+function showCutscenePlaybackFilterOverlay() {
+    const overlay = document.getElementById('cutscenePlaybackFilterOverlay');
+    if (!overlay) return;
+
+    cutscenePlaybackFilterOverlayState.lastFocusedElement = document.activeElement;
+    populateCutsceneFilterList('playback');
+    syncCutsceneFilterButtons('playback');
+    revealOverlay(overlay);
+
+    const firstButton = overlay.querySelector('.cutscene-playback-toggle');
+    if (firstButton && typeof firstButton.focus === 'function') {
+        try {
+            firstButton.focus({ preventScroll: true });
+        } catch (error) {
+            firstButton.focus();
+        }
+    }
+}
+
+function hideCutscenePlaybackFilterOverlay() {
+    const overlay = document.getElementById('cutscenePlaybackFilterOverlay');
+    if (!overlay) return;
+
+    concealOverlay(overlay, {
+        onHidden: () => {
+            const last = cutscenePlaybackFilterOverlayState.lastFocusedElement;
+            restoreRollingSettingsAfterChildDialog(last);
+            if (last && typeof last.focus === 'function') {
+                last.focus({ preventScroll: true });
+            }
+            cutscenePlaybackFilterOverlayState.lastFocusedElement = null;
+        }
+    });
+}
+
+function createAuraFilterNameSpan(aura) {
+    const auraName = aura?.name || '';
+    const isEventAura = aura ? Boolean(getAuraEventId(aura)) : false;
+    const specialClass = aura ? resolveAuraStyleClass(aura, null) : '';
+    const rarityClass = aura && !isEventAura && !shouldSuppressRarityClassForSpecialStyle(specialClass)
+        ? resolveBaseRarityClass(aura)
+        : '';
+    const nameSpan = document.createElement('span');
+    if (aura && (WikiTitles.resolveAuraName(auraName.split(' - ')[0].trim()) || auraName.startsWith('Glitch - '))) {
+        nameSpan.innerHTML = formatAuraNameMarkup(aura);
+    } else {
+        nameSpan.textContent = auraName;
+    }
+    const nameClasses = [rarityClass, specialClass].filter(Boolean).join(' ');
+    if (nameClasses) {
+        nameSpan.className = nameClasses;
+    }
+    return nameSpan;
+}
+
+function renderCutsceneFilterButtonLabel(button, aura, enabled, mode) {
+    if (!button || !aura) {
+        return;
+    }
+
+    const verbSpan = document.createElement('span');
+    verbSpan.className = 'cutscene-filter-toggle__verb';
+    verbSpan.textContent = mode === 'pause' ? 'Pause after' : 'Play';
+
+    const nameSpan = createAuraFilterNameSpan(aura);
+    nameSpan.classList.add('cutscene-filter-toggle__aura');
+
+    const statusSpan = document.createElement('span');
+    statusSpan.className = 'cutscene-filter-toggle__status';
+    const alwaysOn = mode !== 'pause' && ALWAYS_ON_CUTSCENES.has(aura.cutscene);
+    button.disabled = alwaysOn;
+    statusSpan.textContent = alwaysOn ? ': Always On' : `: ${enabled ? 'On' : 'Off'}`;
+
+    const layoutSpan = document.createElement('span');
+    layoutSpan.className = 'cutscene-filter-toggle__layout';
+    layoutSpan.append(verbSpan, nameSpan, statusSpan);
+
+    button.textContent = '';
+    button.append(layoutSpan);
+}
+
+function populateCutsceneFilterList(mode) {
+    const pauseMode = mode === 'pause';
+    const list = document.querySelector(
+        pauseMode ? '[data-cutscene-pause-filter-list]' : '[data-cutscene-playback-filter-list]'
+    );
+    if (!list || list.dataset.populated === 'true') {
+        return;
+    }
+
+    ensureCutsceneFilterPreferences();
+    const fragment = document.createDocumentFragment();
+    getSelectableCutsceneAuras().forEach(aura => {
+        const button = document.createElement('button');
+        const enabled = pauseMode
+            ? isAuraCutscenePauseEnabled(aura)
+            : isAuraCutscenePlaybackEnabled(aura);
+        button.type = 'button';
+        button.className = `interface-toggle filter-tier-toggle ${pauseMode ? 'cutscene-pause-toggle' : 'cutscene-playback-toggle'}`;
+        button.dataset.auraName = aura.name;
+        button.dataset.auraTier = resolveAuraDisplayTierKey(aura);
+        button.setAttribute('aria-pressed', enabled ? 'true' : 'false');
+        renderCutsceneFilterButtonLabel(button, aura, enabled, mode);
+        fragment.appendChild(button);
+    });
+    list.appendChild(fragment);
+    syncAuraTierSeparators(list, '.cutscene-pause-toggle,.cutscene-playback-toggle');
+    list.dataset.populated = 'true';
+}
+
+function syncCutsceneFilterButtons(mode) {
+    const pauseMode = mode === 'pause';
+    const overlay = document.getElementById(
+        pauseMode ? 'cutscenePauseFilterOverlay' : 'cutscenePlaybackFilterOverlay'
+    );
+    if (!overlay) {
+        return;
+    }
+    ensureCutsceneFilterPreferences();
+    overlay.querySelectorAll(pauseMode ? '.cutscene-pause-toggle' : '.cutscene-playback-toggle').forEach(button => {
+        const aura = AURA_BY_NAME.get(button.dataset.auraName) || null;
+        if (!aura) {
+            return;
+        }
+        const enabled = pauseMode
+            ? isAuraCutscenePauseEnabled(aura)
+            : isAuraCutscenePlaybackEnabled(aura);
+        button.setAttribute('aria-pressed', enabled ? 'true' : 'false');
+        renderCutsceneFilterButtonLabel(button, aura, enabled, mode);
+    });
+    syncCutsceneFilterLauncherLabels();
+}
+
+function syncAuraTierFilterButtons() {
+    const overlay = document.getElementById('auraFilterOverlay');
+    if (!overlay || !appState || !appState.auraTierFilters) {
+        return;
+    }
+
+    overlay.querySelectorAll('.filter-tier-toggle').forEach(button => {
+        const tierKey = button.dataset.tierKey;
+        if (!tierKey) {
+            return;
+        }
+        const label = button.dataset.tierLabel || button.textContent.trim();
+        const enabled = Boolean(appState.auraTierFilters[tierKey]);
+        button.setAttribute('aria-pressed', enabled ? 'true' : 'false');
+        button.textContent = `${label}: ${enabled ? 'On' : 'Off'}`;
+    });
+}
+
+function syncAuraFilterButtons() {
+    const overlay = document.getElementById('auraDetailFilterOverlay');
+    if (!overlay || !appState || !appState.auraFilters) {
+        return;
+    }
+
+    overlay.querySelectorAll('.filter-aura-toggle').forEach(button => {
+        const auraName = button.dataset.auraName;
+        if (!auraName) {
+            return;
+        }
+        const enabled = Boolean(appState.auraFilters[auraName]);
+        button.setAttribute('aria-pressed', enabled ? 'true' : 'false');
+        renderAuraFilterButtonLabel(button, auraName, enabled);
+    });
+}
+
+function renderAuraFilterButtonLabel(button, auraName, enabled) {
+    if (!button || !auraName) {
+        return;
+    }
+    const aura = AURA_BY_NAME.get(auraName) || null;
+
+    button.textContent = '';
+    button.append('Skip ');
+    button.append(aura ? createAuraFilterNameSpan(aura) : auraName);
+    button.append(`: ${enabled ? 'On' : 'Off'}`);
+}
+
+function populateAuraFilterList() {
+    const list = document.querySelector('[data-aura-filter-list]');
+    if (!list || !Array.isArray(AURA_REGISTRY)) {
+        return;
+    }
+    if (list.dataset.populated === 'true') {
+        return;
+    }
+
+    list.textContent = '';
+    const displayAuras = [...AURA_REGISTRY].sort(compareAurasByDisplayTierThenChance);
+
+    const fragment = document.createDocumentFragment();
+    displayAuras.forEach(aura => {
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'interface-toggle filter-tier-toggle filter-aura-toggle';
+        button.dataset.auraName = aura.name;
+        button.dataset.auraTier = resolveAuraDisplayTierKey(aura);
+        button.setAttribute('aria-pressed', 'false');
+        renderAuraFilterButtonLabel(button, aura.name, false);
+        fragment.appendChild(button);
+    });
+    list.appendChild(fragment);
+    syncAuraTierSeparators(list, '.filter-aura-toggle');
+    list.dataset.populated = 'true';
+}
+
+function initializeAuraTierFilterPanel() {
+    const overlay = document.getElementById('auraFilterOverlay');
+    const closeButton = document.getElementById('auraFilterClose');
+    if (!overlay) return;
+
+    overlay.addEventListener('click', event => {
+        if (event.target === overlay) {
+            hideAuraFilterOverlay();
+        }
+    });
+
+    overlay.addEventListener('keydown', event => {
+        if (event.key === 'Escape') {
+            hideAuraFilterOverlay();
+        }
+    });
+
+    if (closeButton) {
+        closeButton.addEventListener('click', () => hideAuraFilterOverlay());
+    }
+
+    overlay.querySelectorAll('.filter-tier-toggle').forEach(button => {
+        button.addEventListener('click', () => {
+            const tierKey = button.dataset.tierKey;
+            if (!tierKey || !appState || !appState.auraTierFilters) {
+                return;
+            }
+            appState.auraTierFilters[tierKey] = !appState.auraTierFilters[tierKey];
+            refreshActiveAuraFilterCounts();
+            syncAuraTierFilterButtons();
+            persistAuraTierFilters();
+        });
+    });
+
+    syncAuraTierFilterButtons();
+}
+
+function initializeAuraDetailFilterPanel() {
+    const overlay = document.getElementById('auraDetailFilterOverlay');
+    const closeButton = document.getElementById('auraDetailFilterClose');
+    const resetButton = document.getElementById('auraDetailFilterReset');
+    const list = overlay?.querySelector('[data-aura-filter-list]');
+    if (!overlay) return;
+
+    overlay.addEventListener('click', event => {
+        if (event.target === overlay) {
+            hideAuraDetailFilterOverlay();
+        }
+    });
+
+    overlay.addEventListener('keydown', event => {
+        if (event.key === 'Escape') {
+            hideAuraDetailFilterOverlay();
+        }
+    });
+
+    if (closeButton) {
+        closeButton.addEventListener('click', () => hideAuraDetailFilterOverlay());
+    }
+
+    if (resetButton) {
+        resetButton.addEventListener('click', () => {
+            if (!appState || !appState.auraFilters) {
+                return;
+            }
+            Object.keys(appState.auraFilters).forEach(name => {
+                appState.auraFilters[name] = false;
+            });
+            refreshActiveAuraFilterCounts();
+            syncAuraFilterButtons();
+            persistAuraFilters();
+        });
+    }
+
+    if (list) {
+        list.addEventListener('click', event => {
+            const button = event.target.closest('.filter-aura-toggle');
+            if (!button || !list.contains(button) || !appState || !appState.auraFilters) {
+                return;
+            }
+            const auraName = button.dataset.auraName;
+            if (!auraName) {
+                return;
+            }
+            const enabled = !appState.auraFilters[auraName];
+            appState.auraFilters[auraName] = enabled;
+            refreshActiveAuraFilterCounts();
+            button.setAttribute('aria-pressed', enabled ? 'true' : 'false');
+            renderAuraFilterButtonLabel(button, auraName, enabled);
+            persistAuraFilters();
+        });
+    }
+
+}
+
+function initializeCutsceneFilterPanel(mode) {
+    const pauseMode = mode === 'pause';
+    const overlay = document.getElementById(
+        pauseMode ? 'cutscenePauseFilterOverlay' : 'cutscenePlaybackFilterOverlay'
+    );
+    const closeButton = document.getElementById(
+        pauseMode ? 'cutscenePauseFilterClose' : 'cutscenePlaybackFilterClose'
+    );
+    const resetButton = document.getElementById(
+        pauseMode ? 'cutscenePauseFilterReset' : 'cutscenePlaybackFilterReset'
+    );
+    const disableAllButton = pauseMode
+        ? null
+        : document.getElementById('cutscenePlaybackFilterDisableAll');
+    const list = overlay?.querySelector(
+        pauseMode ? '[data-cutscene-pause-filter-list]' : '[data-cutscene-playback-filter-list]'
+    );
+    const hideOverlay = pauseMode
+        ? hideCutscenePauseFilterOverlay
+        : hideCutscenePlaybackFilterOverlay;
+    if (!overlay) return;
+
+    overlay.addEventListener('click', event => {
+        if (event.target === overlay) {
+            hideOverlay();
+        }
+    });
+    overlay.addEventListener('keydown', event => {
+        if (event.key === 'Escape') {
+            hideOverlay();
+        }
+    });
+    closeButton?.addEventListener('click', hideOverlay);
+
+    resetButton?.addEventListener('click', () => {
+        ensureCutsceneFilterPreferences();
+        const playbackWillEnable = !pauseMode && getCutsceneAuras().some(aura => !isAuraCutscenePlaybackEnabled(aura));
+        const filters = pauseMode
+            ? rollingSettingsPreference.cutscenePauseFilters
+            : rollingSettingsPreference.cutscenePlaybackFilters;
+        getCutsceneAuras().forEach(aura => {
+            filters[aura.name] = !pauseMode;
+        });
+        syncCutsceneFilterButtons(mode);
+        persistRollingSettings();
+        if (!pauseMode) {
+            syncCinematicStateFromCutsceneFilters({ showEnableWarning: playbackWillEnable });
+        }
+    });
+
+    disableAllButton?.addEventListener('click', () => {
+        ensureCutsceneFilterPreferences();
+        getCutsceneAuras().forEach(aura => {
+            rollingSettingsPreference.cutscenePlaybackFilters[aura.name] = ALWAYS_ON_CUTSCENES.has(aura.cutscene);
+        });
+        syncCutsceneFilterButtons('playback');
+        persistRollingSettings();
+        syncCinematicStateFromCutsceneFilters();
+    });
+
+    list?.addEventListener('click', event => {
+        const selector = pauseMode ? '.cutscene-pause-toggle' : '.cutscene-playback-toggle';
+        const button = event.target.closest(selector);
+        if (!button || !list.contains(button)) {
+            return;
+        }
+        const aura = AURA_BY_NAME.get(button.dataset.auraName) || null;
+        if (!aura || (!pauseMode && ALWAYS_ON_CUTSCENES.has(aura.cutscene))) {
+            return;
+        }
+        const filters = pauseMode
+            ? rollingSettingsPreference.cutscenePauseFilters
+            : rollingSettingsPreference.cutscenePlaybackFilters;
+        const enabled = pauseMode
+            ? !isAuraCutscenePauseEnabled(aura)
+            : !isAuraCutscenePlaybackEnabled(aura);
+        filters[aura.name] = enabled;
+        button.setAttribute('aria-pressed', enabled ? 'true' : 'false');
+        renderCutsceneFilterButtonLabel(button, aura, enabled, mode);
+        syncCutsceneFilterLauncherLabels();
+        persistRollingSettings();
+        if (!pauseMode) {
+            syncCinematicStateFromCutsceneFilters({
+                showEnableWarning: enabled
+            });
+        }
+    });
+}
+
+function initializeOptionsMenu(menuId, toggleId, panelId) {
+    const menu = document.getElementById(menuId);
+    const toggleButton = document.getElementById(toggleId);
+    const panel = document.getElementById(panelId);
+    if (!menu || !toggleButton || !panel) {
+        return;
+    }
+
+    const closeMenu = () => {
+        menu.classList.remove('options-menu--open');
+        toggleButton.setAttribute('aria-expanded', 'false');
+    };
+
+    const openMenu = () => {
+        menu.classList.add('options-menu--open');
+        toggleButton.setAttribute('aria-expanded', 'true');
+    };
+
+    toggleButton.addEventListener('click', event => {
+        event.stopPropagation();
+        if (menu.classList.contains('options-menu--open')) {
+            closeMenu();
+        } else {
+            openMenu();
+            if (event.detail === 0) {
+                const firstItem = panel.querySelector('button');
+                if (firstItem) {
+                    firstItem.focus({ preventScroll: true });
+                }
+            }
+        }
+    });
+
+    document.addEventListener('click', event => {
+        if (!menu.contains(event.target)) {
+            closeMenu();
+        }
+    });
+
+    menu.addEventListener('keydown', event => {
+        if (event.key === 'Escape') {
+            closeMenu();
+            toggleButton.focus({ preventScroll: true });
+        }
+    });
+
+    menu.addEventListener('focusout', event => {
+        const nextFocus = event.relatedTarget;
+        if (nextFocus instanceof Node && !menu.contains(nextFocus)) {
+            closeMenu();
+        }
+    });
+
+    closeMenu();
+}
+
+function applyAudioSliderVisualPosition(input, percentValue) {
+    if (!(input instanceof HTMLInputElement)) {
+        return;
+    }
+
+    const clampedPercent = Math.min(100, Math.max(0, Number.isFinite(percentValue) ? percentValue : 0));
+    input.style.setProperty('--audio-slider-progress', `${clampedPercent}%`);
+
+    const control = input.closest('.audio-slider__control');
+    if (!control) {
+        return;
+    }
+
+    control.style.setProperty('--audio-slider-thumb-progress', `${clampedPercent}%`);
+}
+
+function syncAudioSliderVisual(input, targetPercent) {
+    if (!(input instanceof HTMLInputElement)) {
+        return;
+    }
+
+    const target = Math.min(100, Math.max(0, Number.isFinite(targetPercent) ? targetPercent : 0));
+    applyAudioSliderVisualPosition(input, target);
+}
+
+function updateAudioSliderLabel(channel, percentValue) {
+    const overlay = document.getElementById('audioSettingsOverlay');
+    if (!overlay) return;
+
+    const label = overlay.querySelector(`.audio-slider__value[data-audio-value="${channel}"]`);
+    if (label) {
+        label.textContent = `${Math.round(percentValue)}%`;
+    }
+
+    const input = overlay.querySelector(`.audio-slider__input[data-audio-channel="${channel}"]`);
+    if (input) {
+        const clamped = clamp01(percentValue / 100);
+        input.value = String(Math.round(clamped * 100));
+        input.setAttribute('aria-valuetext', `${Math.round(clamped * 100)} percent`);
+        syncAudioSliderVisual(input, clamped * 100);
+    }
+
+    const icon = overlay.querySelector(`.audio-slider__icon[data-audio-icon="${channel}"] i`);
+    if (icon) {
+        const clampedValue = clamp01(percentValue / 100);
+        let iconClass = 'fa-volume-high';
+        if (clampedValue === 0) {
+            iconClass = 'fa-volume-xmark';
+        } else if (clampedValue <= 0.33) {
+            iconClass = 'fa-volume-off';
+        } else if (clampedValue <= 0.66) {
+            iconClass = 'fa-volume-low';
+        }
+        icon.className = `fa-solid ${iconClass}`;
+    }
+}
+
+const appNotificationEntries = new Map();
+function showAppNotification(message, { id = 'general', duration = 2800 } = {}) {
+    const region = document.getElementById('appNotifications');
+    if (!region) return;
+    let entry = appNotificationEntries.get(id);
+    if (!entry) {
+        if (appNotificationEntries.size >= 3) {
+            const [oldestId, oldest] = appNotificationEntries.entries().next().value;
+            clearTimeout(oldest.hideTimer);
+            clearTimeout(oldest.removeTimer);
+            oldest.element.remove();
+            appNotificationEntries.delete(oldestId);
+        }
+        entry = { element: document.createElement('div') };
+        entry.element.className = 'app-notification';
+        appNotificationEntries.set(id, entry);
+        region.appendChild(entry.element);
+    }
+    clearTimeout(entry.hideTimer);
+    clearTimeout(entry.removeTimer);
+    entry.element.textContent = message;
+    requestAnimationFrame(() => entry.element.classList.add('app-notification--visible'));
+    entry.hideTimer = setTimeout(() => {
+        entry.element.classList.remove('app-notification--visible');
+        entry.removeTimer = setTimeout(() => {
+            entry.element.remove();
+            appNotificationEntries.delete(id);
+        }, 300);
+    }, duration);
+}
+
+function initializeAudioKeyboardShortcuts() {
+    document.addEventListener('keydown', event => {
+        if (event.defaultPrevented || !event.altKey || event.ctrlKey || event.metaKey || event.shiftKey || event.isComposing) return;
+        if (event.target.closest?.('input, textarea, select, [contenteditable]:not([contenteditable="false"]), [role="textbox"], [role="slider"]')) return;
+        if (event.code === 'KeyM') {
+            event.preventDefault();
+            if (!event.repeat) toggleMasterMute();
+            return;
+        }
+        if (event.key !== 'ArrowUp' && event.key !== 'ArrowDown') return;
+        event.preventDefault();
+        const direction = event.key === 'ArrowUp' ? 1 : -1;
+        const channels = ['music', 'ui', 'server', 'effects', 'cutscene'];
+        channels.forEach(channel => {
+            const percent = Math.round(clamp01(appState.audio[`${channel}Volume`]) * 100);
+            setChannelVolume(channel, (percent + direction * 5) / 100, { persist: false });
+        });
+        if (direction > 0 && appState.audio.masterMuted) setMasterMuteState(false, { persist: false });
+        persistAudioSettings();
+        const levels = channels.map(channel => `${Math.round(appState.audio[`${channel}Volume`] * 100)}%`);
+        showAppNotification(`Volume ${direction > 0 ? 'up' : 'down'} · Music ${levels[0]} · UI ${levels[1]} · Server Messages ${levels[2]} · Other Effects ${levels[3]} · Cutscenes ${levels[4]}${appState.audio.masterMuted ? ' · Muted' : ''}`, { id: 'volume' });
+    });
+}
+
+function setChannelVolume(channel, normalized, { persist = true, notify = false } = {}) {
+    if (!['music', 'ui', 'server', 'effects', 'cutscene'].includes(channel)) return;
+    const value = clamp01(normalized);
+    appState.audio[`${channel}Volume`] = value;
+    appState.audio.ui = appState.audio.uiVolume > 0;
+
+    const rollingActive = (appState.audio.serverVolume ?? 0) > 0
+        || (appState.audio.musicVolume ?? 0) > 0
+        || (appState.audio.effectsVolume ?? 0) > 0
+        || (appState.audio.cutsceneVolume ?? 0) > 0;
+    appState.audio.roll = rollingActive;
+
+    updateAudioSliderLabel(channel, value * 100);
+    applyChannelVolumeToElements(channel);
+    document.dispatchEvent(new CustomEvent('aura-audio-settings-change'));
+
+    if (experienceStarted) {
+        resumeAudioEngine();
+        if (channel === 'music' && value > 0 && !appState.audio.masterMuted) {
+            startBackgroundMusic(document.getElementById('ambientMusic'));
+        }
+    }
+
+    if (persist) {
+        persistAudioSettings();
+    }
+    if (notify) {
+        const label = { music: 'Background Music', ui: 'UI', server: 'Server Messages', effects: 'Other Sound Effects', cutscene: 'Cutscene Sounds' }[channel];
+        showAppNotification(`${label} · ${Math.round(value * 100)}%${appState.audio.masterMuted ? ' · Muted' : ''}`, { id: 'volume' });
+    }
+}
+
+function initializeAudioSettingsPanel() {
+    const overlay = document.getElementById('audioSettingsOverlay');
+    const openButton = document.getElementById('audioSettingsButton');
+    const closeButton = document.getElementById('audioSettingsClose');
+    if (!overlay || !openButton) return;
+
+    const inputs = Array.from(overlay.querySelectorAll('.audio-slider__input'));
+    inputs.forEach(input => {
+        const channel = input.dataset.audioChannel;
+        const defaultValue = appState.audio[`${channel}Volume`];
+        const percent = Math.round(clamp01(defaultValue) * 100);
+        input.value = percent;
+        syncAudioSliderVisual(input, percent);
+        setChannelVolume(channel, percent / 100, { persist: false });
+
+        input.addEventListener('input', () => {
+            const normalized = clamp01(Number.parseFloat(input.value) / 100);
+            setChannelVolume(channel, normalized, { notify: true });
+        });
+    });
+
+    overlay.addEventListener('click', event => {
+        if (event.target === overlay) {
+            hideAudioSettingsOverlay();
+        }
+    });
+
+    overlay.addEventListener('keydown', event => {
+        if (event.key === 'Escape') {
+            hideAudioSettingsOverlay();
+        }
+    });
+
+    openButton.addEventListener('click', event => {
+        event.preventDefault();
+        showAudioSettingsOverlay();
+    });
+    closeButton?.addEventListener('click', hideAudioSettingsOverlay);
+
+    setChannelVolume('ui', appState.audio.uiVolume, { persist: false });
+}
+
+function initializeRollTriggerFloating() {
+    const cta = document.querySelector('.control-section--cta');
+    if (!cta) return;
+
+    const rollConsole = cta.closest('.roll-console');
+    const rollTriggerButton = cta.querySelector('.roll-trigger');
+    const parametersButton = document.getElementById('rollDockParametersButton');
+    if (!rollConsole || !rollTriggerButton) return;
+
+    const dockAnchor = document.createElement('div');
+    dockAnchor.className = 'roll-trigger-dock-anchor';
+    dockAnchor.setAttribute('aria-hidden', 'true');
+    cta.before(dockAnchor);
+
+    const userAgent = navigator.userAgent || '';
+    const mobileDevicePattern = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Mobile|Tablet/i;
+    const finePointerQuery = window.matchMedia('(any-pointer: fine)');
+    const hoverQuery = window.matchMedia('(any-hover: hover)');
+    const mobileLayoutQuery = window.matchMedia('(max-width: 620px)');
+    const isMobileDevice = navigator.userAgentData?.mobile === true || mobileDevicePattern.test(userAgent);
+
+    const syncShortcutHint = () => {
+        const hasKeyboardLikeInput = finePointerQuery.matches && hoverQuery.matches;
+        if (isMobileDevice || mobileLayoutQuery.matches || !hasKeyboardLikeInput) {
+            delete rollTriggerButton.dataset.shortcutLabel;
+            rollTriggerButton.removeAttribute('aria-keyshortcuts');
+            rollTriggerButton.title = 'Start rolling';
+            return;
+        }
+
+        const shortcutLabel = /Mac/i.test(userAgent) ? 'Command + Enter' : 'Ctrl + Enter';
+        rollTriggerButton.dataset.shortcutLabel = shortcutLabel;
+        rollTriggerButton.setAttribute('aria-keyshortcuts', 'Control+Enter Meta+Enter');
+        rollTriggerButton.title = `Start rolling from anywhere with ${shortcutLabel}`;
+    };
+
+    syncShortcutHint();
+    finePointerQuery.addEventListener?.('change', syncShortcutHint);
+    hoverQuery.addEventListener?.('change', syncShortcutHint);
+    mobileLayoutQuery.addEventListener?.('change', syncShortcutHint);
+
+    let floating = false;
+    let updateFrame = 0;
+
+    const getDockScale = () => {
+        const anchorRect = dockAnchor.getBoundingClientRect();
+        const layoutWidth = dockAnchor.offsetWidth;
+        if (!layoutWidth || !anchorRect.width) return 1;
+
+        const measuredScale = anchorRect.width / layoutWidth;
+        return Number.isFinite(measuredScale) && measuredScale > 0 ? measuredScale : 1;
+    };
+
+    const reserveDockSpace = visualHeight => {
+        const dockScale = getDockScale();
+        dockAnchor.style.height = `${Math.ceil(visualHeight / dockScale)}px`;
+    };
+
+    const syncDockGeometry = () => {
+        if (!floating) return;
+
+        const anchorRect = dockAnchor.getBoundingClientRect();
+        const dockScale = getDockScale();
+        cta.style.setProperty('--roll-cta-left', `${Math.round(anchorRect.left / dockScale)}px`);
+        cta.style.setProperty('--roll-cta-width', `${Math.round(anchorRect.width / dockScale)}px`);
+        reserveDockSpace(cta.getBoundingClientRect().height);
+    };
+
+    const setFloating = nextFloating => {
+        if (floating === nextFloating) return;
+
+        floating = nextFloating;
+        if (floating) {
+            reserveDockSpace(cta.getBoundingClientRect().height);
+            cta.classList.add('control-section--cta--floating');
+            document.body?.classList.add('roll-dock-active');
+            syncDockGeometry();
+        } else {
+            cta.classList.remove('control-section--cta--floating');
+            cta.style.removeProperty('--roll-cta-width');
+            cta.style.removeProperty('--roll-cta-left');
+            dockAnchor.style.removeProperty('height');
+            document.body?.classList.remove('roll-dock-active');
+        }
+    };
+
+    const updateDock = () => {
+        updateFrame = 0;
+        if (appState.stickyRollButton === false) {
+            setFloating(false);
+            return;
+        }
+        const activationOffset = Math.max(12, Math.min(18, window.innerWidth * 0.02));
+        const anchorTop = dockAnchor.getBoundingClientRect().top;
+        const shouldFloat = floating
+            ? anchorTop <= activationOffset + 24
+            : anchorTop <= activationOffset;
+
+        setFloating(shouldFloat);
+        syncDockGeometry();
+    };
+
+    const requestDockUpdate = () => {
+        if (updateFrame) return;
+        updateFrame = window.requestAnimationFrame(updateDock);
+    };
+
+    parametersButton?.addEventListener('click', () => {
+        const parametersPanel = document.querySelector('.surface--parameters');
+        if (!parametersPanel) return;
+
+        parametersPanel.scrollIntoView({
+            behavior: appState?.reduceMotion ? 'auto' : 'smooth',
+            block: 'start'
+        });
+    });
+
+    document.addEventListener('keydown', event => {
+        const shortcutPressed = event.key === 'Enter'
+            && (event.ctrlKey || event.metaKey)
+            && !event.altKey;
+        if (!shortcutPressed || event.defaultPrevented || event.repeat) return;
+
+        const blockingLayerOpen = Boolean(document.querySelector(
+            '.modal-overlay:not([hidden]), .cutscene-warning-overlay:not([hidden]), #introOverlay:not([hidden])'
+        ));
+        if (blockingLayerOpen || isAuraCutscenePlaybackActive() || simulationActive || rollTriggerButton.disabled) return;
+
+        event.preventDefault();
+        rollTriggerButton.click();
+    });
+
+    window.addEventListener('scroll', requestDockUpdate, { passive: true });
+    window.addEventListener('resize', requestDockUpdate, { passive: true });
+    window.addEventListener('orientationchange', requestDockUpdate, { passive: true });
+    document.addEventListener('sticky-roll-button-change', updateDock);
+
+    if (typeof ResizeObserver === 'function') {
+        const dockResizeObserver = new ResizeObserver(requestDockUpdate);
+        dockResizeObserver.observe(rollConsole);
+        dockResizeObserver.observe(cta);
+    }
+
+    requestDockUpdate();
+}
+
+function beginSimulationExperience() {
+    const overlay = document.getElementById('introOverlay');
+    const startButton = document.getElementById('startExperienceButton');
+    const bgMusic = document.getElementById('ambientMusic');
+
+    if (startButton && typeof startButton.blur === 'function') {
+        startButton.blur();
+    }
+
+    experienceStarted = true;
+    resumeAudioEngine();
+    if (bgMusic) {
+        primeBackgroundMusic(bgMusic);
+        startBackgroundMusic(bgMusic);
+    }
+
+    startSnowEffect();
+
+    if (overlay) {
+        overlay.setAttribute('hidden', '');
+        overlay.setAttribute('aria-hidden', 'true');
+    }
+
+    if (glitchPresentationEnabled && isGlitchBiomeSelected()) {
+        triggerGlitchEntryErrors();
+    }
+}
+
+function initializeIntroOverlay() {
+    const overlay = document.getElementById('introOverlay');
+    const startButton = document.getElementById('startExperienceButton');
+    if (!overlay || !startButton) {
+        let interactionArmed = true;
+        const startFromInteraction = () => {
+            if (!interactionArmed) return;
+            interactionArmed = false;
+            document.removeEventListener('pointerdown', startFromInteraction, true);
+            document.removeEventListener('touchstart', startFromInteraction, true);
+            document.removeEventListener('keydown', startFromInteraction, true);
+            beginSimulationExperience();
+        };
+        document.addEventListener('pointerdown', startFromInteraction, { capture: true, passive: true });
+        document.addEventListener('touchstart', startFromInteraction, { capture: true, passive: true });
+        document.addEventListener('keydown', startFromInteraction, true);
+        return;
+    }
+
+    startButton.addEventListener('click', () => {
+        beginSimulationExperience();
+    });
+}
+
+const cutsceneWarningManager = (() => {
+    const storageKey = 'solsCutsceneWarningDismissed';
+    const updateKey = 'solsRollingCalculator:fullscreenCutscenePrompt:v2.215';
+    let suppressed = null;
+    let lastFocusedElement = null;
+    let backgroundOverlay = null;
+    let startupPending = false;
+    let initialized = false;
+
+    const getOverlay = () => document.getElementById('cutsceneWarningOverlay');
+
+    function readSuppressedPreference() {
+        if (suppressed !== null) {
+            return suppressed;
+        }
+        if (typeof window === 'undefined') {
+            suppressed = false;
+            return suppressed;
+        }
+        try {
+            const stored = window.localStorage.getItem(storageKey);
+            suppressed = stored === 'true';
+        } catch (error) {
+            suppressed = false;
+        }
+        return suppressed;
+    }
+
+    function focusPrimaryAction() {
+        const confirmButton = document.getElementById('cutsceneWarningConfirm');
+        if (!confirmButton || typeof confirmButton.focus !== 'function') {
+            return;
+        }
+        try {
+            confirmButton.focus({ preventScroll: true });
+        } catch (error) {
+            confirmButton.focus();
+        }
+    }
+
+    return {
+        isSuppressed() {
+            return readSuppressedPreference();
+        },
+        show() {
+            const changelog = document.getElementById('versionChangelogOverlay');
+            if (changelog && !changelog.hidden) {
+                startupPending = true;
+                return false;
+            }
+            const overlay = getOverlay();
+            if (!overlay) {
+                return false;
+            }
+            if (!overlay.hasAttribute('hidden')) {
+                return true;
+            }
+            startupPending = false;
+            try { localStorage.setItem(updateKey, 'true'); } catch {}
+            lastFocusedElement = document.activeElement;
+            if (!lastFocusedElement?.getClientRects().length) lastFocusedElement = versionInfoButton;
+            backgroundOverlay = lastFocusedElement instanceof Element
+                ? lastFocusedElement.closest('.modal-overlay')
+                : null;
+            if (backgroundOverlay && !backgroundOverlay.hasAttribute('hidden')) {
+                backgroundOverlay.setAttribute('aria-hidden', 'true');
+            }
+            revealOverlay(overlay);
+            focusPrimaryAction();
+            return true;
+        },
+        initialize() {
+            if (initialized) return;
+            initialized = true;
+            try { startupPending = localStorage.getItem(updateKey) !== 'true'; } catch { startupPending = true; }
+            if (startupPending && hasAnyCutscenePlaybackEnabled()) this.show();
+            getOverlay()?.addEventListener('keydown', event => {
+                if (event.key !== 'Tab') return;
+                const buttons = [...getOverlay().querySelectorAll('button')].filter(button => !button.disabled && !button.hidden);
+                if (!buttons.length) return;
+                const index = buttons.indexOf(document.activeElement);
+                event.preventDefault();
+                buttons[(index + (event.shiftKey ? -1 : 1) + buttons.length) % buttons.length].focus();
+            });
+        },
+        afterChangelog() {
+            return startupPending && hasAnyCutscenePlaybackEnabled() ? this.show() : false;
+        },
+        confirm() {
+            void setCutsceneFullscreen(true);
+            this.hide();
+        },
+        decline() {
+            void setCutsceneFullscreen(false);
+            this.hide();
+        },
+        hide() {
+            const overlay = getOverlay();
+            if (!overlay) {
+                return;
+            }
+            concealOverlay(overlay, {
+                onHidden: () => {
+                    if (backgroundOverlay && !backgroundOverlay.hasAttribute('hidden')) {
+                        backgroundOverlay.removeAttribute('aria-hidden');
+                    }
+                    if (lastFocusedElement && typeof lastFocusedElement.focus === 'function') {
+                        lastFocusedElement.focus({ preventScroll: true });
+                    }
+                    lastFocusedElement = null;
+                    backgroundOverlay = null;
+                }
+            });
+        },
+        suppress() {
+            suppressed = true;
+            if (typeof window === 'undefined') {
+                return;
+            }
+            try {
+                window.localStorage.setItem(storageKey, 'true');
+            } catch (error) {
+            }
+        }
+    };
+})();
+
+const rotationPromptManager = (() => {
+    let pendingAction = null;
+
+    const getOverlay = () => document.getElementById('rotationPromptOverlay');
+
+    function isPortraitOrientation() {
+        if (typeof window === 'undefined') {
+            return false;
+        }
+        if (window.matchMedia && window.matchMedia('(orientation: portrait)').matches) {
+            return true;
+        }
+        return window.innerHeight > window.innerWidth;
+    }
+
+    function isMobileOrTablet() {
+        if (typeof navigator !== 'undefined') {
+            const ua = navigator.userAgent || navigator.vendor || '';
+            if (/android|iphone|ipad|ipod|iemobile|mobile/i.test(ua)) {
+                return true;
+            }
+            if (/tablet|kindle|silk|playbook|nexus 7|nexus 9/i.test(ua)) {
+                return true;
+            }
+        }
+        if (typeof window !== 'undefined') {
+            const width = Math.min(window.innerWidth || 0, window.outerWidth || window.innerWidth || 0);
+            return width > 0 && width <= 1100;
+        }
+        return false;
+    }
+
+    function detectFormFactor() {
+        if (typeof window === 'undefined') {
+            return null;
+        }
+        const width = Math.min(window.innerWidth || 0, window.outerWidth || window.innerWidth || 0);
+        if (width && width <= 768) {
+            return 'phone';
+        }
+        if (width && width <= 1100) {
+            return 'tablet';
+        }
+        return null;
+    }
+
+    function focusPrimaryAction() {
+        const confirmButton = document.getElementById('rotationPromptConfirm');
+        if (!confirmButton || typeof confirmButton.focus !== 'function') {
+            return;
+        }
+        try {
+            confirmButton.focus({ preventScroll: true });
+        } catch (error) {
+            confirmButton.focus();
+        }
+    }
+
+    function prepareOverlay(overlay) {
+        if (!overlay) {
+            return;
+        }
+        const formFactor = detectFormFactor();
+        const prompt = overlay.querySelector('.rotation-prompt');
+        if (!prompt) {
+            return;
+        }
+        if (formFactor) {
+            prompt.setAttribute('data-form-factor', formFactor);
+        } else {
+            prompt.removeAttribute('data-form-factor');
+        }
+    }
+
+    function shouldPrompt() {
+        if (!appState.cinematic) {
+            return false;
+        }
+        if (cutsceneWarningManager.isSuppressed()) {
+            return false;
+        }
+        return isPortraitOrientation() && isMobileOrTablet();
+    }
+
+    return {
+        shouldPrompt,
+        prompt(action) {
+            pendingAction = typeof action === 'function' ? action : null;
+
+            if (!shouldPrompt()) {
+                if (pendingAction) {
+                    const next = pendingAction;
+                    pendingAction = null;
+                    next();
+                }
+                return false;
+            }
+
+            const overlay = getOverlay();
+            if (!overlay) {
+                if (pendingAction) {
+                    const next = pendingAction;
+                    pendingAction = null;
+                    next();
+                }
+                return false;
+            }
+
+            prepareOverlay(overlay);
+            revealOverlay(overlay);
+            focusPrimaryAction();
+            return true;
+        },
+        confirm() {
+            const overlay = getOverlay();
+            const action = pendingAction;
+            pendingAction = null;
+            concealOverlay(overlay);
+            if (typeof action === 'function') {
+                action();
+            }
+        },
+        dismiss() {
+            cutsceneWarningManager.suppress();
+            this.confirm();
+        },
+        hide() {
+            pendingAction = null;
+            concealOverlay(getOverlay());
+        },
+        hasPendingAction() {
+            return typeof pendingAction === 'function';
+        }
+    };
+})();
+
+const cyberspaceIllusionaryWarningManager = (() => {
+    let suppressed = null;
+
+    const getOverlay = () => document.getElementById('cyberspaceIllusionaryOverlay');
+
+    function readSuppressedPreference() {
+        if (suppressed !== null) {
+            return suppressed;
+        }
+
+        if (typeof window === 'undefined') {
+            suppressed = false;
+            return suppressed;
+        }
+
+        try {
+            suppressed = window.localStorage.getItem(CYBERSPACE_ILLUSIONARY_WARNING_STORAGE_KEY) === 'true';
+        } catch (error) {
+            suppressed = false;
+        }
+
+        return suppressed;
+    }
+
+    function focusPrimaryAction() {
+        const confirmButton = document.getElementById('cyberspaceIllusionaryConfirm');
+        if (!confirmButton || typeof confirmButton.focus !== 'function') {
+            return;
+        }
+
+        try {
+            confirmButton.focus({ preventScroll: true });
+        } catch (error) {
+            confirmButton.focus();
+        }
+    }
+
+    return {
+        isSuppressed() {
+            return readSuppressedPreference();
+        },
+        show() {
+            if (readSuppressedPreference()) {
+                return false;
+            }
+
+            const overlay = getOverlay();
+            if (!overlay) {
+                return false;
+            }
+
+            if (!overlay.hasAttribute('hidden')) {
+                return true;
+            }
+
+            revealOverlay(overlay);
+            focusPrimaryAction();
+            return true;
+        },
+        hide() {
+            concealOverlay(getOverlay());
+        },
+        suppress() {
+            suppressed = true;
+            if (typeof window !== 'undefined') {
+                try {
+                    window.localStorage.setItem(CYBERSPACE_ILLUSIONARY_WARNING_STORAGE_KEY, 'true');
+                } catch (error) {
+                }
+            }
+            this.hide();
+        },
+        isVisible() {
+            const overlay = getOverlay();
+            return Boolean(overlay && !overlay.hasAttribute('hidden'));
+        }
+    };
+})();
+
+
+function formatLuckMultiplierLabel(multiplier) {
+    const numericMultiplier = Number(multiplier);
+    if (!Number.isFinite(numericMultiplier)) {
+        return '1x';
+    }
+    return `${Number.isInteger(numericMultiplier) ? numericMultiplier : numericMultiplier.toFixed(1)}x`;
+}
+
+function getDevAdminAbuseConfig(biomeId) {
+    return DEV_ADMIN_ABUSE_CONFIGS[biomeId] || null;
+}
+
+function getSelectedDevAdminAbuseVariant(biomeId) {
+    const config = getDevAdminAbuseConfig(biomeId);
+    if (!config || !config.variants) {
+        return null;
+    }
+
+    const selectedVariant = devAdminAbuseVariantSelections[biomeId] || config.defaultVariant || DEV_ADMIN_ABUSE_DEFAULT_VARIANT;
+    return config.variants[selectedVariant] ? selectedVariant : config.defaultVariant || DEV_ADMIN_ABUSE_DEFAULT_VARIANT;
+}
+
+function getDevAdminAbuseMultiplier(biomeId) {
+    const config = getDevAdminAbuseConfig(biomeId);
+    if (!config) {
+        return 1;
+    }
+
+    if (typeof config.multiplier === 'number') {
+        return config.multiplier;
+    }
+
+    const selectedVariant = getSelectedDevAdminAbuseVariant(biomeId);
+    return config.variants?.[selectedVariant]?.multiplier || 1;
+}
+
+function getDevAdminAbuseBasicMultiplier(biomeId) {
+    const config = getDevAdminAbuseConfig(biomeId);
+    const variant = getSelectedDevAdminAbuseVariant(biomeId);
+    return config?.variants?.[variant]?.basicMultiplier || 1;
+}
+
+function getDevAdminAbuseMultipliers(biomeId) {
+    const multipliers = {
+        xyz: 1,
+        xyzOld: 1,
+        xc: 1,
+        xcOld: 1,
+        axis: 1,
+        axisOld: 1,
+        word: 1
+    };
+
+    if (biomeId === 'anotherRealm') {
+        const selectedVariant = getSelectedDevAdminAbuseVariant(biomeId);
+        if (selectedVariant === 'old') {
+            multipliers.xyzOld = getDevAdminAbuseMultiplier(biomeId);
+        } else {
+            multipliers.xyz = getDevAdminAbuseMultiplier(biomeId);
+        }
+        return multipliers;
+    }
+
+    if (biomeId === 'mastermind') {
+        const selectedVariant = getSelectedDevAdminAbuseVariant(biomeId);
+        if (selectedVariant === 'old') {
+            multipliers.axisOld = getDevAdminAbuseMultiplier(biomeId);
+        } else {
+            multipliers.axis = getDevAdminAbuseMultiplier(biomeId);
+        }
+        return multipliers;
+    }
+
+    if (biomeId === 'fullMoon') {
+        const selectedVariant = getSelectedDevAdminAbuseVariant(biomeId);
+        if (selectedVariant === 'old') {
+            multipliers.xcOld = getDevAdminAbuseMultiplier(biomeId);
+        } else {
+            multipliers.xc = getDevAdminAbuseMultiplier(biomeId);
+        }
+        return multipliers;
+    }
+
+    if (biomeId === 'edict') {
+        multipliers.word = getDevAdminAbuseMultiplier(biomeId);
+    }
+
+    return multipliers;
+}
+
+function getSingularityLuckMultiplier(biomeId) {
+    return biomeId === 'singularity' ? SINGULARITY_LUCK_MULTIPLIER : 1;
+}
+
+function isDevAdminAbuseBiomeActive(biomeId) {
+    return Boolean(getDevAdminAbuseConfig(biomeId));
+}
+
+const glitchUiState = {
+    loopTimeoutId: null,
+    burstTimeoutId: null,
+    warbleTimeoutId: null,
+    entryErrorTimeoutId: null,
+    entryErrorFrameId: null,
+    distortionNode: null,
+    waveShaper: null,
+    stereoPannerNode: null,
+    ditherSourceNode: null,
+    ditherGainNode: null,
+    gainNode: null,
+    sourceNode: null,
+    sourceElement: null,
+    mediaPlaybackSnapshot: null,
+    audioCorruptionProfile: null,
+    isUiGlitching: false,
+    audioPipelineMode: null,
+    presentationMode: 'disabled'
+};
+
+let glitchPresentationEnabled = false;
+
+function getAudioContextHandle() {
+    if (typeof window === 'undefined') return null;
+    if (!experienceStarted && !appState.audio.context) return null;
+    if (!appState.audio.context) {
+        const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+        if (!AudioContextClass) return null;
+        try {
+            appState.audio.context = new AudioContextClass();
+        } catch (error) {
+            console.warn('Web Audio unavailable; using media playback instead.', error);
+            return null;
+        }
+    }
+    return appState.audio.context;
+}
+
+function resumeAudioEngine() {
+    if (!experienceStarted) return null;
+    const context = getAudioContextHandle();
+    if (context && context.state === 'suspended') {
+        context.resume().catch(() => {});
+    }
+    return context;
+}
+
+function normalizeMediaSource(element) {
+    if (!element) return null;
+    const rawSrc = element.getAttribute('src') || element.currentSrc || element.dataset?.src;
+    if (!rawSrc) return null;
+    try {
+        return new URL(rawSrc, window.location.href).href;
+    } catch (error) {
+        return rawSrc;
+    }
+}
+
+function canFetchAudioBufferSource(sourceUrl) {
+    if (!sourceUrl) return false;
+    try {
+        const protocol = new URL(sourceUrl, window.location.href).protocol;
+        return protocol === 'http:'
+            || protocol === 'https:'
+            || protocol === 'data:'
+            || protocol === 'blob:';
+    } catch (error) {
+        return false;
+    }
+}
+
+function mediaSourceMatches(element, sourceUrl) {
+    if (!element || !sourceUrl || typeof window === 'undefined') {
+        return false;
+    }
+
+    const currentSource = element.getAttribute('src') || element.currentSrc;
+    if (!currentSource) {
+        return false;
+    }
+
+    try {
+        return new URL(currentSource, window.location.href).href === new URL(sourceUrl, window.location.href).href;
+    } catch (error) {
+        return currentSource === sourceUrl;
+    }
+}
+
+function canUseMediaElementSource(element) {
+    if (!element || typeof window === 'undefined') return false;
+    const { location } = window;
+    if (!location) return false;
+    if (location.protocol === 'file:') {
+        return false;
+    }
+    const sourceUrl = normalizeMediaSource(element);
+    if (!sourceUrl) return false;
+    try {
+        const parsed = new URL(sourceUrl);
+        if (parsed.protocol === 'data:' || parsed.protocol === 'blob:') {
+            return true;
+        }
+        if (parsed.origin === location.origin) {
+            return true;
+        }
+        const crossOrigin = element.getAttribute('crossorigin') ?? element.crossOrigin;
+        return crossOrigin === 'anonymous';
+    } catch (error) {
+        return false;
+    }
+}
+
+function getChannelVolumeMultiplier(category = 'server') {
+    if (appState.audio.masterMuted) return 0;
+    if (category === 'ui') return clamp01(appState.audio.uiVolume ?? 1);
+    if (category === 'effects') return clamp01(appState.audio.effectsVolume ?? 1);
+    if (category === 'cutscene') return clamp01(appState.audio.cutsceneVolume ?? 1);
+    if (category === 'music') return clamp01(appState.audio.musicVolume ?? 1);
+    return clamp01(appState.audio.serverVolume ?? 1);
+}
+
+globalThis.AuraAudio = Object.freeze({
+    getMasterMuted: () => appState.audio.masterMuted,
+    getVolume: getChannelVolumeMultiplier
+});
+
+function resolveBaseGain(element, fallback = 1) {
+    const dataset = element?.dataset || {};
+    const gainValueRaw = dataset.gain ?? dataset.boost ?? dataset.volume;
+    const gainValue = Number.parseFloat(gainValueRaw);
+    if (Number.isFinite(gainValue) && gainValue > 0) {
+        return gainValue;
+    }
+
+    const baseGainMap = appState?.audio?.baseGainMap;
+    if (element && baseGainMap instanceof WeakMap) {
+        const cachedGain = baseGainMap.get(element);
+        if (Number.isFinite(cachedGain) && cachedGain > 0) {
+            return cachedGain;
+        }
+
+        const initialGain = typeof element.volume === 'number' && element.volume > 0
+            ? element.volume
+            : fallback;
+        const stableGain = Number.isFinite(initialGain) && initialGain > 0 ? initialGain : 1;
+        baseGainMap.set(element, stableGain);
+        return stableGain;
+    }
+
+    if (element && typeof element.volume === 'number' && element.volume > 0) {
+        return element.volume;
+    }
+    return fallback;
+}
+
+function applyMediaGain(element, { category = element?.dataset.audioChannel || 'server', fallbackGain } = {}) {
+    if (!element) return;
+
+    const baseGain = resolveBaseGain(element, fallbackGain ?? 1);
+    const channelMultiplier = getChannelVolumeMultiplier(category);
+    const resolvedGain = baseGain * channelMultiplier;
+
+    const shouldMute = resolvedGain <= 0;
+    if (shouldMute) {
+        element.muted = true;
+    } else {
+        element.muted = false;
+        if (typeof element.removeAttribute === 'function') {
+            element.removeAttribute('muted');
+        }
+    }
+
+    const channelEnabled = isSoundChannelActive(category);
+    const context = experienceStarted && channelEnabled && canUseMediaElementSource(element)
+        ? resumeAudioEngine()
+        : null;
+    if (context) {
+        try {
+            let entry = appState.audio.gainMap.get(element);
+            if (!entry) {
+                const source = context.createMediaElementSource(element);
+                const gainNode = context.createGain();
+                source.connect(gainNode).connect(context.destination);
+                entry = { gainNode };
+                appState.audio.gainMap.set(element, entry);
+            }
+            entry.gainNode.gain.value = resolvedGain;
+            element.volume = 1;
+            return;
+        } catch (error) {
+            console.warn('Unable to configure media element gain', error);
+        }
+    }
+
+    element.volume = clamp01(resolvedGain);
+}
+
+function isSoundChannelActive(category) {
+    if (appState.audio.masterMuted) return false;
+    const channelVolume = getChannelVolumeMultiplier(category);
+    if (channelVolume <= 0) return false;
+    if (category === 'ui') return appState.audio.ui;
+    return appState.audio.roll;
+}
+
+function playSoundEffect(audioElement, category = audioElement?.dataset.audioChannel || 'effects') {
+    if (!audioElement) return;
+
+
+    try {
+        startSoundEffectPlayback(audioElement, category);
+    } catch (error) {
+        console.warn('Unable to play sound effect.', error);
+    }
+}
+
+function startSoundEffectPlayback(audioElement, category) {
+    const resolvePlaybackGain = () => {
+        if (!isSoundChannelActive(category)) return 0;
+        const baseGain = resolveBaseGain(audioElement, category === 'ui' ? 0.3 : 1);
+        const channelMultiplier = getChannelVolumeMultiplier(category);
+        return baseGain * channelMultiplier;
+    };
+
+    const initialGain = resolvePlaybackGain();
+    if (initialGain <= 0) return;
+
+    const spawnFallbackPlayer = (currentGain) => {
+        if (currentGain <= 0) {
+            return;
+        }
+
+        const sourceUrl = normalizeMediaSource(audioElement);
+        if (!sourceUrl) {
+            audioElement.currentTime = 0;
+            audioElement.volume = clamp01(currentGain);
+            audioElement.muted = false;
+            if (typeof audioElement.removeAttribute === 'function') {
+                audioElement.removeAttribute('muted');
+            }
+            audioElement.play().catch(() => {});
+            return;
+        }
+
+        const fallbackPlayer = audioElement.cloneNode(true);
+        fallbackPlayer.removeAttribute('id');
+        fallbackPlayer.dataset.audioChannel = category;
+        fallbackPlayer.src = sourceUrl;
+        fallbackPlayer.currentTime = 0;
+        fallbackPlayer.muted = false;
+        fallbackPlayer.loop = false;
+        fallbackPlayer.playsInline = true;
+        fallbackPlayer.autoplay = false;
+        fallbackPlayer.volume = clamp01(currentGain);
+
+        const cleanup = () => {
+            fallbackPlayer.pause();
+            fallbackPlayer.removeAttribute('src');
+            fallbackPlayer.load();
+            appState.audio.fallbackPlayers.delete(fallbackPlayer);
+            if (fallbackPlayer.parentNode) {
+                fallbackPlayer.parentNode.removeChild(fallbackPlayer);
+            }
+        };
+
+        fallbackPlayer.addEventListener('ended', cleanup, { once: true });
+        fallbackPlayer.addEventListener('error', cleanup, { once: true });
+
+        fallbackPlayer.style.display = 'none';
+        const attachmentTarget = document.body || document.documentElement;
+        if (attachmentTarget) {
+            attachmentTarget.appendChild(fallbackPlayer);
+        }
+
+        appState.audio.fallbackPlayers.add(fallbackPlayer);
+        fallbackPlayer.play().catch(() => {
+            cleanup();
+        });
+    };
+
+    const context = resumeAudioEngine();
+    if (!context) {
+        spawnFallbackPlayer(initialGain);
+        return;
+    }
+
+    const sourceKey = normalizeMediaSource(audioElement);
+    if (!sourceKey) {
+        spawnFallbackPlayer(initialGain);
+        return;
+    }
+
+    if (!canFetchAudioBufferSource(sourceKey)) {
+        spawnFallbackPlayer(initialGain);
+        return;
+    }
+
+    const fetchAudioBuffer = async () => {
+        if (appState.audio.bufferCache.has(sourceKey)) {
+            return appState.audio.bufferCache.get(sourceKey);
+        }
+        if (appState.audio.bufferPromises.has(sourceKey)) {
+            return appState.audio.bufferPromises.get(sourceKey);
+        }
+        const task = fetch(sourceKey)
+            .then(response => response.arrayBuffer())
+            .then(buffer => context.decodeAudioData(buffer))
+            .then(decoded => {
+                appState.audio.bufferCache.set(sourceKey, decoded);
+                appState.audio.bufferPromises.delete(sourceKey);
+                return decoded;
+            })
+            .catch(error => {
+                appState.audio.bufferPromises.delete(sourceKey);
+                console.warn('Failed to buffer audio', error);
+                return null;
+            });
+        appState.audio.bufferPromises.set(sourceKey, task);
+        return task;
+    };
+
+    fetchAudioBuffer().then(buffer => {
+        const currentGain = resolvePlaybackGain();
+        if (currentGain <= 0) {
+            return;
+        }
+
+        if (!buffer) {
+            spawnFallbackPlayer(currentGain);
+            return;
+        }
+
+        const source = context.createBufferSource();
+        source.buffer = buffer;
+        const gainNode = context.createGain();
+        gainNode.gain.value = currentGain;
+        const activeSound = { category, gainNode, baseGain: resolveBaseGain(audioElement, category === 'ui' ? 0.3 : 1) };
+        appState.audio.activeSounds.add(activeSound);
+        source.connect(gainNode).connect(context.destination);
+        source.onended = () => {
+            appState.audio.activeSounds.delete(activeSound);
+            source.disconnect();
+            gainNode.disconnect();
+        };
+        source.start(0);
+    }).catch(error => console.warn('Unable to play sound effect.', error));
+}
+
+function computeBackgroundMusicBase(bgMusic) {
+    if (!bgMusic) return 0.18;
+    const dataset = bgMusic.dataset || {};
+    const rawValue = dataset.volume ?? dataset.gain ?? dataset.boost;
+    const parsed = Number.parseFloat(rawValue);
+    if (Number.isFinite(parsed) && parsed > 0) {
+        return Math.min(parsed, 1);
+    }
+    return 0.18;
+}
+
+function computeEffectiveBackgroundVolume(bgMusic) {
+    const base = computeBackgroundMusicBase(bgMusic);
+    return clamp01(base * getChannelVolumeMultiplier('music'));
+}
+
+function synchronizeBackgroundRouting(bgMusic) {
+    if (!bgMusic) {
+        return { baseVolume: 0.18, chain: null };
+    }
+
+    const baseVolume = computeEffectiveBackgroundVolume(bgMusic);
+    const chain = ensureGlitchAudioChain(bgMusic);
+
+    if (chain && chain.gainNode) {
+        chain.baseGain = baseVolume;
+        const context = chain.context;
+        if (context && typeof chain.gainNode.gain.setTargetAtTime === 'function') {
+            chain.gainNode.gain.setTargetAtTime(baseVolume, context.currentTime, 0.01);
+        } else {
+            chain.gainNode.gain.value = baseVolume;
+        }
+        bgMusic.volume = 1;
+    } else {
+        bgMusic.volume = baseVolume;
+    }
+
+    return { baseVolume, chain };
+}
+
+function ensureBackgroundMusicSource(bgMusic) {
+    if (!bgMusic) {
+        return;
+    }
+
+    const pendingSrc = bgMusic.getAttribute('data-current-src') || bgMusic.dataset?.src;
+    if (!pendingSrc) {
+        ensureDeferredMediaSource(bgMusic);
+        return;
+    }
+
+    if (!bgMusic.getAttribute('data-current-src')) {
+        bgMusic.setAttribute('data-current-src', pendingSrc);
+    }
+
+    if (!mediaSourceMatches(bgMusic, pendingSrc)) {
+        bgMusic.src = pendingSrc;
+        if (typeof bgMusic.load === 'function') {
+            bgMusic.load();
+        }
+    }
+}
+
+function primeBackgroundMusic(bgMusic) {
+    if (!bgMusic) return;
+
+    ensureBackgroundMusicSource(bgMusic);
+    synchronizeBackgroundRouting(bgMusic);
+    try {
+        bgMusic.muted = false;
+        if (typeof bgMusic.removeAttribute === 'function') {
+            bgMusic.removeAttribute('muted');
+        }
+    } catch (error) {
+        console.warn('Unable to unmute background music element', error);
+    }
+}
+
+let pendingBackgroundMusicGestureRetry = null;
+
+function clearPendingBackgroundMusicGestureRetry() {
+    if (!pendingBackgroundMusicGestureRetry || typeof document === 'undefined') return;
+    const { retry } = pendingBackgroundMusicGestureRetry;
+    document.removeEventListener('pointerdown', retry, true);
+    document.removeEventListener('keydown', retry, true);
+    pendingBackgroundMusicGestureRetry = null;
+}
+
+function queueBackgroundMusicGestureRetry(bgMusic) {
+    if (!bgMusic || typeof document === 'undefined') return;
+    if (pendingBackgroundMusicGestureRetry?.element === bgMusic) return;
+
+    clearPendingBackgroundMusicGestureRetry();
+    const retry = () => {
+        clearPendingBackgroundMusicGestureRetry();
+        if (!experienceStarted || !isSoundChannelActive('music')) return;
+        startBackgroundMusic(bgMusic);
+    };
+    pendingBackgroundMusicGestureRetry = { element: bgMusic, retry };
+    document.addEventListener('pointerdown', retry, true);
+    document.addEventListener('keydown', retry, true);
+}
+
+let auraFloatingPlaybackActive = false;
+let auraLocalPlaybackActive = false;
+let auraVideoShellActive = false;
+function updateAuraMusicPlayback() {
+    const music = document.getElementById('ambientMusic');
+    if (auraFloatingPlaybackActive || auraLocalPlaybackActive || auraVideoShellActive) music?.pause();
+    else startBackgroundMusic(music);
+}
+document.addEventListener('aura-floating-playback', event => {
+    auraFloatingPlaybackActive = Boolean(event.detail?.active);
+    updateAuraMusicPlayback();
+});
+document.addEventListener('aura-showcase-playback', event => {
+    auraLocalPlaybackActive = Boolean(event.detail?.active);
+    updateAuraMusicPlayback();
+});
+document.addEventListener('aura-video-shell-state', event => {
+    auraVideoShellActive = Boolean(event.detail?.active);
+    updateAuraMusicPlayback();
+});
+function startBackgroundMusic(bgMusic) {
+    if (auraFloatingPlaybackActive || auraLocalPlaybackActive || auraVideoShellActive || !bgMusic || !experienceStarted || !isSoundChannelActive('music')) return;
+
+    primeBackgroundMusic(bgMusic);
+    const playPromise = bgMusic.play();
+    if (playPromise && typeof playPromise.catch === 'function') {
+        playPromise
+            .then(() => {
+                clearPendingBackgroundMusicGestureRetry();
+            })
+            .catch(() => {
+                if (!isSoundChannelActive('music')) return;
+                if (bgMusic.readyState < 3 && bgMusic.dataset.backgroundPlaybackRetryBound !== 'true') {
+                    bgMusic.dataset.backgroundPlaybackRetryBound = 'true';
+                    bgMusic.addEventListener('canplay', () => {
+                        delete bgMusic.dataset.backgroundPlaybackRetryBound;
+                        startBackgroundMusic(bgMusic);
+                    }, { once: true });
+                }
+                queueBackgroundMusicGestureRetry(bgMusic);
+            });
+    }
+}
+
+function setSingularitySummonVisualActive(active) {
+    const body = document.body;
+    const root = document.documentElement;
+
+    [body, root].forEach(element => {
+        if (!element || !element.classList) return;
+        element.classList.toggle('singularity-summon-active', Boolean(active));
+    });
+}
+
+function getSingularitySummonSound() {
+    return document.getElementById(SINGULARITY_SUMMON_SOUND_ID);
+}
+
+function areShakeEffectsDisabled() {
+    return Boolean(appState?.qualityPreferences?.disableShakes);
+}
+
+function clearSingularitySummonTimer() {
+    if (singularitySummonTimeoutId === null) return;
+    clearTimeout(singularitySummonTimeoutId);
+    singularitySummonTimeoutId = null;
+}
+
+function stopSingularitySummonSequence({ resetAudio = true } = {}) {
+    singularitySummonSequenceId += 1;
+    clearSingularitySummonTimer();
+    if (typeof singularitySummonCleanup === 'function') {
+        singularitySummonCleanup();
+        singularitySummonCleanup = null;
+    }
+    setSingularitySummonVisualActive(false);
+
+    if (!resetAudio) return;
+
+    const summonSound = getSingularitySummonSound();
+    if (!summonSound) return;
+    summonSound.pause();
+    try {
+        summonSound.currentTime = 0;
+    } catch (error) {
+        console.warn('Unable to reset Singularity summon sound', error);
+    }
+}
+
+function playSingularitySummonSequence(bgMusic, { expectedMusicSrc, onComplete } = {}) {
+    const summonSound = getSingularitySummonSound();
+    if (!summonSound || !isSoundChannelActive('effects') || areShakeEffectsDisabled()) {
+        if (typeof onComplete === 'function') {
+            onComplete();
+        }
+        return;
+    }
+
+    stopSingularitySummonSequence();
+    const sequenceId = ++singularitySummonSequenceId;
+
+    if (bgMusic) {
+        bgMusic.pause();
+        try {
+            bgMusic.currentTime = 0;
+        } catch (error) {
+            console.warn('Unable to reset Singularity background music', error);
+        }
+    }
+
+    summonSound.loop = false;
+    ensureDeferredMediaSource(summonSound);
+    summonSound.pause();
+    try {
+        summonSound.currentTime = 0;
+    } catch (error) {
+        console.warn('Unable to rewind Singularity summon sound', error);
+    }
+
+    applyMediaGain(summonSound, { category: 'effects', fallbackGain: 0.35 });
+    setSingularitySummonVisualActive(true);
+
+    const cleanup = () => {
+        summonSound.removeEventListener('ended', finish);
+        summonSound.removeEventListener('error', finish);
+        clearSingularitySummonTimer();
+        if (singularitySummonCleanup === cleanup) {
+            singularitySummonCleanup = null;
+        }
+    };
+
+    const finish = () => {
+        if (sequenceId !== singularitySummonSequenceId) {
+            return;
+        }
+
+        cleanup();
+        setSingularitySummonVisualActive(false);
+
+        if (
+            typeof onComplete === 'function'
+            && isSoundChannelActive('music')
+            && (!bgMusic || !expectedMusicSrc || bgMusic.getAttribute('data-current-src') === expectedMusicSrc)
+        ) {
+            onComplete();
+        }
+    };
+
+    singularitySummonCleanup = cleanup;
+    summonSound.addEventListener('ended', finish, { once: true });
+    summonSound.addEventListener('error', finish, { once: true });
+
+    const resolvedDurationMs = Number.isFinite(summonSound.duration) && summonSound.duration > 0
+        ? (summonSound.duration * 1000) + 250
+        : SINGULARITY_SUMMON_FALLBACK_DURATION_MS;
+    singularitySummonTimeoutId = setTimeout(finish, resolvedDurationMs);
+
+    const playPromise = summonSound.play();
+    if (playPromise && typeof playPromise.catch === 'function') {
+        playPromise.catch(() => {
+            summonSound.pause();
+        });
+    }
+}
+
+function completeActiveSingularitySummonImmediately() {
+    const bgMusic = document.getElementById('ambientMusic');
+    stopSingularitySummonSequence();
+
+    if (!bgMusic || !appState.audio.roll || !experienceStarted) {
+        return;
+    }
+
+    if (bgMusic.getAttribute('data-current-src') !== biomeAssets.singularity.music) {
+        return;
+    }
+
+    primeBackgroundMusic(bgMusic);
+    startBackgroundMusic(bgMusic);
+}
+
+function updateMasterMuteToggleButton() {
+    const masterMuteToggle = document.getElementById('masterMuteToggle');
+    if (!masterMuteToggle) return;
+    masterMuteToggle.textContent = appState.audio.masterMuted ? 'Unmute' : 'Mute';
+    masterMuteToggle.setAttribute('aria-pressed', appState.audio.masterMuted ? 'true' : 'false');
+}
+
+function setMasterMuteState(isMuted, { force = false, persist = true } = {}) {
+    if (appState.audio.masterMuted === isMuted && !force) {
+        updateMasterMuteToggleButton();
+        return;
+    }
+
+    appState.audio.masterMuted = isMuted;
+    updateMasterMuteToggleButton();
+
+    if (isMuted) {
+        stopSingularitySummonSequence();
+        clearPendingBackgroundMusicGestureRetry();
+    }
+
+    ['music', 'ui', 'server', 'effects', 'cutscene'].forEach(channel => applyChannelVolumeToElements(channel));
+    document.dispatchEvent(new CustomEvent('aura-audio-settings-change'));
+
+    if (!isMuted) {
+        resumeAudioEngine();
+        if (experienceStarted) {
+            startBackgroundMusic(document.getElementById('ambientMusic'));
+        }
+    }
+
+    if (persist) {
+        persistAudioSettings();
+    }
+}
+
+function toggleMasterMute() {
+    setMasterMuteState(!appState.audio.masterMuted);
+    showAppNotification(appState.audio.masterMuted ? 'All audio muted' : 'Audio unmuted', { id: 'volume' });
+}
+
+function isGlitchBiomeSelected() {
+    const selection = collectBiomeSelectionState();
+    if (!selection) {
+        return false;
+    }
+
+    const { canonicalBiome, themeBiome, primaryBiome, timeBiome } = selection;
+
+    if (canonicalBiome === 'glitch' || themeBiome === 'glitch') {
+        return true;
+    }
+
+    if (primaryBiome === 'glitch' || timeBiome === 'glitch') {
+        return true;
+    }
+
+    return false;
+}
+
+function updateGlitchPresentation() {
+    ensureQualityPreferences();
+    const glitchBiomeActive = isGlitchBiomeSelected();
+    const removeGlitchEffects = appState.qualityPreferences.removeGlitchEffects;
+    const enableGlitch = appState.glitch && glitchBiomeActive && !appState.reduceMotion && !removeGlitchEffects;
+    applyGlitchVisuals(enableGlitch, { forceTheme: glitchBiomeActive });
+}
+
+function toggleGlitchEffects() {
+    appState.glitch = !appState.glitch;
+    const glitchToggle = document.getElementById('glitchEffectsToggle');
+    if (glitchToggle) {
+        glitchToggle.textContent = appState.glitch ? 'Glitch Effects: On' : 'Glitch Effects: Off';
+        glitchToggle.setAttribute('aria-pressed', appState.glitch ? 'true' : 'false');
+    }
+
+    playSoundEffect(clickSoundEffectElement, 'ui');
+    updateGlitchPresentation();
+    persistVisualSettings();
+}
+
+function applyReducedMotionState(enabled) {
+    if (pageBody) {
+        pageBody.classList.toggle('reduce-motion', enabled);
+    }
+
+    if (enabled) {
+        document.querySelectorAll('.feature-boot--active').forEach(cancelFeatureBootAnimation);
+        document.querySelectorAll('.feature-shutdown--active').forEach(finishFeatureShutdownAnimation);
+    }
+
+    if (reduceMotionToggleButton) {
+        reduceMotionToggleButton.textContent = enabled ? 'Reduce Animations: On' : 'Reduce Animations: Off';
+        reduceMotionToggleButton.setAttribute('aria-pressed', enabled ? 'true' : 'false');
+    }
+
+    cachedVideoElements.forEach(video => {
+        if (!video) {
+            return;
+        }
+        if (video.classList?.contains('cutscene-video')) {
+            return;
+        }
+        if (enabled) {
+            if (!video.paused) {
+                video.dataset.resumeOnMotion = 'true';
+                try {
+                    video.pause();
+                } catch (error) {
+                    console.warn('Unable to pause video for reduced motion preference', error);
+                }
+            }
+        } else if (video.dataset.resumeOnMotion === 'true') {
+            delete video.dataset.resumeOnMotion;
+            if (typeof video.play === 'function') {
+                const playPromise = video.play();
+                if (playPromise && typeof playPromise.catch === 'function') {
+                    playPromise.catch(() => {});
+                }
+            }
+        }
+    });
+
+    updateGlitchPresentation();
+
+    if (enabled) {
+        resetLuckPresetAnimations();
+    }
+
+    syncLuckVisualEffects(currentLuck);
+    syncSnowEffect();
+}
+
+function toggleReducedMotion() {
+    appState.reduceMotion = !appState.reduceMotion;
+    reduceMotionPreferenceOverride = appState.reduceMotion;
+    applyReducedMotionState(appState.reduceMotion);
+    playSoundEffect(clickSoundEffectElement, 'ui');
+    persistVisualSettings();
+}
+
+function applyQualityPreferencesState() {
+    ensureQualityPreferences();
+    const uiAnimationsDisabled = appState.qualityPreferences.disableUiAnimations;
+
+    if (pageBody) {
+        const performanceModeActive = Object.entries(PERFORMANCE_FIRST_QUALITY_DEFAULTS)
+            .some(([key, value]) => value && appState.qualityPreferences[key]);
+        pageBody.classList.toggle('quality-no-particles', appState.qualityPreferences.removeParticles);
+        pageBody.classList.remove('quality-no-button-animations');
+        pageBody.classList.toggle('quality-no-ui-animations', uiAnimationsDisabled);
+        pageBody.classList.toggle('quality-no-shakes', appState.qualityPreferences.disableShakes);
+        pageBody.classList.toggle('quality-no-roll-sigil-animations', appState.qualityPreferences.disableRollAndSigilAnimations);
+        pageBody.classList.toggle('quality-reduced-glitch', appState.qualityPreferences.reduceGlitchEffects);
+        pageBody.classList.toggle('quality-no-glitch', appState.qualityPreferences.removeGlitchEffects);
+        pageBody.classList.toggle('quality-simple-auras', appState.qualityPreferences.disableWikiAuraStyles);
+        pageBody.classList.toggle('performance-mode', performanceModeActive);
+    }
+
+    if (appState.qualityPreferences.removeGlitchEffects) {
+        appState.qualityPreferences.reduceGlitchEffects = false;
+    }
+
+    if (appState.qualityPreferences.disableShakes) {
+        resetLuckPresetAnimations();
+        completeActiveSingularitySummonImmediately();
+    }
+
+    if (uiAnimationsDisabled) {
+        document.querySelectorAll('.feature-boot--active').forEach(cancelFeatureBootAnimation);
+        document.querySelectorAll('.feature-shutdown--active').forEach(finishFeatureShutdownAnimation);
+        document.querySelectorAll('.audio-slider__input').forEach(input => {
+            syncAudioSliderVisual(input, Number.parseFloat(input.value));
+        });
+    }
+
+    syncQualityPreferenceButtons();
+    syncSnowEffect();
+    updateGlitchPresentation();
+}
+
+function syncQualityPreferenceButtons() {
+    const menu = document.getElementById('qualityPreferencesOverlay');
+    if (!menu) {
+        return;
+    }
+
+    ensureQualityPreferences();
+
+    menu.querySelectorAll('[data-quality-option]').forEach(button => {
+        const key = button.dataset.qualityOption;
+        if (!key || !Object.prototype.hasOwnProperty.call(appState.qualityPreferences, key)) {
+            return;
+        }
+
+        const enabled = button.hasAttribute('data-quality-inverted')
+            ? !appState.qualityPreferences[key]
+            : Boolean(appState.qualityPreferences[key]);
+        button.setAttribute('aria-checked', enabled ? 'true' : 'false');
+        button.classList.toggle('quality-settings__item--active', enabled);
+    });
+}
+
+function initializeQualityPreferencesMenu() {
+    const trigger = document.getElementById('qualityPreferencesToggle');
+    const menu = document.getElementById('qualityPreferencesMenu');
+    const overlay = document.getElementById('qualityPreferencesOverlay');
+    const closeButton = document.getElementById('qualityPreferencesClose');
+    if (!trigger || !menu || !overlay) {
+        return;
+    }
+
+    ensureQualityPreferences();
+
+    const closeMenu = () => {
+        if (overlay.hasAttribute('hidden') || overlay.hasAttribute('data-closing')) {
+            trigger.setAttribute('aria-expanded', 'false');
+            return;
+        }
+
+        concealOverlay(overlay, {
+            onHidden: () => {
+                trigger.setAttribute('aria-expanded', 'false');
+                const last = qualityPreferencesOverlayState.lastFocusedElement;
+                qualityPreferencesOverlayState.lastFocusedElement = null;
+                if (last && typeof last.focus === 'function') {
+                    last.focus({ preventScroll: true });
+                }
+            }
+        });
+    };
+
+    const openMenu = () => {
+        qualityPreferencesOverlayState.lastFocusedElement = document.activeElement;
+        revealOverlay(overlay);
+        trigger.setAttribute('aria-expanded', 'true');
+        const firstButton = menu.querySelector('[data-quality-option]');
+        if (firstButton && typeof firstButton.focus === 'function') {
+            firstButton.focus({ preventScroll: true });
+        }
+    };
+
+    trigger.addEventListener('click', () => {
+        const isOpen = trigger.getAttribute('aria-expanded') === 'true';
+        if (isOpen) {
+            closeMenu();
+            return;
+        }
+        openMenu();
+    });
+
+    overlay.addEventListener('click', event => {
+        const button = event.target instanceof Element ? event.target.closest('[data-quality-option]') : null;
+        if (!button) {
+            return;
+        }
+
+        const key = button.dataset.qualityOption;
+        if (!key || !Object.prototype.hasOwnProperty.call(appState.qualityPreferences, key)) {
+            return;
+        }
+
+        if (key === 'removeGlitchEffects') {
+            const nextValue = !appState.qualityPreferences.removeGlitchEffects;
+            appState.qualityPreferences.removeGlitchEffects = nextValue;
+            if (nextValue) {
+                appState.qualityPreferences.reduceGlitchEffects = false;
+            }
+        } else if (key === 'reduceGlitchEffects') {
+            const nextValue = !appState.qualityPreferences.reduceGlitchEffects;
+            appState.qualityPreferences.reduceGlitchEffects = nextValue;
+            if (nextValue) {
+                appState.qualityPreferences.removeGlitchEffects = false;
+            }
+        } else {
+            appState.qualityPreferences[key] = !appState.qualityPreferences[key];
+        }
+
+        applyQualityPreferencesState();
+        playSoundEffect(clickSoundEffectElement, 'ui');
+        persistVisualSettings();
+    });
+
+    if (closeButton) {
+        closeButton.addEventListener('click', () => {
+            closeMenu();
+        });
+    }
+
+    overlay.addEventListener('click', event => {
+        if (event.target === overlay) {
+            closeMenu();
+        }
+    });
+
+    overlay.addEventListener('keydown', event => {
+        if (event.key === 'Escape') {
+            closeMenu();
+            trigger.focus({ preventScroll: true });
+        }
+    });
+
+    closeMenu();
+    syncQualityPreferenceButtons();
+}
+
+const CHANGELOG_TIMEZONE_OFFSETS = Object.freeze({
+    UTC: 0,
+    GMT: 0,
+    CET: 60,
+    CEST: 120,
+    EET: 120,
+    EEST: 180,
+    EST: -300,
+    EDT: -240,
+    CST: -360,
+    CDT: -300,
+    MST: -420,
+    MDT: -360,
+    PST: -480,
+    PDT: -420,
+    JST: 540,
+    KST: 540,
+    IST: 330,
+    AEST: 600,
+    AEDT: 660
+});
+
+function formatChangelogLocalDate(date) {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    const rawHour = date.getHours();
+    const period = rawHour >= 12 ? 'PM' : 'AM';
+    const hour = rawHour % 12 || 12;
+    return `${year}/${month}/${day} ${hour}:${minutes} ${period}`;
+}
+
+function localizeChangelogUpdateTimes() {
+    const nodes = Array.from(document.querySelectorAll('.changelog-modal__meta'));
+    if (!nodes.length) {
+        return;
+    }
+
+    const pattern = /^Updated\s+(\d{4})\/(\d{2})\/(\d{2})\s+(\d{1,2}):(\d{2})\s*(AM|PM)\s+([A-Za-z]{2,5})$/i;
+
+    nodes.forEach(node => {
+        const value = node.textContent.trim();
+        const parsed = pattern.exec(value);
+        if (!parsed) {
+            return;
+        }
+
+        const [, y, m, d, h, min, meridiem, timezone] = parsed;
+        const normalizedTz = timezone.toUpperCase();
+        if (!Object.prototype.hasOwnProperty.call(CHANGELOG_TIMEZONE_OFFSETS, normalizedTz)) {
+            return;
+        }
+
+        let hour24 = Number.parseInt(h, 10) % 12;
+        if (meridiem.toUpperCase() === 'PM') {
+            hour24 += 12;
+        }
+
+        const utcMilliseconds = Date.UTC(
+            Number.parseInt(y, 10),
+            Number.parseInt(m, 10) - 1,
+            Number.parseInt(d, 10),
+            hour24,
+            Number.parseInt(min, 10)
+        ) - (CHANGELOG_TIMEZONE_OFFSETS[normalizedTz] * 60 * 1000);
+
+        const localDate = new Date(utcMilliseconds);
+        node.textContent = `Updated ${formatChangelogLocalDate(localDate)}`;
+    });
+}
+
+const reduceMotionMediaQuery = typeof window !== 'undefined' && typeof window.matchMedia === 'function'
+    ? window.matchMedia('(prefers-reduced-motion: reduce)')
+    : null;
+
+if (reduceMotionMediaQuery) {
+    appState.reduceMotion = reduceMotionMediaQuery.matches;
+    reduceMotionMediaQuery.addEventListener('change', event => {
+        if (reduceMotionPreferenceOverride !== null) {
+            return;
+        }
+        appState.reduceMotion = event.matches;
+        applyReducedMotionState(appState.reduceMotion);
+        persistVisualSettings();
+    });
+}
+
+const snowEffectState = {
+    requested: false,
+    mode: 'none'
+};
+
+const HALLOWEEN_LIGHT_COLORS = Object.freeze([
+    '255 151 57',
+    '193 119 255',
+    '174 255 113'
+]);
+
+function createHalloweenLightParticleNode() {
+    const particle = document.createElement('span');
+    particle.className = 'halloween-light-particle';
+
+    const size = randomDecimalBetween(0.72, 1.65);
+    const opacity = randomDecimalBetween(0.38, 0.82);
+    const drift = randomDecimalBetween(-54, 54);
+    const duration = randomDecimalBetween(11, 21);
+    const delay = randomDecimalBetween(0, 22);
+    const x = randomDecimalBetween(2, 98);
+    const swayDistance = randomDecimalBetween(16, 44);
+    const swayDuration = randomDecimalBetween(4.5, 8.5);
+    const color = HALLOWEEN_LIGHT_COLORS[Math.floor(Math.random() * HALLOWEEN_LIGHT_COLORS.length)];
+
+    particle.style.setProperty('--size', size.toFixed(2));
+    particle.style.setProperty('--opacity', opacity.toFixed(2));
+    particle.style.setProperty('--drift', `${drift.toFixed(2)}px`);
+    particle.style.setProperty('--float-duration', `${duration.toFixed(2)}s`);
+    particle.style.setProperty('--float-delay', `${delay.toFixed(2)}s`);
+    particle.style.setProperty('--x', `${x.toFixed(2)}%`);
+    particle.style.setProperty('--sway-distance', `${swayDistance.toFixed(2)}px`);
+    particle.style.setProperty('--sway-duration', `${swayDuration.toFixed(2)}s`);
+    particle.style.setProperty('--light-rgb', color);
+
+    const sway = document.createElement('span');
+    sway.className = 'halloween-light-particle__sway';
+
+    const glow = document.createElement('span');
+    glow.className = 'halloween-light-particle__glow';
+
+    sway.appendChild(glow);
+    particle.appendChild(sway);
+    return particle;
+}
+
+function createParticleNode(mode) {
+    if (mode === 'halloween-lights') {
+        return createHalloweenLightParticleNode();
+    }
+
+    const isSnow = mode === 'snow';
+    const particle = document.createElement('span');
+    particle.className = isSnow ? 'snow-particle' : 'heart-particle';
+
+    const size = randomDecimalBetween(isSnow ? 0.8 : 1.35, isSnow ? 1.7 : 2.1);
+    const opacity = randomDecimalBetween(isSnow ? 0.5 : 0.44, isSnow ? 0.92 : 0.88);
+    const drift = randomDecimalBetween(-32, 32);
+    const duration = randomDecimalBetween(isSnow ? 9 : 8, isSnow ? 17 : 16);
+    const delay = randomDecimalBetween(0, 20);
+    const x = randomDecimalBetween(0, 100);
+    const swayDistance = randomDecimalBetween(isSnow ? 6 : 8, isSnow ? 18 : 24);
+    const swayDuration = randomDecimalBetween(isSnow ? 4.8 : 3.8, isSnow ? 8.4 : 7.4);
+    const popHeight = randomDecimalBetween(42, 142);
+    const glow = randomDecimalBetween(isSnow ? 0.24 : 0.42, isSnow ? 0.6 : 0.8);
+
+    particle.style.setProperty('--size', size.toFixed(2));
+    particle.style.setProperty('--opacity', opacity.toFixed(2));
+    particle.style.setProperty('--drift', `${drift.toFixed(2)}px`);
+    particle.style.setProperty('--float-duration', `${duration.toFixed(2)}s`);
+    particle.style.setProperty('--float-delay', `${delay.toFixed(2)}s`);
+    particle.style.setProperty('--x', `${x.toFixed(2)}%`);
+    particle.style.setProperty('--sway-distance', `${swayDistance.toFixed(2)}px`);
+    particle.style.setProperty('--sway-duration', `${swayDuration.toFixed(2)}s`);
+    particle.style.setProperty('--pop-height', `${popHeight.toFixed(2)}vh`);
+    particle.style.setProperty('--glow-strength', glow.toFixed(2));
+
+    const sway = document.createElement('span');
+    sway.className = isSnow ? 'snow-particle__sway' : 'heart-particle__sway';
+
+    const icon = document.createElement('i');
+    icon.className = isSnow
+        ? 'fa-solid fa-snowflake snow-particle__icon'
+        : 'fa-solid fa-heart heart-particle__icon';
+    icon.setAttribute('aria-hidden', 'true');
+
+    sway.appendChild(icon);
+    particle.appendChild(sway);
+    return particle;
+}
+
+function clearSnowField() {
+    const container = document.getElementById('snowField');
+    if (!container) return;
+
+    container.dataset.active = 'false';
+    if (container.childElementCount > 0) {
+        container.replaceChildren();
+    }
+}
+
+function renderSnowField() {
+    const container = document.getElementById('snowField');
+    const mode = snowEffectState.mode;
+    if (!container || mode === 'none' || appState.reduceMotion || appState.qualityPreferences?.removeParticles) return;
+
+    let viewportWidth = 1280;
+    let viewportHeight = 720;
+    if (typeof window !== 'undefined') {
+        viewportWidth = window.innerWidth || viewportWidth;
+        viewportHeight = window.innerHeight || viewportHeight;
+    }
+
+    const viewportArea = viewportWidth * viewportHeight;
+    const particleTotal = mode === 'halloween-lights'
+        ? Math.min(28, Math.max(9, Math.floor(viewportArea / 140000)))
+        : Math.min(48, Math.max(12, Math.floor(viewportArea / 90000)));
+
+    container.dataset.active = 'true';
+    container.replaceChildren();
+
+    const fragment = document.createDocumentFragment();
+    for (let i = 0; i < particleTotal; i++) {
+        fragment.appendChild(createParticleNode(mode));
+    }
+
+    container.appendChild(fragment);
+}
+
+function syncSnowEffect() {
+    if (!snowEffectState.requested || snowEffectState.mode === 'none' || appState.reduceMotion || appState.qualityPreferences?.removeParticles) {
+        clearSnowField();
+        return;
+    }
+
+    renderSnowField();
+}
+
+function startSnowEffect() {
+    snowEffectState.requested = true;
+    syncSnowEffect();
+}
+
+if (typeof window !== 'undefined') {
+    window.addEventListener('resize', () => {
+        if (snowEffectState.requested && !appState.reduceMotion && !appState.qualityPreferences?.removeParticles) {
+            renderSnowField();
+        }
+    });
+}
+
+const biomeAssets = {
+    lostForest: { image: 'files/images/backgrounds/lostForestBiomeImage.png', music: 'files/music/biomes/lostForestBiomeMusic.mp3' },
+    radiantForest: { image: 'files/images/backgrounds/radiantForestBiomeImage.png', music: 'files/music/biomes/radiantForestBiomeMusic.mp3' },
+    normal: { image: 'files/images/backgrounds/normalBiomeImage.png', music: 'files/music/biomes/normalBiomeMusic.mp3' },
+    roe: { image: 'files/images/backgrounds/normalBiomeImage.png', music: 'files/music/biomes/normalBiomeMusic.mp3' },
+    day: { image: 'files/images/backgrounds/normalBiomeImage.png', music: 'files/music/biomes/dayBiomeMusic.mp3' },
+    night: { image: 'files/images/backgrounds/normalBiomeImageN.png', music: 'files/music/biomes/nightBiomeMusic.mp3' },
+    rainy: { image: 'files/images/backgrounds/rainyBiomeImage.jpg', music: 'files/music/biomes/rainyBiomeMusic.mp3' },
+    windy: { image: 'files/images/backgrounds/windyBiomeImage.jpg', music: 'files/music/biomes/windyBiomeMusic.mp3' },
+    snowy: { image: 'files/images/backgrounds/snowyBiomeImage.jpg', music: 'files/music/biomes/winterBiomeMusic.mp3' },
+    aurora: { image: 'files/images/backgrounds/auroraBiomeImage.jpg', music: 'files/music/biomes/winterBiomeMusic.mp3' },
+    sandstorm: { image: 'files/images/backgrounds/sandstormBiomeImage.jpg', music: 'files/music/biomes/sandstormBiomeMusic.mp3' },
+    hell: { image: 'files/images/backgrounds/hellBiomeImage.jpg', music: 'files/music/biomes/hellBiomeMusic.mp3' },
+    starfall: { image: 'files/images/backgrounds/starfallBiomeImage.jpg', music: 'files/music/biomes/starfallBiomeMusic.mp3' },
+    singularity: { image: 'files/images/backgrounds/singularityBiomeImage.png', music: 'files/music/biomes/singularityBiomeMusic.mp3' },
+    heaven: { image: 'files/images/backgrounds/heavenBiomeImage.png', music: 'files/music/biomes/heavenBiomeMusic.mp3' },
+    corruption: { image: 'files/images/backgrounds/corruptionBiomeImage.jpg', music: 'files/music/biomes/corruptionBiomeMusic.mp3' },
+    null: { image: 'files/images/backgrounds/nullBiomeImage.jpg', music: 'files/music/biomes/nullBiomeMusic.mp3' },
+    dreamspace: { image: 'files/images/backgrounds/dreamspaceBiomeImage.jpg', music: 'files/music/biomes/dreamspaceBiomeMusic.mp3' },
+    glitch: { image: 'files/videos/biomes/glitchBiomeImage.webm', music: 'files/music/biomes/glitchBiomeMusic.mp3' },
+    cyberspace: { image: 'files/images/backgrounds/cyberspaceBiomeImage.jpg', music: 'files/music/biomes/cyberspaceBiomeMusic.mp3' },
+    anotherRealm: { image: 'files/images/backgrounds/anotherRealmBiomeImage.jpg', music: 'files/music/biomes/anotherRealmBiomeMusic.mp3' },
+    mastermind: { image: 'files/images/backgrounds/mastermindBiomeImage.png', music: 'files/music/biomes/mastermindBiomeMusic.mp3' },
+    edict: { image: 'files/images/backgrounds/wordBiomeImage.png', music: 'files/music/biomes/wordBiomeMusic.mp3' },
+    fullMoon: { image: 'files/images/backgrounds/fullMoonBiomeImage.png', music: 'files/music/biomes/fullMoonBiomeMusic.mp3' },
+    graveyard: { image: 'files/images/backgrounds/graveyardBiomeImage.png', music: 'files/music/biomes/graveyardBiomeMusic.mp3' },
+    pumpkinMoon: { image: 'files/images/backgrounds/pumpkinMoonBiomeImage.png', music: 'files/music/biomes/pumpkinMoonBiomeMusic.mp3' },
+    bloodRain: { image: 'files/images/backgrounds/bloodRainBiomeImage.png', music: 'files/music/biomes/bloodRainBiomeMusic.mp3' },
+    limbo: { image: 'files/images/backgrounds/limboImage.jpg', music: 'files/music/biomes/limboMusic.mp3' },
+    blazing: { image: 'files/images/backgrounds/blazingBiomeImage.png', music: 'files/music/biomes/blazingBiomeMusic.mp3' },
+    incinerator: { image: 'files/images/backgrounds/blazingBiomeImage.png', music: 'files/music/biomes/blazingBiomeMusic.mp3' }
+};
+
+function resolveBiomeAssetKey(biome, selectionState = null) {
+    const selection = selectionState || collectBiomeSelectionState();
+    const themeCandidate = selection && selection.themeBiome ? selection.themeBiome : biome;
+    if (Object.prototype.hasOwnProperty.call(biomeAssets, themeCandidate)) {
+        return themeCandidate;
+    }
+    if (Object.prototype.hasOwnProperty.call(biomeAssets, biome)) {
+        return biome;
+    }
+    return 'normal';
+}
+
+function shouldUseGlitchBaseEffect() {
+    return glitchPresentationEnabled
+        && glitchUiState.isUiGlitching
+        && !appState.qualityPreferences?.removeGlitchEffects;
+}
+
+function resetGlitchRuinTimer() {
+    if (glitchUiState.loopTimeoutId !== null) {
+        window.clearTimeout(glitchUiState.loopTimeoutId);
+        glitchUiState.loopTimeoutId = null;
+    }
+}
+
+function resetGlitchWarbleTimer() {
+    if (glitchUiState.warbleTimeoutId !== null) {
+        window.clearTimeout(glitchUiState.warbleTimeoutId);
+        glitchUiState.warbleTimeoutId = null;
+    }
+}
+
+function captureGlitchMediaPlayback(audioElement) {
+    if (!audioElement || glitchUiState.mediaPlaybackSnapshot) return;
+
+    glitchUiState.mediaPlaybackSnapshot = {
+        element: audioElement,
+        playbackRate: Number.isFinite(audioElement.playbackRate) ? audioElement.playbackRate : 1,
+        preservesPitch: 'preservesPitch' in audioElement ? audioElement.preservesPitch : undefined,
+        webkitPreservesPitch: 'webkitPreservesPitch' in audioElement ? audioElement.webkitPreservesPitch : undefined,
+        mozPreservesPitch: 'mozPreservesPitch' in audioElement ? audioElement.mozPreservesPitch : undefined
+    };
+}
+
+function setGlitchPitchPreservation(audioElement, enabled) {
+    if (!audioElement) return;
+    if ('preservesPitch' in audioElement) {
+        audioElement.preservesPitch = enabled;
+    }
+    if ('webkitPreservesPitch' in audioElement) {
+        audioElement.webkitPreservesPitch = enabled;
+    }
+    if ('mozPreservesPitch' in audioElement) {
+        audioElement.mozPreservesPitch = enabled;
+    }
+}
+
+function restoreGlitchMediaPlayback(audioElement, fallbackVolume) {
+    const snapshot = glitchUiState.mediaPlaybackSnapshot;
+    const targetElement = snapshot?.element || audioElement;
+    if (!targetElement) {
+        glitchUiState.mediaPlaybackSnapshot = null;
+        return;
+    }
+
+    targetElement.playbackRate = snapshot?.playbackRate ?? 1;
+    if (snapshot?.preservesPitch !== undefined && 'preservesPitch' in targetElement) {
+        targetElement.preservesPitch = snapshot.preservesPitch;
+    }
+    if (snapshot?.webkitPreservesPitch !== undefined && 'webkitPreservesPitch' in targetElement) {
+        targetElement.webkitPreservesPitch = snapshot.webkitPreservesPitch;
+    }
+    if (snapshot?.mozPreservesPitch !== undefined && 'mozPreservesPitch' in targetElement) {
+        targetElement.mozPreservesPitch = snapshot.mozPreservesPitch;
+    }
+
+    if (Number.isFinite(fallbackVolume)) {
+        targetElement.volume = clamp01(fallbackVolume);
+    }
+    glitchUiState.mediaPlaybackSnapshot = null;
+}
+
+function scheduleGlitchWarbleCycle(bgMusic, chain) {
+    if (!bgMusic || !glitchUiState.isUiGlitching) return;
+
+    resetGlitchWarbleTimer();
+
+    const reducedGlitch = Boolean(appState.qualityPreferences?.reduceGlitchEffects);
+    const baseGain = chain?.baseGain ?? computeEffectiveBackgroundVolume(bgMusic);
+    const playbackRates = reducedGlitch
+        ? [0.9, 0.96, 1.04, 1.1]
+        : [0.58, 0.72, 0.86, 1.08, 1.24, 1.48];
+    const nextPlaybackRate = playbackRates[Math.floor(Math.random() * playbackRates.length)];
+
+    captureGlitchMediaPlayback(bgMusic);
+    setGlitchPitchPreservation(bgMusic, false);
+    bgMusic.playbackRate = nextPlaybackRate;
+
+    if (!reducedGlitch && !bgMusic.paused && bgMusic.readyState >= 1 && Math.random() < 0.38) {
+        try {
+            bgMusic.currentTime = Math.max(0, bgMusic.currentTime - randomDecimalBetween(0.025, 0.11));
+        } catch (error) {}
+    }
+
+    if (chain?.context && chain.gainNode) {
+        const context = chain.context;
+        const now = context.currentTime;
+        const cutDuration = reducedGlitch
+            ? randomDecimalBetween(0.12, 0.28)
+            : randomDecimalBetween(0.035, 0.14);
+        const cutMultiplier = reducedGlitch
+            ? randomDecimalBetween(0.64, 0.88)
+            : randomDecimalBetween(0.06, 0.52);
+        const gainParam = chain.gainNode.gain;
+
+        if (typeof gainParam.cancelScheduledValues === 'function') {
+            gainParam.cancelScheduledValues(now);
+        }
+        if (typeof gainParam.setValueAtTime === 'function') {
+            gainParam.setValueAtTime(baseGain, now);
+            gainParam.linearRampToValueAtTime(baseGain * cutMultiplier, now + cutDuration);
+            gainParam.linearRampToValueAtTime(baseGain, now + cutDuration + (reducedGlitch ? 0.16 : 0.055));
+        } else {
+            gainParam.value = baseGain * cutMultiplier;
+        }
+
+        const filter = glitchUiState.distortionNode;
+        if (filter) {
+            const targetFrequency = reducedGlitch
+                ? randomDecimalBetween(180, 620)
+                : randomDecimalBetween(220, 1900);
+            const targetQ = reducedGlitch
+                ? randomDecimalBetween(0.7, 2.6)
+                : randomDecimalBetween(2.5, 10);
+            filter.frequency.setValueAtTime(targetFrequency, now);
+            filter.Q.setValueAtTime(targetQ, now);
+        }
+
+        const panner = glitchUiState.stereoPannerNode;
+        if (panner?.pan) {
+            const panRange = reducedGlitch ? 0.24 : 0.88;
+            panner.pan.setValueAtTime(randomDecimalBetween(-panRange, panRange), now);
+        }
+
+        const ditherGain = glitchUiState.ditherGainNode?.gain;
+        if (ditherGain) {
+            const ditherLevel = reducedGlitch
+                ? randomDecimalBetween(0.006, 0.018)
+                : randomDecimalBetween(0.035, 0.12);
+            ditherGain.cancelScheduledValues(now);
+            ditherGain.setTargetAtTime(ditherLevel, now, reducedGlitch ? 0.08 : 0.012);
+        }
+    } else {
+        const fallbackCut = reducedGlitch
+            ? randomDecimalBetween(0.7, 0.92)
+            : randomDecimalBetween(0.22, 0.76);
+        bgMusic.volume = clamp01(baseGain * fallbackCut);
+    }
+
+    glitchUiState.warbleTimeoutId = window.setTimeout(() => {
+        glitchUiState.warbleTimeoutId = null;
+        scheduleGlitchWarbleCycle(bgMusic, chain);
+    }, Math.floor(reducedGlitch ? randomDecimalBetween(420, 760) : randomDecimalBetween(90, 250)));
+}
+
+const GLITCH_BURST_TRIGGER_CHANCE = 0.99;
+
+function computeGlitchRestDelay() {
+    if (appState.qualityPreferences?.reduceGlitchEffects) {
+        return Math.floor(randomDecimalBetween(9000, 15000));
+    }
+    return Math.floor(randomDecimalBetween(7000, 13000));
+}
+
+function computeGlitchBurstDuration() {
+    if (appState.qualityPreferences?.reduceGlitchEffects) {
+        return Math.floor(randomDecimalBetween(1200, 1800));
+    }
+    return Math.floor(randomDecimalBetween(1200, 2400));
+}
+
+const glitchAudioCurveCache = new Map();
+
+function createDigitalCorruptionCurve({ bits, drive, dither }) {
+    const samples = 32768;
+    const levels = Math.max(4, 2 ** bits);
+    const curve = new Float32Array(samples);
+
+    for (let i = 0; i < samples; i += 1) {
+        const x = (i * 2) / samples - 1;
+        const driven = Math.tanh(x * drive);
+        const noiseSeed = Math.sin((i + 1) * 12.9898) * 43758.5453;
+        const ditherNoise = ((noiseSeed - Math.floor(noiseSeed)) * 2 - 1) * dither;
+        const quantized = Math.round((driven + ditherNoise) * levels) / levels;
+        curve[i] = Math.max(-1, Math.min(1, quantized));
+    }
+
+    return curve;
+}
+
+function getDigitalCorruptionCurve(reducedGlitch) {
+    const profile = reducedGlitch ? 'reduced' : 'full';
+    if (!glitchAudioCurveCache.has(profile)) {
+        glitchAudioCurveCache.set(
+            profile,
+            createDigitalCorruptionCurve(
+                reducedGlitch
+                    ? { bits: 8, drive: 1.35, dither: 0.0035 }
+                    : { bits: 4, drive: 3.2, dither: 0.026 }
+            )
+        );
+    }
+    return glitchAudioCurveCache.get(profile);
+}
+
+function ensureGlitchAudioChain(audioElement) {
+    if (!audioElement) return null;
+
+    const context = resumeAudioEngine();
+    if (!context) {
+        applyMediaGain(audioElement, { category: 'music' });
+        return null;
+    }
+
+    if (!canUseMediaElementSource(audioElement)) {
+        applyMediaGain(audioElement, { category: 'music' });
+        return null;
+    }
+
+    if (glitchUiState.sourceNode && glitchUiState.sourceElement !== audioElement) {
+        glitchUiState.sourceNode.disconnect();
+        glitchUiState.sourceNode = null;
+        glitchUiState.sourceElement = null;
+    }
+
+    if (!glitchUiState.sourceNode) {
+        glitchUiState.sourceNode = context.createMediaElementSource(audioElement);
+        glitchUiState.sourceElement = audioElement;
+        glitchUiState.audioPipelineMode = null;
+    }
+
+    if (!glitchUiState.waveShaper) {
+        glitchUiState.waveShaper = context.createWaveShaper();
+        glitchUiState.waveShaper.curve = getDigitalCorruptionCurve(false);
+        glitchUiState.waveShaper.oversample = 'none';
+    }
+
+    if (!glitchUiState.distortionNode) {
+        glitchUiState.distortionNode = context.createBiquadFilter();
+        glitchUiState.distortionNode.type = 'highpass';
+        glitchUiState.distortionNode.frequency.value = 240;
+    }
+
+    if (!glitchUiState.stereoPannerNode && typeof context.createStereoPanner === 'function') {
+        glitchUiState.stereoPannerNode = context.createStereoPanner();
+        glitchUiState.stereoPannerNode.pan.value = 0;
+    }
+
+    const desiredPipeline = shouldUseGlitchBaseEffect() ? 'glitch' : 'clean';
+
+    if (desiredPipeline === 'glitch' && (!glitchUiState.ditherSourceNode || !glitchUiState.ditherGainNode)) {
+        const ditherBuffer = context.createBuffer(1, Math.floor(context.sampleRate * 0.75), context.sampleRate);
+        const ditherSamples = ditherBuffer.getChannelData(0);
+        for (let i = 0; i < ditherSamples.length; i += 1) {
+            ditherSamples[i] = Math.random() * 2 - 1;
+        }
+
+        glitchUiState.ditherSourceNode = context.createBufferSource();
+        glitchUiState.ditherSourceNode.buffer = ditherBuffer;
+        glitchUiState.ditherSourceNode.loop = true;
+        glitchUiState.ditherGainNode = context.createGain();
+        glitchUiState.ditherGainNode.gain.value = 0;
+        glitchUiState.ditherSourceNode.connect(glitchUiState.ditherGainNode);
+        glitchUiState.ditherSourceNode.start();
+    }
+
+    if (!glitchUiState.gainNode) {
+        glitchUiState.gainNode = context.createGain();
+        glitchUiState.gainNode.gain.value = computeEffectiveBackgroundVolume(audioElement);
+    }
+
+    if (glitchUiState.audioPipelineMode !== desiredPipeline) {
+        if (glitchUiState.sourceNode) {
+            try { glitchUiState.sourceNode.disconnect(); } catch (error) {}
+        }
+        if (glitchUiState.waveShaper) {
+            try { glitchUiState.waveShaper.disconnect(); } catch (error) {}
+        }
+        if (glitchUiState.distortionNode) {
+            try { glitchUiState.distortionNode.disconnect(); } catch (error) {}
+        }
+        if (glitchUiState.stereoPannerNode) {
+            try { glitchUiState.stereoPannerNode.disconnect(); } catch (error) {}
+        }
+        if (glitchUiState.ditherGainNode) {
+            try { glitchUiState.ditherGainNode.disconnect(); } catch (error) {}
+        }
+        if (glitchUiState.gainNode) {
+            try { glitchUiState.gainNode.disconnect(); } catch (error) {}
+        }
+
+        if (desiredPipeline === 'glitch') {
+            glitchUiState.sourceNode
+                .connect(glitchUiState.waveShaper)
+                .connect(glitchUiState.distortionNode);
+            glitchUiState.ditherGainNode.connect(glitchUiState.distortionNode);
+            if (glitchUiState.stereoPannerNode) {
+                glitchUiState.distortionNode
+                    .connect(glitchUiState.stereoPannerNode)
+                    .connect(glitchUiState.gainNode);
+            } else {
+                glitchUiState.distortionNode.connect(glitchUiState.gainNode);
+            }
+            glitchUiState.gainNode.connect(context.destination);
+        } else {
+            glitchUiState.sourceNode
+                .connect(glitchUiState.gainNode)
+                .connect(context.destination);
+        }
+
+        glitchUiState.audioPipelineMode = desiredPipeline;
+    }
+
+    return {
+        context,
+        baseGain: glitchUiState.gainNode.gain.value,
+        gainNode: glitchUiState.gainNode
+    };
+}
+
+function updateGlitchAudioControls(enabled) {
+    const bgMusic = document.getElementById('ambientMusic');
+    if (!bgMusic) return;
+
+    const { baseVolume, chain } = synchronizeBackgroundRouting(bgMusic);
+
+    if (enabled) {
+        const reducedGlitch = Boolean(appState.qualityPreferences?.reduceGlitchEffects);
+        const profile = reducedGlitch ? 'reduced' : 'full';
+        if (glitchUiState.waveShaper && glitchUiState.audioCorruptionProfile !== profile) {
+            glitchUiState.waveShaper.curve = getDigitalCorruptionCurve(reducedGlitch);
+            glitchUiState.audioCorruptionProfile = profile;
+        }
+        scheduleGlitchWarbleCycle(bgMusic, chain);
+    } else {
+        resetGlitchWarbleTimer();
+        glitchUiState.audioCorruptionProfile = null;
+        restoreGlitchMediaPlayback(bgMusic, chain ? 1 : baseVolume);
+        if (chain?.gainNode) {
+            const now = chain.context.currentTime;
+            if (typeof chain.gainNode.gain.cancelScheduledValues === 'function') {
+                chain.gainNode.gain.cancelScheduledValues(now);
+            }
+            if (typeof chain.gainNode.gain.setTargetAtTime === 'function') {
+                chain.gainNode.gain.setTargetAtTime(baseVolume, now, 0.025);
+            } else {
+                chain.gainNode.gain.value = baseVolume;
+            }
+        }
+        if (glitchUiState.stereoPannerNode?.pan && chain?.context) {
+            glitchUiState.stereoPannerNode.pan.setValueAtTime(0, chain.context.currentTime);
+        }
+        if (glitchUiState.ditherGainNode?.gain && chain?.context) {
+            const now = chain.context.currentTime;
+            glitchUiState.ditherGainNode.gain.cancelScheduledValues(now);
+            glitchUiState.ditherGainNode.gain.setValueAtTime(0, now);
+        }
+    }
+}
+
+const GLITCH_SIGNAL_READOUTS = Object.freeze([
+    'SIGNAL_DESYNC // 0xF7',
+    'FRAME_LOSS // MEMORY_ERR',
+    'UI_THREAD // CORRUPTED',
+    'PACKET_GHOST // NULL',
+    'REALITY_OFFSET // +13',
+    'NO_CARRIER // RETRY_LOOP'
+]);
+
+const GLITCH_CONSOLE_ERRORS = Object.freeze([
+    'RealityBuffer overflowed while rendering purple.',
+    'AuraRegistryError: GLITCH attempted to roll the developer.',
+    'ServerInfoException: Luck escaped containment and refuses to come back.',
+    'NullPointerException: The null pointer is pointing at another null pointer.',
+    'DreamCatcher.dll tried to enter Limbo and was politely removed.',
+    'ConsoleInspectionError: The console noticed you noticing it.',
+    'PacketLossError: Lost three packets and one sandwich.',
+    'BiomeIntegrityError: Cyan and purple are arguing over the z-index.'
+]);
+
+const GLITCH_ENTRY_ERROR_MESSAGES = Object.freeze([
+    Object.freeze({ title: '<< SERVER INFO >>', code: '0xF7A2://BIOME_HANDSHAKE', message: 'UNSTABLE REALITY BUFFER DETECTED' }),
+    Object.freeze({ title: '<< CLIENT ERROR >>', code: 'GLITCH_UI::MOUNT_FAILURE', message: 'AURA INDEX DESYNCHRONIZED' }),
+    Object.freeze({ title: '<< ROLL ENGINE >>', code: 'LUCK_BUFFER = NaN', message: 'PLEASE DO NOT FEED THE NULL POINTER' }),
+    Object.freeze({ title: '<< VERY NORMAL ERROR >>', code: 'ERROR 418://REALITY_IS_TEA', message: 'THIS MESSAGE IS PROBABLY FINE' }),
+    Object.freeze({ title: '<< PACKET FAILURE >>', code: '0x0000F7::NO_CARRIER', message: 'THREE PACKETS AND A SANDWICH ARE MISSING' }),
+    Object.freeze({ title: '<< AURA SERVICE >>', code: 'REGISTRY://PURPLE_OVERFLOW', message: 'CYAN HAS FILED A FORMAL COMPLAINT' }),
+    Object.freeze({ title: '<< REALITY DRIVER >>', code: 'DIMENSION_INDEX = -13', message: 'CURRENT BIOME MAY BE SLIGHTLY SIDEWAYS' }),
+    Object.freeze({ title: '<< CONSOLE WATCH >>', code: 'INSPECTOR_AWARENESS = TRUE', message: 'THE CONSOLE KNOWS THAT YOU ARE LOOKING' })
+]);
+
+function createGlitchErrorCode() {
+    return Math.floor(Math.random() * 0xFFFFFF)
+        .toString(16)
+        .toUpperCase()
+        .padStart(6, '0');
+}
+
+function emitGlitchConsoleErrors() {
+    if (!experienceStarted || typeof console === 'undefined' || typeof console.error !== 'function') return;
+
+    const shuffledErrors = [...GLITCH_CONSOLE_ERRORS];
+    for (let index = shuffledErrors.length - 1; index > 0; index -= 1) {
+        const swapIndex = Math.floor(Math.random() * (index + 1));
+        [shuffledErrors[index], shuffledErrors[swapIndex]] = [shuffledErrors[swapIndex], shuffledErrors[index]];
+    }
+
+    shuffledErrors.slice(0, 4).forEach((message, index) => {
+        console.error(`[GLITCH://FAKE_ERROR 0x${createGlitchErrorCode()}.${index}] ${message}`);
+    });
+}
+
+function concealGlitchEntryErrors() {
+    const overlay = document.getElementById('glitchEntryErrors');
+    const body = document.body;
+
+    if (glitchUiState.entryErrorTimeoutId !== null) {
+        window.clearTimeout(glitchUiState.entryErrorTimeoutId);
+        glitchUiState.entryErrorTimeoutId = null;
+    }
+    if (glitchUiState.entryErrorFrameId !== null) {
+        window.cancelAnimationFrame(glitchUiState.entryErrorFrameId);
+        glitchUiState.entryErrorFrameId = null;
+    }
+
+    body?.classList.remove('glitch-entry-errors-active');
+    if (overlay) {
+        overlay.hidden = true;
+    }
+}
+
+function triggerGlitchEntryErrors() {
+    if (!experienceStarted || appState.qualityPreferences?.removeGlitchEffects) return;
+
+    const overlay = document.getElementById('glitchEntryErrors');
+    const body = document.body;
+    if (!overlay || !body) return;
+
+    concealGlitchEntryErrors();
+    const messages = [...GLITCH_ENTRY_ERROR_MESSAGES];
+    for (let index = messages.length - 1; index > 0; index -= 1) {
+        const swapIndex = Math.floor(Math.random() * (index + 1));
+        [messages[index], messages[swapIndex]] = [messages[swapIndex], messages[index]];
+    }
+
+    overlay.querySelectorAll('[data-glitch-entry-error]').forEach((card, index) => {
+        const error = messages[index];
+        card.style.setProperty('--glitch-entry-delay', `${index * 95}ms`);
+        const title = card.querySelector('[data-glitch-entry-title]');
+        const code = card.querySelector('[data-glitch-entry-code]');
+        const message = card.querySelector('[data-glitch-entry-message]');
+        if (title) title.textContent = error.title;
+        if (code) code.textContent = `${error.code} // ${createGlitchErrorCode()}`;
+        if (message) message.textContent = error.message;
+    });
+
+    overlay.hidden = false;
+    glitchUiState.entryErrorFrameId = window.requestAnimationFrame(() => {
+        glitchUiState.entryErrorFrameId = null;
+        body.classList.add('glitch-entry-errors-active');
+    });
+    glitchUiState.entryErrorTimeoutId = window.setTimeout(() => {
+        glitchUiState.entryErrorTimeoutId = null;
+        body.classList.remove('glitch-entry-errors-active');
+        overlay.hidden = true;
+    }, 4300);
+}
+
+const GLITCH_FRAGMENT_PALETTES = Object.freeze([
+    Object.freeze({
+        fill: 'rgba(0, 236, 255, 0.9)',
+        line: 'rgba(224, 253, 255, 0.98)',
+        accent: 'rgba(0, 246, 255, 0.96)',
+        border: 'rgba(105, 251, 255, 0.98)',
+        glow: 'rgba(0, 229, 255, 0.82)',
+        shadow: 'rgba(127, 29, 255, 0.76)'
+    }),
+    Object.freeze({
+        fill: 'rgba(126, 25, 255, 0.92)',
+        line: 'rgba(216, 176, 255, 0.96)',
+        accent: 'rgba(170, 43, 255, 0.98)',
+        border: 'rgba(185, 77, 255, 0.98)',
+        glow: 'rgba(126, 25, 255, 0.86)',
+        shadow: 'rgba(0, 246, 255, 0.78)'
+    }),
+    Object.freeze({
+        fill: 'rgba(1, 0, 8, 0.98)',
+        line: 'rgba(0, 240, 255, 0.76)',
+        accent: 'rgba(133, 30, 255, 0.9)',
+        border: 'rgba(8, 4, 16, 1)',
+        glow: 'rgba(0, 0, 0, 0.96)',
+        shadow: 'rgba(0, 238, 255, 0.68)'
+    })
+]);
+
+function randomizeGlitchSignal() {
+    const signalLayer = document.getElementById('glitchSignalOverlay');
+    if (!signalLayer) return;
+
+    const tears = signalLayer.querySelectorAll('.glitch-signal__tear');
+    tears.forEach((tear, index) => {
+        const direction = index % 2 === 0 ? 1 : -1;
+        const tearY = randomDecimalBetween(5, 92);
+        const tearX = direction * randomDecimalBetween(4.5, 14);
+        const tearEndX = -direction * randomDecimalBetween(3.5, 11);
+        tear.style.setProperty('--glitch-tear-y', `${tearY.toFixed(2)}vh`);
+        tear.style.setProperty('--glitch-tear-x', `${tearX.toFixed(2)}vw`);
+        tear.style.setProperty('--glitch-tear-end-x', `${tearEndX.toFixed(2)}vw`);
+        tear.style.setProperty('--glitch-tear-height', `${Math.floor(randomDecimalBetween(5, 18))}px`);
+        tear.style.setProperty('--glitch-tear-delay', `${Math.floor(randomDecimalBetween(0, 120))}ms`);
+    });
+
+    const fragments = signalLayer.querySelectorAll('.glitch-signal__fragment');
+    fragments.forEach((fragment, index) => {
+        const palette = GLITCH_FRAGMENT_PALETTES[Math.floor(Math.random() * GLITCH_FRAGMENT_PALETTES.length)];
+        const isSquare = index % 3 === 0;
+        const fragmentWidth = isSquare
+            ? randomDecimalBetween(22, 70)
+            : randomDecimalBetween(52, 188);
+        const fragmentHeight = isSquare
+            ? fragmentWidth * randomDecimalBetween(0.74, 1.16)
+            : randomDecimalBetween(9, 46);
+        const shiftX = randomDecimalBetween(-30, 30);
+        const shiftY = randomDecimalBetween(-13, 13);
+
+        fragment.style.setProperty('--glitch-fragment-left', `${randomDecimalBetween(2, 92).toFixed(2)}vw`);
+        fragment.style.setProperty('--glitch-fragment-top', `${randomDecimalBetween(4, 91).toFixed(2)}vh`);
+        fragment.style.setProperty('--glitch-fragment-width', `${fragmentWidth.toFixed(1)}px`);
+        fragment.style.setProperty('--glitch-fragment-height', `${fragmentHeight.toFixed(1)}px`);
+        fragment.style.setProperty('--glitch-fragment-shift-x', `${shiftX.toFixed(1)}px`);
+        fragment.style.setProperty('--glitch-fragment-shift-y', `${shiftY.toFixed(1)}px`);
+        fragment.style.setProperty('--glitch-fragment-return-x', `${(-shiftX * randomDecimalBetween(0.32, 0.72)).toFixed(1)}px`);
+        fragment.style.setProperty('--glitch-fragment-return-y', `${(-shiftY * randomDecimalBetween(0.24, 0.66)).toFixed(1)}px`);
+        fragment.style.setProperty('--glitch-fragment-scale-x', randomDecimalBetween(0.78, 1.34).toFixed(2));
+        fragment.style.setProperty('--glitch-fragment-line-step', `${Math.floor(randomDecimalBetween(3, 8))}px`);
+        fragment.style.setProperty('--glitch-fragment-shadow-x', `${randomDecimalBetween(-13, 13).toFixed(1)}px`);
+        fragment.style.setProperty('--glitch-fragment-delay', `${Math.floor(randomDecimalBetween(0, 260))}ms`);
+        fragment.style.setProperty('--glitch-fragment-duration', `${Math.floor(randomDecimalBetween(220, 580))}ms`);
+        fragment.style.setProperty('--glitch-fragment-ambient-duration', `${Math.floor(randomDecimalBetween(3800, 7200))}ms`);
+        fragment.style.setProperty('--glitch-fragment-ambient-delay', `${-Math.floor(randomDecimalBetween(0, 7200))}ms`);
+        fragment.style.setProperty('--glitch-fragment-reduced-duration', `${Math.floor(randomDecimalBetween(8200, 12800))}ms`);
+        fragment.style.setProperty('--glitch-fragment-reduced-delay', `${-Math.floor(randomDecimalBetween(0, 12800))}ms`);
+        fragment.style.setProperty('--glitch-fragment-reduced-burst-duration', `${Math.floor(randomDecimalBetween(3800, 6200))}ms`);
+        fragment.style.setProperty('--glitch-fragment-fill', palette.fill);
+        fragment.style.setProperty('--glitch-fragment-line', palette.line);
+        fragment.style.setProperty('--glitch-fragment-accent', palette.accent);
+        fragment.style.setProperty('--glitch-fragment-border', palette.border);
+        fragment.style.setProperty('--glitch-fragment-glow', palette.glow);
+        fragment.style.setProperty('--glitch-fragment-shadow', palette.shadow);
+    });
+
+    const shellShiftX = randomDecimalBetween(4.2, 9.2);
+    const shellShiftY = randomDecimalBetween(2.2, 5.8);
+    document.body.style.setProperty('--glitch-shell-shift-x', `${shellShiftX.toFixed(2)}px`);
+    document.body.style.setProperty('--glitch-shell-shift-y', `${shellShiftY.toFixed(2)}px`);
+
+    const readout = signalLayer.querySelector('.glitch-signal__readout');
+    if (readout) {
+        const messageIndex = Math.floor(Math.random() * GLITCH_SIGNAL_READOUTS.length);
+        readout.textContent = GLITCH_SIGNAL_READOUTS[messageIndex];
+    }
+}
+
+function triggerGlitchBurst() {
+    const body = document.body;
+    if (!body) return;
+
+    randomizeGlitchSignal();
+    emitGlitchConsoleErrors();
+    body.classList.add('is-glitching');
+    glitchUiState.isUiGlitching = true;
+    updateGlitchAudioControls(true);
+}
+
+function completeGlitchBurst() {
+    const body = document.body;
+    if (!body) return;
+
+    body.classList.remove('is-glitching');
+    glitchUiState.isUiGlitching = false;
+    updateGlitchAudioControls(false);
+}
+
+function queueGlitchBurstCycle(delay) {
+    resetGlitchRuinTimer();
+    if (typeof window === 'undefined') return;
+
+    glitchUiState.loopTimeoutId = window.setTimeout(() => {
+        glitchUiState.loopTimeoutId = null;
+        if (!glitchPresentationEnabled) return;
+
+        if (drawEntropy() < GLITCH_BURST_TRIGGER_CHANCE) {
+            executeGlitchBurstSequence();
+        } else {
+            const nextDelay = computeGlitchRestDelay();
+            queueGlitchBurstCycle(nextDelay);
+        }
+    }, delay);
+}
+
+function executeGlitchBurstSequence() {
+    if (!glitchPresentationEnabled || typeof window === 'undefined') return;
+
+    triggerGlitchBurst();
+
+    const activeDuration = computeGlitchBurstDuration();
+
+    glitchUiState.burstTimeoutId = window.setTimeout(() => {
+        glitchUiState.burstTimeoutId = null;
+        completeGlitchBurst();
+        const nextDelay = computeGlitchRestDelay();
+        queueGlitchBurstCycle(nextDelay);
+    }, activeDuration);
+}
+
+function startGlitchLoop(forceImmediate = false) {
+    if (!glitchPresentationEnabled || typeof window === 'undefined') return;
+    if (forceImmediate) {
+        executeGlitchBurstSequence();
+        return;
+    }
+    const initialDelay = computeGlitchRestDelay();
+    queueGlitchBurstCycle(initialDelay);
+}
+
+function isGlitchLoopScheduled() {
+    return glitchUiState.loopTimeoutId !== null || glitchUiState.burstTimeoutId !== null;
+}
+
+function stopGlitchLoop(options = {}) {
+    const body = document.body;
+    const root = document.documentElement;
+    if (glitchUiState.loopTimeoutId !== null) {
+        window.clearTimeout(glitchUiState.loopTimeoutId);
+        glitchUiState.loopTimeoutId = null;
+    }
+    if (glitchUiState.burstTimeoutId !== null) {
+        window.clearTimeout(glitchUiState.burstTimeoutId);
+        glitchUiState.burstTimeoutId = null;
+    }
+    resetGlitchWarbleTimer();
+    glitchUiState.isUiGlitching = false;
+    if (!body || !root) return;
+
+    const clearClasses = () => {
+        body.classList.remove('is-glitching');
+        root.classList.remove('is-glitching');
+    };
+
+    if (options.forceClear) {
+        clearClasses();
+        updateGlitchAudioControls(false);
+        return;
+    }
+
+    window.setTimeout(() => {
+        clearClasses();
+        updateGlitchAudioControls(false);
+    }, 150);
+}
+
+function applyGlitchVisuals(enabled, options = {}) {
+    const body = document.body;
+    const root = document.documentElement;
+    if (!body || !root) return;
+
+    const { forceTheme = false } = options;
+    const nextPresentationMode = enabled
+        ? (appState.qualityPreferences?.reduceGlitchEffects ? 'reduced' : 'full')
+        : 'disabled';
+    const presentationModeChanged = glitchUiState.presentationMode !== nextPresentationMode;
+    glitchUiState.presentationMode = nextPresentationMode;
+    body.classList.toggle('glitch-effects-enabled', enabled);
+    root.classList.toggle('glitch-effects-enabled', enabled);
+
+    if (enabled) {
+        body.classList.add('biome--glitch');
+        root.classList.add('biome--glitch');
+        if (!glitchPresentationEnabled) {
+            triggerGlitchEntryErrors();
+            glitchPresentationEnabled = true;
+            startGlitchLoop(true);
+        } else if (presentationModeChanged) {
+            resetGlitchRuinTimer();
+            if (glitchUiState.burstTimeoutId !== null) {
+                window.clearTimeout(glitchUiState.burstTimeoutId);
+                glitchUiState.burstTimeoutId = null;
+            }
+            completeGlitchBurst();
+            startGlitchLoop(true);
+        } else if (!isGlitchLoopScheduled()) {
+            startGlitchLoop();
+        }
+        updateGlitchAudioControls(shouldUseGlitchBaseEffect());
+    } else {
+        concealGlitchEntryErrors();
+        if (glitchPresentationEnabled) {
+            glitchPresentationEnabled = false;
+            stopGlitchLoop({ forceClear: !forceTheme });
+        }
+        if (forceTheme) {
+            body.classList.add('biome--glitch');
+            root.classList.add('biome--glitch');
+        } else {
+            body.classList.remove('biome--glitch');
+            root.classList.remove('biome--glitch');
+        }
+        glitchUiState.isUiGlitching = false;
+        updateGlitchAudioControls(false);
+    }
+}
+
+let biomeBackgroundRequestId = 0;
+
+function applyBiomeBackdrop(image) {
+    const isVideoAsset = BiomeBackground.isVideo(image);
+    const root = document.documentElement;
+    if (root) {
+        root.style.setProperty('--biome-background', isVideoAsset ? 'none' : `url("${image}")`);
+    }
+
+    const backdrop = document.querySelector('.interface-backdrop');
+    if (backdrop) {
+        const backdropVideo = backdrop.querySelector('.interface-backdrop__video');
+        if (isVideoAsset && backdropVideo) {
+            backdrop.classList.add('interface-backdrop--video-active');
+            backdrop.style.backgroundImage = 'none';
+
+            const currentVideoSrc = backdropVideo.getAttribute('data-current-src');
+            if (currentVideoSrc !== image) {
+                backdropVideo.pause();
+                backdropVideo.removeAttribute('src');
+                backdropVideo.load();
+                backdropVideo.src = image;
+                backdropVideo.load();
+                backdropVideo.setAttribute('data-current-src', image);
+            }
+
+            const playPromise = backdropVideo.play();
+            if (playPromise && typeof playPromise.catch === 'function') {
+                playPromise.catch(() => {});
+            }
+        } else {
+            backdrop.classList.remove('interface-backdrop--video-active');
+            backdrop.style.backgroundImage = `url("${image}")`;
+            if (backdropVideo) {
+                backdropVideo.pause();
+                if (backdropVideo.readyState > 0) {
+                    try {
+                        backdropVideo.currentTime = 0;
+                    } catch (error) {
+                        console.warn('Unable to reset glitch backdrop video time', error);
+                    }
+                }
+                backdropVideo.removeAttribute('src');
+                backdropVideo.load();
+                backdropVideo.removeAttribute('data-current-src');
+            }
+        }
+    }
+}
+
+function applyBiomeTheme(biome, selectionState = null) {
+    const selection = selectionState || collectBiomeSelectionState();
+    const assetKey = resolveBiomeAssetKey(biome, selection);
+    const assets = biomeAssets[assetKey] || biomeAssets.normal;
+    const night = selection.timeBiome === 'night' || selection.activeBiomes?.includes('night') || assetKey === 'night';
+    const request = ++biomeBackgroundRequestId;
+    BiomeBackground.setTime(night ? 'night' : 'day');
+    BiomeBackground.resolve(assets.image, { night }).then(image => {
+        if (request === biomeBackgroundRequestId) applyBiomeBackdrop(image);
+    });
+
+    const bgMusic = document.getElementById('ambientMusic');
+    if (bgMusic && assets) {
+        const currentSrc = bgMusic.getAttribute('data-current-src') || bgMusic.dataset?.src || bgMusic.getAttribute('src');
+        const shouldUpdateMusic = currentSrc !== assets.music;
+        const shouldPlaySingularitySummon = assetKey === 'singularity' && shouldUpdateMusic;
+        const singularitySummonInProgress = assetKey === 'singularity' && typeof singularitySummonCleanup === 'function';
+        if (assetKey !== 'singularity') {
+            stopSingularitySummonSequence();
+        }
+        if (shouldUpdateMusic) {
+            bgMusic.pause();
+            try {
+                bgMusic.currentTime = 0;
+            } catch (error) {
+                console.warn('Unable to reset background music time', error);
+            }
+            bgMusic.removeAttribute('src');
+            if (bgMusic.dataset) {
+                bgMusic.dataset.src = assets.music;
+            }
+            bgMusic.setAttribute('data-current-src', assets.music);
+            if (experienceStarted && appState.audio.roll) {
+                ensureBackgroundMusicSource(bgMusic);
+            } else if (typeof bgMusic.load === 'function') {
+                bgMusic.load();
+            }
+        }
+
+        if (appState.audio.roll && experienceStarted) {
+            primeBackgroundMusic(bgMusic);
+            if (glitchPresentationEnabled) {
+                updateGlitchAudioControls(shouldUseGlitchBaseEffect());
+            }
+        }
+
+        if (appState.audio.roll && experienceStarted && (shouldUpdateMusic || bgMusic.paused) && !singularitySummonInProgress) {
+            if (shouldPlaySingularitySummon) {
+                playSingularitySummonSequence(bgMusic, {
+                    expectedMusicSrc: assets.music,
+                    onComplete: () => startBackgroundMusic(bgMusic)
+                });
+            } else {
+                startBackgroundMusic(bgMusic);
+            }
+        }
+    }
+}
+
+let baseLuck = 1;
+let currentLuck = 1;
+let lastVipMultiplier = 1;
+let lastXyzMultiplier = 1;
+let lastXyzOldMultiplier = 1;
+let lastSorryMultiplier = 1;
+let lastAstraldMultiplier = 1;
+let lastXcMultiplier = 1;
+let lastXcOldMultiplier = 1;
+let lastAxisMultiplier = 1;
+let lastAxisOldMultiplier = 1;
+let lastWordMultiplier = 1;
+let lastDaveMultiplier = 1;
+let lastDorcelessnessMultiplier = 1;
+let suppressYgBlessingAlert = false;
+let suppressAstraldBlessingAlert = false;
+
+const EVENT_LUCK_TOGGLE_IDS = Object.freeze([
+    'sorry-luck-toggle',
+    'astrald-blessing-toggle',
+    'dorcelessness-luck-toggle'
+]);
+
+const EXCLUSIVE_EVENT_TOGGLE_IDS = Object.freeze([
+    'dorcelessness-luck-toggle'
+]);
+
+const YG_BLESSING_BLOCKING_EVENT_IDS = Object.freeze([
+    'sorry-luck-toggle',
+    'astrald-blessing-toggle'
+]);
+
+const ASTRALD_BLESSING_BLOCKING_EVENT_IDS = Object.freeze([
+    'yg-blessing-toggle',
+    'dorcelessness-luck-toggle'
+]);
+
+const YG_BLESSING_EVENT_BLOCK_MESSAGE = "YG blessing has not been obtainable while these events have been occurring in Sol's RNG (yet).";
+const ASTRALD_BLESSING_EVENT_BLOCK_MESSAGE = "Astrald blessing has not been obtainable while these events have been occurring in Sol's RNG (yet).";
+let eventToggleSyncInProgress = false;
+
+function isAnyToggleActive(toggleIds) {
+    if (!Array.isArray(toggleIds)) {
+        return false;
+    }
+    return toggleIds.some(id => {
+        const toggle = document.getElementById(id);
+        return Boolean(toggle && toggle.checked);
+    });
+}
+
+function setToggleChecked(toggle, checked, { dispatchChange } = {}) {
+    if (!toggle || toggle.checked === checked) {
+        return;
+    }
+    toggle.checked = checked;
+    if (dispatchChange) {
+        toggle.dispatchEvent(new Event('change', { bubbles: true }));
+    }
+}
+
+function setToggleCheckedById(id, checked, options = {}) {
+    setToggleChecked(document.getElementById(id), checked, options);
+}
+
+function isCurrentDevAdminAbuseActive() {
+    const selectionState = typeof collectBiomeSelectionState === 'function' ? collectBiomeSelectionState() : null;
+    const biome = selectionState?.canonicalBiome || document.getElementById('biome-dropdown')?.value || 'normal';
+    return isDevAdminAbuseBiomeActive(biome);
+}
+
+function disableYgBlessing({ silent = false } = {}) {
+    const ygToggle = document.getElementById('yg-blessing-toggle');
+    if (!ygToggle || !ygToggle.checked) {
+        return;
+    }
+    if (silent) {
+        suppressYgBlessingAlert = true;
+    }
+    setToggleChecked(ygToggle, false, { dispatchChange: true });
+    if (silent) {
+        suppressYgBlessingAlert = false;
+    }
+}
+
+function disableAstraldBlessing({ silent = false } = {}) {
+    const astraldToggle = document.getElementById('astrald-blessing-toggle');
+    if (!astraldToggle || !astraldToggle.checked) {
+        return;
+    }
+    if (silent) {
+        suppressAstraldBlessingAlert = true;
+    }
+    setToggleChecked(astraldToggle, false, { dispatchChange: true });
+    if (silent) {
+        suppressAstraldBlessingAlert = false;
+    }
+}
+
+function enforceExclusiveEventToggles(activeToggle) {
+    if (eventToggleSyncInProgress || !activeToggle || !activeToggle.checked) {
+        return;
+    }
+    if (!EXCLUSIVE_EVENT_TOGGLE_IDS.includes(activeToggle.id)) {
+        return;
+    }
+    eventToggleSyncInProgress = true;
+    EXCLUSIVE_EVENT_TOGGLE_IDS.forEach(id => {
+        if (id === activeToggle.id) {
+            return;
+        }
+        const toggle = document.getElementById(id);
+        if (toggle && toggle.checked) {
+            setToggleChecked(toggle, false, { dispatchChange: true });
+        }
+    });
+    eventToggleSyncInProgress = false;
+}
+
+const MILLION_LUCK_PRESET = 1000000;
+
+const LUCK_SELECTION_SOURCE = Object.freeze({
+    CUSTOM: 'custom',
+    STANDARD_PRESET: 'standard-preset',
+    DEVICE_PRESET: 'device-preset',
+    MANUAL: 'manual'
+});
+
+const POTION_SIMULATION_MODE = Object.freeze({
+    SINGLE: 'single',
+    MULTIPLE: 'multiple'
+});
+
+const SIMULATION_METHOD = Object.freeze({
+    UNNAMED: 'unnamed',
+    SOLS_LIKE: 'sols-like'
+});
+
+const MULTI_POTION_STACK_EXCLUSION_GROUP = Object.freeze({
+    RED_MOON: 'red-moon'
+});
+
+const MULTI_POTION_CONFIGS = Object.freeze([
+    Object.freeze({ id: 'heavenly', label: 'Heavenly Potion', resultLabel: 'Heavenly', resultClass: 'heavenlyClass', luck: 150000 }),
+    Object.freeze({ id: 'pump-kings-blood', label: "Pump King's Blood", resultLabel: "Pump King's Blood", resultClass: 'pumpBloodClass', luck: 700000, blocksRunes: true }),
+    Object.freeze({ id: 'oblivion', label: 'Oblivion Potion', resultLabel: 'Oblivion', resultClass: 'oblivionClass', luck: 600000, oblivion: true, blocksRunes: true }),
+    Object.freeze({ id: 'godlike', label: 'Godlike Potion', resultLabel: 'Godlike', resultClass: 'godlikePotionClass', luck: 400000 }),
+    Object.freeze({ id: 'blood-ii', label: 'Red Moon II', resultLabel: 'Red Moon II', resultClass: 'bloodIIClass', luck: 200000, bloodPreset: 'blood-ii', stackExclusionGroup: MULTI_POTION_STACK_EXCLUSION_GROUP.RED_MOON }),
+    Object.freeze({ id: 'candy-corn', label: 'Candy Corn', resultLabel: 'Candy Corn', resultClass: 'candyClass', luck: 75000 }),
+    Object.freeze({ id: 'bound', label: 'Bound Potion', resultLabel: 'Bound', resultClass: 'boundClass', luck: 50000 }),
+    Object.freeze({ id: 'blood-i', label: 'Red Moon I', resultLabel: 'Red Moon I', resultClass: 'bloodClass', luck: 11000, bloodPreset: 'blood-i', stackExclusionGroup: MULTI_POTION_STACK_EXCLUSION_GROUP.RED_MOON }),
+    Object.freeze({ id: 'dune', label: 'Potion of the Dune', resultLabel: 'Potion of the Dune', resultClass: 'duneClass', luck: 10000, dune: true }),
+    Object.freeze({ id: 'popping', label: 'Popping Potion', resultLabel: 'Popping', resultClass: 'popClass', luck: 10000 }),
+    Object.freeze({ id: 'tutorial-potion', label: 'Tutorial Potion', resultLabel: 'Tutorial Potion', resultClass: 'tutPotion', luck: 5000, blocksRunes: true })
+]);
+
+const MULTI_POTION_CONFIG_BY_ID = new Map(MULTI_POTION_CONFIGS.map(config => [config.id, config]));
+let potionSimulationMode = POTION_SIMULATION_MODE.SINGLE;
+let simulationMethod = SIMULATION_METHOD.UNNAMED;
+let singlePotionRollValue = 1;
+const equippedGear = { right: 'none', left: 'none', pocket: 'none' };
+let additionalBasicBuffs = 0;
+let singleSpecialLuck = 0;
+
+function getGearLuckInputs(multiple = isMultiplePotionMode()) {
+    const selection = collectBiomeSelectionState();
+    return {
+        basic: GearLuck.basicLuck(equippedGear, multiple ? 1 : Math.max(0, baseLuck - singleSpecialLuck), additionalBasicBuffs,
+            selection.primaryBiome || selection.canonicalBiome, selection.timeBiome),
+        special: multiple ? 0 : singleSpecialLuck,
+        basicMultiplier: getDevAdminAbuseBasicMultiplier(selection.primaryBiome || selection.canonicalBiome),
+        finalMultiplier: getLuckMultiplierTotal(getActiveLuckMultipliers())
+    };
+}
+
+function getEquipmentSummary({ styled = false } = {}) {
+    const formatName = styled ? EquipmentPresentation.name : EquipmentPresentation.label;
+    const selection = collectBiomeSelectionState();
+    const limboSelected = (selection.primaryBiome || selection.canonicalBiome) === 'limbo';
+    return Object.entries(equippedGear).map(([slot, id]) => {
+        const inactive = slot === 'pocket' && id !== 'none' && limboSelected ? ' (inactive in Limbo)' : '';
+        return `${slot === 'pocket' ? 'Pocket' : slot === 'left' ? 'Left' : 'Right'}: ${formatName(GearLuck.find(slot, id))}${inactive}`;
+    }).join(' · ');
+}
+
+function syncEquipmentPreview() {
+    const inputs = getGearLuckInputs();
+    const preview = document.getElementById('equipment-luck-preview');
+    const rule = GearLuck.bonusRule(equippedGear.left);
+    const normal = isRememberRoll() ? 1 : GearLuck.totalLuck(inputs.basic, inputs.special, inputs.finalMultiplier, GearLuck.rollState(equippedGear.left, 1), inputs.basicMultiplier);
+    const bonus = isRememberRoll() ? 1 : GearLuck.totalLuck(inputs.basic, inputs.special, inputs.finalMultiplier, GearLuck.rollState(equippedGear.left, rule.interval || 1001), inputs.basicMultiplier);
+    const cycleLabel = rule.interval ? 'Bonus roll' : equippedGear.left === 'unfathomable' ? 'Ruins active' : null;
+    if (preview) {
+        const cycleClass = rule.interval || !cycleLabel ? 'bonus' : 'multiplier';
+        const cycleText = cycleLabel ? `${cycleLabel}: ${formatWithCommas(bonus)}` : 'No bonus rolls';
+        preview.innerHTML = `<span class="equipment-effect equipment-effect--luck">Basic luck: ${formatWithCommas(inputs.basic * inputs.basicMultiplier)}</span> · <span class="equipment-effect equipment-effect--luck">Special luck: ${formatWithCommas(inputs.special)}</span> · <span class="equipment-effect equipment-effect--cycle">First roll: ${formatWithCommas(normal)}</span> · <span class="equipment-effect equipment-effect--${cycleClass}">${cycleText}</span>`;
+        if (isRememberRoll()) preview.textContent = 'Remember: 1× luck · No potions or equipment bonuses';
+    }
+    const summary = document.getElementById('bonus-roll-summary');
+    if (summary) summary.innerHTML = EquipmentPresentation.format(GearLuck.describe(equippedGear.left));
+    const selectionSummary = document.getElementById('equipment-selection-summary');
+    if (selectionSummary) selectionSummary.innerHTML = getEquipmentSummary({ styled: true });
+    const selection = collectBiomeSelectionState();
+    const limboSelected = (selection.primaryBiome || selection.canonicalBiome) === 'limbo';
+    document.querySelectorAll('[data-equipment-item]').forEach(button => {
+        const active = equippedGear[button.dataset.equipmentSlot] === button.dataset.equipmentItem;
+        const unavailable = button.dataset.equipmentSlot === 'pocket' && button.dataset.equipmentItem !== 'none' && limboSelected;
+        button.disabled = unavailable;
+        if (unavailable) button.title = 'Talismans are unavailable in Limbo.';
+        else button.removeAttribute('title');
+        button.setAttribute('aria-pressed', String(active));
+        button.querySelector('.equipment-card__status').textContent = unavailable
+            ? active ? 'Inactive in Limbo' : 'Unavailable in Limbo'
+            : active ? 'Equipped' : 'Equip';
+    });
+}
+
+function initializeEquipmentControls() {
+    const tabs = Array.from(document.querySelectorAll('[data-equipment-tab]'));
+    const activateTab = slot => {
+        tabs.forEach(tab => {
+            const active = tab.dataset.equipmentTab === slot;
+            tab.setAttribute('aria-selected', String(active));
+            tab.classList.toggle('preset-console__tab--active', active);
+            tab.tabIndex = active ? 0 : -1;
+            document.getElementById(tab.getAttribute('aria-controls')).hidden = !active;
+        });
+    };
+    tabs.forEach((tab, index) => {
+        tab.addEventListener('click', () => activateTab(tab.dataset.equipmentTab));
+        tab.addEventListener('keydown', event => {
+            const next = event.key === 'Home' ? 0 : event.key === 'End' ? tabs.length - 1
+                : event.key === 'ArrowRight' ? (index + 1) % tabs.length
+                : event.key === 'ArrowLeft' ? (index + tabs.length - 1) % tabs.length : -1;
+            if (next < 0) return;
+            event.preventDefault();
+            activateTab(tabs[next].dataset.equipmentTab);
+            tabs[next].focus();
+        });
+    });
+    for (const [slot, items] of Object.entries(GearLuck.catalog)) {
+        const panel = document.getElementById(`equipment-panel-${slot}`);
+        if (!panel) continue;
+        const makeCard = item => {
+            const button = document.createElement('button');
+            button.type = 'button';
+            button.className = 'equipment-card';
+            button.dataset.equipmentSlot = slot;
+            button.dataset.equipmentItem = item?.id || 'none';
+            const description = item ? item.effect || `Adds +${item.luck} basic luck.`
+                : `Leave the ${slot === 'pocket' ? 'pocket gear' : `${slot} device`} slot empty.`;
+            const defaultBonus = slot === 'left' && ['none', 'gemstone', 'jackpot', 'pole-light'].includes(item?.id || 'none')
+                ? ' Default ×2 bonus luck every 10th roll.' : '';
+            button.innerHTML = `<span class="equipment-card__heading"><span class="equipment-card__name">${EquipmentPresentation.name(item)}</span><span class="equipment-card__status"></span></span><span class="equipment-card__description">${EquipmentPresentation.format(description + defaultBonus)}</span>`;
+            button.addEventListener('click', () => {
+                equippedGear[slot] = item?.id || 'none';
+                recomputeLuckValue();
+                playSoundEffect(clickSoundEffectElement, 'ui');
+            });
+            return button;
+        };
+        panel.append(makeCard(null));
+        for (const event of [false, true]) {
+            const matching = items.filter(item => item.event === event);
+            if (!matching.length) continue;
+            const heading = document.createElement('h4');
+            heading.className = 'equipment-panel__heading';
+            heading.textContent = event ? 'Event equipment' : 'Standard equipment';
+            const grid = document.createElement('div');
+            grid.className = 'equipment-card-grid';
+            matching.forEach(item => grid.append(makeCard(item)));
+            panel.append(heading, grid);
+        }
+    }
+    const buffs = document.getElementById('equipment-basic-buffs');
+    bindNumericInputFormatting(buffs, { min: 0 });
+    buffs?.addEventListener('input', () => {
+        additionalBasicBuffs = getNumericInputValue(buffs, { min: 0 }) || 0;
+        recomputeLuckValue();
+    });
+    recomputeLuckValue();
+}
+const featureBootFrameIds = new WeakMap();
+const featureShutdownTimerIds = new WeakMap();
+
+function isFeatureBootMotionReduced() {
+    return Boolean(
+        appState.reduceMotion
+        || appState.qualityPreferences?.disableUiAnimations
+        || pageBody?.classList.contains('reduce-motion')
+        || pageBody?.classList.contains('quality-no-ui-animations')
+        || (reduceMotionPreferenceOverride === null && reduceMotionMediaQuery?.matches)
+    );
+}
+
+function cancelFeatureBootAnimation(element) {
+    if (!(element instanceof HTMLElement)) {
+        return;
+    }
+
+    const pendingFrameId = featureBootFrameIds.get(element);
+    if (pendingFrameId !== undefined && typeof window.cancelAnimationFrame === 'function') {
+        window.cancelAnimationFrame(pendingFrameId);
+    }
+    featureBootFrameIds.delete(element);
+    element.classList.remove('feature-boot--active');
+}
+
+function cancelFeatureShutdownAnimation(element) {
+    if (!(element instanceof HTMLElement)) {
+        return;
+    }
+
+    const pendingTimerId = featureShutdownTimerIds.get(element);
+    if (pendingTimerId !== undefined) {
+        window.clearTimeout(pendingTimerId);
+    }
+    featureShutdownTimerIds.delete(element);
+    element.classList.remove('feature-shutdown--active');
+    delete element.dataset.featureShutdownVisibility;
+}
+
+function hideFeatureContainerImmediately(element, visibilityMode = 'hidden') {
+    if (!(element instanceof HTMLElement)) {
+        return;
+    }
+
+    if (visibilityMode === 'display') {
+        element.style.display = 'none';
+    } else {
+        element.hidden = true;
+    }
+}
+
+function finishFeatureShutdownAnimation(element) {
+    if (!(element instanceof HTMLElement)) {
+        return;
+    }
+
+    const visibilityMode = element.dataset.featureShutdownVisibility || 'hidden';
+    cancelFeatureShutdownAnimation(element);
+    hideFeatureContainerImmediately(element, visibilityMode);
+}
+
+function playFeatureBootAnimation(element, { delay = 0 } = {}) {
+    if (!(element instanceof HTMLElement)) {
+        return;
+    }
+
+    cancelFeatureBootAnimation(element);
+    if (isFeatureBootMotionReduced()) {
+        return;
+    }
+
+    element.style.setProperty('--feature-boot-delay', `${Math.max(0, delay)}ms`);
+    const activate = () => {
+        featureBootFrameIds.delete(element);
+        if (isFeatureBootMotionReduced() || element.hidden || element.style.display === 'none') {
+            return;
+        }
+        element.classList.add('feature-boot--active');
+    };
+
+    if (typeof window.requestAnimationFrame === 'function') {
+        const frameId = window.requestAnimationFrame(activate);
+        featureBootFrameIds.set(element, frameId);
+        return;
+    }
+    activate();
+}
+
+function playFeatureShutdownAnimation(element, { visibilityMode = 'hidden' } = {}) {
+    if (!(element instanceof HTMLElement)) {
+        return;
+    }
+
+    cancelFeatureBootAnimation(element);
+    cancelFeatureShutdownAnimation(element);
+    if (isFeatureBootMotionReduced()) {
+        hideFeatureContainerImmediately(element, visibilityMode);
+        return;
+    }
+
+    element.dataset.featureShutdownVisibility = visibilityMode;
+    element.classList.add('feature-shutdown--active');
+
+    const durationByType = {
+        panel: 520,
+        compact: 360,
+        row: 410
+    };
+    const fallbackDuration = durationByType[element.dataset.featureBoot] || 410;
+    const timerId = window.setTimeout(() => {
+        finishFeatureShutdownAnimation(element);
+    }, fallbackDuration);
+    featureShutdownTimerIds.set(element, timerId);
+}
+
+function setFeatureContainerVisible(
+    element,
+    visible,
+    { visibilityMode = 'hidden', delay = 0 } = {}
+) {
+    if (!(element instanceof HTMLElement)) {
+        return;
+    }
+
+    const usesDisplay = visibilityMode === 'display';
+    const wasShuttingDown = element.classList.contains('feature-shutdown--active');
+    const currentlyVisible = usesDisplay
+        ? element.style.display !== 'none'
+        : !element.hidden;
+
+    if (visible) {
+        if (wasShuttingDown) {
+            cancelFeatureShutdownAnimation(element);
+            playFeatureBootAnimation(element, { delay });
+            return;
+        }
+        if (currentlyVisible) {
+            return;
+        }
+
+        cancelFeatureBootAnimation(element);
+        if (usesDisplay) {
+            element.style.display = '';
+        } else {
+            element.hidden = false;
+        }
+        playFeatureBootAnimation(element, { delay });
+        return;
+    }
+
+    if (!currentlyVisible || wasShuttingDown) {
+        return;
+    }
+
+    playFeatureShutdownAnimation(element, { visibilityMode });
+}
+
+document.addEventListener('animationend', event => {
+    if (
+        event.animationName === 'featureContainerBoot'
+        && event.target instanceof HTMLElement
+    ) {
+        cancelFeatureBootAnimation(event.target);
+    } else if (
+        event.animationName === 'featureContainerShutdown'
+        && event.target instanceof HTMLElement
+    ) {
+        finishFeatureShutdownAnimation(event.target);
+    }
+});
+
+let currentLuckSelectionSource = LUCK_SELECTION_SOURCE.CUSTOM;
+
+function setLuckSelectionSource(source) {
+    if (typeof source !== 'string') {
+        return;
+    }
+
+    const allowedSources = Object.values(LUCK_SELECTION_SOURCE);
+    if (allowedSources.includes(source)) {
+        currentLuckSelectionSource = source;
+    }
+}
+
+function getLuckSelectionSource() {
+    return currentLuckSelectionSource || LUCK_SELECTION_SOURCE.CUSTOM;
+}
+
+function syncLuckVisualEffects(luckValue) {
+    if (!pageBody) {
+        return;
+    }
+
+    pageBody.classList.remove('luck-effect--million');
+}
+
+function resetLuckPresetAnimations() {
+    const animationClasses = ['luck-preset-button--pop', 'luck-preset-button--mega-pop', 'luck-preset-button--master-pop'];
+    const targets = Array.from(document.querySelectorAll('.luck-preset-button--shake'));
+
+    targets.forEach(button => {
+        if (!button) {
+            return;
+        }
+        animationClasses.forEach(className => button.classList.remove(className));
+    });
+}
+
+function applyLuckValue(value, options = {}) {
+    if (isRememberRoll()) return;
+    const normalizedOptions = { ...options };
+
+    if (normalizedOptions.luckSource) {
+        setLuckSelectionSource(normalizedOptions.luckSource);
+    }
+
+    const shouldResetSpecialPresets = normalizedOptions.luckSource === LUCK_SELECTION_SOURCE.STANDARD_PRESET
+        || normalizedOptions.luckSource === LUCK_SELECTION_SOURCE.DEVICE_PRESET;
+
+    if (shouldResetSpecialPresets) {
+        if (!('activatePumpKingsBloodPreset' in normalizedOptions)) {
+            normalizedOptions.activatePumpKingsBloodPreset = false;
+        }
+        if (!('activateOblivionPreset' in normalizedOptions)) {
+            normalizedOptions.activateOblivionPreset = false;
+        }
+        if (!('activateTutorialPotionPreset' in normalizedOptions)) {
+            normalizedOptions.activateTutorialPotionPreset = false;
+        }
+        if (!('activateDunePreset' in normalizedOptions)) {
+            normalizedOptions.activateDunePreset = false;
+        }
+        if (!('activateBloodPreset' in normalizedOptions)) {
+            normalizedOptions.activateBloodPreset = false;
+        }
+    }
+
+    if (normalizedOptions.activateOblivionPreset === true) {
+        normalizedOptions.activateTutorialPotionPreset = false;
+        normalizedOptions.activateDunePreset = false;
+        normalizedOptions.activateBloodPreset = false;
+    }
+    if (normalizedOptions.activatePumpKingsBloodPreset === true) {
+        normalizedOptions.activateOblivionPreset = false;
+    }
+    if (normalizedOptions.activateTutorialPotionPreset === true) {
+        normalizedOptions.activateOblivionPreset = false;
+    }
+    if (normalizedOptions.activateDunePreset === true) {
+        normalizedOptions.activateOblivionPreset = false;
+    }
+    if (normalizedOptions.activateBloodPreset) {
+        normalizedOptions.activateOblivionPreset = false;
+    }
+    const luckInput = document.getElementById('luck-total');
+    const targetLuck = Math.max(0, value);
+
+    const standardPreset = normalizedOptions.luckSource === LUCK_SELECTION_SOURCE.STANDARD_PRESET;
+    singleSpecialLuck = standardPreset && targetLuck >= 5000 ? targetLuck : 0;
+    baseLuck = targetLuck + (standardPreset ? 1 : 0);
+    currentLuck = targetLuck;
+
+    if (luckInput) {
+        setNumericInputValue(luckInput, targetLuck, { format: true, min: 0 });
+    }
+
+    syncLuckVisualEffects(targetLuck);
+
+    if (typeof applyOblivionPresetOptions === 'function') {
+        applyOblivionPresetOptions(normalizedOptions);
+    }
+    if (typeof applyDunePresetOptions === 'function') {
+        applyDunePresetOptions(normalizedOptions);
+    }
+    if (typeof applyBloodPresetOptions === 'function') {
+        applyBloodPresetOptions(normalizedOptions);
+    }
+    if (typeof applyPumpKingsBloodPresetOptions === 'function') {
+        applyPumpKingsBloodPresetOptions(normalizedOptions);
+    }
+    if (typeof applyTutorialPotionPresetOptions === 'function') {
+        applyTutorialPotionPresetOptions(normalizedOptions);
+    }
+
+    recomputeLuckValue();
+}
+
+function getActiveLuckMultipliers() {
+    const controls = {
+        biome: document.getElementById('biome-dropdown'),
+        vip: document.getElementById('vip-dropdown'),
+        sorry: document.getElementById('sorry-luck-toggle'),
+        astrald: document.getElementById('astrald-blessing-toggle'),
+        dorcelessness: document.getElementById('dorcelessness-luck-toggle'),
+        dave: document.getElementById('dave-luck-dropdown')
+    };
+
+    const biomeValue = controls.biome ? controls.biome.value : 'normal';
+    const isLimboBiome = biomeValue === 'limbo';
+    const devAdminAbuseMultipliers = getDevAdminAbuseMultipliers(biomeValue);
+
+    return {
+        vip: parseFloat(controls.vip ? controls.vip.value : '1') || 1,
+        xyz: devAdminAbuseMultipliers.xyz,
+        xyzOld: devAdminAbuseMultipliers.xyzOld,
+        sorry: controls.sorry && controls.sorry.checked ? 1.2 : 1,
+        astrald: controls.astrald && controls.astrald.checked ? 1.2 : 1,
+        xc: devAdminAbuseMultipliers.xc,
+        xcOld: devAdminAbuseMultipliers.xcOld,
+        axis: devAdminAbuseMultipliers.axis,
+        axisOld: devAdminAbuseMultipliers.axisOld,
+        word: devAdminAbuseMultipliers.word,
+        singularity: getSingularityLuckMultiplier(biomeValue),
+        moonCatch: biomeValue === 'radiantForest' ? corLunaeBlessingMultiplier : 1,
+        dorcelessness: controls.dorcelessness && controls.dorcelessness.checked ? 2 : 1,
+        dave: isLimboBiome && controls.dave ? parseFloat(controls.dave.value) || 1 : 1
+    };
+}
+
+function getLuckMultiplierTotal(multipliers) {
+    return Object.values(multipliers).reduce((total, multiplier) => {
+        const numericMultiplier = Number(multiplier);
+        return total * (Number.isFinite(numericMultiplier) && numericMultiplier > 0 ? numericMultiplier : 1);
+    }, 1);
+}
+
+function isMultiplePotionMode() {
+    return potionSimulationMode === POTION_SIMULATION_MODE.MULTIPLE;
+}
+
+function isSolsLikeSimulationMethod() {
+    return simulationMethod === SIMULATION_METHOD.SOLS_LIKE;
+}
+
+function syncSimulationMethodControls() {
+    const solsLikeSelected = isSolsLikeSimulationMethod();
+    const { rollTriggerButton, pauseRollButton, followRollFeedButton } = uiHandles;
+    const splitControl = rollTriggerButton?.closest('.roll-split-control');
+    const rollConsoleStatus = document.getElementById('rollConsoleStatus');
+
+    document.querySelectorAll('[data-simulation-method]').forEach(button => {
+        const active = button.dataset.simulationMethod === simulationMethod;
+        button.classList.toggle('simulation-method__button--active', active);
+        button.setAttribute('aria-pressed', active ? 'true' : 'false');
+        button.disabled = simulationActive;
+    });
+
+    document.body?.classList.toggle('simulation-method--sols-like', solsLikeSelected);
+    if (rollTriggerButton && !simulationActive) {
+        syncRadiantRollLabel();
+    }
+    if (splitControl) {
+        splitControl.classList.toggle('roll-split-control--active', solsLikeSelected);
+    }
+    if (pauseRollButton) {
+        pauseRollButton.hidden = !solsLikeSelected;
+        pauseRollButton.disabled = !solsLikeSelected || !simulationActive || !activeSolLikeSimulationController;
+    }
+    if (followRollFeedButton && (!solsLikeSelected || !simulationActive || !activeSolLikeSimulationController)) {
+        followRollFeedButton.hidden = true;
+    }
+    if (rollConsoleStatus) {
+        const statusText = rollConsoleStatus.querySelector('.roll-console__armed-text');
+        rollConsoleStatus.dataset.state = simulationActive ? 'rolling' : 'ready';
+        if (statusText) {
+            statusText.textContent = simulationActive ? 'Rolling' : 'Ready';
+        }
+    }
+    syncRollingSettingsControls();
+    syncBiomeBuffs();
+}
+
+function setSimulationMethod(method, { playAudio = true } = {}) {
+    if (simulationActive) {
+        return;
+    }
+
+    simulationMethod = method === SIMULATION_METHOD.SOLS_LIKE
+        ? SIMULATION_METHOD.SOLS_LIKE
+        : SIMULATION_METHOD.UNNAMED;
+    syncSimulationMethodControls();
+    if (rollFeedSortingAvailable) applyRollFeedSort(rollFeedSortMode);
+    else syncRollFeedSortControl();
+    if (playAudio) {
+        playSoundEffect(clickSoundEffectElement, 'ui');
+    }
+}
+
+function setupWikiResourceHubSpin() {
+    const card = document.querySelector('.resource-link--wiki');
+    const icon = card?.querySelector('.resource-link__image--solswiki');
+
+    if (!card || !icon) return;
+    if (card.dataset.wikiSpinBound === 'true') return;
+
+    card.dataset.wikiSpinBound = 'true';
+
+    const fullRotationDuration = 2800;
+    const easeInDuration = 1000;
+    const easeOutDuration = 1000;
+    const normalSpeed = 360 / fullRotationDuration;
+
+    let angle = 0;
+    let frameId = null;
+    let exitAnimation = null;
+    let hovering = false;
+    let lastFrameTime = 0;
+    let accelerationStartedAt = 0;
+
+    function normalizeAngle(value) {
+        return ((value % 360) + 360) % 360;
+    }
+
+    function getCurrentRotation() {
+        const transform = getComputedStyle(icon).transform;
+
+        if (!transform || transform === 'none') {
+            return normalizeAngle(angle);
+        }
+
+        const matrix = new DOMMatrixReadOnly(transform);
+
+        return normalizeAngle(
+            Math.atan2(matrix.b, matrix.a) * (180 / Math.PI)
+        );
+    }
+
+    function velocityEase(t) {
+        return t * t * t * (t * (t * 6 - 15) + 10);
+    }
+
+    function cancelExitAnimation() {
+        if (!exitAnimation) return;
+
+        const currentAngle = getCurrentRotation();
+        const animation = exitAnimation;
+
+        exitAnimation = null;
+
+        animation.onfinish = null;
+        animation.oncancel = null;
+        animation.cancel();
+
+        angle = currentAngle;
+        icon.style.transform = `rotate(${angle}deg)`;
+    }
+
+    function spinFrame(now) {
+        if (!hovering) {
+            frameId = null;
+            return;
+        }
+
+        if (!lastFrameTime) {
+            lastFrameTime = now;
+        }
+
+        const delta = Math.min(now - lastFrameTime, 50);
+        lastFrameTime = now;
+
+        const elapsed = now - accelerationStartedAt;
+        const progress = Math.min(1, elapsed / easeInDuration);
+
+        const speed = normalSpeed * velocityEase(progress);
+
+        angle += speed * delta;
+
+        icon.style.transform = `rotate(${angle}deg)`;
+
+        frameId = requestAnimationFrame(spinFrame);
+    }
+
+    function startSpin() {
+        if (hovering) return;
+
+        hovering = true;
+
+        cancelExitAnimation();
+
+        if (frameId !== null) {
+            cancelAnimationFrame(frameId);
+            frameId = null;
+        }
+
+        angle = getCurrentRotation();
+
+        lastFrameTime = 0;
+        accelerationStartedAt = performance.now();
+
+        frameId = requestAnimationFrame(spinFrame);
+    }
+
+    function stopSpin() {
+        if (!hovering) return;
+
+        hovering = false;
+
+        if (frameId !== null) {
+            cancelAnimationFrame(frameId);
+            frameId = null;
+        }
+
+        cancelExitAnimation();
+
+        const currentAngle = getCurrentRotation();
+
+        angle = currentAngle;
+
+        const normalizedAngle = normalizeAngle(currentAngle);
+
+        const remainingRotation = normalizedAngle < 0.01
+            ? 0
+            : 360 - normalizedAngle;
+
+        const targetAngle = currentAngle + remainingRotation;
+
+        const animation = icon.animate(
+            [
+                {
+                    transform: `rotate(${currentAngle}deg)`
+                },
+                {
+                    transform: `rotate(${targetAngle}deg)`
+                }
+            ],
+            {
+                duration: easeOutDuration,
+                easing: 'cubic-bezier(0, 0.65, 0.25, 1)',
+                fill: 'forwards'
+            }
+        );
+
+        exitAnimation = animation;
+
+        animation.onfinish = () => {
+            if (exitAnimation !== animation) return;
+
+            exitAnimation = null;
+
+            animation.onfinish = null;
+            animation.oncancel = null;
+
+            animation.cancel();
+
+            angle = 0;
+            icon.style.transform = 'rotate(0deg)';
+        };
+
+        animation.oncancel = () => {
+            if (exitAnimation === animation) {
+                exitAnimation = null;
+            }
+        };
+    }
+
+    card.addEventListener('mouseenter', startSpin);
+    card.addEventListener('mouseleave', stopSpin);
+}
+
+function setupSimulationMethodControls() {
+    document.querySelectorAll('[data-simulation-method]').forEach(button => {
+        button.addEventListener('click', () => {
+            setSimulationMethod(button.dataset.simulationMethod);
+        });
+    });
+
+    const { pauseRollButton, followRollFeedButton } = uiHandles;
+    if (pauseRollButton) {
+        pauseRollButton.addEventListener('click', () => {
+            activeSolLikeSimulationController?.togglePause();
+        });
+    }
+    if (followRollFeedButton) {
+        followRollFeedButton.addEventListener('click', () => {
+            activeSolLikeSimulationController?.followLatest();
+        });
+    }
+
+    setSimulationMethod(SIMULATION_METHOD.UNNAMED, { playAudio: false });
+}
+
+function isMultiplePotionStackingEnabled() {
+    return typeof document !== 'undefined'
+        && Boolean(document.getElementById('multiPotionStackToggle')?.checked);
+}
+
+function getMultiplePotionLuckState() {
+    const inputs = getGearLuckInputs(true);
+    return {
+        deviceLuckBonus: inputs.basic,
+        leftDevice: equippedGear.left,
+        basicLuckMultiplier: inputs.basicMultiplier,
+        finalLuckMultiplier: inputs.finalMultiplier
+    };
+}
+
+function calculateMultiplePotionLuck(basePotionLuck, luckState = getMultiplePotionLuckState()) {
+    if (isRememberRoll()) return 1;
+    const normalizedPotionLuck = Number.isFinite(basePotionLuck) ? Math.max(0, basePotionLuck) : 0;
+    return GearLuck.totalLuck(luckState.deviceLuckBonus, normalizedPotionLuck, luckState.finalLuckMultiplier,
+        GearLuck.rollState(luckState.leftDevice, 1), luckState.basicLuckMultiplier);
+}
+
+function createMultiplePotionBatch(config, count, luckState) {
+    return {
+        ...config,
+        count,
+        baseLuck: config.luck,
+        luckValue: calculateMultiplePotionLuck(config.luck, luckState),
+        deviceLuckBonus: luckState.deviceLuckBonus,
+        basicLuckMultiplier: luckState.basicLuckMultiplier,
+        finalLuckMultiplier: luckState.finalLuckMultiplier
+    };
+}
+
+function getMultiplePotionBatchResultConfigs(batch) {
+    const potionIds = Array.isArray(batch?.potionIds) && batch.potionIds.length > 0
+        ? batch.potionIds
+        : [batch?.id];
+    return potionIds
+        .map(id => MULTI_POTION_CONFIG_BY_ID.get(id))
+        .filter(Boolean);
+}
+
+function formatMultiplePotionBatchResultText(batch) {
+    const potionConfigs = getMultiplePotionBatchResultConfigs(batch);
+    const potionNames = potionConfigs.length > 0
+        ? potionConfigs.map(config => config.resultLabel || config.label).join(' + ')
+        : 'Potion';
+    return potionConfigs.length ? `With ${potionNames}` : '';
+}
+
+function formatMultiplePotionBatchResultMarkup(batch) {
+    const potionConfigs = getMultiplePotionBatchResultConfigs(batch);
+    const potionMarkup = potionConfigs.length > 0
+        ? potionConfigs.map(config => (
+            WikiTitles.item(config.label, config.resultLabel || config.label)
+        )).join(' + ')
+        : 'Potion';
+    return potionConfigs.length ? `<span class="tinyClass">With ${potionMarkup}</span>` : '';
+}
+
+function formatRollEffect(batch, styled = false) {
+    const effect = ['mana-surge', 'darkshader', 'tide'].includes(batch?.rollEffect) ? batch.rollEffect : 'bonus';
+    if (!batch?.bonusRollApplied && !['mana-surge', 'darkshader'].includes(effect)) return '';
+    const label = effect === 'mana-surge' ? '(Mana Surge)' : `(${Number((batch.rollMultiplier || 1).toFixed(4))}x)`;
+    return styled ? `<span class="roll-effect roll-effect--${effect}">${label}</span>` : label;
+}
+
+function formatRollResultDetails(trueChanceValue, batch, { styled = false, aura = null } = {}) {
+    if (isFixedLuckResultAura(aura)) return '1 Luck';
+    const chance = trueChanceValue ? `True Chance: 1 in ${trueChanceValue}` : '';
+    const details = [chance, formatRollEffect(batch, styled)].filter(Boolean).join(' ');
+    const luck = Number.isFinite(batch?.luckValue)
+        ? `${details ? ' · ' : ''}${formatWithCommas(batch.luckValue)} Luck` : '';
+    const gemstone = batch?.gemstoneLuck ? ` (+${batch.gemstoneLuck} Gemstone)` : '';
+    return `${details}${luck}${gemstone}`;
+}
+
+function formatRollResultSuffix(trueChanceValue, batch, potionMarkup = '', aura = null) {
+    const details = formatRollResultDetails(trueChanceValue, batch, { styled: true, aura });
+    const potions = getMultiplePotionBatchResultConfigs(batch).length
+        ? ` ${potionMarkup || formatMultiplePotionBatchResultMarkup(batch)}` : '';
+    return (details ? ` <span class="tinyClass">${details}</span>` : '') + potions;
+}
+
+function stackCompatiblePotionBatches(batches, luckState) {
+    let activeBatches = batches.map(batch => ({
+        ...batch,
+        remaining: batch.count
+    }));
+    const stackedBatches = [];
+
+    while (activeBatches.length > 0) {
+        const activeExclusionGroups = new Set();
+        const stackBatches = activeBatches.filter(batch => {
+            const exclusionGroup = batch.stackExclusionGroup;
+            if (!exclusionGroup) {
+                return true;
+            }
+            if (activeExclusionGroups.has(exclusionGroup)) {
+                return false;
+            }
+            activeExclusionGroups.add(exclusionGroup);
+            return true;
+        });
+        const stackedPotionIds = new Set(stackBatches.map(batch => batch.id));
+        const segmentCount = Math.min(...stackBatches.map(batch => batch.remaining));
+        const potionIds = stackBatches.map(batch => batch.id);
+        const potionLabels = stackBatches.map(batch => batch.label);
+        const baseLuck = stackBatches.reduce((total, batch) => total + batch.baseLuck, 0);
+        const bloodPresets = stackBatches
+            .map(batch => batch.bloodPreset)
+            .filter(Boolean);
+        const isStacked = stackBatches.length > 1;
+
+        stackedBatches.push({
+            id: isStacked ? `stacked:${potionIds.join('+')}` : potionIds[0],
+            label: isStacked ? `Stacked (${potionLabels.join(' + ')})` : potionLabels[0],
+            count: segmentCount,
+            baseLuck,
+            luckValue: calculateMultiplePotionLuck(baseLuck, luckState),
+            deviceLuckBonus: luckState.deviceLuckBonus,
+            basicLuckMultiplier: luckState.basicLuckMultiplier,
+            finalLuckMultiplier: luckState.finalLuckMultiplier,
+            potionIds,
+            potionLabels,
+            stacked: isStacked,
+            dune: stackBatches.some(batch => batch.dune),
+            bloodPreset: bloodPresets[0] || null,
+            bloodPresets,
+            blocksRunes: false,
+            oblivion: false
+        });
+
+        activeBatches = activeBatches
+            .map(batch => ({
+                ...batch,
+                remaining: batch.remaining - (stackedPotionIds.has(batch.id) ? segmentCount : 0)
+            }))
+            .filter(batch => batch.remaining > 0);
+    }
+
+    return stackedBatches;
+}
+
+function collectMultiplePotionBatches(
+    luckState = getMultiplePotionLuckState(),
+    { stackCompatiblePotions = isMultiplePotionStackingEnabled() } = {}
+) {
+    if (typeof document === 'undefined') {
+        return [];
+    }
+
+    const blockingBatches = [];
+    const compatibleBatches = [];
+    const inputsByPotionId = new Map(Array.from(
+        document.querySelectorAll('[data-multi-potion]'),
+        input => [input.dataset.multiPotion, input]
+    ));
+    MULTI_POTION_CONFIGS.forEach(config => {
+        const input = inputsByPotionId.get(config.id);
+        if (!input) {
+            return;
+        }
+
+        const rawCount = getNumericInputValue(input, { min: 0, max: 1000000000000 });
+        const count = Number.isFinite(rawCount) ? Math.floor(rawCount) : 0;
+        if (count <= 0) {
+            return;
+        }
+
+        const batch = createMultiplePotionBatch(config, count, luckState);
+        if (batch.blocksRunes) {
+            blockingBatches.push(batch);
+        } else {
+            compatibleBatches.push(batch);
+        }
+    });
+
+    const finalCompatibleBatches = stackCompatiblePotions
+        ? stackCompatiblePotionBatches(compatibleBatches, luckState)
+        : compatibleBatches;
+    return [...blockingBatches, ...finalCompatibleBatches];
+}
+
+function getMultiPotionRuneBlockedRollCount(batches = collectMultiplePotionBatches()) {
+    if (!Array.isArray(batches)) {
+        return 0;
+    }
+    return batches.reduce((total, batch) => {
+        return total + (batch?.blocksRunes ? Math.max(0, Math.floor(batch.count || 0)) : 0);
+    }, 0);
+}
+
+function formatPotionBatchList(batches, { includeLuck = false } = {}) {
+    if (!Array.isArray(batches) || batches.length === 0) {
+        return 'None';
+    }
+    return batches.map(batch => {
+        const quantity = `${formatWithCommas(batch.count)} ${batch.label}`;
+        return includeLuck
+            ? `${quantity} (${formatWithCommas(batch.luckValue)} luck each)`
+            : quantity;
+    }).join(', ');
+}
+
+function syncMultiplePotionLuckPreviews(luckState = getMultiplePotionLuckState()) {
+    document.querySelectorAll('[data-multi-potion]').forEach(input => {
+        const config = MULTI_POTION_CONFIG_BY_ID.get(input.dataset.multiPotion);
+        const luckPreview = input.closest('.multi-potion-field')?.querySelector('small');
+        if (!config || !luckPreview) {
+            return;
+        }
+        const effectiveLuck = calculateMultiplePotionLuck(config.luck, luckState);
+        luckPreview.textContent = `${formatWithCommas(effectiveLuck)} first-roll luck`;
+    });
+}
+
+function syncMultiplePotionTotal() {
+    const luckState = getMultiplePotionLuckState();
+    const batches = collectMultiplePotionBatches(luckState);
+    const total = batches.reduce((sum, batch) => sum + batch.count, 0);
+    const totalLabel = document.getElementById('multiPotionTotal');
+    if (totalLabel) {
+        totalLabel.textContent = formatWithCommas(total);
+    }
+    syncMultiplePotionLuckPreviews(luckState);
+    const stackSummary = document.getElementById('multiPotionStackSummary');
+    const stackingEnabled = isMultiplePotionStackingEnabled();
+    if (stackSummary) {
+        if (stackingEnabled) {
+            stackSummary.textContent = batches.length > 0
+                ? `Calculated batches: ${formatPotionBatchList(batches, { includeLuck: true })}`
+                : 'Add potion quantities to preview the calculated stacked batches.';
+        }
+        setFeatureContainerVisible(stackSummary, stackingEnabled);
+    }
+
+    if (isMultiplePotionMode()) {
+        const rollField = document.getElementById('roll-total');
+        if (rollField) {
+            setNumericInputValue(rollField, total, { format: true, min: 0, max: 1000000000000 });
+        }
+    }
+
+    syncBiomeBuffs();
+    return total;
+}
+
+function syncMultiplePotionModeAvailability(isLimboSelected) {
+    const multipleButton = document.querySelector('[data-potion-mode="multiple"]');
+    const potionModeControl = document.querySelector('.potion-mode');
+
+    if (multipleButton) {
+        multipleButton.disabled = Boolean(isLimboSelected);
+        if (isLimboSelected) {
+            multipleButton.title = 'Potion modes are unavailable in Limbo.';
+            if (isMultiplePotionMode()) {
+                setPotionSimulationMode(POTION_SIMULATION_MODE.SINGLE, { playAudio: false });
+            }
+        } else {
+            multipleButton.removeAttribute('title');
+        }
+    }
+
+    setFeatureContainerVisible(potionModeControl, !isLimboSelected);
+}
+
+function setPotionSimulationMode(mode, { playAudio = true } = {}) {
+    if (isRememberRoll()) return;
+    const normalizedMode = mode === POTION_SIMULATION_MODE.MULTIPLE
+        ? POTION_SIMULATION_MODE.MULTIPLE
+        : POTION_SIMULATION_MODE.SINGLE;
+    const multipleButton = document.querySelector('[data-potion-mode="multiple"]');
+    if (normalizedMode === POTION_SIMULATION_MODE.MULTIPLE && multipleButton?.disabled) {
+        return;
+    }
+
+    const wasMultiple = isMultiplePotionMode();
+    if (!wasMultiple && normalizedMode === POTION_SIMULATION_MODE.MULTIPLE) {
+        const rollField = document.getElementById('roll-total');
+        const currentRollValue = getNumericInputValue(rollField, { min: 1, max: 1000000000000 });
+        singlePotionRollValue = Number.isFinite(currentRollValue) ? currentRollValue : 1;
+    }
+
+    potionSimulationMode = normalizedMode;
+    const multipleModeActive = isMultiplePotionMode();
+    document.body?.classList.toggle('potion-mode--multiple', multipleModeActive);
+
+    document.querySelectorAll('[data-potion-mode]').forEach(button => {
+        const active = button.dataset.potionMode === normalizedMode;
+        button.classList.toggle('potion-mode__button--active', active);
+        button.setAttribute('aria-pressed', active ? 'true' : 'false');
+    });
+    document.querySelectorAll('.potion-single-control').forEach((control, index) => {
+        setFeatureContainerVisible(control, !multipleModeActive, {
+            delay: index * 36
+        });
+    });
+
+    const multiPanel = document.getElementById('multiPotionPanel');
+    setFeatureContainerVisible(multiPanel, multipleModeActive);
+    ['luck-preset-panel', 'roll-preset-panel'].forEach(id => {
+        const panel = document.getElementById(id);
+        if (panel) {
+            panel.setAttribute('aria-disabled', multipleModeActive ? 'true' : 'false');
+        }
+    });
+    const devicePresetPanel = document.getElementById('device-buff-preset-panel');
+    if (devicePresetPanel) {
+        devicePresetPanel.setAttribute('aria-disabled', 'false');
+    }
+
+    if (multipleModeActive && !wasMultiple) {
+        clearActiveLuckPotionPresets({ syncBiomeConstraints: false });
+        syncMultiplePotionTotal();
+    } else if (!multipleModeActive && wasMultiple) {
+        const rollField = document.getElementById('roll-total');
+        if (rollField) {
+            setNumericInputValue(rollField, singlePotionRollValue, { format: true, min: 1, max: 1000000000000 });
+        }
+    }
+    recomputeLuckValue();
+
+    if (typeof updateBiomeControlConstraints === 'function') {
+        updateBiomeControlConstraints({ triggerSync: true });
+    }
+    if (playAudio) {
+        playSoundEffect(clickSoundEffectElement, 'ui');
+    }
+}
+
+function initializePotionSimulationMode() {
+    document.querySelectorAll('[data-potion-mode]').forEach(button => {
+        button.addEventListener('click', () => {
+            setPotionSimulationMode(button.dataset.potionMode);
+        });
+    });
+
+    document.querySelectorAll('[data-multi-potion]').forEach(input => {
+        bindNumericInputFormatting(input, { min: 0, max: 1000000000000 });
+        if (!input.dataset.rawValue) {
+            setNumericInputValue(input, 0, { format: true, min: 0, max: 1000000000000 });
+        }
+        input.addEventListener('input', () => {
+            syncMultiplePotionTotal();
+            if (typeof updateBiomeControlConstraints === 'function') {
+                updateBiomeControlConstraints({ triggerSync: true });
+            }
+        });
+    });
+
+    const stackToggle = document.getElementById('multiPotionStackToggle');
+    if (stackToggle) {
+        stackToggle.addEventListener('change', () => {
+            syncMultiplePotionTotal();
+            playSoundEffect(clickSoundEffectElement, 'ui');
+        });
+    }
+
+    setPotionSimulationMode(POTION_SIMULATION_MODE.SINGLE, { playAudio: false });
+    syncMultiplePotionTotal();
+}
+
+function syncLastLuckMultipliers(multipliers) {
+    lastVipMultiplier = multipliers.vip;
+    lastXyzMultiplier = multipliers.xyz;
+    lastXyzOldMultiplier = multipliers.xyzOld;
+    lastSorryMultiplier = multipliers.sorry;
+    lastAstraldMultiplier = multipliers.astrald;
+    lastXcMultiplier = multipliers.xc;
+    lastXcOldMultiplier = multipliers.xcOld;
+    lastAxisMultiplier = multipliers.axis;
+    lastAxisOldMultiplier = multipliers.axisOld;
+    lastWordMultiplier = multipliers.word;
+    lastDaveMultiplier = multipliers.dave;
+    lastDorcelessnessMultiplier = multipliers.dorcelessness;
+}
+
+function applyLuckDelta(presetValue, options = {}) {
+    if (isRememberRoll()) return;
+    const numericPresetValue = Number(presetValue);
+    if (!Number.isFinite(numericPresetValue) || numericPresetValue === 0) {
+        return;
+    }
+
+    const normalizedOptions = { ...options };
+    if (normalizedOptions.luckSource) {
+        setLuckSelectionSource(normalizedOptions.luckSource);
+    }
+
+    const multipliers = getActiveLuckMultipliers();
+    const multiplierTotal = getLuckMultiplierTotal(multipliers);
+    const luckInput = document.getElementById('luck-total');
+    const displayedLuck = luckInput ? getNumericInputValue(luckInput, { min: 0 }) : currentLuck;
+    const derivedBaseLuck = multiplierTotal > 0 && Number.isFinite(displayedLuck)
+        ? displayedLuck / multiplierTotal
+        : displayedLuck;
+    const startingBaseLuck = Number.isFinite(baseLuck)
+        ? Math.max(0, baseLuck)
+        : Math.max(0, Number.isFinite(derivedBaseLuck) ? derivedBaseLuck : 0);
+
+    if (normalizedOptions.luckSource === LUCK_SELECTION_SOURCE.STANDARD_PRESET && Math.abs(numericPresetValue) >= 5000) {
+        const nextSpecialLuck = Math.max(0, singleSpecialLuck + numericPresetValue);
+        baseLuck = Math.max(0, startingBaseLuck - singleSpecialLuck) + nextSpecialLuck;
+        singleSpecialLuck = nextSpecialLuck;
+    } else {
+        baseLuck = Math.max(singleSpecialLuck, startingBaseLuck + numericPresetValue);
+    }
+
+    if (typeof applyOblivionPresetOptions === 'function') {
+        applyOblivionPresetOptions(normalizedOptions);
+    }
+    if (typeof applyDunePresetOptions === 'function') {
+        applyDunePresetOptions(normalizedOptions);
+    }
+    if (typeof applyBloodPresetOptions === 'function') {
+        applyBloodPresetOptions(normalizedOptions);
+    }
+    if (typeof applyPumpKingsBloodPresetOptions === 'function') {
+        applyPumpKingsBloodPresetOptions(normalizedOptions);
+    }
+    if (typeof applyTutorialPotionPresetOptions === 'function') {
+        applyTutorialPotionPresetOptions(normalizedOptions);
+    }
+
+    recomputeLuckValue();
+}
+
+function buildLuckAdjustmentOptions(button, action, fallbackSource) {
+    const options = {};
+    if (fallbackSource) {
+        options.luckSource = fallbackSource;
+    }
+
+    if (button && button.id === 'luck-preset-oblivion') {
+        if (action === 'add') {
+            options.activateOblivionPreset = true;
+            options.activatePumpKingsBloodPreset = false;
+            options.activateTutorialPotionPreset = false;
+            options.activateDunePreset = false;
+            options.activateBloodPreset = false;
+        } else if (action === 'subtract') {
+            options.activateOblivionPreset = false;
+        }
+    }
+
+    if (button && button.id === 'luck-preset-pump-kings-blood') {
+        if (action === 'add') {
+            options.activatePumpKingsBloodPreset = true;
+            options.activateOblivionPreset = false;
+        } else if (action === 'subtract') {
+            options.activatePumpKingsBloodPreset = false;
+        }
+    }
+
+    if (button && button.id === 'luck-preset-tutorial-potion') {
+        if (action === 'add') {
+            options.activateTutorialPotionPreset = true;
+            options.activateOblivionPreset = false;
+        } else if (action === 'subtract') {
+            options.activateTutorialPotionPreset = false;
+        }
+    }
+
+    if (button && button.id === 'luck-preset-dune') {
+        if (action === 'add') {
+            options.activateDunePreset = true;
+            options.activateOblivionPreset = false;
+        } else if (action === 'subtract') {
+            options.activateDunePreset = false;
+        }
+    }
+
+    const bloodPresetConfig = button
+        ? Object.values(BLOOD_PRESET_CONFIGS).find(config => config.buttonId === button.id)
+        : null;
+    if (bloodPresetConfig) {
+        if (action === 'add') {
+            options.activateBloodPreset = bloodPresetConfig.identifier;
+            options.activateOblivionPreset = false;
+        } else if (action === 'subtract' && activeBloodPresetIdentifier === bloodPresetConfig.identifier) {
+            options.activateBloodPreset = false;
+        }
+    }
+
+    return options;
+}
+
+function createLuckPresetAdjustmentButtons(button, presetValue, fallbackSource) {
+    const wrapper = document.createElement('div');
+    wrapper.className = 'preset-button__actions';
+    const formattedValue = Number(presetValue).toLocaleString('en-US');
+
+    const addButton = document.createElement('button');
+    addButton.type = 'button';
+    addButton.className = 'preset-button__action preset-button__action--add';
+    addButton.textContent = '+';
+    addButton.setAttribute('aria-label', `Add ${formattedValue} luck`);
+    addButton.title = `Add ${formattedValue} luck`;
+    addButton.addEventListener('click', event => {
+        event.stopPropagation();
+        applyLuckDelta(presetValue, buildLuckAdjustmentOptions(button, 'add', fallbackSource));
+    });
+
+    const subtractButton = document.createElement('button');
+    subtractButton.type = 'button';
+    subtractButton.className = 'preset-button__action preset-button__action--subtract';
+    subtractButton.textContent = '-';
+    subtractButton.setAttribute('aria-label', `Remove ${formattedValue} luck`);
+    subtractButton.title = `Remove ${formattedValue} luck`;
+    subtractButton.addEventListener('click', event => {
+        event.stopPropagation();
+        applyLuckDelta(-presetValue, buildLuckAdjustmentOptions(button, 'subtract', fallbackSource));
+    });
+
+    wrapper.appendChild(subtractButton);
+    wrapper.appendChild(addButton);
+
+    return wrapper;
+}
+
+function setupLuckPresetAdjustmentButtons() {
+    const panels = [
+        { id: 'luck-preset-panel', source: LUCK_SELECTION_SOURCE.STANDARD_PRESET },
+        { id: 'device-buff-preset-panel', source: LUCK_SELECTION_SOURCE.DEVICE_PRESET }
+    ];
+
+    panels.forEach(({ id, source }) => {
+        const panel = document.getElementById(id);
+        if (!panel) {
+            return;
+        }
+
+        const presetButtons = panel.querySelectorAll('button[data-luck-value]');
+        presetButtons.forEach(button => {
+            const presetValue = Number(button.dataset.luckValue);
+            if (!Number.isFinite(presetValue) || button.closest('.preset-button')) {
+                return;
+            }
+
+            const wrapper = document.createElement('div');
+            wrapper.className = 'preset-button';
+            wrapper.style.display = button.style.display;
+            if (button.dataset.limboOnly) {
+                wrapper.dataset.limboOnly = button.dataset.limboOnly;
+            }
+            button.style.display = '';
+
+            const parent = button.parentNode;
+            if (!parent) {
+                return;
+            }
+
+            const label = document.createElement('span');
+            label.className = 'preset-button__label';
+            while (button.firstChild) {
+                label.appendChild(button.firstChild);
+            }
+            button.appendChild(label);
+
+            parent.insertBefore(wrapper, button);
+            wrapper.appendChild(button);
+
+            const adjustments = createLuckPresetAdjustmentButtons(button, presetValue, source);
+            wrapper.appendChild(adjustments);
+        });
+    });
+}
+
+function applyRollPreset(value) {
+    const rollField = document.getElementById('roll-total');
+    if (!rollField) {
+        return;
+    }
+
+    setNumericInputValue(rollField, value, { format: true, min: 1, max: 1000000000000 });
+    syncBiomeBuffs();
+    playSoundEffect(clickSoundEffectElement, 'ui');
+}
+
+function setPresetConsoleBank(bankName, { focusTab = false, playAudio = false } = {}) {
+    const tabs = Array.from(document.querySelectorAll('[data-preset-bank-target]'));
+    const panels = Array.from(document.querySelectorAll('[data-preset-bank]'));
+    if (!tabs.length || !panels.length) {
+        return;
+    }
+
+    const validBankNames = tabs.map(tab => tab.dataset.presetBankTarget);
+    const selectedBank = validBankNames.includes(bankName) ? bankName : validBankNames[0];
+
+    tabs.forEach(tab => {
+        const active = tab.dataset.presetBankTarget === selectedBank;
+        tab.classList.toggle('preset-console__tab--active', active);
+        tab.setAttribute('aria-selected', active ? 'true' : 'false');
+        tab.tabIndex = active ? 0 : -1;
+        if (active && focusTab) {
+            tab.focus();
+        }
+    });
+
+    panels.forEach(panel => {
+        const active = panel.dataset.presetBank === selectedBank;
+        panel.hidden = !active;
+        panel.classList.toggle('preset-console__bank--active', active);
+    });
+
+    if (playAudio) {
+        playSoundEffect(clickSoundEffectElement, 'ui');
+    }
+}
+
+function setupPresetConsoleTabs() {
+    const tabs = Array.from(document.querySelectorAll('[data-preset-bank-target]'));
+    if (!tabs.length) {
+        return;
+    }
+
+    tabs.forEach((tab, index) => {
+        tab.addEventListener('click', () => {
+            setPresetConsoleBank(tab.dataset.presetBankTarget, { playAudio: true });
+        });
+
+        tab.addEventListener('keydown', event => {
+            let nextIndex = null;
+            if (event.key === 'ArrowRight' || event.key === 'ArrowDown') {
+                nextIndex = (index + 1) % tabs.length;
+            } else if (event.key === 'ArrowLeft' || event.key === 'ArrowUp') {
+                nextIndex = (index - 1 + tabs.length) % tabs.length;
+            } else if (event.key === 'Home') {
+                nextIndex = 0;
+            } else if (event.key === 'End') {
+                nextIndex = tabs.length - 1;
+            }
+
+            if (nextIndex === null) {
+                return;
+            }
+
+            event.preventDefault();
+            setPresetConsoleBank(tabs[nextIndex].dataset.presetBankTarget, {
+                focusTab: true,
+                playAudio: true
+            });
+        });
+    });
+
+    const initiallySelectedTab = tabs.find(tab => tab.getAttribute('aria-selected') === 'true') || tabs[0];
+    setPresetConsoleBank(initiallySelectedTab.dataset.presetBankTarget);
+}
+
+function recomputeLuckValue() {
+    const luckField = document.getElementById('luck-total');
+    const normalizedBaseLuck = Number.isFinite(baseLuck) ? Math.max(0, baseLuck) : 0;
+    baseLuck = normalizedBaseLuck;
+
+    const multipliers = getActiveLuckMultipliers();
+    const gearInputs = getGearLuckInputs(false);
+    currentLuck = isRememberRoll() ? 1 : GearLuck.totalLuck(gearInputs.basic, gearInputs.special, gearInputs.finalMultiplier,
+        GearLuck.rollState(equippedGear.left, 1), gearInputs.basicMultiplier);
+    syncLastLuckMultipliers(multipliers);
+
+    if (luckField) {
+        const shouldFormat = document.activeElement !== luckField;
+        setNumericInputValue(luckField, currentLuck, { format: shouldFormat, min: 0 });
+    }
+
+    syncLuckVisualEffects(currentLuck);
+    syncEquipmentPreview();
+    if (isMultiplePotionMode()) {
+        syncMultiplePotionTotal();
+    }
+    syncBiomeBuffs();
+}
+
+function hasLuckPresets() {
+    return baseLuck !== 1 || singleSpecialLuck > 0 || additionalBasicBuffs > 0
+        || Object.values(equippedGear).some(id => id !== 'none')
+        || ['vip-dropdown', 'dave-luck-dropdown'].some(id => Number(document.getElementById(id)?.value || 1) !== 1)
+        || Array.from(document.querySelectorAll('[data-multi-potion]')).some(input => getNumericInputValue(input, { min: 0 }) > 0);
+}
+
+function resetAllLuckPresets() {
+    Object.keys(equippedGear).forEach(slot => { equippedGear[slot] = 'none'; });
+    additionalBasicBuffs = 0;
+    setNumericInputValue(document.getElementById('equipment-basic-buffs'), 0, { format: true, min: 0 });
+    ['vip-dropdown', 'dave-luck-dropdown'].forEach(id => {
+        const select = document.getElementById(id);
+        if (select) select.value = '1';
+        refreshCustomSelect(id);
+    });
+    Object.values(EVENT_BUFF_TOGGLES).forEach(id => {
+        const toggle = document.getElementById(id);
+        if (toggle) toggle.checked = false;
+    });
+    document.querySelectorAll('[data-multi-potion]').forEach(input => {
+        setNumericInputValue(input, 0, { format: true, min: 0 });
+    });
+    setLuckSelectionSource(LUCK_SELECTION_SOURCE.MANUAL);
+    clearActiveLuckPotionPresets({ syncBiomeConstraints: false });
+    updateBiomeControlConstraints({ triggerSync: false });
+    resetLuckFields();
+    globalThis.SessionReturn?.save();
+}
+
+function resetLuckFields(event) {
+    if (event?.shiftKey) {
+        resetAllLuckPresets();
+        return;
+    }
+    const luckInput = document.getElementById('luck-total');
+    baseLuck = 1;
+    singleSpecialLuck = 0;
+    currentLuck = 1;
+    if (luckInput) {
+        const shouldFormat = document.activeElement !== luckInput;
+        setNumericInputValue(luckInput, baseLuck, { format: shouldFormat, min: 0 });
+    }
+    playSoundEffect(clickSoundEffectElement, 'ui');
+    clearActiveLuckPotionPresets();
+    recomputeLuckValue();
+}
+
+function resetRollCount() {
+    const rollField = document.getElementById('roll-total');
+    if (rollField) {
+        const shouldFormat = document.activeElement !== rollField;
+        setNumericInputValue(rollField, 1, { format: shouldFormat, min: 1, max: 1000000000000 });
+    }
+    playSoundEffect(clickSoundEffectElement, 'ui');
+    syncBiomeBuffs();
+}
+
+function setGlitchPreset() {
+    setPrimaryBiomeSelection('glitch');
+    setOtherBiomeSelection('none');
+    setTimeBiomeSelection('none');
+    playSoundEffect(clickSoundEffectElement, 'ui');
+    updateBiomeControlConstraints({ source: BIOME_PRIMARY_SELECT_ID });
+}
+
+function setDreamspacePreset() {
+    setPrimaryBiomeSelection('dreamspace');
+    setOtherBiomeSelection('none');
+    setTimeBiomeSelection('none');
+    playSoundEffect(clickSoundEffectElement, 'ui');
+    updateBiomeControlConstraints({ source: BIOME_PRIMARY_SELECT_ID });
+}
+
+function setSingularityPreset() {
+    setPrimaryBiomeSelection('singularity');
+    setOtherBiomeSelection('none');
+    setTimeBiomeSelection('none');
+    playSoundEffect(clickSoundEffectElement, 'ui');
+    updateBiomeControlConstraints({ source: BIOME_PRIMARY_SELECT_ID });
+}
+
+function setRadiantForestPreset() {
+    setPrimaryBiomeSelection('radiantForest');
+    setOtherBiomeSelection('none');
+    setTimeBiomeSelection('night');
+    playSoundEffect(clickSoundEffectElement, 'ui');
+    updateBiomeControlConstraints({ source: BIOME_PRIMARY_SELECT_ID });
+}
+
+function setLimboPreset() {
+    setPrimaryBiomeSelection('limbo');
+    setOtherBiomeSelection('none');
+    setTimeBiomeSelection('day');
+    playSoundEffect(clickSoundEffectElement, 'ui');
+    updateBiomeControlConstraints({ source: BIOME_PRIMARY_SELECT_ID });
+}
+
+function setRoePreset() {
+    setOtherBiomeSelection('roe');
+    playSoundEffect(clickSoundEffectElement, 'ui');
+    updateBiomeControlConstraints({ source: BIOME_OTHER_SELECT_ID });
+}
+
+function setCyberspacePreset() {
+    setPrimaryBiomeSelection('cyberspace');
+    setOtherBiomeSelection('none');
+    setTimeBiomeSelection('none');
+    playSoundEffect(clickSoundEffectElement, 'ui');
+    updateBiomeControlConstraints({ source: BIOME_PRIMARY_SELECT_ID });
+}
+
+function resetBiomeChoice() {
+    setPrimaryBiomeSelection('normal');
+    setOtherBiomeSelection('none');
+    setTimeBiomeSelection('none');
+    playSoundEffect(clickSoundEffectElement, 'ui');
+    updateBiomeControlConstraints({ source: null });
+}
+
+function initializeBiomeInterface() {
+    const selectionState = collectBiomeSelectionState();
+    const biome = selectionState.canonicalBiome;
+    const daveLuckContainer = document.getElementById('dave-luck-wrapper');
+    const sorryLuckContainer = document.getElementById('sorry-luck-wrapper');
+    const dorcelessnessLuckContainer = document.getElementById('dorcelessness-luck-wrapper');
+    const ygBlessingContainer = document.getElementById('yg-blessing-wrapper');
+    const astraldBlessingContainer = document.getElementById('astrald-blessing-wrapper');
+    const luckPresets = document.getElementById('luck-preset-panel');
+    if (biome === 'limbo') {
+        setFeatureContainerVisible(daveLuckContainer, true, { visibilityMode: 'display' });
+        if (sorryLuckContainer) sorryLuckContainer.style.display = '';
+        if (dorcelessnessLuckContainer) dorcelessnessLuckContainer.style.display = '';
+        if (ygBlessingContainer) ygBlessingContainer.style.display = '';
+        if (astraldBlessingContainer) astraldBlessingContainer.style.display = '';
+    } else {
+        setFeatureContainerVisible(daveLuckContainer, false, { visibilityMode: 'display' });
+        if (sorryLuckContainer) sorryLuckContainer.style.display = '';
+        if (dorcelessnessLuckContainer) dorcelessnessLuckContainer.style.display = '';
+        if (ygBlessingContainer) ygBlessingContainer.style.display = '';
+        if (astraldBlessingContainer) astraldBlessingContainer.style.display = '';
+    }
+
+    if (isDevAdminAbuseBiomeActive(biome)) {
+        disableYgBlessing({ silent: true });
+        disableAstraldBlessing({ silent: true });
+    }
+
+    if (luckPresets) {
+        const isLimbo = biome === 'limbo'
+            || selectionState.activeBiomes.includes('limbo')
+            || selectionState.breakthroughBiomes.includes('limbo');
+        Array.from(luckPresets.children).forEach(element => {
+            const requiresLimbo = element.dataset.limboOnly === 'true';
+            const shouldShow = requiresLimbo ? isLimbo : !isLimbo;
+
+            element.style.display = shouldShow ? '' : 'none';
+        });
+    }
+    applyBiomeTheme(biome, selectionState);
+    updateGlitchPresentation();
+    recomputeLuckValue();
+    refreshCustomSelect('biome-dropdown');
+    updateBiomeControlConstraints();
+}
+
+const FIRST_PERSON_CUTSCENES = new Set(['illusionary-cutscene']);
+const CUTSCENE_PLAY_TIMEOUT_MS = 15000;
+const CUTSCENE_STALL_TIMEOUT_MS = 30000;
+const CUTSCENE_WATCHDOG_INTERVAL_MS = 500;
+const CUTSCENE_END_EPSILON_SECONDS = 0.35;
+const CUTSCENE_RECOVERY_LIMIT = 1;
+
+function isAuraCutscenePlaybackActive() {
+    const cinematicOverlay = document.getElementById('cinematic-overlay');
+    return Boolean(
+        appState.videoPlaying
+        || cinematicOverlay?.style.display === 'flex'
+    );
+}
+
+function hasCutsceneMediaSource(videoId) {
+    if (typeof document === 'undefined') return false;
+    if (['true-jade-cutscene', 'true-kyawthuite-cutscene', 'true-twilight-cutscene'].includes(videoId)) return false;
+    const video = document.getElementById(videoId);
+    if (!video || video.dataset.cutscenePending === 'true') return false;
+    if (video.getAttribute('src') || video.dataset.src) return true;
+    return Array.from(video.querySelectorAll('source')).some(source => (
+        Boolean(source.getAttribute('src')) || Boolean(source.dataset.src)
+    ));
+}
+
+function getAuraCutsceneFadeDuration(videoId) {
+    if (videoId === 'tomorrow-cutscene') return 2000;
+    if (videoId === 'breakthrough-cutscene') return 5000;
+    return 1000;
+}
+
+function startPreparedCutscenePlayback(video) {
+    return new Promise((resolve, reject) => {
+        let settled = false;
+        let timeoutId = null;
+
+        const finish = (error = null) => {
+            if (settled) return;
+            settled = true;
+            if (timeoutId !== null) {
+                window.clearTimeout(timeoutId);
+                timeoutId = null;
+            }
+            if (error) {
+                reject(error);
+            } else {
+                resolve();
+            }
+        };
+
+        timeoutId = window.setTimeout(() => {
+            finish(new Error('The cutscene did not begin playing in time.'));
+        }, CUTSCENE_PLAY_TIMEOUT_MS);
+
+        try {
+            const playPromise = video.play();
+            if (playPromise && typeof playPromise.then === 'function') {
+                playPromise.then(() => finish(), finish);
+            } else {
+                finish();
+            }
+        } catch (error) {
+            finish(error);
+        }
+    });
+}
+
+function playAuraVideo(videoId, options = {}) {
+    const manageAmbient = options.manageAmbient !== false;
+    return new Promise(resolve => {
+        if ((!appState.cinematic && !options.force && !ALWAYS_ON_CUTSCENES.has(videoId)) || !hasCutsceneMediaSource(videoId)) {
+            resolve();
+            return;
+        }
+
+        let overlay = document.getElementById('cinematic-overlay');
+        if (!overlay) {
+            overlay = document.createElement('div');
+            overlay.id = 'cinematic-overlay';
+            overlay.className = 'cinematic-overlay';
+            document.body.appendChild(overlay);
+        }
+
+        let controls = document.getElementById('skip-cinematic-controls');
+        if (!controls) {
+            controls = document.createElement('div');
+            controls.id = 'skip-cinematic-controls';
+            controls.className = 'skip-cinematic-controls';
+            document.body.appendChild(controls);
+        }
+
+        let revealButton = document.getElementById('reveal-cinematic-controls');
+        if (!revealButton) {
+            revealButton = document.createElement('button');
+            revealButton.type = 'button';
+            revealButton.id = 'reveal-cinematic-controls';
+            revealButton.className = 'skip-cinematic-reveal';
+            revealButton.setAttribute('aria-label', 'Show cutscene controls');
+            revealButton.setAttribute('aria-controls', 'skip-cinematic-actions');
+            revealButton.innerHTML = '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m3 3 18 18M10.6 10.6a2 2 0 0 0 2.8 2.8M9.5 5.3A10.7 10.7 0 0 1 12 5c6 0 10 7 10 7a18.5 18.5 0 0 1-3 3.7M6.5 6.5A20.2 20.2 0 0 0 2 12s4 7 10 7a11 11 0 0 0 5.5-1.5"/></svg>';
+            controls.appendChild(revealButton);
+        }
+        let actions = document.getElementById('skip-cinematic-actions');
+        if (!actions) {
+            actions = document.createElement('div');
+            actions.id = 'skip-cinematic-actions';
+            actions.className = 'skip-cinematic-actions';
+            controls.appendChild(actions);
+        }
+
+        let skipButton = document.getElementById('skip-cinematic-button');
+        if (!skipButton) {
+            skipButton = document.createElement('button');
+            skipButton.type = 'button';
+            skipButton.id = 'skip-cinematic-button';
+            skipButton.className = 'skip-cinematic-button';
+            skipButton.textContent = 'Skip cutscene';
+            actions.appendChild(skipButton);
+        } else if (skipButton.parentElement !== actions) {
+            actions.appendChild(skipButton);
+        }
+
+        let skipAllButton = document.getElementById('skip-all-cinematic-button');
+        if (!skipAllButton) {
+            skipAllButton = document.createElement('button');
+            skipAllButton.type = 'button';
+            skipAllButton.id = 'skip-all-cinematic-button';
+            skipAllButton.className = 'skip-cinematic-button skip-cinematic-button--all';
+            skipAllButton.textContent = 'Skip All Cutscenes';
+            actions.appendChild(skipAllButton);
+        } else if (skipAllButton.parentElement !== actions) {
+            actions.appendChild(skipAllButton);
+        }
+        skipButton.setAttribute('aria-keyshortcuts', 'Space');
+        skipButton.title = 'Skip cutscene (Space)';
+        skipAllButton.setAttribute('aria-keyshortcuts', 'Shift+Space');
+        skipAllButton.title = 'Skip all remaining cutscenes (Shift+Space)';
+        controls.classList.remove('skip-cinematic-controls--open');
+        revealButton.setAttribute('aria-expanded', 'false');
+        revealButton.setAttribute('aria-label', 'Show cutscene controls');
+        revealButton.onclick = () => {
+            const open = controls.classList.toggle('skip-cinematic-controls--open');
+            revealButton.setAttribute('aria-expanded', String(open));
+            revealButton.setAttribute('aria-label', `${open ? 'Hide' : 'Show'} cutscene controls`);
+        };
+
+        const video = document.getElementById(videoId);
+        if (!video) {
+            resolve();
+            return;
+        }
+
+        ensureDeferredMediaSource(video);
+
+        applyMediaGain(video, { category: 'cutscene' });
+
+        appState.videoPlaying = true;
+        const bgMusic = manageAmbient ? document.getElementById('ambientMusic') : null;
+        const wasPlaying = !!(bgMusic && !bgMusic.paused);
+        if (bgMusic && wasPlaying) {
+            bgMusic.pause();
+        }
+
+        const isFirstPerson = FIRST_PERSON_CUTSCENES.has(videoId);
+        overlay.classList.toggle('cinematic-overlay--first-person', isFirstPerson);
+        if (document.body) {
+            document.body.classList.toggle('first-person-cutscene-active', isFirstPerson);
+        }
+
+        let loadingStatus = overlay.querySelector('.cinematic-overlay__loading');
+        if (!loadingStatus) {
+            loadingStatus = document.createElement('div');
+            loadingStatus.className = 'cinematic-overlay__loading';
+            loadingStatus.setAttribute('role', 'status');
+            loadingStatus.setAttribute('aria-live', 'polite');
+            loadingStatus.innerHTML = '<span class="cinematic-overlay__spinner" aria-hidden="true"></span><span>Loading cutscene&hellip;</span>';
+            overlay.appendChild(loadingStatus);
+        }
+
+        const fadeDuration = getAuraCutsceneFadeDuration(videoId);
+        overlay.classList.toggle('cinematic-overlay--blackout', fadeDuration > 0);
+        overlay.classList.toggle('cinematic-overlay--fading', fadeDuration > 0);
+        overlay.dataset.fadeDuration = String(fadeDuration);
+        overlay.classList.add('cinematic-overlay--loading');
+
+
+        overlay.style.opacity = '0';
+        video.style.display = 'none';
+        overlay.style.display = 'flex';
+        overlay.setAttribute('aria-hidden', 'false');
+        controls.style.display = 'flex';
+        skipButton.style.display = 'block';
+        skipAllButton.style.display = 'block';
+        if (!appState.scrollLock && document.body) {
+            const body = document.body;
+            const previousOverflow = body.style.overflow;
+            const previousPadding = body.style.paddingRight;
+            const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
+            body.style.overflow = 'hidden';
+            if (scrollbarWidth > 0) {
+                body.style.paddingRight = `${scrollbarWidth}px`;
+            }
+            appState.scrollLock = {
+                overflow: previousOverflow,
+                paddingRight: previousPadding
+            };
+        }
+        video.muted = !isSoundChannelActive('cutscene');
+
+        let cleanedUp = false;
+        let playbackStarted = false;
+        let playbackNotified = false;
+        let recoveryAttempts = 0;
+        let recoveryInProgress = false;
+        let watchdogIntervalId = null;
+        let lastPlaybackTime = 0;
+        let lastProgressAt = Date.now();
+        let fadeAnimation = null;
+        const previousFocus = document.activeElement;
+        const handleControlsKeydown = event => {
+            if ((event.code === 'Space' || event.key === ' ') && !event.altKey && !event.ctrlKey && !event.metaKey && !event.isComposing) {
+                event.preventDefault();
+                event.stopImmediatePropagation();
+                if (!event.repeat) (event.shiftKey ? skipAllButton : skipButton).click();
+                return;
+            }
+            if (event.key === 'Tab') {
+                const focusable = [revealButton, skipButton, skipAllButton].filter(button => button && getComputedStyle(button).display !== 'none');
+                const first = focusable[0];
+                const last = focusable[focusable.length - 1];
+                if (!controls.contains(document.activeElement) || (event.shiftKey && document.activeElement === first) || (!event.shiftKey && document.activeElement === last)) {
+                    event.preventDefault();
+                    (event.shiftKey ? last : first)?.focus({ preventScroll: true });
+                }
+                return;
+            }
+            if (event.key !== 'Escape') return;
+            controls.classList.remove('skip-cinematic-controls--open');
+            revealButton.setAttribute('aria-expanded', 'false');
+            revealButton.setAttribute('aria-label', 'Show cutscene controls');
+            if (controls.contains(document.activeElement)) {
+                document.activeElement.blur();
+                previousFocus?.focus({ preventScroll: true });
+            }
+        };
+        document.addEventListener('keydown', handleControlsKeydown, true);
+
+        const safelyResetVideo = () => {
+            try {
+                video.pause();
+            } catch (error) {
+            }
+            try {
+                video.currentTime = 0;
+            } catch (error) {
+            }
+        };
+
+        const removePlaybackListeners = () => {
+            video.removeEventListener('ended', handleEnded);
+            video.removeEventListener('error', handlePlaybackError);
+            video.removeEventListener('timeupdate', handlePlaybackProgress);
+            video.removeEventListener('playing', handlePlaying);
+            video.removeEventListener('webkitendfullscreen', handleNativeFullscreenEnd);
+            document.removeEventListener('visibilitychange', handleVisibilityChange);
+            window.removeEventListener('pagehide', handlePageHide);
+        };
+
+        const cleanup = (result = 'finished') => {
+            if (cleanedUp) return;
+            cleanedUp = true;
+            overlay.style.display = 'none';
+            fadeAnimation?.cancel();
+            overlay.style.opacity = '0';
+            if (watchdogIntervalId !== null) {
+                window.clearInterval(watchdogIntervalId);
+                watchdogIntervalId = null;
+            }
+            removePlaybackListeners();
+            appState.videoPlaying = false;
+            safelyResetVideo();
+            video.style.display = 'none';
+            overlay.setAttribute('aria-hidden', 'true');
+            overlay.classList.remove('cinematic-overlay--loading');
+            overlay.classList.remove('cinematic-overlay--first-person');
+            overlay.classList.remove('cinematic-overlay--fading', 'cinematic-overlay--blackout');
+            if (document.body) {
+                document.body.classList.remove('first-person-cutscene-active');
+            }
+            controls.style.display = 'none';
+            controls.classList.remove('skip-cinematic-controls--open');
+            document.removeEventListener('keydown', handleControlsKeydown, true);
+            if (controls.contains(document.activeElement) && previousFocus?.isConnected) {
+                previousFocus.focus({ preventScroll: true });
+            }
+            skipButton.style.display = 'none';
+            skipAllButton.style.display = 'none';
+            if (appState.scrollLock && document.body) {
+                const body = document.body;
+                body.style.overflow = appState.scrollLock.overflow;
+                body.style.paddingRight = appState.scrollLock.paddingRight;
+                appState.scrollLock = null;
+            }
+            if (bgMusic && wasPlaying && appState.audio.roll) {
+                startBackgroundMusic(bgMusic);
+            }
+            skipButton.onclick = null;
+            skipAllButton.onclick = null;
+            revealButton.onclick = null;
+            resolve(result);
+        };
+
+        function handleEnded() {
+            cleanup();
+        }
+
+        function handleNativeFullscreenEnd() {
+            cutsceneFullscreenDismissed = true;
+            cleanup('skipped');
+        }
+
+        function handlePlaying() {
+            playbackStarted = true;
+            if (!playbackNotified) {
+                playbackNotified = true;
+                options.onPlaying?.();
+            }
+            overlay.classList.remove('cinematic-overlay--loading');
+            lastPlaybackTime = Number.isFinite(video.currentTime) ? video.currentTime : 0;
+            lastProgressAt = Date.now();
+        }
+
+        function handlePlaybackProgress() {
+            const currentTime = Number.isFinite(video.currentTime) ? video.currentTime : 0;
+            if (currentTime > lastPlaybackTime + 0.02) {
+                lastPlaybackTime = currentTime;
+                lastProgressAt = Date.now();
+            }
+
+            const duration = video.duration;
+            if (
+                Number.isFinite(duration)
+                && duration > 0
+                && currentTime >= Math.max(0, duration - CUTSCENE_END_EPSILON_SECONDS)
+            ) {
+                cleanup();
+            }
+        }
+
+        async function recoverPlayback() {
+            if (cleanedUp || recoveryInProgress) return;
+            if (recoveryAttempts >= CUTSCENE_RECOVERY_LIMIT) {
+                console.warn(`Cutscene ${videoId} stopped making progress and was closed safely.`);
+                cleanup('failed');
+                return;
+            }
+
+            recoveryInProgress = true;
+            recoveryAttempts += 1;
+            playbackStarted = false;
+            const resumeTime = Number.isFinite(video.currentTime) ? video.currentTime : 0;
+
+            try {
+                video.style.display = 'none';
+                overlay.classList.add('cinematic-overlay--loading');
+                video.pause();
+                await prepareCutsceneVideo(video, { forceReload: true });
+                if (cleanedUp) return;
+
+                const duration = video.duration;
+                if (resumeTime > 0 && Number.isFinite(duration) && duration > 0) {
+                    video.currentTime = Math.min(resumeTime, Math.max(0, duration - CUTSCENE_END_EPSILON_SECONDS));
+                }
+
+                video.style.display = 'block';
+                await startPreparedCutscenePlayback(video);
+                if (cleanedUp) return;
+                handlePlaying();
+            } catch (error) {
+                if (!cleanedUp) {
+                    console.warn(`Unable to recover cutscene ${videoId}.`, error);
+                    cleanup('failed');
+                }
+            } finally {
+                recoveryInProgress = false;
+            }
+        }
+
+        function handlePlaybackError() {
+            if (playbackStarted) {
+                void recoverPlayback();
+            }
+        }
+
+        function handleVisibilityChange() {
+            lastProgressAt = Date.now();
+            if (!document.hidden && playbackStarted && video.paused && !video.ended && !recoveryInProgress) {
+                const resumePromise = video.play();
+                if (resumePromise && typeof resumePromise.catch === 'function') {
+                    resumePromise.catch(() => recoverPlayback());
+                }
+            }
+        }
+
+        function handlePageHide() {
+            cleanup('interrupted');
+        }
+
+        skipButton.onclick = () => {
+            cleanup('skipped');
+        };
+
+        skipAllButton.onclick = () => {
+            if (typeof options.onSkipAll === 'function') {
+                options.onSkipAll();
+            }
+            cleanup('skipped-all');
+        };
+
+        video.addEventListener('ended', handleEnded);
+        video.addEventListener('error', handlePlaybackError);
+        video.addEventListener('timeupdate', handlePlaybackProgress);
+        video.addEventListener('playing', handlePlaying);
+        video.addEventListener('webkitendfullscreen', handleNativeFullscreenEnd);
+        document.addEventListener('visibilitychange', handleVisibilityChange);
+        window.addEventListener('pagehide', handlePageHide);
+
+        watchdogIntervalId = window.setInterval(() => {
+            if (cleanedUp || recoveryInProgress || document.hidden || !playbackStarted) return;
+            handlePlaybackProgress();
+            if (!cleanedUp && Date.now() - lastProgressAt >= CUTSCENE_STALL_TIMEOUT_MS) {
+                void recoverPlayback();
+            }
+        }, CUTSCENE_WATCHDOG_INTERVAL_MS);
+
+        void (async () => {
+            try {
+                fadeAnimation = overlay.animate([{ opacity: 0 }, { opacity: 1 }], {
+                    duration: fadeDuration, easing: 'ease-in-out', fill: 'forwards'
+                });
+                const fade = fadeAnimation.finished.then(() => {
+                    if (cleanedUp) return;
+
+
+                    overlay.style.opacity = '1';
+                    fadeAnimation.cancel();
+                    fadeAnimation = null;
+                    overlay.classList.remove('cinematic-overlay--fading');
+                });
+                await Promise.all([prepareCutsceneVideo(video), fade]);
+                if (cleanedUp) return;
+
+
+                await enterCutsceneFullscreen(video);
+                if (cleanedUp) return;
+                safelyResetVideo();
+                video.style.display = 'block';
+                await startPreparedCutscenePlayback(video);
+                if (cleanedUp) return;
+                handlePlaying();
+            } catch (error) {
+                if (!cleanedUp) {
+                    console.warn(`Unable to load cutscene ${videoId}.`, error);
+                    cleanup('failed');
+                }
+            }
+        })();
+    });
+}
+
+function getFullscreenElement() {
+    if (typeof document === 'undefined') return null;
+    return document.fullscreenElement
+        || document.webkitFullscreenElement
+        || document.mozFullScreenElement
+        || document.msFullscreenElement
+        || (cutsceneNativeFullscreenVideo?.webkitDisplayingFullscreen ? cutsceneNativeFullscreenVideo : null)
+        || null;
+}
+
+async function requestFullscreen(element) {
+    if (!element) return false;
+    const method = element.requestFullscreen
+        || element.webkitRequestFullscreen
+        || element.mozRequestFullScreen
+        || element.msRequestFullscreen;
+    if (!method) return false;
+    try {
+        const result = method.call(element);
+        if (result && typeof result.then === 'function') {
+            await result;
+        }
+        return true;
+    } catch (error) {
+        return false;
+    }
+}
+
+async function exitFullscreen() {
+    if (typeof document === 'undefined') return false;
+    if (cutsceneNativeFullscreenVideo?.webkitDisplayingFullscreen) {
+        try {
+            cutsceneNativeFullscreenVideo.webkitExitFullscreen();
+            cutsceneNativeFullscreenVideo = null;
+            return true;
+        } catch { return false; }
+    }
+    if (!getFullscreenElement()) return false;
+    const method = document.exitFullscreen
+        || document.webkitExitFullscreen
+        || document.mozCancelFullScreen
+        || document.msExitFullscreen;
+    if (!method) return false;
+    try {
+        const result = method.call(document);
+        if (result && typeof result.then === 'function') {
+            await result;
+        }
+        return true;
+    } catch (error) {
+        return false;
+    }
+}
+
+function setCutsceneFullscreen(enabled) {
+    rollingSettingsPreference.fullscreenCutscenes = Boolean(enabled);
+    persistRollingSettings();
+    syncRollingSettingsControls();
+    if (!enabled) return releaseCutsceneFullscreen();
+    return Promise.resolve(true);
+}
+
+function enterCutsceneFullscreen(video) {
+    if (getFullscreenElement()) return Promise.resolve(true);
+    if (!rollingSettingsPreference.fullscreenCutscenes || !appState.videoPlaying || cutsceneFullscreenDismissed) {
+        return Promise.resolve(false);
+    }
+    if (cutsceneFullscreenTransition) return cutsceneFullscreenTransition;
+    const root = document.documentElement;
+    const documentFullscreenSupported = document.fullscreenEnabled !== false && Boolean(root.requestFullscreen || root.webkitRequestFullscreen || root.mozRequestFullScreen || root.msRequestFullscreen);
+    let operation;
+    if (documentFullscreenSupported) {
+        operation = requestFullscreen(root);
+    } else if (video?.readyState >= 1 && typeof video.webkitEnterFullscreen === 'function' && video.webkitSupportsFullscreen !== false) {
+        try {
+            video.webkitEnterFullscreen();
+            cutsceneNativeFullscreenVideo = video;
+            operation = Promise.resolve(true);
+        } catch { operation = Promise.resolve(false); }
+    } else {
+        operation = Promise.resolve(false);
+    }
+    cutsceneFullscreenTransition = operation.then(success => {
+        cutsceneFullscreenOwned = success && Boolean(getFullscreenElement() || cutsceneNativeFullscreenVideo);
+        return success;
+    }).finally(() => {
+        cutsceneFullscreenTransition = null;
+        syncRollingSettingsControls();
+    });
+    syncRollingSettingsControls();
+    return cutsceneFullscreenTransition;
+}
+
+async function releaseCutsceneFullscreen({ preserveFullscreen = false } = {}) {
+    if (cutsceneFullscreenTransition) await cutsceneFullscreenTransition;
+    if (!cutsceneFullscreenOwned) return;
+    cutsceneFullscreenOwned = false;
+    if (!preserveFullscreen && getFullscreenElement()) await exitFullscreen();
+    cutsceneNativeFullscreenVideo = null;
+}
+
+async function playAuraSequence(queue, options = {}) {
+    const playableQueue = Array.isArray(queue)
+        ? queue.filter(hasCutsceneMediaSource)
+        : [];
+    if (playableQueue.length === 0) {
+        return { skippedAll: false };
+    }
+
+    if (cutsceneFullscreenTransition) await cutsceneFullscreenTransition;
+    const wasFullscreenAtStart = Boolean(getFullscreenElement());
+    cutsceneFullscreenDismissed = false;
+
+    const ambientMusic = typeof document !== 'undefined' ? document.getElementById('ambientMusic') : null;
+    const shouldResumeAmbient = !!(ambientMusic && !ambientMusic.paused);
+    if (ambientMusic && shouldResumeAmbient) {
+        ambientMusic.pause();
+    }
+
+    let skipRemainingCutscenes = Boolean(options.skipRemaining);
+    const skipAllCutscenes = () => {
+        skipRemainingCutscenes = true;
+        if (typeof options.onSkipAll === 'function') {
+            options.onSkipAll();
+        }
+    };
+
+    try {
+        for (let queueIndex = 0; queueIndex < playableQueue.length; queueIndex++) {
+            const videoId = playableQueue[queueIndex];
+            if (skipRemainingCutscenes) break;
+            const force = options.force === true || ALWAYS_ON_CUTSCENES.has(videoId);
+            if (!force && !appState.cinematic) continue;
+            const nextVideo = document.getElementById(playableQueue[queueIndex + 1]);
+            const result = await playAuraVideo(videoId, {
+                force,
+                manageAmbient: false,
+                onSkipAll: skipAllCutscenes,
+                onPlaying: () => {
+                    if (nextVideo) prepareCutsceneVideo(nextVideo).catch(() => {});
+                }
+            });
+            if (result === 'skipped-all') break;
+        }
+    } finally {
+        await releaseCutsceneFullscreen({ preserveFullscreen: wasFullscreenAtStart });
+        if (ambientMusic && shouldResumeAmbient && appState.audio.roll) {
+            startBackgroundMusic(ambientMusic);
+        }
+    }
+
+    return { skippedAll: skipRemainingCutscenes };
+}
+
+function computeChanceRarityClass(chance) {
+    if (chance >= 999999999) return 'rarity-tier-transcendent';
+    if (chance >= 99999999) return 'rarity-tier-glorious';
+    if (chance >= 9999999) return 'rarity-tier-exalted';
+    if (chance >= 999999) return 'rarity-tier-mythic';
+    if (chance >= 99999) return 'rarity-tier-legendary';
+    if (chance >= 9999) return 'rarity-tier-unique';
+    if (chance >= 999) return 'rarity-tier-epic';
+    return 'rarity-tier-basic';
+}
+
+function isEventAuraForTier(aura) {
+    if (!aura || typeof getAuraEventIds !== 'function') {
+        return false;
+    }
+    return getAuraEventIds(aura).length > 0;
+}
+
+function computeRarityClass(aura, biome) {
+    if (!aura) return '';
+    const auraName = aura.name || '';
+    if (isEventAuraForTier(aura)) return computeChanceRarityClass(aura.chance);
+    if (isForcedChallengedPlusAura(auraName)) return 'rarity-tier-challenged-plus';
+    if (isForcedChallengedAura(auraName)) return 'rarity-tier-challenged';
+    const forcedStandardTierKey = getForcedStandardAuraTierKey(auraName);
+    if (forcedStandardTierKey) return `rarity-tier-${forcedStandardTierKey}`;
+    if (auraName.startsWith('Pixelation')) return 'rarity-tier-transcendent';
+    if (aura.disableRarityClass) return '';
+    const hasLimboNative = auraMatchesAnyBiome(aura, ['limbo', 'limbo-null']);
+    if (hasLimboNative && biome === 'limbo') return 'rarity-tier-limbo';
+    return computeChanceRarityClass(aura.chance);
+}
+
+const rarityClassCache = new WeakMap();
+
+function resolveRarityClass(aura, biome) {
+    if (!aura || typeof aura !== 'object') {
+        return computeRarityClass(aura, biome);
+    }
+    let biomeCache = rarityClassCache.get(aura);
+    if (!biomeCache) {
+        biomeCache = new Map();
+        rarityClassCache.set(aura, biomeCache);
+    }
+    const cacheKey = typeof biome === 'string' ? biome : '';
+    if (!biomeCache.has(cacheKey)) {
+        biomeCache.set(cacheKey, computeRarityClass(aura, biome));
+    }
+    return biomeCache.get(cacheKey);
+}
+
+function computeBaseRarityClass(aura) {
+    if (!aura) return '';
+    const auraName = aura.name || '';
+    if (isEventAuraForTier(aura)) return computeChanceRarityClass(aura.chance);
+    if (isForcedChallengedPlusAura(auraName)) return 'rarity-tier-challenged-plus';
+    if (isForcedChallengedAura(auraName)) return 'rarity-tier-challenged';
+    const forcedStandardTierKey = getForcedStandardAuraTierKey(auraName);
+    if (forcedStandardTierKey) return `rarity-tier-${forcedStandardTierKey}`;
+    if (auraName.startsWith('Pixelation')) return 'rarity-tier-transcendent';
+    if (aura.disableRarityClass) return '';
+    return computeChanceRarityClass(aura.chance);
+}
+
+function shouldUseNativeOverrideTier() {
+    return false;
+}
+
+const AURA_TIER_FILTERS = Object.freeze([
+    { key: 'basic', label: 'Skip Basic Auras', className: 'rarity-tier-basic' },
+    { key: 'epic', label: 'Skip Epic Auras', className: 'rarity-tier-epic' },
+    { key: 'unique', label: 'Skip Unique Auras', className: 'rarity-tier-unique' },
+    { key: 'legendary', label: 'Skip Legendary Auras', className: 'rarity-tier-legendary' },
+    { key: 'mythic', label: 'Skip Mythic Auras', className: 'rarity-tier-mythic' },
+    { key: 'exalted', label: 'Skip Exalted Auras', className: 'rarity-tier-exalted' },
+    { key: 'glorious', label: 'Skip Glorious Auras', className: 'rarity-tier-glorious' },
+    { key: 'transcendent', label: 'Skip Transcendent Auras', className: 'rarity-tier-transcendent' },
+    { key: 'challenged', label: 'Skip Challenged Auras', className: 'rarity-tier-challenged' },
+    { key: 'challenged-plus', label: 'Skip Challenged+ Auras', className: 'rarity-tier-challenged-plus' }
+]);
+
+const AURA_TIER_CLASS_TO_KEY = new Map(AURA_TIER_FILTERS.map(tier => [tier.className, tier.key]));
+const AURA_TIER_ORDER = new Map(AURA_TIER_FILTERS.map((tier, index) => [tier.key, index]));
+const AURA_TIER_SKIP_NAME_OVERRIDES = new Map([
+    ['transcendent', ['Nyctophobia']],
+    ['glorious', ['Unknown', 'Elude', 'Prologue', 'Dreamscape']],
+    ['exalted', ['Juxtaposition']],
+    ['mythic', ['Anima', 'Nihility', 'Undefined', 'Flowed', 'Shiftlock']],
+    ['legendary', ['Raven']],
+    ['basic', ['Nothing']]
+]);
+
+function formatAuraTierLabel(tier) {
+    if (!tier) {
+        return '';
+    }
+    const label = typeof tier.label === 'string' && tier.label.trim().length > 0
+        ? tier.label
+        : tier.key;
+    return label
+        .replace(/^Skip\s+/i, '')
+        .replace(/\s*Auras?$/i, '')
+        .trim();
+}
+
+function resolveAuraDisplayTierKey(aura, biome = null) {
+    if (!aura) return 'basic';
+    if (isEventAuraForTier(aura)) {
+        return AURA_TIER_CLASS_TO_KEY.get(computeChanceRarityClass(aura.chance)) || 'basic';
+    }
+    if (isForcedChallengedPlusAura(aura.name)) return 'challenged-plus';
+    if (isForcedChallengedAura(aura.name)) return 'challenged';
+    const rarityClass = biome === null ? resolveBaseRarityClass(aura) : resolveRarityClass(aura, biome);
+    const key = AURA_TIER_CLASS_TO_KEY.get(rarityClass);
+    if (key) return key;
+    for (const [tierKey, prefixes] of AURA_TIER_SKIP_NAME_OVERRIDES) {
+        if (prefixes.some(prefix => aura.name.startsWith(prefix))) return tierKey;
+    }
+    return AURA_TIER_CLASS_TO_KEY.get(computeBaseRarityClass({ ...aura, disableRarityClass: false })) || 'basic';
+}
+
+function compareAurasByDisplayTierThenChance(a, b) {
+    const aTier = resolveAuraDisplayTierKey(a);
+    const bTier = resolveAuraDisplayTierKey(b);
+    const tierDifference = (AURA_TIER_ORDER.get(aTier) ?? -1) - (AURA_TIER_ORDER.get(bTier) ?? -1);
+    if (tierDifference !== 0) {
+        return tierDifference;
+    }
+    if (a.chance !== b.chance) {
+        return a.chance - b.chance;
+    }
+    return a.name.localeCompare(b.name);
+}
+
+function createAuraTierHeading(tierKey) {
+    const tier = AURA_TIER_FILTERS.find(candidate => candidate.key === tierKey);
+    if (!tier) return null;
+    const heading = document.createElement('span');
+    heading.className = 'aura-tier-separator';
+    heading.dataset.auraTierHeading = tierKey;
+    heading.setAttribute('role', 'heading');
+    heading.setAttribute('aria-level', '3');
+    heading.textContent = formatAuraTierLabel(tier);
+    return heading;
+}
+
+function syncAuraTierSeparators(container, selector, enabled = true) {
+    if (!container) return;
+    container.querySelectorAll(':scope > .aura-tier-separator').forEach(heading => heading.remove());
+    if (!enabled) return;
+    let previousTier = null;
+    container.querySelectorAll(selector).forEach(entry => {
+        if (entry.hidden) return;
+        const tierKey = entry.dataset.auraTier || '';
+        if (tierKey !== previousTier) {
+            const heading = createAuraTierHeading(tierKey);
+            if (heading) entry.before(heading);
+        }
+        previousTier = tierKey;
+    });
+}
+
+function getAuraTierSearchTerms(tierKey) {
+    if (typeof tierKey !== 'string' || !tierKey) {
+        return '';
+    }
+    return AURA_TIER_SEARCH_TERMS.get(tierKey) || tierKey.toLocaleLowerCase();
+}
+
+const AURA_TIER_SEARCH_TERMS = new Map(AURA_TIER_FILTERS.map(tier => [
+    tier.key,
+    `${tier.key} ${tier.key.replaceAll('-', ' ')} ${formatAuraTierLabel(tier)}`.trim().toLocaleLowerCase()
+]));
+
+function getIncludedAuraTierLabels() {
+    if (!appState || !appState.auraTierFilters) {
+        return [];
+    }
+    return AURA_TIER_FILTERS
+        .filter(tier => !appState.auraTierFilters[tier.key])
+        .map(formatAuraTierLabel)
+        .filter(Boolean);
+}
+
+function getAuraFilterSummaryText() {
+    const labels = getIncludedAuraTierLabels();
+    if (labels.length === AURA_TIER_FILTERS.length) return 'ALL';
+    return labels.length > 0 ? labels.join(', ') : 'None';
+}
+
+function resolveAuraFilterSummaryText(summary) {
+    const saved = summary?.auraFilterSummary;
+    if (typeof saved !== 'string' || !saved.trim()) return getAuraFilterSummaryText();
+    const labels = saved.split(',').map(label => label.trim());
+    const all = new Set(AURA_TIER_FILTERS.map(formatAuraTierLabel));
+    return labels.length === all.size && labels.every(label => all.has(label)) ? 'ALL' : saved;
+}
+
+function initializeAuraFilters(registry) {
+    if (!appState) {
+        return;
+    }
+    if (!appState.auraFilters || typeof appState.auraFilters !== 'object') {
+        appState.auraFilters = {};
+    }
+    if (!Array.isArray(registry)) {
+        return;
+    }
+    registry.forEach(aura => {
+        if (!aura || typeof aura.name !== 'string') {
+            return;
+        }
+        if (typeof appState.auraFilters[aura.name] !== 'boolean') {
+            appState.auraFilters[aura.name] = false;
+        }
+    });
+}
+
+function isAuraFiltered(aura) {
+    if (!aura || !appState || !appState.auraFilters) {
+        return false;
+    }
+    const auraName = aura.name || '';
+    if (!auraName) {
+        return false;
+    }
+    return Boolean(appState.auraFilters[auraName]);
+}
+
+function resolveAuraTierKey(aura, biome) {
+    if (!aura) {
+        return null;
+    }
+    if (isEventAuraForTier(aura)) {
+        return AURA_TIER_CLASS_TO_KEY.get(computeChanceRarityClass(aura.chance)) || 'basic';
+    }
+    const auraName = (aura.name || '').trim();
+    if (isForcedChallengedPlusAura(auraName)) {
+        return 'challenged-plus';
+    }
+    if (isForcedChallengedAura(auraName)) {
+        return 'challenged';
+    }
+    const rarityClass = typeof resolveRarityClass === 'function'
+        ? resolveRarityClass(aura, biome)
+        : '';
+    const resolvedTierKey = AURA_TIER_CLASS_TO_KEY.get(rarityClass) || null;
+    if (resolvedTierKey) {
+        return resolvedTierKey;
+    }
+
+    if (rarityClass === 'rarity-tier-limbo') {
+        const baseTierClass = resolveBaseRarityClass(aura);
+        return AURA_TIER_CLASS_TO_KEY.get(baseTierClass) || null;
+    }
+
+    return null;
+}
+
+function normalizeAuraTierName(auraName) {
+    if (typeof auraName !== 'string') {
+        return '';
+    }
+    return auraName
+        .split(' - ')[0]
+        .trim();
+}
+
+function isForcedChallengedPlusAura(auraName) {
+    const normalizedAuraName = normalizeAuraTierName(auraName);
+    return normalizedAuraName === RADIANT_REWARD_AURA_NAME
+        || ['Oppression', 'Monarch', 'Hellborn', 'Illusionary', 'Dreammetric', 'Astraios', 'Oblivion'].includes(normalizedAuraName);
+}
+
+function getForcedStandardAuraTierKey(auraName) {
+    const normalizedAuraName = normalizeAuraTierName(auraName);
+    if (normalizedAuraName === 'Fault') return 'legendary';
+    if (normalizedAuraName === '★') return 'unique';
+    if (normalizedAuraName === '★★') return 'legendary';
+    if (normalizedAuraName === '★★★') return 'mythic';
+    return null;
+}
+
+function isForcedChallengedAura(auraName) {
+    const normalizedAuraName = normalizeAuraTierName(auraName);
+    return [
+        'Borealis',
+        'Leviathan',
+        'Memory',
+        'Glitch',
+        'Meta',
+        'Gravitational : Point Zero',
+        'DreamCatcher',
+        'Dream Catcher',
+        'Projection',
+        'Neferkhaf',
+        '赤月の破片',
+        'True Jade', 'True Kyawthuite', 'True Twilight'
+    ].includes(normalizedAuraName);
+}
+
+function isEmptyAuraName(auraName) {
+    if (typeof auraName !== 'string') {
+        return false;
+    }
+    return auraName
+        .split(' - ')[0]
+        .trim() === 'Empty';
+}
+
+function shouldSkipAuraByTierOverride(aura) {
+    if (!aura || !appState || !appState.auraTierFilters) {
+        return false;
+    }
+    const auraName = (aura.name || '').trim();
+    if (!auraName) {
+        return false;
+    }
+    const auraNameLower = auraName.toLowerCase();
+    for (const [tierKey, auraPrefixes] of AURA_TIER_SKIP_NAME_OVERRIDES) {
+        if (!appState.auraTierFilters[tierKey]) {
+            continue;
+        }
+        for (const prefix of auraPrefixes) {
+            if (auraNameLower.startsWith(prefix.toLowerCase())) {
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+function isAuraTierSkipped(aura, biome) {
+    if (shouldSkipAuraByTierOverride(aura)) {
+        return true;
+    }
+    const tierKey = resolveAuraTierKey(aura, biome);
+    if (!tierKey || !appState || !appState.auraTierFilters) {
+        return false;
+    }
+    if (appState.auraTierFilters[tierKey]) {
+        return true;
+    }
+    if (tierKey === 'challenged' && shouldUseNativeOverrideTier(aura, biome)) {
+        const baseTierClass = resolveBaseRarityClass(aura);
+        const baseTierKey = AURA_TIER_CLASS_TO_KEY.get(baseTierClass) || null;
+        if (baseTierKey && appState.auraTierFilters[baseTierKey]) {
+            return true;
+        }
+    }
+    return false;
+}
+
+function shouldHideAuraFromRollFeed(aura, biome) {
+    return (activeAuraTierFilterCount > 0 && isAuraTierSkipped(aura, biome))
+        || (activeAuraFilterCount > 0 && isAuraFiltered(aura));
+}
+
+const baseRarityClassCache = new WeakMap();
+
+function resolveBaseRarityClass(aura) {
+    if (!aura || typeof aura !== 'object') {
+        return computeBaseRarityClass(aura);
+    }
+    if (!baseRarityClassCache.has(aura)) {
+        baseRarityClassCache.set(aura, computeBaseRarityClass(aura));
+    }
+    return baseRarityClassCache.get(aura);
+}
+
+function shouldSkipAuraCutscene(aura) {
+    return !isAuraCutscenePlaybackEnabled(aura);
+}
+
+const nativeAuraOutlineOverrides = new Map([
+    ['Lunar : Full Moon', 'sigil-outline-night'],
+    ['Lunar', 'sigil-outline-night'],
+    ['Solar : Solstice', 'sigil-outline-day'],
+    ['Solar', 'sigil-outline-day'],
+    ['Twilight : Withering Grace', 'sigil-outline-night'],
+    ['Twilight : Iridescent Memory', 'sigil-outline-night'],
+    ['Twilight', 'sigil-outline-night'],
+    ['Lullaby', 'sigil-outline-night'],
+    ['Archangel', 'sigil-outline-heaven'],
+]);
+
+const auraOutlineOverrides = new Map([
+    ['Illusionary', 'sigil-outline-illusionary'],
+    ['Prowler', 'sigil-outline-xyz'],
+    ['紅月を求めし者', 'sigil-outline-xc'],
+    ['紅月の観測者', 'sigil-outline-xc'],
+    ['Verdict', 'sigil-outline-edict'],
+    ['Attorney', 'sigil-outline-edict'],
+    ['Divinus : Love', 'sigil-outline-valentine-2024'],
+    ['Flushed : Heart Eye', 'sigil-outline-valentine-2024'],
+    ['Pukeko', 'sigil-outline-april'],
+    ['Flushed : Troll', 'sigil-outline-april'],
+    ['Undefined : Defined', 'sigil-outline-april'],
+    ['Origin : Onion', 'sigil-outline-april'],
+    ['Chromatic : Kromat1k', 'sigil-outline-april'],
+    ['Glock : the glock of the sky', 'sigil-outline-april'],
+    ["Impeached : I'm Peach", 'sigil-outline-april'],
+    ['Bloated.exe', 'sigil-outline-april'],
+    ['Burger', 'sigil-outline-april'],
+    ['Bounded : Kidnapped', 'sigil-outline-april'],
+    ['Aether : Dissapointment', 'sigil-outline-april'],
+    ['StarRider : yourdidit', 'sigil-outline-april'],
+    ["Very Small Sewage Rat That's About 3.082 Studs Long", 'sigil-outline-april'],
+    ['Pukeko : Jumping', 'sigil-outline-april'],
+    ['Doodle : Abyssal Hunter', 'sigil-outline-april'],
+    ['Lumenpool : Ramenpool', 'sigil-outline-april'],
+    ['Equinox : youareanidiot', 'sigil-outline-april'],
+    ['Impeached : ImCrine', 'sigil-outline-april'],
+    ['Surfer : Symphony', 'sigil-outline-april'],
+    ['Workshop : System', 'sigil-outline-april'],
+    ['P.U.K.E.K.O.G.O.D.', 'sigil-outline-april'],
+    ["A Fool's Experience", 'sigil-outline-april'],
+    ['Star Rider : Starfish Rider', 'sigil-outline-summer'],
+    ['Watermelon', 'sigil-outline-summer'],
+    ['Surfer : Shard Surfer', 'sigil-outline-summer'],
+    ['Manta', 'sigil-outline-summer'],
+    ['Aegis : Watergun', 'sigil-outline-summer'],
+    ['Innovator', 'sigil-outline-innovator'],
+    ['Wonderland', 'sigil-outline-winter'],
+    ['Santa Frost', 'sigil-outline-winter'],
+    ['Winter Fantasy', 'sigil-outline-winter'],
+    ['Express', 'sigil-outline-winter'],
+    ['Abominable', 'sigil-outline-winter'],
+    ['Atlas : Yuletide', 'sigil-outline-winter'],
+    ['Pump : Trickster', 'sigil-outline-blood'],
+    ['Headless', 'sigil-outline-blood'],
+    ['Oni', 'sigil-outline-blood'],
+    ['Headless : Horseman', 'sigil-outline-blood'],
+    ['Sinister', 'sigil-outline-blood'],
+    ['Accursed', 'sigil-outline-blood'],
+    ['Phantasma', 'sigil-outline-blood'],
+    ['Apocalypse', 'sigil-outline-blood'],
+    ['Malediction', 'sigil-outline-blood'],
+    ['Banshee', 'sigil-outline-blood'],
+    ['Ravage', 'sigil-outline-blood'],
+    ['Arachnophobia', 'sigil-outline-blood'],
+    ['Lamenthyr', 'sigil-outline-blood'],
+    ['Erebus', 'sigil-outline-blood'],
+    ['Wraithlight', 'sigil-outline-blood'],
+    ['Grief', 'sigil-outline-blood'],
+    ['Graveborn', 'sigil-outline-blood'],
+    ['Crimson', 'sigil-outline-blood'],
+    ['Shucks', 'sigil-outline-blood'],
+    ['Afterparty', 'sigil-outline-blood'],
+    ['Reaper', 'sigil-outline-blood'],
+    ['Celestial : Wicked', 'sigil-outline-blood'],
+    ['Lunar : Cultist', 'sigil-outline-blood'],
+    ['Werewolf', 'sigil-outline-blood'],
+    ['Bloodgarden', 'sigil-outline-blood'],
+    ['Pleiades', 'sigil-outline-singularity'],
+    ['Pulsar', 'sigil-outline-singularity'],
+    ['Constella', 'sigil-outline-singularity'],
+    ['Vega', 'sigil-outline-singularity'],
+    ['Astronaut', 'sigil-outline-singularity'],
+    ['Centurion', 'sigil-outline-singularity'],
+    ['Projection', 'sigil-outline-singularity'],
+    ['Gravitational : Point Zero', 'sigil-outline-singularity'],
+    ['Astraios', 'sigil-outline-singularity'],
+    ['Cryogenic', 'sigil-outline-cryogenic'],
+    ['Leviathan', 'sigil-outline-leviathan'],
+    ['Monarch', 'sigil-outline-monarch'],
+    ['Winter Garden', 'sigil-outline-winter-garden'],
+    ['Dream Traveler', 'sigil-outline-dream-traveler'],
+    ['Sovereign : Frostveil', 'sigil-outline-frostveil'],
+    ['Erebus', 'sigil-outline-erebus'],
+    ['Lamenthyr', 'sigil-outline-lamenthyr'],
+    ['Symphony : Bloomed', 'sigil-outline-valentine-2026'],
+    ['Oppression', 'sigil-outline-oppression'],
+    ['Dreammetric', 'sigil-outline-dreammetric'],
+    ['Borealis', 'sigil-outline-borealis'],
+    ['Empty', 'sigil-outline-empty'],
+    ['Glitch', 'sigil-effect-glitch'],
+    ['Fault', 'sigil-outline-glitch'],
+    ['[CONTENT DELETED]', 'sigil-outline-glitch'],
+    ['Hatchwarden', 'sigil-outline-easter-2026'],
+    ['Emperor', 'sigil-outline-easter-2026'],
+    ['Eggsistance', 'sigil-outline-easter-2026'],
+    ['Revive', 'sigil-outline-easter-2026'],
+    ['Eggore', 'sigil-outline-easter-2026'],
+    ['Eostre', 'sigil-outline-easter-2026'],
+    ['Aegis : Eggis', 'sigil-outline-easter-2026'],
+    ['Y.O.L.K.E.G.G.', 'sigil-outline-easter-2026'],
+    ['Sky Festival', 'sigil-outline-easter-2026'],
+    ['Floaty', 'sigil-outline-summer'],
+    ['Beach Ball', 'sigil-outline-summer'],
+    ['Nostalgia', 'sigil-outline-summer'],
+    ['Goose Rave', 'sigil-outline-summer'],
+    ['Vacation', 'sigil-outline-summer'],
+    ['Bayview', 'sigil-outline-summer'],
+    ['Pool Party', 'sigil-outline-summer'],
+    ['Heatstroke', 'sigil-outline-summer'],
+    ['Osteria', 'sigil-outline-summer'],
+    ['Bubble : Cascade', 'sigil-outline-summer'],
+    ['Centaurus', 'sigil-outline-summer'],
+    ['Vendor', 'sigil-outline-summer'],
+    ['Fruitpunch', 'sigil-outline-summer'],
+    ['Raft', 'sigil-outline-summer'],
+    ['Buoyant', 'sigil-outline-summer'],
+    ['Breeze', 'sigil-outline-summer'],
+    ['Watermelon : Summersnack', 'sigil-outline-summer'],
+    ['Coconut', 'sigil-outline-summer'],
+    ['Life Guard : On-Duty', 'sigil-outline-summer'],
+    ['Tropical Isles', 'sigil-outline-summer'],
+    ['Crabtropica', 'sigil-outline-summer'],
+]);
+
+const wikiAuraSigilNames = new Set(Object.keys(WikiTitleData.auras));
+const glitchOutlineNames = new Set(['Fault', '[CONTENT DELETED']);
+const dreamspaceOutlineNames = new Set(['★★★', '★★', '★']);
+const cyberspaceOutlineExclusions = new Set(['Pixelation', 'Illusionary']);
+
+function resolveAuraStyleClass(aura, biome) {
+    if (!aura) return '';
+
+    const name = typeof aura === 'string' ? aura : aura.name;
+    if (!name) return '';
+
+    const classes = [];
+    const shortName = name.includes(' - ') ? name.split(' - ')[0].trim() : name.trim();
+    if (WikiTitles.resolveAuraName(shortName)) return 'sigil-wiki-aura';
+    if (name.startsWith('Oblivion')) classes.push('sigil-effect-oblivion');
+    if (name.startsWith('Memory')) classes.push('sigil-effect-memory');
+    if (name.startsWith('Neferkhaf')) classes.push('sigil-effect-neferkhaf');
+    if (name.startsWith('赤月の破片')) classes.push('sigil-outline-赤月の破片');
+    if (name.startsWith('Pixelation')) classes.push('sigil-effect-pixelation');
+    if (name.startsWith('Luminosity')) classes.push('sigil-effect-luminosity');
+    if (name.startsWith('Unnamed Needs Equinox NOW')) classes.push('sigil-effect-equinox');
+    if (name.startsWith('Equinox')) classes.push('sigil-effect-equinox');
+    if (name.startsWith('Equinox : youareanidiot')) classes.push('sigil-effect-equinox');
+    if (name.startsWith('Megaphone')) classes.push('sigil-effect-megaphone');
+    if (name.startsWith('Astral : Astrald')) classes.push('sigil-effect-astrald');
+    if (name.startsWith('Nyctophobia')) classes.push('sigil-effect-nyctophobia');
+    if (name.startsWith('Clockwork')) classes.push('sigil-effect-clockwork');
+    if (name.startsWith('Breakthrough')) classes.push('sigil-effect-breakthrough', 'sigil-border-breakthrough');
+
+    const auraData = typeof aura === 'string' ? null : aura;
+    const auraEventId = auraData ? getAuraEventId(auraData, { preferEnabled: true }) : null;
+
+    if (auraEventId === 'winter26') {
+        const shortNameCheck = name.includes(' - ') ? name.split(' - ')[0].trim() : name.trim();
+        if (shortNameCheck !== 'Winter Garden' && shortNameCheck !== 'Dream Traveler' && shortNameCheck !== 'Sovereign : Frostveil') {
+            classes.push('sigil-outline-winter-2026');
+        }
+    }
+
+    if (auraMatchesAnyBiome(auraData, ['pumpkinMoon', 'graveyard']) && shortName !== 'Erebus' && shortName !== 'Lamenthyr') {
+        classes.push('sigil-outline-halloween');
+    }
+
+    if (dreamspaceOutlineNames.has(shortName)) {
+        classes.push('sigil-outline-dreamspace');
+    }
+
+    const isCyberspaceAligned = auraData
+        && biome === 'cyberspace'
+        && (
+            isAuraNativeTo(auraData, 'cyberspace')
+            || (auraData.breakthroughs && auraData.breakthroughs.has('cyberspace'))
+        );
+
+    const isNativeRoll = auraData && biome ? isAuraNativeTo(auraData, biome) : false;
+    if (isNativeRoll) {
+        const nativeOverride = nativeAuraOutlineOverrides.get(shortName);
+        if (nativeOverride) {
+            classes.push(nativeOverride);
+        }
+    }
+
+    if (isCyberspaceAligned && !cyberspaceOutlineExclusions.has(shortName)) {
+        classes.push('sigil-outline-cyberspace');
+    }
+
+    const overrideClass = auraOutlineOverrides.get(shortName);
+    if (overrideClass) {
+        classes.push(overrideClass);
+    }
+
+    return classes.join(' ');
+}
+
+function shouldSuppressRarityClassForSpecialStyle(specialClass = '') {
+    if (!specialClass) {
+        return false;
+    }
+    return specialClass.includes('sigil-wiki-aura') || specialClass.includes('sigil-outline-edict') || specialClass.includes('sigil-effect-clockwork');
+}
+
+const OBLIVION_PRESET_IDENTIFIER = 'oblivion';
+const OBLIVION_LUCK_TARGET = 600000;
+const OBLIVION_AURA_LABEL = 'Oblivion';
+const MEMORY_AURA_LABEL = 'Memory';
+const OBLIVION_POTION_ODDS = 2000;
+const OBLIVION_MEMORY_ODDS = 100;
+
+const PUMP_KINGS_BLOOD_PRESET_IDENTIFIER = 'pump-kings-blood';
+const PUMP_KINGS_BLOOD_LUCK_TARGET = 700000;
+
+const TUTORIAL_POTION_PRESET_IDENTIFIER = 'tutorial-potion';
+const TUTORIAL_POTION_LUCK_TARGET = 5000;
+
+const DUNE_PRESET_IDENTIFIER = 'dune';
+const DUNE_LUCK_TARGET = 10000;
+const DUNE_AURA_LABEL = 'Neferkhaf';
+const DUNE_POTION_ODDS = 1000;
+
+const BLOOD_AURA_LABEL = '赤月の破片';
+const BLOOD_I_PRESET_IDENTIFIER = 'blood-i';
+const BLOOD_II_PRESET_IDENTIFIER = 'blood-ii';
+const BLOOD_PRESET_CONFIGS = Object.freeze({
+    [BLOOD_I_PRESET_IDENTIFIER]: Object.freeze({
+        identifier: BLOOD_I_PRESET_IDENTIFIER,
+        buttonId: 'luck-preset-blood-i',
+        luckTarget: 11000,
+        potionOdds: 1000
+    }),
+    [BLOOD_II_PRESET_IDENTIFIER]: Object.freeze({
+        identifier: BLOOD_II_PRESET_IDENTIFIER,
+        buttonId: 'luck-preset-blood-ii',
+        luckTarget: 200000,
+        potionOdds: 100
+    })
+});
+
+let oblivionPresetEnabled = false;
+let oblivionAuraData = null;
+let memoryAuraData = null;
+
+let pumpKingsBloodPresetEnabled = false;
+let tutorialPotionPresetEnabled = false;
+
+let dunePresetEnabled = false;
+let duneAuraData = null;
+
+let activeBloodPresetIdentifier = null;
+let bloodAuraData = null;
+
+function getBloodPresetConfig(presetIdentifier = activeBloodPresetIdentifier) {
+    return BLOOD_PRESET_CONFIGS[presetIdentifier] || null;
+}
+
+function handleOblivionPresetSelection(presetKey) {
+    if (presetKey !== OBLIVION_PRESET_IDENTIFIER) {
+        return;
+    }
+
+    applyLuckValue(OBLIVION_LUCK_TARGET, {
+        luckSource: LUCK_SELECTION_SOURCE.STANDARD_PRESET,
+        activateOblivionPreset: true,
+        activateDunePreset: false,
+        activateBloodPreset: false
+    });
+}
+
+function handlePumpKingsBloodPresetSelection(presetKey) {
+    if (presetKey !== PUMP_KINGS_BLOOD_PRESET_IDENTIFIER) {
+        return;
+    }
+
+    applyLuckValue(PUMP_KINGS_BLOOD_LUCK_TARGET, {
+        luckSource: LUCK_SELECTION_SOURCE.STANDARD_PRESET,
+        activatePumpKingsBloodPreset: true,
+        activateOblivionPreset: false
+    });
+}
+
+function handleTutorialPotionPresetSelection(presetKey) {
+    if (presetKey !== TUTORIAL_POTION_PRESET_IDENTIFIER) {
+        return;
+    }
+
+    applyLuckValue(TUTORIAL_POTION_LUCK_TARGET, {
+        luckSource: LUCK_SELECTION_SOURCE.STANDARD_PRESET,
+        activateTutorialPotionPreset: true,
+        activateOblivionPreset: false
+    });
+}
+
+function handleDunePresetSelection(presetKey) {
+    if (presetKey !== DUNE_PRESET_IDENTIFIER) {
+        return;
+    }
+
+    const activeBloodPreset = getBloodPresetConfig();
+    const targetLuck = DUNE_LUCK_TARGET + (activeBloodPreset?.luckTarget || 0);
+    applyLuckValue(targetLuck, {
+        luckSource: LUCK_SELECTION_SOURCE.STANDARD_PRESET,
+        activateDunePreset: true,
+        activateOblivionPreset: false,
+        activateBloodPreset: activeBloodPresetIdentifier
+    });
+}
+
+function handleBloodPresetSelection(presetKey) {
+    const bloodPreset = getBloodPresetConfig(presetKey);
+    if (!bloodPreset) {
+        return;
+    }
+
+    const targetLuck = bloodPreset.luckTarget + (dunePresetEnabled ? DUNE_LUCK_TARGET : 0);
+    applyLuckValue(targetLuck, {
+        luckSource: LUCK_SELECTION_SOURCE.STANDARD_PRESET,
+        activateBloodPreset: presetKey,
+        activateDunePreset: dunePresetEnabled,
+        activateOblivionPreset: false
+    });
+}
+
+function syncLuckPotionButtonState(buttonId, isActive) {
+    if (typeof document === 'undefined') {
+        return;
+    }
+
+    const button = document.getElementById(buttonId);
+    if (!button) {
+        return;
+    }
+
+    button.classList.toggle('luck-preset-button--active', Boolean(isActive));
+    button.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+}
+
+function syncLuckPotionPresetAvailability(isLimboSelected) {
+    if (typeof document === 'undefined') {
+        return;
+    }
+
+    const potionPresetButtons = [
+        'luck-preset-oblivion',
+        'luck-preset-pump-kings-blood',
+        'luck-preset-tutorial-potion',
+        'luck-preset-dune',
+        ...Object.values(BLOOD_PRESET_CONFIGS).map(config => config.buttonId)
+    ];
+    potionPresetButtons.forEach(buttonId => {
+        const button = document.getElementById(buttonId);
+        if (!button) {
+            return;
+        }
+
+        button.disabled = isLimboSelected;
+        if (isLimboSelected) {
+            button.title = 'Unavailable while Limbo is selected.';
+        } else {
+            button.removeAttribute('title');
+        }
+
+        const actionButtons = button.closest('.preset-button')?.querySelectorAll('.preset-button__action');
+        actionButtons?.forEach(actionButton => {
+            actionButton.disabled = isLimboSelected;
+            if (isLimboSelected) {
+                actionButton.title = 'Unavailable while Limbo is selected.';
+            } else {
+                actionButton.removeAttribute('title');
+            }
+        });
+    });
+}
+
+function applyOblivionPresetOptions(options = {}) {
+    if ('activateOblivionPreset' in options) {
+        oblivionPresetEnabled = options.activateOblivionPreset === true;
+        syncLuckPotionButtonState('luck-preset-oblivion', oblivionPresetEnabled);
+        if (typeof updateBiomeControlConstraints === 'function') {
+            updateBiomeControlConstraints({ triggerSync: true });
+        }
+    }
+}
+
+function applyPumpKingsBloodPresetOptions(options = {}) {
+    if ('activatePumpKingsBloodPreset' in options) {
+        pumpKingsBloodPresetEnabled = options.activatePumpKingsBloodPreset === true;
+        syncLuckPotionButtonState('luck-preset-pump-kings-blood', pumpKingsBloodPresetEnabled);
+        if (typeof updateBiomeControlConstraints === 'function') {
+            updateBiomeControlConstraints({ triggerSync: true });
+        }
+    }
+}
+
+function applyTutorialPotionPresetOptions(options = {}) {
+    if ('activateTutorialPotionPreset' in options) {
+        tutorialPotionPresetEnabled = options.activateTutorialPotionPreset === true;
+        syncLuckPotionButtonState('luck-preset-tutorial-potion', tutorialPotionPresetEnabled);
+        if (typeof updateBiomeControlConstraints === 'function') {
+            updateBiomeControlConstraints({ triggerSync: true });
+        }
+    }
+}
+
+function applyDunePresetOptions(options = {}) {
+    if ('activateDunePreset' in options) {
+        dunePresetEnabled = options.activateDunePreset === true;
+        syncLuckPotionButtonState('luck-preset-dune', dunePresetEnabled);
+    }
+}
+
+function applyBloodPresetOptions(options = {}) {
+    if ('activateBloodPreset' in options) {
+        const requestedPreset = options.activateBloodPreset === true
+            ? BLOOD_I_PRESET_IDENTIFIER
+            : options.activateBloodPreset;
+        activeBloodPresetIdentifier = getBloodPresetConfig(requestedPreset)
+            ? requestedPreset
+            : null;
+        Object.values(BLOOD_PRESET_CONFIGS).forEach(config => {
+            syncLuckPotionButtonState(config.buttonId, config.identifier === activeBloodPresetIdentifier);
+        });
+    }
+}
+
+function clearActiveLuckPotionPresets({ syncBiomeConstraints = true } = {}) {
+    let changed = false;
+
+    if (oblivionPresetEnabled) {
+        oblivionPresetEnabled = false;
+        syncLuckPotionButtonState('luck-preset-oblivion', false);
+        changed = true;
+    }
+    if (pumpKingsBloodPresetEnabled) {
+        pumpKingsBloodPresetEnabled = false;
+        syncLuckPotionButtonState('luck-preset-pump-kings-blood', false);
+        changed = true;
+    }
+    if (tutorialPotionPresetEnabled) {
+        tutorialPotionPresetEnabled = false;
+        syncLuckPotionButtonState('luck-preset-tutorial-potion', false);
+        changed = true;
+    }
+    if (dunePresetEnabled) {
+        dunePresetEnabled = false;
+        syncLuckPotionButtonState('luck-preset-dune', false);
+        changed = true;
+    }
+    if (activeBloodPresetIdentifier) {
+        activeBloodPresetIdentifier = null;
+        Object.values(BLOOD_PRESET_CONFIGS).forEach(config => {
+            syncLuckPotionButtonState(config.buttonId, false);
+        });
+        changed = true;
+    }
+
+    if (changed && typeof updateBiomeControlConstraints === 'function') {
+        updateBiomeControlConstraints({ triggerSync: syncBiomeConstraints });
+    }
+}
+
+function splitAuraDisplaySuffix(baseName) {
+    const separatorIndex = baseName.lastIndexOf(' - ');
+    if (separatorIndex < 0) {
+        return { suffix: '' };
+    }
+    const possibleChance = baseName.slice(separatorIndex + 3).trim();
+    return /^\d[\d,]*$/.test(possibleChance)
+        ? { suffix: baseName.slice(separatorIndex) }
+        : { suffix: '' };
+}
+
+const EVENT_AURA_SIGIL_CLASSES = Object.freeze(Object.fromEntries(Object.values(EventData).map(event => [event.id, event.sigilClass])));
+
+function resolveEventAuraSigilClass(aura) {
+    if (!aura || typeof aura !== 'object') return '';
+    const eventId = getAuraEventId(aura, { preferEnabled: true });
+    return eventId ? (EVENT_AURA_SIGIL_CLASSES[eventId] || '') : '';
+}
+
+function formatWikiAuraSigilMarkup(aura, baseName, biome = null) {
+    if (!aura || typeof baseName !== 'string') return '';
+    const canonicalName = aura.name.split(' - ')[0].trim();
+    const { suffix } = splitAuraDisplaySuffix(baseName);
+    const tierAura = AURA_BY_CANONICAL_NAME.get(canonicalName) || aura;
+    const eventSigilClass = resolveEventAuraSigilClass(tierAura);
+    const fallbackStyleClass = eventSigilClass || `rarity-tier-${resolveAuraDisplayTierKey(tierAura, biome)}`;
+    return WikiTitles.aura(canonicalName, suffix ? suffix.slice(3) : '', fallbackStyleClass);
+}
+
+function initializeChangelogAuraSigils(root = document) {
+    if (typeof document === 'undefined') return;
+
+    const elements = [...root.querySelectorAll('[data-changelog-aura-sigil]')];
+    if (root.matches?.('[data-changelog-aura-sigil]')) elements.unshift(root);
+    elements.forEach(element => {
+        if (element.dataset.changelogAuraSigilRendered === 'true') return;
+        const auraName = WikiTitles.resolveAuraName(element.dataset.changelogAuraSigil?.trim());
+        if (!auraName || !wikiAuraSigilNames.has(auraName)) return;
+        const markup = formatWikiAuraSigilMarkup({ name: auraName }, auraName);
+        if (!markup) return;
+        element.innerHTML = markup;
+        element.dataset.changelogAuraSigilRendered = 'true';
+    });
+}
+
+function formatAuraNameMarkup(aura, overrideName, biome = null) {
+    if (!aura) return overrideName || '';
+    const baseName = typeof overrideName === 'string' && overrideName.length > 0 ? overrideName : aura.name;
+    const wikiSigilMarkup = formatWikiAuraSigilMarkup(aura, baseName, biome);
+    if (wikiSigilMarkup) {
+        if (aura.subtitle) {
+            return `${wikiSigilMarkup} <span class="sigil-subtitle"><span class="aura-tier-detail rarity-tier-${resolveAuraDisplayTierKey(aura, biome)}">${aura.subtitle}</span></span>`;
+        }
+        return wikiSigilMarkup;
+    }
+    const eventSigilClass = resolveEventAuraSigilClass(aura);
+    if (eventSigilClass) {
+        const eventMarkup = `<span class="${eventSigilClass}">${baseName}</span>`;
+        if (aura.subtitle) {
+            return `${eventMarkup} <span class="sigil-subtitle">${aura.subtitle}</span>`;
+        }
+        return eventMarkup;
+    }
+    if (baseName === 'Glitch' || baseName.startsWith('Glitch - ')) {
+        const [namePart, ...restParts] = baseName.split(' - ');
+        const suffix = restParts.length > 0 ? ` - ${restParts.join(' - ')}` : '';
+        const glitchMarkup = `<span class="sigil-effect-glitch__title">${namePart.toUpperCase()}</span>${suffix}`;
+        if (aura.subtitle) {
+            return `${glitchMarkup} <span class="sigil-subtitle">${aura.subtitle}</span>`;
+        }
+        return glitchMarkup;
+    }
+    if (baseName.startsWith('Breakthrough')) {
+        const [namePart, ...restParts] = baseName.split(' - ');
+        const suffix = restParts.length > 0 ? ` - ${restParts.join(' - ')}` : '';
+        const breakthroughMarkup = `<span class="sigil-effect-breakthrough__title">${namePart.toUpperCase()}</span>` +
+            (suffix ? `<span class="sigil-effect-breakthrough__suffix">${suffix}</span>` : '');
+        if (aura.subtitle) {
+            return `${breakthroughMarkup} <span class="sigil-subtitle">${aura.subtitle}</span>`;
+        }
+        return breakthroughMarkup;
+    }
+    if (baseName.startsWith('Lamenthyr')) {
+        if (aura.subtitle) {
+            return `${baseName} <span class="sigil-subtitle">${aura.subtitle}</span>`;
+        }
+        return baseName;
+    }
+    if (aura.subtitle) {
+        return `${baseName} <span class="sigil-subtitle">${aura.subtitle}</span>`;
+    }
+    return baseName;
+}
+
+function formatAuraNameText(aura, overrideName) {
+    if (!aura) return overrideName || '';
+    const baseName = typeof overrideName === 'string' && overrideName.length > 0 ? overrideName : aura.name;
+    if (aura.subtitle) {
+        return `${baseName} — ${aura.subtitle}`;
+    }
+    return baseName;
+}
+
+function formatRollFeedAuraNameMarkup(aura, overrideName, biome = null) {
+    const markup = formatAuraNameMarkup(aura, overrideName, biome);
+    return globalThis.AuraLinks?.wrap(aura?.name || overrideName, markup) || markup;
+}
+
+const layeredTextSigilClasses = ['sigil-outline-lamenthyr', 'sigil-outline-edict', 'sigil-effect-clockwork'];
+const layeredTextSigilSelector = layeredTextSigilClasses.map(className => `.${className}`).join(',');
+
+function syncLayeredSigilText(element) {
+    if (!element) return;
+    const text = element.textContent;
+    if (typeof text !== 'string' || text.length === 0) return;
+    if (element.dataset.text !== text) {
+        element.dataset.text = text;
+    }
+}
+
+function updateLayeredSigilText(container = document) {
+    if (!container || typeof container.querySelectorAll !== 'function') return;
+    if (container.nodeType === Node.ELEMENT_NODE && container.matches(layeredTextSigilSelector)) {
+        syncLayeredSigilText(container);
+    }
+    container.querySelectorAll(layeredTextSigilSelector).forEach(syncLayeredSigilText);
+}
+
+function observeLayeredSigilText() {
+    initializeChangelogAuraSigils();
+    updateLayeredSigilText();
+    registerGlitchSigils(document);
+    WikiTitles.initializeItems();
+    WikiTitles.initializeEffects();
+    if (!document.body) return;
+    const pendingRoots = new Set();
+    let flushScheduled = false;
+    const flushPendingRoots = () => {
+        flushScheduled = false;
+        pendingRoots.forEach(root => {
+            if (!root.isConnected) return;
+            updateLayeredSigilText(root);
+            initializeChangelogAuraSigils(root);
+            registerGlitchSigils(root);
+            WikiTitles.initializeItems(root);
+            WikiTitles.initializeEffects(root);
+        });
+        pendingRoots.clear();
+    };
+    const scheduleRoot = root => {
+        if (!root || typeof root.querySelectorAll !== 'function') return;
+        pendingRoots.add(root);
+        if (!flushScheduled) {
+            flushScheduled = true;
+            queueMicrotask(flushPendingRoots);
+        }
+    };
+    const observer = new MutationObserver(mutations => {
+        mutations.forEach(mutation => {
+            if (mutation.type === 'childList') {
+                mutation.removedNodes.forEach(unregisterGlitchSigils);
+                mutation.addedNodes.forEach(node => {
+                    if (node.nodeType === Node.ELEMENT_NODE) {
+                        scheduleRoot(node);
+                    }
+                });
+            } else if (mutation.type === 'characterData') {
+                const parent = mutation.target.parentElement;
+                if (parent && parent.matches(layeredTextSigilSelector)) {
+                    syncLayeredSigilText(parent);
+                }
+            }
+        });
+    });
+    observer.observe(document.body, { childList: true, subtree: true, characterData: true });
+}
+
+const GLITCH_SIGIL_SELECTOR = '.sigil-outline-glitch';
+const GLITCH_SIGIL_SYMBOLS = Object.freeze(['@', '#', '$', '%', '&', '*', '!', '?', '+', '=', '(', ')', '^', '-', '1', '0']);
+const GLITCH_SIGIL_REPLACEABLE_CHARACTER_PATTERN = /[\p{L}\p{N}]/u;
+const visibleGlitchSigils = new Set();
+const registeredGlitchSigils = new WeakSet();
+const glitchSigilVisibilityObserver = typeof IntersectionObserver === 'function'
+    ? new IntersectionObserver(entries => {
+        for (const entry of entries) {
+            if (entry.isIntersecting && entry.target.isConnected) visibleGlitchSigils.add(entry.target);
+            else visibleGlitchSigils.delete(entry.target);
+        }
+    }) : null;
+
+function visitGlitchSigils(root, visit) {
+    if (root.nodeType === Node.ELEMENT_NODE && root.matches(GLITCH_SIGIL_SELECTOR)) visit(root);
+    root.querySelectorAll?.(GLITCH_SIGIL_SELECTOR).forEach(visit);
+}
+
+function registerGlitchSigils(root) {
+    visitGlitchSigils(root, element => {
+        if (registeredGlitchSigils.has(element)) return;
+        registeredGlitchSigils.add(element);
+        if (glitchSigilVisibilityObserver) glitchSigilVisibilityObserver.observe(element);
+        else visibleGlitchSigils.add(element);
+    });
+}
+
+function unregisterGlitchSigils(root) {
+    if (root.isConnected) return;
+    visitGlitchSigils(root, element => {
+        glitchSigilVisibilityObserver?.unobserve(element);
+        registeredGlitchSigils.delete(element);
+        visibleGlitchSigils.delete(element);
+    });
+}
+let glitchSigilFlickerTimeoutId = null;
+let glitchSigilRestoreTimeoutId = null;
+
+function canFlickerGlitchSigils() {
+    return typeof document !== 'undefined'
+        && !document.hidden
+        && !appState.qualityPreferences?.disableRollAndSigilAnimations;
+}
+
+function createGlitchSigilFlickerText(text) {
+    const characters = Array.from(text);
+    const replaceableIndexes = [];
+    characters.forEach((character, index) => {
+        if (GLITCH_SIGIL_REPLACEABLE_CHARACTER_PATTERN.test(character)) {
+            replaceableIndexes.push(index);
+        }
+    });
+    if (replaceableIndexes.length === 0) {
+        return text;
+    }
+
+    const characterIndex = replaceableIndexes[Math.floor(Math.random() * replaceableIndexes.length)];
+    characters[characterIndex] = GLITCH_SIGIL_SYMBOLS[Math.floor(Math.random() * GLITCH_SIGIL_SYMBOLS.length)];
+    return characters.join('');
+}
+
+function isGlitchSigilVisible(element) {
+    if (!element || element.getClientRects().length === 0) {
+        return false;
+    }
+    const bounds = element.getBoundingClientRect();
+    if (
+        bounds.width <= 0
+        || bounds.height <= 0
+        || bounds.right <= 0
+        || bounds.bottom <= 0
+        || bounds.left >= window.innerWidth
+        || bounds.top >= window.innerHeight
+    ) {
+        return false;
+    }
+    let current = element;
+    while (current && current !== document.documentElement) {
+        const style = window.getComputedStyle(current);
+        if (style.display === 'none' || style.visibility === 'hidden' || Number.parseFloat(style.opacity) === 0) {
+            return false;
+        }
+        current = current.parentElement;
+    }
+    const centerX = Math.min(window.innerWidth - 1, Math.max(0, bounds.left + bounds.width / 2));
+    const centerY = Math.min(window.innerHeight - 1, Math.max(0, bounds.top + bounds.height / 2));
+    const topElement = document.elementFromPoint(centerX, centerY);
+    return !!topElement && (
+        topElement === element
+        || element.contains(topElement)
+        || topElement.contains(element)
+    );
+}
+
+function getGlitchSigilTextNodes(element) {
+    if (!element || typeof document === 'undefined') {
+        return [];
+    }
+    const textNodes = [];
+    const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT);
+    let node = walker.nextNode();
+    while (node) {
+        const parent = node.parentElement;
+        const belongsToTarget = parent?.closest(GLITCH_SIGIL_SELECTOR) === element;
+        if (
+            belongsToTarget
+            && isGlitchSigilVisible(parent)
+            && GLITCH_SIGIL_REPLACEABLE_CHARACTER_PATTERN.test(node.nodeValue || '')
+        ) {
+            textNodes.push(node);
+        }
+        node = walker.nextNode();
+    }
+    return textNodes;
+}
+
+function scheduleGlitchSigilFlicker(delay = 10 + Math.random() * 5) {
+    if (glitchSigilFlickerTimeoutId !== null) {
+        clearTimeout(glitchSigilFlickerTimeoutId);
+    }
+    glitchSigilFlickerTimeoutId = window.setTimeout(() => {
+        glitchSigilFlickerTimeoutId = null;
+        if (!canFlickerGlitchSigils()) {
+            if (!document.hidden) scheduleGlitchSigilFlicker(700);
+            return;
+        }
+
+        const targets = Array.from(visibleGlitchSigils)
+            .filter(isGlitchSigilVisible)
+            .map(element => ({ element }));
+        if (targets.length === 0) {
+            scheduleGlitchSigilFlicker(700);
+            return;
+        }
+
+        const target = targets[Math.floor(Math.random() * targets.length)];
+        target.textNodes = getGlitchSigilTextNodes(target.element);
+        if (target.textNodes.length === 0) {
+            scheduleGlitchSigilFlicker(700);
+            return;
+        }
+        const textNode = target.textNodes[Math.floor(Math.random() * target.textNodes.length)];
+        const sourceText = textNode.nodeValue;
+        const flickerText = createGlitchSigilFlickerText(sourceText);
+        if (flickerText === sourceText) {
+            scheduleGlitchSigilFlicker();
+            return;
+        }
+
+        textNode.nodeValue = flickerText;
+        target.element.classList.add('sigil-glitch-flicker');
+        glitchSigilRestoreTimeoutId = window.setTimeout(() => {
+            glitchSigilRestoreTimeoutId = null;
+            if (textNode.isConnected && textNode.nodeValue === flickerText) {
+                textNode.nodeValue = sourceText;
+            }
+            target.element.classList.remove('sigil-glitch-flicker');
+            scheduleGlitchSigilFlicker();
+        }, 80 + Math.random() * 70);
+    }, delay);
+}
+
+function startGlitchSigilFlicker() {
+    if (glitchSigilRestoreTimeoutId !== null) {
+        clearTimeout(glitchSigilRestoreTimeoutId);
+        glitchSigilRestoreTimeoutId = null;
+    }
+    scheduleGlitchSigilFlicker(180 + Math.random() * 320);
+}
+
+document.addEventListener('visibilitychange', () => {
+    if (!document.hidden && glitchSigilFlickerTimeoutId === null && glitchSigilRestoreTimeoutId === null) {
+        scheduleGlitchSigilFlicker();
+    }
+});
+
+function determineResultPriority(aura, baseChance) {
+    if (!aura) return baseChance;
+    if (aura.name === OBLIVION_AURA_LABEL) return Number.POSITIVE_INFINITY;
+    if (aura.name === MEMORY_AURA_LABEL) return Number.MAX_SAFE_INTEGER;
+    if (aura.name === DUNE_AURA_LABEL) return Number.MAX_SAFE_INTEGER - 1;
+    if (aura.name === BLOOD_AURA_LABEL) return Number.MAX_SAFE_INTEGER - 2;
+    return baseChance;
+}
+
+const MEGAPHONE_AURA_NAME = 'Megaphone - 5,000';
+const BREAKTHROUGH_AURA_NAME = 'Breakthrough - 1,999,999,999';
+const LEVIATHAN_AURA_NAME = 'Leviathan - 1,730,400,000';
+const MONARCH_AURA_NAME = "Monarch - 3,000,000,000";
+const HELLBORN_AURA_NAME = "Hellborn - 2,644,600,640";
+const DREAMCATCHER_AURA_NAME = "DreamCatcher - 2,222,222,222";
+const EMPTY_AURA_NAME = 'Empty - 11,111,111'
+const RADIANT_REWARD_AURA_NAME = 'Tomorrow';
+
+const NATIVE_BREAKTHROUGH_MULTIPLIERS = Object.freeze({
+    lostForest: 2,
+    radiantForest: 2,
+    cyberspace: 2,
+    blazing: 2,
+    incinerator: 2,
+    aurora: 2,
+    windy: 3,
+    snowy: 3,
+    rainy: 4,
+    sandstorm: 4,
+    starfall: 5,
+    singularity: 5,
+    heaven: 5,
+    edict: 2,
+    corruption: 5,
+    hell: 6,
+    oldStarfall: 10,
+    night: 10,
+    day: 10,
+    null: 1000,
+    limbo: 1000
+});
+
+function nativeBreakthroughs(...biomes) {
+    return Object.fromEntries(
+        biomes
+            .map(biome => [biome, NATIVE_BREAKTHROUGH_MULTIPLIERS[biome]])
+            .filter(([, multiplier]) => Number.isFinite(multiplier) && multiplier > 0)
+    );
+}
+
+const AURA_BLUEPRINT_SOURCE = Object.freeze([
+    ...EventAuras,
+    // { name: "Unnamed Needs Equinox RIGHT NOW!!!!!!!!!!!!! - 2,500,000,000,000,000000", chance: 2500000000000000000, cutscene: "equinox-cutscene" },
+    { name: RADIANT_REWARD_AURA_NAME, chance: 1, nativeBiomes: ['radiantForest'], requiresRadiantMoons: true, cutscene: 'tomorrow-cutscene', disableRarityClass: true, tier: 'Challenged+', wikiPending: true },
+    { name: "Oblivion", chance: 2000, requiresOblivionPreset: true, ignoreLuck: true, fixedRollThreshold: 1, subtitle: "The Truth Seeker", cutscene: "oblivion-cutscene", disableRarityClass: true },
+    { name: "Memory", chance: 200000, requiresOblivionPreset: true, ignoreLuck: true, fixedRollThreshold: 1, subtitle: "The Fallen", cutscene: "memory-cutscene", disableRarityClass: true },
+    { name: "Neferkhaf", chance: 1000, requiresDunePreset: true, ignoreLuck: true, fixedRollThreshold: 1, subtitle: "The Crawler", cutscene: "neferkhaf-cutscene", disableRarityClass: true },
+    { name: "赤月の破片", chance: 1000, requiresBloodPreset: true, ignoreLuck: true, fixedRollThreshold: 1, subtitle: "Fragments Of The Crimson Moon", cutscene: "blood-cutscene", disableRarityClass: true },
+    { name: "Illusionary - 10,000,000", chance: 10000000, nativeBiomes: ["cyberspace"], ignoreLuck: true, fixedRollThreshold: 1, cutscene: "illusionary-cutscene" },
+    { name: "Meta - 10,000", chance: 10000, nativeBiomes: ["cyberspace"], ignoreLuck: true, fixedRollThreshold: 1 },
+    { name: 'Tree House - 3,800,000,000', chance: 3800000000, breakthroughs: nativeBreakthroughs('lostForest'), cutscene: 'tree-house-cutscene' },
+    { name: MONARCH_AURA_NAME, chance: 3000000000, cutscene: "monarch-cutscene", nativeBiomes: ["corruption", "glitch"], disableNativeOverrideTier: true },
+    { name: HELLBORN_AURA_NAME, chance: 2644600640, nativeBiomes: ["hell", "glitch"], disableNativeOverrideTier: true, cutscene: "hellborn-cutscene" },
+    { name: "Equinox - 2,500,000,000", chance: 2500000000, cutscene: "equinox-cutscene" },
+    { name: DREAMCATCHER_AURA_NAME, chance: 2222222222, nativeBiomes: ["night"], cutscene: "catcher-cutscene" },
+    { name: BREAKTHROUGH_AURA_NAME, chance: 1999999999, cutscene: "breakthrough-cutscene" },
+    { name: "Astraios - 1,750,000,000", chance:  1750000000, nativeBiomes: ["singularity"], cutscene: "astraios-cutscene" },
+    { name: LEVIATHAN_AURA_NAME, chance: 1730400000, nativeBiomes: ["rainy", "glitch"], cutscene: "leviathan-cutscene", disableNativeOverrideTier: true },
+    { name: "Luminosity - 1,200,000,000", chance: 1200000000, cutscene: "luminosity-cutscene" },
+    // { name: "Godslayer - 1,100,100,100", chance: 1100100100, cutscene: "godslayer-cutscene" }, Unobtainable until further notice
+    { name: "Pixelation - 1,073,741,824", chance: 1073741824, breakthroughs: nativeBreakthroughs("cyberspace"), nativeBiomes: ["cyberspace"], cutscene: "pixelation-cutscene" },
+    { name: "Nyctophobia - 1,011,111,010", chance: 1011111010, nativeBiomes: ["limbo"], cutscene: "nyctophobia-cutscene" },
+    { name: "Ascendant - 935,000,000", chance: 935000000, breakthroughs: nativeBreakthroughs("heaven") },
+    { name: "Dreamscape - 850,000,000", chance: 850000000, nativeBiomes: ["limbo"] },
+    { name: "Poseidon : Atlantis - 850,000,000", chance: 850000000, breakthroughs: nativeBreakthroughs("rainy") },
+    { name: "Eisveil - 830,000,000", chance: 830000000, breakthroughs: nativeBreakthroughs("snowy") },
+    { name: "Aegis - 825,000,000", chance: 825000000, breakthroughs: nativeBreakthroughs("cyberspace"), nativeBiomes: ["cyberspace"] },
+    { name: "Ruins : Withered - 800,000,000", chance: 800000000, breakthroughs: nativeBreakthroughs("lostForest") },
+    { name: "Virtual : Full Control - 80,000,000", chance: 80000000, breakthroughs: nativeBreakthroughs("cyberspace"), nativeBiomes: ["cyberspace"] },
+    { name: "Sovereign - 750,000,000", chance: 750000000 },
+    { name: "Pythios - 666,666,666", chance: 666666666, breakthroughs: nativeBreakthroughs("hell") },
+    { name: "PROLOGUE - 666,616,111", chance: 666616111, nativeBiomes: ["limbo"] },
+    { name: "Sloth - 650,000,000", chance: 650000000, },
+    { name: "Matrix : Reality - 601,020,102", chance: 601020102, breakthroughs: nativeBreakthroughs("cyberspace"), nativeBiomes: ["cyberspace"] },
+    { name: "Sophyra - 570,000,000", chance: 570000000 },
+    { name: "Elude - 555,555,555", chance: 555555555, nativeBiomes: ["limbo"] },
+    { name: "Sailor : Admiral - 540,000,000", chance: 540000000, breakthroughs: nativeBreakthroughs("rainy") },
+    { name: "Gravitational : Point Zero - 521,121,900", chance:  521121900, nativeBiomes: ["singularity"] },
+    { name: "Matrix : Overdrive - 503,000,000", chance: 503000000, breakthroughs: nativeBreakthroughs("cyberspace"), nativeBiomes: ["cyberspace"] },
+    { name: "Ruins - 500,000,000", chance: 500000000, breakthroughs: nativeBreakthroughs("lostForest") },
+    { name: 'Hasuen - 485,000,000', chance: 485000000, breakthroughs: nativeBreakthroughs('lostForest') },
+    { name: "Volcanic - 480,000,000", chance: 480000000, breakthroughs: nativeBreakthroughs("hell") },
+    { name: "Kyawthuite : Remembrance - 450,000,000", chance: 450000000, breakthroughs: nativeBreakthroughs("radiantForest") },
+    { name: "unknown - 444,444,444", chance: 444444444, nativeBiomes: ["limbo"] },
+    { name: "Apostolos - 444,000,000", chance: 444000000, breakthroughs: nativeBreakthroughs('edict') },
+    { name: "Gargantua - 430,000,000", chance: 430000000, breakthroughs: nativeBreakthroughs("singularity") },
+    { name: "Twilight : Withering Grace - 422,656,000", chance: 422656000, breakthroughs: nativeBreakthroughs("night") },
+    { name: "Abyssal Hunter - 400,000,000", chance: 400000000, breakthroughs: nativeBreakthroughs("rainy") },
+    { name: "Celestial : Eclipse - 384,400,000", chance: 384400000 },
+    { name: "Cytokinesis - 330,400,472", chance: 330400472, breakthroughs: nativeBreakthroughs("cyberspace"), nativeBiomes: ["cyberspace"] },
+    { name: "CHILLSEAR - 375,000,000", chance: 375000000, breakthroughs: nativeBreakthroughs("snowy") },
+    { name: "Flora : Evergreen - 370,073,730", chance: 370073730, breakthroughs: nativeBreakthroughs("lostForest") },
+    { name: "Atlas - 360,000,000", chance: 360000000, breakthroughs: nativeBreakthroughs("sandstorm") },
+    { name: "Archangel - 350,000,000", chance: 350000000, breakthroughs: nativeBreakthroughs("heaven") },
+    { name: "Jazz : Orchestra - 336,870,912", chance: 336870912 },
+    { name: "Dreammetric - 320,000,000", chance: 320000000, nativeBiomes: ["dreamspace"], cutscene: "dreammetric-cutscene" },
+    { name: "LOTUSFALL - 320,000,000", chance: 320000000 },
+    { name: "Perpetual - 315,000,000", chance: 315000000, breakthroughs: nativeBreakthroughs("lostForest") },
+    { name: "Dreamer - 315,000,000", chance: 315000000, breakthroughs: nativeBreakthroughs("night") },
+    { name: "Maelstrom - 309,999,999", chance: 309999999, breakthroughs: nativeBreakthroughs("windy") },
+    { name: "Overture : History - 300,000,000", chance: 300000000 },
+    { name: "Bloodlust - 300,000,000", chance: 300000000, breakthroughs: nativeBreakthroughs("hell") },
+    { name: "Exotic : Void - 299,999,999", chance: 299999999 },
+    { name: "Prophecy - 275,649,430", chance: 275649430, breakthroughs: nativeBreakthroughs("heaven") },
+    { name: "Astral : Zodiac - 267,200,000", chance: 267200000, breakthroughs: nativeBreakthroughs("starfall") },
+    { name: "Virtual Memory - 232,232,232", chance:  232232232, breakthroughs: nativeBreakthroughs("cyberspace"), nativeBiomes: ["cyberspace"] },
+    { name: "Hyper-volt : Ever-Storm - 225,000,000", chance: 225000000 },
+    { name: "Lumenpool - 220,000,000", chance: 220000000, breakthroughs: nativeBreakthroughs("rainy") },
+    { name: "Oppression - 220,000,000", chance: 220000000, nativeBiomes: ["glitch"], cutscene: "oppression-cutscene" },
+    { name: "Impeached - 200,000,000", chance: 200000000, breakthroughs: nativeBreakthroughs("corruption") },
+    { name: "Raven : Plague - 200,000,000", chance: 200000000, nativeBiomes: ["limbo"] },
+    { name: "Projection - 197,000,000", chance:  197000000, nativeBiomes: ["singularity"] },
+    { name: "Felled - 180,000,000", chance: 180000000, breakthroughs: nativeBreakthroughs("hell") },
+    { name: "Symphony - 175,000,000", chance: 175000000 },
+    { name: "Bounded : Aichmalotos - 170,000,000", chance: 170000000 },
+    { name: "Overture - 150,000,000", chance: 150000000 },
+    { name: "Sharkyn : Hammerhead - 120,000,000", chance: 120000000, breakthroughs: nativeBreakthroughs("rainy") },
+    { name: "Lily - 112,000,000", chance: 112000000, breakthroughs: nativeBreakthroughs('lostForest') },
+    { name: "Spectraflow - 100,000,000", chance: 100000000 },
+    { name: "Starscourge : Radiant - 100,000,000", chance: 100000000, breakthroughs: nativeBreakthroughs("starfall") },
+    { name: "Chromatic : GENESIS - 99,999,999", chance: 99999999 },
+    { name: "Quartz : Rose - 97,500,000", chance: 97500000 },
+    { name: "Atomic : Nucleus - 92,118,000", chance: 92118000 },
+    { name: "Runic : Wilt - 87,388,744", chance: 87388744, breakthroughs: nativeBreakthroughs("lostForest") },
+    { name: "Virtual : Worldwide - 87,500,000", chance: 87500000, breakthroughs: nativeBreakthroughs("cyberspace"), nativeBiomes: ["cyberspace"] },
+    { name: "Hellbound - 85,000,000", chance: 85000000, breakthroughs: nativeBreakthroughs("hell") },
+    { name: "Harnessed : Elements - 85,000,000", chance: 85000000 },
+    { name: "Virtual : Ultimate - 80,000,000", chance: 80000000, breakthroughs: nativeBreakthroughs("cyberspace"), nativeBiomes: ["cyberspace"] },
+    { name: "Aquaria - 80,000,000", chance: 80000000, breakthroughs: nativeBreakthroughs("rainy") },
+    { name: "Carriage - 80,000,000", chance: 80000000 },
+    { name: "Sailor : Flying Dutchman - 80,000,000", chance: 80000000, breakthroughs: nativeBreakthroughs("rainy") },
+    { name: "Melodic : Serenade - 77,000,000", chance: 77000000, breakthroughs: nativeBreakthroughs("night") },
+    { name: "Starborn - 72,000,000", chance: 72000000, breakthroughs: nativeBreakthroughs("starfall") },
+    { name: "Dominion - 70,000,000", chance: 70000000, breakthroughs: nativeBreakthroughs("heaven") },
+    { name: "Antivirus - 62,500,000", chance: 62500000, breakthroughs: nativeBreakthroughs("cyberspace"), nativeBiomes: ["cyberspace"] },
+    { name: "SENTINEL - 60,000,000", chance: 60000000 },
+    { name: "Twilight : Iridescent Memory - 60,000,000", chance: 60000000, breakthroughs: nativeBreakthroughs("night") },
+    { name: 'Cor Lunae - 50,000,000', chance: 50000000, nativeBiomes: ['radiantForest'] },
+    { name: "Matrix - 50,000,000", chance: 50000000, breakthroughs: nativeBreakthroughs("cyberspace"), nativeBiomes: ["cyberspace"] },
+    { name: "Runic - 50,000,000", chance: 50000000, breakthroughs: nativeBreakthroughs("lostForest") },
+    { name: "Exotic : APEX - 49,999,500", chance: 49999500 },
+    { name: "Overseer - 45,000,000", chance: 45000000 },
+    { name: "{J u x t a p o s i t i o n} - 40,440,400", chance: 40440400, nativeBiomes: ["limbo"] },
+    { name: "Virtual : Fatal Error - 40,413,000", chance: 40413000, breakthroughs: nativeBreakthroughs("cyberspace"), nativeBiomes: ["cyberspace"] },
+    { name: "Ethereal - 35,000,000", chance: 35000000 },
+    { name: "Flora : Florest - 32,800,000", chance: 32800000, breakthroughs: nativeBreakthroughs("lostForest") },
+    { name: "Arcane : Dark - 30,000,000", chance: 30000000 },
+    { name: "Blizzard - 27,315,000", chance: 27315000, breakthroughs: nativeBreakthroughs("snowy") },
+    { name: "Centurion - 25,000,000", chance:  25000000, nativeBiomes: ["singularity"] },
+    { name: "Apotheosis - 24,649,430", chance: 24649430 },
+    { name: "Ruby : Brimstone - 24,000,000", chance: 24000000 },
+    { name: "Aviator - 24,000,000", chance: 24000000, breakthroughs: nativeBreakthroughs("windy") },
+    { name: "Oculus - 23,233,340", chance: 23233340, breakthroughs: nativeBreakthroughs("heaven") },
+    { name: "Plasma - 20,600,000", chance: 20000000 },
+    { name: "Chromatic - 20,000,000", chance: 20000000 },
+    { name: "Lullaby - 17,000,000", chance: 17000000, breakthroughs: nativeBreakthroughs("night") },
+    { name: "Icarus - 15,660,000", chance: 15660000, breakthroughs: nativeBreakthroughs("heaven") },
+    { name: "Arcane : Legacy - 15,000,000", chance: 15000000 },
+    { name: "Sirius - 14,000,000", chance: 14000000, breakthroughs: nativeBreakthroughs("starfall") },
+    { name: "Borealis - 13,333,333", chance: 13333333, nativeBiomes: ["dreamspace"] },
+    { name: "Stormal : Hurricane - 13,500,000", chance: 13500000, breakthroughs: nativeBreakthroughs("windy") },
+    { name: "Glitch - 12,210,110", chance: 12210110, nativeBiomes: ["glitch"] },
+    { name: "Imaginary - 12,200,200", chance: 12200200, nativeBiomes: ["limbo"] },
+    { name: "Graffiti - 12,000,000", chance: 12000000},
+    { name: "Sailor - 12,000,000", chance: 12000000, breakthroughs: nativeBreakthroughs("rainy") },
+    { name: "Melodic - 11,300,000", chance: 11300000 },
+    { name: EMPTY_AURA_NAME, chance: 11111111, nativeBiomes: ["null", "glitch"] },
+    { name: 'True Jade - 10,250,000', chance: 10250000, nativeBiomes: ['radiantForest'], radiantUnlockMask: 1, tier: 'Challenged', wikiPending: true },
+    { name: "Starscourge - 10,000,000", chance: 10000000, breakthroughs: nativeBreakthroughs("starfall") },
+    { name: "Sharkyn - 10,000,000", chance: 10000000, breakthroughs: nativeBreakthroughs("rainy") },
+    { name: "Guardian - 10,000,000", chance: 10000000 },
+    { name: "Amethyst - 9,333,700", chance: 9333700 },
+    { name: "Jade : Purity - 9,250,000", chance: 9250000, breakthroughs: nativeBreakthroughs("radiantForest") },
+    { name: "Stargazer - 9,200,000", chance: 9200000, breakthroughs: nativeBreakthroughs("starfall") },
+    { name: "Helios - 9,000,000", chance: 9000000 },
+    { name: "Nihility - 9,000,000", chance: 9000000, breakthroughs: nativeBreakthroughs("null", "limbo"), nativeBiomes: ["limbo-null"] },
+    { name: 'Nightshade - 8,262,026', chance: 8262026, nativeBiomes: ['radiantForest'] },
+    { name: "Harnessed - 8,500,000", chance: 8500000 },
+    { name: "Soultorn - 8,333,333", chance: 8333333 },
+    { name: "Spectre : Requiem - 8,222,000", chance: 8222000 },
+    { name: "Outlaw - 8,000,000", chance: 8000000, breakthroughs: nativeBreakthroughs("sandstorm") },
+    { name: "Divinus : Guardian - 7,777,777", chance: 7777777, breakthroughs: nativeBreakthroughs("heaven") },
+    { name: "Nautilus : Lost - 7,700,000", chance: 7700000 },
+    { name: "Velocity - 7,630,000", chance: 7630000 },
+    { name: "Hyper-volt - 7,500,000", chance: 7500000 },
+    { name: "Faith - 7,250,000", chance: 7250000, breakthroughs: nativeBreakthroughs("heaven") },
+    { name: "Refraction - 7,242,000", chance: 7242000 },
+    { name: "Anubis - 7,200,000", chance: 7200000, breakthroughs: nativeBreakthroughs("sandstorm") },
+    { name: "Hades - 6,666,666", chance: 6666666, breakthroughs: nativeBreakthroughs("hell") },
+    { name: "Origin - 6,500,000", chance: 6500000 },
+    { name: "Astronaut - 6,117,196", chance:  6117196, nativeBiomes: ["singularity"] },
+    { name: 'True Twilight - 6,000,000', chance: 6000000, nativeBiomes: ['radiantForest'], radiantUnlockMask: 4, tier: 'Challenged', wikiPending: true },
+    { name: "Twilight - 6,000,000", chance: 6000000, breakthroughs: nativeBreakthroughs("night") },
+    { name: "Anima - 5,730,000", chance: 5730000, nativeBiomes: ["limbo"] },
+    { name: 'Moonchild - 5,000,000', chance: 5000000, nativeBiomes: ['radiantForest'], wikiPending: true },
+    { name: "Galaxy - 5,000,000", chance: 5000000, breakthroughs: nativeBreakthroughs("singularity") },
+    { name: "Lunar : Full Moon - 5,000,000", chance: 5000000, breakthroughs: nativeBreakthroughs("night") },
+    { name: "Solar : Solstice - 5,000,000", chance: 5000000, breakthroughs: nativeBreakthroughs("day") },
+    { name: "Zeus - 4,500,000", chance: 4500000, breakthroughs: nativeBreakthroughs("heaven") },
+    { name: "Aquatic : Flame - 4,000,000", chance: 4000000 },
+    { name: "Metabytes - 4,000,000", chance: 4000000, breakthroughs: nativeBreakthroughs("cyberspace"), nativeBiomes: ["cyberspace"] },
+    { name: "Wraith - 4,100,000", chance: 4100000 },
+    { name: "Poseidon - 4,000,000", chance: 4000000, breakthroughs: nativeBreakthroughs("rainy") },
+    { name: "Crystallized : Bejeweled - 3,600,000", chance: 3600000 },
+    { name: "Shiftlock - 3,325,000", chance: 3325000, breakthroughs: nativeBreakthroughs("null", "limbo"), nativeBiomes: ["limbo-null"] },
+    { name: "Savior - 3,200,000", chance: 3200000 },
+    { name: "Apatite - 3,133,133", chance: 3133133 },
+    { name: "Orion - 3,000,000", chance: 3000000, breakthroughs: nativeBreakthroughs("starfall") },
+    { name: "Parasite - 3,000,000", chance: 3000000, breakthroughs: nativeBreakthroughs("corruption") },
+    { name: "Vega - 2,580,000", chance:  2580000, nativeBiomes: ["singularity"] },
+    { name: "Virtual - 2,500,000", chance: 2500000, breakthroughs: nativeBreakthroughs("cyberspace"), nativeBiomes: ["cyberspace"] },
+    { name: "Evanescent - 3,360,000", chance: 3360000, breakthroughs: nativeBreakthroughs("rainy") },
+    { name: "Flowed - 2,121,121", chance: 2121121, breakthroughs: nativeBreakthroughs("null", "limbo"), nativeBiomes: ["limbo-null"] },
+    { name: "Bounded : Unbound - 2,000,000", chance: 2000000 },
+    { name: "Gravitational - 2,000,000", chance: 2000000 },
+    { name: "Flutter : Buggify - 2,000,000", chance: 2000000, breakthroughs: nativeBreakthroughs('lostForest') },
+    { name: "Player : Respawn - 1,999,999", chance: 1999999, breakthroughs: nativeBreakthroughs("cyberspace"), nativeBiomes: ["cyberspace"] },
+    { name: "Archmage - 1,766,000", chance: 1766000 },
+    { name: "Obsidian - 1,750,000", chance: 1750000 },
+    { name: "Cosmos - 1,520,000", chance: 1520000 },
+    { name: "Astral - 1,336,000", chance: 1336000, breakthroughs: nativeBreakthroughs("starfall") },
+    { name: "Symbiosis - 1,331,201", chance: 1331201, breakthroughs: nativeBreakthroughs("corruption") },
+    { name: "Rage : Brawler - 1,280,000", chance: 1280000 },
+    { name: "Undefined - 1,111,000", chance: 1111000, breakthroughs: nativeBreakthroughs("null", "limbo"), nativeBiomes: ["limbo-null"] },
+    { name: "Magnetic : Reverse Polarity - 1,024,000", chance: 1024000 },
+    { name: "ゴシック - 1,000,001", chance: 1000001, nativeBiomes: ["limbo"] },
+    { name: "Arcane - 1,000,000", chance: 1000000 },
+    { name: "Starlight : Kunzite - 1,000,000", chance: 1000000, breakthroughs: nativeBreakthroughs("starfall") },
+    { name: "Kyawthuite - 850,000", chance: 850000, breakthroughs: nativeBreakthroughs("radiantForest") },
+    { name: 'True Kyawthuite - 825,000', chance: 825000, nativeBiomes: ['radiantForest'], radiantUnlockMask: 2, tier: 'Challenged', wikiPending: true },
+    { name: "Verdict - 700,000", chance: 700000, nativeBiomes: ["edict"], cutscene: "verdict-cutscene" },
+    { name: "紅月を求めし者 - 666,666", chance: 666666, nativeBiomes: ["fullMoon"] },
+    { name: "Undead : Devil - 666,666", chance: 666666, breakthroughs: nativeBreakthroughs("hell") },
+    { name: "Warlock - 666,000", chance: 666000 },
+    { name: 'Veylune - 555,000', chance: 555000, breakthroughs: nativeBreakthroughs('lostForest') },
+    { name: "Prowler - 540,000", chance: 540000, nativeBiomes: ["anotherRealm"], cutscene: "prowler-cutscene" },
+    { name: "Clockwork - 530,000", chance: 530000, nativeBiomes: ["mastermind"], cutscene: "clockwork-cutscene" },
+    { name: 'Artifact - 500,000', chance: 500000, breakthroughs: nativeBreakthroughs('lostForest') },
+    { name: "Raven - 500,000", chance: 500000, nativeBiomes: ["limbo"] },
+    { name: "Hope - 488,725", chance: 488725, breakthroughs: nativeBreakthroughs("heaven") },
+    { name: "紅月の観測者 - 444,444", chance: 444444, nativeBiomes: ["fullMoon"] },
+    { name: "Terror - 400,000", chance: 400000 },
+    { name: "Celestial - 350,000", chance: 350000 },
+    { name: "Vortex - 399,999", chance: 399999, breakthroughs: nativeBreakthroughs("windy") },
+    { name: "Lantern - 333,333", chance: 333333, breakthroughs: nativeBreakthroughs("lostForest") },
+    { name: "Attorney - 270,000", chance: 270000, nativeBiomes: ["edict"], cutscene: "attorney-cutscene" },
+    { name: "Astral : Astrald - 267,000", chance: 267000, requiresAstraldBlessing: true  },
+    { name: "Bounded - 200,000", chance: 200000 },
+    { name: "Aether - 180,000", chance: 180000 },
+    { name: "Jazz - 160,000", chance: 160000 },
+    { name: "Spectre - 140,000", chance: 140000 },
+    { name: "Jade - 125,000", chance: 125000, breakthroughs: nativeBreakthroughs("radiantForest") },
+    { name: "Divinus : Angel - 120,000", chance: 120000, breakthroughs: nativeBreakthroughs("heaven") },
+    { name: "Comet - 120,000", chance: 120000, breakthroughs: nativeBreakthroughs("singularity") },
+    { name: "Diaboli : Void - 100,400", chance: 100400 },
+    { name: "Exotic - 99,999", chance: 99999 },
+    { name: "Stormal - 90,000", chance: 90000, breakthroughs: nativeBreakthroughs("windy") },
+    { name: "Flow - 87,000", chance: 87000, breakthroughs: nativeBreakthroughs("windy") },
+    { name: "Constella - 86,988", chance:  86988, nativeBiomes: ["singularity"] },
+    { name: "Pulsar - 83,345", chance:  83345, nativeBiomes: ["singularity"] },
+    { name: "Permafrost - 73,500", chance: 73500, breakthroughs: nativeBreakthroughs("snowy") },
+    { name: "Nautilus - 70,000", chance: 70000 },
+    { name: "Hazard : Rays - 70,000", chance: 70000, breakthroughs: nativeBreakthroughs("corruption") },
+    { name: "Flushed : Lobotomy - 69,000", chance: 69000 },
+    { name: "Pleiades - 65,358", chance: 65358, nativeBiomes: ["singularity"] },
+    { name: "Star Rider - 50,000", chance: 50000, breakthroughs: nativeBreakthroughs("starfall") },
+    { name: "Starlight - 50,000", chance: 50000, breakthroughs: nativeBreakthroughs("starfall") },
+    { name: "Solar - 50,000", chance: 50000, breakthroughs: nativeBreakthroughs("day") },
+    { name: "Lunar - 50,000", chance: 50000, breakthroughs: nativeBreakthroughs("night") },
+    { name: "Aquatic - 40,000", chance: 40000 },
+    { name: "Watt - 32,768", chance: 32768 },
+    { name: "Copper - 29,000", chance: 29000 },
+    { name: "Marsh - 29,000", chance: 25000, breakthroughs: nativeBreakthroughs("lostForest") },
+    { name: "Gilded : Crowned - 20,000", chance: 20000, breakthroughs: nativeBreakthroughs("sandstorm") },
+    { name: "Powered - 16,384", chance: 16384 },
+    { name: "LEAK - 14,000", chance: 14000 },
+    { name: "Rage : Heated - 12,800", chance: 12800 },
+    { name: "Kawaii - 12,300", chance: 12300 },
+    { name: "Corrosive - 12,000", chance: 12000, breakthroughs: nativeBreakthroughs("corruption") },
+    { name: "Undead - 12,000", chance: 12000, breakthroughs: nativeBreakthroughs("hell") },
+    { name: "★★★ - 10,000", chance: 10000, nativeBiomes: ["dreamspace"] },
+    { name: "Atomic : Riboneucleic - 9876", chance: 9876 },
+    { name: "Lost Soul - 9,200", chance: 9200 },
+    { name: "Honey - 8,335", chance: 8335 },
+    { name: "Quartz - 8,192", chance: 8192 },
+    { name: 'Rekindle - 7,500', chance: 7500, nativeBiomes: ['radiantForest'], wikiPending: true },
+    { name: "Doodle - 7,500", chance: 7500 },
+    { name: "Hazard - 7,000", chance: 7000, breakthroughs: nativeBreakthroughs("corruption") },
+    { name: "Flushed - 6,900", chance: 6900 },
+    { name: MEGAPHONE_AURA_NAME, chance: 5000, requiresYgBlessing: true },
+    { name: 'Watcher - 5,000', chance: 5000, nativeBiomes: ['radiantForest'], wikiPending: true },
+    { name: "Targeted - 5,000", chance: 5000 },
+    { name: "Flutter - 5,000", chance: 5000, breakthroughs: nativeBreakthroughs('lostForest') },
+    { name: "HellFire - 4,776", chance: 4776, breakthroughs: nativeBreakthroughs("hell") },
+    { name: "Bleeding - 4,444", chance: 4444 },
+    { name: "Sidereum - 4,096", chance: 4096 },
+    { name: "[CONTENT DELETED] - 4,040", chance: 4040, nativeBiomes: ["glitch"] },
+    { name: "Cola - 3,999", chance: 3999 },
+    { name: "Flora - 3,700", chance: 3700, breakthroughs: nativeBreakthroughs("lostForest") },
+    { name: "Fault - 3,000", chance: 3000, nativeBiomes: ["glitch"] },
+    { name: "Player - 3,000", chance: 3000, breakthroughs: nativeBreakthroughs("cyberspace"), nativeBiomes: ["cyberspace"] },
+    { name: "Glacier - 2,304", chance: 2304, breakthroughs: nativeBreakthroughs("snowy") },
+    { name: "Ash - 2,300", chance: 2300 },
+    { name: "Magnetic - 2,048", chance: 2048 },
+    { name: "Glock - 1,700", chance: 1700 },
+    { name: "Atomic - 1,180", chance: 1180 },
+    { name: "Hydrogen - 1,111", chance: 1111 },
+    { name: "Precious - 1,024", chance: 1024 },
+    { name: "Penumbra - 1,010", chance: 1010 },
+    { name: "Umbra - 1,010", chance: 1010 },
+    { name: "Diaboli - 1,004", chance: 1004 },
+    { name: "★★ - 1,000", chance: 1000, nativeBiomes: ["dreamspace"] },
+    { name: "Aquamarine - 900", chance: 900 },
+    { name: "Wind - 900", chance: 900, breakthroughs: nativeBreakthroughs("windy") },
+    { name: "Sapphire - 800", chance: 800 },
+    { name: "Jackpot - 777", chance: 777, breakthroughs: nativeBreakthroughs("sandstorm") },
+    { name: "Ink - 700", chance: 700 },
+    { name: "Gilded - 512", chance: 512, breakthroughs: nativeBreakthroughs("sandstorm") },
+    { name: "Emerald - 500", chance: 500 },
+    { name: "Forbidden - 403", chance: 403, breakthroughs: nativeBreakthroughs("cyberspace"), nativeBiomes: ["cyberspace"] },
+    { name: "Ruby - 350", chance: 350 },
+    { name: "Topaz - 150", chance: 150 },
+    { name: "Rage - 128", chance: 128 },
+    { name: "Dizzy - 123", chance: 123 },
+    { name: "★ - 100", chance: 100, nativeBiomes: ["dreamspace"] },
+    { name: "Crystallized - 64", chance: 64 },
+    { name: "Divinus - 32", chance: 32, breakthroughs: nativeBreakthroughs("heaven") },
+    { name: "Rare - 16", chance: 16 },
+    { name: "Natural - 8", chance: 8 },
+    { name: "Good - 5", chance: 5 },
+    { name: "Uncommon - 4", chance: 4 },
+    { name: "Common - 2", chance: 1 },
+    { name: "Nothing - 1", chance: 1, nativeBiomes: ["limbo"] },
+]);
+
+function coerceNativeBiomes(nativeBiomes) {
+    if (!nativeBiomes) return null;
+    const queue = Array.isArray(nativeBiomes) ? nativeBiomes : [nativeBiomes];
+    const normalized = new Set();
+    for (const item of queue) {
+        if (typeof item !== 'string') continue;
+        const fragments = item.split(',');
+        for (const fragment of fragments) {
+            const trimmed = fragment.trim();
+            if (trimmed) {
+                normalized.add(trimmed);
+            }
+        }
+    }
+    return normalized.size > 0 ? normalized : null;
+}
+
+function coerceBreakthroughMap(breakthroughs) {
+    if (!breakthroughs) return null;
+    const pairs = breakthroughs instanceof Map
+        ? Array.from(breakthroughs.entries())
+        : Object.entries(breakthroughs);
+    const sanitized = new Map();
+    for (const [biome, multiplier] of pairs) {
+        const value = Number(multiplier);
+        if (Number.isFinite(value) && value > 0) {
+            sanitized.set(biome, value);
+        }
+    }
+    return sanitized.size > 0 ? sanitized : null;
+}
+
+function normalizeAuraDefinition(definition, index) {
+    const { nativeBiomes, breakthroughs, ...rest } = definition;
+    return {
+        ...rest,
+        index,
+        nativeBiomes: coerceNativeBiomes(nativeBiomes),
+        breakthroughs: coerceBreakthroughMap(breakthroughs)
+    };
+}
+
+function createAuraRegistry(definitions) {
+    const catalog = new Array(definitions.length);
+    for (let index = 0; index < definitions.length; index++) {
+        const normalized = normalizeAuraDefinition(definitions[index], index);
+        catalog[index] = Object.freeze(normalized);
+    }
+    return Object.freeze(catalog);
+}
+
+const AURA_REGISTRY = createAuraRegistry(AURA_BLUEPRINT_SOURCE);
+const AURA_BY_NAME = new Map(AURA_REGISTRY.map(aura => [aura.name, aura]));
+const AURA_BY_CANONICAL_NAME = new Map(AURA_REGISTRY.map(aura => [aura.name.split(' - ')[0].trim(), aura]));
+const RADIANT_FOREST_CONFIG = Object.freeze({
+    moonIndices: ['Jade', 'Jade : Purity', 'Kyawthuite', 'Kyawthuite : Remembrance', 'Twilight : Withering Grace', 'Twilight : Iridescent Memory', 'Twilight'].map(name => AURA_BY_CANONICAL_NAME.get(name).index),
+    rewardIndex: AURA_BY_NAME.get(RADIANT_REWARD_AURA_NAME).index
+});
+initializeAuraFilters(AURA_REGISTRY);
+
+const auraWinCounts = new Float64Array(AURA_REGISTRY.length);
+
+function getAuraIndex(aura) {
+    return aura && Number.isInteger(aura.index) ? aura.index : -1;
+}
+
+function resetAuraRollState() {
+    auraWinCounts.fill(0);
+}
+
+function readAuraWinCount(aura) {
+    const index = getAuraIndex(aura);
+    return index === -1 ? 0 : auraWinCounts[index];
+}
+
+function isAuraNativeTo(aura, biome) {
+    return Boolean(aura && aura.nativeBiomes && aura.nativeBiomes.has(biome));
+}
+
+function auraMatchesAnyBiome(aura, biomes) {
+    if (!aura || !aura.nativeBiomes || !Array.isArray(biomes)) return false;
+    for (const biome of biomes) {
+        if (aura.nativeBiomes.has(biome)) {
+            return true;
+        }
+    }
+    return false;
+}
+
+function readBreakthroughMultiplier(aura, biome) {
+    if (!aura || !aura.breakthroughs) return null;
+    return aura.breakthroughs.get(biome) ?? null;
+}
+
+const EVENT_LIST = Object.freeze(Object.values(EventData).sort((a, b) => a.order - b.order));
+
+const VALENTINE_EVENT_IDS = Object.freeze(EVENT_LIST.filter(event => event.theme === 'valentine').map(event => event.id));
+const APRIL_FOOLS_EVENT_IDS = Object.freeze(EVENT_LIST.filter(event => event.theme === 'april-fools').map(event => event.id));
+const EASTER_EVENT_IDS = Object.freeze(EVENT_LIST.filter(event => event.theme === 'easter').map(event => event.id));
+const HALLOWEEN_EVENT_IDS = Object.freeze(EVENT_LIST.filter(event => event.theme === 'halloween').map(event => event.id));
+const SUMMER_EVENT_IDS = Object.freeze(EVENT_LIST.filter(event => event.theme === 'summer').map(event => event.id));
+const WINTER_EVENT_IDS = Object.freeze(EVENT_LIST.filter(event => event.theme === 'winter').map(event => event.id));
+
+const APRIL_FOOLS_COPY_TARGETS = Object.freeze([
+    {
+        selector: '.masthead-console__rail > span:first-child',
+        variants: Object.freeze([
+            'Certified Serious Simulator',
+            'Probability Department (Unsupervised)',
+            'Definitely Not Rigged'
+        ])
+    },
+    {
+        selector: '#resources-heading + .surface__subtitle',
+        variants: Object.freeze([
+            'Useful links, suspiciously organized.',
+            'Resources approved by at least one raccoon.',
+            'External links. Internal confidence sold separately.'
+        ])
+    },
+    {
+        selector: '#results-heading + .surface__subtitle',
+        variants: Object.freeze([
+            'Results inspected by three raccoons.',
+            'High fidelity output, low fidelity life choices.',
+            'Every number is wearing a tiny disguise.'
+        ])
+    },
+    {
+        selector: '#controls-heading + .surface__subtitle',
+        variants: Object.freeze([
+            'Press responsibly; the buttons remember.',
+            'Choose how the numbers hurt your feelings.',
+            'Controls calibrated entirely by vibes.'
+        ])
+    },
+    {
+        selector: '#parameters-heading + .surface__subtitle',
+        variants: Object.freeze([
+            'Configure your luck. Reality remains non-refundable.',
+            'Add ingredients until probability gets nervous.',
+            'Scientific settings, emotionally approximate.'
+        ])
+    },
+    {
+        selector: '#presets-heading + .surface__subtitle',
+        variants: Object.freeze([
+            'Prepackaged confidence for statistically bold decisions.',
+            'One-click luck, batteries not included.',
+            'Curated settings from the Department of Guessing.'
+        ])
+    },
+    {
+        selector: '.feed-toolbar__heading-copy > small',
+        variants: Object.freeze([
+            'Search, sort & pretend',
+            'Find your emotional support aura',
+            'Organize the chaos alphabetically'
+        ])
+    },
+    {
+        selector: '.feed-console__stream-header small',
+        variants: Object.freeze([
+            'Exact sequence preserved, somehow',
+            'Chronology is more of a suggestion',
+            'Freshly rolled and lightly confused'
+        ])
+    }
+]);
+
+let aprilFoolsCopyActive = false;
+
+const EVENT_LABEL_MAP = new Map(EVENT_LIST.map(({ id, label }) => [id, label]));
+const HALLOWEEN_2024_EVENT_ID = 'halloween24';
+const HARVESTER_AURA_NAME = 'Harvester - 666,000,000';
+const HARVESTER_CURSE_LAYER_ID = 'harvester-curse-layer';
+const FLUSHED_TROLL_AURA_NAME = 'Flushed : Troll - 1,000,000';
+const FLUSHED_TROLL_SIGNATURE_LAYER_ID = 'flushed-troll-signature-layer';
+let harvesterCurseTimeoutId = null;
+let flushedTrollSignatureTimeoutId = null;
+
+const EVENT_AURA_LOOKUP = Object.freeze(Object.fromEntries(EVENT_LIST.map(event => [event.id, [...event.auras.map(aura => aura.name), ...(event.additionalAuraNames || [])]])));
+
+const BIOME_EVENT_CONSTRAINTS = Object.freeze(EVENT_LIST.reduce((constraints, event) => {
+    for (const biome of event.biomes || []) (constraints[biome] ||= []).push(event.id);
+    return constraints;
+}, {}));
+
+const EVENT_BIOME_CONDITION_MESSAGES = Object.freeze({
+    anotherRealm: 'Requires Developer Biomes to be enabled under run parameters.',
+    mastermind: 'Requires Developer Biomes to be enabled under run parameters.',
+    edict: 'Requires Developer Biomes to be enabled under run parameters.',
+    graveyard: 'Requires Night time with a Halloween event enabled.',
+    pumpkinMoon: 'Requires Night time with a Halloween event enabled.',
+    bloodRain: 'Requires Halloween 2025 or Halloween 2026 enabled.',
+    blazing: 'Requires Summer 2025 or Summer 2026 enabled.',
+    incinerator: 'Requires Summer 2026 enabled.',
+    aurora: 'Requires Winter 2026 enabled.',
+    fullMoon: 'Requires Developer Biomes to be enabled under run parameters.',
+});
+
+const enabledEvents = new Set(EVENT_LIST.filter(event => event.status !== 'upcoming' && event.defaultEnabled).map(event => event.id));
+const auraEventIndex = new Map();
+
+function hasAnyEnabledEvent(eventIds) {
+    return eventIds.some(eventId => enabledEvents.has(eventId));
+}
+
+function hasCombinedEventsEnabled() {
+    return enabledEvents.size > 1;
+}
+
+function syncAprilFoolsCopy(active) {
+    if (active === aprilFoolsCopyActive || typeof document === 'undefined') {
+        return;
+    }
+
+    aprilFoolsCopyActive = active;
+    APRIL_FOOLS_COPY_TARGETS.forEach(({ selector, variants }) => {
+        const node = document.querySelector(selector);
+        if (!node) {
+            return;
+        }
+
+        if (!Object.prototype.hasOwnProperty.call(node.dataset, 'eventBaseText')) {
+            node.dataset.eventBaseText = node.textContent.trim();
+        }
+
+        if (!active) {
+            node.textContent = node.dataset.eventBaseText;
+            node.classList.remove('april-fools-copy');
+            return;
+        }
+
+        const previousIndex = Number.parseInt(node.dataset.aprilFoolsCopyIndex, 10);
+        let nextIndex = Math.floor(Math.random() * variants.length);
+        if (Number.isInteger(previousIndex) && variants.length > 1 && nextIndex === previousIndex) {
+            nextIndex = (nextIndex + 1 + Math.floor(Math.random() * (variants.length - 1))) % variants.length;
+        }
+
+        node.dataset.aprilFoolsCopyIndex = String(nextIndex);
+        node.textContent = variants[nextIndex];
+        node.classList.add('april-fools-copy');
+    });
+}
+
+function resolveEventThemeVariant() {
+    if (hasCombinedEventsEnabled()) return 'default';
+    if (hasAnyEnabledEvent(VALENTINE_EVENT_IDS)) return 'valentine';
+    if (hasAnyEnabledEvent(APRIL_FOOLS_EVENT_IDS)) return 'april-fools';
+    if (hasAnyEnabledEvent(EASTER_EVENT_IDS)) return 'easter';
+    if (hasAnyEnabledEvent(WINTER_EVENT_IDS)) return 'winter';
+    if (hasAnyEnabledEvent(HALLOWEEN_EVENT_IDS)) return 'halloween';
+    if (hasAnyEnabledEvent(SUMMER_EVENT_IDS)) return 'summer';
+    return 'default';
+}
+
+function resolveParticleMode() {
+    if (hasCombinedEventsEnabled()) return 'none';
+    if (hasAnyEnabledEvent(VALENTINE_EVENT_IDS)) return 'hearts';
+    if (hasAnyEnabledEvent(WINTER_EVENT_IDS)) return 'snow';
+    if (hasAnyEnabledEvent(HALLOWEEN_EVENT_IDS)) return 'halloween-lights';
+    return 'none';
+}
+
+function syncEventVisualPresentation() {
+    if (!pageBody) {
+        return;
+    }
+
+    const variant = resolveEventThemeVariant();
+    pageBody.classList.toggle('theme-event-valentine', variant === 'valentine');
+    pageBody.classList.toggle('theme-event-winter', variant === 'winter');
+    pageBody.classList.toggle('theme-event-halloween', variant === 'halloween');
+    pageBody.classList.toggle('theme-event-summer', variant === 'summer');
+    pageBody.classList.toggle('theme-event-easter', variant === 'easter');
+    pageBody.classList.toggle('theme-event-april-fools', variant === 'april-fools');
+
+    snowEffectState.mode = resolveParticleMode();
+    syncSnowEffect();
+    syncAprilFoolsCopy(variant === 'april-fools');
+    globalThis.PumpkinCarver?.setActive(variant === 'halloween');
+}
+
+function biomeEventRequirementsMet(biomeId) {
+    if (!biomeId) {
+        return true;
+    }
+
+    if (DEV_BIOME_IDS.has(biomeId) && !devBiomesEnabled) {
+        return false;
+    }
+
+    const requiredEvent = BIOME_EVENT_CONSTRAINTS[biomeId];
+    if (!requiredEvent) {
+        return true;
+    }
+
+    const requiredEvents = Array.isArray(requiredEvent) ? requiredEvent : [requiredEvent];
+    return requiredEvents.some(eventId => enabledEvents.has(eventId));
+}
+
+const GLITCH_EVENT_WHITELIST = new Set(EVENT_LIST.filter(event => event.glitchEligible).map(event => event.id));
+
+const EVENT_AURA_BIOME_CONSTRAINTS = Object.freeze(Object.fromEntries(EVENT_LIST.filter(event => event.auraBiomes).map(event => [event.id, event.auraBiomes])));
+
+function eventAuraBiomeRequirementsMet(eventIds, context) {
+    if (!Array.isArray(eventIds) || eventIds.length === 0) {
+        return true;
+    }
+
+    const eventState = context?.enabledEventsSet instanceof Set
+        ? context.enabledEventsSet
+        : enabledEvents;
+    const directBiomes = new Set([
+        context?.biome,
+        context?.primaryBiome,
+        context?.timeBiome
+    ].filter(Boolean));
+
+    for (const eventId of eventIds) {
+        if (!eventState.has(eventId)) {
+            continue;
+        }
+
+        const allowedBiomes = EVENT_AURA_BIOME_CONSTRAINTS[eventId];
+        if (!allowedBiomes) {
+            return true;
+        }
+
+        const allowed = allowedBiomes.some(biomeId => biomeId === 'glitch'
+            ? context?.glitchLikeBiome === true
+            : directBiomes.has(biomeId));
+        if (allowed) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+for (const [eventId, auraNames] of Object.entries(EVENT_AURA_LOOKUP)) {
+    auraNames.forEach(name => {
+        const existingEventIds = auraEventIndex.get(name);
+        if (Array.isArray(existingEventIds)) {
+            if (!existingEventIds.includes(eventId)) {
+                existingEventIds.push(eventId);
+            }
+            return;
+        }
+        auraEventIndex.set(name, [eventId]);
+    });
+}
+
+const EMPTY_EVENT_IDS = Object.freeze([]);
+const auraEventIdsByIndex = new Array(AURA_REGISTRY.length).fill(EMPTY_EVENT_IDS);
+for (const aura of AURA_REGISTRY) {
+    const eventIds = auraEventIndex.get(aura.name);
+    auraEventIdsByIndex[aura.index] = Array.isArray(eventIds) && eventIds.length > 0
+        ? Object.freeze(eventIds.slice())
+        : EMPTY_EVENT_IDS;
+}
+
+function getAuraEventIds(aura) {
+    const index = getAuraIndex(aura);
+    return index === -1 ? EMPTY_EVENT_IDS : auraEventIdsByIndex[index];
+}
+
+function getAuraEventId(aura, { preferEnabled = false, enabledSet = null } = {}) {
+    const eventIds = getAuraEventIds(aura);
+    if (eventIds.length === 0) return null;
+    if (preferEnabled) {
+        const eventState = enabledSet instanceof Set ? enabledSet : enabledEvents;
+        const activeEventId = eventIds.find(eventId => eventState.has(eventId));
+        if (activeEventId) {
+            return activeEventId;
+        }
+    }
+    return eventIds[0];
+}
+
+const CUTSCENE_PRIORITY_SEQUENCE = [
+            "trolled-cutscene",
+            'tomorrow-cutscene', "illusionary-cutscene", "dreammetric-cutscene", "oppression-cutscene", "oblivion-cutscene",
+            "memory-cutscene", "neferkhaf-cutscene", "blood-cutscene",
+            'tree-house-cutscene', "monarch-cutscene", "centaurus-cutscene", "hellborn-cutscene", "idiot-cutscene", "equinox-cutscene", "catcher-cutscene",
+            "dream-traveler-cutscene", "skyFestival-cutscene", "breakthrough-cutscene", "yolk-cutscene", "astraios-cutscene",
+            "leviathan-cutscene", "winter-garden-cutscene", "taverna-cutscene", "crabtropica-cutscene", "erebus-cutscene", "luminosity-cutscene", "eggis-cutscene", "godslayer-cutscene",
+            "pixelation-cutscene", "nyctophobia-cutscene", "solsLoadingScreen-cutscene", "pukekoGod-cutscene", "frostveil-cutscene",
+            "eostre-cutscene", "lamenthyr-cutscene", "verdict-cutscene", "prowler-cutscene", "clockwork-cutscene", "attorney-cutscene"
+];
+
+const CUTSCENE_AURA_LOOKUP = new Map(
+    AURA_REGISTRY
+        .filter(aura => typeof aura.cutscene === 'string' && aura.cutscene.length > 0)
+        .map(aura => [aura.cutscene, aura])
+);
+
+oblivionAuraData = AURA_BY_NAME.get(OBLIVION_AURA_LABEL) || null;
+memoryAuraData = AURA_BY_NAME.get(MEMORY_AURA_LABEL) || null;
+duneAuraData = AURA_BY_NAME.get(DUNE_AURA_LABEL) || null;
+bloodAuraData = AURA_BY_NAME.get(BLOOD_AURA_LABEL) || null;
+
+const ROE_EXCLUSION_SET = new Set([
+    "Erebus - 1,200,000,000",
+    "Lamenthyr - 1,000,000,000",
+    "Arachnophobia - 940,000,000",
+    "Ravage - 930,000,000",
+    "Apostolos : Veil - 800,000,000",
+    "Malediction - 730,000,000",
+    "Banshee - 730,000,000",
+    "Wraithlight - 695,000,000",
+    "Harvester - 666,000,000",
+    "Apocalypse - 624,000,000",
+    "Dreammetric - 320,000,000",
+    "Phantasma - 462,600,000",
+    "Graveborn - 290,000,000",
+    "Oppression - 220,000,000",
+    "Nightmare Sky - 190,000,000",
+    "Crimson - 120,000,000",
+    "Grief - 88,250,000",
+    "Bloodgarden - 88,000,000",
+    "Accursed - 82,000,000",
+    "Dullahan - 72,000,000",
+    "Reaper - 66,000,000",
+    "Soul Hunter - 40,000,000",
+    "Headless : Horseman - 32,000,000",
+    "Cryptfire - 21,000,000",
+    "Sinister - 15,000,000",
+    "Borealis - 13,333,333",
+    "Glitch - 12,210,110",
+    "Moonflower - 10,000,000",
+    "Oni - 6,666,666",
+    "Vital - 6,000,000",
+    "Shucks - 4,460,000",
+    "Headless - 3,200,000",
+    "Lunar : Nightfall - 3,000,000",
+    "Werewolf - 3,600,000",
+    "Lunar : Cultist - 2,000,000",
+    "Celestial : Wicked - 1,500,000",
+    "Pump : Trickster - 600,000",
+    "Prowler - 540,000",
+    "Pump - 200,000",
+    "★★★ - 10,000",
+    "Fault - 3,000",
+    "★★ - 1,000",
+    "★ - 100"
+]);
+
+const ROE_BREAKTHROUGH_BLOCKLIST = new Set([
+    "Twilight : Withering Grace - 180,000,000",
+    "Aegis : Watergun - 825,000,000",
+    "Manta - 300,000,000"
+]);
+
+const EVENT_SUMMARY_EMPTY_LABEL = "No events enabled";
+
+function syncEventOptionVisualState(eventId, enabled) {
+    const eventMenu = document.getElementById('event-option-list');
+    if (!eventMenu) return;
+
+    const checkbox = eventMenu.querySelector(`input[type="checkbox"][data-event-id="${eventId}"]`);
+    if (!checkbox) return;
+
+    if (checkbox.checked !== enabled) {
+        checkbox.checked = enabled;
+    }
+
+    const option = checkbox.closest('.interface-select__option--checkbox');
+    if (option) {
+        option.classList.toggle('interface-select__option--active', !!enabled);
+    }
+}
+
+function gatherActiveEventLabels() {
+    return EVENT_LIST
+        .filter(event => enabledEvents.has(event.id))
+        .map(event => event.label);
+}
+
+function updateEventSummary() {
+    EventControls.update();
+}
+
+function initializeInterfaceSelectMotion(details) {
+    if (!(details instanceof HTMLDetailsElement) || details.dataset.motionInitialized === 'true') {
+        return;
+    }
+
+    details.dataset.motionInitialized = 'true';
+    const summary = details.querySelector('.interface-select__summary');
+
+    const prepareBootMotion = () => {
+        const wasBooting = details.classList.contains('interface-select--booting');
+        details.classList.remove('interface-select--booting');
+        if (isFeatureBootMotionReduced()) {
+            return;
+        }
+
+        details.dataset.motionCycle = details.dataset.motionCycle === 'primary'
+            ? 'alternate'
+            : 'primary';
+
+        if (wasBooting) {
+            void details.offsetWidth;
+        }
+        details.classList.add('interface-select--booting');
+    };
+
+    if (summary instanceof HTMLElement) {
+        summary.addEventListener('click', () => {
+            if (!details.open) {
+                prepareBootMotion();
+            }
+        });
+    }
+
+    details.addEventListener('toggle', () => {
+        if (!details.open) {
+            details.classList.remove('interface-select--booting');
+            return;
+        }
+
+        if (!details.classList.contains('interface-select--booting')) {
+            prepareBootMotion();
+        }
+    });
+}
+
+function closeOpenSelectMenus(except, options = {}) {
+    const { focusSummary = false } = options;
+    let hasFocused = false;
+    const openSelects = document.querySelectorAll('details.interface-select[open]');
+    openSelects.forEach(details => {
+        if (except && details === except) return;
+        details.open = false;
+        const summary = details.querySelector('.interface-select__summary');
+        if (summary) {
+            summary.setAttribute('aria-expanded', 'false');
+            if (focusSummary && !hasFocused) {
+                summary.focus();
+                hasFocused = true;
+            }
+        }
+        if (details.id === 'event-selector') {
+            updateEventSummary();
+        }
+        const selectId = details.dataset.select;
+        if (selectId) {
+            const registryEntry = selectWidgetRegistry.get(selectId);
+            if (registryEntry && typeof registryEntry.update === 'function') {
+                registryEntry.update();
+            }
+        }
+    });
+}
+
+document.addEventListener('click', event => {
+    const parentSelect = event.target.closest('details.interface-select');
+    closeOpenSelectMenus(parentSelect);
+});
+
+document.addEventListener('keydown', event => {
+    if (event.key === 'Escape') {
+        const rollOverlay = document.getElementById('rollWarningOverlay');
+        const rollOverlayVisible = rollOverlay && !rollOverlay.hasAttribute('hidden');
+        if (rollOverlayVisible) {
+            largeRollWarningManager.cancel();
+            return;
+        }
+
+        const overlay = document.getElementById('cutsceneWarningOverlay');
+        const overlayVisible = overlay && !overlay.hasAttribute('hidden');
+        if (overlayVisible) {
+            cutsceneWarningManager.decline();
+            return;
+        }
+
+        const rotationOverlay = document.getElementById('rotationPromptOverlay');
+        const rotationOverlayVisible = rotationOverlay && !rotationOverlay.hasAttribute('hidden');
+        if (rotationOverlayVisible) {
+            rotationPromptManager.hide();
+            return;
+        }
+
+        const cyberspaceOverlay = document.getElementById('cyberspaceIllusionaryOverlay');
+        const cyberspaceOverlayVisible = cyberspaceOverlay && !cyberspaceOverlay.hasAttribute('hidden');
+        if (cyberspaceOverlayVisible) {
+            cyberspaceIllusionaryWarningManager.hide();
+            return;
+        }
+
+        closeOpenSelectMenus(null, { focusSummary: true });
+    }
+});
+
+function enforceBiomeEventRestrictions() {
+    const biomeSelector = document.getElementById('biome-dropdown');
+    if (!biomeSelector) return;
+
+    const currentValue = biomeSelector.value;
+    let resetToDefault = false;
+
+    Array.from(biomeSelector.options).forEach(option => {
+        let disabled = false;
+        let title = '';
+
+        if (DEV_BIOME_IDS.has(option.value) && !devBiomesEnabled) {
+            disabled = true;
+            title = 'Enable Developer Biomes to access this biome.';
+        }
+
+        const requiredEvent = BIOME_EVENT_CONSTRAINTS[option.value];
+        if (requiredEvent) {
+            const requiredEvents = Array.isArray(requiredEvent) ? requiredEvent : [requiredEvent];
+            const enabled = requiredEvents.some(eventId => enabledEvents.has(eventId));
+            if (!enabled) {
+                disabled = true;
+                const eventLabels = requiredEvents
+                    .map(eventId => EVENT_LIST.find(event => event.id === eventId)?.label)
+                    .filter(Boolean);
+                if (eventLabels.length > 0) {
+                    let labelText = eventLabels[0];
+                    if (eventLabels.length === 2) {
+                        labelText = `${eventLabels[0]} or ${eventLabels[1]}`;
+                    } else if (eventLabels.length > 2) {
+                        labelText = `${eventLabels.slice(0, -1).join(', ')}, or ${eventLabels[eventLabels.length - 1]}`;
+                    }
+                    title = title || `${labelText} must be enabled to access this biome.`;
+                }
+            }
+        }
+
+        option.disabled = disabled;
+        if (title) {
+            option.title = title;
+        } else {
+            option.removeAttribute('title');
+        }
+
+        if (disabled && option.value === currentValue) {
+            resetToDefault = true;
+        }
+    });
+
+    if (resetToDefault) {
+        biomeSelector.value = 'normal';
+        if (typeof initializeBiomeInterface === 'function') {
+            initializeBiomeInterface();
+        } else if (typeof handleBiomeInterface === 'function') {
+            handleBiomeInterface();
+        }
+    }
+
+    refreshCustomSelect('biome-dropdown');
+    updateBiomeControlConstraints();
+}
+
+function showBiomeConditionOverlay(biomeId, { message: overrideMessage = null, labelOverride = null, titleOverride = null } = {}) {
+    if (typeof document === 'undefined') {
+        return;
+    }
+
+    const message = overrideMessage ?? EVENT_BIOME_CONDITION_MESSAGES[biomeId];
+    if (!message) {
+        return;
+    }
+
+    const overlay = document.getElementById('biomeConditionOverlay');
+    const title = document.getElementById('biomeConditionTitle');
+    const body = document.getElementById('biomeConditionBody');
+
+    if (!overlay || !title || !body || typeof revealOverlay !== 'function') {
+        return;
+    }
+
+    const fallbackLabel = labelOverride || 'Biome';
+    const label = labelOverride
+        || (biomeId && typeof resolveSelectionLabel === 'function'
+            ? resolveSelectionLabel(BIOME_PRIMARY_SELECT_ID, biomeId, { fallbackLabel })
+            : fallbackLabel);
+
+    title.textContent = titleOverride || `${label} requirements`;
+    body.textContent = message;
+    revealOverlay(overlay);
+}
+
+function showYgBlessingOverlay() {
+    if (typeof document === 'undefined') {
+        return;
+    }
+
+    const overlay = document.getElementById('ygBlessingOverlay');
+    const body = document.getElementById('ygBlessingBody');
+    if (!overlay || !body || typeof revealOverlay !== 'function') {
+        return;
+    }
+
+    body.textContent = YG_BLESSING_EVENT_BLOCK_MESSAGE;
+    revealOverlay(overlay);
+}
+
+function showAstraldBlessingOverlay() {
+    if (typeof document === 'undefined') {
+        return;
+    }
+
+    const overlay = document.getElementById('astraldBlessingOverlay');
+    const body = document.getElementById('astraldBlessingBody');
+    if (!overlay || !body || typeof revealOverlay !== 'function') {
+        return;
+    }
+
+    body.textContent = ASTRALD_BLESSING_EVENT_BLOCK_MESSAGE;
+    revealOverlay(overlay);
+}
+
+function setEventToggleState(eventId, enabled) {
+    const event = EventData[eventId];
+    if (!event) return;
+    if ((!enabled && EventControls.locked(event)) || (enabled && event.status === 'upcoming')) {
+        syncEventOptionVisualState(eventId, enabledEvents.has(eventId));
+        updateEventSummary();
+        return;
+    }
+    const hasEvent = enabledEvents.has(eventId);
+    if (enabled && !hasEvent) {
+        enabledEvents.add(eventId);
+    } else if (!enabled && hasEvent) {
+        enabledEvents.delete(eventId);
+    } else {
+        syncEventOptionVisualState(eventId, enabled);
+        return;
+    }
+
+    syncEventOptionVisualState(eventId, enabled);
+
+    updateEventSummary();
+    enforceBiomeEventRestrictions();
+    syncEventVisualPresentation();
+}
+
+function initializeEventSelector() {
+    EventControls.initialize({ events: EVENT_LIST, enabled: enabledEvents, onChange: setEventToggleState });
+    const details = document.getElementById('event-selector');
+    if (details) initializeInterfaceSelectMotion(details);
+    updateEventSummary();
+    enforceBiomeEventRestrictions();
+    syncEventVisualPresentation();
+}
+
+function initializeDevBiomeToggle() {
+    const toggle = document.getElementById('dev-biomes-toggle');
+    if (!toggle) {
+        return;
+    }
+
+    const applyState = () => {
+        devBiomesEnabled = toggle.checked;
+        enforceBiomeEventRestrictions();
+    };
+
+    applyState();
+
+    toggle.addEventListener('change', applyState);
+}
+
+function triggerLuckPresetButtonAnimation(button, className) {
+    if (!button || areShakeEffectsDisabled()) {
+        return;
+    }
+
+    button.classList.remove('luck-preset-button--pop', 'luck-preset-button--mega-pop', 'luck-preset-button--master-pop');
+    void button.offsetWidth;
+    button.classList.add(className);
+}
+
+function bindLuckPresetButtonAnimation(button, className, animationNames) {
+    if (!button) {
+        return;
+    }
+
+    button.addEventListener('click', () => {
+        if (appState.reduceMotion || areShakeEffectsDisabled()) {
+            return;
+        }
+        triggerLuckPresetButtonAnimation(button, className);
+    });
+
+    button.addEventListener('animationend', event => {
+        if (animationNames.includes(event.animationName)) {
+            button.classList.remove(className);
+        }
+    });
+}
+
+function setupLuckPresetAnimations() {
+    resetLuckPresetAnimations();
+
+    const animationConfigByTier = {
+        mild: { className: 'luck-preset-button--pop', animationNames: ['luckPresetPop'] },
+        aggressive: { className: 'luck-preset-button--mega-pop', animationNames: ['luckPresetMegaPop'] },
+        massive: { className: 'luck-preset-button--master-pop', animationNames: ['luckPresetMasterPop'] }
+    };
+
+    document.querySelectorAll('.luck-preset-button--shake').forEach(button => {
+        const config = animationConfigByTier[button.dataset.shakeTier] || animationConfigByTier.mild;
+        bindLuckPresetButtonAnimation(button, config.className, config.animationNames);
+    });
+}
+
+function setVersionButtonExpanded(state) {
+    const trigger = versionInfoButton || document.getElementById('versionInfoButton');
+    if (trigger) {
+        trigger.setAttribute('aria-expanded', state ? 'true' : 'false');
+    }
+}
+
+function showVersionChangelogOverlay() {
+    const overlay = document.getElementById('versionChangelogOverlay');
+    if (!overlay) {
+        return;
+    }
+
+    ensureChangelogTabsReady();
+
+    const activeElement = document.activeElement;
+    if (activeElement && typeof activeElement.focus === 'function') {
+        versionChangelogOverlayState.lastFocusedElement = activeElement;
+    } else {
+        versionChangelogOverlayState.lastFocusedElement = null;
+    }
+
+    revealOverlay(overlay);
+    setVersionButtonExpanded(true);
+
+    if (!versionChangelogOverlayState.escapeHandler) {
+        versionChangelogOverlayState.escapeHandler = event => {
+            if (event.key === 'Escape' || event.key === 'Esc') {
+                event.preventDefault();
+                hideVersionChangelogOverlay();
+            }
+        };
+        document.addEventListener('keydown', versionChangelogOverlayState.escapeHandler);
+    }
+
+    const activeTab = document.querySelector('[data-changelog-tab][aria-selected="true"]');
+    const firstTab = document.querySelector('[data-changelog-tab]');
+    const closeButton = document.getElementById('versionChangelogClose');
+    const focusTarget = activeTab || firstTab || closeButton;
+    if (focusTarget && typeof focusTarget.focus === 'function') {
+        try {
+            focusTarget.focus({ preventScroll: true });
+        } catch (error) {
+            focusTarget.focus();
+        }
+    }
+}
+
+function hideVersionChangelogOverlay({ focusTrigger = true } = {}) {
+    const overlay = document.getElementById('versionChangelogOverlay');
+    if (!overlay || overlay.hasAttribute('hidden') || overlay.hasAttribute('data-closing')) {
+        setVersionButtonExpanded(false);
+        return;
+    }
+
+    setVersionButtonExpanded(false);
+
+    if (versionChangelogOverlayState.escapeHandler) {
+        document.removeEventListener('keydown', versionChangelogOverlayState.escapeHandler);
+        versionChangelogOverlayState.escapeHandler = null;
+    }
+
+    const focusTarget = versionChangelogOverlayState.lastFocusedElement;
+    versionChangelogOverlayState.lastFocusedElement = null;
+
+    concealOverlay(overlay, {
+        onHidden: () => {
+            if (cutsceneWarningManager.afterChangelog()) return;
+            if (!focusTrigger) {
+                return;
+            }
+            if (focusTarget && typeof focusTarget.focus === 'function') {
+                focusTarget.focus();
+                return;
+            }
+            const trigger = versionInfoButton || document.getElementById('versionInfoButton');
+            if (trigger && typeof trigger.focus === 'function') {
+                trigger.focus();
+            }
+        }
+    });
+}
+
+function setupChangelogTabs() {
+    const tablist = document.querySelector('[data-changelog-tablist]');
+    if (!tablist) {
+        return;
+    }
+
+    const panels = Array.from(document.querySelectorAll('[data-changelog-panel]'));
+    const panelContainer = document.querySelector('[data-changelog-panels]');
+    const jumpSelect = document.querySelector('[data-changelog-jump]');
+    const navigationButtons = Array.from(document.querySelectorAll('[data-changelog-nav]'));
+
+    if (!panels.length) {
+        return;
+    }
+
+    const formatVersionLabel = (versionId, panel) => {
+        const explicitLabel = panel.getAttribute('data-changelog-label');
+        if (explicitLabel) {
+            return explicitLabel.trim();
+        }
+
+        const titleElement = panel.querySelector('.changelog-modal__title');
+        if (titleElement) {
+            const match = titleElement.textContent.match(/v\d+(?:\.\d+)?/i);
+            if (match && match[0]) {
+                return match[0];
+            }
+        }
+
+        const normalizedVersionId = String(versionId || '').trim();
+        if (/^v\d+$/i.test(normalizedVersionId)) {
+            const numericVersion = normalizedVersionId.slice(1);
+            if (numericVersion.length > 1) {
+                return `v${numericVersion.charAt(0)}.${numericVersion.slice(1)}`;
+            }
+        }
+
+        return normalizedVersionId || 'Unknown';
+    };
+
+    const syncSubupdateTitles = () => {
+        panels.forEach(panel => {
+            const subtitleElement = panel.querySelector('.changelog-modal__header .changelog-tab__subtitle');
+            let updateTitle = '';
+            if (subtitleElement) {
+                const subtitleClone = subtitleElement.cloneNode(true);
+                subtitleClone.querySelectorAll('.tinyClass').forEach(node => node.remove());
+                updateTitle = subtitleClone.textContent.replace(/\s+/g, ' ').trim();
+            }
+            if (!updateTitle) {
+                updateTitle = formatVersionLabel(panel.dataset.changelogPanel, panel)
+                    .replace(/\s*\(Latest Update\)\s*$/i, '')
+                    .trim();
+            }
+            const subupdateTitles = panel.querySelectorAll('[data-changelog-subupdates-title]');
+            subupdateTitles.forEach(title => {
+                const titleCopy = document.createElement('span');
+                titleCopy.className = 'changelog-subupdates__title-copy changelog-tab__subtitle';
+                titleCopy.textContent = updateTitle;
+
+                const titleSuffix = document.createElement('span');
+                titleSuffix.className = 'changelog-subupdates__title-suffix';
+                titleSuffix.textContent = ' sub-updates';
+
+                title.replaceChildren(titleCopy, titleSuffix);
+            });
+        });
+    };
+
+    syncSubupdateTitles();
+
+    const setupSubupdateCards = () => {
+        panels.forEach(panel => {
+            const cards = Array.from(panel.querySelectorAll('.changelog-subupdate-card'));
+            cards.forEach(card => {
+                if (card.dataset.subupdateInitialized === 'true') {
+                    return;
+                }
+
+                const versionElement = card.querySelector('.changelog-subupdate-card__version');
+                const versionLabel = versionElement ? versionElement.textContent.trim() : 'Sub-update';
+                const detailNodes = Array.from(card.querySelectorAll(
+                    '.changelog-subupdate-card__title, .changelog-subupdate-card__meta, .changelog-modal__intro, .changelog-modal__list--sub, :scope > p'
+                ));
+                card.dataset.subupdateInitialized = 'true';
+                card.dataset.subupdateLabel = versionLabel;
+                card.tabIndex = 0;
+                card.setAttribute('role', 'button');
+                card.setAttribute('aria-expanded', 'false');
+                card.setAttribute('aria-label', `Open ${versionLabel} sub-update`);
+
+                const setCardOpen = isOpen => {
+                    const nextOpen = Boolean(isOpen);
+                    card.classList.toggle('changelog-subupdate-card--open', nextOpen);
+                    card.setAttribute('aria-expanded', nextOpen ? 'true' : 'false');
+                    card.setAttribute('aria-label', `${nextOpen ? 'Close' : 'Open'} ${versionLabel} sub-update`);
+                    detailNodes.forEach(node => {
+                        node.setAttribute('aria-hidden', nextOpen ? 'false' : 'true');
+                    });
+                };
+
+                const closeSiblingCards = () => {
+                    cards.forEach(otherCard => {
+                        if (otherCard === card) {
+                            return;
+                        }
+                        otherCard.classList.remove('changelog-subupdate-card--open');
+                        otherCard.setAttribute('aria-expanded', 'false');
+                        const otherLabel = otherCard.dataset.subupdateLabel || 'Sub-update';
+                        otherCard.setAttribute('aria-label', `Open ${otherLabel} sub-update`);
+                        otherCard.querySelectorAll(
+                            '.changelog-subupdate-card__title, .changelog-subupdate-card__meta, .changelog-modal__intro, .changelog-modal__list--sub, :scope > p'
+                        ).forEach(node => {
+                            node.setAttribute('aria-hidden', 'true');
+                        });
+                    });
+                };
+
+                card.addEventListener('click', event => {
+                    const target = event.target;
+                    if (target instanceof Element && target.closest('a, button, input, select, textarea, label')) {
+                        return;
+                    }
+
+                    const isOpen = card.classList.contains('changelog-subupdate-card--open');
+                    const headerClicked = target instanceof Element && Boolean(target.closest('.changelog-subupdate-card__header'));
+                    if (isOpen && !headerClicked) {
+                        return;
+                    }
+
+                    if (!isOpen) {
+                        closeSiblingCards();
+                    }
+                    setCardOpen(!isOpen);
+                });
+
+                card.addEventListener('keydown', event => {
+                    if (event.key !== 'Enter' && event.key !== ' ') {
+                        return;
+                    }
+                    event.preventDefault();
+                    if (!card.classList.contains('changelog-subupdate-card--open')) {
+                        closeSiblingCards();
+                    }
+                    setCardOpen(!card.classList.contains('changelog-subupdate-card--open'));
+                });
+
+                setCardOpen(false);
+            });
+        });
+    };
+
+    setupSubupdateCards();
+
+    let tabs = Array.from(tablist.querySelectorAll('[data-changelog-tab]'));
+    const existingTabIds = new Set(tabs.map(tab => tab.dataset.changelogTab));
+    let missingTabsCreated = false;
+
+    panels.forEach(panel => {
+        const panelId = panel.dataset.changelogPanel;
+        if (!panelId || existingTabIds.has(panelId)) {
+            return;
+        }
+
+        const tab = document.createElement('button');
+        tab.type = 'button';
+        tab.className = 'changelog-tab';
+        tab.id = `changelog-tab-${panelId}`;
+        tab.setAttribute('role', 'tab');
+        tab.setAttribute('aria-controls', panel.id);
+        tab.setAttribute('aria-selected', 'false');
+        tab.setAttribute('tabindex', '-1');
+        tab.dataset.changelogTab = panelId;
+
+        const title = document.createElement('span');
+        title.className = 'changelog-tab__title';
+        title.textContent = formatVersionLabel(panelId, panel);
+        tab.appendChild(title);
+
+        panel.setAttribute('aria-labelledby', tab.id);
+        tablist.appendChild(tab);
+        missingTabsCreated = true;
+    });
+
+    if (missingTabsCreated) {
+        tabs = Array.from(tablist.querySelectorAll('[data-changelog-tab]'));
+    }
+
+    if (!tabs.length) {
+        return;
+    }
+
+    applyLatestUpdateBadgeToChangelogTabs(tabs);
+
+    const panelLookup = new Map();
+    panels.forEach(panel => {
+        panelLookup.set(panel.dataset.changelogPanel, panel);
+    });
+
+    tabs.forEach(tab => {
+        const panelId = tab.dataset.changelogTab;
+        const panel = panelLookup.get(panelId);
+        if (!panel) {
+            return;
+        }
+        if (!tab.id) {
+            tab.id = `changelog-tab-${panelId}`;
+        }
+        tab.setAttribute('aria-controls', panel.id);
+        panel.setAttribute('aria-labelledby', tab.id);
+    });
+
+    let activePanelId = null;
+
+    if (panelContainer) {
+        const releaseHeight = () => {
+            panelContainer.classList.remove('changelog-modal__panels--animating');
+            panelContainer.style.height = '';
+        };
+
+        panelContainer.addEventListener('transitionend', event => {
+            if (event.target === panelContainer && event.propertyName === 'height') {
+                releaseHeight();
+            }
+        });
+
+        panelContainer.addEventListener('transitioncancel', event => {
+            if (event.target === panelContainer && event.propertyName === 'height') {
+                releaseHeight();
+            }
+        });
+    }
+
+    const getTabIndexById = tabId => tabs.findIndex(tab => tab.dataset.changelogTab === tabId);
+
+    const updateControlsForActiveTab = targetId => {
+        const activeIndex = getTabIndexById(targetId);
+        if (activeIndex === -1) {
+            return;
+        }
+
+        navigationButtons.forEach(button => {
+            const direction = button.getAttribute('data-changelog-nav');
+            if (direction === 'newer') {
+                button.disabled = activeIndex <= 0;
+            } else if (direction === 'older') {
+                button.disabled = activeIndex >= tabs.length - 1;
+            }
+        });
+
+        if (jumpSelect) {
+            jumpSelect.value = targetId;
+        }
+    };
+
+    const activateTab = (targetId, { animate = true } = {}) => {
+        const nextPanel = panelLookup.get(targetId);
+        if (!nextPanel) {
+            return;
+        }
+
+        const previousPanel = activePanelId ? panelLookup.get(activePanelId) : null;
+        const shouldAnimate = Boolean(
+            animate &&
+            panelContainer &&
+            previousPanel &&
+            previousPanel !== nextPanel &&
+            !appState.reduceMotion
+        );
+
+        if (panelContainer) {
+            if (shouldAnimate) {
+                panelContainer.classList.add('changelog-modal__panels--animating');
+                panelContainer.style.height = `${previousPanel.scrollHeight}px`;
+            } else {
+                panelContainer.classList.remove('changelog-modal__panels--animating');
+                panelContainer.style.height = '';
+            }
+        }
+
+        tabs.forEach(tab => {
+            const isActive = tab.dataset.changelogTab === targetId;
+            tab.setAttribute('aria-selected', isActive ? 'true' : 'false');
+            tab.setAttribute('tabindex', isActive ? '0' : '-1');
+            tab.classList.toggle('changelog-tab--active', isActive);
+        });
+
+        panelLookup.forEach((panel, panelId) => {
+            const isActive = panelId === targetId;
+            panel.hidden = !isActive;
+            panel.setAttribute('tabindex', isActive ? '0' : '-1');
+            if (isActive) {
+                panel.removeAttribute('aria-hidden');
+            } else {
+                panel.setAttribute('aria-hidden', 'true');
+            }
+        });
+
+        if (panelContainer) {
+            if (shouldAnimate) {
+                const applyTargetHeight = () => {
+                    panelContainer.style.height = `${nextPanel.scrollHeight}px`;
+                };
+                if (typeof requestAnimationFrame === 'function') {
+                    requestAnimationFrame(applyTargetHeight);
+                } else {
+                    applyTargetHeight();
+                }
+            } else {
+                panelContainer.style.height = '';
+            }
+        }
+
+        activePanelId = targetId;
+        updateControlsForActiveTab(targetId);
+
+        const activeTab = tabs.find(tab => tab.dataset.changelogTab === targetId);
+        if (activeTab && typeof activeTab.scrollIntoView === 'function') {
+            activeTab.scrollIntoView({
+                block: 'nearest',
+                inline: 'center',
+                behavior: appState.reduceMotion ? 'auto' : 'smooth'
+            });
+        }
+    };
+
+    const focusTabByOffset = (currentTab, offset) => {
+        const currentIndex = tabs.indexOf(currentTab);
+        if (currentIndex === -1) {
+            return;
+        }
+        const nextIndex = (currentIndex + offset + tabs.length) % tabs.length;
+        const nextTab = tabs[nextIndex];
+        if (nextTab) {
+            nextTab.focus();
+            activateTab(nextTab.dataset.changelogTab);
+        }
+    };
+
+    tabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+            activateTab(tab.dataset.changelogTab);
+        });
+
+        tab.addEventListener('keydown', event => {
+            if (event.key === 'ArrowRight') {
+                event.preventDefault();
+                focusTabByOffset(tab, 1);
+            } else if (event.key === 'ArrowLeft') {
+                event.preventDefault();
+                focusTabByOffset(tab, -1);
+            } else if (event.key === 'Home') {
+                event.preventDefault();
+                const firstTab = tabs[0];
+                if (firstTab) {
+                    firstTab.focus();
+                    activateTab(firstTab.dataset.changelogTab);
+                }
+            } else if (event.key === 'End') {
+                event.preventDefault();
+                const lastTab = tabs[tabs.length - 1];
+                if (lastTab) {
+                    lastTab.focus();
+                    activateTab(lastTab.dataset.changelogTab);
+                }
+            }
+        });
+    });
+
+    navigationButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            if (!activePanelId) {
+                return;
+            }
+
+            const currentIndex = getTabIndexById(activePanelId);
+            if (currentIndex === -1) {
+                return;
+            }
+
+            const direction = button.getAttribute('data-changelog-nav');
+            const targetIndex = direction === 'older' ? currentIndex + 1 : currentIndex - 1;
+            const targetTab = tabs[targetIndex];
+            if (!targetTab) {
+                return;
+            }
+
+            targetTab.focus();
+            activateTab(targetTab.dataset.changelogTab);
+        });
+    });
+
+    if (jumpSelect) {
+        jumpSelect.innerHTML = '';
+        tabs.forEach(tab => {
+            const option = document.createElement('option');
+            option.value = tab.dataset.changelogTab;
+            option.textContent = tab.dataset.baseLabel || tab.textContent.trim();
+            jumpSelect.appendChild(option);
+        });
+
+        jumpSelect.addEventListener('change', () => {
+            const targetId = jumpSelect.value;
+            const targetTab = tabs.find(tab => tab.dataset.changelogTab === targetId);
+            if (!targetTab) {
+                return;
+            }
+            targetTab.focus();
+            activateTab(targetId);
+        });
+    }
+
+    const presetActiveTab = tabs.find(tab => tab.getAttribute('aria-selected') === 'true');
+    const initialTab = presetActiveTab || tabs[0];
+    if (initialTab) {
+        activateTab(initialTab.dataset.changelogTab, { animate: false });
+    }
+}
+
+function ensureChangelogTabsReady() {
+    if (versionChangelogOverlayState.tabsInitialized) {
+        return;
+    }
+
+    initializeChangelogAuraSigils();
+    WikiTitles.initializeItems();
+    setupChangelogTabs();
+    localizeChangelogUpdateTimes();
+    versionChangelogOverlayState.tabsInitialized = true;
+}
+
+function setupVersionChangelogOverlay() {
+    const overlay = document.getElementById('versionChangelogOverlay');
+    const trigger = versionInfoButton || document.getElementById('versionInfoButton');
+    const closeButton = document.getElementById('versionChangelogClose');
+
+    if (!overlay || !trigger) {
+        return;
+    }
+    if (trigger.dataset.changelogOverlayBound === 'true') {
+        return;
+    }
+    trigger.dataset.changelogOverlayBound = 'true';
+
+    trigger.addEventListener('click', () => {
+        if (overlay.hasAttribute('hidden')) {
+            showVersionChangelogOverlay();
+        } else {
+            hideVersionChangelogOverlay();
+        }
+    });
+
+    if (closeButton) {
+        closeButton.addEventListener('click', () => {
+            hideVersionChangelogOverlay();
+        });
+    }
+
+    overlay.addEventListener('click', event => {
+        if (event.target === overlay) {
+            hideVersionChangelogOverlay();
+        }
+    });
+}
+
+function setupNodeShiftAnimation() {
+    const nodeShiftLink = document.querySelector('.resource-link--nodeshift');
+    const nodeShiftImage = document.querySelector('.resource-link__image--nodeshift');
+
+    if (!nodeShiftLink || !nodeShiftImage) {
+        return;
+    }
+
+    const triggerAnimation = () => {
+        nodeShiftImage.classList.remove('hurt-burst');
+        void nodeShiftImage.offsetWidth;
+        nodeShiftImage.classList.add('hurt-burst');
+    };
+
+    nodeShiftLink.addEventListener('mouseenter', triggerAnimation);
+    nodeShiftImage.addEventListener('mouseenter', triggerAnimation);
+    nodeShiftLink.addEventListener('focus', triggerAnimation);
+    nodeShiftImage.addEventListener('focus', triggerAnimation);
+}
+
+function relocateResourcesPanelForMobile() {
+    const resourcesPanel = document.querySelector('.surface--side');
+    const footer = document.querySelector('.interface-footer');
+
+    if (!resourcesPanel || !footer) {
+        return;
+    }
+
+    const originalParent = resourcesPanel.parentElement;
+    const originalNextSibling = resourcesPanel.nextElementSibling;
+    const mobileQuery = window.matchMedia('(max-width: 900px)');
+
+    const moveToFooter = () => {
+        footer.parentElement.insertBefore(resourcesPanel, footer);
+    };
+
+    const restoreToLayout = () => {
+        if (originalParent && originalParent.contains(resourcesPanel)) {
+            return;
+        }
+
+        if (originalParent) {
+            if (originalNextSibling && originalNextSibling.parentElement === originalParent) {
+                originalParent.insertBefore(resourcesPanel, originalNextSibling);
+            } else {
+                originalParent.appendChild(resourcesPanel);
+            }
+        }
+    };
+
+    const syncLayout = () => {
+        if (mobileQuery.matches) {
+            moveToFooter();
+        } else {
+            restoreToLayout();
+        }
+    };
+
+    syncLayout();
+    mobileQuery.addEventListener('change', syncLayout);
+}
+
+function initializeHelpCenter() {
+    const toggle = document.getElementById('helpCenterToggle');
+    const panel = document.getElementById('helpCenterPanel');
+    const backdrop = document.getElementById('helpCenterBackdrop');
+    const closeButton = document.getElementById('helpCenterClose');
+    const searchInput = document.getElementById('helpCenterSearch');
+    const content = document.getElementById('helpCenterContent');
+    const emptyState = document.getElementById('helpCenterEmpty');
+    const guidedTour = document.getElementById('helpGuidedTour');
+    const tourStartButton = document.getElementById('helpTourStart');
+    const tourPreviousButton = document.getElementById('helpTourPrevious');
+    const tourTryButton = document.getElementById('helpTourTry');
+    const tourCompleteButton = document.getElementById('helpTourComplete');
+    const tourSteps = document.getElementById('helpTourSteps');
+    const tourStepCount = document.getElementById('helpTourStepCount');
+    const tourCompletion = document.getElementById('helpTourCompletion');
+    const tourProgress = guidedTour?.querySelector('[role="progressbar"]');
+    const tourProgressFill = document.getElementById('helpTourProgressFill');
+    const tourLesson = document.getElementById('helpTourLesson');
+    const tourLessonIcon = document.getElementById('helpTourLessonIcon');
+    const tourLessonNumber = document.getElementById('helpTourLessonNumber');
+    const tourLessonTitle = document.getElementById('helpTourLessonTitle');
+    const tourLessonDescription = document.getElementById('helpTourLessonDescription');
+    const tourLessonTask = document.getElementById('helpTourLessonTask');
+    const tourResumeButton = document.getElementById('helpTourResume');
+    const tourResumeLabel = document.getElementById('helpTourResumeLabel');
+    if (
+        !toggle || !panel || !backdrop || !closeButton || !searchInput || !content || !emptyState
+        || !guidedTour || !tourStartButton || !tourPreviousButton || !tourTryButton
+        || !tourCompleteButton || !tourSteps || !tourStepCount || !tourCompletion
+        || !tourProgress || !tourProgressFill || !tourLesson || !tourLessonIcon
+        || !tourLessonNumber || !tourLessonTitle || !tourLessonDescription
+        || !tourLessonTask || !tourResumeButton || !tourResumeLabel
+    ) {
+        return;
+    }
+
+    const cards = Array.from(content.querySelectorAll('[data-help-card]'));
+    const navButtons = Array.from(panel.querySelectorAll('#helpCenterNav [data-help-target]'));
+    const tourDisclosure = document.getElementById('helpTourDisclosure');
+    const searchStatus = document.getElementById('helpSearchStatus');
+    const clearSearchButton = document.getElementById('helpSearchClear');
+    let activeTopic = 'help-start';
+    const searchableText = new Map(cards.map(card => [
+        card.id,
+        `${card.dataset.helpKeywords || ''} ${card.textContent || ''}`.toLocaleLowerCase()
+    ]));
+    const tourLessons = Object.freeze([
+        {
+            icon: 'fa-clover',
+            title: 'Set luck and roll amount',
+            description: 'Start with the two values that define a basic simulation.',
+            task: 'Change Luck Total and Roll Amount, then return to the guide.',
+            target: '.parameter-console__module--loadout'
+        },
+        {
+            icon: 'fa-flask-vial',
+            title: 'Explore potion and item rules',
+            description: 'Single Potion Mode is direct; Multiple Potion Mode exposes ordered potion batches and stacking.',
+            task: 'Switch between potion modes and inspect quantities, stacking, and the potion priority note.',
+            target: '.parameter-console__module--loadout'
+        },
+        {
+            icon: 'fa-bolt',
+            title: 'Try a Quick Preset',
+            description: 'Preset banks provide fast starting points for luck, devices, buffs, and roll counts.',
+            task: 'Open a preset bank and apply one preset. Use its minus or plus control if available.',
+            target: '.surface--presets'
+        },
+        {
+            icon: 'fa-mountain-sun',
+            title: 'Build an environment',
+            description: 'Biome, rune, time, and events determine which environment rules are active.',
+            task: 'Choose a biome, rune, and time of day, then inspect the Events control.',
+            target: '.parameter-console__module--environment'
+        },
+        {
+            icon: 'fa-infinity',
+            title: 'Test biome shortcuts and RoE',
+            description: 'Environment Shortcuts apply common combinations without changing unrelated run settings.',
+            task: 'Try a shortcut, then enable RoE and confirm your biome and time remain selected.',
+            target: '.parameter-console__module--actions'
+        },
+        {
+            icon: 'fa-dice',
+            title: 'Compare simulation methods',
+            description: 'Unnamed’s reveals results at the end; Sol’s-Like shows the same RNG sequence live.',
+            task: 'Switch between the two method cards and inspect the Sol’s-Like pause control.',
+            target: '.roll-console__module--method'
+        },
+        {
+            icon: 'fa-gauge-high',
+            title: 'Tune rolling speed and filters',
+            description: 'Rolling Settings controls live display speed and which tiers or auras are shown.',
+            task: 'Try a speed shortcut, move the slider, and open either aura filter.',
+            action: 'rolling-settings',
+            target: '.rolling-settings__field'
+        },
+        {
+            icon: 'fa-film',
+            title: 'Configure cutscenes and preferences',
+            description: 'Rolling Settings contains per-aura cutscene playback and pause controls alongside the roll-feed filters.',
+            task: 'Open Filter Cutscenes and choose which aura cutscenes should play.',
+            action: 'rolling-settings',
+            target: '#rollingCutscenePlaybackFiltersButton'
+        },
+        {
+            icon: 'fa-list-ol',
+            title: 'Read and refine results',
+            description: 'The Sequence Monitor contains the live feed, tier-aware search, sorting, sharing, XP, and totals.',
+            task: 'Run a small simulation, search an aura or tier, and try the available sorting and sharing controls.',
+            target: '.surface--results'
+        }
+    ]);
+    const completedTourLessons = new Set();
+    let currentTourLesson = 0;
+    let tourActive = false;
+    let highlightedTourTarget = null;
+    let open = false;
+    let lastFocusedElement = null;
+    let closeTimer = null;
+
+    const prefersReducedMotion = () => Boolean(
+        appState?.reduceMotion
+        || window.matchMedia('(prefers-reduced-motion: reduce)').matches
+        || document.body.classList.contains('quality-no-ui-animations')
+    );
+
+    const clearHighlightedTourTarget = () => {
+        if (highlightedTourTarget) {
+            highlightedTourTarget.classList.remove('help-tour-target');
+            highlightedTourTarget = null;
+        }
+    };
+
+    const launchTourCompletionConfetti = () => {
+        guidedTour.querySelector('.help-tour-confetti')?.remove();
+        if (
+            prefersReducedMotion()
+            || document.body.classList.contains('quality-no-particles')
+        ) {
+            return;
+        }
+
+        const confettiLayer = document.createElement('div');
+        confettiLayer.className = 'help-tour-confetti';
+        confettiLayer.setAttribute('aria-hidden', 'true');
+        const colors = ['#77d9ff', '#7af0bd', '#ffe47a', '#ff8eae', '#bb8cff', '#f4fbff'];
+        const pieceCount = 42;
+        const fragment = document.createDocumentFragment();
+
+        for (let index = 0; index < pieceCount; index += 1) {
+            const progress = pieceCount === 1 ? 0.5 : index / (pieceCount - 1);
+            const horizontalDistance = ((progress * 2) - 1) * (135 + (Math.random() * 95));
+            const endHorizontalDistance = horizontalDistance * (1.08 + (Math.random() * 0.18));
+            const riseDistance = -(75 + (Math.random() * 125));
+            const fallDistance = 75 + (Math.random() * 105);
+            const rotation = (Math.random() < 0.5 ? -1 : 1) * (280 + (Math.random() * 620));
+            const piece = document.createElement('span');
+
+            piece.className = 'help-tour-confetti__piece';
+            piece.style.setProperty('--confetti-color', colors[index % colors.length]);
+            piece.style.setProperty('--confetti-x', `${horizontalDistance.toFixed(1)}px`);
+            piece.style.setProperty('--confetti-end-x', `${endHorizontalDistance.toFixed(1)}px`);
+            piece.style.setProperty('--confetti-rise', `${riseDistance.toFixed(1)}px`);
+            piece.style.setProperty('--confetti-fall', `${fallDistance.toFixed(1)}px`);
+            piece.style.setProperty('--confetti-half-rotation', `${(rotation * 0.55).toFixed(1)}deg`);
+            piece.style.setProperty('--confetti-rotation', `${rotation.toFixed(1)}deg`);
+            piece.style.setProperty('--confetti-delay', `${Math.floor(Math.random() * 110)}ms`);
+            piece.style.setProperty('--confetti-duration', `${1150 + Math.floor(Math.random() * 450)}ms`);
+            piece.style.setProperty('--confetti-width', `${5 + Math.floor(Math.random() * 4)}px`);
+            piece.style.setProperty('--confetti-height', `${8 + Math.floor(Math.random() * 7)}px`);
+            if (index % 4 === 0) {
+                piece.classList.add('help-tour-confetti__piece--round');
+            }
+            fragment.appendChild(piece);
+        }
+
+        confettiLayer.appendChild(fragment);
+        guidedTour.appendChild(confettiLayer);
+        window.setTimeout(() => confettiLayer.remove(), 1800);
+    };
+
+    const renderTour = () => {
+        const lesson = tourLessons[currentTourLesson];
+        const completedCount = completedTourLessons.size;
+        const finished = completedCount === tourLessons.length;
+        const stepNumber = currentTourLesson + 1;
+
+        tourStepCount.textContent = finished
+            ? 'Tour complete'
+            : `Step ${stepNumber} of ${tourLessons.length}`;
+        tourCompletion.textContent = `${completedCount} completed`;
+        tourProgress.setAttribute('aria-valuemax', String(tourLessons.length));
+        tourProgress.setAttribute('aria-valuenow', String(completedCount));
+        tourProgressFill.style.width = `${(completedCount / tourLessons.length) * 100}%`;
+        tourLesson.classList.toggle('help-tour__lesson--complete', finished);
+
+        if (finished) {
+            tourLessonIcon.innerHTML = '<i class="fa-solid fa-trophy"></i>';
+            tourLessonNumber.textContent = 'Training complete';
+            tourLessonTitle.textContent = 'You are ready to build accurate simulations';
+            tourLessonDescription.textContent = 'You have visited every major workflow and practiced the controls in the live interface.';
+            tourLessonTask.innerHTML = '<i class="fa-solid fa-circle-check" aria-hidden="true"></i> Restart whenever you want a quick refresher.';
+            tourTryButton.disabled = true;
+            tourCompleteButton.innerHTML = '<span>Restart tour</span><i class="fa-solid fa-rotate-right" aria-hidden="true"></i>';
+        } else {
+            tourLessonIcon.innerHTML = `<i class="fa-solid ${lesson.icon}"></i>`;
+            tourLessonNumber.textContent = `Task ${String(stepNumber).padStart(2, '0')}`;
+            tourLessonTitle.textContent = lesson.title;
+            tourLessonDescription.textContent = lesson.description;
+            tourLessonTask.innerHTML = `<i class="fa-solid fa-circle-check" aria-hidden="true"></i> ${lesson.task}`;
+            tourTryButton.disabled = false;
+            tourCompleteButton.innerHTML = currentTourLesson === tourLessons.length - 1
+                ? '<span>Finish tour</span><i class="fa-solid fa-flag-checkered" aria-hidden="true"></i>'
+                : '<span>Done, next</span><i class="fa-solid fa-arrow-right" aria-hidden="true"></i>';
+        }
+
+        tourPreviousButton.disabled = finished || currentTourLesson === 0;
+        tourStartButton.innerHTML = tourActive || completedCount > 0
+            ? '<i class="fa-solid fa-rotate-right" aria-hidden="true"></i><span>Restart guided tour</span>'
+            : '<i class="fa-solid fa-play" aria-hidden="true"></i><span>Start guided tour</span>';
+        tourResumeLabel.textContent = `Continue step ${stepNumber}`;
+
+        const fragment = document.createDocumentFragment();
+        tourLessons.forEach((item, index) => {
+            const stepButton = document.createElement('button');
+            stepButton.type = 'button';
+            stepButton.dataset.helpTourStep = String(index);
+            stepButton.setAttribute('aria-label', `Open guided practice step ${index + 1}: ${item.title}`);
+            if (index === currentTourLesson && !finished) {
+                stepButton.setAttribute('aria-current', 'step');
+            }
+            if (completedTourLessons.has(index)) {
+                stepButton.classList.add('help-tour__step--complete');
+            }
+            stepButton.textContent = String(index + 1);
+            fragment.appendChild(stepButton);
+        });
+        tourSteps.replaceChildren(fragment);
+    };
+
+    const startTour = () => {
+        showTopic('help-start');
+        if (tourDisclosure) tourDisclosure.open = true;
+        tourActive = true;
+        currentTourLesson = 0;
+        completedTourLessons.clear();
+        guidedTour.querySelector('.help-tour-confetti')?.remove();
+        tourResumeButton.hidden = true;
+        clearHighlightedTourTarget();
+        renderTour();
+        guidedTour.scrollIntoView({
+            behavior: prefersReducedMotion() ? 'auto' : 'smooth',
+            block: 'start'
+        });
+    };
+
+    const setActiveTopic = topicId => {
+        navButtons.forEach(button => {
+            if (button.dataset.helpTarget === topicId) {
+                button.setAttribute('aria-current', 'true');
+            } else {
+                button.removeAttribute('aria-current');
+            }
+        });
+    };
+
+    const showTopic = topicId => {
+        activeTopic = topicId;
+        searchInput.value = '';
+        cards.forEach(card => { card.hidden = card.id !== topicId; });
+        navButtons.forEach(button => { button.hidden = false; });
+        setActiveTopic(topicId);
+        if (tourDisclosure) tourDisclosure.hidden = topicId !== 'help-start';
+        emptyState.hidden = true;
+        if (searchStatus) searchStatus.textContent = '';
+        if (clearSearchButton) clearSearchButton.hidden = true;
+        content.scrollTop = 0;
+    };
+
+    const closeHelpCenter = ({ restoreFocus = true } = {}) => {
+        if (!open) return;
+        open = false;
+        panel.classList.remove('help-center--open');
+        backdrop.classList.remove('help-center__backdrop--open');
+        panel.setAttribute('aria-hidden', 'true');
+        toggle.setAttribute('aria-expanded', 'false');
+        document.body.classList.remove('help-center-open');
+        tourResumeButton.hidden = !tourActive || completedTourLessons.size === tourLessons.length;
+        window.clearTimeout(closeTimer);
+        const finishClose = () => {
+            panel.hidden = true;
+            backdrop.hidden = true;
+            if (restoreFocus && lastFocusedElement && typeof lastFocusedElement.focus === 'function') {
+                lastFocusedElement.focus({ preventScroll: true });
+            }
+        };
+        if (prefersReducedMotion()) {
+            finishClose();
+        } else {
+            closeTimer = window.setTimeout(finishClose, 240);
+        }
+    };
+
+    const openHelpCenter = () => {
+        if (open) return;
+        window.clearTimeout(closeTimer);
+        open = true;
+        lastFocusedElement = document.activeElement;
+        panel.hidden = false;
+        backdrop.hidden = false;
+        panel.setAttribute('aria-hidden', 'false');
+        toggle.setAttribute('aria-expanded', 'true');
+        document.body.classList.add('help-center-open');
+        tourResumeButton.hidden = true;
+        clearHighlightedTourTarget();
+        const optionsMenu = document.getElementById('optionsMenu');
+        const optionsMenuToggle = document.getElementById('optionsMenuToggle');
+        optionsMenu?.classList.remove('options-menu--open');
+        optionsMenuToggle?.setAttribute('aria-expanded', 'false');
+        requestAnimationFrame(() => {
+            panel.classList.add('help-center--open');
+            backdrop.classList.add('help-center__backdrop--open');
+            searchInput.focus({ preventScroll: true });
+        });
+    };
+
+    const focusTourTarget = () => {
+        const lesson = tourLessons[currentTourLesson];
+        const target = lesson.target ? document.querySelector(lesson.target) : null;
+        if (!target) return;
+        clearHighlightedTourTarget();
+        highlightedTourTarget = target;
+        target.classList.add('help-tour-target');
+        target.scrollIntoView({
+            behavior: prefersReducedMotion() ? 'auto' : 'smooth',
+            block: 'center'
+        });
+        if (typeof target.focus === 'function') {
+            window.setTimeout(() => {
+                try {
+                    target.focus({ preventScroll: true });
+                } catch (error) {
+                    target.focus();
+                }
+            }, prefersReducedMotion() ? 0 : 320);
+        }
+    };
+
+    const launchTourLesson = () => {
+        const lesson = tourLessons[currentTourLesson];
+        tourActive = true;
+        renderTour();
+        closeHelpCenter({ restoreFocus: false });
+        const delay = prefersReducedMotion() ? 0 : 250;
+        window.setTimeout(() => {
+            if (lesson.action === 'rolling-settings') {
+                showRollingSettingsOverlay();
+                window.setTimeout(focusTourTarget, prefersReducedMotion() ? 0 : 80);
+            } else if (lesson.action === 'settings-menu') {
+                const optionsMenu = document.getElementById('optionsMenu');
+                const optionsMenuToggle = document.getElementById('optionsMenuToggle');
+                optionsMenu?.classList.add('options-menu--open');
+                optionsMenuToggle?.setAttribute('aria-expanded', 'true');
+                focusTourTarget();
+            } else {
+                focusTourTarget();
+            }
+            tourResumeButton.hidden = false;
+        }, delay);
+    };
+
+    const resumeTour = () => {
+        clearHighlightedTourTarget();
+        tourResumeButton.hidden = true;
+        const overlays = [
+            document.getElementById('auraDetailFilterOverlay'),
+            document.getElementById('auraFilterOverlay'),
+            document.getElementById('cutscenePauseFilterOverlay'),
+            document.getElementById('cutscenePlaybackFilterOverlay'),
+            document.getElementById('rollingSettingsOverlay')
+        ];
+        let overlayWasOpen = false;
+        overlays.forEach(overlay => {
+            if (overlay && !overlay.hasAttribute('hidden')) {
+                overlayWasOpen = true;
+                concealOverlay(overlay);
+            }
+        });
+        const optionsMenu = document.getElementById('optionsMenu');
+        const optionsMenuToggle = document.getElementById('optionsMenuToggle');
+        optionsMenu?.classList.remove('options-menu--open');
+        optionsMenuToggle?.setAttribute('aria-expanded', 'false');
+        window.setTimeout(() => {
+            openHelpCenter();
+            showTopic('help-start');
+            if (tourDisclosure) tourDisclosure.open = true;
+            renderTour();
+            guidedTour.scrollIntoView({
+                behavior: prefersReducedMotion() ? 'auto' : 'smooth',
+                block: 'start'
+            });
+        }, overlayWasOpen && !prefersReducedMotion() ? 220 : 0);
+    };
+
+    const applySearch = () => {
+        const query = searchInput.value.trim().toLocaleLowerCase();
+        if (!query) { showTopic(activeTopic); return; }
+        const terms = query.split(/\s+/);
+        let visibleCount = 0;
+        cards.forEach(card => {
+            const visible = terms.every(term => searchableText.get(card.id).includes(term));
+            card.hidden = !visible;
+            if (visible) {
+                visibleCount += 1;
+            }
+        });
+        navButtons.forEach(button => {
+            const target = document.getElementById(button.dataset.helpTarget || '');
+            button.hidden = Boolean(target?.hidden);
+        });
+        if (tourDisclosure) tourDisclosure.hidden = true;
+        emptyState.hidden = visibleCount !== 0;
+        setActiveTopic(null);
+        if (searchStatus) searchStatus.textContent = `${visibleCount} ${visibleCount === 1 ? 'topic' : 'topics'} found`;
+        if (clearSearchButton) clearSearchButton.hidden = false;
+        content.scrollTop = 0;
+    };
+
+    toggle.addEventListener('click', () => {
+        if (open) {
+            closeHelpCenter();
+        } else {
+            openHelpCenter();
+        }
+    });
+    closeButton.addEventListener('click', () => closeHelpCenter());
+    backdrop.addEventListener('click', () => closeHelpCenter());
+    tourStartButton.addEventListener('click', startTour);
+    tourPreviousButton.addEventListener('click', () => {
+        if (currentTourLesson === 0) return;
+        tourActive = true;
+        currentTourLesson -= 1;
+        renderTour();
+    });
+    tourTryButton.addEventListener('click', launchTourLesson);
+    tourCompleteButton.addEventListener('click', () => {
+        if (completedTourLessons.size === tourLessons.length) {
+            startTour();
+            return;
+        }
+        tourActive = true;
+        completedTourLessons.add(currentTourLesson);
+        if (completedTourLessons.size === tourLessons.length) {
+            tourActive = false;
+            tourResumeButton.hidden = true;
+        } else if (currentTourLesson < tourLessons.length - 1) {
+            currentTourLesson += 1;
+        } else {
+            const nextIncompleteLesson = tourLessons.findIndex((lesson, index) => (
+                !completedTourLessons.has(index)
+            ));
+            if (nextIncompleteLesson !== -1) {
+                currentTourLesson = nextIncompleteLesson;
+            }
+        }
+        renderTour();
+        if (completedTourLessons.size === tourLessons.length) {
+            launchTourCompletionConfetti();
+        }
+    });
+    tourSteps.addEventListener('click', event => {
+        const stepButton = event.target.closest('[data-help-tour-step]');
+        if (!stepButton || !tourSteps.contains(stepButton)) return;
+        const nextLesson = Number.parseInt(stepButton.dataset.helpTourStep, 10);
+        if (!Number.isInteger(nextLesson) || nextLesson < 0 || nextLesson >= tourLessons.length) {
+            return;
+        }
+        tourActive = true;
+        currentTourLesson = nextLesson;
+        renderTour();
+    });
+    tourResumeButton.addEventListener('click', resumeTour);
+    searchInput.addEventListener('input', applySearch);
+    clearSearchButton?.addEventListener('click', () => { showTopic(activeTopic); searchInput.focus(); });
+    document.querySelectorAll('[data-open-help]').forEach(button => {
+        button.addEventListener('click', () => { openHelpCenter(); showTopic(button.dataset.openHelp || 'help-start'); });
+    });
+    searchInput.addEventListener('keydown', event => {
+        if (event.key === 'Escape' && searchInput.value) {
+            event.stopPropagation();
+            searchInput.value = '';
+            applySearch();
+        }
+    });
+
+    panel.querySelectorAll('[data-help-target]').forEach(button => {
+        button.addEventListener('click', () => {
+            const topicId = button.dataset.helpTarget;
+            const card = topicId ? document.getElementById(topicId) : null;
+            if (!card) return;
+            showTopic(topicId);
+        });
+    });
+
+    panel.addEventListener('click', event => {
+        const jumpButton = event.target.closest('[data-help-jump]');
+        if (jumpButton) {
+            const selector = jumpButton.dataset.helpJump;
+            const target = selector ? document.querySelector(selector) : null;
+            if (jumpButton.dataset.helpPresetBank) setPresetConsoleBank(jumpButton.dataset.helpPresetBank);
+            closeHelpCenter({ restoreFocus: false });
+            if (target) {
+                window.setTimeout(() => target.scrollIntoView({
+                    behavior: prefersReducedMotion() ? 'auto' : 'smooth',
+                    block: 'center'
+                }), prefersReducedMotion() ? 0 : 250);
+            }
+            return;
+        }
+
+        const actionButton = event.target.closest('[data-help-action]');
+        if (actionButton?.dataset.helpAction === 'rolling-settings') {
+            closeHelpCenter({ restoreFocus: false });
+            window.setTimeout(showRollingSettingsOverlay, prefersReducedMotion() ? 0 : 250);
+        }
+    });
+
+    document.addEventListener('keydown', event => {
+        if (!open) return;
+        if (event.key === 'Escape') {
+            event.preventDefault();
+            closeHelpCenter();
+            return;
+        }
+        if (event.key !== 'Tab') return;
+        const focusable = Array.from(panel.querySelectorAll(
+            'button:not([disabled]):not([hidden]), input:not([disabled]), a[href], summary, [tabindex]:not([tabindex="-1"])'
+        )).filter(element => !element.closest('[hidden]') && element.getClientRects().length > 0);
+        if (focusable.length === 0) return;
+        const first = focusable[0];
+        const last = focusable[focusable.length - 1];
+        if (event.shiftKey && document.activeElement === first) {
+            event.preventDefault();
+            last.focus();
+        } else if (!event.shiftKey && document.activeElement === last) {
+            event.preventDefault();
+            first.focus();
+        }
+    });
+    renderTour();
+    showTopic('help-start');
+}
+
+function initializeCreditsDirectory() {
+    const credits = document.querySelector('.footer-credits');
+    const searchInput = document.getElementById('creditsSearch');
+    const resultCount = document.getElementById('creditsResultCount');
+    const emptyState = document.getElementById('creditsEmpty');
+    if (!credits || !searchInput || !resultCount || !emptyState) {
+        return;
+    }
+
+    const filterButtons = Array.from(credits.querySelectorAll('[data-credit-filter]'));
+    const creditItems = Array.from(credits.querySelectorAll('.footer-credits__item'));
+    const summaryCount = credits.querySelector('.footer-credits__summary-count');
+    let activeCategory = 'all';
+
+    if (summaryCount) {
+        summaryCount.textContent = `${creditItems.length} contributions`;
+    }
+
+    creditItems.forEach(item => {
+        const contributionText = item.textContent.toLocaleLowerCase();
+        item.dataset.creditSearchText = contributionText;
+        item.dataset.creditCategory ||= contributionText.includes('cutscene') ? 'cutscene' : 'media';
+        const kind = document.createElement('span');
+        kind.className = 'footer-credits__item-kind';
+        kind.textContent = item.dataset.creditCategory === 'cutscene'
+            ? 'Cutscene'
+            : (item.dataset.creditCategory === 'artwork' ? 'Artwork' : contributionText.includes('song') ? 'Audio' : 'Biome');
+        const heading = item.querySelector('.footer-credits__item-heading');
+        if (heading) heading.prepend(kind);
+        else item.prepend(kind);
+    });
+
+    const applyCreditsFilter = () => {
+        const query = searchInput.value.trim().toLocaleLowerCase();
+        let visibleCount = 0;
+
+        creditItems.forEach(item => {
+            const matchesCategory = activeCategory === 'all'
+                || item.dataset.creditCategory === activeCategory;
+            const matchesQuery = query.length === 0
+                || item.dataset.creditSearchText.includes(query);
+            const visible = matchesCategory && matchesQuery;
+            item.hidden = !visible;
+            if (visible) {
+                visibleCount += 1;
+            }
+        });
+
+        resultCount.textContent = `${visibleCount} of ${creditItems.length} contributions`;
+        emptyState.hidden = visibleCount !== 0;
+    };
+
+    filterButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            activeCategory = button.dataset.creditFilter || 'all';
+            filterButtons.forEach(candidate => {
+                const selected = candidate === button;
+                candidate.classList.toggle('is-active', selected);
+                candidate.setAttribute('aria-pressed', String(selected));
+            });
+            applyCreditsFilter();
+        });
+    });
+
+    searchInput.addEventListener('input', applyCreditsFilter);
+    applyCreditsFilter();
+}
+
+document.addEventListener('DOMContentLoaded', initializeEventSelector);
+document.addEventListener('DOMContentLoaded', initializeLatestDeploymentTime);
+document.addEventListener('DOMContentLoaded', initializeDevBiomeToggle);
+document.addEventListener('DOMContentLoaded', setupSimulationMethodControls);
+document.addEventListener('DOMContentLoaded', initializeRollingSettingsPanel);
+document.addEventListener('DOMContentLoaded', setupRollFeedSearch);
+document.addEventListener('DOMContentLoaded', setupRollFeedSorting);
+window.addEventListener('storage', event => {
+    if (event.key === AUDIO_SETTINGS_STORAGE_KEY) {
+        hydrateAudioSettings();
+        ['music', 'ui', 'server', 'effects', 'cutscene'].forEach(channel => {
+            setChannelVolume(channel, appState.audio[`${channel}Volume`], { persist: false });
+        });
+        setMasterMuteState(appState.audio.masterMuted, { force: true, persist: false });
+        return;
+    }
+    if (event.key !== VISUAL_SETTINGS_STORAGE_KEY) return;
+    hydrateVisualSettings();
+    applyQualityPreferencesState();
+});
+document.addEventListener('DOMContentLoaded', initializePotionSimulationMode);
+document.addEventListener('DOMContentLoaded', setupLuckPresetAdjustmentButtons);
+document.addEventListener('DOMContentLoaded', setupPresetConsoleTabs);
+document.addEventListener('DOMContentLoaded', initializeEquipmentControls);
+document.addEventListener('DOMContentLoaded', setupLuckPresetAnimations);
+document.addEventListener('DOMContentLoaded', setupVersionChangelogOverlay);
+document.addEventListener('DOMContentLoaded', maybeShowChangelogOnFirstVisit);
+document.addEventListener('DOMContentLoaded', initializeIntroOverlay);
+document.addEventListener('DOMContentLoaded', initializeRollTriggerFloating);
+document.addEventListener('DOMContentLoaded', setupRollCancellationControl);
+document.addEventListener('DOMContentLoaded', setupNodeShiftAnimation);
+document.addEventListener('DOMContentLoaded', setupWikiResourceHubSpin);
+document.addEventListener('DOMContentLoaded', relocateResourcesPanelForMobile);
+document.addEventListener('DOMContentLoaded', observeLayeredSigilText);
+document.addEventListener('DOMContentLoaded', startGlitchSigilFlicker);
+document.addEventListener('DOMContentLoaded', initializeCreditsDirectory);
+document.addEventListener('DOMContentLoaded', initializeHelpCenter);
+
+
+function spawnFortePixelatedSecretMessage() {
+    const secretLayer = document.getElementById('fortePixelatedSecretLayer');
+    const trigger = document.getElementById('fortePixelatedTrigger');
+    if (!secretLayer || !trigger) {
+        return;
+    }
+
+    const triggerRect = trigger.getBoundingClientRect();
+    const layerRect = secretLayer.getBoundingClientRect();
+    const triggerCenterX = triggerRect.left - layerRect.left + (triggerRect.width / 2);
+    const triggerCenterY = triggerRect.top - layerRect.top + (triggerRect.height / 2);
+    const randomAngle = Math.random() * Math.PI * 2;
+    const randomRadius = 18 + (Math.random() * 36);
+    const margin = 14;
+
+    const originX = Math.min(
+        Math.max(triggerCenterX + (Math.cos(randomAngle) * randomRadius), margin),
+        layerRect.width - margin
+    );
+    const originY = Math.min(
+        Math.max(triggerCenterY + (Math.sin(randomAngle) * randomRadius), margin),
+        layerRect.height - margin
+    );
+
+    const secretMessage = document.createElement('span');
+    secretMessage.className = 'preset-signoff__secret-message preset-signoff__secret-message--above-trigger qbearClass';
+    secretMessage.textContent = 'Meow :3';
+    secretMessage.style.setProperty('--secret-left', `${originX}px`);
+    secretMessage.style.setProperty('--secret-top', `${originY}px`);
+    secretLayer.append(secretMessage);
+
+    secretMessage.addEventListener('animationend', () => {
+        secretMessage.remove();
+    }, { once: true });
+}
+
+function applyFortePixelatedWaveText() {
+    const trigger = document.getElementById('fortePixelatedTrigger');
+    if (!trigger) {
+        return;
+    }
+
+    const text = trigger.textContent || '';
+    trigger.textContent = '';
+
+    Array.from(text).forEach((character, index) => {
+        const letter = document.createElement('span');
+        letter.className = 'pixel-wave-letter';
+        letter.style.setProperty('--pixel-wave-index', String(index));
+        letter.textContent = character === ' ' ? '\u00A0' : character;
+        trigger.append(letter);
+    });
+}
+
+
+function temporarilyRevealQbearMeowedMessage(trigger) {
+    const statusMessage = trigger.closest('.preset-signoff__status-message');
+    const channelLabel = statusMessage?.querySelector('.sigil-outline-cyberspace');
+    const middleTextNode = statusMessage
+        ? Array.from(statusMessage.childNodes).find(node => node.nodeType === Node.TEXT_NODE)
+        : null;
+
+    if (!statusMessage || !channelLabel || !middleTextNode) {
+        return;
+    }
+
+    let globalPrefixNode = statusMessage.querySelector('[data-global-prefix="true"]');
+    if (!globalPrefixNode) {
+        globalPrefixNode = document.createElement('span');
+        globalPrefixNode.dataset.globalPrefix = 'true';
+        statusMessage.insertBefore(globalPrefixNode, statusMessage.firstChild);
+    }
+
+        channelLabel.textContent = 'QBEAR';
+        middleTextNode.textContent = ' HAS BEEN ';
+        trigger.classList.add('sigil-effect-pixelation');
+        trigger.textContent = 'MEOWED :3';
+        applyFortePixelatedWaveText();
+        fortePixelatedSecretState.revealTimeoutId = null;
+
+    if (fortePixelatedSecretState.revealTimeoutId) {
+        window.clearTimeout(fortePixelatedSecretState.revealTimeoutId);
+    }
+
+    fortePixelatedSecretState.revealTimeoutId = window.setTimeout(() => {
+        channelLabel.textContent = 'FORTE';
+        middleTextNode.textContent = ' HAS BEEN ';
+        trigger.classList.add('sigil-effect-pixelation');
+        trigger.textContent = 'PIXELATED';
+        applyFortePixelatedWaveText();
+        fortePixelatedSecretState.revealTimeoutId = null;
+    }, 1500);
+}
+
+function setupFortePixelatedSecret() {
+    const trigger = document.getElementById('fortePixelatedTrigger');
+    if (!trigger) {
+        return;
+    }
+
+    const activateSecret = () => {
+        fortePixelatedSecretState.clickCount += 1;
+        if (fortePixelatedSecretState.clickCount < fortePixelatedSecretState.threshold) {
+            return;
+        }
+
+        fortePixelatedSecretState.clickCount = 0;
+        spawnFortePixelatedSecretMessage();
+        temporarilyRevealQbearMeowedMessage(trigger);
+        playSoundEffect(qbearMeowSoundEffectElement, 'effects');
+    };
+
+    trigger.addEventListener('click', activateSecret);
+    trigger.addEventListener('keydown', event => {
+        if (event.key !== 'Enter' && event.key !== ' ') {
+            return;
+        }
+        event.preventDefault();
+        activateSecret();
+    });
+}
+
+function setupSupportFloatToggle() {
+    const supportFloat = document.getElementById('supportFloat');
+    const toggleButton = document.getElementById('supportFloatToggle');
+    const supportLink = document.getElementById('supportFloatLink');
+    const qrButton = document.getElementById('supportFloatQrButton');
+
+    if (!supportFloat || !toggleButton || !supportLink) {
+        return;
+    }
+
+    const setCollapsed = collapsed => {
+        if (collapsed) {
+            setSupportQrDrawerOpen(false);
+        }
+        supportFloat.classList.toggle('support-float--collapsed', collapsed);
+        toggleButton.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
+        toggleButton.setAttribute('aria-label', collapsed ? 'Expand support button' : 'Minimize support button');
+        toggleButton.title = collapsed ? 'Expand' : 'Minimize';
+        supportLink.setAttribute('aria-hidden', collapsed ? 'true' : 'false');
+        supportLink.tabIndex = collapsed ? -1 : 0;
+        if (qrButton) {
+            qrButton.disabled = collapsed;
+            qrButton.tabIndex = collapsed ? -1 : 0;
+            qrButton.setAttribute('aria-hidden', collapsed ? 'true' : 'false');
+        }
+    };
+
+    toggleButton.addEventListener('click', event => {
+        event.preventDefault();
+        event.stopPropagation();
+        const shouldCollapse = !supportFloat.classList.contains('support-float--collapsed');
+        if (!shouldCollapse) {
+            const donationFloat = document.getElementById('donationFloat');
+            const donationToggle = document.getElementById('donationFloatToggle');
+            if (donationFloat && donationToggle && !donationFloat.classList.contains('donation-float--collapsed')) {
+                donationToggle.click();
+            }
+        }
+        setCollapsed(shouldCollapse);
+    });
+
+    setCollapsed(true);
+}
+
+function setupDonationFloatToggle() {
+    const donationFloat = document.getElementById('donationFloat');
+    const toggleButton = document.getElementById('donationFloatToggle');
+    const donationLink = document.getElementById('donationFloatLink');
+
+    if (!donationFloat || !toggleButton || !donationLink) {
+        return;
+    }
+
+    const setCollapsed = collapsed => {
+        donationFloat.classList.toggle('donation-float--collapsed', collapsed);
+        toggleButton.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
+        toggleButton.setAttribute('aria-label', collapsed ? 'Expand donation card' : 'Minimize donation card');
+        toggleButton.title = collapsed ? 'Expand' : 'Minimize';
+        donationLink.setAttribute('aria-hidden', collapsed ? 'true' : 'false');
+        donationLink.tabIndex = collapsed ? -1 : 0;
+    };
+
+    toggleButton.addEventListener('click', event => {
+        event.preventDefault();
+        event.stopPropagation();
+        const shouldCollapse = !donationFloat.classList.contains('donation-float--collapsed');
+        if (!shouldCollapse) {
+            const supportFloat = document.getElementById('supportFloat');
+            const supportToggle = document.getElementById('supportFloatToggle');
+            if (supportFloat && supportToggle && !supportFloat.classList.contains('support-float--collapsed')) {
+                supportToggle.click();
+            }
+        }
+        setCollapsed(shouldCollapse);
+    });
+
+    setCollapsed(true);
+}
+
+function setSupportQrDrawerOpen(isOpen, { focusQrButton = false } = {}) {
+    const supportFloat = document.getElementById('supportFloat');
+    const qrButton = document.getElementById('supportFloatQrButton');
+    const qrDrawer = document.getElementById('supportQrDrawer');
+    if (!supportFloat || !qrButton || !qrDrawer) {
+        return;
+    }
+
+    supportFloat.classList.toggle('support-float--qr-open', isOpen);
+    qrButton.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+    qrButton.setAttribute('aria-label', isOpen ? 'Hide support QR code' : 'Show support QR code');
+    qrButton.title = isOpen ? 'Hide QR code' : 'Show QR code';
+
+    qrDrawer.querySelectorAll('a, button').forEach(element => {
+        if ('tabIndex' in element) {
+            element.tabIndex = isOpen ? 0 : -1;
+        }
+    });
+
+    const restoreQrButtonFocus = () => {
+        if (focusQrButton && typeof qrButton.focus === 'function') {
+            try {
+                qrButton.focus({ preventScroll: true });
+            } catch (error) {
+                qrButton.focus();
+            }
+        }
+    };
+
+    if (isOpen) {
+        revealOverlay(qrDrawer);
+        const primaryAction = qrDrawer.querySelector('.support-qr-modal__action');
+        window.requestAnimationFrame(() => {
+            if (primaryAction && typeof primaryAction.focus === 'function') {
+                try {
+                    primaryAction.focus({ preventScroll: true });
+                } catch (error) {
+                    primaryAction.focus();
+                }
+            }
+        });
+        return;
+    }
+
+    concealOverlay(qrDrawer, { onHidden: restoreQrButtonFocus });
+}
+
+function toggleSupportQrDrawer() {
+    const supportFloat = document.getElementById('supportFloat');
+    if (!supportFloat || supportFloat.classList.contains('support-float--collapsed')) {
+        return;
+    }
+
+    setSupportQrDrawerOpen(!supportFloat.classList.contains('support-float--qr-open'));
+}
+
+function closeSupportQrDrawer({ focusQrButton = false } = {}) {
+    setSupportQrDrawerOpen(false, { focusQrButton });
+}
+
+let interactionAudioDelegationBound = false;
+
+function initializeInteractionAudioDelegation() {
+    if (interactionAudioDelegationBound || typeof document === 'undefined') {
+        return;
+    }
+    interactionAudioDelegationBound = true;
+
+    const clickSound = clickSoundEffectElement;
+    const hoverSound = document.getElementById('hoverSoundFx');
+
+    const findInteractiveTarget = (event, selector) => {
+        const target = event.target;
+        if (!(target instanceof Element)) {
+            return null;
+        }
+        const interactive = target.closest(selector);
+        if (!interactive || !document.documentElement.contains(interactive)) {
+            return null;
+        }
+        if ('disabled' in interactive && interactive.disabled) {
+            return null;
+        }
+        return interactive;
+    };
+
+    document.addEventListener('click', event => {
+        if (findInteractiveTarget(event, 'button, input')) {
+            playSoundEffect(clickSound, 'ui');
+        }
+    });
+
+    document.addEventListener('change', event => {
+        if (findInteractiveTarget(event, 'select')) {
+            playSoundEffect(clickSound, 'ui');
+        }
+    });
+
+    document.addEventListener('mouseover', event => {
+        const interactive = findInteractiveTarget(event, 'button, input, select');
+        if (!interactive) {
+            return;
+        }
+        const relatedTarget = event.relatedTarget;
+        if (relatedTarget instanceof Node && interactive.contains(relatedTarget)) {
+            return;
+        }
+        playSoundEffect(hoverSound, 'ui');
+    });
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    const confirmButton = document.getElementById('cutsceneWarningConfirm');
+    if (confirmButton) {
+        confirmButton.addEventListener('click', () => {
+            cutsceneWarningManager.confirm();
+        });
+    }
+
+    const dismissButton = document.getElementById('cutsceneWarningDismiss');
+    if (dismissButton) {
+        dismissButton.addEventListener('click', () => {
+            cutsceneWarningManager.decline();
+        });
+    }
+
+    const overlay = document.getElementById('cutsceneWarningOverlay');
+    if (overlay) {
+        overlay.addEventListener('click', event => {
+            if (event.target === overlay) {
+                cutsceneWarningManager.decline();
+            }
+        });
+    }
+
+    const rotationConfirm = document.getElementById('rotationPromptConfirm');
+    if (rotationConfirm) {
+        rotationConfirm.addEventListener('click', () => {
+            rotationPromptManager.confirm();
+        });
+    }
+
+    const rotationDismiss = document.getElementById('rotationPromptDismiss');
+    if (rotationDismiss) {
+        rotationDismiss.addEventListener('click', () => {
+            rotationPromptManager.dismiss();
+        });
+    }
+
+    const rotationOverlay = document.getElementById('rotationPromptOverlay');
+    if (rotationOverlay) {
+        rotationOverlay.addEventListener('click', event => {
+            if (event.target === rotationOverlay) {
+                rotationPromptManager.hide();
+            }
+        });
+    }
+
+    const cyberspaceConfirm = document.getElementById('cyberspaceIllusionaryConfirm');
+    if (cyberspaceConfirm) {
+        cyberspaceConfirm.addEventListener('click', () => {
+            cyberspaceIllusionaryWarningManager.hide();
+        });
+    }
+
+    const cyberspaceDismiss = document.getElementById('cyberspaceIllusionaryDismiss');
+    if (cyberspaceDismiss) {
+        cyberspaceDismiss.addEventListener('click', () => {
+            cyberspaceIllusionaryWarningManager.suppress();
+        });
+    }
+
+    const cyberspaceOverlay = document.getElementById('cyberspaceIllusionaryOverlay');
+    if (cyberspaceOverlay) {
+        cyberspaceOverlay.addEventListener('click', event => {
+            if (event.target === cyberspaceOverlay) {
+                cyberspaceIllusionaryWarningManager.hide();
+            }
+        });
+    }
+
+    const rollConfirm = document.getElementById('rollWarningConfirm');
+    if (rollConfirm) {
+        rollConfirm.addEventListener('click', () => {
+            largeRollWarningManager.confirm();
+        });
+    }
+
+    const rollCancel = document.getElementById('rollWarningCancel');
+    if (rollCancel) {
+        rollCancel.addEventListener('click', () => {
+            largeRollWarningManager.cancel();
+        });
+    }
+
+    const rollOverlay = document.getElementById('rollWarningOverlay');
+    if (rollOverlay) {
+        rollOverlay.addEventListener('click', event => {
+            if (event.target === rollOverlay) {
+                largeRollWarningManager.cancel();
+            }
+        });
+    }
+
+    const backgroundApply = document.getElementById('backgroundRollingApply');
+    if (backgroundApply) {
+        backgroundApply.addEventListener('click', () => {
+            backgroundRollingPreference.suppressPrompt = false;
+            setBackgroundRollingEnabled(true);
+            hideBackgroundRollingOverlay();
+        });
+    }
+
+    const backgroundApplyPersist = document.getElementById('backgroundRollingApplyPersist');
+    if (backgroundApplyPersist) {
+        backgroundApplyPersist.addEventListener('click', () => {
+            backgroundRollingPreference.suppressPrompt = true;
+            setBackgroundRollingEnabled(true);
+            hideBackgroundRollingOverlay();
+        });
+    }
+
+    const backgroundCancel = document.getElementById('backgroundRollingCancel');
+    if (backgroundCancel) {
+        backgroundCancel.addEventListener('click', () => {
+            hideBackgroundRollingOverlay();
+        });
+    }
+
+    const backgroundOverlay = document.getElementById('backgroundRollingOverlay');
+    if (backgroundOverlay) {
+        backgroundOverlay.addEventListener('click', event => {
+            if (event.target === backgroundOverlay) {
+                hideBackgroundRollingOverlay();
+            }
+        });
+    }
+
+    const trueChanceDisplayEnable = document.getElementById('trueChanceDisplayEnable');
+    if (trueChanceDisplayEnable) {
+        trueChanceDisplayEnable.addEventListener('click', () => {
+            setSelectiveTrueChanceDisplayEnabled(true);
+            hideTrueChanceDisplayOverlay();
+        });
+    }
+
+    const trueChanceDisplayCancel = document.getElementById('trueChanceDisplayCancel');
+    if (trueChanceDisplayCancel) {
+        trueChanceDisplayCancel.addEventListener('click', () => {
+            hideTrueChanceDisplayOverlay();
+        });
+    }
+
+    const trueChanceDisplayOverlay = document.getElementById('trueChanceDisplayOverlay');
+    if (trueChanceDisplayOverlay) {
+        trueChanceDisplayOverlay.addEventListener('click', event => {
+            if (event.target === trueChanceDisplayOverlay) {
+                hideTrueChanceDisplayOverlay();
+            }
+        });
+    }
+});
+
+const BIOME_ICON_OVERRIDES = {
+    lostForest: 'files/images/icons/biomes/lostForestBiomeIcon.png',
+    radiantForest: 'files/images/icons/biomes/radiantForestBiomeIcon.png',
+    none: 'files/images/icons/biomes/otherBiomeIcon.png',
+    normal: 'files/images/icons/biomes/otherBiomeIcon.png',
+    day: 'files/images/icons/biomes/otherBiomeIcon.png',
+    night: 'files/images/icons/biomes/otherBiomeIcon.png',
+    aurora: 'files/images/icons/biomes/auroraBiomeIcon.png',
+    incinerator: 'files/images/icons/biomes/blazingBiomeIcon.png',
+};
+
+const BIOME_SIGIL_CLASS_OVERRIDES = Object.freeze({
+    lostForest: 'sigil-outline-lost-forest',
+    radiantForest: 'sigil-outline-radiant-forest',
+    day: 'sigil-outline-day',
+    night: 'sigil-outline-night',
+    windy: 'sigil-outline-windy',
+    snowy: 'sigil-outline-snowy',
+    rainy: 'sigil-outline-rainy',
+    sandstorm: 'sigil-outline-sandstorm',
+    starfall: 'sigil-outline-starfall',
+    hell: 'sigil-outline-hell',
+    heaven: 'sigil-outline-heaven',
+    corruption: 'sigil-outline-corruption',
+    null: 'sigil-outline-null',
+    singularity: 'sigil-outline-singularity',
+    cyberspace: 'sigil-outline-cyberspace',
+    dreamspace: 'sigil-outline-dreamspace',
+    glitch: 'sigil-outline-glitch',
+    limbo: 'sigil-outline-limbo',
+    pumpkinMoon: 'sigil-outline-halloween',
+    graveyard: 'sigil-outline-halloween',
+    bloodRain: 'sigil-outline-blood',
+    blazing: 'sigil-outline-summer',
+    incinerator: 'sigil-outline-summer',
+    aurora: 'sigil-outline-winter',
+    anotherRealm: 'biome-sigil--hyperspace-realm',
+    mastermind: 'biome-sigil--null-existence',
+    edict: 'biome-sigil--citadel-of-orders',
+    fullMoon: 'biome-sigil--red-full-moon'
+});
+
+const BIOME_DISPLAY_LABEL_OVERRIDES = Object.freeze({
+    anotherRealm: '[ THE HYPERSPACE REALM ]',
+    mastermind: "THE NULL'S EXISTENCE",
+    edict: 'THE CITADEL OF ORDERS',
+    fullMoon: '[ 赤い満月 ]'
+});
+
+function getBiomeIconSource(value) {
+    if (!value) {
+        return null;
+    }
+    const runeConfig = resolveRuneConfiguration(value);
+    if (runeConfig && runeConfig.icon) {
+        return runeConfig.icon;
+    }
+    const override = BIOME_ICON_OVERRIDES[value];
+    if (override) {
+        return override;
+    }
+    return `files/images/icons/biomes/${value}BiomeIcon.png`;
+}
+
+function populateBiomeOptionElement(target, option, { deferImage = false } = {}) {
+    if (!target || !option) {
+        return '';
+    }
+
+    const label = BIOME_DISPLAY_LABEL_OVERRIDES[option.value] || option.textContent.trim();
+    target.innerHTML = '';
+
+    const iconSource = getBiomeIconSource(option.value);
+    if (iconSource) {
+        const icon = document.createElement('img');
+        icon.className = 'biome-option__icon';
+        if (deferImage) {
+            icon.dataset.src = iconSource;
+        } else {
+            icon.src = iconSource;
+        }
+        icon.alt = '';
+        icon.loading = 'lazy';
+        icon.decoding = 'async';
+        icon.setAttribute('aria-hidden', 'true');
+        icon.width = 28;
+        icon.height = 28;
+        icon.draggable = false;
+        icon.addEventListener('error', () => {
+            icon.classList.add('biome-option__icon--hidden');
+        }, { once: true });
+        target.appendChild(icon);
+    }
+
+    const labelSpan = document.createElement('span');
+    labelSpan.className = 'biome-option__label';
+    const sigilClass = BIOME_SIGIL_CLASS_OVERRIDES[option.value];
+    if (sigilClass) {
+        labelSpan.classList.add(sigilClass);
+    }
+    if (resolveRuneConfiguration(option.value)) {
+        labelSpan.innerHTML = WikiTitles.item(label);
+    } else {
+        labelSpan.textContent = label;
+    }
+    target.appendChild(labelSpan);
+
+    target.title = label;
+    return label;
+}
+
+function initializeSingleSelectControl(selectId) {
+    const select = document.getElementById(selectId);
+    const details = document.querySelector(`details[data-select="${selectId}"]`);
+    if (!select || !details) return;
+
+    const summary = details.querySelector('.interface-select__summary');
+    const menu = details.querySelector('.interface-select__menu');
+    if (!summary || !menu) return;
+
+    const placeholder = summary.dataset.placeholder || summary.textContent.trim();
+    menu.innerHTML = '';
+
+    const isBiomeSelect = selectId === 'biome-dropdown'
+        || selectId === BIOME_PRIMARY_SELECT_ID
+        || selectId === BIOME_OTHER_SELECT_ID
+        || selectId === BIOME_TIME_SELECT_ID;
+
+    const setElementContent = (element, option, { deferImage = false } = {}) => {
+        if (!option) {
+            element.textContent = '';
+            element.removeAttribute('title');
+            return;
+        }
+
+        if (isBiomeSelect) {
+            populateBiomeOptionElement(element, option, { deferImage });
+        } else {
+            const label = option.textContent.trim();
+            element.textContent = label;
+            element.title = label;
+        }
+    };
+
+    const optionButtons = Array.from(select.options).map(option => {
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'interface-select__option-button';
+        button.dataset.value = option.value;
+        setElementContent(button, option, { deferImage: isBiomeSelect });
+        button.setAttribute('role', 'option');
+        const getConditionMessage = () => {
+            const biomeCondition = isBiomeSelect && option.disabled
+                ? EVENT_BIOME_CONDITION_MESSAGES[option.value]
+                : '';
+            return option.dataset.conditionMessage || biomeCondition || '';
+        };
+
+        const getConditionLabel = () => option.dataset.conditionLabel
+            || (typeof resolveSelectionLabel === 'function'
+                ? resolveSelectionLabel(selectId, option.value, {
+                    fallbackLabel: isBiomeSelect ? 'Biome' : 'Selection',
+                    noneLabel: isBiomeSelect ? 'Biome' : 'Selection'
+                })
+                : option.textContent.trim());
+
+        const showConditionOverlay = () => {
+            const message = getConditionMessage();
+            if (!message && !(isBiomeSelect && EVENT_BIOME_CONDITION_MESSAGES[option.value])) {
+                return;
+            }
+            const label = getConditionLabel();
+            showBiomeConditionOverlay(option.value, {
+                message: message || undefined,
+                labelOverride: label || undefined
+            });
+        };
+
+        button.addEventListener('click', () => {
+            if (option.disabled) {
+                showConditionOverlay();
+                return;
+            }
+            const valueChanged = select.value !== option.value;
+            if (valueChanged) {
+                select.value = option.value;
+                select.dispatchEvent(new Event('change', { bubbles: true }));
+            }
+            details.open = false;
+            summary.focus();
+            updateSummary();
+        });
+        menu.appendChild(button);
+        return { button, option };
+    });
+
+    let optionIconsHydrated = !isBiomeSelect;
+    const hydrateOptionIcons = () => {
+        if (optionIconsHydrated) {
+            return;
+        }
+        optionIconsHydrated = true;
+        optionButtons.forEach(({ button }) => {
+            const icon = button.querySelector('img[data-src]');
+            if (!icon || !icon.dataset.src) {
+                return;
+            }
+            icon.src = icon.dataset.src;
+            delete icon.dataset.src;
+        });
+    };
+
+    if (isBiomeSelect) {
+        summary.addEventListener('pointerenter', hydrateOptionIcons, { once: true, passive: true });
+        summary.addEventListener('focus', hydrateOptionIcons, { once: true });
+        summary.addEventListener('click', hydrateOptionIcons, { once: true });
+    }
+
+    if (!menu.hasAttribute('role')) {
+        menu.setAttribute('role', 'listbox');
+    }
+
+    let summaryContentKey = '';
+
+    function updateSummary() {
+        const selectedOption = select.options[select.selectedIndex];
+        const label = selectedOption ? selectedOption.textContent.trim() : placeholder;
+        const normalizedLabel = label ? label.trim() : '';
+        const nextSummaryContentKey = selectedOption
+            ? `${selectedOption.value}\u0000${normalizedLabel}`
+            : `\u0000${normalizedLabel}`;
+
+        if (summaryContentKey !== nextSummaryContentKey) {
+            summaryContentKey = nextSummaryContentKey;
+            if (selectedOption) {
+                setElementContent(summary, selectedOption);
+            } else {
+                summary.textContent = normalizedLabel;
+                summary.title = normalizedLabel;
+            }
+        }
+
+        summary.classList.toggle('form-field__input--placeholder', !selectedOption);
+        summary.setAttribute('aria-expanded', details.open ? 'true' : 'false');
+
+        optionButtons.forEach(({ button, option }) => {
+            const isActive = option.value === select.value;
+            button.setAttribute('aria-selected', isActive ? 'true' : 'false');
+            const conditionMessage = option.dataset.conditionMessage
+                || (isBiomeSelect && option.disabled ? EVENT_BIOME_CONDITION_MESSAGES[option.value] : '');
+            const hasConditionHelp = !!conditionMessage;
+
+            button.classList.toggle('interface-select__option-button--active', isActive);
+            button.classList.toggle('interface-select__option-button--disabled', option.disabled);
+            button.classList.toggle('interface-select__option-button--condition', hasConditionHelp);
+            button.disabled = !!option.disabled && !hasConditionHelp;
+
+            if (option.disabled) {
+                button.setAttribute('aria-disabled', 'true');
+            } else {
+                button.removeAttribute('aria-disabled');
+            }
+        });
+    }
+
+    select.addEventListener('change', updateSummary);
+    initializeInterfaceSelectMotion(details);
+    details.addEventListener('toggle', () => {
+        summary.setAttribute('aria-expanded', details.open ? 'true' : 'false');
+        if (details.open) {
+            hydrateOptionIcons();
+        }
+    });
+
+    selectWidgetRegistry.set(selectId, { update: updateSummary });
+
+    updateSummary();
+}
+
+function refreshCustomSelect(selectId) {
+    const registryEntry = selectWidgetRegistry.get(selectId);
+    if (registryEntry && typeof registryEntry.update === 'function') {
+        registryEntry.update();
+    }
+}
+
+function findFirstEnabledOption(select, predicate = () => true) {
+    if (!select) return null;
+    return Array.from(select.options).find(option => !option.disabled && predicate(option));
+}
+
+function collectBiomeSelectionState() {
+    if (typeof document === 'undefined') {
+        return {
+            canonicalBiome: 'normal',
+            primaryBiome: 'normal',
+            timeBiome: 'none',
+            runeValue: 'none',
+            runeConfig: null,
+            runeBiome: null,
+            themeBiome: 'normal',
+            activeBiomes: ['normal'],
+            breakthroughBiomes: ['normal']
+        };
+    }
+
+    const primarySelect = document.getElementById(BIOME_PRIMARY_SELECT_ID);
+    const otherSelect = document.getElementById(BIOME_OTHER_SELECT_ID);
+    const timeSelect = document.getElementById(BIOME_TIME_SELECT_ID);
+
+    const primaryBiome = primarySelect ? (primarySelect.value || 'normal') : 'normal';
+    const runeValue = otherSelect ? (otherSelect.value || 'none') : 'none';
+    const timeBiome = primaryBiome === 'radiantForest' ? 'night' : timeSelect ? (timeSelect.value || 'none') : 'none';
+
+    const runeConfig = resolveRuneConfiguration(runeValue);
+    const runeBiome = (() => {
+        if (!runeConfig) {
+            return (runeValue && runeValue !== 'none') ? runeValue : null;
+        }
+        return runeConfig.canonicalBiome || runeConfig.themeBiome || null;
+    })();
+
+    const hasPrimary = primaryBiome && primaryBiome !== 'none';
+    const hasDistinctPrimary = hasPrimary && primaryBiome !== 'normal';
+    const hasTime = timeBiome && timeBiome !== 'none';
+
+    const canonicalBiome = (() => {
+        if (hasDistinctPrimary) {
+            return primaryBiome;
+        }
+        if (hasTime) {
+            return timeBiome;
+        }
+        if (hasPrimary) {
+            return primaryBiome;
+        }
+        return 'normal';
+    })();
+
+    const themeBiome = (() => {
+        if (hasDistinctPrimary) {
+            return primaryBiome;
+        }
+        if (hasTime) {
+            return timeBiome;
+        }
+        if (hasPrimary) {
+            return primaryBiome;
+        }
+        return canonicalBiome;
+    })();
+
+    const activeBiomeSet = new Set();
+    if (canonicalBiome && canonicalBiome !== 'none') {
+        activeBiomeSet.add(canonicalBiome);
+    }
+    if (primaryBiome && primaryBiome !== 'none') {
+        activeBiomeSet.add(primaryBiome);
+    }
+    if (timeBiome && timeBiome !== 'none') {
+        activeBiomeSet.add(timeBiome);
+    }
+    if (runeConfig && Array.isArray(runeConfig.activeBiomes)) {
+        for (const biomeId of runeConfig.activeBiomes) {
+            if (biomeId) {
+                activeBiomeSet.add(biomeId);
+            }
+        }
+    }
+    if (runeBiome && runeBiome !== 'none') {
+        activeBiomeSet.add(runeBiome);
+    }
+    if (runeConfig && typeof runeConfig.exclusivityBiome === 'string' && runeConfig.exclusivityBiome.length > 0) {
+        activeBiomeSet.add(runeConfig.exclusivityBiome);
+    }
+
+    const breakthroughCandidates = [];
+    if (runeConfig && Array.isArray(runeConfig.breakthroughBiomes)) {
+        breakthroughCandidates.push(...runeConfig.breakthroughBiomes);
+    }
+    if (runeBiome && runeBiome !== 'none') {
+        breakthroughCandidates.push(runeBiome);
+    }
+    if (runeConfig && typeof runeConfig.exclusivityBiome === 'string' && runeConfig.exclusivityBiome.length > 0) {
+        breakthroughCandidates.push(runeConfig.exclusivityBiome);
+    }
+    if (primaryBiome && primaryBiome !== 'none') {
+        breakthroughCandidates.push(primaryBiome);
+    }
+    if (timeBiome && timeBiome !== 'none') {
+        breakthroughCandidates.push(timeBiome);
+    }
+    breakthroughCandidates.push(canonicalBiome);
+
+    const uniqueBreakthroughs = [];
+    const seen = new Set();
+    for (const candidate of breakthroughCandidates) {
+        if (!candidate || seen.has(candidate)) {
+            continue;
+        }
+        seen.add(candidate);
+        uniqueBreakthroughs.push(candidate);
+    }
+
+    return {
+        canonicalBiome,
+        primaryBiome,
+        timeBiome,
+        runeValue,
+        runeConfig,
+        runeBiome,
+        themeBiome,
+        activeBiomes: Array.from(activeBiomeSet),
+        breakthroughBiomes: uniqueBreakthroughs
+    };
+}
+
+function computeActiveBiomeValue() {
+    const selection = collectBiomeSelectionState();
+    return selection.canonicalBiome;
+}
+
+function syncActiveBiomeSelection({ forceDispatch = false } = {}) {
+    const biomeSelect = document.getElementById('biome-dropdown');
+    if (!biomeSelect) {
+        return;
+    }
+
+    const previousValue = biomeSelect.value;
+    const nextValue = computeActiveBiomeValue();
+
+    if (previousValue !== nextValue) {
+        biomeSelect.value = nextValue;
+        biomeSelect.dispatchEvent(new Event('change', { bubbles: true }));
+    } else if (forceDispatch) {
+        biomeSelect.dispatchEvent(new Event('change', { bubbles: true }));
+    }
+}
+
+function updateBiomeControlConstraints({ source = null, triggerSync = true } = {}) {
+    const primarySelect = document.getElementById(BIOME_PRIMARY_SELECT_ID);
+    const otherSelect = document.getElementById(BIOME_OTHER_SELECT_ID);
+    const timeSelect = document.getElementById(BIOME_TIME_SELECT_ID);
+    const canonicalSelect = document.getElementById('biome-dropdown');
+    if (!primarySelect || !otherSelect || !timeSelect || !canonicalSelect) {
+        return;
+    }
+
+    let primaryChanged = false;
+    let otherChanged = false;
+    let timeChanged = false;
+
+    const radiantSelected = primarySelect.value === 'radiantForest';
+    if (radiantSelected && timeSelect.value !== 'night') {
+        timeSelect.value = 'night';
+        timeChanged = true;
+    }
+
+    const selectedRuneConfig = resolveRuneConfiguration(otherSelect.value);
+    const specialPotionBlocksRunes =
+           oblivionPresetEnabled
+        || pumpKingsBloodPresetEnabled
+        || tutorialPotionPresetEnabled;
+    const runeActive = selectedRuneConfig !== null && !specialPotionBlocksRunes;
+
+    if (timeSelect.value === 'day' && DAY_RESTRICTED_BIOMES.has(primarySelect.value)) {
+        if (source === BIOME_TIME_SELECT_ID) {
+            const fallback = findFirstEnabledOption(primarySelect, option => !DAY_RESTRICTED_BIOMES.has(option.value));
+            if (fallback) {
+                primarySelect.value = fallback.value;
+                primaryChanged = true;
+            }
+        } else {
+            timeSelect.value = 'night';
+            timeChanged = true;
+        }
+    }
+
+    if (timeSelect.value === 'night' && DAY_ONLY_BIOMES.has(primarySelect.value)) {
+        if (source === BIOME_TIME_SELECT_ID) {
+            const fallback = findFirstEnabledOption(primarySelect, option => !DAY_ONLY_BIOMES.has(option.value));
+            if (fallback) {
+                primarySelect.value = fallback.value;
+                primaryChanged = true;
+            }
+        } else {
+            timeSelect.value = 'day';
+            timeChanged = true;
+        }
+    }
+
+    if (primarySelect.value === 'limbo' && runeActive) {
+        if (source === BIOME_PRIMARY_SELECT_ID) {
+            otherSelect.value = 'none';
+            otherChanged = true;
+        } else {
+            const fallback = findFirstEnabledOption(primarySelect, option => option.value !== 'limbo');
+            if (fallback) {
+                primarySelect.value = fallback.value;
+                primaryChanged = true;
+            } else {
+                otherSelect.value = 'none';
+                otherChanged = true;
+            }
+        }
+    }
+
+    const eventDisabledMap = new Map();
+    const eventTitleMap = new Map();
+    Array.from(canonicalSelect.options).forEach(option => {
+        eventDisabledMap.set(option.value, option.disabled);
+        eventTitleMap.set(option.value, option.title || '');
+    });
+
+    const daySelected = timeSelect.value === 'day';
+    const nightSelected = timeSelect.value === 'night';
+    Array.from(primarySelect.options).forEach(option => {
+        const disabledByEvent = eventDisabledMap.get(option.value) || false;
+        let disabledByConflict = false;
+        let conflictTitle = '';
+
+        if (daySelected && DAY_RESTRICTED_BIOMES.has(option.value)) {
+            disabledByConflict = true;
+            conflictTitle = 'Unavailable while Day is selected.';
+        } else if (nightSelected && DAY_ONLY_BIOMES.has(option.value)) {
+            disabledByConflict = true;
+            conflictTitle = 'Unavailable while Night is selected.';
+        }
+        if (runeActive && option.value === 'limbo') {
+            disabledByConflict = true;
+            conflictTitle = 'Unavailable while a rune is active.';
+        }
+
+        option.disabled = disabledByEvent || disabledByConflict;
+        if (disabledByEvent) {
+            const eventTitle = eventTitleMap.get(option.value);
+            if (eventTitle) {
+                option.title = eventTitle;
+            } else if (conflictTitle) {
+                option.title = conflictTitle;
+            } else {
+                option.removeAttribute('title');
+            }
+        } else if (disabledByConflict) {
+            option.title = conflictTitle;
+        } else {
+            option.removeAttribute('title');
+        }
+    });
+
+    if (primarySelect.options[primarySelect.selectedIndex]?.disabled) {
+        const fallback = findFirstEnabledOption(primarySelect, option => !option.disabled);
+        if (fallback) {
+            primarySelect.value = fallback.value;
+            primaryChanged = true;
+        }
+    }
+
+    if (specialPotionBlocksRunes && selectedRuneConfig !== null) {
+        otherSelect.value = 'none';
+        otherChanged = true;
+    }
+
+    const limboSelected = primarySelect.value === 'limbo';
+    if (limboSelected) {
+        if (timeSelect.value !== 'day') {
+            timeSelect.value = 'day';
+            timeChanged = true;
+        }
+        if (pumpKingsBloodPresetEnabled) {
+            applyPumpKingsBloodPresetOptions({ activatePumpKingsBloodPreset: false });
+        }
+        if (oblivionPresetEnabled) {
+            applyOblivionPresetOptions({ activateOblivionPreset: false });
+        }
+        if (tutorialPotionPresetEnabled) {
+            applyTutorialPotionPresetOptions({ activateTutorialPotionPreset: false });
+        }
+        if (dunePresetEnabled) {
+            applyDunePresetOptions({ activateDunePreset: false });
+        }
+        if (activeBloodPresetIdentifier) {
+            applyBloodPresetOptions({ activateBloodPreset: false });
+        }
+    }
+    syncLuckPotionPresetAvailability(limboSelected);
+    syncMultiplePotionModeAvailability(limboSelected);
+
+    Array.from(otherSelect.options).forEach(option => {
+        const runeOption = resolveRuneConfiguration(option.value);
+        let disabled = false;
+        let title = '';
+        if (pumpKingsBloodPresetEnabled && runeOption) {
+            disabled = true;
+            title = "Unavailable while Pump King's Blood is active.";
+            option.dataset.conditionMessage = title;
+            option.dataset.conditionLabel = option.textContent?.trim() || 'Rune';
+        } else if (oblivionPresetEnabled && runeOption) {
+            disabled = true;
+            title = 'Unavailable while Oblivion preset is active.';
+            option.dataset.conditionMessage = title;
+            option.dataset.conditionLabel = option.textContent?.trim() || 'Rune';
+        } else if (tutorialPotionPresetEnabled && runeOption) {
+            disabled = true;
+            title = 'Unavailable while Tutorial Potion is active.';
+            option.dataset.conditionMessage = title;
+            option.dataset.conditionLabel = option.textContent?.trim() || 'Rune';
+        } else if (limboSelected && runeOption) {
+            disabled = true;
+            title = 'Unavailable while Limbo is selected.';
+            option.dataset.conditionMessage = title;
+            option.dataset.conditionLabel = option.textContent?.trim() || 'Rune';
+        } else {
+            option.removeAttribute('data-condition-message');
+            option.removeAttribute('data-condition-label');
+        }
+        option.disabled = disabled;
+        if (title) {
+            option.title = title;
+        } else {
+            option.removeAttribute('title');
+        }
+    });
+
+    if (otherSelect.options[otherSelect.selectedIndex]?.disabled) {
+        otherSelect.value = 'none';
+        otherChanged = true;
+    }
+
+    Array.from(timeSelect.options).forEach(option => {
+        let disabled = false;
+        let title = '';
+        if (primarySelect.value === 'radiantForest') {
+            disabled = option.value !== 'night';
+            title = 'The Radiant Forest forces Night.';
+            option.dataset.conditionMessage = title;
+            option.dataset.conditionLabel = option.textContent?.trim() || 'Time';
+        } else if (limboSelected) {
+            disabled = true;
+            title = 'Time is locked to Day while Limbo is selected.';
+            option.dataset.conditionMessage = title;
+            option.dataset.conditionLabel = option.textContent?.trim() || 'Time';
+        } else if (option.value === 'day' && DAY_RESTRICTED_BIOMES.has(primarySelect.value)) {
+            disabled = true;
+            title = 'Unavailable while Pumpkin Moon or Graveyard is selected.';
+            option.removeAttribute('data-condition-message');
+            option.removeAttribute('data-condition-label');
+        } else if (option.value === 'night' && DAY_ONLY_BIOMES.has(primarySelect.value)) {
+            disabled = true;
+            title = `${primarySelect.options[primarySelect.selectedIndex]?.textContent?.trim() || 'This biome'} is only available during Day.`;
+            option.dataset.conditionMessage = title;
+            option.dataset.conditionLabel = option.textContent?.trim() || 'Time';
+        } else {
+            option.removeAttribute('data-condition-message');
+            option.removeAttribute('data-condition-label');
+        }
+        option.disabled = disabled;
+        if (title) {
+            option.title = title;
+        } else {
+            option.removeAttribute('title');
+        }
+    });
+
+    if (!limboSelected && timeSelect.options[timeSelect.selectedIndex]?.disabled) {
+        const fallback = findFirstEnabledOption(timeSelect, option => !option.disabled && option.value !== 'none');
+        if (fallback) {
+            timeSelect.value = fallback.value;
+        } else {
+            timeSelect.value = 'none';
+        }
+        timeChanged = true;
+    }
+
+    const currentPrimarySelection = primarySelect.value;
+    if (currentPrimarySelection !== lastPrimaryBiomeSelection) {
+        if (lastPrimaryBiomeSelection === 'radiantForest') radiantForestState = SimulationCore.createRadiantState();
+        if (currentPrimarySelection === 'cyberspace' && !cyberspaceIllusionaryWarningManager.isSuppressed()) {
+            cyberspaceIllusionaryWarningManager.show();
+        }
+        const unmetRequirements = EVENT_BIOME_CONDITION_MESSAGES[currentPrimarySelection]
+            && !biomeEventRequirementsMet(currentPrimarySelection);
+        if (unmetRequirements) {
+            showBiomeConditionOverlay(currentPrimarySelection);
+        }
+        lastPrimaryBiomeSelection = currentPrimarySelection;
+    }
+    syncBiomeBuffs();
+
+    refreshCustomSelect(BIOME_PRIMARY_SELECT_ID);
+    refreshCustomSelect(BIOME_OTHER_SELECT_ID);
+    refreshCustomSelect(BIOME_TIME_SELECT_ID);
+
+    if (source === BIOME_OTHER_SELECT_ID) {
+        updateGlitchPresentation();
+    }
+
+    if (triggerSync) {
+        syncActiveBiomeSelection({ forceDispatch: primaryChanged || otherChanged || timeChanged
+            || source === BIOME_TIME_SELECT_ID || source === BIOME_OTHER_SELECT_ID });
+    }
+}
+
+function setupBiomeControlDependencies() {
+    const primarySelect = document.getElementById(BIOME_PRIMARY_SELECT_ID);
+    const otherSelect = document.getElementById(BIOME_OTHER_SELECT_ID);
+    const timeSelect = document.getElementById(BIOME_TIME_SELECT_ID);
+
+    if (!primarySelect || !otherSelect || !timeSelect) {
+        return;
+    }
+
+    primarySelect.addEventListener('change', () => updateBiomeControlConstraints({ source: BIOME_PRIMARY_SELECT_ID }));
+    otherSelect.addEventListener('change', () => updateBiomeControlConstraints({ source: BIOME_OTHER_SELECT_ID }));
+    timeSelect.addEventListener('change', () => updateBiomeControlConstraints({ source: BIOME_TIME_SELECT_ID }));
+
+    updateBiomeControlConstraints({ triggerSync: false });
+    syncActiveBiomeSelection({ forceDispatch: true });
+}
+
+function setPrimaryBiomeSelection(value) {
+    const select = document.getElementById(BIOME_PRIMARY_SELECT_ID);
+    if (!select) {
+        return;
+    }
+    if (!Array.from(select.options).some(option => option.value === value)) {
+        return;
+    }
+    select.value = value;
+    refreshCustomSelect(BIOME_PRIMARY_SELECT_ID);
+}
+
+function setOtherBiomeSelection(value) {
+    const select = document.getElementById(BIOME_OTHER_SELECT_ID);
+    if (!select) {
+        return;
+    }
+    if (!Array.from(select.options).some(option => option.value === value)) {
+        return;
+    }
+    select.value = value;
+    refreshCustomSelect(BIOME_OTHER_SELECT_ID);
+}
+
+function setTimeBiomeSelection(value) {
+    const select = document.getElementById(BIOME_TIME_SELECT_ID);
+    if (!select) {
+        return;
+    }
+    if (!Array.from(select.options).some(option => option.value === value)) {
+        return;
+    }
+    select.value = value;
+    refreshCustomSelect(BIOME_TIME_SELECT_ID);
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    initializeSingleSelectControl('vip-dropdown');
+    initializeSingleSelectControl('dave-luck-dropdown');
+    initializeSingleSelectControl('cor-lunae-blessing-dropdown');
+    initializeSingleSelectControl(BIOME_PRIMARY_SELECT_ID);
+    initializeSingleSelectControl(BIOME_OTHER_SELECT_ID);
+    initializeSingleSelectControl(BIOME_TIME_SELECT_ID);
+});
+
+document.addEventListener('DOMContentLoaded', setupBiomeControlDependencies);
+document.addEventListener('DOMContentLoaded', setupBiomeBuffs);
+
+document.addEventListener('DOMContentLoaded', () => {
+    hydrateAudioSettings();
+    applyFortePixelatedWaveText();
+    setupFortePixelatedSecret();
+    setupSupportFloatToggle();
+    setupDonationFloatToggle();
+
+    const supportQrButton = document.getElementById('supportFloatQrButton');
+    const supportQrDrawer = document.getElementById('supportQrDrawer');
+    const supportQrClose = document.getElementById('supportQrClose');
+    if (supportQrButton) {
+        supportQrButton.addEventListener('click', event => {
+            event.preventDefault();
+            event.stopPropagation();
+            toggleSupportQrDrawer();
+        });
+    }
+
+    supportQrClose?.addEventListener('click', () => {
+        closeSupportQrDrawer({ focusQrButton: true });
+    });
+
+    supportQrDrawer?.addEventListener('click', event => {
+        if (event.target === supportQrDrawer) {
+            closeSupportQrDrawer({ focusQrButton: true });
+        }
+    });
+
+    supportQrDrawer?.addEventListener('keydown', event => {
+        const supportFloat = document.getElementById('supportFloat');
+        if (!supportFloat || !supportFloat.classList.contains('support-float--qr-open')) {
+            return;
+        }
+        if (event.key !== 'Escape' && event.key !== 'Esc') {
+            return;
+        }
+        event.preventDefault();
+        closeSupportQrDrawer({ focusQrButton: true });
+    });
+
+    initializeInteractionAudioDelegation();
+
+    const luckField = document.getElementById('luck-total');
+    if (luckField) {
+        bindNumericInputFormatting(luckField, { min: 0 });
+        if (!luckField.dataset.rawValue) {
+            setNumericInputValue(luckField, baseLuck, { format: true, min: 0 });
+        }
+    }
+
+    const rollField = document.getElementById('roll-total');
+    if (rollField) {
+        bindNumericInputFormatting(rollField, { min: 1, max: 1000000000000 });
+        if (!rollField.dataset.rawValue) {
+            setNumericInputValue(rollField, 1, { format: true, min: 1, max: 1000000000000 });
+        }
+    }
+
+    document.getElementById('vip-dropdown').addEventListener('change', recomputeLuckValue);
+    const sorryToggle = document.getElementById('sorry-luck-toggle');
+    const astraldBlessingToggle = document.getElementById('astrald-blessing-toggle');
+    const dorcelessnessToggle = document.getElementById('dorcelessness-luck-toggle');
+    const ygBlessingToggle = document.getElementById('yg-blessing-toggle');
+    if (sorryToggle) {
+        sorryToggle.addEventListener('change', () => {
+            enforceExclusiveEventToggles(sorryToggle);
+            if (sorryToggle.checked) {
+                disableYgBlessing({ silent: true });
+            }
+            recomputeLuckValue();
+        });
+    }
+    if (dorcelessnessToggle) {
+        dorcelessnessToggle.addEventListener('change', () => {
+            enforceExclusiveEventToggles(dorcelessnessToggle);
+            if (dorcelessnessToggle.checked) {
+                disableAstraldBlessing({ silent: true });
+            }
+            recomputeLuckValue();
+        });
+    }
+    const daveDropdown = document.getElementById('dave-luck-dropdown');
+    if (daveDropdown) {
+        daveDropdown.addEventListener('change', recomputeLuckValue);
+    }
+
+    if (ygBlessingToggle) {
+        ygBlessingToggle.addEventListener('change', () => {
+            if (!ygBlessingToggle.checked) {
+                disableAstraldBlessing({ silent: true });
+            }
+            if (suppressYgBlessingAlert) {
+                return;
+            }
+            if (isAnyToggleActive(YG_BLESSING_BLOCKING_EVENT_IDS) || isCurrentDevAdminAbuseActive()) {
+                showYgBlessingOverlay();
+                disableYgBlessing({ silent: true });
+            }
+        });
+    }
+
+    if (astraldBlessingToggle) {
+        astraldBlessingToggle.addEventListener('change', () => {
+            enforceExclusiveEventToggles(astraldBlessingToggle);
+            if (!astraldBlessingToggle.checked) {
+                disableYgBlessing({ silent: true });
+            }
+            if (suppressAstraldBlessingAlert) {
+                return;
+            }
+            if (isAnyToggleActive(ASTRALD_BLESSING_BLOCKING_EVENT_IDS) || isCurrentDevAdminAbuseActive()) {
+                showAstraldBlessingOverlay();
+                disableAstraldBlessing({ silent: true });
+                disableYgBlessing({ silent: true });
+            }
+            recomputeLuckValue();
+        });
+    }
+
+    if (luckField) {
+        luckField.addEventListener('input', () => {
+            if (isRememberRoll()) { recomputeLuckValue(); return; }
+            const parsed = getNumericInputValue(luckField, { min: 0 });
+            const normalized = Number.isFinite(parsed) && parsed > 0 ? Math.max(0, parsed) : 0;
+            baseLuck = normalized;
+            singleSpecialLuck = 0;
+            setLuckSelectionSource(LUCK_SELECTION_SOURCE.MANUAL);
+            clearActiveLuckPotionPresets({ syncBiomeConstraints: false });
+            const multipliers = getActiveLuckMultipliers();
+            const inputs = getGearLuckInputs(false);
+            currentLuck = GearLuck.totalLuck(inputs.basic, inputs.special, inputs.finalMultiplier, GearLuck.rollState(equippedGear.left, 1), inputs.basicMultiplier);
+            syncLastLuckMultipliers(multipliers);
+            syncLuckVisualEffects(currentLuck);
+            syncEquipmentPreview();
+        });
+
+        luckField.addEventListener('blur', recomputeLuckValue);
+    }
+
+    const biomeDropdown = document.getElementById('biome-dropdown');
+    biomeDropdown.addEventListener('change', initializeBiomeInterface);
+    initializeBiomeInterface();
+
+    setupShareInterface();
+    initializeAudioSettingsPanel();
+    initializeAudioKeyboardShortcuts();
+    const masterMuteToggle = document.getElementById('masterMuteToggle');
+    if (masterMuteToggle) {
+        masterMuteToggle.addEventListener('click', toggleMasterMute);
+    }
+    setMasterMuteState(appState.audio.masterMuted, { force: true, persist: false });
+
+    const biomeConditionOverlay = document.getElementById('biomeConditionOverlay');
+    const biomeConditionClose = document.getElementById('biomeConditionClose');
+    if (biomeConditionOverlay && biomeConditionClose) {
+        biomeConditionClose.addEventListener('click', () => concealOverlay(biomeConditionOverlay));
+        biomeConditionOverlay.addEventListener('click', event => {
+            if (event.target === biomeConditionOverlay) {
+                concealOverlay(biomeConditionOverlay);
+            }
+        });
+    }
+
+    const ygBlessingOverlay = document.getElementById('ygBlessingOverlay');
+    const ygBlessingClose = document.getElementById('ygBlessingClose');
+    if (ygBlessingOverlay && ygBlessingClose) {
+        ygBlessingClose.addEventListener('click', () => concealOverlay(ygBlessingOverlay));
+        ygBlessingOverlay.addEventListener('click', event => {
+            if (event.target === ygBlessingOverlay) {
+                concealOverlay(ygBlessingOverlay);
+            }
+        });
+    }
+
+    const astraldBlessingOverlay = document.getElementById('astraldBlessingOverlay');
+    const astraldBlessingClose = document.getElementById('astraldBlessingClose');
+    if (astraldBlessingOverlay && astraldBlessingClose) {
+        astraldBlessingClose.addEventListener('click', () => concealOverlay(astraldBlessingOverlay));
+        astraldBlessingOverlay.addEventListener('click', event => {
+            if (event.target === astraldBlessingOverlay) {
+                concealOverlay(astraldBlessingOverlay);
+            }
+        });
+    }
+
+    hydrateVisualSettings();
+    applyPerformanceFirstDefaults();
+    initializeCinematicStateFromCutsceneFilters();
+
+    initializeQualityPreferencesMenu();
+    applyReducedMotionState(appState.reduceMotion);
+    applyQualityPreferencesState();
+
+    hydrateBackgroundRollingPreference();
+    setBackgroundRollingEnabled(backgroundRollingPreference.allowed, { persistPreference: false });
+    setSelectiveTrueChanceDisplayEnabled(Boolean(appState.selectiveTrueChanceDisplay), { persistPreference: false });
+    setStickyRollButtonEnabled(appState.stickyRollButton !== false, { persistPreference: false });
+    hydrateAuraFilters();
+    hydrateAuraTierFilters();
+    refreshActiveAuraFilterCounts();
+
+    const backgroundRollingButton = document.getElementById('backgroundRollingButton');
+    if (backgroundRollingButton) {
+        backgroundRollingButton.addEventListener('click', () => {
+            if (appState.backgroundRolling) {
+                setBackgroundRollingEnabled(false);
+                return;
+            }
+
+            if (backgroundRollingPreference.suppressPrompt) {
+                setBackgroundRollingEnabled(true);
+                return;
+            }
+
+            showBackgroundRollingOverlay();
+        });
+    }
+
+    const trueChanceDisplayButton = document.getElementById('trueChanceDisplayButton');
+    if (trueChanceDisplayButton) {
+        trueChanceDisplayButton.addEventListener('click', () => {
+            if (appState.selectiveTrueChanceDisplay) {
+                setSelectiveTrueChanceDisplayEnabled(false);
+                return;
+            }
+
+            showTrueChanceDisplayOverlay();
+        });
+    }
+
+    document.getElementById('stickyRollButtonToggle')?.addEventListener('click', () => {
+        setStickyRollButtonEnabled(!appState.stickyRollButton);
+    });
+
+    initializeOptionsMenu('optionsMenu', 'optionsMenuToggle', 'optionsMenuPanel');
+    initializeAuraTierFilterPanel();
+    initializeAuraDetailFilterPanel();
+    initializeCutsceneFilterPanel('pause');
+    initializeCutsceneFilterPanel('playback');
+
+    const yearEl = document.getElementById('build-year');
+    if (yearEl) {
+        yearEl.textContent = new Date().getFullYear();
+    }
+});
+
+const XP_RARITY_ROWS = Object.freeze([
+    ['tier-9k', 9999, 99998, 1000, '1 in 9,999 – 99,998'],
+    ['tier-99k', 99999, 999998, 2500, '1 in 99,999 – 999,998'],
+    ['tier-999k', 999999, 9999998, 5000, '1 in 999,999 – 9,999,998'],
+    ['tier-9m', 9999999, 99999998, 7500, '1 in 9,999,999 – 99,999,998'],
+    ['tier-99m', 99999999, 999999998, 15000, '1 in 99,999,999 – 999,999,998'],
+    ['tier-999m', 999999999, Number.POSITIVE_INFINITY, 30000, '1 in 999,999,999+']
+]);
+
+const XP_RARITY_TABLE = Object.freeze(XP_RARITY_ROWS.map(([key, min, max, xp, label]) => Object.freeze({ key, min, max, xp, label })));
+
+function resolveXpTierForChance(chance) {
+    if (!Number.isFinite(chance)) return null;
+    if (chance >= 999999999) return XP_RARITY_TABLE[5];
+    if (chance >= 99999999) return XP_RARITY_TABLE[4];
+    if (chance >= 9999999) return XP_RARITY_TABLE[3];
+    if (chance >= 999999) return XP_RARITY_TABLE[2];
+    if (chance >= 99999) return XP_RARITY_TABLE[1];
+    if (chance >= 9999) return XP_RARITY_TABLE[0];
+    return null;
+}
+
+const auraXpTierKeysByIndex = new Array(AURA_REGISTRY.length);
+for (const aura of AURA_REGISTRY) {
+    auraXpTierKeysByIndex[aura.index] = resolveXpTierForChance(aura.chance)?.key || null;
+}
+
+const LIMBO_NATIVE_FILTER = ['limbo', 'limbo-null'];
+const GLITCH_BREAKTHROUGH_EXCLUSION_SET = new Set(['day', 'night', 'aurora', 'singularity', 'radiantForest', 'incinerator']);
+const NULL_BIOME_FILTER = new Set(['null', 'limbo-null']);
+const LEVIATHAN_ALLOWED_BIOMES = new Set(['rainy', 'glitch']);
+const MONARCH_ALLOWED_BIOMES = new Set(['corruption', 'glitch']);
+const HELLBORN_ALLOWED_BIOMES = new Set(['hell', 'glitch']);
+const EMPTY_ALLOWED_BIOMES = new Set(['null', 'limbo', 'glitch']);
+const DREAMCATCHER_ALLOWED_BIOMES = new Set(['night']);
+const auraGlitchBreakthroughMinChanceCache = new Array(AURA_REGISTRY.length).fill(null);
+
+function getAuraGlitchBreakthroughMinChance(aura) {
+    const index = getAuraIndex(aura);
+    if (index === -1 || !aura?.breakthroughs) {
+        return null;
+    }
+
+    const cached = auraGlitchBreakthroughMinChanceCache[index];
+    if (cached !== null) {
+        return cached;
+    }
+
+    let minChance = aura.chance;
+    let hasEligibleBreakthrough = false;
+    for (const [biomeId, multiplier] of aura.breakthroughs.entries()) {
+        if (GLITCH_BREAKTHROUGH_EXCLUSION_SET.has(biomeId)) {
+            continue;
+        }
+        hasEligibleBreakthrough = true;
+        const scaled = Math.floor(aura.chance / multiplier);
+        if (scaled < minChance) {
+            minChance = scaled;
+        }
+    }
+
+    const resolved = hasEligibleBreakthrough ? Math.max(1, minChance) : null;
+    auraGlitchBreakthroughMinChanceCache[index] = resolved;
+    return resolved;
+}
+
+function isYgBlessingEnabled() {
+    if (typeof document === 'undefined') {
+        return false;
+    }
+
+    const toggle = document.getElementById('yg-blessing-toggle');
+    return Boolean(toggle && toggle.checked);
+}
+
+function isAstraldBlessingEnabled() {
+    if (typeof document === 'undefined') {
+        return false;
+    }
+
+    const toggle = document.getElementById('astrald-blessing-toggle');
+    return Boolean(toggle && toggle.checked);
+}
+
+function createAuraEvaluationContext(selection, { eventChecker, luckValue, enabledEventsSet, ignoreRune = false } = {}) {
+    const selectionState = selection || collectBiomeSelectionState();
+    const biome = selectionState?.canonicalBiome || 'normal';
+    const runeConfig = ignoreRune
+        ? null
+        : (selectionState?.runeConfig || resolveRuneConfiguration(selectionState?.runeValue));
+    const runeValue = ignoreRune ? 'none' : (selectionState?.runeValue || null);
+    const primaryBiome = selectionState?.primaryBiome || null;
+    const timeBiome = selectionState?.timeBiome || null;
+    const exclusivityBiome = runeConfig?.exclusivityBiome || biome;
+    const isRoe = biome === 'roe' || runeValue === 'roe';
+    const glitchExplicitlySelected = selectionState?.primaryBiome === 'glitch'
+        || selectionState?.timeBiome === 'glitch'
+        || biome === 'glitch'
+        || runeValue === 'glitch';
+    const glitchLikeBiome = glitchExplicitlySelected;
+
+    let activeBiomes = Array.isArray(selectionState?.activeBiomes) && selectionState.activeBiomes.length > 0
+        ? selectionState.activeBiomes.slice()
+        : [exclusivityBiome].filter(Boolean);
+    let breakthroughBiomes = Array.isArray(selectionState?.breakthroughBiomes) && selectionState.breakthroughBiomes.length > 0
+        ? selectionState.breakthroughBiomes.slice()
+        : [exclusivityBiome, biome].filter(Boolean);
+
+    const baseActiveBiomeSet = new Set();
+    if (biome && biome !== 'none') {
+        baseActiveBiomeSet.add(biome);
+    }
+    if (primaryBiome && primaryBiome !== 'none') {
+        baseActiveBiomeSet.add(primaryBiome);
+    }
+    if (timeBiome && timeBiome !== 'none') {
+        baseActiveBiomeSet.add(timeBiome);
+    }
+    const baseActiveBiomes = Array.from(baseActiveBiomeSet);
+
+    const baseBreakthroughCandidates = [];
+    if (primaryBiome && primaryBiome !== 'none') {
+        baseBreakthroughCandidates.push(primaryBiome);
+    }
+    if (timeBiome && timeBiome !== 'none') {
+        baseBreakthroughCandidates.push(timeBiome);
+    }
+    if (biome && biome !== 'none') {
+        baseBreakthroughCandidates.push(biome);
+    }
+    const baseBreakthroughBiomes = [];
+    const baseBreakthroughSeen = new Set();
+    for (const candidate of baseBreakthroughCandidates) {
+        if (!candidate || baseBreakthroughSeen.has(candidate)) {
+            continue;
+        }
+        baseBreakthroughSeen.add(candidate);
+        baseBreakthroughBiomes.push(candidate);
+    }
+
+    if (ignoreRune) {
+        activeBiomes = baseActiveBiomes.slice();
+        breakthroughBiomes = baseBreakthroughBiomes.slice();
+    }
+
+    if (!glitchExplicitlySelected && runeConfig?.exclusivityBiome === 'glitch') {
+        activeBiomes = activeBiomes.filter(biomeId => biomeId !== 'glitch');
+        breakthroughBiomes = breakthroughBiomes.filter(biomeId => biomeId !== 'glitch');
+    }
+
+    return {
+        biome,
+        isRoe,
+        glitchLikeBiome,
+        exclusivityBiome,
+        eventChecker,
+        activeBiomes,
+        breakthroughBiomes,
+        runeValue,
+        primaryBiome,
+        timeBiome,
+        baseActiveBiomes,
+        baseBreakthroughBiomes,
+        ygBlessingActive: isYgBlessingEnabled(),
+        astraldBlessingActive: isAstraldBlessingEnabled(),
+        luckSource: getLuckSelectionSource(),
+        luckValue: Number.isFinite(luckValue) ? luckValue : currentLuck,
+        enabledEventsSet: enabledEventsSet instanceof Set ? enabledEventsSet : enabledEvents
+    };
+}
+
+function isIllusionaryAura(aura) {
+    if (!aura || typeof aura.name !== 'string') {
+        return false;
+    }
+    return aura.name.startsWith('Illusionary');
+}
+
+function isCyberspaceExclusiveLucklessAura(aura) {
+    if (!aura || typeof aura.name !== 'string') {
+        return false;
+    }
+    return isIllusionaryAura(aura) || isExactMetaAuraName(aura.name);
+}
+
+function isFixedLuckResultAura(aura) {
+    return isCyberspaceExclusiveLucklessAura(aura)
+        || aura?.name?.trim().split(' - ')[0] === 'Cryogenic';
+}
+
+function computeLimboEffectiveChance(aura, context) {
+    if (aura.requiresOblivionPreset || aura.requiresDunePreset || aura.requiresBloodPreset) return Infinity;
+    if (!context.eventChecker(aura)) return Infinity;
+    if (!aura.nativeBiomes) return Infinity;
+    if (!auraMatchesAnyBiome(aura, LIMBO_NATIVE_FILTER)) return Infinity;
+
+    let effectiveChance = aura.chance;
+    const limboBreakthrough = readBreakthroughMultiplier(aura, 'limbo');
+    if (limboBreakthrough) {
+        effectiveChance = Math.floor(aura.chance / limboBreakthrough);
+    }
+    return Math.max(1, effectiveChance);
+}
+
+function computeStandardEffectiveChance(aura, context) {
+    const { biome, exclusivityBiome, glitchLikeBiome, isRoe, activeBiomes, breakthroughBiomes, primaryBiome, enabledEventsSet } = context;
+    if (aura.requiresOblivionPreset || aura.requiresDunePreset || aura.requiresBloodPreset) return Infinity;
+
+    const eventIds = getAuraEventIds(aura);
+    const eventEnabled = context.eventChecker(aura);
+    if (!eventEnabled) return Infinity;
+    if (!eventAuraBiomeRequirementsMet(eventIds, context)) return Infinity;
+
+    if (isRoe && ROE_EXCLUSION_SET.has(aura.name)) {
+        const matchesActive = Array.isArray(activeBiomes) && activeBiomes.length > 0
+            ? auraMatchesAnyBiome(aura, activeBiomes)
+            : false;
+        if (!matchesActive) {
+            const glitchPrimarySelected = primaryBiome === 'glitch';
+            if (!glitchPrimarySelected) {
+                return Infinity;
+            }
+        }
+    }
+
+    const isRuneIgnoredAura = aura?.name === LEVIATHAN_AURA_NAME || aura?.name === MONARCH_AURA_NAME || aura?.name === HELLBORN_AURA_NAME;
+    const resolvedActiveBiomes = isRuneIgnoredAura && Array.isArray(context.baseActiveBiomes)
+        ? context.baseActiveBiomes
+        : activeBiomes;
+    const resolvedBreakthroughBiomes = isRuneIgnoredAura && Array.isArray(context.baseBreakthroughBiomes)
+        ? context.baseBreakthroughBiomes
+        : breakthroughBiomes;
+
+    let allowCyberspaceNativeRarity = true;
+    if (aura.nativeBiomes) {
+        if (isAuraNativeTo(aura, 'limbo') && !isAuraNativeTo(aura, 'limbo-null')) {
+            return Infinity;
+        }
+
+        const allowEventGlitchAccess = glitchLikeBiome
+            && eventEnabled
+            && eventIds.some(candidateEventId => (enabledEventsSet || enabledEvents).has(candidateEventId) && GLITCH_EVENT_WHITELIST.has(candidateEventId));
+
+        const activeBiomeList = Array.isArray(resolvedActiveBiomes) && resolvedActiveBiomes.length > 0
+            ? resolvedActiveBiomes
+            : [exclusivityBiome];
+        const matchesActiveBiome = auraMatchesAnyBiome(aura, activeBiomeList);
+
+        const cyberspaceNative = isAuraNativeTo(aura, 'cyberspace');
+        const inCyberspace = biome === 'cyberspace';
+        const cyberspaceActive = inCyberspace || activeBiomeList.includes('cyberspace');
+
+        if (isCyberspaceExclusiveLucklessAura(aura) && !cyberspaceActive) {
+            return Infinity;
+        }
+
+        const treatCyberspaceNativeAsNonNative = cyberspaceNative && !cyberspaceActive;
+        const resolvedActiveMatch = treatCyberspaceNativeAsNonNative ? true : matchesActiveBiome;
+
+        allowCyberspaceNativeRarity = cyberspaceNative
+            ? inCyberspace
+            : true;
+
+        if (!isAuraNativeTo(aura, 'limbo-null') && !resolvedActiveMatch && !allowEventGlitchAccess) {
+            return Infinity;
+        }
+    }
+
+    let effectiveChance = aura.chance;
+    if (aura.breakthroughs) {
+        let breakthroughAppliedViaGlitch = false;
+
+        if (glitchLikeBiome
+            && (!isRoe || !ROE_BREAKTHROUGH_BLOCKLIST.has(aura.name))
+            && allowCyberspaceNativeRarity) {
+            const glitchBreakthroughChance = getAuraGlitchBreakthroughMinChance(aura);
+            if (Number.isFinite(glitchBreakthroughChance) && glitchBreakthroughChance > 0) {
+                effectiveChance = glitchBreakthroughChance;
+                breakthroughAppliedViaGlitch = true;
+            }
+        }
+
+        if (!breakthroughAppliedViaGlitch) {
+            const candidates = Array.isArray(resolvedBreakthroughBiomes) && resolvedBreakthroughBiomes.length > 0
+                ? resolvedBreakthroughBiomes
+                : [exclusivityBiome, biome].filter(Boolean);
+            let multiplier = null;
+            for (const candidate of candidates) {
+                if (!allowCyberspaceNativeRarity && candidate === 'cyberspace') {
+                    continue;
+                }
+                multiplier = readBreakthroughMultiplier(aura, candidate);
+                if (multiplier) {
+                    break;
+                }
+            }
+            if (!multiplier && exclusivityBiome && !candidates.includes(exclusivityBiome)) {
+                multiplier = readBreakthroughMultiplier(aura, exclusivityBiome);
+            }
+            if (!multiplier && biome && !candidates.includes(biome)) {
+                multiplier = readBreakthroughMultiplier(aura, biome);
+            }
+            if (multiplier) {
+                effectiveChance = Math.floor(aura.chance / multiplier);
+            }
+        }
+    }
+
+    if (context.rainyNative && !aura.nativeBiomes) {
+        const rainyMultiplier = readBreakthroughMultiplier(aura, 'rainy');
+        if (rainyMultiplier) effectiveChance = Math.min(effectiveChance, Math.floor(aura.chance / rainyMultiplier));
+    }
+    if (context.vampireHunter && eventIds.some(id => HALLOWEEN_EVENT_IDS.includes(id))) {
+        effectiveChance *= 0.8;
+    }
+    return Math.max(1, effectiveChance);
+}
+
+function determineAuraEffectiveChance(aura, context) {
+    if (aura.requiresRadiantMoons) return Infinity;
+    if (aura.radiantUnlockMask && (context.biome !== 'radiantForest'
+        || !((context.radiantUnlockMask || 0) & aura.radiantUnlockMask))) return Infinity;
+    let forceStandardEvaluation = false;
+
+    if (aura?.name === BREAKTHROUGH_AURA_NAME) {
+        const canonicalBiome = context?.biome || 'normal';
+        if (NULL_BIOME_FILTER.has(canonicalBiome)) {
+            return Infinity;
+        }
+    }
+    if (aura?.name === LEVIATHAN_AURA_NAME) {
+        const canonicalBiome = context?.biome || 'normal';
+        const inAllowedBiome = LEVIATHAN_ALLOWED_BIOMES.has(canonicalBiome);
+        if (!inAllowedBiome) {
+            return Infinity;
+        }
+    }
+    if (aura?.name === MONARCH_AURA_NAME) {
+        const canonicalBiome = context?.biome || 'normal';
+        const inAllowedBiome = MONARCH_ALLOWED_BIOMES.has(canonicalBiome);
+        if (!inAllowedBiome) {
+            return Infinity;
+        }
+    }
+    if (aura?.name === HELLBORN_AURA_NAME) {
+        const canonicalBiome = context?.biome || 'normal';
+        const inAllowedBiome = HELLBORN_ALLOWED_BIOMES.has(canonicalBiome);
+        if (!inAllowedBiome) {
+            return Infinity;
+        }
+    }
+    if (aura?.name === EMPTY_AURA_NAME) {
+        const canonicalBiome = context?.biome || 'normal';
+        const inAllowedBiome = EMPTY_ALLOWED_BIOMES.has(canonicalBiome);
+        if (!inAllowedBiome) {
+            return Infinity;
+        }
+        if (canonicalBiome === 'limbo') {
+            return Math.max(1, aura.chance);
+        }
+    }
+    if (aura?.name === DREAMCATCHER_AURA_NAME) {
+        const activeBiomes = Array.isArray(context?.activeBiomes) ? context.activeBiomes : [];
+        const limboIsActive = context?.biome === 'limbo'
+            || context?.primaryBiome === 'limbo'
+            || activeBiomes.includes('limbo');
+        if (limboIsActive) {
+            return Infinity;
+        }
+        const nightIsActive = activeBiomes.some(biomeId => DREAMCATCHER_ALLOWED_BIOMES.has(biomeId))
+            || DREAMCATCHER_ALLOWED_BIOMES.has(context?.timeBiome)
+            || DREAMCATCHER_ALLOWED_BIOMES.has(context?.biome);
+        if (!nightIsActive) {
+            return Infinity;
+        }
+        forceStandardEvaluation = true;
+    }
+    if (aura?.requiresYgBlessing) {
+        const blessingActive = context?.ygBlessingActive === true;
+        const canonicalBiome = context?.biome || 'normal';
+        if (!blessingActive) {
+            return Infinity;
+        }
+        if (canonicalBiome === 'limbo' || canonicalBiome === 'limbo-null') {
+            return Infinity;
+        }
+    }
+    if (aura?.requiresAstraldBlessing) {
+        const blessingActive = context?.astraldBlessingActive === true;
+        const canonicalBiome = context?.biome || 'normal';
+        if (!blessingActive) {
+            return Infinity;
+        }
+        if (canonicalBiome === 'limbo' || canonicalBiome === 'limbo-null') {
+            return Infinity;
+        }
+    }
+
+    if (context.biome === 'limbo' && !forceStandardEvaluation) {
+        return computeLimboEffectiveChance(aura, context);
+    }
+    return computeStandardEffectiveChance(aura, context);
+}
+
+function buildComputedAuraEntries(registry, context, luckValue, breakthroughStatsMap) {
+    const evaluated = [];
+    for (const aura of registry) {
+        const effectiveChance = determineAuraEffectiveChance(aura, context);
+        if (!Number.isFinite(effectiveChance)) {
+            continue;
+        }
+
+        const usesBreakthrough = effectiveChance !== aura.chance;
+        let breakthroughStats = null;
+        if (usesBreakthrough) {
+            const existingStats = breakthroughStatsMap.get(aura.name);
+            breakthroughStats = existingStats && existingStats.btChance === effectiveChance
+                ? existingStats
+                : { count: 0, btChance: effectiveChance };
+        }
+        if (breakthroughStats) {
+            breakthroughStatsMap.set(aura.name, breakthroughStats);
+        }
+
+        let successThreshold;
+        if (aura.ignoreLuck) {
+            const fixedThreshold = Number.isFinite(aura.fixedRollThreshold) ? aura.fixedRollThreshold : 1;
+            successThreshold = Math.max(0, Math.min(effectiveChance, fixedThreshold));
+        } else {
+            successThreshold = Math.min(effectiveChance, luckValue);
+        }
+
+        const successRatio = successThreshold > 0 ? successThreshold / effectiveChance : 0;
+        evaluated.push({ aura, successRatio, breakthroughStats, effectiveChance });
+    }
+
+    evaluated.sort((a, b) => b.effectiveChance - a.effectiveChance);
+    return evaluated;
+}
+
+const trueChanceFormatters = Array.from({ length: 4 }, (_, maximumFractionDigits) =>
+    new Intl.NumberFormat('en-US', { minimumFractionDigits: 0, maximumFractionDigits }));
+
+function formatRealChanceValue(chanceValue, luckValue) {
+    if (!Number.isFinite(chanceValue) || chanceValue <= 0) {
+        return null;
+    }
+
+    if (!Number.isFinite(luckValue) || luckValue <= 0) {
+        return '∞';
+    }
+
+    const realChance = chanceValue / luckValue;
+    if (!Number.isFinite(realChance) || realChance <= 0) {
+        return '∞';
+    }
+
+    let decimalPlaces = 0;
+    if (realChance < 1000) {
+        decimalPlaces = 3;
+    } else if (realChance < 100000) {
+        decimalPlaces = 2;
+    } else if (realChance < 1000000) {
+        decimalPlaces = 1;
+    }
+
+    return trueChanceFormatters[decimalPlaces].format(realChance);
+}
+
+const TRUE_CHANCE_HIDDEN_AURA_PREFIXES = Object.freeze([
+    'Oblivion',
+    'Memory',
+    'Neferkhaf',
+    '赤月の破片',
+    '[CONTENT DELETED]',
+    'Cryogenic',
+    'Illusionary'
+]);
+
+function isExactMetaAuraName(auraName) {
+    if (typeof auraName !== 'string') {
+        return false;
+    }
+    return auraName.trim().split(' - ')[0] === 'Meta';
+}
+
+function shouldHideSelectiveTrueChanceForAura(auraName) {
+    if (typeof auraName !== 'string') {
+        return false;
+    }
+    return TRUE_CHANCE_HIDDEN_AURA_PREFIXES.some(prefix => auraName.startsWith(prefix)) || isExactMetaAuraName(auraName);
+}
+
+let rollFeedSearchInput = null;
+let rollFeedVisibilityObserver = null;
+let observedRollFeedEntries = new WeakSet();
+let liveRollFeed = null;
+const LIVE_ROLL_FEED_PAGE_SIZE = 100;
+
+function createLiveRollFeed(onNavigate) {
+    const records = [];
+    let ordered = records;
+    let matches = records;
+    let query = getRollFeedSearchQuery();
+    if (query) matches = [];
+    let start = 0;
+    let following = true;
+    let sortMode = ROLL_FEED_SORT_MODE.RECENT;
+    const mounted = new Map();
+    const list = document.createElement('div');
+    list.className = 'live-roll-feed__window';
+    feedContainer.appendChild(list);
+    const navigation = document.getElementById('rollFeedHistory');
+    const label = document.getElementById('rollFeedHistoryRange');
+    const first = document.getElementById('rollFeedHistoryFirst');
+    const previous = document.getElementById('rollFeedHistoryPrevious');
+    const next = document.getElementById('rollFeedHistoryNext');
+    const latest = document.getElementById('rollFeedHistoryLatest');
+    latest.textContent = 'Latest';
+    const lastStart = () => Math.max(0, matches.length - LIVE_ROLL_FEED_PAGE_SIZE);
+    let followFrame = null;
+    let touchY = null;
+    let destroyed = false;
+
+    function pinToLatest() {
+        if (following && !destroyed) feedContainer.scrollTop = feedContainer.scrollHeight;
+    }
+
+    function scheduleFollowScroll() {
+        if (!following || destroyed || followFrame !== null) return;
+        followFrame = requestAnimationFrame(() => {
+            followFrame = null;
+            pinToLatest();
+        });
+    }
+
+    function stopFollowing() {
+        if (!following || destroyed) return;
+        following = false;
+        latest.disabled = false;
+        onNavigate();
+    }
+
+    function canScroll(direction) {
+        if (direction < 0) return feedContainer.scrollTop > 0;
+        return feedContainer.scrollTop + feedContainer.clientHeight < feedContainer.scrollHeight - 1;
+    }
+
+    function handleWheel(event) {
+        if (event.isTrusted && !event.ctrlKey && event.deltaY !== 0 && canScroll(event.deltaY)) stopFollowing();
+    }
+
+    function handleTouchStart(event) {
+        if (event.isTrusted) touchY = event.touches.length === 1 ? event.touches[0].clientY : null;
+    }
+
+    function handleTouchMove(event) {
+        if (!event.isTrusted || touchY === null || event.touches.length !== 1) return;
+        const delta = touchY - event.touches[0].clientY;
+        if (Math.abs(delta) > 4 && canScroll(delta)) stopFollowing();
+    }
+
+    function handleTouchEnd() { touchY = null; }
+
+    function handleScrollKey(event) {
+        if (!event.isTrusted || event.defaultPrevented || event.altKey || event.ctrlKey || event.metaKey) return;
+        if (event.target.closest?.('input, textarea, select, button, a, [contenteditable]:not([contenteditable="false"])')) return;
+        const direction = ['ArrowUp', 'PageUp', 'Home'].includes(event.key) || (event.key === ' ' && event.shiftKey)
+            ? -1 : ['ArrowDown', 'PageDown', 'End', ' '].includes(event.key) ? 1 : 0;
+        if (direction && canScroll(direction)) stopFollowing();
+    }
+
+    function handleScrollbarPointer(event) {
+        if (!event.isTrusted || event.pointerType !== 'mouse' || feedContainer.scrollHeight <= feedContainer.clientHeight) return;
+        const bounds = feedContainer.getBoundingClientRect();
+        const scale = bounds.width / feedContainer.offsetWidth;
+        const contentRight = bounds.left + (feedContainer.clientLeft + feedContainer.clientWidth) * scale;
+        const middleScroll = event.button === 1 && !event.target.closest?.('a, button');
+        const scrollbarScroll = event.button === 0 && event.target === feedContainer && event.clientX >= contentRight && event.clientX < bounds.right - feedContainer.clientLeft * scale;
+        if (middleScroll || scrollbarScroll) stopFollowing();
+    }
+
+    feedContainer.addEventListener('scroll', scheduleFollowScroll, { passive: true });
+    feedContainer.addEventListener('wheel', handleWheel, { passive: true });
+    feedContainer.addEventListener('touchstart', handleTouchStart, { passive: true });
+    feedContainer.addEventListener('touchmove', handleTouchMove, { passive: true });
+    feedContainer.addEventListener('touchend', handleTouchEnd, { passive: true });
+    feedContainer.addEventListener('touchcancel', handleTouchEnd, { passive: true });
+    feedContainer.addEventListener('keydown', handleScrollKey);
+    feedContainer.addEventListener('pointerdown', handleScrollbarPointer, { passive: true });
+    const resizeObserver = typeof ResizeObserver === 'function' ? new ResizeObserver(scheduleFollowScroll) : null;
+    resizeObserver?.observe(list);
+    resizeObserver?.observe(feedContainer);
+
+    function render() {
+        list.querySelectorAll(':scope > .aura-tier-separator').forEach(heading => heading.remove());
+        start = following ? lastStart() : Math.min(start, lastStart());
+        const visible = matches.slice(start, start + LIVE_ROLL_FEED_PAGE_SIZE);
+        const keep = new Set(visible);
+        for (const [record, element] of mounted) {
+            if (keep.has(record)) continue;
+            rollFeedVisibilityObserver?.unobserve(element);
+            observedRollFeedEntries.delete(element);
+            element.remove();
+            mounted.delete(record);
+        }
+        let cursor = list.firstElementChild;
+        for (const record of visible) {
+            let element = mounted.get(record);
+            if (!element) {
+                element = record.presentation.element.cloneNode(true);
+                element.dataset.rollNumber = record.originalOrder;
+                mounted.set(record, element);
+            }
+            if (element !== cursor) list.insertBefore(element, cursor);
+            cursor = element.nextElementSibling;
+        }
+        observeRollFeedEntries(list);
+        syncAuraTierSeparators(list, '[data-roll-feed-entry]', isRarityFeedSort(sortMode));
+        navigation.hidden = records.length === 0;
+        const range = matches.length
+            ? `${formatWithCommas(start + 1)}–${formatWithCommas(start + visible.length)} of ${formatWithCommas(matches.length)}`
+            : 'No matching rolls';
+        if (label.textContent !== range) label.textContent = range;
+        first.disabled = start === 0;
+        previous.disabled = start === 0;
+        next.disabled = start >= lastStart();
+        latest.disabled = following;
+    }
+
+    function showPage(offset) {
+        following = false;
+        start = Math.max(0, Math.min(lastStart(), start + offset));
+        render();
+        feedContainer.scrollTop = 0;
+        onNavigate();
+    }
+    const showFirst = () => showPage(-start);
+    const showPrevious = () => showPage(-LIVE_ROLL_FEED_PAGE_SIZE);
+    const showNext = () => showPage(LIVE_ROLL_FEED_PAGE_SIZE);
+    function followLatest() {
+        following = true;
+        render();
+        pinToLatest();
+        scheduleFollowScroll();
+        onNavigate();
+    }
+    first.addEventListener('click', showFirst);
+    previous.addEventListener('click', showPrevious);
+    next.addEventListener('click', showNext);
+    latest.addEventListener('click', followLatest);
+
+    return {
+        get length() { return records.length; },
+        get following() { return following; },
+        followLatest,
+        append(entries) {
+            for (const record of entries) {
+                records.push(record);
+                if (query && record.presentation.searchText.includes(query)) matches.push(record);
+            }
+            render();
+            pinToLatest();
+            scheduleFollowScroll();
+        },
+        search() {
+            const nextQuery = getRollFeedSearchQuery();
+            if (nextQuery === query) return;
+            query = nextQuery;
+            matches = query ? ordered.filter(record => record.presentation.searchText.includes(query)) : ordered;
+            start = 0;
+            render();
+            feedContainer.scrollTop = following ? feedContainer.scrollHeight : 0;
+            scheduleFollowScroll();
+        },
+        sort(mode) {
+            sortMode = mode;
+            latest.textContent = mode === ROLL_FEED_SORT_MODE.RECENT ? 'Latest' : 'Last';
+            const sortable = records.map(record => ({ ...record.presentation, originalOrder: record.originalOrder, record }));
+            ordered = sortRollFeedEntries(sortable, mode).map(item => item.record);
+            matches = query ? ordered.filter(record => record.presentation.searchText.includes(query)) : ordered;
+            following = false;
+            start = 0;
+            render();
+            feedContainer.scrollTop = 0;
+            onNavigate();
+        },
+        destroy() {
+            destroyed = true;
+            if (followFrame !== null) cancelAnimationFrame(followFrame);
+            resizeObserver?.disconnect();
+            feedContainer.removeEventListener('scroll', scheduleFollowScroll);
+            feedContainer.removeEventListener('wheel', handleWheel);
+            feedContainer.removeEventListener('touchstart', handleTouchStart);
+            feedContainer.removeEventListener('touchmove', handleTouchMove);
+            feedContainer.removeEventListener('touchend', handleTouchEnd);
+            feedContainer.removeEventListener('touchcancel', handleTouchEnd);
+            feedContainer.removeEventListener('keydown', handleScrollKey);
+            feedContainer.removeEventListener('pointerdown', handleScrollbarPointer);
+            first.removeEventListener('click', showFirst);
+            previous.removeEventListener('click', showPrevious);
+            next.removeEventListener('click', showNext);
+            latest.removeEventListener('click', followLatest);
+            navigation.hidden = true;
+            for (const element of mounted.values()) rollFeedVisibilityObserver?.unobserve(element);
+            mounted.clear();
+            records.length = 0;
+            ordered = matches = records;
+            list.remove();
+        }
+    };
+}
+
+function resetLiveRollFeed() {
+    liveRollFeed?.destroy();
+    liveRollFeed = null;
+}
+
+function ensureRollFeedVisibilityObserver() {
+    if (
+        rollFeedVisibilityObserver
+        || !feedContainer
+        || typeof IntersectionObserver !== 'function'
+    ) {
+        return rollFeedVisibilityObserver;
+    }
+
+    rollFeedVisibilityObserver = new IntersectionObserver(entries => {
+        entries.forEach(entry => {
+            entry.target.classList.toggle('roll-feed-entry--offscreen', !entry.isIntersecting);
+        });
+    }, {
+        root: feedContainer,
+        rootMargin: '180px 0px'
+    });
+
+    return rollFeedVisibilityObserver;
+}
+
+function resetRollFeedVisibilityObserver() {
+    observedRollFeedEntries = new WeakSet();
+    if (rollFeedVisibilityObserver) {
+        rollFeedVisibilityObserver.disconnect();
+    }
+}
+
+function observeRollFeedEntries(root = feedContainer) {
+    if (!root || typeof root.querySelectorAll !== 'function') {
+        return;
+    }
+
+    const observer = ensureRollFeedVisibilityObserver();
+    if (!observer) {
+        return;
+    }
+
+    root.querySelectorAll('[data-roll-feed-entry]').forEach(entry => {
+        if (observedRollFeedEntries.has(entry)) return;
+        observedRollFeedEntries.add(entry);
+        entry.classList.add('roll-feed-entry--offscreen');
+        observer.observe(entry);
+    });
+}
+
+function getRollFeedSearchQuery() {
+    const searchInput = rollFeedSearchInput || document.getElementById('rollFeedSearch');
+    rollFeedSearchInput = searchInput;
+    return searchInput && typeof searchInput.value === 'string'
+        ? searchInput.value.trim().toLocaleLowerCase()
+        : '';
+}
+
+function applyRollFeedSearchFilter(root = feedContainer) {
+    if (liveRollFeed && root === feedContainer) {
+        liveRollFeed.search();
+        return;
+    }
+    if (!root || typeof root.querySelectorAll !== 'function') {
+        return;
+    }
+
+    const query = getRollFeedSearchQuery();
+    const entrySelector = query
+        ? '[data-roll-feed-entry]'
+        : '[data-roll-feed-entry][hidden]';
+    root.querySelectorAll(entrySelector).forEach(entry => {
+        if (!query) {
+            entry.hidden = false;
+            return;
+        }
+        let searchableText = entry.dataset.rollFeedSearchText;
+        if (typeof searchableText !== 'string') {
+            const entryText = (entry.textContent || '').toLocaleLowerCase();
+            const tierText = getAuraTierSearchTerms(entry.dataset.auraTier || '');
+            searchableText = `${entryText} ${tierText}`;
+            entry.dataset.rollFeedSearchText = searchableText;
+        }
+        entry.hidden = !searchableText.includes(query);
+    });
+    const resultsList = root.querySelector('.roll-feed__results-list');
+    syncAuraTierSeparators(resultsList, '[data-roll-feed-entry]', isRarityFeedSort(rollFeedSortMode));
+}
+
+function setupRollFeedSearch() {
+    const searchInput = document.getElementById('rollFeedSearch');
+    if (!searchInput) {
+        return;
+    }
+
+    rollFeedSearchInput = searchInput;
+    let pendingFrameId = null;
+    const refreshFilter = () => {
+        if (pendingFrameId !== null) {
+            return;
+        }
+        const applyFilter = () => {
+            pendingFrameId = null;
+            applyRollFeedSearchFilter();
+        };
+        if (typeof window.requestAnimationFrame === 'function') {
+            pendingFrameId = window.requestAnimationFrame(applyFilter);
+        } else {
+            pendingFrameId = window.setTimeout(applyFilter, 0);
+        }
+    };
+    searchInput.addEventListener('input', refreshFilter);
+    searchInput.addEventListener('search', refreshFilter);
+    searchInput.addEventListener('keydown', event => {
+        if (event.key === 'Escape' && searchInput.value) {
+            event.preventDefault();
+            searchInput.value = '';
+            refreshFilter();
+        }
+    });
+}
+
+const PINNED_DREAMSPACE_STAR_NAMES = new Set(['★', '★★', '★★★']);
+
+function isPinnedDreamspaceStarName(auraName) {
+    if (typeof auraName !== 'string') {
+        return false;
+    }
+    const normalizedName = auraName.replace(/\s+-\s+[\d,]+\s*$/, '').trim();
+    return PINNED_DREAMSPACE_STAR_NAMES.has(normalizedName);
+}
+
+function isPinnedSpecialAuraName(auraName) {
+    if (typeof auraName !== 'string') {
+        return false;
+    }
+    return isForcedChallengedPlusAura(auraName)
+        || isExactMetaAuraName(auraName)
+        || isPinnedDreamspaceStarName(auraName)
+        || ['Projection', 'Gravitational : Point Zero'].includes(normalizeAuraTierName(auraName))
+        || auraName.startsWith('Fault')
+        || auraName.startsWith('[CONTENT DELETED]')
+        || auraName.startsWith('Glitch')
+        || auraName.startsWith('Borealis');
+}
+
+function sortEntriesInUnnamedResultOrder(sourceEntries) {
+    let entries = Array.isArray(sourceEntries) ? [...sourceEntries] : [];
+    entries.sort((a, b) => {
+        const priorityDifference = b.priority - a.priority;
+        if (!Number.isNaN(priorityDifference) && priorityDifference !== 0) {
+            return priorityDifference;
+        }
+        return (a.originalOrder || 0) - (b.originalOrder || 0);
+    });
+
+    const prependMatches = predicate => {
+        const matchingEntries = entries.filter(predicate);
+        if (matchingEntries.length === 0) {
+            return;
+        }
+        entries = [
+            ...matchingEntries,
+            ...entries.filter(entry => !predicate(entry))
+        ];
+    };
+
+    const cryogenicEntries = entries.filter(
+        entry => typeof entry.auraName === 'string' && entry.auraName.startsWith('Cryogenic')
+    );
+    if (cryogenicEntries.length > 0) {
+        entries = entries.filter(
+            entry => !(typeof entry.auraName === 'string' && entry.auraName.startsWith('Cryogenic'))
+        );
+        const equinoxIndex = entries.findIndex(
+            entry => typeof entry.auraName === 'string' && entry.auraName.startsWith('Equinox')
+        );
+        entries.splice(equinoxIndex >= 0 ? equinoxIndex : 0, 0, ...cryogenicEntries);
+    }
+
+    prependMatches(entry => isPinnedSpecialAuraName(entry.auraName));
+    prependMatches(entry => isForcedChallengedPlusAura(entry.auraName));
+
+    return entries;
+}
+
+function decodeRollFeedSortValue(value) {
+    if (typeof value !== 'string' || value.length === 0) {
+        return '';
+    }
+    try {
+        return decodeURIComponent(value);
+    } catch (error) {
+        return value;
+    }
+}
+
+function getAuraAlphabeticalSortName(auraName) {
+    if (typeof auraName !== 'string') {
+        return '';
+    }
+    if (!auraAlphabeticalNameCache.has(auraName)) {
+        auraAlphabeticalNameCache.set(auraName, auraName.replace(/\s+-\s+[\d,]+\s*$/, '').trim());
+    }
+    return auraAlphabeticalNameCache.get(auraName);
+}
+
+const auraAlphabeticalNameCache = new Map();
+const rollFeedAlphabeticalCollator = new Intl.Collator(undefined, {
+    sensitivity: 'base',
+    numeric: true
+});
+
+function getRollFeedSortSequence() {
+    return rollFeedSortSupportsRecent && isSolsLikeSimulationMethod()
+        ? ROLL_FEED_SORT_SEQUENCE
+        : ROLL_FEED_SORT_SEQUENCE_UNNAMED;
+}
+
+function getDefaultRollFeedSortMode() {
+    return getRollFeedSortSequence().includes(ROLL_FEED_SORT_MODE.RECENT)
+        ? ROLL_FEED_SORT_MODE.RECENT
+        : ROLL_FEED_SORT_MODE.RARITY;
+}
+
+function isRarityFeedSort(mode) {
+    return mode === ROLL_FEED_SORT_MODE.RARITY || mode === ROLL_FEED_SORT_MODE.RARITY_ASCENDING;
+}
+
+function sortRollFeedEntries(records, mode) {
+    if (isRarityFeedSort(mode)) {
+        const ordered = sortEntriesInUnnamedResultOrder(records);
+        return mode === ROLL_FEED_SORT_MODE.RARITY_ASCENDING ? ordered.reverse() : ordered;
+    }
+    if (mode === ROLL_FEED_SORT_MODE.ALPHABETICAL || mode === ROLL_FEED_SORT_MODE.ALPHABETICAL_DESCENDING) {
+        const direction = mode === ROLL_FEED_SORT_MODE.ALPHABETICAL_DESCENDING ? -1 : 1;
+        return [...records].sort((a, b) => direction * rollFeedAlphabeticalCollator.compare(a.alphabeticalName, b.alphabeticalName)
+            || a.originalOrder - b.originalOrder);
+    }
+    return [...records].sort((a, b) => a.originalOrder - b.originalOrder);
+}
+
+function syncRollFeedSortControl() {
+    const select = document.getElementById('rollFeedSortSelect');
+    const control = document.getElementById('rollFeedSortControl');
+    if (!select || !control) return;
+    const sortSequence = getRollFeedSortSequence();
+    const normalizedMode = sortSequence.includes(rollFeedSortMode)
+        ? rollFeedSortMode
+        : getDefaultRollFeedSortMode();
+    rollFeedSortMode = normalizedMode;
+    control.hidden = !rollFeedSortingAvailable;
+    select.disabled = !rollFeedSortingAvailable;
+    select.value = normalizedMode;
+    [...select.options].forEach(option => {
+        option.hidden = !sortSequence.includes(option.value);
+        option.disabled = option.hidden;
+    });
+    globalThis.InterfaceSelects?.refresh('rollFeedSortSelect');
+}
+
+function setRollFeedSortingAvailable(
+    available,
+    { resetMode = false, supportsRecent = rollFeedSortSupportsRecent } = {}
+) {
+    rollFeedSortingAvailable = Boolean(available);
+    rollFeedSortSupportsRecent = Boolean(supportsRecent);
+    if (resetMode) {
+        rollFeedSortMode = getDefaultRollFeedSortMode();
+    }
+    syncRollFeedSortControl();
+}
+
+function applyRollFeedSort(mode = rollFeedSortMode) {
+    if (!feedContainer || !rollFeedSortingAvailable) {
+        return;
+    }
+
+    const sortSequence = getRollFeedSortSequence();
+    const normalizedMode = sortSequence.includes(mode)
+        ? mode
+        : getDefaultRollFeedSortMode();
+    if (liveRollFeed) {
+        liveRollFeed.sort(normalizedMode);
+        rollFeedSortMode = normalizedMode;
+        syncRollFeedSortControl();
+        return;
+    }
+    const liveEntries = Array.from(feedContainer.querySelectorAll('.live-roll-feed__entry'));
+    const unnamedResultsList = feedContainer.querySelector('.roll-feed__results-list');
+    const entryElements = liveEntries.length > 0
+        ? liveEntries
+        : Array.from(unnamedResultsList?.querySelectorAll('.roll-feed__result-entry') || []);
+    const entryRecords = entryElements.map((element, index) => {
+        const originalOrder = Number.parseInt(
+            liveEntries.length > 0 ? element.dataset.rollNumber : element.dataset.resultOrder,
+            10
+        );
+        const priority = Number(element.dataset.auraPriority);
+        return {
+            element,
+            auraName: decodeRollFeedSortValue(element.dataset.auraName),
+            alphabeticalName: decodeRollFeedSortValue(element.dataset.auraSortName),
+            priority: Number.isNaN(priority) ? 0 : priority,
+            originalOrder: Number.isFinite(originalOrder) ? originalOrder : index
+        };
+    });
+
+    const orderedRecords = sortRollFeedEntries(entryRecords, normalizedMode);
+
+    const fragment = document.createDocumentFragment();
+    orderedRecords.forEach(record => fragment.appendChild(record.element));
+    if (liveEntries.length > 0) {
+        const summary = Array.from(feedContainer.children).find(
+            child => child.classList?.contains('live-roll-feed__summary')
+        ) || null;
+        feedContainer.insertBefore(fragment, summary);
+        feedContainer.scrollTop = 0;
+    } else if (unnamedResultsList) {
+        unnamedResultsList.appendChild(fragment);
+    }
+
+    rollFeedSortMode = normalizedMode;
+    syncRollFeedSortControl();
+    applyRollFeedSearchFilter();
+}
+
+function setupRollFeedSorting() {
+    const select = document.getElementById('rollFeedSortSelect');
+    if (!select) return;
+    globalThis.InterfaceSelects?.initialize('rollFeedSortSelect');
+    select.addEventListener('change', () => {
+        if (!rollFeedSortingAvailable) {
+            return;
+        }
+        applyRollFeedSort(select.value);
+        playSoundEffect(clickSoundEffectElement, 'ui');
+    });
+
+    setRollFeedSortingAvailable(false, { resetMode: true, supportsRecent: false });
+}
+
+function buildResultEntries(
+    registry,
+    biome,
+    breakthroughStatsMap,
+    luckValue,
+    { allowTrueChance = true, potionBatch = null, winCounts = null } = {}
+) {
+    let entries = [];
+    const safeWinCounts = Array.isArray(winCounts) || ArrayBuffer.isView(winCounts)
+        ? winCounts
+        : null;
+    const potionSourceMarkup = potionBatch
+        ? formatMultiplePotionBatchResultMarkup(potionBatch)
+        : '';
+    const potionSourceText = potionBatch
+        ? formatMultiplePotionBatchResultText(potionBatch)
+        : '';
+    for (const aura of registry) {
+        if (shouldHideAuraFromRollFeed(aura, biome)) {
+            continue;
+        }
+        const auraIndex = getAuraIndex(aura);
+        const winCount = safeWinCounts && auraIndex >= 0
+            ? (Number.isFinite(safeWinCounts[auraIndex]) ? safeWinCounts[auraIndex] : 0)
+            : readAuraWinCount(aura);
+        if (winCount <= 0) continue;
+
+        const specialClass = typeof resolveAuraStyleClass === 'function' ? resolveAuraStyleClass(aura, biome) : '';
+        const rarityClass = `rarity-tier-${resolveAuraDisplayTierKey(aura, biome)}`;
+        const eventSigilClass = resolveEventAuraSigilClass(aura);
+        const countClass = [rarityClass, eventSigilClass].filter(Boolean).join(' ');
+        const nativeClass = [rarityClass, eventSigilClass].filter(Boolean).join(' ');
+        const classAttr = `aura-tier-detail ${rarityClass}`;
+        const formattedName = formatRollFeedAuraNameMarkup(aura, undefined, biome);
+        const formattedTextName = formatAuraNameText(aura);
+        const breakthroughStats = breakthroughStatsMap.get(aura.name);
+        const isBreakthrough = aura.name.startsWith('Breakthrough');
+
+        const formatBreakthroughMarkupWithCount = (nameValue, countValue) =>
+            `${formatRollFeedAuraNameMarkup(aura, nameValue, biome)}<span class="aura-tier-detail aura-count ${countClass}"> | Times Rolled: ${formatWithCommas(countValue)}</span>`;
+
+        const eventId = getAuraEventId(aura, { preferEnabled: true });
+        const specialClassTokens = specialClass
+            ? specialClass.split(/\s+/).filter(Boolean)
+            : [];
+        const shareSpecialTokens = specialClassTokens.slice();
+        if (eventId === 'winter26' && !shareSpecialTokens.includes('sigil-outline-winter')) {
+            shareSpecialTokens.push('sigil-outline-winter');
+        }
+        const isBreakthroughAura = aura.name.startsWith('Breakthrough');
+
+        const createShareVisualRecord = (baseName, countValue, options = {}) => ({
+            aura,
+            biome,
+            tierKey: resolveAuraDisplayTierKey(aura, biome),
+            displayName: isBreakthroughAura
+                ? `${baseName} | Times Rolled: ${formatWithCommas(countValue)}`
+                : baseName,
+            subtitle: aura.subtitle || null,
+            prefix: typeof options.prefix === 'string' && options.prefix.length > 0 ? options.prefix : null,
+            variant: options.variant || 'standard',
+            count: countValue,
+            countLabel: isBreakthroughAura ? null : `Times Rolled: ${formatWithCommas(countValue)}`,
+            classes: {
+                rarity: rarityClass || null,
+                special: shareSpecialTokens,
+                event: Boolean(eventId)
+            }
+        });
+
+        const pushVisualEntry = (markup, shareText, priority, visualRecord, auraName, rarityForRealChance) => {
+            const realChanceValue = allowTrueChance
+                && appState.selectiveTrueChanceDisplay
+                && !shouldHideSelectiveTrueChanceForAura(auraName)
+                ? formatRealChanceValue(rarityForRealChance, luckValue)
+                : null;
+            const rollBatch = potionBatch || { luckValue };
+            const resultSuffixMarkup = formatRollResultSuffix(realChanceValue, rollBatch, potionSourceMarkup, aura);
+            const resultSourceText = [formatRollResultDetails(realChanceValue, rollBatch, { aura }), potionSourceText].filter(Boolean).join(' · ');
+            entries.push({
+                markup: `${markup}${resultSuffixMarkup}`,
+                share: resultSourceText ? `${shareText} | ${resultSourceText}` : shareText,
+                priority,
+                visual: visualRecord
+                    ? { ...visualRecord, potionSource: resultSourceText || null }
+                    : null,
+                auraName: auraName || null,
+                tierKey: resolveAuraDisplayTierKey(aura, biome)
+            });
+        };
+
+        if (breakthroughStats && breakthroughStats.count > 0) {
+            const btName = aura.name.replace(/-\s*[\d,]+/, `- ${formatWithCommas(breakthroughStats.btChance)}`);
+            const nativeLabel = isBreakthrough
+                ? formatBreakthroughMarkupWithCount(btName, breakthroughStats.count)
+                : formatRollFeedAuraNameMarkup(aura, btName, biome);
+            const nativeShareName = formatAuraNameText(aura, btName);
+            pushVisualEntry(
+                isBreakthrough
+                    ? `<span class="${classAttr}"><span class="aura-native ${nativeClass}">[Native]</span> ${nativeLabel}</span>`
+                    : `<span class="${classAttr}"><span class="aura-native ${nativeClass}">[Native]</span> ${nativeLabel}<span class="aura-count ${countClass}"> | Times Rolled: ${formatWithCommas(breakthroughStats.count)}</span></span>`,
+                `[Native] ${nativeShareName} | Times Rolled: ${formatWithCommas(breakthroughStats.count)}`,
+                determineResultPriority(aura, breakthroughStats.btChance),
+                createShareVisualRecord(btName, breakthroughStats.count, { prefix: '[Native]', variant: 'native' }),
+                aura.name,
+                breakthroughStats.btChance
+            );
+
+            if (winCount > breakthroughStats.count) {
+                const remainingCount = winCount - breakthroughStats.count;
+                const breakthroughRemainingLabel = isBreakthrough
+                    ? formatBreakthroughMarkupWithCount(aura.name, remainingCount)
+                    : formattedName;
+                pushVisualEntry(
+                    isBreakthrough
+                        ? `<span class="${classAttr}">${breakthroughRemainingLabel}</span>`
+                        : `<span class="${classAttr}">${formattedName}<span class="aura-count ${countClass}"> | Times Rolled: ${formatWithCommas(remainingCount)}</span></span>`,
+                    `${formattedTextName} | Times Rolled: ${formatWithCommas(remainingCount)}`,
+                    determineResultPriority(aura, aura.chance),
+                    createShareVisualRecord(aura.name, remainingCount, { variant: 'standard' }),
+                    aura.name,
+                    aura.chance
+                );
+            }
+        } else {
+            const breakthroughLabel = isBreakthrough
+                ? formatBreakthroughMarkupWithCount(aura.name, winCount)
+                : formattedName;
+            pushVisualEntry(
+                isBreakthrough
+                    ? `<span class="${classAttr}">${breakthroughLabel}</span>`
+                    : `<span class="${classAttr}">${formattedName}<span class="aura-count ${countClass}"> | Times Rolled: ${formatWithCommas(winCount)}</span></span>`,
+                `${formattedTextName} | Times Rolled: ${formatWithCommas(winCount)}`,
+                determineResultPriority(aura, aura.chance),
+                createShareVisualRecord(aura.name, winCount, { variant: 'standard' }),
+                aura.name,
+                aura.chance
+            );
+        }
+    }
+
+    entries = sortEntriesInUnnamedResultOrder(entries);
+
+    const markupList = [];
+    const feedRecords = [];
+    const shareRecords = [];
+    const shareVisualRecords = [];
+    for (const entry of entries) {
+        markupList.push(entry.markup);
+        feedRecords.push({
+            markup: entry.markup,
+            tierKey: entry.tierKey || '',
+            auraName: entry.auraName || '',
+            alphabeticalName: getAuraAlphabeticalSortName(entry.auraName),
+            priority: entry.priority
+        });
+        if (entry.share) {
+            shareRecords.push(entry.share);
+        }
+        if (entry.visual) {
+            shareVisualRecords.push(entry.visual);
+        }
+    }
+
+    return { markupList, feedRecords, shareRecords, shareVisualRecords };
+}
+
+function mergeFixedLuckResultBatches(batches) {
+    const fixedLuckAuras = AURA_REGISTRY.filter(isFixedLuckResultAura);
+    const resultBatches = batches.map(batch => ({
+        ...batch,
+        winCounts: batch.winCounts.slice(),
+        breakthroughStatsMap: new Map(batch.breakthroughStatsMap)
+    }));
+    const batchesByPotion = new Map();
+    for (const batch of resultBatches) {
+        const potionKey = getMultiplePotionBatchResultConfigs(batch).map(config => config.id).sort().join('+');
+        const firstBatch = batchesByPotion.get(potionKey);
+        if (!firstBatch) {
+            batchesByPotion.set(potionKey, batch);
+            continue;
+        }
+        for (const aura of fixedLuckAuras) {
+            firstBatch.winCounts[aura.index] += batch.winCounts[aura.index];
+            batch.winCounts[aura.index] = 0;
+            const stats = batch.breakthroughStatsMap.get(aura.name);
+            if (stats) {
+                const firstStats = firstBatch.breakthroughStatsMap.get(aura.name);
+                firstBatch.breakthroughStatsMap.set(aura.name, {
+                    ...stats,
+                    count: (firstStats?.count || 0) + stats.count
+                });
+            }
+        }
+    }
+    return resultBatches;
+}
+
+function buildLiveRollMarkup(
+    aura,
+    rollNumber,
+    biome,
+    breakthroughStats,
+    isNativeRoll,
+    luckValue,
+    { allowTrueChance = true, potionBatch = null } = {}
+) {
+    if (!aura) {
+        return '';
+    }
+
+    const rarityClass = `rarity-tier-${resolveAuraDisplayTierKey(aura, biome)}`;
+    const eventSigilClass = resolveEventAuraSigilClass(aura);
+    const nativeClass = [rarityClass, eventSigilClass].filter(Boolean).join(' ');
+    const classAttr = `aura-tier-detail ${rarityClass}`;
+    const nativeChance = isNativeRoll && breakthroughStats
+        ? breakthroughStats.btChance
+        : aura.chance;
+    const displayName = isNativeRoll && breakthroughStats
+        ? aura.name.replace(/-\s*[\d,]+/, `- ${formatWithCommas(breakthroughStats.btChance)}`)
+        : aura.name;
+    const prefix = isNativeRoll ? `<span class="aura-native ${nativeClass}">[Native]</span> ` : '';
+    const formattedName = formatRollFeedAuraNameMarkup(aura, displayName, biome);
+    const trueChanceValue = allowTrueChance
+        && appState.selectiveTrueChanceDisplay
+        && !shouldHideSelectiveTrueChanceForAura(aura.name)
+        ? formatRealChanceValue(nativeChance, luckValue)
+        : null;
+    const resultDetailsMarkup = formatRollResultSuffix(trueChanceValue, potionBatch || { luckValue }, '', aura);
+
+    const tierKey = resolveAuraDisplayTierKey(aura, biome);
+    const alphabeticalName = getAuraAlphabeticalSortName(aura.name);
+    const auraPriority = determineResultPriority(aura, nativeChance);
+    const encodedAuraName = encodeURIComponent(aura.name);
+    const encodedAlphabeticalName = encodeURIComponent(alphabeticalName);
+    return `<span class="live-roll-feed__entry" data-roll-feed-entry data-aura-tier="${tierKey}" data-roll-number="${rollNumber}" data-aura-name="${encodedAuraName}" data-aura-sort-name="${encodedAlphabeticalName}" data-aura-priority="${auraPriority}">`
+        + `<span class="${classAttr}">${prefix}${formattedName}</span>${resultDetailsMarkup}`
+        + '</span>';
+}
+
+function summarizeXpRewards(registry) {
+    const earnedTiers = new Set();
+    registry.forEach(aura => {
+        if (readAuraWinCount(aura) > 0) {
+            const tierKey = auraXpTierKeysByIndex[aura.index];
+            if (tierKey) {
+                earnedTiers.add(tierKey);
+            }
+        }
+    });
+
+    let totalXp = 0;
+    const lines = [];
+    for (const tier of XP_RARITY_TABLE) {
+        if (earnedTiers.has(tier.key)) {
+            totalXp += tier.xp;
+            lines.push(`Reached ${tier.label}: +${formatWithCommas(tier.xp)} XP`);
+        }
+    }
+
+    return { totalXp, lines };
+}
+
+function clearHarvesterCurseLayer() {
+    if (typeof document === 'undefined') return;
+    if (harvesterCurseTimeoutId !== null) {
+        clearTimeout(harvesterCurseTimeoutId);
+        harvesterCurseTimeoutId = null;
+    }
+    const existing = document.getElementById(HARVESTER_CURSE_LAYER_ID);
+    if (existing && existing.parentElement) {
+        existing.parentElement.removeChild(existing);
+    }
+}
+
+function renderHarvesterCurseLayer(count) {
+    if (typeof document === 'undefined') return;
+    clearHarvesterCurseLayer();
+
+    if (!count || count <= 0) {
+        return;
+    }
+
+    const layer = document.createElement('div');
+    layer.id = HARVESTER_CURSE_LAYER_ID;
+    layer.className = 'harvester-curse';
+
+    const visibleStacks = Math.min(count, 24);
+    for (let i = 0; i < visibleStacks; i++) {
+        const card = document.createElement('div');
+        card.className = 'harvester-curse__card';
+        card.style.setProperty('--harvester-tilt', `${(Math.random() * 12 - 6).toFixed(2)}deg`);
+        card.style.setProperty('--harvester-delay', `${Math.floor(Math.random() * 120)}ms`);
+        card.style.setProperty('--harvester-rumble-speed', `${70 + Math.floor(Math.random() * 60)}ms`);
+        card.style.setProperty('--harvester-jux-speed', `${55 + Math.floor(Math.random() * 45)}ms`);
+        card.style.left = `${4 + Math.random() * 92}vw`;
+        card.style.top = `${4 + Math.random() * 92}vh`;
+        card.innerHTML = [
+            '<span class="harvester-curse__line harvester-curse__line--i">I</span>',
+            '<span class="harvester-curse__line">HATE</span>',
+            '<span class="harvester-curse__line harvester-curse__line--jux">JUX</span>'
+        ].join('');
+        layer.appendChild(card);
+    }
+
+    document.body.appendChild(layer);
+
+    const lifetimeMs = Math.min(14000, 5000 + (visibleStacks * 320));
+    harvesterCurseTimeoutId = setTimeout(() => {
+        harvesterCurseTimeoutId = null;
+        clearHarvesterCurseLayer();
+    }, lifetimeMs);
+}
+
+function clearFlushedTrollSignatureLayer() {
+    if (typeof document === 'undefined') return;
+    if (flushedTrollSignatureTimeoutId !== null) {
+        clearTimeout(flushedTrollSignatureTimeoutId);
+        flushedTrollSignatureTimeoutId = null;
+    }
+    const existing = document.getElementById(FLUSHED_TROLL_SIGNATURE_LAYER_ID);
+    if (existing && existing.parentElement) {
+        existing.parentElement.removeChild(existing);
+    }
+}
+
+function renderFlushedTrollSignatureLayer(count) {
+    if (typeof document === 'undefined') return;
+    clearFlushedTrollSignatureLayer();
+
+    if (!count || count <= 0) {
+        return;
+    }
+
+    const layer = document.createElement('div');
+    layer.id = FLUSHED_TROLL_SIGNATURE_LAYER_ID;
+    layer.className = 'flushed-troll-signature';
+
+    const visibleStacks = Math.min(Math.ceil(count / 10), 24);
+    for (let i = 0; i < visibleStacks; i++) {
+        const card = document.createElement('div');
+        card.className = 'flushed-troll-signature__card';
+        card.style.setProperty('--flushed-troll-tilt', `${(Math.random() * 12 - 6).toFixed(2)}deg`);
+        card.style.setProperty('--flushed-troll-delay', `${Math.floor(Math.random() * 140)}ms`);
+        card.style.setProperty('--flushed-troll-rumble-speed', `${70 + Math.floor(Math.random() * 60)}ms`);
+        card.style.left = `${10 + Math.random() * 80}vw`;
+        card.style.top = `${10 + Math.random() * 80}vh`;
+
+        const text = document.createElement('span');
+        text.className = 'flushed-troll-signature__text sigil-effect-outline-glitch';
+        text.textContent = 'YG was here';
+        card.appendChild(text);
+
+        layer.appendChild(card);
+    }
+
+    document.body.appendChild(layer);
+
+    const lifetimeMs = Math.min(14000, 5000 + (visibleStacks * 420));
+    flushedTrollSignatureTimeoutId = setTimeout(() => {
+        flushedTrollSignatureTimeoutId = null;
+        clearFlushedTrollSignatureLayer();
+    }, lifetimeMs);
+}
+
+function requestRollCancellation() {
+    if (!simulationActive || cancelRollRequested) {
+        return;
+    }
+
+    cancelRollRequested = true;
+    const { cancelRollButton } = uiHandles;
+    if (cancelRollButton) {
+        cancelRollButton.disabled = true;
+        cancelRollButton.textContent = 'Cancelling...';
+    }
+    activeSimulationCancelHandler?.();
+}
+
+function setupRollCancellationControl() {
+    const { cancelRollButton } = uiHandles;
+    if (!cancelRollButton) {
+        return;
+    }
+
+    cancelRollButton.addEventListener('click', () => {
+        requestRollCancellation();
+    });
+}
+
+function shouldScheduleBackgroundWork() {
+    return Boolean(appState && appState.backgroundRolling);
+}
+
+function queueSimulationWork(callback) {
+    if (typeof callback !== 'function') {
+        return;
+    }
+
+    const preferTimers = shouldScheduleBackgroundWork();
+
+    if (preferTimers && typeof window !== 'undefined' && typeof window.setTimeout === 'function') {
+        window.setTimeout(callback, 16);
+        return;
+    }
+
+    if (typeof window !== 'undefined' && typeof window.requestAnimationFrame === 'function') {
+        window.requestAnimationFrame(callback);
+        return;
+    }
+
+    setTimeout(callback, 16);
+}
+
+const SIMULATION_WORKER_PATH = typeof window.getVersionedAppAssetUrl === 'function'
+    ? window.getVersionedAppAssetUrl('scripts/simulator/simulation-worker.js?session=1')
+    : 'scripts/simulator/simulation-worker.js?session=1';
+const WORKER_PROGRESS_UPDATE_INTERVAL_MS = 100;
+const WORKER_RESPONSE_TIMEOUT_MS = 10000;
+
+function createSimulationProgressCommit(commit) {
+    if (typeof AppRuntime !== 'undefined' && typeof AppRuntime.createFrameCommit === 'function') {
+        return AppRuntime.createFrameCommit(commit);
+    }
+
+
+    let disposed = false;
+    return {
+        schedule(value) { if (!disposed) commit(value); },
+        dispose() { disposed = true; }
+    };
+}
+
+function renderSimulationFailure(error, { stage = 'starting', rolls, method } = {}) {
+    if (!feedContainer) return;
+    feedContainer.textContent = 'Rolling could not finish. Please try Start Rolling again.';
+    const details = document.createElement('details');
+    details.className = 'roll-feed-error';
+    const summary = document.createElement('summary');
+    summary.textContent = 'Error details';
+    const info = document.createElement('pre');
+    info.textContent = [
+        `Build: ${window.appBuildCacheKey || 'unknown'}`,
+        `Stage: ${stage}`,
+        `Error: ${error?.name || 'Error'}: ${error?.message || String(error)}`,
+        `Rolls: ${rolls ?? 'unknown'}`,
+        `Method: ${method || 'unknown'}`,
+        `Browser: ${navigator.userAgent || 'unknown'}`
+    ].join('\n');
+    details.append(summary, info);
+    feedContainer.appendChild(details);
+}
+
+function terminateActiveSimulationWorker() {
+    if (!activeSimulationWorker) {
+        return;
+    }
+
+    activeSimulationWorker.terminate();
+    activeSimulationWorker = null;
+}
+
+const { buildWeightedSelection, selectWeightedIndex, buildCumulativeSelectionFromProbabilities,
+    buildCombinedSimulationSelection } = SimulationCore;
+
+function createSimulationCandidateConfig(entries) {
+    const auraIndices = [];
+    const ratios = [];
+    const breakthroughIndices = [];
+
+    for (const entry of entries) {
+        if (!(entry && entry.successRatio > 0 && entry.aura)) {
+            continue;
+        }
+        auraIndices.push(entry.aura.index);
+        ratios.push(entry.successRatio);
+        breakthroughIndices.push(entry.breakthroughStats ? entry.aura.index : -1);
+    }
+
+    return { auraIndices, ratios, breakthroughIndices };
+}
+
+function applySimulationWinCounts(winCounts) {
+    const safeCounts = Array.isArray(winCounts) || ArrayBuffer.isView(winCounts) ? winCounts : [];
+    const totalAuraCount = AURA_REGISTRY.length;
+    for (let index = 0; index < totalAuraCount; index++) {
+        const value = safeCounts[index];
+        auraWinCounts[index] = Number.isFinite(value) ? value : 0;
+    }
+}
+
+function copySimulationCounts(targetCounts, sourceCounts) {
+    if (!ArrayBuffer.isView(targetCounts)) {
+        return;
+    }
+    targetCounts.fill(0);
+    const safeCounts = Array.isArray(sourceCounts) || ArrayBuffer.isView(sourceCounts)
+        ? sourceCounts
+        : [];
+    const limit = Math.min(targetCounts.length, safeCounts.length);
+    for (let index = 0; index < limit; index++) {
+        const value = safeCounts[index];
+        targetCounts[index] = Number.isFinite(value) ? value : 0;
+    }
+}
+
+function applySimulationBatchCounts(simulationBatches, winCountsByBatch, breakthroughCountsByBatch) {
+    if (!Array.isArray(simulationBatches)) {
+        return;
+    }
+    simulationBatches.forEach((batch, index) => {
+        copySimulationCounts(batch.winCounts, winCountsByBatch?.[index]);
+        copySimulationCounts(batch.breakthroughCounts, breakthroughCountsByBatch?.[index]);
+        syncBreakthroughCounts(batch.breakthroughStatsByAuraIndex, batch.breakthroughCounts);
+    });
+}
+
+function syncBreakthroughCounts(statsByAuraIndex, breakthroughCounts) {
+    if (!Array.isArray(statsByAuraIndex)) {
+        return;
+    }
+
+    const safeCounts = Array.isArray(breakthroughCounts) || ArrayBuffer.isView(breakthroughCounts) ? breakthroughCounts : [];
+    for (let index = 0; index < statsByAuraIndex.length; index++) {
+        const stats = statsByAuraIndex[index];
+        if (!stats) {
+            continue;
+        }
+        const value = safeCounts[index];
+        stats.count = Number.isFinite(value) ? value : 0;
+    }
+}
+
+function createSimulationWorker() {
+    if (typeof Worker !== 'function' || typeof window === 'undefined') {
+        return null;
+    }
+
+    const locationProtocol = window.location?.protocol || '';
+    const locationOrigin = window.location?.origin || '';
+    if (locationProtocol === 'file:' || locationOrigin === 'null') {
+        return null;
+    }
+
+    try {
+        return new Worker(SIMULATION_WORKER_PATH);
+    } catch (error) {
+        return null;
+    }
+}
+
+function prepareSimulationBatch(batch, selectionState, eventContext) {
+    const luckValue = Number.isFinite(batch?.luckValue) ? Math.max(0, batch.luckValue) : 0;
+    const breakthroughStatsMap = new Map();
+    const breakthroughStatsByAuraIndex = new Array(AURA_REGISTRY.length).fill(null);
+    const evaluationContext = createAuraEvaluationContext(selectionState, {
+        eventChecker: eventContext.eventChecker,
+        enabledEventsSet: eventContext.enabledEventsSet,
+        luckValue,
+        ignoreRune: Boolean(batch?.blocksRunes)
+    });
+    evaluationContext.rainyNative = Boolean(batch.rainyNative);
+    evaluationContext.vampireHunter = Boolean(batch.vampireHunter);
+    evaluationContext.radiantUnlockMask = batch.radiantUnlockMask || 0;
+    const computedAuras = buildComputedAuraEntries(
+        AURA_REGISTRY,
+        evaluationContext,
+        luckValue,
+        breakthroughStatsMap
+    );
+    const lucklessAuras = [];
+    const luckAffectedAuras = [];
+    for (const entry of computedAuras) {
+        if (!entry || !entry.aura) {
+            continue;
+        }
+        if (entry.breakthroughStats) {
+            breakthroughStatsByAuraIndex[entry.aura.index] = entry.breakthroughStats;
+        }
+        if (entry.aura.ignoreLuck) {
+            lucklessAuras.push(entry);
+        } else {
+            luckAffectedAuras.push(entry);
+        }
+    }
+
+    const activeDuneAura = batch.dune ? duneAuraData : null;
+    const activeBloodPresets = (Array.isArray(batch.bloodPresets) && batch.bloodPresets.length > 0
+        ? batch.bloodPresets
+        : [batch.bloodPreset])
+        .map(identifier => getBloodPresetConfig(identifier))
+        .filter(Boolean);
+    const activeOblivionAura = batch.oblivion ? oblivionAuraData : null;
+    const activeMemoryAura = batch.oblivion ? memoryAuraData : null;
+    const lucklessCandidateConfig = createSimulationCandidateConfig(lucklessAuras);
+    const luckAffectedCandidateConfig = createSimulationCandidateConfig(luckAffectedAuras);
+    const prerollAuraIndices = [];
+    const prerollAuraRatios = [];
+
+    if (activeDuneAura) {
+        prerollAuraIndices.push(activeDuneAura.index);
+        prerollAuraRatios.push(1 / DUNE_POTION_ODDS);
+    }
+    activeBloodPresets.forEach(activeBloodPreset => {
+        if (!bloodAuraData) {
+            return;
+        }
+        prerollAuraIndices.push(bloodAuraData.index);
+        prerollAuraRatios.push(1 / activeBloodPreset.potionOdds);
+    });
+    if (activeMemoryAura) {
+        prerollAuraIndices.push(activeMemoryAura.index);
+        prerollAuraRatios.push(1 / OBLIVION_MEMORY_ODDS);
+    }
+    if (activeOblivionAura) {
+        prerollAuraIndices.push(activeOblivionAura.index);
+        prerollAuraRatios.push(1 / OBLIVION_POTION_ODDS);
+    }
+
+    const combinedSelection = buildCombinedSimulationSelection([
+        {
+            selection: buildWeightedSelection(prerollAuraRatios),
+            auraIndices: prerollAuraIndices,
+            breakthroughIndices: null
+        },
+        {
+            selection: buildWeightedSelection(lucklessCandidateConfig.ratios),
+            auraIndices: lucklessCandidateConfig.auraIndices,
+            breakthroughIndices: lucklessCandidateConfig.breakthroughIndices
+        },
+        {
+            selection: buildWeightedSelection(luckAffectedCandidateConfig.ratios),
+            auraIndices: luckAffectedCandidateConfig.auraIndices,
+            breakthroughIndices: luckAffectedCandidateConfig.breakthroughIndices
+        }
+    ]);
+
+    const radiantSelections = selectionState.primaryBiome === 'radiantForest' && batch.radiantUnlockMask === undefined
+        ? Array.from({ length: 8 }, (_, mask) => mask === 0 ? combinedSelection
+            : prepareSimulationBatch({ ...batch, radiantUnlockMask: mask }, selectionState, eventContext).combinedSelection)
+        : null;
+
+    return {
+        id: batch.id || null,
+        rollLabel: batch.rollLabel || '',
+        rollMultiplier: batch.rollMultiplier || 1,
+        bonusRollApplied: Boolean(batch.bonusRollApplied),
+        rollEffect: batch.rollEffect || null,
+        gemstoneLuck: batch.gemstoneLuck || 0,
+        variantKey: batch.variantKey,
+        potionIds: Array.isArray(batch.potionIds) ? batch.potionIds.slice() : null,
+        count: Math.max(0, Math.floor(batch.count || 0)),
+        luckValue,
+        label: batch.label || 'Single Potion',
+        winCounts: new Float64Array(AURA_REGISTRY.length),
+        breakthroughCounts: new Float64Array(AURA_REGISTRY.length),
+        breakthroughStatsMap,
+        breakthroughStatsByAuraIndex,
+        combinedSelection,
+        radiantSelections,
+        prerollAuraIndices,
+        prerollAuraRatios,
+        lucklessCandidateConfig,
+        luckAffectedCandidateConfig
+    };
+}
+
+function prepareEquipmentSimulation(definitions, selectionState, eventContext, multiple) {
+    const inputs = getGearLuckInputs(multiple);
+    const timing = GearLuck.schedule(equippedGear.left);
+    const batches = [];
+    const sequencePlan = [];
+    let startRoll = 0;
+    const actualBiome = selectionState.primaryBiome || selectionState.canonicalBiome;
+    const vampireHunter = equippedGear.right === 'vampire-hunter'
+        && ['graveyard', 'pumpkinMoon', 'bloodRain', 'glitch'].includes(actualBiome);
+    definitions.forEach(definition => {
+        const stateIndices = new Map();
+        GearLuck.statesInRange(timing, startRoll, definition.count).forEach(stateIndex => {
+            const state = timing.states[stateIndex];
+            const labels = [];
+            if (state.bonus) labels.push(`×${state.bonusMultiplier} bonus`);
+            if (state.basicMultiplier !== 1) labels.push(`×${state.basicMultiplier} basic`);
+            if (state.extraLuck) labels.push(`+${state.extraLuck} Gemstone`);
+            if (state.rainyNative) labels.push('Rainy rarity');
+            const batch = prepareSimulationBatch({
+                ...definition,
+                luckValue: GearLuck.totalLuck(inputs.basic, multiple ? definition.baseLuck : inputs.special, inputs.finalMultiplier, state, inputs.basicMultiplier),
+                rainyNative: state.rainyNative,
+                vampireHunter,
+                variantKey: batches.length,
+                rollMultiplier: state.bonusMultiplier * state.basicMultiplier,
+                bonusRollApplied: state.bonus,
+                rollEffect: equippedGear.left === 'unfathomable' && state.basicMultiplier > 1 ? 'mana-surge'
+                    : equippedGear.left === 'darkshader' && state.basicMultiplier > 1 ? 'darkshader'
+                    : state.rainyNative ? 'tide' : null,
+                gemstoneLuck: state.extraLuck,
+                rollLabel: labels.join(' · ') || 'Normal roll'
+            }, selectionState, eventContext);
+            stateIndices.set(stateIndex, batches.length);
+            batches.push(batch);
+        });
+        const mapEntry = entry => Array.isArray(entry) ? entry.map(index => stateIndices.get(index)) : stateIndices.get(entry);
+        sequencePlan.push({ count: definition.count, startRoll,
+            prefix: timing.prefix.map(mapEntry), pattern: timing.pattern.map(mapEntry), heldRandomEvery: timing.heldRandomEvery });
+        startRoll += definition.count;
+    });
+    const rewardBatchIndex = actualBiome === 'radiantForest' ? batches.length : null;
+    if (rewardBatchIndex !== null) {
+        batches.push(prepareSimulationBatch({ count: 1, label: 'Remember', luckValue: 1,
+            variantKey: batches.length, rollLabel: 'Remember', radiantUnlockMask: 0 }, selectionState, eventContext));
+    }
+    return { batches, sequencePlan, rewardBatchIndex };
+}
+
+async function runRollSimulation(options = {}) {
+    try {
+
+        await window.appBuildMetadataPromise;
+        startRollSimulation(options);
+    } catch (error) {
+        if (activeSimulationFailureHandler) activeSimulationFailureHandler(error);
+        else {
+            console.warn('Unable to start rolling.', error);
+            renderSimulationFailure(error);
+        }
+    }
+}
+
+function startRollSimulation(options = {}) {
+    if (simulationActive || isAuraCutscenePlaybackActive()) return;
+
+    if (!feedContainer) {
+        feedContainer = document.getElementById('simulation-feed');
+    }
+    if (!luckField) {
+        luckField = document.getElementById('luck-total');
+    }
+
+    if (!feedContainer || !luckField) {
+        return;
+    }
+
+    clearHarvesterCurseLayer();
+    clearFlushedTrollSignatureLayer();
+
+    const {
+        rollTriggerButton,
+        pauseRollButton,
+        cancelRollButton,
+        brandMark,
+        rollCountInput,
+        biomeSelector,
+        progressPanel,
+        progressBarFill,
+        progressLabel,
+        audio
+    } = uiHandles;
+
+    if (!rollTriggerButton || !rollCountInput || !luckField) {
+        return;
+    }
+
+    const bypassRollWarning = Boolean(options && options.bypassRollWarning);
+    const bypassRotationPrompt = Boolean(options && options.bypassRotationPrompt);
+    const totalOverride = options && Number.isFinite(options.totalOverride)
+        ? Number.parseInt(options.totalOverride, 10)
+        : null;
+
+    const rememberRun = isRememberRoll();
+    const isMultiplePotionRun = !rememberRun && isMultiplePotionMode();
+    const solsLikeRun = isSolsLikeSimulationMethod();
+    const selectedPotionStackingEnabled = isMultiplePotionRun && isMultiplePotionStackingEnabled();
+    const selectedPotionBatches = isMultiplePotionRun
+        ? collectMultiplePotionBatches(getMultiplePotionLuckState(), {
+            stackCompatiblePotions: selectedPotionStackingEnabled
+        })
+        : [];
+    const selectedDevicePresetName = getEquipmentSummary();
+    const selectedEquipment = { ...equippedGear };
+    const selectedBuffs = [...document.querySelectorAll('[data-biome-buff]:not([hidden])')]
+        .filter(element => !element.closest('[hidden]') && element.dataset.biomeBuff !== 'moons')
+        .map(element => ({ id: element.dataset.biomeBuff, label: element.getAttribute('aria-label'), icon: element.querySelector('img')?.getAttribute('src') || '' }));
+    const selectedBonusDescription = GearLuck.describe(equippedGear.left);
+    if (isMultiplePotionRun && selectedPotionBatches.length === 0) {
+        resetLiveRollFeed();
+        resetRollFeedVisibilityObserver();
+        feedContainer.textContent = 'Add at least one potion quantity before starting a multiple potion simulation.';
+        return;
+    }
+
+    const rollInputValue = getNumericInputValue(rollCountInput, { min: 1, max: 1000000000000 });
+    let total = isMultiplePotionRun
+        ? selectedPotionBatches.reduce((sum, batch) => sum + batch.count, 0)
+        : (Number.isFinite(totalOverride) ? totalOverride : rollInputValue);
+
+    if (!Number.isFinite(total) || total <= 0) {
+        total = 1;
+    }
+    total = Math.max(1, Math.floor(total));
+    if (rememberRun) total = 1;
+
+    if (!bypassRotationPrompt && rotationPromptManager.shouldPrompt()) {
+        rotationPromptManager.prompt(() => runRollSimulation({
+            ...options,
+            bypassRotationPrompt: true,
+            totalOverride: total
+        }));
+        return;
+    }
+
+    if (!bypassRollWarning && total > LARGE_ROLL_WARNING_THRESHOLD) {
+        largeRollWarningManager.prompt(total, () => runRollSimulation({
+            bypassRollWarning: true,
+            totalOverride: total
+        }));
+        return;
+    }
+
+    const shouldFormatRolls = document.activeElement !== rollCountInput;
+    setNumericInputValue(rollCountInput, total, {
+        format: shouldFormatRolls,
+        min: isMultiplePotionRun ? 0 : 1,
+        max: 1000000000000
+    });
+
+    setRollFeedSortingAvailable(false, {
+        resetMode: true,
+        supportsRecent: solsLikeRun
+    });
+    const runId = ++simulationRunId;
+    let runFinished = false;
+    let runStage = 'preparing';
+    let progressCommit = null;
+    let cleanupLiveFeedFollowControl = null;
+    let cleanupWorker = null;
+    const cleanupSimulation = () => {
+        if (runFinished) return false;
+        runFinished = true;
+        cleanupWorker?.();
+        cleanupWorker = null;
+        progressCommit?.dispose();
+        terminateActiveSimulationWorker();
+        cleanupLiveFeedFollowControl?.();
+        cleanupLiveFeedFollowControl = null;
+        activeSolLikeSimulationController = null;
+        activeSimulationFailureHandler = null;
+        activeSimulationCancelHandler = null;
+        if (progressPanel) {
+            progressPanel.style.display = 'none';
+            progressPanel.classList.remove('loading-indicator--active', 'loading-indicator--paused');
+            delete progressPanel.dataset.loadingIndicator;
+        }
+        rollTriggerButton.disabled = false;
+        rollTriggerButton.style.opacity = '1';
+        brandMark?.classList.remove('banner__emblem--spinning', 'banner__emblem--simulation-paused');
+        if (pauseRollButton) {
+            pauseRollButton.classList.remove('roll-pause--paused');
+            pauseRollButton.setAttribute('aria-label', 'Pause rolling');
+            pauseRollButton.setAttribute('title', 'Pause rolling');
+            pauseRollButton.innerHTML = '<i class="fa-solid fa-pause" aria-hidden="true"></i>';
+        }
+        if (cancelRollButton) {
+            cancelRollButton.hidden = true;
+            cancelRollButton.disabled = false;
+            cancelRollButton.textContent = 'Cancel Roll';
+        }
+        simulationActive = false;
+        cancelRollRequested = false;
+        syncSimulationMethodControls();
+        return true;
+    };
+    const failSimulation = error => {
+        if (runId !== simulationRunId) return;
+        console.warn('Rolling could not finish.', error);
+        cleanupSimulation();
+        lastSimulationSummary = null;
+        clearHarvesterCurseLayer();
+        clearFlushedTrollSignatureLayer();
+        renderSimulationFailure(error, { stage: runStage, rolls: total, method: solsLikeRun ? "Sol's-Like" : 'Unnamed' });
+    };
+    const guardWork = callback => (...args) => {
+        if (runFinished) return;
+        try { return Promise.resolve(callback(...args)).catch(failSimulation); }
+        catch (error) { failSimulation(error); }
+    };
+    activeSimulationFailureHandler = failSimulation;
+    simulationActive = true;
+    cancelRollRequested = false;
+    rollTriggerButton.disabled = true;
+    rollTriggerButton.style.opacity = '0.5';
+    syncSimulationMethodControls();
+    if (cancelRollButton) {
+        cancelRollButton.hidden = false;
+        cancelRollButton.disabled = false;
+        cancelRollButton.textContent = 'Cancel Roll';
+    }
+    if (brandMark) {
+        brandMark.classList.toggle('banner__emblem--spinning', total > 10_000_000);
+    }
+
+    playSoundEffect(audio.roll, 'ui');
+    if (total >= 10000000) {
+        playSoundEffect(audio.explosion, 'effects');
+    }
+
+    let parsedLuck = isMultiplePotionRun
+        ? Math.max(...selectedPotionBatches.map(batch => batch.luckValue))
+        : getNumericInputValue(luckField, { min: 0 });
+    if (!Number.isFinite(parsedLuck)) {
+        parsedLuck = 1;
+        if (!isMultiplePotionRun) {
+            const shouldFormatLuck = document.activeElement !== luckField;
+            setNumericInputValue(luckField, parsedLuck, { format: shouldFormatLuck, min: 0 });
+        }
+    }
+    const luckValue = Math.max(0, parsedLuck);
+    const selectionState = collectBiomeSelectionState();
+    const biome = selectionState.canonicalBiome;
+    const primaryBiome = selectionState.primaryBiome;
+    const runeValue = selectionState.runeValue;
+    const timeBiome = selectionState.timeBiome;
+
+    const radiantRun = primaryBiome === 'radiantForest'
+        ? { config: RADIANT_FOREST_CONFIG, state: radiantForestState, checkpoints: true }
+        : null;
+    const initialRadiantState = radiantRun ? { ...radiantRun.state } : null;
+    const updateRadiantProgress = () => {
+        if (radiantRun && radiantRun.state === radiantForestState) syncBiomeBuffs();
+    };
+
+    const eventSnapshot = enabledEvents.size > 0 ? new Set(enabledEvents) : null;
+    const isEventAuraEnabled = aura => {
+        const eventIds = getAuraEventIds(aura);
+        if (eventIds.length === 0) {
+            return true;
+        }
+        const eventState = eventSnapshot || enabledEvents;
+        return eventIds.some(eventId => eventState.has(eventId));
+    };
+
+    resetLiveRollFeed();
+    resetRollFeedVisibilityObserver();
+    feedContainer.textContent = solsLikeRun ? '' : 'Rolling...';
+    const startTime = performance.now();
+
+    resetAuraRollState(AURA_REGISTRY);
+
+    const activeSingleBloodPreset = getBloodPresetConfig();
+    const simulationBatchDefinitions = isMultiplePotionRun
+        ? selectedPotionBatches
+        : [{
+            count: total,
+            label: 'Single Potion',
+            baseLuck,
+            luckValue,
+            dune: Boolean(dunePresetEnabled && baseLuck >= DUNE_LUCK_TARGET),
+            bloodPreset: activeSingleBloodPreset && baseLuck >= activeSingleBloodPreset.luckTarget
+                ? activeSingleBloodPreset.identifier
+                : null,
+            oblivion: Boolean(oblivionPresetEnabled && luckValue >= OBLIVION_LUCK_TARGET)
+        }];
+
+    const PROGRESS_DECIMAL_PLACES = 2;
+    const PROGRESS_ROUNDING_STEP = 1 / (10 ** PROGRESS_DECIMAL_PLACES);
+    const formatProgressLabel = value => value.toFixed(PROGRESS_DECIMAL_PLACES);
+
+    const progressElementsAvailable = progressPanel && progressBarFill && progressLabel;
+    const showProgress = progressElementsAvailable;
+    if (progressPanel) {
+        progressPanel.style.display = showProgress ? 'grid' : 'none';
+        progressPanel.classList.toggle('loading-indicator--active', showProgress);
+        if (!showProgress) {
+            delete progressPanel.dataset.loadingIndicator;
+        }
+    }
+    if (progressElementsAvailable) {
+        const formattedInitialProgress = formatProgressLabel(0);
+        progressBarFill.style.width = '0%';
+        progressLabel.textContent = `${formattedInitialProgress}%`;
+        if (showProgress && progressPanel) {
+            progressPanel.dataset.loadingIndicator = formattedInitialProgress;
+        }
+    }
+
+    const { batches: simulationBatches, sequencePlan, rewardBatchIndex } = prepareEquipmentSimulation(
+        simulationBatchDefinitions,
+        selectionState,
+        {
+            eventChecker: isEventAuraEnabled,
+            enabledEventsSet: eventSnapshot || enabledEvents
+        },
+        isMultiplePotionRun
+    );
+    if (radiantRun) radiantRun.rewardBatchIndex = rewardBatchIndex;
+    const cutscenesEnabled = appState.cinematic === true;
+    let tomorrowCutsceneHandled = false;
+    const playTomorrowCutscene = async () => {
+        if (tomorrowCutsceneHandled) return;
+        tomorrowCutsceneHandled = true;
+        const aura = AURA_BY_NAME.get(RADIANT_REWARD_AURA_NAME);
+        await playAuraSequence([aura.cutscene], { force: true });
+    };
+    const paintRemember = () => new Promise(resolve => {
+        queueAnimationFrame(() => queueAnimationFrame(resolve));
+    });
+
+    const queueAnimationFrame = callback => queueSimulationWork(guardWork(callback));
+    const updateProgress = showProgress
+        ? (() => {
+            let lastProgressValue = null;
+            return progress => {
+                globalThis.SessionReturn?.progress(currentRoll, total);
+                const progressValueRounded = Math.floor(progress / PROGRESS_ROUNDING_STEP) * PROGRESS_ROUNDING_STEP;
+                const formattedProgressValue = formatProgressLabel(progressValueRounded);
+                if (formattedProgressValue === lastProgressValue && progress < 100) {
+                    return;
+                }
+                lastProgressValue = formattedProgressValue;
+                progressBarFill.style.width = `${progress}%`;
+                progressLabel.textContent = `${formattedProgressValue}%`;
+                progressPanel.dataset.loadingIndicator = `${formattedProgressValue}`;
+            };
+        })()
+        : null;
+
+    let currentRoll = 0;
+
+    const sampleEntropy = (typeof drawEntropy === 'function') ? drawEntropy : Math.random;
+
+    progressCommit = createSimulationProgressCommit(progress => updateProgress?.(progress));
+    let resultCutscenesStarted = false;
+    let calculationFinishedAt = null;
+    const finalizeSimulation = (cancelled, completedRolls = total) => {
+        if (runFinished) return;
+        calculationFinishedAt ??= performance.now();
+        if (!cancelled && cutscenesEnabled && !solsLikeRun && !resultCutscenesStarted) {
+            resultCutscenesStarted = true;
+            const cutsceneQueue = CUTSCENE_PRIORITY_SEQUENCE.filter(videoId => {
+                const aura = CUTSCENE_AURA_LOOKUP.get(videoId);
+                return aura && !aura.requiresRadiantMoons && readAuraWinCount(aura) > 0
+                    && !shouldSkipAuraCutscene(aura, biome);
+            });
+            if (cutsceneQueue.length > 0) {
+                runStage = 'playing cutscenes';
+                cleanupWorker?.();
+                cleanupWorker = null;
+                terminateActiveSimulationWorker();
+                void playAuraSequence(cutsceneQueue).then(
+                    guardWork(() => finalizeSimulation(cancelRollRequested, completedRolls)),
+                    failSimulation
+                );
+                return;
+            }
+        }
+        updateRadiantProgress();
+        cleanupSimulation();
+
+        if (cancelled) {
+            if (solsLikeRun && completedRolls > 0) {
+                feedContainer.insertAdjacentHTML(
+                    'beforeend',
+                    `<span class="live-roll-feed__status">Rolling canceled after ${formatWithCommas(completedRolls)} rolls.</span>`
+                );
+                setRollFeedSortingAvailable(Boolean(liveRollFeed?.length), { supportsRecent: true });
+            } else {
+                feedContainer.textContent = 'Rolling canceled.';
+            }
+            clearHarvesterCurseLayer();
+            clearFlushedTrollSignatureLayer();
+            return;
+        }
+
+        runStage = 'building results';
+        const executionTime = ((calculationFinishedAt - startTime) / 1000).toFixed(3);
+
+        let highestChance = 0;
+        for (const aura of AURA_REGISTRY) {
+            if (readAuraWinCount(aura) > 0 && aura.chance > highestChance) {
+                highestChance = aura.chance;
+            }
+        }
+
+        if (highestChance >= 99999999) {
+            if (biome === 'limbo') {
+                playSoundEffect(audio.m100limbo, 'server');
+            } else {
+                playSoundEffect(audio.m100, 'server');
+            }
+        } else if (highestChance >= 10000000) {
+            playSoundEffect(audio.m10, 'server');
+        } else if (highestChance >= 1000000) {
+            playSoundEffect(audio.k100, 'server');
+        } else if (highestChance >= 100000) {
+            playSoundEffect(audio.k10, 'server');
+        } else if (highestChance >= 1000) {
+            playSoundEffect(audio.k1, 'server');
+        }
+
+        const biomeLabel = resolveSelectionLabel(
+            BIOME_PRIMARY_SELECT_ID,
+            primaryBiome,
+            { noneLabel: 'None', fallbackLabel: biome || 'Unknown' }
+        );
+        const runeLabel = resolveSelectionLabel(
+            BIOME_OTHER_SELECT_ID,
+            runeValue,
+            { noneLabel: 'None', fallbackLabel: 'None' }
+        );
+        const timeLabel = resolveSelectionLabel(
+            BIOME_TIME_SELECT_ID,
+            timeBiome,
+            { noneLabel: 'Neutral', fallbackLabel: timeBiome || 'Neutral' }
+        );
+
+        const usedEventIds = eventSnapshot ? Array.from(eventSnapshot) : [];
+        const eventLabels = usedEventIds.map(id => EVENT_LABEL_MAP.get(id) || id);
+        const eventSummaryText = eventLabels.length > 0 ? eventLabels.join(', ') : EVENT_SUMMARY_EMPTY_LABEL;
+        const auraFilterSummaryText = getAuraFilterSummaryText();
+        const usedLuckValues = simulationBatches.filter(batch => batch.winCounts.some(count => count > 0)).map(batch => batch.luckValue);
+        if (!usedLuckValues.length) usedLuckValues.push(simulationBatches[0]?.luckValue || 0);
+        const minLuck = Math.min(...usedLuckValues);
+        const maxLuck = Math.max(...usedLuckValues);
+        const luckSummaryText = minLuck === maxLuck ? formatWithCommas(minLuck)
+            : `${formatWithCommas(minLuck)}–${formatWithCommas(maxLuck)} (varies by roll${isMultiplePotionRun ? ' and potion' : ''})`;
+        const potionSummaryText = isMultiplePotionRun
+            ? formatPotionBatchList(selectedPotionBatches, { includeLuck: true })
+            : null;
+        const runeBlockedRolls = isMultiplePotionRun && runeValue !== 'none'
+            ? getMultiPotionRuneBlockedRollCount(selectedPotionBatches)
+            : 0;
+        const runeAppliedRolls = Math.max(0, completedRolls - runeBlockedRolls);
+        const runeSummaryText = runeBlockedRolls > 0
+            ? `${runeLabel} (ignored for the first ${formatWithCommas(runeBlockedRolls)} incompatible potion rolls; applied to ${formatWithCommas(runeAppliedRolls)} rolls)`
+            : runeLabel;
+
+        const resultChunks = [];
+
+        const resultCollections = mergeFixedLuckResultBatches(simulationBatches).map(batch => buildResultEntries(
+            AURA_REGISTRY,
+            biome,
+            batch.breakthroughStatsMap,
+            batch.luckValue,
+            {
+                allowTrueChance: true,
+                potionBatch: batch,
+                winCounts: batch.winCounts
+            }
+        ));
+        let feedRecords = resultCollections.flatMap(collection => collection.feedRecords);
+        if (simulationBatches.length > 1) {
+            feedRecords = sortEntriesInUnnamedResultOrder(
+                feedRecords.map((record, originalOrder) => ({ ...record, originalOrder }))
+            );
+        }
+        const shareRecords = resultCollections.flatMap(collection => collection.shareRecords);
+        const shareVisualRecords = resultCollections.flatMap(collection => collection.shareVisualRecords);
+        if (!solsLikeRun) {
+            const unnamedResultEntries = feedRecords.map((record, index) => {
+                const encodedAuraName = encodeURIComponent(record.auraName);
+                const encodedAlphabeticalName = encodeURIComponent(record.alphabeticalName);
+                return `<span class="roll-feed__result-entry" data-roll-feed-entry data-aura-tier="${record.tierKey}" data-result-order="${index}" data-aura-name="${encodedAuraName}" data-aura-sort-name="${encodedAlphabeticalName}" data-aura-priority="${record.priority}">${record.markup}</span>`;
+            });
+            resultChunks.push(`<span class="roll-feed__results-list">${unnamedResultEntries.join('')}</span>`);
+        }
+
+        const { totalXp, lines: xpLines } = summarizeXpRewards(AURA_REGISTRY);
+        const executionSeconds = Number.parseFloat(executionTime);
+        lastSimulationSummary = {
+            rolls: completedRolls,
+            luck: isMultiplePotionRun ? null : luckValue,
+            luckLabel: luckSummaryText,
+            potionMode: isMultiplePotionRun ? POTION_SIMULATION_MODE.MULTIPLE : POTION_SIMULATION_MODE.SINGLE,
+            potionStackingEnabled: selectedPotionStackingEnabled,
+            devicePresetName: selectedDevicePresetName,
+            equipment: selectedEquipment,
+            buffs: selectedBuffs,
+            bonusDescription: selectedBonusDescription,
+            potionBatches: isMultiplePotionRun
+                ? selectedPotionBatches.map(batch => ({
+                    id: batch.id,
+                    label: batch.label,
+                    count: batch.count,
+                    luckValue: batch.luckValue,
+                    potionLabels: batch.potionLabels
+                }))
+                : [],
+            biomeId: biome,
+            biomeLabel,
+            primaryBiomeId: primaryBiome,
+            primaryBiomeLabel: biomeLabel,
+            runeId: runeValue,
+            runeLabel: runeSummaryText,
+            timeId: timeBiome,
+            timeLabel,
+            eventIds: usedEventIds,
+            eventLabels,
+            shareRecords,
+            shareVisuals: shareVisualRecords,
+            xpTotal: totalXp,
+            xpLines,
+            auraFilterSummary: auraFilterSummaryText,
+            auraFilterTiers: getIncludedAuraTierLabels(),
+            executionSeconds: Number.isFinite(executionSeconds) ? executionSeconds : 0
+        };
+        resultChunks.push(ResultSummary.render(lastSimulationSummary));
+
+        if (solsLikeRun) {
+            feedContainer.insertAdjacentHTML(
+                'beforeend',
+                `<div class="live-roll-feed__summary">${resultChunks.join('')}</div>`
+            );
+        } else {
+            feedContainer.innerHTML = resultChunks.join('');
+        }
+        ResultSummary.attachFeedNavigation(feedContainer);
+        observeRollFeedEntries(feedContainer);
+        applyRollFeedSearchFilter();
+        setRollFeedSortingAvailable(
+            solsLikeRun ? Boolean(liveRollFeed?.length) : Boolean(feedContainer.querySelector('[data-roll-feed-entry]')),
+            { supportsRecent: solsLikeRun }
+        );
+
+        const harvesterAura = AURA_BY_NAME.get(HARVESTER_AURA_NAME) || null;
+        const harvesterCount = harvesterAura ? readAuraWinCount(harvesterAura) : 0;
+        const halloween24Active = eventSnapshot
+            ? eventSnapshot.has(HALLOWEEN_2024_EVENT_ID)
+            : enabledEvents.has(HALLOWEEN_2024_EVENT_ID);
+        const flushedTrollAura = AURA_BY_NAME.get(FLUSHED_TROLL_AURA_NAME) || null;
+        const flushedTrollCount = flushedTrollAura ? readAuraWinCount(flushedTrollAura) : 0;
+
+        if (halloween24Active && harvesterCount > 0) {
+            renderHarvesterCurseLayer(harvesterCount);
+        } else {
+            clearHarvesterCurseLayer();
+        }
+
+        if (flushedTrollCount > 0) {
+            renderFlushedTrollSignatureLayer(flushedTrollCount);
+        } else {
+            clearFlushedTrollSignatureLayer();
+        }
+
+        globalThis.SessionReturn?.save();
+    };
+
+    const startMainThreadSimulation = () => {
+        const runner = SimulationCore.createRunner(simulationBatches, auraWinCounts, sampleEntropy, null, sequencePlan, radiantRun);
+        async function processRollSequence() {
+            if (cancelRollRequested) {
+                finalizeSimulation(true, currentRoll);
+                return;
+            }
+            currentRoll = runner.runSlice(8, () => performance.now());
+            updateRadiantProgress();
+
+            if (runner.checkpoint === 'radiant-ready' && !runner.done) await paintRemember();
+            if (runner.checkpoint === 'radiant-reward' && !cancelRollRequested) await playTomorrowCutscene();
+            if (runFinished) return;
+            if (cancelRollRequested) {
+                finalizeSimulation(true, currentRoll);
+                return;
+            }
+
+            if (updateProgress) {
+                const progress = (currentRoll / total) * 100;
+                progressCommit.schedule(progress);
+            }
+
+            if (currentRoll < total) {
+                queueAnimationFrame(processRollSequence);
+                return;
+            }
+
+            simulationBatches.forEach(batch => {
+                syncBreakthroughCounts(batch.breakthroughStatsByAuraIndex, batch.breakthroughCounts);
+            });
+            finalizeSimulation(false, currentRoll);
+        }
+
+        if (total <= 4096) guardWork(processRollSequence)();
+        else queueAnimationFrame(processRollSequence);
+    };
+
+    const startSolsLikeMainThreadSimulation = () => {
+        const getCurrentRollIntervalMs = () => (
+            1000 / normalizeSolsLikeRollsPerSecond(
+                rollingSettingsPreference.solsLikeRollsPerSecond
+            )
+        );
+        const maxFrameDuration = shouldScheduleBackgroundWork() ? 20 : 12;
+        const liveCursor = SimulationCore.createRollCursor(simulationBatches, sequencePlan);
+        const radiantSelect = radiantRun ? SimulationCore.createRadiantSelector(radiantRun.config, radiantRun.state, sampleEntropy) : null;
+        let currentBatchIndex = 0;
+        let manualPaused = false;
+        let cutsceneActive = false;
+        let processing = false;
+        let workScheduled = false;
+        let skipRemainingCutscenes = false;
+        let liveRunStopped = false;
+        let nextRollDueAt = performance.now();
+        const { followRollFeedButton } = uiHandles;
+        const liveMarkupTemplate = document.createElement('template');
+        const liveEntryTemplates = new Map();
+
+        const syncLiveFeedFollowControl = () => {
+            if (!followRollFeedButton) {
+                return;
+            }
+            followRollFeedButton.hidden = !simulationActive || liveRunStopped || liveRollFeed.following;
+        };
+
+        liveRollFeed = createLiveRollFeed(syncLiveFeedFollowControl);
+        cleanupLiveFeedFollowControl = () => {
+            if (followRollFeedButton) {
+                followRollFeedButton.hidden = true;
+            }
+        };
+
+        const syncPausePresentation = () => {
+            const rollingPaused = manualPaused || cutsceneActive;
+            const rollConsoleStatus = document.getElementById('rollConsoleStatus');
+            if (brandMark) {
+                brandMark.classList.toggle('banner__emblem--simulation-paused', rollingPaused);
+            }
+            if (progressPanel) {
+                progressPanel.classList.toggle('loading-indicator--paused', rollingPaused);
+            }
+            if (rollConsoleStatus) {
+                const statusText = rollConsoleStatus.querySelector('.roll-console__armed-text');
+                rollConsoleStatus.dataset.state = cutsceneActive
+                    ? 'cutscene'
+                    : (manualPaused ? 'paused' : 'rolling');
+                if (statusText) {
+                    statusText.textContent = cutsceneActive
+                        ? 'Cutscene'
+                        : (manualPaused ? 'Paused' : 'Rolling');
+                }
+            }
+            if (pauseRollButton) {
+                pauseRollButton.disabled = !simulationActive || cutsceneActive;
+                pauseRollButton.classList.toggle('roll-pause--paused', manualPaused);
+                pauseRollButton.setAttribute('aria-label', manualPaused ? 'Resume rolling' : 'Pause rolling');
+                pauseRollButton.setAttribute('title', manualPaused ? 'Resume rolling' : 'Pause rolling');
+                pauseRollButton.innerHTML = manualPaused
+                    ? '<i class="fa-solid fa-play" aria-hidden="true"></i>'
+                    : '<i class="fa-solid fa-pause" aria-hidden="true"></i>';
+            }
+
+            syncRollingSettingsControls();
+        };
+
+        const performSingleLiveRoll = () => {
+            currentBatchIndex = liveCursor.next(sampleEntropy);
+            if (radiantRun?.state.moons === 127 && !radiantRun.state.rewardClaimed) {
+                currentBatchIndex = radiantRun.rewardBatchIndex;
+            }
+            const activeBatch = simulationBatches[currentBatchIndex];
+            if (!activeBatch) {
+                return null;
+            }
+
+            const combinedSelectionConfig = activeBatch.combinedSelection;
+            const radiantResult = radiantSelect ? radiantSelect(activeBatch) : null;
+            const selectedIndex = radiantSelect ? -1 : selectWeightedIndex(combinedSelectionConfig.selection, sampleEntropy());
+            const auraIndex = radiantResult ? radiantResult.auraIndex : selectedIndex < 0 ? -1 : combinedSelectionConfig.auraIndices[selectedIndex];
+            if (!(Number.isInteger(auraIndex) && auraIndex >= 0 && auraIndex < AURA_REGISTRY.length)) {
+                return null;
+            }
+
+            auraWinCounts[auraIndex] += 1;
+            activeBatch.winCounts[auraIndex] += 1;
+            const breakthroughIndex = radiantResult ? radiantResult.breakthroughIndex : combinedSelectionConfig.breakthroughIndices[selectedIndex];
+            const isNativeRoll = Number.isInteger(breakthroughIndex)
+                && breakthroughIndex >= 0
+                && breakthroughIndex < activeBatch.breakthroughCounts.length;
+            if (isNativeRoll) {
+                activeBatch.breakthroughCounts[breakthroughIndex] += 1;
+            }
+
+            return {
+                aura: AURA_REGISTRY[auraIndex],
+                isNativeRoll: isNativeRoll && breakthroughIndex === auraIndex,
+                potionBatch: activeBatch
+            };
+        };
+
+        const appendLiveMarkup = markupList => {
+            if (!Array.isArray(markupList) || markupList.length === 0) {
+                return;
+            }
+            liveRollFeed.append(markupList);
+            syncLiveFeedFollowControl();
+        };
+
+        const scheduleNextLiveFrame = () => {
+            if (
+                workScheduled
+                || liveRunStopped
+                || processing
+                || manualPaused
+                || cutsceneActive
+                || cancelRollRequested
+                || currentRoll >= total
+            ) {
+                return;
+            }
+            workScheduled = true;
+            const runScheduledWork = () => {
+                workScheduled = false;
+                return processLiveRollSequence();
+            };
+            const waitUntilNextRoll = nextRollDueAt - performance.now();
+            if (waitUntilNextRoll > 20 && typeof window.setTimeout === 'function') {
+                window.setTimeout(guardWork(runScheduledWork), waitUntilNextRoll);
+            } else {
+                queueAnimationFrame(runScheduledWork);
+            }
+        };
+
+        const finishCancelledLiveRun = () => {
+            if (processing || cutsceneActive) {
+                return;
+            }
+            finalizeSimulation(true, currentRoll);
+        };
+
+        const processLiveRollSequence = async () => {
+            if (liveRunStopped || processing || manualPaused || cutsceneActive) {
+                return;
+            }
+            if (cancelRollRequested) {
+                finishCancelledLiveRun();
+                return;
+            }
+
+            const frameStartTime = performance.now();
+            if (frameStartTime < nextRollDueAt) {
+                scheduleNextLiveFrame();
+                return;
+            }
+
+            processing = true;
+            const frameDeadline = frameStartTime + maxFrameDuration;
+            const rollIntervalMs = getCurrentRollIntervalMs();
+            const rollsDue = Math.min(
+                1000,
+                Math.max(1, Math.floor((frameStartTime - nextRollDueAt) / rollIntervalMs) + 1)
+            );
+            const markupList = [];
+            let processedThisFrame = 0;
+            let pendingCutsceneId = null;
+            let pendingCutsceneAura = null;
+            let pendingCutsceneEntry = null;
+
+            while (currentRoll < total && processedThisFrame < rollsDue) {
+                const rollResult = performSingleLiveRoll();
+                currentRoll += 1;
+                processedThisFrame += 1;
+
+                if (rollResult?.aura) {
+                    const aura = rollResult.aura;
+                    const shouldPlayCutscene = aura.requiresRadiantMoons || (
+                        cutscenesEnabled
+                        && !skipRemainingCutscenes
+                        && aura.cutscene
+                        && !shouldSkipAuraCutscene(aura, biome)
+                    );
+                    const breakthroughStats = rollResult.potionBatch.breakthroughStatsByAuraIndex[aura.index];
+                    if (!shouldHideAuraFromRollFeed(aura, biome)) {
+                        const templateKey = currentBatchIndex + ':' + aura.index + ':'
+                            + rollResult.isNativeRoll + ':' + appState.selectiveTrueChanceDisplay;
+                        let template = liveEntryTemplates.get(templateKey);
+                        if (!template) {
+                            const markup = buildLiveRollMarkup(
+                                aura,
+                                currentRoll,
+                                biome,
+                                breakthroughStats,
+                                rollResult.isNativeRoll,
+                                rollResult.potionBatch.luckValue,
+                                {
+                                    allowTrueChance: true,
+                                    potionBatch: rollResult.potionBatch
+                                }
+                            );
+                            liveMarkupTemplate.innerHTML = markup;
+                            const element = liveMarkupTemplate.content.firstElementChild;
+                            if (element) {
+                                updateLayeredSigilText(element);
+                                template = {
+                                    element,
+                                    searchText: `${element.textContent.toLocaleLowerCase()} ${getAuraTierSearchTerms(element.dataset.auraTier || '')}`,
+                                    auraName: decodeRollFeedSortValue(element.dataset.auraName),
+                                    alphabeticalName: decodeRollFeedSortValue(element.dataset.auraSortName),
+                                    priority: Number(element.dataset.auraPriority) || 0
+                                };
+                                liveEntryTemplates.set(templateKey, template);
+                            }
+                        }
+                        if (template) {
+                            const entry = { presentation: template, originalOrder: currentRoll };
+                            if (shouldPlayCutscene) pendingCutsceneEntry = entry;
+                            else markupList.push(entry);
+                        }
+                    }
+
+                    if (shouldPlayCutscene) {
+                        pendingCutsceneId = aura.cutscene;
+                        pendingCutsceneAura = aura;
+                        break;
+                    }
+                }
+
+                if (radiantRun?.state.moons === 127 && !radiantRun.state.rewardClaimed) break;
+                if ((processedThisFrame & 63) === 0 && performance.now() >= frameDeadline) {
+                    break;
+                }
+            }
+
+            nextRollDueAt += processedThisFrame * rollIntervalMs;
+            appendLiveMarkup(markupList);
+            updateRadiantProgress();
+            if (updateProgress) {
+                updateProgress(total > 0 ? (currentRoll / total) * 100 : 100);
+            }
+
+            if (pendingCutsceneId && !cancelRollRequested) {
+                cutsceneActive = true;
+                syncPausePresentation();
+                if (pendingCutsceneAura.requiresRadiantMoons) await playTomorrowCutscene();
+                else await playAuraSequence([pendingCutsceneId], {
+                    skipRemaining: skipRemainingCutscenes,
+                    onSkipAll: () => {
+                        skipRemainingCutscenes = true;
+                    }
+                });
+                if (runFinished) return;
+                if (pendingCutsceneEntry) appendLiveMarkup([pendingCutsceneEntry]);
+                cutsceneActive = false;
+                nextRollDueAt = performance.now() + getCurrentRollIntervalMs();
+                if (
+                    isAuraCutscenePauseEnabled(pendingCutsceneAura)
+                    && !cancelRollRequested
+                    && currentRoll < total
+                ) {
+                    manualPaused = true;
+                }
+                syncPausePresentation();
+            }
+
+            processing = false;
+            if (cancelRollRequested) {
+                finishCancelledLiveRun();
+                return;
+            }
+            if (currentRoll >= total) {
+                liveRunStopped = true;
+                simulationBatches.forEach(batch => {
+                    syncBreakthroughCounts(batch.breakthroughStatsByAuraIndex, batch.breakthroughCounts);
+                });
+                finalizeSimulation(false, currentRoll);
+                return;
+            }
+
+            scheduleNextLiveFrame();
+        };
+
+        activeSolLikeSimulationController = {
+            isPaused() {
+                return manualPaused && !cutsceneActive && !liveRunStopped;
+            },
+            followLatest() {
+                liveRollFeed.followLatest();
+            },
+            togglePause() {
+                if (!simulationActive || cutsceneActive || cancelRollRequested) {
+                    return;
+                }
+                manualPaused = !manualPaused;
+                syncPausePresentation();
+                if (!manualPaused) {
+                    nextRollDueAt = performance.now();
+                    scheduleNextLiveFrame();
+                }
+            },
+            cancel() {
+                liveRunStopped = true;
+                manualPaused = false;
+                syncPausePresentation();
+                if (!processing && !cutsceneActive) {
+                    finishCancelledLiveRun();
+                }
+            }
+        };
+
+        syncSimulationMethodControls();
+        syncPausePresentation();
+        scheduleNextLiveFrame();
+    };
+
+    const startWorkerSimulation = () => {
+        const worker = createSimulationWorker();
+        if (!worker) return false;
+        activeSimulationWorker = worker;
+        let responseTimeout = null;
+        let waitingForCutscene = false;
+        const clearResponseTimeout = () => {
+            if (responseTimeout !== null) window.clearTimeout(responseTimeout);
+            responseTimeout = null;
+        };
+        const recoverWorker = error => {
+            if (activeSimulationWorker !== worker || runFinished) return;
+            console.warn('Simulation worker unavailable; continuing on the main thread.', error);
+            cleanupWorker?.();
+            cleanupWorker = null;
+            terminateActiveSimulationWorker();
+            if (cancelRollRequested) {
+                finalizeSimulation(true, currentRoll);
+                return;
+            }
+            resetAuraRollState(AURA_REGISTRY);
+            if (radiantRun) Object.assign(radiantRun.state, initialRadiantState);
+            currentRoll = 0;
+            progressCommit.schedule(0);
+            updateRadiantProgress();
+            guardWork(startMainThreadSimulation)();
+        };
+        const armResponseTimeout = () => {
+            clearResponseTimeout();
+            responseTimeout = window.setTimeout(guardWork(() => {
+                if (activeSimulationWorker !== worker) return;
+                if (document.hidden && !shouldScheduleBackgroundWork()) {
+                    armResponseTimeout();
+                    return;
+                }
+                recoverWorker(new Error('The calculation worker stopped responding.'));
+            }), WORKER_RESPONSE_TIMEOUT_MS);
+        };
+        const resumeVisibleWorker = () => {
+            if (!document.hidden && !waitingForCutscene && activeSimulationWorker === worker) armResponseTimeout();
+        };
+        cleanupWorker = () => {
+            clearResponseTimeout();
+            document.removeEventListener('visibilitychange', resumeVisibleWorker);
+            worker.onmessage = null;
+            worker.onerror = null;
+            worker.onmessageerror = null;
+        };
+        document.addEventListener('visibilitychange', resumeVisibleWorker);
+        worker.onmessage = guardWork(async event => {
+            if (activeSimulationWorker !== worker) return;
+            const message = event.data || {};
+            if (message.winCounts) applySimulationWinCounts(message.winCounts);
+            if (radiantRun && message.radiantState) {
+                Object.assign(radiantRun.state, message.radiantState);
+                updateRadiantProgress();
+            }
+            if (message.type === 'radiant-ready' || message.type === 'radiant-reward') {
+                currentRoll = message.currentRoll;
+                waitingForCutscene = true;
+                clearResponseTimeout();
+                if (message.type === 'radiant-ready') await paintRemember();
+                else if (!cancelRollRequested) await playTomorrowCutscene();
+                if (runFinished || activeSimulationWorker !== worker) return;
+                waitingForCutscene = false;
+                armResponseTimeout();
+                try { worker.postMessage({ type: 'resume' }); }
+                catch (error) { recoverWorker(error); }
+                return;
+            }
+            if (message.type === 'progress') {
+                const workerRollCount = Number.isFinite(message.currentRoll) ? message.currentRoll : currentRoll;
+                if (workerRollCount > currentRoll) armResponseTimeout();
+                currentRoll = workerRollCount;
+                if (updateProgress) progressCommit.schedule(total > 0 ? (workerRollCount / total) * 100 : 100);
+                return;
+            }
+            if (message.type === 'complete') {
+                currentRoll = Number.isFinite(message.currentRoll) ? message.currentRoll : total;
+                applySimulationWinCounts(message.winCounts);
+                applySimulationBatchCounts(simulationBatches, message.batchWinCounts, message.batchBreakthroughCounts);
+                if (updateProgress) progressCommit.schedule(100);
+                finalizeSimulation(false, currentRoll);
+                return;
+            }
+            if (message.type === 'cancelled') {
+                currentRoll = Number.isFinite(message.currentRoll) ? message.currentRoll : currentRoll;
+                finalizeSimulation(true, currentRoll);
+                return;
+            }
+            if (message.type === 'error') recoverWorker(message.error || new Error('The calculation worker failed.'));
+        });
+        worker.onerror = guardWork(error => {
+            error.preventDefault?.();
+            recoverWorker(error);
+        });
+        worker.onmessageerror = guardWork(() => recoverWorker(new Error('The calculation worker returned an unreadable message.')));
+        armResponseTimeout();
+        try {
+            worker.postMessage({
+                type: 'start',
+                total,
+                auraCount: AURA_REGISTRY.length,
+                progressIntervalMs: WORKER_PROGRESS_UPDATE_INTERVAL_MS,
+                sequencePlan,
+                radiant: radiantRun,
+                batches: simulationBatches.map(batch => ({
+                    total: batch.count,
+                    radiantSelections: batch.radiantSelections,
+                    prerollAuraIndices: batch.prerollAuraIndices,
+                    prerollAuraRatios: batch.prerollAuraRatios,
+                    lucklessAuraIndices: batch.lucklessCandidateConfig.auraIndices,
+                    lucklessAuraRatios: batch.lucklessCandidateConfig.ratios,
+                    lucklessBreakthroughIndices: batch.lucklessCandidateConfig.breakthroughIndices,
+                    luckAffectedAuraIndices: batch.luckAffectedCandidateConfig.auraIndices,
+                    luckAffectedAuraRatios: batch.luckAffectedCandidateConfig.ratios,
+                    luckAffectedBreakthroughIndices: batch.luckAffectedCandidateConfig.breakthroughIndices
+                }))
+            });
+        } catch (error) {
+            recoverWorker(error);
+        }
+        return true;
+    };
+
+    activeSimulationCancelHandler = () => {
+        if (solsLikeRun) activeSolLikeSimulationController?.cancel();
+        else finalizeSimulation(true, currentRoll);
+    };
+
+    runStage = solsLikeRun ? 'streaming rolls' : 'calculating rolls';
+    if (solsLikeRun) {
+        startSolsLikeMainThreadSimulation();
+    } else if (total <= 4096 || !startWorkerSimulation()) {
+        startMainThreadSimulation();
+    }
+}
+
+function setupShareInterface() {
+    if (typeof document === 'undefined') return;
+    const controls = document.getElementById('feedShareControls');
+    const trigger = document.getElementById('feedShareButton');
+    const menu = document.getElementById('feedShareMenu');
+    const imageMenu = document.getElementById('feedShareImageMenu');
+    if (!controls || !trigger || !menu) return;
+
+    const defaultLabel = trigger.textContent ? trigger.textContent.trim() : '';
+    trigger.dataset.defaultLabel = defaultLabel || 'Share Result';
+    document.getElementById('feedShareCancel')?.addEventListener('click', event => {
+        event.stopPropagation();
+        imageShareAbortController?.abort();
+    });
+
+    let pendingImageModeResolve = null;
+
+    const finalizeImageMenu = (value, restoreFocus) => {
+        const wasOpen = imageMenu && !imageMenu.hidden;
+        const hadPending = Boolean(pendingImageModeResolve);
+        if (imageMenu && !imageMenu.hidden) {
+            imageMenu.classList.remove('feed-share__menu--open');
+            imageMenu.hidden = true;
+        }
+        if (restoreFocus && (wasOpen || hadPending) && typeof trigger.focus === 'function') {
+            trigger.focus({ preventScroll: true });
+        }
+        if (pendingImageModeResolve) {
+            const resolve = pendingImageModeResolve;
+            pendingImageModeResolve = null;
+            resolve(value);
+        }
+    };
+
+    const cancelImageMenu = restoreFocus => {
+        finalizeImageMenu(null, restoreFocus);
+    };
+
+    const openImageMenu = () => {
+        if (!imageMenu) return;
+        imageMenu.hidden = false;
+        const activate = () => {
+            imageMenu.classList.add('feed-share__menu--open');
+            const first = imageMenu.querySelector('[data-image-share-mode]');
+            if (first) {
+                first.focus({ preventScroll: true });
+            }
+        };
+        if (typeof window !== 'undefined' && typeof window.requestAnimationFrame === 'function') {
+            window.requestAnimationFrame(activate);
+        } else {
+            setTimeout(activate, 0);
+        }
+    };
+
+    if (imageMenu) {
+        imageShareModeRequester = () => {
+            if (pendingImageModeResolve) {
+                return Promise.resolve(null);
+            }
+            return new Promise(resolve => {
+                pendingImageModeResolve = resolve;
+                openImageMenu();
+            });
+        };
+        imageMenu.addEventListener('click', event => {
+            event.stopPropagation();
+        });
+        imageMenu.addEventListener('keydown', event => {
+            if (event.key === 'Escape') {
+                event.preventDefault();
+                cancelImageMenu(true);
+            }
+        });
+        const imageButtons = imageMenu.querySelectorAll('[data-image-share-mode]');
+        imageButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                const mode = button.getAttribute('data-image-share-mode');
+                if (mode === 'copy' || mode === 'download') {
+                    finalizeImageMenu(mode, true);
+                } else {
+                    cancelImageMenu(true);
+                }
+            });
+        });
+    } else {
+        imageShareModeRequester = null;
+    }
+
+    const closeMenu = () => {
+        if (menu.hidden) return;
+        menu.classList.remove('feed-share__menu--open');
+        menu.hidden = true;
+        trigger.setAttribute('aria-expanded', 'false');
+    };
+
+    const openMenu = focusFirst => {
+        if (!menu.hidden) return;
+        updateImageShareAvailability();
+        menu.hidden = false;
+        const activate = () => {
+            menu.classList.add('feed-share__menu--open');
+            if (focusFirst) {
+                const firstItem = menu.querySelector('[data-share-format]:not(:disabled)');
+                if (firstItem) {
+                    firstItem.focus({ preventScroll: true });
+                }
+            }
+        };
+        if (typeof window !== 'undefined' && typeof window.requestAnimationFrame === 'function') {
+            window.requestAnimationFrame(activate);
+        } else {
+            setTimeout(activate, 0);
+        }
+        trigger.setAttribute('aria-expanded', 'true');
+    };
+
+    trigger.addEventListener('click', event => {
+        event.stopPropagation();
+        if (menu.hidden) {
+            cancelImageMenu(false);
+            openMenu(event.detail === 0);
+        } else {
+            closeMenu();
+            cancelImageMenu(false);
+        }
+    });
+
+    trigger.addEventListener('keydown', event => {
+        if ((event.key === 'ArrowDown' || event.key === 'Enter' || event.key === ' ') && menu.hidden) {
+            event.preventDefault();
+            cancelImageMenu(false);
+            openMenu(true);
+        } else if (event.key === 'Escape' && !menu.hidden) {
+            event.preventDefault();
+            closeMenu();
+            cancelImageMenu(true);
+        }
+    });
+
+    menu.addEventListener('click', event => {
+        event.stopPropagation();
+    });
+
+    menu.addEventListener('keydown', event => {
+        if (event.key === 'Escape') {
+            closeMenu();
+            trigger.focus({ preventScroll: true });
+        }
+    });
+
+    document.addEventListener('click', event => {
+        if (!controls.contains(event.target)) {
+            closeMenu();
+            cancelImageMenu(false);
+        }
+    });
+
+    controls.addEventListener('focusout', event => {
+        const nextFocus = event.relatedTarget;
+        if (!nextFocus || !controls.contains(nextFocus)) {
+            closeMenu();
+            cancelImageMenu(true);
+        }
+    });
+
+    const shareButtons = menu.querySelectorAll('[data-share-format]');
+    shareButtons.forEach(button => {
+        button.addEventListener('click', async () => {
+            const format = button.getAttribute('data-share-format');
+            closeMenu();
+            cancelImageMenu(false);
+            await handleShareAction(format);
+        });
+    });
+}
+
+function getImageShareEntryCount(summary) {
+    if (Array.isArray(summary?.shareVisuals) && summary.shareVisuals.length) return summary.shareVisuals.length;
+    return Array.isArray(summary?.shareRecords) ? summary.shareRecords.length : 0;
+}
+
+function updateImageShareAvailability() {
+    const option = document.querySelector('[data-share-format="image"]');
+    const note = document.getElementById('feedShareImageLimit');
+    if (!option) return;
+    const count = getImageShareEntryCount(lastSimulationSummary);
+    const limited = count > MAX_IMAGE_SHARE_ENTRIES;
+    option.disabled = limited;
+    option.textContent = limited ? `Image unavailable · ${formatWithCommas(count)} entries` : 'Image Options';
+    option.title = limited ? `Image sharing supports up to ${MAX_IMAGE_SHARE_ENTRIES} displayed aura entries.` : '';
+    if (note) {
+        note.hidden = !limited;
+        note.textContent = `Images support up to ${MAX_IMAGE_SHARE_ENTRIES} displayed aura entries. You can still share this result as text.`;
+    }
+}
+
+function setImageShareLoading(loading) {
+    imageShareInProgress = loading;
+    const trigger = document.getElementById('feedShareButton');
+    const cancel = document.getElementById('feedShareCancel');
+    if (cancel) cancel.hidden = !loading;
+    if (!trigger) return;
+    trigger.disabled = loading;
+    trigger.classList.toggle('feed-share__trigger--loading', loading);
+    if (!loading) {
+        trigger.removeAttribute('aria-busy');
+        trigger.textContent = trigger.dataset.defaultLabel || 'Share Result';
+        return;
+    }
+    if (shareFeedbackTimerId) { clearTimeout(shareFeedbackTimerId); shareFeedbackTimerId = null; }
+    trigger.classList.remove('feed-share__trigger--success', 'feed-share__trigger--error');
+    trigger.setAttribute('aria-busy', 'true');
+    const label = document.createElement('span');
+    label.textContent = 'Preparing image…';
+    const progress = document.createElement('span');
+    progress.className = 'feed-share__progress';
+    progress.setAttribute('role', 'progressbar');
+    progress.setAttribute('aria-label', 'Image preparation');
+    progress.setAttribute('aria-valuemin', '0');
+    progress.setAttribute('aria-valuemax', '100');
+    progress.setAttribute('aria-valuenow', '0');
+    const fill = document.createElement('span');
+    fill.className = 'feed-share__progress-fill';
+    progress.append(fill);
+    trigger.replaceChildren(label, progress);
+}
+
+function updateImageShareProgress(value) {
+    const progress = document.querySelector('#feedShareButton .feed-share__progress');
+    if (!progress) return;
+    const percent = Math.max(Number(progress.getAttribute('aria-valuenow')) || 0, Math.min(100, Math.round(value * 100)));
+    progress.setAttribute('aria-valuenow', String(percent));
+    progress.firstElementChild.style.width = `${percent}%`;
+}
+
+function notifyShareResult(message, tone = 'success') {
+    if (typeof document === 'undefined') return;
+    const trigger = document.getElementById('feedShareButton');
+    if (!trigger) return;
+
+    const defaultLabel = trigger.dataset.defaultLabel || trigger.textContent || 'Share Result';
+    trigger.dataset.defaultLabel = defaultLabel;
+
+    trigger.textContent = message;
+    trigger.classList.remove('feed-share__trigger--success', 'feed-share__trigger--error');
+    if (tone === 'success') {
+        trigger.classList.add('feed-share__trigger--success');
+    } else if (tone === 'error') {
+        trigger.classList.add('feed-share__trigger--error');
+    }
+
+    if (typeof window !== 'undefined' && shareFeedbackTimerId) {
+        window.clearTimeout(shareFeedbackTimerId);
+    }
+
+    const timeout = tone === 'error' ? 4200 : 2600;
+    const reset = () => {
+        trigger.textContent = trigger.dataset.defaultLabel || defaultLabel;
+        trigger.classList.remove('feed-share__trigger--success', 'feed-share__trigger--error');
+        shareFeedbackTimerId = null;
+    };
+
+    if (typeof window !== 'undefined') {
+        shareFeedbackTimerId = window.setTimeout(reset, timeout);
+    } else {
+        reset();
+    }
+}
+
+async function handleShareAction(format) {
+    if (imageShareInProgress) return;
+    const normalized = typeof format === 'string' ? format.toLowerCase() : '';
+    if (!lastSimulationSummary) {
+        notifyShareResult('Run a simulation first', 'error');
+        return;
+    }
+
+    try {
+        if (normalized === 'markdown' || normalized === 'discord') {
+            const text = createDiscordShareText(lastSimulationSummary);
+            const copied = await copyTextToClipboard(text);
+            if (copied) {
+                notifyShareResult('Discord format copied!');
+            } else {
+                if (typeof window !== 'undefined') {
+                    window.prompt('Copy the roll result:', text);
+                }
+                notifyShareResult('Copy manually required', 'neutral');
+            }
+        } else if (normalized === 'plain' || normalized === 'text') {
+            const text = createPlainShareText(lastSimulationSummary);
+            const copied = await copyTextToClipboard(text);
+            if (copied) {
+                notifyShareResult('Plain text copied!');
+            } else {
+                if (typeof window !== 'undefined') {
+                    window.prompt('Copy the roll result:', text);
+                }
+                notifyShareResult('Copy manually required', 'neutral');
+            }
+        } else if (normalized === 'image') {
+            const summary = lastSimulationSummary;
+            if (getImageShareEntryCount(summary) > MAX_IMAGE_SHARE_ENTRIES) {
+                updateImageShareAvailability();
+                notifyShareResult(`Images: ${MAX_IMAGE_SHARE_ENTRIES} entries maximum`, 'error');
+                return;
+            }
+            const imageModule = AppRuntime.loadScript('scripts/export/share-image.js');
+            imageModule.catch(() => {});
+            const mode = await requestImageShareMode();
+            if (!mode) {
+                notifyShareResult('Image share cancelled', 'neutral');
+                return;
+            }
+            const controller = new AbortController();
+            imageShareAbortController = controller;
+            setImageShareLoading(true);
+            let outcome;
+            try {
+                await AppRuntime.abortable(imageModule, controller.signal);
+                outcome = await AppRuntime.abortable(generateShareImage(summary, mode, {
+                    signal: controller.signal,
+                    onProgress: value => {
+                        if (imageShareAbortController === controller && !controller.signal.aborted) updateImageShareProgress(value);
+                    },
+                    onCommit: () => { document.getElementById('feedShareCancel').hidden = true; }
+                }), controller.signal);
+            } finally {
+                if (imageShareAbortController === controller) {
+                    imageShareAbortController = null;
+                    setImageShareLoading(false);
+                }
+            }
+            if (outcome === 'copied') {
+                notifyShareResult('Image copied to clipboard!', 'success');
+            } else if (outcome === 'downloaded') {
+                notifyShareResult('Image downloaded!', 'success');
+            } else if (outcome === 'downloaded-fallback') {
+                notifyShareResult('Clipboard unavailable, image downloaded instead.', 'neutral');
+            } else {
+                notifyShareResult('Image failed', 'error');
+            }
+        } else {
+            notifyShareResult('Unknown share option', 'error');
+        }
+    } catch (error) {
+        if (error.name === 'AbortError') {
+            notifyShareResult('Image preparation cancelled', 'neutral');
+            document.getElementById('feedShareButton')?.focus({ preventScroll: true });
+            return;
+        }
+        console.error('Share action failed', error);
+        notifyShareResult('Share failed', 'error');
+    }
+}
+
+async function copyTextToClipboard(text) {
+    if (typeof navigator !== 'undefined' && navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
+        try {
+            await navigator.clipboard.writeText(text);
+            return true;
+        } catch (error) {
+            console.warn('Clipboard API copy failed', error);
+        }
+    }
+
+    if (typeof document === 'undefined') {
+        return false;
+    }
+
+    try {
+        const textarea = document.createElement('textarea');
+        textarea.value = text;
+        textarea.setAttribute('readonly', '');
+        textarea.style.position = 'absolute';
+        textarea.style.left = '-9999px';
+        document.body.appendChild(textarea);
+        const selection = document.getSelection();
+        const previousRange = selection && selection.rangeCount > 0 ? selection.getRangeAt(0) : null;
+        textarea.select();
+        const successful = document.execCommand('copy');
+        document.body.removeChild(textarea);
+        if (previousRange && selection) {
+            selection.removeAllRanges();
+            selection.addRange(previousRange);
+        }
+        return successful;
+    } catch (error) {
+        console.warn('execCommand copy failed', error);
+        return false;
+    }
+}
+
+function requestImageShareMode() {
+    if (typeof imageShareModeRequester === 'function') {
+        return imageShareModeRequester();
+    }
+    if (typeof window === 'undefined') {
+        return Promise.resolve('download');
+    }
+    const response = window.prompt('How would you like to share the image? Enter "download" or "copy".', 'download');
+    if (response === null) {
+        return Promise.resolve(null);
+    }
+    const normalized = response.trim().toLowerCase();
+    if (normalized === 'download' || normalized === 'copy') {
+        return Promise.resolve(normalized);
+    }
+    window.alert('Unrecognized option. The image will be downloaded.');
+    return Promise.resolve('download');
+}
+
+async function copyImageBlobToClipboard(blob) {
+    if (!blob) {
+        return false;
+    }
+    if (typeof navigator === 'undefined' || !navigator.clipboard || typeof navigator.clipboard.write !== 'function') {
+        return false;
+    }
+    if (typeof ClipboardItem === 'undefined') {
+        return false;
+    }
+    try {
+        const item = new ClipboardItem({ [blob.type || 'image/png']: blob });
+        await navigator.clipboard.write([item]);
+        return true;
+    } catch (error) {
+        console.warn('Clipboard image copy failed', error);
+        return false;
+    }
+}
+
+function createDiscordShareText(summary) {
+    const auras = summary.shareRecords?.length ? summary.shareRecords.map(line => `* ${line}`) : ['* No auras were rolled.'];
+    return ['**Sols Roll Result**', '', '**Auras Rolled**', ...auras, '', ResultSummary.text(summary, true)].join('\n');
+}
+
+function createPlainShareText(summary) {
+    const auras = summary.shareRecords?.length ? summary.shareRecords : ['No auras were rolled.'];
+    return ['Sols Roll Result', '', 'Auras Rolled', ...auras, '', ResultSummary.text(summary)].join('\n');
+}
+
+document.addEventListener('DOMContentLoaded', () => queueMicrotask(() => cutsceneWarningManager.initialize()));

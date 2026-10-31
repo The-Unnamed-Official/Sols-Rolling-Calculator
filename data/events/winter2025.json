@@ -1,0 +1,54 @@
+{
+  "id": "winter25",
+  "label": "Winter 2025",
+  "order": 5,
+  "theme": "winter",
+  "sigilClass": "sigil-outline-winter",
+  "status": "ended",
+  "defaultEnabled": false,
+  "auras": [
+    {
+      "name": "Atlas : Yuletide - 510,000,000",
+      "chance": 510000000,
+      "breakthroughs": {
+        "snowy": 3
+      }
+    },
+    {
+      "name": "Abominable - 120,000,000",
+      "chance": 120000000,
+      "breakthroughs": {
+        "snowy": 3
+      }
+    },
+    {
+      "name": "Express - 90,000,000",
+      "chance": 90000000,
+      "breakthroughs": {
+        "snowy": 3
+      }
+    },
+    {
+      "name": "Winter Fantasy - 72,000,000",
+      "chance": 72000000,
+      "breakthroughs": {
+        "snowy": 3
+      }
+    },
+    {
+      "name": "Santa Frost - 45,000,000",
+      "chance": 45000000,
+      "breakthroughs": {
+        "snowy": 3
+      }
+    },
+    {
+      "name": "Wonderland - 12,000,000",
+      "chance": 12000000,
+      "breakthroughs": {
+        "snowy": 3
+      }
+    }
+  ],
+  "biomes": []
+}
