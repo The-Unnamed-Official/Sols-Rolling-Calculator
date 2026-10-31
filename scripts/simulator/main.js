@@ -4170,9 +4170,9 @@ const biomeAssets = {
     mastermind: { image: 'files/images/backgrounds/mastermindBiomeImage.png', music: 'files/music/biomes/mastermindBiomeMusic.mp3' },
     edict: { image: 'files/images/backgrounds/wordBiomeImage.png', music: 'files/music/biomes/wordBiomeMusic.mp3' },
     fullMoon: { image: 'files/images/backgrounds/fullMoonBiomeImage.png', music: 'files/music/biomes/fullMoonBiomeMusic.mp3' },
-    graveyard: { image: 'files/images/backgrounds/graveyardBiomeImage.jpg', music: 'files/music/biomes/graveyardBiomeMusic.mp3' },
-    pumpkinMoon: { image: 'files/images/backgrounds/pumpkinMoonBiomeImage.jpg', music: 'files/music/biomes/pumpkinMoonBiomeMusic.mp3' },
-    bloodRain: { image: 'files/images/backgrounds/bloodRainBiomeImage.jpg', music: 'files/music/biomes/bloodRainBiomeMusic.mp3' },
+    graveyard: { image: 'files/images/backgrounds/graveyardBiomeImage.png', music: 'files/music/biomes/graveyardBiomeMusic.mp3' },
+    pumpkinMoon: { image: 'files/images/backgrounds/pumpkinMoonBiomeImage.png', music: 'files/music/biomes/pumpkinMoonBiomeMusic.mp3' },
+    bloodRain: { image: 'files/images/backgrounds/bloodRainBiomeImage.png', music: 'files/music/biomes/bloodRainBiomeMusic.mp3' },
     limbo: { image: 'files/images/backgrounds/limboImage.jpg', music: 'files/music/biomes/limboMusic.mp3' },
     blazing: { image: 'files/images/backgrounds/blazingBiomeImage.png', music: 'files/music/biomes/blazingBiomeMusic.mp3' },
     incinerator: { image: 'files/images/backgrounds/blazingBiomeImage.png', music: 'files/music/biomes/blazingBiomeMusic.mp3' }
