@@ -17,7 +17,7 @@ const canonical = title => {
     while (reference.aliases[key] && !visited.has(key)) { visited.add(key); key = reference.aliases[key]; }
     return key;
 };
-const styled = new Set(Object.values(context.WikiTitleData.auras).map(art => canonical(decodeURIComponent(new URL(art.source).pathname.slice(6)))));
+const styled = new Set(Object.values(context.WikiTitleData.auras).filter(art => art.source && !art.pending).map(art => canonical(decodeURIComponent(new URL(art.source).pathname.slice(6)))));
 const missing = reference.pages.filter(page => !styled.has(normalize(page.title)));
 const allowedTags = new Set(['span', 'b', 'i', 'big', 'small', 'br']);
 const allowedAttributes = new Set(['style', 'class', 'data-text', 'data-textstroke', 'data-gradient', 'data-colors', 'data-width', 'data-color']);

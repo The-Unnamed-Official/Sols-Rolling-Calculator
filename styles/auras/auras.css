@@ -113,6 +113,11 @@
 .aura-version-tab[aria-selected="true"] { color: var(--accent-strong); background: rgba(63, 175, 211, .18); box-shadow: inset 0 0 0 1px var(--accent); }
 .aura-version-panel { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.12fr); gap: clamp(20px, 3vw, 38px); min-width: 0; align-items: start; }
 .aura-version-information { display: grid; gap: 20px; min-width: 0; }
+.aura-version-panel > .aura-version-information:only-child { grid-column: 1 / -1; }
+@media (min-width: 961px) {
+    .aura-version-panel > .aura-version-information:only-child { grid-template-columns: minmax(0, 1.8fr) minmax(0, 1fr); align-items: start; }
+    .aura-version-information:only-child > .aura-detail__body { grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: start; }
+}
 .aura-version-visuals { display: grid; gap: 28px; min-width: 0; }
 .aura-version-visuals .aura-media-viewer { position: static; }
 .aura-showcases { display: grid; gap: 24px; min-width: 0; }

@@ -1631,6 +1631,76 @@ globalThis.WikiTitleData = {
     "Artifact": {
       "source": "https://sol-rng.fandom.com/wiki/Artifact",
       "markup": "<span style=\"-webkit-background-clip:text !important;-webkit-text-fill-color:transparent;background:linear-gradient(to bottom, #b3f1c1 15%, #8cfa97 17%, #80f68d 20%, #4fd360 30%, #3bb84c 35%, #32a944 45%, #2d9f3e 50%, #15761f 60%, #003500 70%);font-family:'Kings'\"><b>Artifact</b></span>"
+    },
+    "Ghost": {
+      "source": "",
+      "pending": true,
+      "markup": "<span class=\"wiki-ref-halloween26-ghost\">Ghost</span>"
+    },
+    "Former Garden": {
+      "source": "",
+      "pending": true,
+      "markup": "<span class=\"wiki-ref-halloween26-former-garden\">Former Garden</span>"
+    },
+    "Flushed : Pumpkinity": {
+      "source": "",
+      "pending": true,
+      "markup": "<span class=\"wiki-ref-halloween26-flushed-pumpkinity\">Flushed : Pumpkinity</span>"
+    },
+    "Acropolis": {
+      "source": "",
+      "pending": true,
+      "markup": "<span class=\"wiki-ref-halloween26-acropolis\">Acropolis</span>"
+    },
+    "Enchanted": {
+      "source": "",
+      "pending": true,
+      "markup": "<span class=\"wiki-ref-halloween26-enchanted\">Enchanted</span>"
+    },
+    "Hanahaki": {
+      "source": "",
+      "pending": true,
+      "markup": "<span class=\"wiki-ref-halloween26-hanahaki\">Hanahaki</span>"
+    },
+    "Cauldron": {
+      "source": "",
+      "pending": true,
+      "markup": "<span class=\"wiki-ref-halloween26-cauldron\">Cauldron</span>"
+    },
+    "Rejoice": {
+      "source": "",
+      "pending": true,
+      "markup": "<span class=\"wiki-ref-halloween26-rejoice\">Rejoice</span>"
+    },
+    "Harvester : Necromancy": {
+      "source": "",
+      "pending": true,
+      "markup": "<span class=\"wiki-ref-halloween26-harvester-necromancy\">Harvester : Necromancy</span>"
+    },
+    "Embercrypt": {
+      "source": "",
+      "pending": true,
+      "markup": "<span class=\"wiki-ref-halloween26-embercrypt\">Embercrypt</span>"
+    },
+    "Cruor": {
+      "source": "",
+      "pending": true,
+      "markup": "<span class=\"wiki-ref-halloween26-cruor\">Cruor</span>"
+    },
+    "Lost Soul : Styx": {
+      "source": "",
+      "pending": true,
+      "markup": "<span class=\"wiki-ref-halloween26-lost-soul-styx\">Lost Soul : Styx</span>"
+    },
+    "Gaze": {
+      "source": "",
+      "pending": true,
+      "markup": "<span class=\"wiki-ref-halloween26-gaze\">Gaze</span>"
+    },
+    "Nightshade": {
+      "source": "",
+      "pending": true,
+      "markup": "<span class=\"wiki-ref-radiantforest-nightshade\">Nightshade</span>"
     }
   },
   "items": {

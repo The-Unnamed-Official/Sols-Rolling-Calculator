@@ -199,6 +199,76 @@ test('sorted icons resolve in the simulator and generated aura layouts', async (
         assert.deepEqual(missing, []);
     } finally { await context.close(); }
 });
+test('Halloween 2026 auras have linked profiles, correct roll details and prepared sigil titles', async () => {
+    const event = JSON.parse(fs.readFileSync(path.join(root, 'data/events/halloween2026.json'), 'utf8'));
+    const catalogue = JSON.parse(fs.readFileSync(path.join(root, 'data/auras/catalogue.json'), 'utf8'));
+    const { context, page, errors, missing } = await fixture();
+    try {
+        const registered = await page.evaluate(names => names.map(name => {
+            const aura = AURA_BY_NAME.get(name);
+            const label = name.replace(/\s+-\s+[\d,]+$/, '');
+            return { chance: aura?.chance, href: AuraLinks.href(name), title: WikiTitleData.auras[label] };
+        }), event.auras.map(aura => aura.name));
+        await page.evaluate(names => {
+            const auras = names.map(name => AURA_BY_NAME.get(name));
+            const counts = new Float64Array(AURA_REGISTRY.length);
+            for (const aura of auras) counts[aura.index] = 1;
+            const results = buildResultEntries(auras, 'bloodRain', new Map(), 45.6, { winCounts: counts });
+            lastSimulationSummary.shareVisuals = results.shareVisualRecords;
+            lastSimulationSummary.shareRecords = results.shareRecords;
+            lastSimulationSummary.rolls = auras.length;
+        }, event.auras.map(aura => aura.name));
+        await imageOptions(page);
+        await download(page, 'download', 'share-image-halloween-auras.png');
+        for (const [index, aura] of event.auras.entries()) {
+            const name = aura.name.replace(/\s+-\s+[\d,]+$/, '');
+            const entry = catalogue.find(entry => entry.name === name);
+            assert.ok(entry, name);
+            assert.equal(entry.simulatorChance, aura.chance);
+            assert.ok(entry.events.includes('Halloween 2026'));
+            assert.equal(entry.kind, 'Event');
+            assert.equal(registered[index].chance, aura.chance);
+            assert.equal(registered[index].href, origin + `/auras/${entry.slug}/`);
+            assert.equal(registered[index].title.pending, true);
+            assert.match(registered[index].title.markup, /wiki-ref-halloween26-/);
+            assert.ok(entry.background.includes(aura.nativeBiomes.find(biome => biome !== 'glitch')));
+            await page.goto(origin + `/auras/${entry.slug}/`, { waitUntil: 'load' });
+            await page.waitForFunction(() => document.documentElement.dataset.auraLayout === 'ready');
+            assert.equal(await page.locator('h1 .wiki-title--aura').count(), 1, name);
+            assert.equal(await page.locator('h1 .wiki-title__plain').isVisible(), false, name);
+            assert.equal(await page.locator('h1 .wiki-title__art').isVisible(), true, name);
+            assert.equal(await page.locator('.aura-fact__odds').textContent(), '1 in ' + aura.chance.toLocaleString('en-US'));
+            assert.match(await page.locator('.aura-event').textContent(), /Halloween 2026/);
+            if (entry.wikiPending) assert.match(await page.locator('.aura-reference').textContent(), /Halloween 2026/);
+            else {
+                assert.ok((await page.locator('.aura-reference').textContent()).includes(entry.reviewedOn));
+                assert.ok((await page.locator('.aura-reference a').getAttribute('href')).endsWith('?oldid=' + entry.revisionId));
+            }
+            assert.equal(await page.locator('a[href=""]').count(), 0);
+            if (name.includes(' : ')) {
+                assert.equal(await page.locator('.aura-mutation-link[aria-current="page"]').count(), 1);
+                assert.ok(await page.locator('.aura-mutation-link').count() >= 2);
+            }
+            if (name === 'Harvester : Necromancy') await page.locator('.aura-detail').screenshot({ path: path.join(root, '.cache/verification/2.215/halloween-necromancy-profile.png') });
+        }
+        await page.setViewportSize({ width: 390, height: 844 });
+        assert.equal(await page.locator('.aura-detail').evaluate(element => element.scrollWidth > element.clientWidth), false);
+        await page.locator('.aura-detail').screenshot({ path: path.join(root, '.cache/verification/2.215/halloween-gaze-mobile.png') });
+        await page.goto(origin + '/auras/?event=Halloween+2026&size=18', { waitUntil: 'load' });
+        await page.waitForFunction(() => document.documentElement.dataset.auraLayout === 'ready');
+        const eventEntries = catalogue.filter(entry => entry.events.includes(event.label));
+        await page.waitForFunction(count => document.querySelectorAll('#aura-list [data-aura-row]').length === Math.min(18, count), eventEntries.length);
+        assert.equal(await page.locator('#aura-event option[value="Halloween 2026"]').getAttribute('data-sigil'), 'sigil-outline-blood');
+        const listed = await page.locator('#aura-list [data-aura-row]').evaluateAll(rows => rows.map(row => row.dataset.name).sort());
+        assert.deepEqual(listed, eventEntries.slice(0, 18).map(entry => entry.name).sort());
+        await page.goto(pathToFileURL(path.join(root, 'auras/ghost/index.html')).href, { waitUntil: 'load' });
+        await page.waitForFunction(() => document.documentElement.dataset.auraLayout === 'ready');
+        assert.equal(await page.locator('h1 .wiki-title--aura').count(), 1);
+        assert.deepEqual(errors, []);
+        assert.deepEqual(missing, []);
+    } finally { await context.close(); }
+});
+
 test('layered and wide aura titles stay above rarity and count text in exported images', async () => {
     const { context, page, errors, warnings } = await fixture();
     try {

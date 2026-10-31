@@ -109,7 +109,7 @@ for (const aura of blueprint) {
     const name = aura.name.split(' - ')[0].trim();
     const source = overrides[name] || sourceByName.get(normalize(aliases[name] || name));
     if (!source) throw new Error(`Missing wiki title: ${name}`);
-    auras[name] = { source: source.url, markup: sanitizeMarkup(source.markup) };
+    auras[name] = { source: source.url, markup: sanitizeMarkup(source.markup), ...(source.pending ? { pending: true } : {}) };
 }
 const items = {};
 const itemNames = new Set([

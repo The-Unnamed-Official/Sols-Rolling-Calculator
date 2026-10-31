@@ -124,7 +124,7 @@ async function refresh() {
     const navigation = await query(['Template:Auras']);
     const markup = navigation.pages[0].revisions[0].slots.main.content;
     const titles = new Set([...markup.matchAll(/\[\[([^|\]]+)\|\s*\{\{Aura\|/g)].map(match => match[1].replace(/^:/, '')));
-    for (const title of Object.values(context.WikiTitleData.auras)) titles.add(decodeURIComponent(new URL(title.source).pathname.slice('/wiki/'.length)).replace(/_/g, ' '));
+    for (const title of Object.values(context.WikiTitleData.auras)) if (title.source && !title.pending) titles.add(decodeURIComponent(new URL(title.source).pathname.slice('/wiki/'.length)).replace(/_/g, ' '));
     titles.add('Solar');
     const batches = [];
     const all = [...titles];

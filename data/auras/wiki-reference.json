@@ -3914,6 +3914,31 @@
       "events": []
     },
     {
+      "title": "Flushed : Pumpkinity",
+      "source": "https://sol-rng.fandom.com/wiki/Flushed_:_Pumpkinity",
+      "revisionId": 154658,
+      "description": "no stop its not pumpkinity hey! its me! pumpkinity! spooking everything!",
+      "descriptionTruncated": false,
+      "rarity": "N/A (Unobtainable outside of Pumpkin Moon or Glitched)",
+      "nativeRarity": "1 in 69,000",
+      "tier": "Event",
+      "required": "Pumpkin Moon or Glitched",
+      "obtainment": "",
+      "categories": [
+        "Auras",
+        "Event",
+        "Event (Tier)",
+        "Biome-Exclusive"
+      ],
+      "notice": "",
+      "status": "",
+      "exclusive": true,
+      "events": [
+        "Halloween 2026"
+      ],
+      "reviewedOn": "2026-10-31"
+    },
+    {
       "title": "Flushed : Troll",
       "source": "https://sol-rng.fandom.com/wiki/Flushed_:_Troll",
       "revisionId": 147421,
@@ -4158,6 +4183,31 @@
       "status": "",
       "exclusive": false,
       "events": []
+    },
+    {
+      "title": "Ghost",
+      "source": "https://sol-rng.fandom.com/wiki/Ghost",
+      "revisionId": 154664,
+      "description": "",
+      "descriptionTruncated": false,
+      "rarity": "N/A (Unobtainable outside of Graveyard or Glitched)",
+      "nativeRarity": "1 in 10,414,606",
+      "tier": "Event",
+      "required": "Graveyard or Glitched",
+      "obtainment": "",
+      "categories": [
+        "Auras",
+        "Event",
+        "Event (Tier)",
+        "Biome-Exclusive"
+      ],
+      "notice": "",
+      "status": "",
+      "exclusive": true,
+      "events": [
+        "Halloween 2026"
+      ],
+      "reviewedOn": "2026-10-31"
     },
     {
       "title": "Gilded",
@@ -4644,6 +4694,29 @@
       "events": [
         "Halloween 2024"
       ]
+    },
+    {
+      "title": "Harvester : Necromancy",
+      "source": "https://sol-rng.fandom.com/wiki/Harvester_:_Necromancy",
+      "revisionId": 154668,
+      "description": "Empty",
+      "descriptionTruncated": false,
+      "rarity": "(Unobtainable outside of Graveyard)",
+      "nativeRarity": "1 in 225,000,000",
+      "tier": "Event",
+      "required": "Graveyard",
+      "obtainment": "",
+      "categories": [
+        "Event",
+        "Auras"
+      ],
+      "notice": "",
+      "status": "",
+      "exclusive": true,
+      "events": [
+        "Halloween 2026"
+      ],
+      "reviewedOn": "2026-10-31"
     },
     {
       "title": "Hasuen",
@@ -10854,5 +10927,29 @@
         "Easter 2026"
       ]
     }
-  ]
+  ],
+  "eventReviews": {
+    "halloween26": {
+      "reviewedOn": "2026-10-31",
+      "source": "https://sol-rng.fandom.com/wiki/Category:Auras",
+      "publishedArticles": [
+        "Harvester : Necromancy",
+        "Flushed : Pumpkinity",
+        "Ghost"
+      ],
+      "catalogueOnly": [],
+      "pendingKnownArticles": [
+        "Former Garden",
+        "Acropolis",
+        "Enchanted",
+        "Hanahaki",
+        "Cauldron",
+        "Rejoice",
+        "Embercrypt",
+        "Cruor",
+        "Lost Soul : Styx",
+        "Gaze"
+      ]
+    }
+  }
 }

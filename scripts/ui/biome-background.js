@@ -53,7 +53,7 @@
         const match = /^(.*)\.(png|jpe?g|webp|avif)$/i.exec(url.pathname);
         if (!match) return night ? [] : [url.href];
         const stem = match[1] + (night && !match[1].endsWith('N') ? 'N' : '');
-        return [...new Set(['png', match[2], ...formats])].map(extension => {
+        return [...new Set([match[2], ...formats])].map(extension => {
             const candidate = new URL(url);
             candidate.pathname = `${stem}.${extension}`;
             return candidate.href;

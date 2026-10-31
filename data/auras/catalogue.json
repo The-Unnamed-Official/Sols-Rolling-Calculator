@@ -1323,6 +1323,7 @@
     "categories": [],
     "obtainment": "",
     "wikiPending": true,
+    "detailsContext": "the current simulator",
     "mediaPending": true,
     "name": "Watcher",
     "slug": "watcher",
@@ -1461,6 +1462,7 @@
     "categories": [],
     "obtainment": "",
     "wikiPending": true,
+    "detailsContext": "the current simulator",
     "mediaPending": true,
     "name": "Rekindle",
     "slug": "rekindle",
@@ -4638,6 +4640,7 @@
     "categories": [],
     "obtainment": "",
     "wikiPending": true,
+    "detailsContext": "the current simulator",
     "mediaPending": true,
     "name": "Moonchild",
     "slug": "moonchild",
@@ -5234,6 +5237,41 @@
     "background": "",
     "simulatorName": "Spectre : Requiem - 8,222,000",
     "simulatorChance": 8222000,
+    "ignoreLuck": false
+  },
+  {
+    "title": "Nightshade",
+    "source": "",
+    "revisionId": null,
+    "description": "",
+    "descriptionTruncated": false,
+    "rarity": "1 in 8,262,026",
+    "nativeRarity": "",
+    "tier": "Mythic",
+    "required": "The Radiant Forest",
+    "exclusive": true,
+    "events": [],
+    "categories": [],
+    "obtainment": "",
+    "wikiPending": true,
+    "detailsContext": "the current simulator",
+    "mediaPending": true,
+    "name": "Nightshade",
+    "slug": "nightshade",
+    "rarityValue": 8262026,
+    "rarityText": "1 in 8,262,026",
+    "tierKey": "mythic",
+    "kind": "Biome exclusive",
+    "location": "The Radiant Forest",
+    "nativeBiomes": [
+      "The Radiant Forest"
+    ],
+    "biomes": [
+      "The Radiant Forest"
+    ],
+    "background": "files/images/backgrounds/radiantForestBiomeImage.png",
+    "simulatorName": "Nightshade - 8,262,026",
+    "simulatorChance": 8262026,
     "ignoreLuck": false
   },
   {
@@ -6514,6 +6552,7 @@
     "categories": [],
     "obtainment": "",
     "wikiPending": true,
+    "detailsContext": "the current simulator",
     "mediaPending": true,
     "name": "Cor Lunae",
     "slug": "cor-lunae",
@@ -9887,6 +9926,7 @@
     "categories": [],
     "obtainment": "Roll all Kyawthuite variants during this biome to unlock",
     "wikiPending": true,
+    "detailsContext": "the current simulator",
     "mediaPending": true,
     "name": "True Kyawthuite",
     "slug": "true-kyawthuite",
@@ -9921,6 +9961,7 @@
     "categories": [],
     "obtainment": "Roll all Twilight variants during this biome to unlock",
     "wikiPending": true,
+    "detailsContext": "the current simulator",
     "mediaPending": true,
     "name": "True Twilight",
     "slug": "true-twilight",
@@ -9955,6 +9996,7 @@
     "categories": [],
     "obtainment": "Roll all Jade variants during this biome to unlock",
     "wikiPending": true,
+    "detailsContext": "the current simulator",
     "mediaPending": true,
     "name": "True Jade",
     "slug": "true-jade",
@@ -10529,6 +10571,7 @@
     "categories": [],
     "obtainment": "Collect all seven Radiant Moons; guaranteed on the next roll",
     "wikiPending": true,
+    "detailsContext": "the current simulator",
     "mediaPending": true,
     "name": "Tomorrow",
     "slug": "tomorrow",
@@ -10860,6 +10903,51 @@
     "background": "files/images/backgrounds/blazingBiomeImage.png",
     "simulatorName": "Buoyant - 32,000",
     "simulatorChance": 32000,
+    "ignoreLuck": false
+  },
+  {
+    "title": "Flushed : Pumpkinity",
+    "source": "https://sol-rng.fandom.com/wiki/Flushed_:_Pumpkinity",
+    "revisionId": 154658,
+    "description": "no stop its not pumpkinity hey! its me! pumpkinity! spooking everything!",
+    "descriptionTruncated": false,
+    "rarity": "1 in 69,000",
+    "nativeRarity": "",
+    "tier": "Event",
+    "required": "Pumpkin Moon / Glitched",
+    "obtainment": "Enable Halloween 2026 in the simulator",
+    "categories": [
+      "Auras",
+      "Event",
+      "Event (Tier)",
+      "Biome-Exclusive"
+    ],
+    "notice": "",
+    "status": "",
+    "exclusive": true,
+    "events": [
+      "Halloween 2026"
+    ],
+    "reviewedOn": "2026-10-31",
+    "mediaPending": true,
+    "name": "Flushed : Pumpkinity",
+    "slug": "flushed-pumpkinity",
+    "rarityValue": 69000,
+    "rarityText": "1 in 69,000",
+    "tierKey": "event",
+    "kind": "Event",
+    "location": "Enable Halloween 2026 in the simulator · Pumpkin Moon / Glitched",
+    "nativeBiomes": [
+      "Glitched",
+      "Pumpkin Moon"
+    ],
+    "biomes": [
+      "Glitch",
+      "Pumpkin Moon"
+    ],
+    "background": "files/images/backgrounds/pumpkinMoonBiomeImage.jpg",
+    "simulatorName": "Flushed : Pumpkinity - 69,000",
+    "simulatorChance": 69000,
     "ignoreLuck": false
   },
   {
@@ -11226,6 +11314,47 @@
     "background": "files/images/backgrounds/fullMoonBiomeImage.png",
     "simulatorName": "紅月の観測者 - 444,444",
     "simulatorChance": 444444,
+    "ignoreLuck": false
+  },
+  {
+    "title": "Enchanted",
+    "source": "",
+    "revisionId": null,
+    "description": "",
+    "descriptionTruncated": false,
+    "rarity": "1 in 445,000",
+    "nativeRarity": "",
+    "tier": "Event",
+    "required": "Pumpkin Moon / Glitched",
+    "exclusive": true,
+    "events": [
+      "Halloween 2026"
+    ],
+    "categories": [
+      "Event"
+    ],
+    "obtainment": "Enable Halloween 2026 in the simulator",
+    "wikiPending": true,
+    "detailsContext": "Halloween 2026",
+    "mediaPending": true,
+    "name": "Enchanted",
+    "slug": "enchanted",
+    "rarityValue": 445000,
+    "rarityText": "1 in 445,000",
+    "tierKey": "event",
+    "kind": "Event",
+    "location": "Enable Halloween 2026 in the simulator · Pumpkin Moon / Glitched",
+    "nativeBiomes": [
+      "Glitched",
+      "Pumpkin Moon"
+    ],
+    "biomes": [
+      "Glitch",
+      "Pumpkin Moon"
+    ],
+    "background": "files/images/backgrounds/pumpkinMoonBiomeImage.jpg",
+    "simulatorName": "Enchanted - 445,000",
+    "simulatorChance": 445000,
     "ignoreLuck": false
   },
   {
@@ -11712,6 +11841,47 @@
     "biomes": [],
     "background": "",
     "simulatorName": "Bounded : Kidnapped - 2,000,000",
+    "simulatorChance": 2000000,
+    "ignoreLuck": false
+  },
+  {
+    "title": "Lost Soul : Styx",
+    "source": "",
+    "revisionId": null,
+    "description": "",
+    "descriptionTruncated": false,
+    "rarity": "1 in 2,000,000",
+    "nativeRarity": "",
+    "tier": "Event",
+    "required": "Pumpkin Moon / Glitched",
+    "exclusive": true,
+    "events": [
+      "Halloween 2026"
+    ],
+    "categories": [
+      "Event"
+    ],
+    "obtainment": "Enable Halloween 2026 in the simulator",
+    "wikiPending": true,
+    "detailsContext": "Halloween 2026",
+    "mediaPending": true,
+    "name": "Lost Soul : Styx",
+    "slug": "lost-soul-styx",
+    "rarityValue": 2000000,
+    "rarityText": "1 in 2,000,000",
+    "tierKey": "event",
+    "kind": "Event",
+    "location": "Enable Halloween 2026 in the simulator · Pumpkin Moon / Glitched",
+    "nativeBiomes": [
+      "Glitched",
+      "Pumpkin Moon"
+    ],
+    "biomes": [
+      "Glitch",
+      "Pumpkin Moon"
+    ],
+    "background": "files/images/backgrounds/pumpkinMoonBiomeImage.jpg",
+    "simulatorName": "Lost Soul : Styx - 2,000,000",
     "simulatorChance": 2000000,
     "ignoreLuck": false
   },
@@ -12271,6 +12441,47 @@
     "ignoreLuck": false
   },
   {
+    "title": "Embercrypt",
+    "source": "",
+    "revisionId": null,
+    "description": "",
+    "descriptionTruncated": false,
+    "rarity": "1 in 9,700,000",
+    "nativeRarity": "",
+    "tier": "Event",
+    "required": "Pumpkin Moon / Glitched",
+    "exclusive": true,
+    "events": [
+      "Halloween 2026"
+    ],
+    "categories": [
+      "Event"
+    ],
+    "obtainment": "Enable Halloween 2026 in the simulator",
+    "wikiPending": true,
+    "detailsContext": "Halloween 2026",
+    "mediaPending": true,
+    "name": "Embercrypt",
+    "slug": "embercrypt",
+    "rarityValue": 9700000,
+    "rarityText": "1 in 9,700,000",
+    "tierKey": "event",
+    "kind": "Event",
+    "location": "Enable Halloween 2026 in the simulator · Pumpkin Moon / Glitched",
+    "nativeBiomes": [
+      "Glitched",
+      "Pumpkin Moon"
+    ],
+    "biomes": [
+      "Glitch",
+      "Pumpkin Moon"
+    ],
+    "background": "files/images/backgrounds/pumpkinMoonBiomeImage.jpg",
+    "simulatorName": "Embercrypt - 9,700,000",
+    "simulatorChance": 9700000,
+    "ignoreLuck": false
+  },
+  {
     "title": "Moonflower",
     "source": "https://sol-rng.fandom.com/wiki/Moonflower",
     "revisionId": 147368,
@@ -12310,6 +12521,51 @@
     "background": "files/images/backgrounds/pumpkinMoonBiomeImage.jpg",
     "simulatorName": "Moonflower - 10,000,000",
     "simulatorChance": 10000000,
+    "ignoreLuck": false
+  },
+  {
+    "title": "Ghost",
+    "source": "https://sol-rng.fandom.com/wiki/Ghost",
+    "revisionId": 154664,
+    "description": "",
+    "descriptionTruncated": false,
+    "rarity": "1 in 10,414,606",
+    "nativeRarity": "",
+    "tier": "Event",
+    "required": "Graveyard / Glitched",
+    "obtainment": "Enable Halloween 2026 in the simulator",
+    "categories": [
+      "Auras",
+      "Event",
+      "Event (Tier)",
+      "Biome-Exclusive"
+    ],
+    "notice": "",
+    "status": "",
+    "exclusive": true,
+    "events": [
+      "Halloween 2026"
+    ],
+    "reviewedOn": "2026-10-31",
+    "mediaPending": true,
+    "name": "Ghost",
+    "slug": "ghost",
+    "rarityValue": 10414606,
+    "rarityText": "1 in 10,414,606",
+    "tierKey": "event",
+    "kind": "Event",
+    "location": "Enable Halloween 2026 in the simulator · Graveyard / Glitched",
+    "nativeBiomes": [
+      "Glitched",
+      "Graveyard"
+    ],
+    "biomes": [
+      "Glitch",
+      "Graveyard"
+    ],
+    "background": "files/images/backgrounds/graveyardBiomeImage.jpg",
+    "simulatorName": "Ghost - 10,414,606",
+    "simulatorChance": 10414606,
     "ignoreLuck": false
   },
   {
@@ -12562,6 +12818,47 @@
     "background": "files/images/backgrounds/graveyardBiomeImage.jpg",
     "simulatorName": "Cryptfire - 21,000,000",
     "simulatorChance": 21000000,
+    "ignoreLuck": false
+  },
+  {
+    "title": "Cauldron",
+    "source": "",
+    "revisionId": null,
+    "description": "",
+    "descriptionTruncated": false,
+    "rarity": "1 in 24,000,000",
+    "nativeRarity": "",
+    "tier": "Event",
+    "required": "Pumpkin Moon / Glitched",
+    "exclusive": true,
+    "events": [
+      "Halloween 2026"
+    ],
+    "categories": [
+      "Event"
+    ],
+    "obtainment": "Enable Halloween 2026 in the simulator",
+    "wikiPending": true,
+    "detailsContext": "Halloween 2026",
+    "mediaPending": true,
+    "name": "Cauldron",
+    "slug": "cauldron",
+    "rarityValue": 24000000,
+    "rarityText": "1 in 24,000,000",
+    "tierKey": "event",
+    "kind": "Event",
+    "location": "Enable Halloween 2026 in the simulator · Pumpkin Moon / Glitched",
+    "nativeBiomes": [
+      "Glitched",
+      "Pumpkin Moon"
+    ],
+    "biomes": [
+      "Glitch",
+      "Pumpkin Moon"
+    ],
+    "background": "files/images/backgrounds/pumpkinMoonBiomeImage.jpg",
+    "simulatorName": "Cauldron - 24,000,000",
+    "simulatorChance": 24000000,
     "ignoreLuck": false
   },
   {
@@ -13225,6 +13522,88 @@
     "ignoreLuck": false
   },
   {
+    "title": "Former Garden",
+    "source": "",
+    "revisionId": null,
+    "description": "",
+    "descriptionTruncated": false,
+    "rarity": "1 in 63,000,000",
+    "nativeRarity": "",
+    "tier": "Event",
+    "required": "Blood Rain / Glitched",
+    "exclusive": true,
+    "events": [
+      "Halloween 2026"
+    ],
+    "categories": [
+      "Event"
+    ],
+    "obtainment": "Enable Halloween 2026 in the simulator",
+    "wikiPending": true,
+    "detailsContext": "Halloween 2026",
+    "mediaPending": true,
+    "name": "Former Garden",
+    "slug": "former-garden",
+    "rarityValue": 63000000,
+    "rarityText": "1 in 63,000,000",
+    "tierKey": "event",
+    "kind": "Event",
+    "location": "Enable Halloween 2026 in the simulator · Blood Rain / Glitched",
+    "nativeBiomes": [
+      "Glitched",
+      "Blood Rain"
+    ],
+    "biomes": [
+      "Glitch",
+      "Blood Rain"
+    ],
+    "background": "files/images/backgrounds/bloodRainBiomeImage.jpg",
+    "simulatorName": "Former Garden - 63,000,000",
+    "simulatorChance": 63000000,
+    "ignoreLuck": false
+  },
+  {
+    "title": "Hanahaki",
+    "source": "",
+    "revisionId": null,
+    "description": "",
+    "descriptionTruncated": false,
+    "rarity": "1 in 66,000,000",
+    "nativeRarity": "",
+    "tier": "Event",
+    "required": "Blood Rain / Glitched",
+    "exclusive": true,
+    "events": [
+      "Halloween 2026"
+    ],
+    "categories": [
+      "Event"
+    ],
+    "obtainment": "Enable Halloween 2026 in the simulator",
+    "wikiPending": true,
+    "detailsContext": "Halloween 2026",
+    "mediaPending": true,
+    "name": "Hanahaki",
+    "slug": "hanahaki",
+    "rarityValue": 66000000,
+    "rarityText": "1 in 66,000,000",
+    "tierKey": "event",
+    "kind": "Event",
+    "location": "Enable Halloween 2026 in the simulator · Blood Rain / Glitched",
+    "nativeBiomes": [
+      "Glitched",
+      "Blood Rain"
+    ],
+    "biomes": [
+      "Glitch",
+      "Blood Rain"
+    ],
+    "background": "files/images/backgrounds/bloodRainBiomeImage.jpg",
+    "simulatorName": "Hanahaki - 66,000,000",
+    "simulatorChance": 66000000,
+    "ignoreLuck": false
+  },
+  {
     "title": "Reaper",
     "source": "https://sol-rng.fandom.com/wiki/Reaper",
     "revisionId": 150477,
@@ -13813,6 +14192,49 @@
     "ignoreLuck": false
   },
   {
+    "title": "Harvester : Necromancy",
+    "source": "https://sol-rng.fandom.com/wiki/Harvester_:_Necromancy",
+    "revisionId": 154668,
+    "description": "Empty",
+    "descriptionTruncated": false,
+    "rarity": "1 in 225,000,000",
+    "nativeRarity": "",
+    "tier": "Event",
+    "required": "Blood Rain / Glitched",
+    "obtainment": "Enable Halloween 2026 in the simulator",
+    "categories": [
+      "Event",
+      "Auras"
+    ],
+    "notice": "",
+    "status": "",
+    "exclusive": true,
+    "events": [
+      "Halloween 2026"
+    ],
+    "reviewedOn": "2026-10-31",
+    "mediaPending": true,
+    "name": "Harvester : Necromancy",
+    "slug": "harvester-necromancy",
+    "rarityValue": 225000000,
+    "rarityText": "1 in 225,000,000",
+    "tierKey": "event",
+    "kind": "Event",
+    "location": "Enable Halloween 2026 in the simulator · Blood Rain / Glitched",
+    "nativeBiomes": [
+      "Glitched",
+      "Blood Rain"
+    ],
+    "biomes": [
+      "Glitch",
+      "Blood Rain"
+    ],
+    "background": "files/images/backgrounds/bloodRainBiomeImage.jpg",
+    "simulatorName": "Harvester : Necromancy - 225,000,000",
+    "simulatorChance": 225000000,
+    "ignoreLuck": false
+  },
+  {
     "title": "Shard Surfer",
     "source": "https://sol-rng.fandom.com/wiki/Shard_Surfer",
     "revisionId": 148443,
@@ -14061,6 +14483,47 @@
     "background": "",
     "simulatorName": "Eggsistance - 307,777,777",
     "simulatorChance": 307777777,
+    "ignoreLuck": false
+  },
+  {
+    "title": "Cruor",
+    "source": "",
+    "revisionId": null,
+    "description": "",
+    "descriptionTruncated": false,
+    "rarity": "1 in 333,333,333",
+    "nativeRarity": "",
+    "tier": "Event",
+    "required": "Blood Rain / Glitched",
+    "exclusive": true,
+    "events": [
+      "Halloween 2026"
+    ],
+    "categories": [
+      "Event"
+    ],
+    "obtainment": "Enable Halloween 2026 in the simulator",
+    "wikiPending": true,
+    "detailsContext": "Halloween 2026",
+    "mediaPending": true,
+    "name": "Cruor",
+    "slug": "cruor",
+    "rarityValue": 333333333,
+    "rarityText": "1 in 333,333,333",
+    "tierKey": "event",
+    "kind": "Event",
+    "location": "Enable Halloween 2026 in the simulator · Blood Rain / Glitched",
+    "nativeBiomes": [
+      "Glitched",
+      "Blood Rain"
+    ],
+    "biomes": [
+      "Glitch",
+      "Blood Rain"
+    ],
+    "background": "files/images/backgrounds/bloodRainBiomeImage.jpg",
+    "simulatorName": "Cruor - 333,333,333",
+    "simulatorChance": 333333333,
     "ignoreLuck": false
   },
   {
@@ -14388,6 +14851,47 @@
     "background": "files/videos/biomes/glitchBiomeImage.webm",
     "simulatorName": "Phantasma - 462,600,000",
     "simulatorChance": 462600000,
+    "ignoreLuck": false
+  },
+  {
+    "title": "Acropolis",
+    "source": "",
+    "revisionId": null,
+    "description": "",
+    "descriptionTruncated": false,
+    "rarity": "1 in 466,666,666",
+    "nativeRarity": "",
+    "tier": "Event",
+    "required": "Graveyard / Glitched",
+    "exclusive": true,
+    "events": [
+      "Halloween 2026"
+    ],
+    "categories": [
+      "Event"
+    ],
+    "obtainment": "Enable Halloween 2026 in the simulator",
+    "wikiPending": true,
+    "detailsContext": "Halloween 2026",
+    "mediaPending": true,
+    "name": "Acropolis",
+    "slug": "acropolis",
+    "rarityValue": 466666666,
+    "rarityText": "1 in 466,666,666",
+    "tierKey": "event",
+    "kind": "Event",
+    "location": "Enable Halloween 2026 in the simulator · Graveyard / Glitched",
+    "nativeBiomes": [
+      "Glitched",
+      "Graveyard"
+    ],
+    "biomes": [
+      "Glitch",
+      "Graveyard"
+    ],
+    "background": "files/images/backgrounds/graveyardBiomeImage.jpg",
+    "simulatorName": "Acropolis - 466,666,666",
+    "simulatorChance": 466666666,
     "ignoreLuck": false
   },
   {
@@ -14798,6 +15302,47 @@
     "biomes": [],
     "background": "",
     "simulatorName": "Eggore - 700,000,000",
+    "simulatorChance": 700000000,
+    "ignoreLuck": false
+  },
+  {
+    "title": "Rejoice",
+    "source": "",
+    "revisionId": null,
+    "description": "",
+    "descriptionTruncated": false,
+    "rarity": "1 in 700,000,000",
+    "nativeRarity": "",
+    "tier": "Event",
+    "required": "Blood Rain / Glitched",
+    "exclusive": true,
+    "events": [
+      "Halloween 2026"
+    ],
+    "categories": [
+      "Event"
+    ],
+    "obtainment": "Enable Halloween 2026 in the simulator",
+    "wikiPending": true,
+    "detailsContext": "Halloween 2026",
+    "mediaPending": true,
+    "name": "Rejoice",
+    "slug": "rejoice",
+    "rarityValue": 700000000,
+    "rarityText": "1 in 700,000,000",
+    "tierKey": "event",
+    "kind": "Event",
+    "location": "Enable Halloween 2026 in the simulator · Blood Rain / Glitched",
+    "nativeBiomes": [
+      "Glitched",
+      "Blood Rain"
+    ],
+    "biomes": [
+      "Glitch",
+      "Blood Rain"
+    ],
+    "background": "files/images/backgrounds/bloodRainBiomeImage.jpg",
+    "simulatorName": "Rejoice - 700,000,000",
     "simulatorChance": 700000000,
     "ignoreLuck": false
   },
@@ -15233,6 +15778,47 @@
     "background": "files/images/backgrounds/blazingBiomeImage.png",
     "simulatorName": "Pool Party - 972,000,000",
     "simulatorChance": 972000000,
+    "ignoreLuck": false
+  },
+  {
+    "title": "Gaze",
+    "source": "",
+    "revisionId": null,
+    "description": "",
+    "descriptionTruncated": false,
+    "rarity": "1 in 977,000,000",
+    "nativeRarity": "",
+    "tier": "Event",
+    "required": "Graveyard / Glitched",
+    "exclusive": true,
+    "events": [
+      "Halloween 2026"
+    ],
+    "categories": [
+      "Event"
+    ],
+    "obtainment": "Enable Halloween 2026 in the simulator",
+    "wikiPending": true,
+    "detailsContext": "Halloween 2026",
+    "mediaPending": true,
+    "name": "Gaze",
+    "slug": "gaze",
+    "rarityValue": 977000000,
+    "rarityText": "1 in 977,000,000",
+    "tierKey": "event",
+    "kind": "Event",
+    "location": "Enable Halloween 2026 in the simulator · Graveyard / Glitched",
+    "nativeBiomes": [
+      "Glitched",
+      "Graveyard"
+    ],
+    "biomes": [
+      "Glitch",
+      "Graveyard"
+    ],
+    "background": "files/images/backgrounds/graveyardBiomeImage.jpg",
+    "simulatorName": "Gaze - 977,000,000",
+    "simulatorChance": 977000000,
     "ignoreLuck": false
   },
   {
