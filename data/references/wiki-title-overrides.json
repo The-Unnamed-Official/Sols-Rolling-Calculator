@@ -106,86 +106,88 @@
   },
   "Ghost": {
     "name": "Ghost",
-    "url": "",
-    "pending": true,
-    "markup": "<span class=\"halloween26-ghost\">Ghost</span>"
-  },
-  "Former Garden": {
-    "name": "Former Garden",
-    "url": "",
-    "pending": true,
-    "markup": "<span class=\"halloween26-former-garden\">Former Garden</span>"
+    "url": "https://sol-rng.fandom.com/wiki/Ghost",
+    "markup": "<span style=\"background:linear-gradient(180deg, #60668e, #464a6f, #7278a2, #44496c, #2c304e);-webkit-background-clip:text !important;-webkit-text-fill-color:transparent;font-family:'EB Garamond';font-weight:bold;font-size:150%;-webkit-text-stroke:.1px white\"><b>GHOST</b></span>"
   },
   "Flushed : Pumpkinity": {
     "name": "Flushed : Pumpkinity",
-    "url": "",
-    "pending": true,
-    "markup": "<span class=\"halloween26-flushed-pumpkinity\">Flushed : Pumpkinity</span>"
+    "url": "https://sol-rng.fandom.com/wiki/Flushed_:_Pumpkinity",
+    "markup": "<span style=\"-webkit-background-clip:text !important;-webkit-text-fill-color:transparent;font-weight:bold;font-weight:bold;background:linear-gradient(180deg, #531400, #6b1900, #ffaa4d, #ffdc8a);font-family:'Kings'\"><b>Flushed&nbsp;: Pumpkinity</b></span>"
   },
   "Acropolis": {
     "name": "Acropolis",
-    "url": "",
-    "pending": true,
-    "markup": "<span class=\"halloween26-acropolis\">Acropolis</span>"
+    "url": "https://sol-rng.fandom.com/wiki/Acropolis",
+    "markup": "<span style=\"background:linear-gradient(to bottom, #111833, #484e89, #5d67a8, #3c4884);-webkit-background-clip:text !important;-webkit-text-fill-color:transparent;font-family:'Accanthis ADF Std';font-weight:bold;-webkit-text-stroke:.001em white\"><b>ACROPOLIS</b></span>"
   },
   "Enchanted": {
     "name": "Enchanted",
-    "url": "",
-    "pending": true,
-    "markup": "<span class=\"halloween26-enchanted\">Enchanted</span>"
+    "url": "https://sol-rng.fandom.com/wiki/Enchanted",
+    "markup": "<span style=\"background:linear-gradient(180deg, #f7a1f8 60%, #d63491 45%, #fffddb 90%);letter-spacing:0.2em;-webkit-background-clip:text !important;-webkit-text-fill-color:transparent;font-family:'Dancing Script';font-size:150%;font-weight:bold;font-style:italic;-webkit-text-stroke:.001em white\"><b>Enchanted</b></span>"
   },
   "Hanahaki": {
     "name": "Hanahaki",
-    "url": "",
-    "pending": true,
-    "markup": "<span class=\"halloween26-hanahaki\">Hanahaki</span>"
+    "url": "https://sol-rng.fandom.com/wiki/Hanahaki",
+    "markup": "<span style=\"background:linear-gradient(183deg, #680306 55%, #fda3a3 45%, #bb080c 70%);letter-spacing:0.2em;-webkit-background-clip:text !important;-webkit-text-fill-color:transparent;font-family:'Noto Serif SC';font-weight:bold;font-weight:bold\"><b>花吐き病</b></span>"
   },
   "Cauldron": {
     "name": "Cauldron",
-    "url": "",
-    "pending": true,
-    "markup": "<span class=\"halloween26-cauldron\">Cauldron</span>"
+    "url": "https://sol-rng.fandom.com/wiki/Cauldron",
+    "markup": "<span style=\"display:inline-block;font-family:'Fuzzy Bubbles';font-weight:bold\"><span class=\"GradientedTextStroke\" data-textstroke=\"cauldron\" data-gradient=\"to bottom\" data-colors=\"#e3f7bb, #caef8f, #83a045, #a9ba62, #a5ac83\" data-width=\"2\"></span><span style=\"position:relative;-webkit-background-clip:text !important;-webkit-text-fill-color:transparent;background:linear-gradient(to bottom, #97da91, #a6d88e, #b6e798, #cbf4ac, #b2e39b);-webkit-text-stroke:0.3px #5a843f\">cauldron</span></span>"
   },
   "Rejoice": {
     "name": "Rejoice",
-    "url": "",
-    "pending": true,
-    "markup": "<span class=\"halloween26-rejoice\">Rejoice</span>"
+    "url": "https://sol-rng.fandom.com/wiki/Rejoice",
+    "markup": "<span style=\"display:inline-block;font-family:'Playfair Display';filter:drop-shadow(0px 1.5px 0px rgba(10, 0, 0, 0.4))\"><span style=\"filter:drop-shadow(0px 1.5px 0px rgba(10, 0, 0, 0.4))\"><span style=\"filter:drop-shadow(0px 1.5px 0px rgba(10, 0, 0, 0.4))\"><span style=\"position:absolute;-webkit-background-clip:text !important;-webkit-text-fill-color:transparent;background:linear-gradient(to bottom, #540305 0%, #200305 30%, black 87%);transform:scale(1.5) translate(2.55em, -.1em);font-weight:bold;-webkit-text-stroke:0.005em #f76c6f\">‎ <i>]]</i> ‎</span><span style=\"position:relative;-webkit-background-clip:text !important;-webkit-text-fill-color:transparent;background:linear-gradient(to bottom, #920305 0%, #420306 30%, black 87%);-webkit-text-stroke:0.0075em #f76c6f\">r e j o i c e</span></span></span></span>"
   },
   "Harvester : Necromancy": {
     "name": "Harvester : Necromancy",
-    "url": "",
+    "url": "https://sol-rng.fandom.com/wiki/Harvester_:_Necromancy",
     "pending": true,
-    "markup": "<span class=\"halloween26-harvester-necromancy\">Harvester : Necromancy</span>"
+    "markup": "<span style=\"display:inline-block;font-family:'Merriweather';text-align:center;line-height:1.15\"><small style=\"display:block;font-size:.42em;letter-spacing:.24em;color:#9fc7aa\">HARVESTER</small><span style=\"display:block;background:linear-gradient(180deg,#b9efc8 10%,#539677 45%,#054020 72%,#91bfa2);background-clip:text;-webkit-background-clip:text!important;-webkit-text-fill-color:transparent;-webkit-text-stroke:.01em #7daf94\">Necromancy</span></span>"
   },
   "Embercrypt": {
     "name": "Embercrypt",
-    "url": "",
-    "pending": true,
-    "markup": "<span class=\"halloween26-embercrypt\">Embercrypt</span>"
+    "url": "https://sol-rng.fandom.com/wiki/Embercrypt",
+    "markup": "<span style=\"background:linear-gradient(180deg, #db5e3e 50%, #ff956e 30%, #6a0b06 70%);-webkit-background-clip:text !important;-webkit-text-fill-color:transparent;font-family:'Playfair Display';font-weight:bold;font-weight:bold;-webkit-text-stroke:.01em black\"><b>EMBERCRYPT</b></span>"
   },
   "Cruor": {
     "name": "Cruor",
-    "url": "",
+    "url": "https://sol-rng.fandom.com/wiki/Cruor",
     "pending": true,
-    "markup": "<span class=\"halloween26-cruor\">Cruor</span>"
+    "markup": "<span style=\"display:inline-block;font-family:'Playfair Display';font-weight:700;letter-spacing:.12em;background:linear-gradient(180deg,#e5ce91 5%,#a60a1c 42%,#3f0711 70%,#d58282);background-clip:text;-webkit-background-clip:text!important;-webkit-text-fill-color:transparent;-webkit-text-stroke:.01em #d28b80\">CRUOR</span>"
   },
   "Lost Soul : Styx": {
     "name": "Lost Soul : Styx",
-    "url": "",
-    "pending": true,
-    "markup": "<span class=\"halloween26-lost-soul-styx\">Lost Soul : Styx</span>"
+    "url": "https://sol-rng.fandom.com/wiki/Lost_Soul_:_Styx",
+    "markup": "<span style=\"background:linear-gradient(to bottom, #001b52, #183665, #5687f3, #7ea9ff, #ffffff, #ffffff);-webkit-background-clip:text !important;-webkit-text-fill-color:transparent;font-family:'Tangerine';font-size:150%;letter-spacing:2px;-webkit-text-stroke:.2px #103854\">Styx</span>"
   },
   "Gaze": {
     "name": "Gaze",
-    "url": "",
+    "url": "https://sol-rng.fandom.com/wiki/Gaze",
     "pending": true,
-    "markup": "<span class=\"halloween26-gaze\">Gaze</span>"
+    "markup": "<span style=\"display:inline-block;font-family:'Grenze Gotisch';font-weight:700;font-size:120%;letter-spacing:.16em;background:linear-gradient(180deg,#f2d27a 10%,#e6c9ed 35%,#c9384f 60%,#580820 85%);background-clip:text;-webkit-background-clip:text!important;-webkit-text-fill-color:transparent;-webkit-text-stroke:.01em #f0b7c6\">GAZE</span>"
   },
   "Nightshade": {
     "name": "Nightshade",
     "url": "",
     "pending": true,
     "markup": "<span class=\"radiantforest-nightshade\">Nightshade</span>"
+  },
+  "Former Gardens": {
+    "name": "Former Gardens",
+    "url": "https://sol-rng.fandom.com/wiki/Former_Gardens",
+    "markup": "<span style=\"position:absolute;-webkit-background-clip:text !important;-webkit-text-fill-color:transparent;background:linear-gradient(184deg, #AD0C15 55%, #f1a9b2 41%);font-family:'Parisienne'\">Formerㅤㅤㅤ</span><span style=\"-webkit-background-clip:text !important;-webkit-text-fill-color:transparent;-webkit-text-stroke:.1px #c02c1b;background:linear-gradient(to bottom, #cf674c, #ffdcaa, #8b0501);font-weight:bold;position:relative;font-family:'Parisienne'\">ㅤㅤㅤGardens</span>"
+  },
+  "Deathkeeper": {
+    "name": "Deathkeeper",
+    "url": "https://sol-rng.fandom.com/wiki/Deathkeeper",
+    "pending": true,
+    "markup": "<span style=\"display:inline-block;font-family:Grenze Gotisch;font-weight:700;font-size:120%;letter-spacing:.08em;background:linear-gradient(180deg,#e7e7d5 10%,#a5c9ba 35%,#4f8677 58%,#1e393d 80%,#8fa5a4);background-clip:text;-webkit-background-clip:text!important;-webkit-text-fill-color:transparent;-webkit-text-stroke:.01em #a2c4b6\">Deathkeeper</span>"
+  },
+  "Cataclysmic": {
+    "name": "Cataclysmic",
+    "url": "https://sol-rng.fandom.com/wiki/Cataclysmic",
+    "pending": true,
+    "markup": "<span style=\"display:inline-block;font-family:Cinzel;font-weight:700;letter-spacing:.12em;background:linear-gradient(180deg,#fff3cf 8%,#f0b174 30%,#cd5438 52%,#5d1223 76%,#b75466);background-clip:text;-webkit-background-clip:text!important;-webkit-text-fill-color:transparent;-webkit-text-stroke:.01em #e0a17d\">CATACLYSMIC</span>"
   }
 }

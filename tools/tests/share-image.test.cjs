@@ -6,6 +6,7 @@ const http = require('node:http');
 const { pathToFileURL } = require('node:url');
 const { chromium } = require('playwright');
 const root = path.resolve(__dirname, '../..');
+const currentBuild = /<meta name="app-build" content="([^"]+)"/.exec(fs.readFileSync(path.join(root, 'index.html'), 'utf8'))[1];
 let server;
 let origin;
 let browser;
@@ -26,11 +27,12 @@ after(async () => { await browser?.close(); await new Promise(resolve => server.
 
 async function fixture(local = false, { fullscreenPrompt = false } = {}) {
     const context = await browser.newContext({ viewport: { width: 1440, height: 1000 }, acceptDownloads: true });
-    await context.addInitScript(prompt => {
-        localStorage.setItem('solsRollingCalculator:lastSeenChangelogVersion', prompt ? 'v2.214' : 'v2.215');
-        if (prompt) localStorage.removeItem('solsRollingCalculator:fullscreenCutscenePrompt:v2.215');
-        else localStorage.setItem('solsRollingCalculator:fullscreenCutscenePrompt:v2.215', 'true');
-    }, fullscreenPrompt);
+    await context.addInitScript(({ prompt, build }) => {
+        if (localStorage.getItem('solsRollingCalculator:lastSeenChangelogVersion') !== null) return;
+        localStorage.setItem('solsRollingCalculator:lastSeenChangelogVersion', prompt ? 'v2.215' : 'v' + build);
+        localStorage.setItem('solsRollingCalculator:fullscreenCutscenePrompt:v2.215', 'true');
+        if (!prompt) localStorage.setItem('solsRollingCalculator:fullscreenCutscenePrompt:v2.216', 'true');
+    }, { prompt: fullscreenPrompt, build: currentBuild });
     await context.route('**/*', route => {
         const url = route.request().url();
         if (url.startsWith(origin) || url.startsWith('file:') || url.startsWith('data:') || url.startsWith('blob:')) return route.continue();
@@ -199,7 +201,7 @@ test('sorted icons resolve in the simulator and generated aura layouts', async (
         assert.deepEqual(missing, []);
     } finally { await context.close(); }
 });
-test('Halloween 2026 auras have linked profiles, correct roll details and prepared sigil titles', async () => {
+test('Halloween 2026 auras have linked profiles, correct roll details and styled sigil titles', async () => {
     const event = JSON.parse(fs.readFileSync(path.join(root, 'data/events/halloween2026.json'), 'utf8'));
     const catalogue = JSON.parse(fs.readFileSync(path.join(root, 'data/auras/catalogue.json'), 'utf8'));
     const { context, page, errors, missing } = await fixture();
@@ -229,8 +231,9 @@ test('Halloween 2026 auras have linked profiles, correct roll details and prepar
             assert.equal(entry.kind, 'Event');
             assert.equal(registered[index].chance, aura.chance);
             assert.equal(registered[index].href, origin + `/auras/${entry.slug}/`);
-            assert.equal(registered[index].title.pending, true);
-            assert.match(registered[index].title.markup, /wiki-ref-halloween26-/);
+            assert.equal(Boolean(registered[index].title.pending), ['Harvester : Necromancy', 'Gaze'].includes(name));
+            assert.match(registered[index].title.markup, /style="/);
+            assert.equal(registered[index].title.source, entry.source);
             assert.ok(entry.background.includes(aura.nativeBiomes.find(biome => biome !== 'glitch')));
             await page.goto(origin + `/auras/${entry.slug}/`, { waitUntil: 'load' });
             await page.waitForFunction(() => document.documentElement.dataset.auraLayout === 'ready');
@@ -238,6 +241,10 @@ test('Halloween 2026 auras have linked profiles, correct roll details and prepar
             assert.equal(await page.locator('h1 .wiki-title__plain').isVisible(), false, name);
             assert.equal(await page.locator('h1 .wiki-title__art').isVisible(), true, name);
             assert.equal(await page.locator('.aura-fact__odds').textContent(), '1 in ' + aura.chance.toLocaleString('en-US'));
+            if (name === 'Cauldron') {
+                const offset = await page.locator('h1 .wiki-ref-GradientedTextStroke').evaluate(stroke => Math.abs(stroke.getBoundingClientRect().left - stroke.nextElementSibling.getBoundingClientRect().left));
+                assert.ok(offset < 2, 'Cauldron outline overlays its title');
+            }
             assert.match(await page.locator('.aura-event').textContent(), /Halloween 2026/);
             if (entry.wikiPending) assert.match(await page.locator('.aura-reference').textContent(), /Halloween 2026/);
             else {
@@ -249,11 +256,11 @@ test('Halloween 2026 auras have linked profiles, correct roll details and prepar
                 assert.equal(await page.locator('.aura-mutation-link[aria-current="page"]').count(), 1);
                 assert.ok(await page.locator('.aura-mutation-link').count() >= 2);
             }
-            if (name === 'Harvester : Necromancy') await page.locator('.aura-detail').screenshot({ path: path.join(root, '.cache/verification/2.215/halloween-necromancy-profile.png') });
+            if (name === 'Harvester : Necromancy') await page.locator('.aura-detail').screenshot({ path: path.join(root, '.cache/verification/2.216/halloween-necromancy-profile.png') });
         }
         await page.setViewportSize({ width: 390, height: 844 });
         assert.equal(await page.locator('.aura-detail').evaluate(element => element.scrollWidth > element.clientWidth), false);
-        await page.locator('.aura-detail').screenshot({ path: path.join(root, '.cache/verification/2.215/halloween-gaze-mobile.png') });
+        await page.locator('.aura-detail').screenshot({ path: path.join(root, '.cache/verification/2.216/halloween-gaze-mobile.png') });
         await page.goto(origin + '/auras/?event=Halloween+2026&size=18', { waitUntil: 'load' });
         await page.waitForFunction(() => document.documentElement.dataset.auraLayout === 'ready');
         const eventEntries = catalogue.filter(entry => entry.events.includes(event.label));
@@ -264,6 +271,44 @@ test('Halloween 2026 auras have linked profiles, correct roll details and prepar
         await page.goto(pathToFileURL(path.join(root, 'auras/ghost/index.html')).href, { waitUntil: 'load' });
         await page.waitForFunction(() => document.documentElement.dataset.auraLayout === 'ready');
         assert.equal(await page.locator('h1 .wiki-title--aura').count(), 1);
+        assert.deepEqual(errors, []);
+        assert.deepEqual(missing, []);
+    } finally { await context.close(); }
+});
+
+test('Halloween shop auras stay out of every roll registry and show purchase details in version 2.216', async () => {
+    const { context, page, errors, missing } = await fixture();
+    try {
+        const registry = await page.evaluate(() => ({
+            registered: AURA_REGISTRY.some(aura => /^(Cruor|Acropolis|Cataclysmic|Deathkeeper)\s+-/.test(aura.name)),
+            eventRolls: EventAuras.some(aura => /^(Cruor|Acropolis|Cataclysmic|Deathkeeper)\s+-/.test(aura.name)),
+            necromancy: [...AURA_BY_CANONICAL_NAME.get('Harvester : Necromancy').nativeBiomes],
+            version: document.getElementById('versionInfoButton').dataset.versionId
+        }));
+        assert.equal(registry.registered, false);
+        assert.equal(registry.eventRolls, false);
+        assert.deepEqual(registry.necromancy.sort(), ['glitch', 'graveyard']);
+        assert.equal(registry.version, 'v2.216');
+        await page.locator('#versionInfoButton').click();
+        const parent = page.locator('[data-changelog-panel="v2.215"]');
+        const card = parent.locator('.changelog-subupdate-card').filter({ hasText: 'v2.216' });
+        await card.click();
+        assert.equal(await card.getAttribute('aria-expanded'), 'true');
+        assert.match(await card.textContent(), /15,000 and 20,000 Hallow Points/);
+        for (const [name, price] of [['Cruor', '15,000'], ['Acropolis', '20,000'], ['Cataclysmic', '17,250'], ['Deathkeeper', '22,500']]) {
+            await page.goto(origin + `/auras/${name.toLowerCase()}/`, { waitUntil: 'load' });
+            await page.waitForFunction(() => document.documentElement.dataset.auraLayout === 'ready');
+            assert.equal(await page.locator('h1 .wiki-title--aura').count(), 1);
+            assert.match(await page.locator('.aura-fact__odds').textContent(), new RegExp(price + ' Hallow Points'));
+            assert.match(await page.locator('.aura-availability').textContent(), /Cannot be obtained by rolling/);
+            assert.equal(await page.getByRole('heading', { name: 'Where to roll', exact: true }).count(), 0);
+            assert.equal(await page.getByRole('heading', { name: 'How to obtain', exact: true }).count(), 1);
+            assert.doesNotMatch(await page.locator('.aura-detail').textContent(), /Graveyard|Glitched|Blood Rain|Any biome|Enable Halloween|1 in (333,333,333|466,666,666)/);
+            assert.doesNotMatch((await page.locator('[data-aura-description]').allTextContents()).join(''), /<\/?(?:span|b)\b/);
+            await page.setViewportSize({ width: 390, height: 844 });
+            assert.equal(await page.locator('.aura-detail').evaluate(el => el.scrollWidth > el.clientWidth), false);
+            await page.locator('.aura-detail').screenshot({ path: path.join(root, `.cache/verification/2.216/${name.toLowerCase()}-shop-mobile.png`) });
+        }
         assert.deepEqual(errors, []);
         assert.deepEqual(missing, []);
     } finally { await context.close(); }
@@ -709,7 +754,7 @@ test('Memory displays one title face for each naming-style preference', async ()
         assert.deepEqual(errors, []);
     } finally { await context.close(); }
 });
-test('the update offers fullscreen only after the changelog closes', async () => {
+test('the update offers fullscreen once after the changelog closes, including after reload', async () => {
     const { context, page, errors } = await fixture(false, { fullscreenPrompt: true });
     try {
         assert.equal(await page.locator('#versionChangelogOverlay').isVisible(), true);
@@ -721,36 +766,133 @@ test('the update offers fullscreen only after the changelog closes', async () =>
         await page.locator('#cutsceneWarningOverlay').waitFor({ state: 'hidden' });
         assert.equal(await page.evaluate(() => rollingSettingsPreference.fullscreenCutscenes), true);
         assert.equal(await page.locator('#rollingFullscreenCutscenesToggle').getAttribute('aria-checked'), 'true');
-        assert.equal(await page.evaluate(() => localStorage.getItem('solsRollingCalculator:fullscreenCutscenePrompt:v2.215')), 'true');
+        assert.equal(await page.evaluate(() => localStorage.getItem('solsRollingCalculator:fullscreenCutscenePrompt:v2.216')), 'true');
         await page.locator('#versionInfoButton').click();
         await page.locator('#versionChangelogClose').click();
         await page.locator('#versionChangelogOverlay').waitFor({ state: 'hidden' });
         assert.equal(await page.locator('#cutsceneWarningOverlay').isVisible(), false);
+        await page.reload({ waitUntil: 'load' });
+        assert.equal(await page.locator('#cutsceneWarningOverlay').isVisible(), false);
+        assert.equal(await page.evaluate(() => rollingSettingsPreference.fullscreenCutscenes), true);
         assert.deepEqual(errors, []);
     } finally { await context.close(); }
 });
-test('enabling any cutscene offers fullscreen even when other cutscenes are already on', async () => {
+test('enabling individual cutscenes does not repeat the fullscreen offer', async () => {
     const { context, page, errors } = await fixture();
     try {
         await page.evaluate(() => {
             rollingSettingsPreference.cutscenePlaybackFilters[AURA_BY_CANONICAL_NAME.get('Memory').name] = false;
             rollingSettingsPreference.cutscenePlaybackFilters[AURA_BY_CANONICAL_NAME.get('Equinox').name] = false;
+            persistRollingSettings();
             showCutscenePlaybackFilterOverlay();
         });
         await page.locator('#cutscenePlaybackFilterList button[data-aura-name="Memory"]').click();
-        await page.locator('#cutsceneWarningOverlay').waitFor({ state: 'visible' });
-        await page.locator('#cutsceneWarningDismiss').click();
-        await page.locator('#cutsceneWarningOverlay').waitFor({ state: 'hidden' });
+        assert.equal(await page.locator('#cutsceneWarningOverlay').isVisible(), false);
         assert.equal(await page.evaluate(() => rollingSettingsPreference.fullscreenCutscenes), false);
         assert.equal(await page.evaluate(() => isAuraCutscenePlaybackEnabled(AURA_BY_CANONICAL_NAME.get('Memory'))), true);
         await page.locator('#cutscenePlaybackFilterList button[data-aura-name="Equinox - 2,500,000,000"]').click();
-        await page.locator('#cutsceneWarningOverlay').waitFor({ state: 'visible' });
-        await page.locator('#cutsceneWarningConfirm').click();
-        await page.locator('#cutsceneWarningOverlay').waitFor({ state: 'hidden' });
-        assert.equal(await page.evaluate(() => rollingSettingsPreference.fullscreenCutscenes), true);
+        assert.equal(await page.locator('#cutsceneWarningOverlay').isVisible(), false);
+        await page.locator('#cutscenePlaybackFilterDisableAll').click();
+        await page.locator('#cutscenePlaybackFilterReset').click();
+        assert.equal(await page.locator('#cutsceneWarningOverlay').isVisible(), false);
+        await page.reload({ waitUntil: 'load' });
+        assert.equal(await page.locator('#cutsceneWarningOverlay').isVisible(), false);
+        assert.equal(await page.evaluate(() => rollingSettingsPreference.fullscreenCutscenes), false);
         assert.deepEqual(errors, []);
     } finally { await context.close(); }
 });
+
+test('declining the update fullscreen offer stays dismissed after enabling cutscenes and reloading', async () => {
+    const { context, page, errors } = await fixture(false, { fullscreenPrompt: true });
+    try {
+        await page.locator('#versionChangelogClose').click();
+        await page.locator('#cutsceneWarningOverlay').waitFor({ state: 'visible' });
+        await page.locator('#cutsceneWarningDismiss').click();
+        await page.locator('#cutsceneWarningOverlay').waitFor({ state: 'hidden' });
+        await page.evaluate(() => {
+            rollingSettingsPreference.cutscenePlaybackFilters[AURA_BY_CANONICAL_NAME.get('Memory').name] = false;
+            showCutscenePlaybackFilterOverlay();
+        });
+        await page.locator('#cutscenePlaybackFilterList button[data-aura-name="Memory"]').click();
+        assert.equal(await page.locator('#cutsceneWarningOverlay').isVisible(), false);
+        await page.reload({ waitUntil: 'load' });
+        assert.equal(await page.locator('#cutsceneWarningOverlay').isVisible(), false);
+        assert.equal(await page.evaluate(() => rollingSettingsPreference.fullscreenCutscenes), false);
+        assert.deepEqual(errors, []);
+    } finally { await context.close(); }
+});
+
+test('the fullscreen offer returns only when explicitly enabling fullscreen cutscenes', async () => {
+    const { context, page, errors } = await fixture();
+    try {
+        await page.evaluate(async () => {
+            await setCutsceneFullscreen(true);
+            showRollingSettingsOverlay();
+        });
+        const toggle = page.locator('#rollingFullscreenCutscenesToggle');
+        await toggle.click();
+        assert.equal(await toggle.getAttribute('aria-checked'), 'false');
+        assert.equal(await page.locator('#cutsceneWarningOverlay').isVisible(), false);
+        await toggle.click();
+        await page.locator('#cutsceneWarningOverlay').waitFor({ state: 'visible' });
+        await page.locator('#cutsceneWarningConfirm').click();
+        await page.locator('#cutsceneWarningOverlay').waitFor({ state: 'hidden' });
+        assert.equal(await toggle.getAttribute('aria-checked'), 'true');
+        await toggle.click();
+        await toggle.click();
+        await page.locator('#cutsceneWarningOverlay').waitFor({ state: 'visible' });
+        await page.locator('#cutsceneWarningDismiss').click();
+        await page.locator('#cutsceneWarningOverlay').waitFor({ state: 'hidden' });
+        assert.equal(await toggle.getAttribute('aria-checked'), 'false');
+        await page.reload({ waitUntil: 'load' });
+        assert.equal(await page.locator('#cutsceneWarningOverlay').isVisible(), false);
+        await page.evaluate(() => syncCinematicStateFromCutsceneFilters({ showEnableWarning: true }));
+        assert.equal(await page.locator('#cutsceneWarningOverlay').isVisible(), false);
+        assert.deepEqual(errors, []);
+    } finally { await context.close(); }
+});
+test('Glitch music keeps playing forward through pitch swings and restores normal playback afterward', async () => {
+    const { context, page, errors } = await fixture();
+    try {
+        await page.locator('#versionInfoButton').click();
+        await page.locator('#versionChangelogClose').click();
+        const result = await page.evaluate(async () => {
+            const music = document.getElementById('ambientMusic');
+            music.src = 'files/music/biomes/glitchBiomeMusic.mp3';
+            music.playbackRate = 1;
+            music.preservesPitch = true;
+            await music.play();
+            let seeks = 0;
+            const onSeek = () => seeks++;
+            music.addEventListener('seeking', onSeek);
+            appState.qualityPreferences.reduceGlitchEffects = false;
+            glitchPresentationEnabled = true;
+            glitchUiState.isUiGlitching = true;
+            updateGlitchAudioControls(true);
+            const samples = [{ time: music.currentTime, rate: music.playbackRate }];
+            const sampleTimer = setInterval(() => samples.push({ time: music.currentTime, rate: music.playbackRate }), 16);
+            await new Promise(resolve => setTimeout(resolve, 600));
+            clearInterval(sampleTimer);
+            const playing = !music.paused && !music.error;
+            glitchUiState.isUiGlitching = false;
+            glitchPresentationEnabled = false;
+            updateGlitchAudioControls(false);
+            const restored = { rate: music.playbackRate, pitch: music.preservesPitch, timer: glitchUiState.warbleTimeoutId };
+            music.removeEventListener('seeking', onSeek);
+            music.pause();
+            return { samples, seeks, playing, restored };
+        });
+        assert.equal(result.playing, true);
+        assert.equal(result.seeks, 0);
+        assert.ok(result.samples.at(-1).time > result.samples[0].time + 0.15);
+        assert.ok(result.samples.every((sample, index, all) => !index || sample.time >= all[index - 1].time));
+        assert.ok(result.samples.some(sample => sample.rate <= 0.5));
+        assert.ok(result.samples.some(sample => sample.rate >= 2));
+        assert.deepEqual(result.restored, { rate: 1, pitch: true, timer: null });
+        assert.deepEqual(errors, []);
+    } finally { await context.close(); }
+});
+
 test('cutscenes release their fullscreen, preserve user fullscreen, and tolerate browser denial', async () => {
     const { context, page, errors } = await fixture();
     try {
