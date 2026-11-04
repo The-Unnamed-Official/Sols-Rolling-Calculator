@@ -16,7 +16,7 @@ async function api(parameters) {
 }
 async function discoverEventPages(event, reference, request = api) {
     const existing = new Set(reference.pages.map(page => normalize(page.title)));
-    const known = new Set(event.auras.map(aura => normalize(aura.name)));
+    const known = new Set([...event.auras.map(aura => normalize(aura.name)), ...reference.pages.filter(page => page.events.includes(event.label)).map(page => normalize(page.title))]);
     const titles = new Set(event.auras.map(aura => baseName(aura.name)));
     reference.pages.filter(page => page.events.includes(event.label)).forEach(page => titles.add(page.title));
     let continuation;
@@ -30,6 +30,12 @@ async function discoverEventPages(event, reference, request = api) {
     for (const [, title] of markup.matchAll(/\[\[([^|\]]+)\|\s*\{\{Aura\|/g)) if (!existing.has(normalize(title))) titles.add(title.replace(/^:/, ''));
     const found = new Map();
     const aliases = {};
+    const canonical = name => {
+        let key = normalize(name);
+        const visited = new Set();
+        while (aliases[key] && !visited.has(key)) { visited.add(key); key = aliases[key]; }
+        return key;
+    };
     const candidates = [...titles];
     for (let offset = 0; offset < candidates.length; offset += 50) {
         const result = await request({ action: 'query', prop: 'revisions', rvprop: 'ids|content', rvslots: 'main', titles: candidates.slice(offset, offset + 50).join('|'), redirects: '1' });
@@ -38,7 +44,9 @@ async function discoverEventPages(event, reference, request = api) {
             const content = page.revisions?.[0]?.slots?.main?.content || '';
             if (page.missing || !templates(content, '(?:New)?Aura[ _]?Infobox').length) continue;
             const entry = extract(page);
-            if (!known.has(normalize(entry.title)) && !entry.events.some(label => normalize(label) === normalize(event.label))) continue;
+            const obtainment = normalize(entry.rarity + ' ' + entry.obtainment);
+            const eventCurrency = (event.auraDiscoveryTerms || []).some(term => obtainment.includes(normalize(term)));
+            if (![...known].some(name => canonical(name) === normalize(entry.title)) && !entry.events.some(label => normalize(label) === normalize(event.label)) && !eventCurrency) continue;
             entry.events = [...new Set([...entry.events, event.label])];
             if (/^(?:TBA|TBD|N\/A|Unknown|Coming soon|\?+)[.!]?$/i.test(entry.description)) {
                 entry.description = '';
@@ -47,7 +55,7 @@ async function discoverEventPages(event, reference, request = api) {
             found.set(normalize(entry.title), entry);
         }
     }
-    return { pages: [...found.values()], aliases, pending: event.auras.map(aura => baseName(aura.name)).filter(name => !found.has(normalize(name))) };
+    return { pages: [...found.values()], aliases, pending: event.auras.map(aura => baseName(aura.name)).filter(name => !found.has(canonical(name))) };
 }
 function prepareTitles(event, pages) {
     const titlePath = path.join(root, 'scripts/titles/wiki-title-data.js');

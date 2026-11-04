@@ -60,7 +60,6 @@ function createRichText({auras={},items={},biomes=[]}) {
         source=source.replace(/\[\[(?:File|Image|Category):[^\]]*\]\]/gi,'');
         source=source.replace(/\[\[([^\]|]+)(?:\|([^\]]+))?\]\]/g,(_,target,label)=>label||target);
         source=source.replace(/\[https?:\/\/\S+\s+([^\]]+)\]/g,(_,label)=>label);
-        source=source.replace(/'''([^']+)'''/g,(_,label)=>hold('<strong>'+text(label)+'</strong>')).replace(/''([^']+)''/g,(_,label)=>hold('<em>'+text(label)+'</em>'));
         source=source.replace(/<\/?([\w-]+)\b[^>]*>/g,tag=>{
             const closing=tag.startsWith('</'),name=/^<\/?([\w-]+)/.exec(tag)[1].toLowerCase();
             if(name==='br') return hold('<br>');
@@ -72,6 +71,7 @@ function createRichText({auras={},items={},biomes=[]}) {
             const classes=(/\bclass\s*=\s*(?:"([^"]*)"|'([^']*)')/i.exec(tag)?.slice(1).find(Boolean)||'').split(/\s+/).filter(name=>/^(?:sigil-|biome-sigil--|rarity-tier-)[a-z0-9-]+$/i.test(name)).join(' ');
             return hold(closing?`</${allowed}>`:`<${allowed}${classes?' class="'+escape(classes)+'"':''}${css?' style="'+escape(css)+'"':''}>`);
         });
+        source=source.replace(/'''([^']+)'''/g,(_,label)=>hold('<strong>'+text(label)+'</strong>')).replace(/''([^']+)''/g,(_,label)=>hold('<em>'+text(label)+'</em>'));
         source=source.replace(/&nbsp;|&#160;/g,' ').replace(/&amp;/g,'&').replace(/&quot;/g,'"').replace(/&#39;|&apos;/g,"'").replace(/&lt;/g,'<').replace(/&gt;/g,'>');
         const expand=html=>html.replace(/\u0000(\d+)\u0000/g,(_,index)=>tokens[index]===undefined?'':expand(tokens[index]));
         return expand(source.split(/(\u0000\d+\u0000)/).map(part=>/^\u0000\d+\u0000$/.test(part)?part:text(part.replace(/\s+/g,' '))).join(''));

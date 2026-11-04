@@ -35,6 +35,33 @@ test('event discovery includes shop, boss, quest and pass articles outside the s
     assert.equal(result.aliases['example shop aura'], 'example shop aura');
 });
 
+test('event discovery follows renamed roll auras and retains known shop articles', async () => {
+    const event = { label: 'Halloween 2026', auras: [{ name: 'Old Name - 1,000' }] };
+    const article = title => ({ title, revisions: [{ slots: { main: { content: '{{Aura Infobox|aura_rarity=Shop reward}}\n==Profile==\nAdded in Eon 1-31.' } } }] });
+    const request = async parameters => parameters.list
+        ? { query: { categorymembers: [] } }
+        : parameters.titles === 'Template:Auras'
+            ? { query: { pages: [] } }
+            : { query: { redirects: [{ from: 'Old Name', to: 'New Name' }], pages: [article('New Name'), article('Known Shop Aura')] } };
+    const result = await discoverEventPages(event, { pages: [{ title: 'Known Shop Aura', events: [event.label] }] }, request);
+    assert.deepEqual(result.pages.map(page => page.title), ['New Name', 'Known Shop Aura']);
+    assert.deepEqual(result.pending, []);
+    assert.ok(result.pages.every(page => page.events.includes(event.label)));
+});
+
+test('event shop currency discovers new auras whose profiles only mention the game update', async () => {
+    const event = { label: 'Halloween 2026', auras: [], auraDiscoveryTerms: ['Hallow Point'] };
+    const request = async parameters => parameters.list
+        ? { query: { categorymembers: [{ title: 'New Shop Aura' }] } }
+        : parameters.titles === 'Template:Auras'
+            ? { query: { pages: [] } }
+            : { query: { pages: [{ title: 'New Shop Aura', revisions: [{ slots: { main: { content: '{{Aura Infobox|aura_rarity=Bought from Jack The Pumpkin for 17,250 Hallow Points.}}\n==Profile==\nAdded in Eon 1-31.' } } }] }] } };
+    const result = await discoverEventPages(event, { pages: [] }, request);
+    assert.equal(result.pages[0].title, 'New Shop Aura');
+    assert.deepEqual(result.pages[0].events, ['Halloween 2026']);
+    assert.equal(event.auras.length, 0);
+});
+
 test('published shop and boss auras generate catalogue pages without entering the roll registry', () => {
     const root = path.resolve(__dirname, '../..');
     const builder = path.join(root, 'tools/build/build-aura-pages.cjs');

@@ -1396,7 +1396,11 @@ function initializeRollingSettingsPanel() {
     syncRollingSettingsControls();
 
     fullscreenToggle?.addEventListener('click', () => {
-        void setCutsceneFullscreen(!rollingSettingsPreference.fullscreenCutscenes);
+        if (rollingSettingsPreference.fullscreenCutscenes) {
+            void setCutsceneFullscreen(false);
+        } else {
+            cutsceneWarningManager.show({ force: true });
+        }
     });
     const reflectFullscreen = () => {
         if (cutsceneFullscreenOwned && !getFullscreenElement() && !cutsceneFullscreenTransition) {
@@ -2528,14 +2532,23 @@ function initializeIntroOverlay() {
 
 const cutsceneWarningManager = (() => {
     const storageKey = 'solsCutsceneWarningDismissed';
-    const updateKey = 'solsRollingCalculator:fullscreenCutscenePrompt:v2.215';
+    const updateKey = 'solsRollingCalculator:fullscreenCutscenePrompt:v2.216';
     let suppressed = null;
+    let promptShown = false;
     let lastFocusedElement = null;
     let backgroundOverlay = null;
     let startupPending = false;
+    let forcePending = false;
     let initialized = false;
 
     const getOverlay = () => document.getElementById('cutsceneWarningOverlay');
+
+    function hasShownPrompt() {
+        if (!promptShown) {
+            try { promptShown = localStorage.getItem(updateKey) === 'true'; } catch {}
+        }
+        return promptShown;
+    }
 
     function readSuppressedPreference() {
         if (suppressed !== null) {
@@ -2570,10 +2583,12 @@ const cutsceneWarningManager = (() => {
         isSuppressed() {
             return readSuppressedPreference();
         },
-        show() {
+        show({ force = false } = {}) {
+            if (!force && hasShownPrompt()) return false;
             const changelog = document.getElementById('versionChangelogOverlay');
             if (changelog && !changelog.hidden) {
                 startupPending = true;
+                forcePending ||= force;
                 return false;
             }
             const overlay = getOverlay();
@@ -2584,6 +2599,8 @@ const cutsceneWarningManager = (() => {
                 return true;
             }
             startupPending = false;
+            forcePending = false;
+            promptShown = true;
             try { localStorage.setItem(updateKey, 'true'); } catch {}
             lastFocusedElement = document.activeElement;
             if (!lastFocusedElement?.getClientRects().length) lastFocusedElement = versionInfoButton;
@@ -2600,7 +2617,7 @@ const cutsceneWarningManager = (() => {
         initialize() {
             if (initialized) return;
             initialized = true;
-            try { startupPending = localStorage.getItem(updateKey) !== 'true'; } catch { startupPending = true; }
+            startupPending = !hasShownPrompt();
             if (startupPending && hasAnyCutscenePlaybackEnabled()) this.show();
             getOverlay()?.addEventListener('keydown', event => {
                 if (event.key !== 'Tab') return;
@@ -2612,7 +2629,7 @@ const cutsceneWarningManager = (() => {
             });
         },
         afterChangelog() {
-            return startupPending && hasAnyCutscenePlaybackEnabled() ? this.show() : false;
+            return startupPending && hasAnyCutscenePlaybackEnabled() ? this.show({ force: forcePending }) : false;
         },
         confirm() {
             void setCutsceneFullscreen(true);
@@ -2971,6 +2988,8 @@ const glitchUiState = {
     loopTimeoutId: null,
     burstTimeoutId: null,
     warbleTimeoutId: null,
+    pitchTimeoutId: null,
+    pitchTargetRate: null,
     entryErrorTimeoutId: null,
     entryErrorFrameId: null,
     distortionNode: null,
@@ -4208,6 +4227,10 @@ function resetGlitchWarbleTimer() {
         window.clearTimeout(glitchUiState.warbleTimeoutId);
         glitchUiState.warbleTimeoutId = null;
     }
+    if (glitchUiState.pitchTimeoutId !== null) {
+        window.clearTimeout(glitchUiState.pitchTimeoutId);
+        glitchUiState.pitchTimeoutId = null;
+    }
 }
 
 function captureGlitchMediaPlayback(audioElement) {
@@ -4258,6 +4281,22 @@ function restoreGlitchMediaPlayback(audioElement, fallbackVolume) {
         targetElement.volume = clamp01(fallbackVolume);
     }
     glitchUiState.mediaPlaybackSnapshot = null;
+    glitchUiState.pitchTargetRate = null;
+}
+
+function easeGlitchPitch(bgMusic, targetRate, duration) {
+    const startPitch = Math.log2(bgMusic.playbackRate);
+    const targetPitch = Math.log2(targetRate);
+    const started = performance.now();
+    const step = () => {
+        glitchUiState.pitchTimeoutId = null;
+        if (!glitchUiState.isUiGlitching) return;
+        const progress = Math.min(1, (performance.now() - started) / duration);
+        const eased = progress * progress * (3 - 2 * progress);
+        bgMusic.playbackRate = 2 ** (startPitch + (targetPitch - startPitch) * eased);
+        if (progress < 1) glitchUiState.pitchTimeoutId = window.setTimeout(step, 4);
+    };
+    step();
 }
 
 function scheduleGlitchWarbleCycle(bgMusic, chain) {
@@ -4266,42 +4305,34 @@ function scheduleGlitchWarbleCycle(bgMusic, chain) {
     resetGlitchWarbleTimer();
 
     const reducedGlitch = Boolean(appState.qualityPreferences?.reduceGlitchEffects);
-    const baseGain = chain?.baseGain ?? computeEffectiveBackgroundVolume(bgMusic);
-    const playbackRates = reducedGlitch
-        ? [0.9, 0.96, 1.04, 1.1]
-        : [0.58, 0.72, 0.86, 1.08, 1.24, 1.48];
-    const nextPlaybackRate = playbackRates[Math.floor(Math.random() * playbackRates.length)];
+    const baseGain = computeEffectiveBackgroundVolume(bgMusic);
+    const cycleDuration = Math.floor(reducedGlitch ? randomDecimalBetween(55, 85) : randomDecimalBetween(24, 40));
+    const previousTarget = glitchUiState.pitchTargetRate ?? bgMusic.playbackRate;
+    // Alternate below and above the original pitch; keep the track moving forward.
+    const pitchSteps = reducedGlitch
+        ? (previousTarget >= 1 ? [-4, -2] : [2, 4])
+        : (previousTarget >= 1 ? [-24, -17, -12] : [12, 17, 24]);
+    const semitones = pitchSteps[Math.floor(Math.random() * pitchSteps.length)];
 
     captureGlitchMediaPlayback(bgMusic);
     setGlitchPitchPreservation(bgMusic, false);
-    bgMusic.playbackRate = nextPlaybackRate;
-
-    if (!reducedGlitch && !bgMusic.paused && bgMusic.readyState >= 1 && Math.random() < 0.38) {
-        try {
-            bgMusic.currentTime = Math.max(0, bgMusic.currentTime - randomDecimalBetween(0.025, 0.11));
-        } catch (error) {}
-    }
+    glitchUiState.pitchTargetRate = 2 ** (semitones / 12);
+    easeGlitchPitch(bgMusic, glitchUiState.pitchTargetRate, cycleDuration * 0.85);
 
     if (chain?.context && chain.gainNode) {
         const context = chain.context;
         const now = context.currentTime;
-        const cutDuration = reducedGlitch
-            ? randomDecimalBetween(0.12, 0.28)
-            : randomDecimalBetween(0.035, 0.14);
-        const cutMultiplier = reducedGlitch
-            ? randomDecimalBetween(0.64, 0.88)
-            : randomDecimalBetween(0.06, 0.52);
         const gainParam = chain.gainNode.gain;
 
         if (typeof gainParam.cancelScheduledValues === 'function') {
             gainParam.cancelScheduledValues(now);
         }
-        if (typeof gainParam.setValueAtTime === 'function') {
+        if (typeof gainParam.setTargetAtTime === 'function') {
+            gainParam.setTargetAtTime(baseGain, now, 0.008);
+        } else if (typeof gainParam.setValueAtTime === 'function') {
             gainParam.setValueAtTime(baseGain, now);
-            gainParam.linearRampToValueAtTime(baseGain * cutMultiplier, now + cutDuration);
-            gainParam.linearRampToValueAtTime(baseGain, now + cutDuration + (reducedGlitch ? 0.16 : 0.055));
         } else {
-            gainParam.value = baseGain * cutMultiplier;
+            gainParam.value = baseGain;
         }
 
         const filter = glitchUiState.distortionNode;
@@ -4312,14 +4343,14 @@ function scheduleGlitchWarbleCycle(bgMusic, chain) {
             const targetQ = reducedGlitch
                 ? randomDecimalBetween(0.7, 2.6)
                 : randomDecimalBetween(2.5, 10);
-            filter.frequency.setValueAtTime(targetFrequency, now);
-            filter.Q.setValueAtTime(targetQ, now);
+            filter.frequency.setTargetAtTime(targetFrequency, now, 0.006);
+            filter.Q.setTargetAtTime(targetQ, now, 0.006);
         }
 
         const panner = glitchUiState.stereoPannerNode;
         if (panner?.pan) {
             const panRange = reducedGlitch ? 0.24 : 0.88;
-            panner.pan.setValueAtTime(randomDecimalBetween(-panRange, panRange), now);
+            panner.pan.setTargetAtTime(randomDecimalBetween(-panRange, panRange), now, 0.006);
         }
 
         const ditherGain = glitchUiState.ditherGainNode?.gain;
@@ -4331,16 +4362,13 @@ function scheduleGlitchWarbleCycle(bgMusic, chain) {
             ditherGain.setTargetAtTime(ditherLevel, now, reducedGlitch ? 0.08 : 0.012);
         }
     } else {
-        const fallbackCut = reducedGlitch
-            ? randomDecimalBetween(0.7, 0.92)
-            : randomDecimalBetween(0.22, 0.76);
-        bgMusic.volume = clamp01(baseGain * fallbackCut);
+        bgMusic.volume = clamp01(baseGain);
     }
 
     glitchUiState.warbleTimeoutId = window.setTimeout(() => {
         glitchUiState.warbleTimeoutId = null;
         scheduleGlitchWarbleCycle(bgMusic, chain);
-    }, Math.floor(reducedGlitch ? randomDecimalBetween(420, 760) : randomDecimalBetween(90, 250)));
+    }, cycleDuration);
 }
 
 const GLITCH_BURST_TRIGGER_CHANCE = 0.99;

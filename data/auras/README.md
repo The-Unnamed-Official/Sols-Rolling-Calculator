@@ -35,12 +35,24 @@ Simulator auras missing from the wiki snapshot receive profiles with their
 confirmed rarity, biome restrictions, and event details. Descriptions and media
 remain pending until references are available. Rebuilding after a snapshot refresh
 automatically replaces those temporary profiles with the wiki records.
-Halloween 2026 title placeholders are marked `pending` in
+Halloween 2026 profiles and title templates were refreshed on November 4, 2026.
+Cruor and Acropolis are shop purchases from Jack The Pumpkin for 15,000 and
+20,000 Hallow Points. Cataclysmic costs 17,250 and Deathkeeper costs 22,500.
+All four remain in the directory and are excluded from
+`data/events/halloween2026.json`, which contains only rollable auras.
+Its `auraDiscoveryTerms` currency markers let the event refresh find shop
+articles that mention Eon 1-31 without spelling out the event's name.
+Former Gardens uses its corrected name, and Harvester : Necromancy rolls in
+Graveyard or Glitched.
+
+The ten published Halloween title designs are stored in
 `data/references/wiki-title-overrides.json` and the compiled
-`scripts/titles/wiki-title-data.js`. Each has its own `wiki-ref-halloween26-` class
-for the future sigil artwork. Replace the override markup and clear `pending`
-when importing the actual artwork through the title builder; pages, roll results,
-the changelog, and image exports share the same title registry.
+`scripts/titles/wiki-title-data.js`. Cruor, Gaze, Harvester : Necromancy,
+Cataclysmic, and Deathkeeper still
+return plain text from Template:Aura, so they use local themed fallback styles
+marked `pending` until the wiki publishes artwork. Replace those overrides and
+clear `pending` when importing the actual artwork. Pages, roll results, the
+changelog, and image exports share the same title registry, including shop auras.
 
 The twelve Eon 1-30 title templates were refreshed from
 [Template:Aura](https://sol-rng.fandom.com/wiki/Template:Aura) on October 19,

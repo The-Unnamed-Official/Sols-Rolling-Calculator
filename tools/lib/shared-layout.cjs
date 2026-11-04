@@ -18,8 +18,8 @@ function qualityPreferences(home = false) {
 function buildHomeLayout() {
     const file = path.join(root, 'index.html');
     const source = fs.readFileSync(file, 'utf8');
-    let result = source.replace(/<header class="surface interface-header masthead-console"[^>]*>[\s\S]*?<\/header>/, header('', true))
-        .replace(/<div id="qualityPreferencesOverlay"[\s\S]*?(?=\s*<div id="rollingSettingsOverlay")/, qualityPreferences(true));
+    let result = source.replace(/<header class="surface interface-header masthead-console"[^>]*>[\s\S]*?<\/header>/, header('', true).trimEnd())
+        .replace(/<div id="qualityPreferencesOverlay"[\s\S]*?(?=\s*<div id="rollingSettingsOverlay")/, qualityPreferences(true).trimEnd());
     if (!result.includes('scripts/auras/aura-directory-preferences.js')) result = result.replace('</head>', '    <script src="scripts/auras/aura-directory-preferences.js" defer></script>\n</head>');
     if (source !== result) fs.writeFileSync(file, result);
 }

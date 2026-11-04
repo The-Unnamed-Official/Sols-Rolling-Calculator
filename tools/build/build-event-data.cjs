@@ -10,7 +10,7 @@ const events = fs.readdirSync(directory).filter(file => file.endsWith('.json')).
         || !['default', 'valentine', 'april-fools', 'summer', 'halloween', 'winter', 'easter'].includes(event.theme)
         || !/^sigil-[\w-]+$/.test(event.sigilClass)
         || (event.status === 'upcoming' && event.defaultEnabled)) throw new Error(`Invalid event metadata: ${file}`);
-    for (const field of ['biomes', 'auraBiomes', 'additionalAuraNames']) {
+    for (const field of ['biomes', 'auraBiomes', 'additionalAuraNames', 'auraDiscoveryTerms']) {
         if (event[field] !== undefined && (!Array.isArray(event[field]) || event[field].some(value => typeof value !== 'string' || !value.trim()))) throw new Error(`Invalid ${field}: ${file}`);
     }
     const names = new Set();

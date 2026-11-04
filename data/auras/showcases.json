@@ -4989,5 +4989,82 @@
     "source": "https://sol-rng.fandom.com/wiki/File:ArchangelOpening.mp4",
     "mime": "video/mp4",
     "timestamp": "2025-11-26T12:36:04Z"
+  },
+  "GazeAbility1.mp4": {
+    "file": "GazeAbility1.mp4",
+    "url": "https://static.wikia.nocookie.net/sol-rng/images/b/b1/GazeAbility1.mp4/revision/latest?cb=20261101164614",
+    "source": "https://sol-rng.fandom.com/wiki/File:GazeAbility1.mp4",
+    "mime": "video/mp4",
+    "timestamp": "2026-11-01T16:46:14Z"
+  },
+  "GazeAbility2.mp4": {
+    "file": "GazeAbility2.mp4",
+    "url": "https://static.wikia.nocookie.net/sol-rng/images/f/f5/GazeAbility2.mp4/revision/latest?cb=20261101164652",
+    "source": "https://sol-rng.fandom.com/wiki/File:GazeAbility2.mp4",
+    "mime": "video/mp4",
+    "timestamp": "2026-11-01T16:46:52Z"
+  },
+  "GazeAbility3.mp4": {
+    "file": "GazeAbility3.mp4",
+    "url": "https://static.wikia.nocookie.net/sol-rng/images/2/2b/GazeAbility3.mp4/revision/latest?cb=20261101164722",
+    "source": "https://sol-rng.fandom.com/wiki/File:GazeAbility3.mp4",
+    "mime": "video/mp4",
+    "timestamp": "2026-11-01T16:47:22Z"
+  },
+  "GazeAbility3 (Behold.).mp4": {
+    "file": "GazeAbility3 (Behold.).mp4",
+    "url": "https://static.wikia.nocookie.net/sol-rng/images/9/91/GazeAbility3_%28Behold.%29.mp4/revision/latest?cb=20261101164741",
+    "source": "https://sol-rng.fandom.com/wiki/File:GazeAbility3_(Behold.).mp4",
+    "mime": "video/mp4",
+    "timestamp": "2026-11-01T16:47:41Z"
+  },
+  "GazeCutscene.mp4": {
+    "file": "GazeCutscene.mp4",
+    "url": "https://static.wikia.nocookie.net/sol-rng/images/7/79/GazeCutscene.mp4/revision/latest?cb=20261101165411",
+    "source": "https://sol-rng.fandom.com/wiki/File:GazeCutscene.mp4",
+    "mime": "video/mp4",
+    "timestamp": "2026-11-01T16:54:11Z"
+  },
+  "RejoiceCutscene.mp4": {
+    "file": "RejoiceCutscene.mp4",
+    "url": "https://static.wikia.nocookie.net/sol-rng/images/c/ce/RejoiceCutscene.mp4/revision/latest?cb=20261102101359",
+    "source": "https://sol-rng.fandom.com/wiki/File:RejoiceCutscene.mp4",
+    "mime": "video/mp4",
+    "timestamp": "2026-11-02T10:13:59Z"
+  },
+  "GhostCutscene.mp4": {
+    "file": "GhostCutscene.mp4",
+    "url": "https://static.wikia.nocookie.net/sol-rng/images/8/8b/GhostCutscene.mp4/revision/latest?cb=20261102102706",
+    "source": "https://sol-rng.fandom.com/wiki/File:GhostCutscene.mp4",
+    "mime": "video/mp4",
+    "timestamp": "2026-11-02T10:27:06Z"
+  },
+  "EmbercryptCutscene.mp4": {
+    "file": "EmbercryptCutscene.mp4",
+    "url": "https://static.wikia.nocookie.net/sol-rng/images/f/f3/EmbercryptCutscene.mp4/revision/latest?cb=20261103081104",
+    "source": "https://sol-rng.fandom.com/wiki/File:EmbercryptCutscene.mp4",
+    "mime": "video/mp4",
+    "timestamp": "2026-11-03T08:11:04Z"
+  },
+  "LostSoulStyxCutscene.mp4": {
+    "file": "LostSoulStyxCutscene.mp4",
+    "url": "https://static.wikia.nocookie.net/sol-rng/images/1/18/LostSoulStyxCutscene.mp4/revision/latest?cb=20261103081459",
+    "source": "https://sol-rng.fandom.com/wiki/File:LostSoulStyxCutscene.mp4",
+    "mime": "video/mp4",
+    "timestamp": "2026-11-03T08:14:59Z"
+  },
+  "EnchantedCutscene.mp4": {
+    "file": "EnchantedCutscene.mp4",
+    "url": "https://static.wikia.nocookie.net/sol-rng/images/4/4a/EnchantedCutscene.mp4/revision/latest?cb=20261103081806",
+    "source": "https://sol-rng.fandom.com/wiki/File:EnchantedCutscene.mp4",
+    "mime": "video/mp4",
+    "timestamp": "2026-11-03T08:18:06Z"
+  },
+  "PumpkinityCutscene.mp4": {
+    "file": "PumpkinityCutscene.mp4",
+    "url": "https://static.wikia.nocookie.net/sol-rng/images/4/4e/PumpkinityCutscene.mp4/revision/latest?cb=20261103082040",
+    "source": "https://sol-rng.fandom.com/wiki/File:PumpkinityCutscene.mp4",
+    "mime": "video/mp4",
+    "timestamp": "2026-11-03T08:20:40Z"
   }
 }

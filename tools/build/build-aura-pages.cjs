@@ -118,8 +118,12 @@ const entries = pages.map(page => {
     const event = aura && eventForAura.get(normalize(aura.name));
     if (event?.status === 'active') {
         const required = [...(aura.nativeBiomes || [])].sort((a, b) => Number(a === 'glitch') - Number(b === 'glitch')).map(biomeLabel).join(' / ');
-        page = { ...page, rarity: odds(aura.chance), nativeRarity: '', required, exclusive: Boolean(required),
+        page = { ...page, tier: page.tier || 'Event', rarity: odds(aura.chance), nativeRarity: '', required, exclusive: Boolean(required),
             events: [...new Set([...page.events, event.label])], obtainment: page.obtainment || `Enable ${event.label} in the simulator` };
+    }
+    // Shop pages can retain obsolete roll-biome fields in their wiki infobox.
+    if (!aura && /^(?:Bought|Purchased)\s+from\b/i.test(page.rarity)) {
+        page = { ...page, required: '', nativeRarity: '', exclusive: false };
     }
     const nighttimeNative = Boolean(aura?.breakthroughs?.night || aura?.nativeBiomes?.includes('night'));
     const simulatorNativeBiome = Object.keys(aura?.breakthroughs || {}).find(biome => ['lostForest', 'radiantForest', 'edict'].includes(biome));
@@ -138,7 +142,8 @@ const entries = pages.map(page => {
     const biomes = [...new Set([...nativeBiomes, page.required].filter(biome => biome && !/effect|N\/A/i.test(biome)).flatMap(biome => biome.split(/\s+or\s+|\s*\/\s*/i)).map(biome => biome.replace(/\s*\(collection\)/i, '').replace(/^Glitched$/i, 'Glitch').replace(/^The Limbo$/i, 'Limbo').trim()))];
     const tierKey = tierContext.AuraTiers.resolve(page.tier, rarity);
     const effectSource = /\bfrom (.+)/i.exec(page.rarity)?.[1];
-    const obtainment = page.obtainment || effectSource || (aura?.requiresDunePreset ? 'Potion of the Dune' : aura?.requiresBloodPreset ? 'Red Moon Potion' : '') || (/craft/i.test(page.rarity) ? "Crafted at Jake’s Workshop" : '');
+    const purchase = /^(?:Bought|Purchased)\s+from\b/i.test(page.rarity) ? page.rarity : '';
+    const obtainment = page.obtainment || purchase || effectSource || (aura?.requiresDunePreset ? 'Potion of the Dune' : aura?.requiresBloodPreset ? 'Red Moon Potion' : '') || (/craft/i.test(page.rarity) ? "Crafted at Jake’s Workshop" : '');
     const location = [obtainment, page.required].filter(Boolean).join(' · ') || (nativeBiomes.length ? nativeBiomes.join(' / ') : /unobtainable|unreleased|removed/i.test(page.rarity + ' ' + page.status) ? 'Not currently rollable' : 'Any biome');
     const kind = /craft/i.test(page.rarity) ? 'Crafted' : /NPC/i.test(page.rarity) ? 'NPC exclusive'
         : /developer|dev exclusive/i.test(page.rarity) || page.categories.includes('Developer') ? 'Developer exclusive'
@@ -157,7 +162,7 @@ for (const [alias, target] of Object.entries(reference.aliases)) {
 const collator = new Intl.Collator('en', { sensitivity: 'base', numeric: true, ignorePunctuation: true });
 entries.sort((a, b) => tierContext.AuraTiers.sortGroup(a.tierKey, a.kind) - tierContext.AuraTiers.sortGroup(b.tierKey, b.kind) || (a.rarityValue ?? Infinity) - (b.rarityValue ?? Infinity) || collator.compare(a.name, b.name));
 const entryByTitle=new Map(entries.map(entry=>[wikiKey(entry.title),entry]));
-const memberFor=title=>entryByTitle.get(canonicalTitle(wikiKey(title)));
+const memberFor=title=>entryByTitle.get(canonicalTitle(wikiKey(title))) || entryByTitle.get(canonicalTitle(wikiKey(title).replace(/^:|:$/g, '')));
 const parents=new Map();
 for(const entry of entries) {
     const profile=history.profiles[entry.title] || {};
@@ -267,8 +272,10 @@ for (const entry of entries) {
         where = entry.exclusive ? `Only in ${entry.required}. This aura cannot be rolled outside its exclusive biome.`
             : entry.nativeRarity ? `Native to ${entry.required}. Native odds: ${entry.nativeRarity}. It can also be rolled outside its native biome through breakthrough.` : entry.required;
     }
-    const rarityLabel = entry.exclusive && denominator(entry.nativeRarity) ? 'Exclusive biome rarity' : entry.events.length && /unobtainable/i.test(entry.rarity) && entry.simulatorChance ? 'Event rarity' : 'Rarity';
-    const status = /unobtainable|unreleased|removed/i.test(entry.rarity + ' ' + entry.status) && !entry.exclusive ? `<p class="aura-availability">${escape(entry.rarity)}${entry.events.length && entry.simulatorName ? '. Available through its event settings in the simulator.' : ''}</p>` : '';
+    const purchaseOnly = !entry.simulatorName && /^(?:Bought|Purchased)\s+from\b/i.test(entry.rarity);
+    const rarityLabel = purchaseOnly ? 'Shop purchase' : entry.exclusive && denominator(entry.nativeRarity) ? 'Exclusive biome rarity' : entry.events.length && /unobtainable/i.test(entry.rarity) && entry.simulatorChance ? 'Event rarity' : 'Rarity';
+    const status = purchaseOnly ? '<p class="aura-availability">Shop aura. Cannot be obtained by rolling.</p>'
+        : /unobtainable|unreleased|removed/i.test(entry.rarity + ' ' + entry.status) && !entry.exclusive ? `<p class="aura-availability">${escape(entry.rarity)}${entry.events.length && entry.simulatorName ? '. Available through its event settings in the simulator.' : ''}</p>` : '';
     const currentContent = `<div class="aura-detail__body">
             <section class="changelog-release-group aura-description" aria-labelledby="description-title"><h2 id="description-title">${descriptionTruncated ? 'Description excerpt' : 'Description'}</h2>${descriptionText ? `<blockquote id="aura-description-text" data-aura-description>${rich.description(currentVersion || {description:descriptionText})}${descriptionTruncated ? '…' : ''}</blockquote><button class="interface-button interface-button--ghost aura-description__toggle" type="button" data-description-toggle aria-controls="aura-description-text" aria-expanded="false" hidden>Show More</button>` : `<p>${entry.wikiPending ? 'Aura description not available yet.' : 'The wiki does not currently record an aura description.'}</p>`}${entry.wikiPending ? `<p>Wiki details are still in progress. Roll and collection details reflect ${escape(entry.detailsContext || 'Eon 1-30')}.</p>` : `<a class="aura-source-link" href="${escape(entry.source)}${currentVersion?'?oldid='+currentVersion.revisionId:''}" target="_blank" rel="noopener">${descriptionTruncated ? 'Read the full description' : 'View the source'} on Sol's RNG Wiki ↗</a>`}</section>
             <div class="aura-facts"><section class="changelog-release-group aura-fact"><h2>${rarityLabel}</h2><p class="aura-fact__odds">${escape(entry.rarityText)}</p>${entry.nativeRarity && !entry.exclusive ? `<p class="aura-fact__secondary">Native: ${rich.text(entry.nativeRarity)}</p>` : ''}${status}</section><section class="changelog-release-group aura-fact"><h2>${entry.obtainment ? 'How to obtain' : 'Where to roll'}</h2><p>${rich.text(where)}</p>${entry.events.length ? `<div class="aura-event"><h3>Event${entry.events.length > 1 ? 's' : ''}</h3><p>${escape(entry.events.join(' / '))}</p></div>` : ''}${entry.ignoreLuck ? '<p class="aura-fact__secondary">Fixed odds in the simulator; luck does not increase its chance.</p>' : ''}</section></div>

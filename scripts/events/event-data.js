@@ -1006,6 +1006,9 @@ globalThis.EventData = Object.freeze({
     "sigilClass": "sigil-outline-blood",
     "status": "active",
     "defaultEnabled": true,
+    "auraDiscoveryTerms": [
+      "Hallow Point"
+    ],
     "auras": [
       {
         "name": "Ghost - 10,414,606",
@@ -1016,7 +1019,7 @@ globalThis.EventData = Object.freeze({
         ]
       },
       {
-        "name": "Former Garden - 63,000,000",
+        "name": "Former Gardens - 63,000,000",
         "chance": 63000000,
         "nativeBiomes": [
           "glitch",
@@ -1029,14 +1032,6 @@ globalThis.EventData = Object.freeze({
         "nativeBiomes": [
           "glitch",
           "pumpkinMoon"
-        ]
-      },
-      {
-        "name": "Acropolis - 466,666,666",
-        "chance": 466666666,
-        "nativeBiomes": [
-          "glitch",
-          "graveyard"
         ]
       },
       {
@@ -1076,7 +1071,7 @@ globalThis.EventData = Object.freeze({
         "chance": 225000000,
         "nativeBiomes": [
           "glitch",
-          "bloodRain"
+          "graveyard"
         ]
       },
       {
@@ -1085,14 +1080,6 @@ globalThis.EventData = Object.freeze({
         "nativeBiomes": [
           "glitch",
           "pumpkinMoon"
-        ]
-      },
-      {
-        "name": "Cruor - 333,333,333",
-        "chance": 333333333,
-        "nativeBiomes": [
-          "glitch",
-          "bloodRain"
         ]
       },
       {

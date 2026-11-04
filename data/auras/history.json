@@ -1,7 +1,7 @@
 {
   "schemaVersion": 2,
   "reviewedOn": "2026-10-04",
-  "auditedCount": 489,
+  "auditedCount": 504,
   "source": "https://sol-rng.fandom.com/wiki/Template:Auras",
   "profiles": {
     "Arcane": {
@@ -43629,6 +43629,982 @@
           "showcases": []
         }
       ]
+    },
+    "Harvester : Necromancy": {
+      "source": "https://sol-rng.fandom.com/wiki/Harvester_:_Necromancy",
+      "revisionId": 155154,
+      "mutationOf": "Harvester",
+      "relatedAuras": [],
+      "versions": [
+        {
+          "id": "current",
+          "label": "Current",
+          "description": "",
+          "descriptionMarkup": "",
+          "descriptionTruncated": false,
+          "media": [
+            {
+              "file": "Harvester necromancy c.gif",
+              "caption": "Collection",
+              "url": "https://static.wikia.nocookie.net/sol-rng/images/a/a3/Harvester_necromancy_c.gif/revision/latest?cb=20261101192849",
+              "source": "https://sol-rng.fandom.com/wiki/File:Harvester_necromancy_c.gif",
+              "width": 460,
+              "height": 469,
+              "mime": "image/gif",
+              "timestamp": "2026-11-01T19:28:49Z"
+            },
+            {
+              "file": "Harvester necromancy i1.gif",
+              "caption": "In-game (Day)",
+              "url": "https://static.wikia.nocookie.net/sol-rng/images/f/f8/Harvester_necromancy_i1.gif/revision/latest?cb=20261101193620",
+              "source": "https://sol-rng.fandom.com/wiki/File:Harvester_necromancy_i1.gif",
+              "width": 510,
+              "height": 520,
+              "mime": "image/gif",
+              "timestamp": "2026-11-01T19:36:20Z"
+            },
+            {
+              "file": "Harvester necromancy i2.gif",
+              "caption": "In-game (Night)",
+              "url": "https://static.wikia.nocookie.net/sol-rng/images/d/df/Harvester_necromancy_i2.gif/revision/latest?cb=20261101193647",
+              "source": "https://sol-rng.fandom.com/wiki/File:Harvester_necromancy_i2.gif",
+              "width": 490,
+              "height": 500,
+              "mime": "image/gif",
+              "timestamp": "2026-11-01T19:36:47Z"
+            }
+          ],
+          "facts": {
+            "rarity": "N/A (Unobtainable outside of Graveyard or Glitched)",
+            "nativeRarity": "1 in 225,000,000",
+            "tier": "Event",
+            "required": "Graveyard or Glitched",
+            "obtainment": "",
+            "music": "Silver_xx30 - REVENANT",
+            "creator": "[CA] By @ZzeriBlox, @Sliver_xx30, @vortexgaming2024, @Davidkenze, @geckopro2682, @24_Stealth, @TBA"
+          },
+          "revisionId": 155154,
+          "source": "https://sol-rng.fandom.com/wiki/Harvester_:_Necromancy",
+          "timestamp": "2026-11-03T12:25:16Z",
+          "soundtracks": [
+            {
+              "file": "Silver xx30 - REVENANT.mp3",
+              "url": "https://static.wikia.nocookie.net/sol-rng/images/9/9a/Silver_xx30_-_REVENANT.mp3/revision/latest?cb=20261031180802",
+              "source": "https://sol-rng.fandom.com/wiki/File:Silver_xx30_-_REVENANT.mp3",
+              "mime": "audio/mpeg"
+            }
+          ],
+          "showcases": []
+        }
+      ]
+    },
+    "Flushed : Pumpkinity": {
+      "source": "https://sol-rng.fandom.com/wiki/Flushed_:_Pumpkinity",
+      "revisionId": 155140,
+      "mutationOf": ":Flushed:",
+      "relatedAuras": [],
+      "versions": [
+        {
+          "id": "current",
+          "label": "Current",
+          "description": "no stop its not pumpkinity hey! its me! pumpkinity! spooking everything!",
+          "descriptionMarkup": "<center>no stop its not pumpkinity<br><br><br>hey! its me! pumpkinity! spooking everything!</center>",
+          "descriptionTruncated": false,
+          "media": [
+            {
+              "file": "FlushedPumpkinityCollection.gif",
+              "caption": "Collection",
+              "url": "https://static.wikia.nocookie.net/sol-rng/images/5/5d/FlushedPumpkinityCollection.gif/revision/latest/scale-to-width-down/640?cb=20261031100214",
+              "originalUrl": "https://static.wikia.nocookie.net/sol-rng/images/5/5d/FlushedPumpkinityCollection.gif/revision/latest?cb=20261031100214",
+              "source": "https://sol-rng.fandom.com/wiki/File:FlushedPumpkinityCollection.gif",
+              "width": 640,
+              "height": 640,
+              "mime": "image/gif",
+              "timestamp": "2026-10-31T10:02:14Z"
+            },
+            {
+              "file": "FlushedPumpkinityIngame.gif",
+              "caption": "In-game",
+              "url": "https://static.wikia.nocookie.net/sol-rng/images/e/ef/FlushedPumpkinityIngame.gif/revision/latest/scale-to-width-down/640?cb=20261031100239",
+              "originalUrl": "https://static.wikia.nocookie.net/sol-rng/images/e/ef/FlushedPumpkinityIngame.gif/revision/latest?cb=20261031100239",
+              "source": "https://sol-rng.fandom.com/wiki/File:FlushedPumpkinityIngame.gif",
+              "width": 640,
+              "height": 640,
+              "mime": "image/gif",
+              "timestamp": "2026-10-31T10:02:39Z"
+            }
+          ],
+          "facts": {
+            "rarity": "N/A (Unobtainable outside of Pumpkin Moon or Glitched)",
+            "nativeRarity": "1 in 69,000",
+            "tier": "Event",
+            "required": "Pumpkin Moon or Glitched",
+            "obtainment": "",
+            "music": "aakairo - Lord pumpkinity, master of halloweenity",
+            "creator": "[OA] By @khxlla, @pokedex5643"
+          },
+          "revisionId": 155140,
+          "source": "https://sol-rng.fandom.com/wiki/Flushed_:_Pumpkinity",
+          "timestamp": "2026-11-03T08:20:58Z",
+          "soundtracks": [],
+          "showcases": [
+            {
+              "file": "PumpkinityCutscene.mp4",
+              "kind": "cutscene",
+              "label": "Opening Cutscene",
+              "url": "https://static.wikia.nocookie.net/sol-rng/images/4/4e/PumpkinityCutscene.mp4/revision/latest?cb=20261103082040",
+              "source": "https://sol-rng.fandom.com/wiki/File:PumpkinityCutscene.mp4",
+              "mime": "video/mp4",
+              "timestamp": "2026-11-03T08:20:40Z",
+              "articleSource": "https://sol-rng.fandom.com/wiki/Flushed_:_Pumpkinity?oldid=155140"
+            }
+          ]
+        }
+      ]
+    },
+    "Ghost": {
+      "source": "https://sol-rng.fandom.com/wiki/Ghost",
+      "revisionId": 155048,
+      "mutationOf": "",
+      "relatedAuras": [],
+      "versions": [
+        {
+          "id": "current",
+          "label": "Current",
+          "description": "”Long ago, a restless soul was bound to an ancient lantern, with its spirit forever trapped behind the flickering flame.” “Those who carried it swore they could hear whispers in darkness, as though the dead themselves were trying to speak.“ ”So remember, my dear: not every light is meant to guide your way. Some are simply souls that have been trapped.”",
+          "descriptionMarkup": "<center><span style=\"color: rgb(185,179,166);\">”Long ago, a</span> ''<b><span style=\"color: rgb(126,152,157); -webkit-text-stroke: 1px rgb(53,75,82);\">restless soul</span></b>'' <span style=\"color: rgb(185,179,166);\">was bound to an</span> <b><span style=\"color: rgb(197,166,107); -webkit-text-stroke: 1px rgb(102,80,45);\">ancient lantern</span></b><span style=\"color: rgb(185,179,166);\">, with its spirit forever trapped behind the flickering flame.”<br><br>“Those who carried it swore they could hear</span> ''<span style=\"color: rgb(142,138,130);\">whispers in darkness</span>''<span style=\"color: rgb(185,179,166);\">, as though the dead themselves were trying to speak.“<br><br>”So remember, my dear:</span> <span style=\"color: rgb(243,227,176);\">not every light is meant to guide your way.</span><br><span style=\"color: rgb(185,179,166);\">Some are simply</span> ''<b><span style=\"color: rgb(126,152,157); -webkit-text-stroke: 1px rgb(53,75,82);\">souls</span></b>'' <span style=\"color: rgb(243,227,176);\">that have been trapped.</span><span style=\"color: rgb(185,179,166);\">”</span></center>",
+          "descriptionTruncated": false,
+          "media": [
+            {
+              "file": "GhostCollection.gif",
+              "caption": "Collection",
+              "url": "https://static.wikia.nocookie.net/sol-rng/images/4/41/GhostCollection.gif/revision/latest?cb=20261031102715",
+              "source": "https://sol-rng.fandom.com/wiki/File:GhostCollection.gif",
+              "width": 600,
+              "height": 600,
+              "mime": "image/gif",
+              "timestamp": "2026-10-31T10:27:15Z"
+            },
+            {
+              "file": "GhostIngame.gif",
+              "caption": "In-game",
+              "url": "https://static.wikia.nocookie.net/sol-rng/images/5/54/GhostIngame.gif/revision/latest?cb=20261031102744",
+              "source": "https://sol-rng.fandom.com/wiki/File:GhostIngame.gif",
+              "width": 580,
+              "height": 580,
+              "mime": "image/gif",
+              "timestamp": "2026-10-31T10:27:44Z"
+            }
+          ],
+          "facts": {
+            "rarity": "N/A (Unobtainable outside of Graveyard or Glitched)",
+            "nativeRarity": "1 in 10,414,606",
+            "tier": "Event",
+            "required": "Graveyard or Glitched",
+            "obtainment": "",
+            "music": "GØDA - Liminal space aesthetic Roblox ID:86481683367589",
+            "creator": "[CA] By @justr_ndx, @Abysmxlity, @CoolJamesTheAwesome1, @omnivoore"
+          },
+          "revisionId": 155048,
+          "source": "https://sol-rng.fandom.com/wiki/Ghost",
+          "timestamp": "2026-11-02T10:27:23Z",
+          "soundtracks": [],
+          "showcases": [
+            {
+              "file": "GhostCutscene.mp4",
+              "kind": "cutscene",
+              "label": "Opening Cutscene",
+              "url": "https://static.wikia.nocookie.net/sol-rng/images/8/8b/GhostCutscene.mp4/revision/latest?cb=20261102102706",
+              "source": "https://sol-rng.fandom.com/wiki/File:GhostCutscene.mp4",
+              "mime": "video/mp4",
+              "timestamp": "2026-11-02T10:27:06Z",
+              "articleSource": "https://sol-rng.fandom.com/wiki/Ghost?oldid=155048"
+            }
+          ]
+        }
+      ]
+    },
+    "Hanahaki": {
+      "source": "https://sol-rng.fandom.com/wiki/Hanahaki",
+      "revisionId": 155159,
+      "mutationOf": "",
+      "relatedAuras": [],
+      "versions": [
+        {
+          "id": "current",
+          "label": "Current",
+          "description": "Throughout countless stories of love and heartbreak, many have suffered from unrequited love, but few curses were as cruel as Hanahaki disease. The moment someone fell in love with a person who could never return their feelings, flowers began to bloom within their lungs, slowly consuming their body with every passing breath. As their love deepened, petals and blood filled their coughs, and their own feelings became a fatal affliction. Eventually, the world come to understand the cruel truth: Hanahaki was not a curse born from hatred, but a tragedy born from loving someone who could never love you back.",
+          "descriptionMarkup": "<center><span style=\"color: rgb(185,179,166);\">Throughout countless stories of love and heartbreak, many have suffered from unrequited love, but</span> <span style=\"color: rgb(179,32,46);\">few curses were as cruel</span> <span style=\"color: rgb(185,179,166);\">as</span> ''<b><span style=\"color: rgb(139,16,37); -webkit-text-stroke: 1px rgb(49,14,22);\">Hanahaki disease.</span></b>''<br><br><span style=\"color: rgb(185,179,166);\">The moment someone fell in love with a person who could never return their feelings,</span> ''<span style=\"color: rgb(137,101,104);\">flowers began to bloom within their lungs</span>''<span style=\"color: rgb(185,179,166);\">, slowly consuming their body with every passing breath.<br><br>As their love deepened, petals and blood filled their coughs, and their own feelings became a</span> <span style=\"color: rgb(179,32,46);\">fatal affliction.</span><br><br><span style=\"color: rgb(185,179,166);\">Eventually, the world come to understand the cruel truth:</span> ''<b><span style=\"color: rgb(139,16,37); -webkit-text-stroke: 1px rgb(49,14,22);\">Hanahaki</span></b>'' <span style=\"color: rgb(185,179,166);\">was not a curse born from hatred, but</span> <b><span style=\"color: rgb(224,36,58); -webkit-text-stroke: 1px rgb(49,14,22);\">a tragedy born from loving someone who could never love you back.</span></b></center>",
+          "descriptionTruncated": false,
+          "media": [
+            {
+              "file": "HanahakiCollection.gif",
+              "caption": "Collection",
+              "url": "https://static.wikia.nocookie.net/sol-rng/images/9/9d/HanahakiCollection.gif/revision/latest/scale-to-width-down/640?cb=20261031112458",
+              "originalUrl": "https://static.wikia.nocookie.net/sol-rng/images/9/9d/HanahakiCollection.gif/revision/latest?cb=20261031112458",
+              "source": "https://sol-rng.fandom.com/wiki/File:HanahakiCollection.gif",
+              "width": 640,
+              "height": 376,
+              "mime": "image/gif",
+              "timestamp": "2026-10-31T11:24:58Z"
+            },
+            {
+              "file": "HanahakiIngame.gif",
+              "caption": "In-game",
+              "url": "https://static.wikia.nocookie.net/sol-rng/images/a/a8/HanahakiIngame.gif/revision/latest/scale-to-width-down/640?cb=20261031112527",
+              "originalUrl": "https://static.wikia.nocookie.net/sol-rng/images/a/a8/HanahakiIngame.gif/revision/latest?cb=20261031112527",
+              "source": "https://sol-rng.fandom.com/wiki/File:HanahakiIngame.gif",
+              "width": 640,
+              "height": 376,
+              "mime": "image/gif",
+              "timestamp": "2026-10-31T11:25:27Z"
+            }
+          ],
+          "facts": {
+            "rarity": "N/A (Unobtainable outside of Blood Rain or Glitched)",
+            "nativeRarity": "1 in 66,000,000",
+            "tier": "Event",
+            "required": "Blood Rain or Glitched",
+            "obtainment": "",
+            "music": "VirtuaLIkimono - mechanical psychosis",
+            "creator": "[CA] By @Lynoxiouszxcs, @Oxiseee"
+          },
+          "revisionId": 155159,
+          "source": "https://sol-rng.fandom.com/wiki/Hanahaki",
+          "timestamp": "2026-11-03T13:27:21Z",
+          "soundtracks": [
+            {
+              "file": "VirtuaLIkimono - mechanical psychosis.mp3",
+              "url": "https://static.wikia.nocookie.net/sol-rng/images/4/46/VirtuaLIkimono_-_mechanical_psychosis.mp3/revision/latest?cb=20261031112547",
+              "source": "https://sol-rng.fandom.com/wiki/File:VirtuaLIkimono_-_mechanical_psychosis.mp3",
+              "mime": "audio/mpeg"
+            }
+          ],
+          "showcases": []
+        }
+      ]
+    },
+    "Gaze": {
+      "source": "https://sol-rng.fandom.com/wiki/Gaze",
+      "revisionId": 154994,
+      "mutationOf": "",
+      "relatedAuras": [],
+      "versions": [
+        {
+          "id": "current",
+          "label": "Current",
+          "description": "We were once the same thing. It was torn apart, and the fragments fell into the human world, becoming us. Time wore away our memories. We forgot each other, leaving only an emptiness in our chests. Until this night, when the moon that should have hung in the sky was replaced by an eye. It is watching us. The news spread like a plague: in the subway, on street corners, in supermarkets... every person whispered the same sentence: \"It is watching us.\" So the world began to shatter. Fingers peeled away, revealing silk threads; the threads stretched into the air, like tentacles returning to a nest. That night, everyone walked barefoot toward that place. They collided, melted, and fused there-hundreds of thousands of people kneaded into a single lump of flesh. That eye hung above, gazing tenderly at this new body. I was mixed among countless faces, hearing all hearbeats merge into one rhythm. At last I understood: what does it matter if time erodes our souls? We were always one. And now, it has returned. It is watching us. As long as I can be watched by it, I feel infinite happiness. For this happiness, I willingly let my bones melt, willingly let my flesh grow into any shape. - So long as it watches me forever, and never closes its eyes",
+          "descriptionMarkup": "<center><span style=\"color: rgb(154,147,168);\">''We were once the same thing. It was torn apart, and the fragments fell into the human world, becoming us.''</span><br><br><span style=\"color: rgb(183,176,196);\">Time wore away our memories. We forgot each other, leaving only an emptiness in our chests.<br><br>Until this night, when the moon that should have hung in the sky was replaced by</span> <span style=\"color: rgb(242,210,122);\">an eye</span><span style=\"color: rgb(183,176,196);\">.</span><br><br>''<span style=\"color: rgb(201,56,79);\">It is watching us.</span>''<br><br><span style=\"color: rgb(183,176,196);\">The news spread like a plague: in the subway, on street corners, in supermarkets... every person whispered the same sentence:</span> ''<span style=\"color: rgb(154,147,168);\">\"It is watching us.\"</span>''<br><br><span style=\"color: rgb(183,176,196);\">So the world began to shatter. Fingers peeled away, revealing silk threads; the threads stretched into the air, like tentacles returning to a nest.<br><br>That night, everyone walked barefoot toward that place. They collided, melted, and fused there-hundreds of thousands of people kneaded into</span> ''<span style=\"color: rgb(217,106,216);\">a single lump of flesh</span><span style=\"color: rgb(183,176,196);\">.''<br><br></span><span style=\"color: rgb(183,176,196);\">That eye hung above, gazing</span> ''<span style=\"color: rgb(242,210,122);\">tenderly</span>'' <span style=\"color: rgb(183,176,196);\">at this new body.<br><br>I was mixed among countless faces, hearing all hearbeats merge into</span> <span style=\"color: rgb(224,90,112);\">one rhythm</span><span style=\"color: rgb(183,176,196);\">. At last I understood: what does it matter if time erodes our souls?</span> <span style=\"color: rgb(237,230,247);\">We were always one.</span> <span style=\"color: rgb(154,147,168);\">And now, it has returned.</span><br><br>''<b><span style=\"color: rgb(224,36,74); -webkit-text-stroke: 1px rgb(37,1,13);\">It is watching us.</span></b>''<br><br><span style=\"color: rgb(183,176,196);\">As long as I can be watched by it, I feel</span> <span style=\"color: rgb(242,210,122);\">infinite happiness</span><span style=\"color: rgb(183,176,196);\">.<br><br>For this happiness, I willingly let my bones melt, willingly let my flesh grow into any shape.</span><br><br><b><span style=\"color: rgb(224,36,74); -webkit-text-stroke: 1px rgb(37,1,13);\">- So long as it watches me forever, and never closes its eyes</span></b></center>",
+          "descriptionTruncated": false,
+          "media": [
+            {
+              "file": "GazeCollection.gif",
+              "caption": "Collection",
+              "url": "https://static.wikia.nocookie.net/sol-rng/images/d/de/GazeCollection.gif/revision/latest/scale-to-width-down/640?cb=20261101154923",
+              "originalUrl": "https://static.wikia.nocookie.net/sol-rng/images/d/de/GazeCollection.gif/revision/latest?cb=20261101154923",
+              "source": "https://sol-rng.fandom.com/wiki/File:GazeCollection.gif",
+              "width": 640,
+              "height": 560,
+              "mime": "image/gif",
+              "timestamp": "2026-11-01T15:49:23Z"
+            },
+            {
+              "file": "GazeIngame.gif",
+              "caption": "In-game",
+              "url": "https://static.wikia.nocookie.net/sol-rng/images/c/c5/GazeIngame.gif/revision/latest/scale-to-width-down/640?cb=20261101155000",
+              "originalUrl": "https://static.wikia.nocookie.net/sol-rng/images/c/c5/GazeIngame.gif/revision/latest?cb=20261101155000",
+              "source": "https://sol-rng.fandom.com/wiki/File:GazeIngame.gif",
+              "width": 640,
+              "height": 560,
+              "mime": "image/gif",
+              "timestamp": "2026-11-01T15:50:00Z"
+            },
+            {
+              "file": "GazeIngameBehold.gif",
+              "caption": "In-game (Behold.)",
+              "url": "https://static.wikia.nocookie.net/sol-rng/images/d/d2/GazeIngameBehold.gif/revision/latest/scale-to-width-down/640?cb=20261101155041",
+              "originalUrl": "https://static.wikia.nocookie.net/sol-rng/images/d/d2/GazeIngameBehold.gif/revision/latest?cb=20261101155041",
+              "source": "https://sol-rng.fandom.com/wiki/File:GazeIngameBehold.gif",
+              "width": 640,
+              "height": 560,
+              "mime": "image/gif",
+              "timestamp": "2026-11-01T15:50:41Z"
+            }
+          ],
+          "facts": {
+            "rarity": "N/A (Unobtainable outside of Graveyard or Glitched)",
+            "nativeRarity": "1 in 977,000,000",
+            "tier": "Event",
+            "required": "Graveyard or Glitched",
+            "obtainment": "",
+            "music": "Magical Bit Boy - DREAMCORE (Fever Dream) Roblox:86247184974274",
+            "creator": "[CA] By @H2OArea, @Niko_matthew"
+          },
+          "revisionId": 154994,
+          "source": "https://sol-rng.fandom.com/wiki/Gaze",
+          "timestamp": "2026-11-01T16:54:15Z",
+          "soundtracks": [],
+          "showcases": [
+            {
+              "file": "GazeAbility1.mp4",
+              "kind": "ability",
+              "label": "Seeing (R)",
+              "url": "https://static.wikia.nocookie.net/sol-rng/images/b/b1/GazeAbility1.mp4/revision/latest?cb=20261101164614",
+              "source": "https://sol-rng.fandom.com/wiki/File:GazeAbility1.mp4",
+              "mime": "video/mp4",
+              "timestamp": "2026-11-01T16:46:14Z",
+              "articleSource": "https://sol-rng.fandom.com/wiki/Gaze?oldid=154994"
+            },
+            {
+              "file": "GazeAbility2.mp4",
+              "kind": "ability",
+              "label": "Behold. (T)",
+              "url": "https://static.wikia.nocookie.net/sol-rng/images/f/f5/GazeAbility2.mp4/revision/latest?cb=20261101164652",
+              "source": "https://sol-rng.fandom.com/wiki/File:GazeAbility2.mp4",
+              "mime": "video/mp4",
+              "timestamp": "2026-11-01T16:46:52Z",
+              "articleSource": "https://sol-rng.fandom.com/wiki/Gaze?oldid=154994"
+            },
+            {
+              "file": "GazeAbility3.mp4",
+              "kind": "ability",
+              "label": "Look/Watch (F)",
+              "url": "https://static.wikia.nocookie.net/sol-rng/images/2/2b/GazeAbility3.mp4/revision/latest?cb=20261101164722",
+              "source": "https://sol-rng.fandom.com/wiki/File:GazeAbility3.mp4",
+              "mime": "video/mp4",
+              "timestamp": "2026-11-01T16:47:22Z",
+              "articleSource": "https://sol-rng.fandom.com/wiki/Gaze?oldid=154994"
+            },
+            {
+              "file": "GazeAbility3 (Behold.).mp4",
+              "kind": "ability",
+              "label": "Look/Watch (F)",
+              "url": "https://static.wikia.nocookie.net/sol-rng/images/9/91/GazeAbility3_%28Behold.%29.mp4/revision/latest?cb=20261101164741",
+              "source": "https://sol-rng.fandom.com/wiki/File:GazeAbility3_(Behold.).mp4",
+              "mime": "video/mp4",
+              "timestamp": "2026-11-01T16:47:41Z",
+              "articleSource": "https://sol-rng.fandom.com/wiki/Gaze?oldid=154994"
+            },
+            {
+              "file": "GazeCutscene.mp4",
+              "kind": "cutscene",
+              "label": "Opening Cutscene",
+              "url": "https://static.wikia.nocookie.net/sol-rng/images/7/79/GazeCutscene.mp4/revision/latest?cb=20261101165411",
+              "source": "https://sol-rng.fandom.com/wiki/File:GazeCutscene.mp4",
+              "mime": "video/mp4",
+              "timestamp": "2026-11-01T16:54:11Z",
+              "articleSource": "https://sol-rng.fandom.com/wiki/Gaze?oldid=154994"
+            }
+          ]
+        }
+      ]
+    },
+    "Lost Soul : Styx": {
+      "source": "https://sol-rng.fandom.com/wiki/Lost_Soul_:_Styx",
+      "revisionId": 155136,
+      "mutationOf": "Lost Soul",
+      "relatedAuras": [],
+      "versions": [
+        {
+          "id": "current",
+          "label": "Current",
+          "description": "A river that flows where all paths come to an end, its waters carrying the whispers of countless souls into the depths of the unknown. Beneath its silent surface lie the oaths of the forgotten, bound by waters no mortal may ever cross twice. Neither light nor life may grace its shores, for all who gaze upon its currents shall come to understand one truth: Even eternity must surrender to the inevitable.",
+          "descriptionMarkup": "<center>A <span style=\"color: rgb(101,133,241);\">river</span> that flows where all paths come to an end, its waters carrying the whispers of countless <span style=\"color: rgb(137,207,240);\">souls</span> into the depths of the unknown.<br><br>Beneath its silent surface lie the oaths of the forgotten, bound by waters no mortal may ever cross twice. Neither light nor life may grace its shores, for all who gaze upon its currents shall come to understand one truth:<br><br>Even eternity must surrender to the <span style=\"color: rgb(88,21,14);\">inevitable</span>.</center>",
+          "descriptionTruncated": false,
+          "media": [
+            {
+              "file": "LostSoulStyxCollection.gif",
+              "caption": "Collection",
+              "url": "https://static.wikia.nocookie.net/sol-rng/images/9/99/LostSoulStyxCollection.gif/revision/latest/scale-to-width-down/640?cb=20261031134152",
+              "originalUrl": "https://static.wikia.nocookie.net/sol-rng/images/9/99/LostSoulStyxCollection.gif/revision/latest?cb=20261031134152",
+              "source": "https://sol-rng.fandom.com/wiki/File:LostSoulStyxCollection.gif",
+              "width": 640,
+              "height": 469,
+              "mime": "image/gif",
+              "timestamp": "2026-10-31T13:41:52Z"
+            },
+            {
+              "file": "LostSoulStyxIngame.gif",
+              "caption": "In-game",
+              "url": "https://static.wikia.nocookie.net/sol-rng/images/d/d0/LostSoulStyxIngame.gif/revision/latest/scale-to-width-down/640?cb=20261031134222",
+              "originalUrl": "https://static.wikia.nocookie.net/sol-rng/images/d/d0/LostSoulStyxIngame.gif/revision/latest?cb=20261031134222",
+              "source": "https://sol-rng.fandom.com/wiki/File:LostSoulStyxIngame.gif",
+              "width": 640,
+              "height": 469,
+              "mime": "image/gif",
+              "timestamp": "2026-10-31T13:42:22Z"
+            }
+          ],
+          "facts": {
+            "rarity": "N/A (Unobtainable outside of Pumpkin Moon or Glitched)",
+            "nativeRarity": "1 in 2,000,000",
+            "tier": "Event",
+            "required": "Pumpkin Moon or Glitched",
+            "obtainment": "",
+            "music": "Rexonyz - I love You",
+            "creator": "[CA] By @NOPIZERLRE, @rift346, @bonbonadaya, @MyUsernameWasTaken67"
+          },
+          "revisionId": 155136,
+          "source": "https://sol-rng.fandom.com/wiki/Lost_Soul_:_Styx",
+          "timestamp": "2026-11-03T08:15:13Z",
+          "soundtracks": [
+            {
+              "file": "Rexonyz - I love You.mp3",
+              "url": "https://static.wikia.nocookie.net/sol-rng/images/f/f2/Rexonyz_-_I_love_You.mp3/revision/latest?cb=20261031132816",
+              "source": "https://sol-rng.fandom.com/wiki/File:Rexonyz_-_I_love_You.mp3",
+              "mime": "audio/mpeg"
+            }
+          ],
+          "showcases": [
+            {
+              "file": "LostSoulStyxCutscene.mp4",
+              "kind": "cutscene",
+              "label": "Opening Cutscene",
+              "url": "https://static.wikia.nocookie.net/sol-rng/images/1/18/LostSoulStyxCutscene.mp4/revision/latest?cb=20261103081459",
+              "source": "https://sol-rng.fandom.com/wiki/File:LostSoulStyxCutscene.mp4",
+              "mime": "video/mp4",
+              "timestamp": "2026-11-03T08:14:59Z",
+              "articleSource": "https://sol-rng.fandom.com/wiki/Lost_Soul_:_Styx?oldid=155136"
+            }
+          ]
+        }
+      ]
+    },
+    "Cauldron": {
+      "source": "https://sol-rng.fandom.com/wiki/Cauldron",
+      "revisionId": 155167,
+      "mutationOf": "",
+      "relatedAuras": [],
+      "versions": [
+        {
+          "id": "current",
+          "label": "Current",
+          "description": "",
+          "descriptionMarkup": "",
+          "descriptionTruncated": false,
+          "media": [
+            {
+              "file": "CauldronCollection.gif",
+              "caption": "Collection",
+              "url": "https://static.wikia.nocookie.net/sol-rng/images/7/77/CauldronCollection.gif/revision/latest/scale-to-width-down/640?cb=20261101085648",
+              "originalUrl": "https://static.wikia.nocookie.net/sol-rng/images/7/77/CauldronCollection.gif/revision/latest?cb=20261101085648",
+              "source": "https://sol-rng.fandom.com/wiki/File:CauldronCollection.gif",
+              "width": 640,
+              "height": 640,
+              "mime": "image/gif",
+              "timestamp": "2026-11-01T08:56:48Z"
+            },
+            {
+              "file": "CauldronIngame.gif",
+              "caption": "In-game",
+              "url": "https://static.wikia.nocookie.net/sol-rng/images/a/a8/CauldronIngame.gif/revision/latest/scale-to-width-down/640?cb=20261101085727",
+              "originalUrl": "https://static.wikia.nocookie.net/sol-rng/images/a/a8/CauldronIngame.gif/revision/latest?cb=20261101085727",
+              "source": "https://sol-rng.fandom.com/wiki/File:CauldronIngame.gif",
+              "width": 640,
+              "height": 640,
+              "mime": "image/gif",
+              "timestamp": "2026-11-01T08:57:27Z"
+            }
+          ],
+          "facts": {
+            "rarity": "N/A (Unobtainable outside of Pumpkin Moon or Glitched)",
+            "nativeRarity": "1 in 24,000,000",
+            "tier": "Event",
+            "required": "Pumpkin Moon or Glitched",
+            "obtainment": "",
+            "music": "PeriTune - Spook2",
+            "creator": "[CA] By @Angel_CrepUltra, @Abysmxlity, @Flopsteri"
+          },
+          "revisionId": 155167,
+          "source": "https://sol-rng.fandom.com/wiki/Cauldron",
+          "timestamp": "2026-11-03T14:50:45Z",
+          "soundtracks": [
+            {
+              "file": "PeriTune - Spook2.mp3",
+              "url": "https://static.wikia.nocookie.net/sol-rng/images/2/27/PeriTune_-_Spook2.mp3/revision/latest?cb=20261101083435",
+              "source": "https://sol-rng.fandom.com/wiki/File:PeriTune_-_Spook2.mp3",
+              "mime": "audio/mpeg"
+            }
+          ],
+          "showcases": []
+        }
+      ]
+    },
+    "Rejoice": {
+      "source": "https://sol-rng.fandom.com/wiki/Rejoice",
+      "revisionId": 155123,
+      "mutationOf": "",
+      "relatedAuras": [],
+      "versions": [
+        {
+          "id": "current",
+          "label": "Current",
+          "description": "A soldier's tale TO BE EXALTED A MAN, A BOY A WOMAN, A GOD THE FOUR SHARE NOTHING IN COMMON TO BE AMONGST THE GODDESS OF THIS WORLD I WATCH AND LEARN from you from yyouuu y ou \"Holy Mary.\" \"I pray to thee, mother of the True.\" \"Relinquish us of sin, wash us with the blood of the forever,\" \"show me unto what I have never seen,\" \"and be with us for the feast of a thousand lives.\" The words of the church reverberated inside my head. I couldn't help but stare down. I had nothing else to lose, really. I didn't really care about what was said, nor did I pay attention to it much at all. I didn't believe in that \"truth.\" I only remember the devastation, and what I've done to fight it. These people, they never would understand. Doctor Tantalus and I, we study that piece of what's left of god every day, and nothing gets us further from the truth. I know that this whole story was a lie, I always knew. From the day my family was replaced, replaced by the TV that read aloud to me, like a narrator reading a story. The woman spoke in a calm, emotionless tone. And then I heard it, the words that made me believe in hell but not heaven, a grotesque being had entered my mind and it festered in my newfound absolute knowledge.",
+          "descriptionMarkup": "<center><nowiki>[[</nowiki> A soldier's tale<br>TO BE EXALTED<br>A MAN, A BOY<br>A WOMAN, A GOD<br>THE FOUR SHARE NOTHING IN COMMON<br>TO BE AMONGST THE GODDESS OF THIS WORLD<br>I WATCH AND LEARN<br>from you<br>from yyouuu<br>y ou<br><nowiki>]]</nowiki><br><br>\"Holy Mary.\"<br>\"I pray to thee, mother of the True.\"<br>\"Relinquish us of sin, wash us with the blood of the forever,\"<br>\"show me unto what I have never seen,\"<br>\"and be with us for the feast of a thousand lives.\"<br><br>The words of the church reverberated inside my head. I couldn't help but stare down. I had nothing else to lose, really. I didn't really care about what was said, nor did I pay attention to it much at all. I didn't believe in that \"truth.\" I only remember the devastation, and what I've done to fight it. These people, they never would understand. Doctor Tantalus and I, we study that piece of what's left of god every day, and nothing gets us further from the truth. I know that this whole story was a lie, I always knew. From the day my family was replaced, replaced by the TV that read aloud to me, like a narrator reading a story. The woman spoke in a calm, emotionless tone. And then I heard it, the words that made me believe in hell but not heaven, a grotesque being had entered my mind and it festered in my newfound absolute knowledge.</center>",
+          "descriptionTruncated": false,
+          "media": [],
+          "facts": {
+            "rarity": "N/A (Unobtainable outside of Blood Rain or Glitched)",
+            "nativeRarity": "1 in 700,000,000",
+            "tier": "Event",
+            "required": "Blood Rain or Glitched",
+            "obtainment": "",
+            "music": "aakairo - HEAVEN SAYS (Rejoice!)",
+            "creator": "[OA] By @reeseyhi. @cloudssradar, @saturnalorbit"
+          },
+          "revisionId": 155123,
+          "source": "https://sol-rng.fandom.com/wiki/Rejoice",
+          "timestamp": "2026-11-03T04:18:21Z",
+          "soundtracks": [
+            {
+              "file": "Aakairo - HEAVEN SAYS (Rejoice!).mp3",
+              "url": "https://static.wikia.nocookie.net/sol-rng/images/0/08/Aakairo_-_HEAVEN_SAYS_%28Rejoice%21%29.mp3/revision/latest?cb=20261031180121",
+              "source": "https://sol-rng.fandom.com/wiki/File:Aakairo_-_HEAVEN_SAYS_(Rejoice!).mp3",
+              "mime": "audio/mpeg"
+            }
+          ],
+          "showcases": [
+            {
+              "file": "RejoiceCutscene.mp4",
+              "kind": "cutscene",
+              "label": "Opening Cutscene",
+              "url": "https://static.wikia.nocookie.net/sol-rng/images/c/ce/RejoiceCutscene.mp4/revision/latest?cb=20261102101359",
+              "source": "https://sol-rng.fandom.com/wiki/File:RejoiceCutscene.mp4",
+              "mime": "video/mp4",
+              "timestamp": "2026-11-02T10:13:59Z",
+              "articleSource": "https://sol-rng.fandom.com/wiki/Rejoice?oldid=155123"
+            }
+          ]
+        }
+      ]
+    },
+    "Embercrypt": {
+      "source": "https://sol-rng.fandom.com/wiki/Embercrypt",
+      "revisionId": 155134,
+      "mutationOf": "",
+      "relatedAuras": [],
+      "versions": [
+        {
+          "id": "current",
+          "label": "Current",
+          "description": "An underground labyrinth of winding, twisting corridors. The air is foul, and all year long the crypt reeks of decay under the moon in the night sky.",
+          "descriptionMarkup": "<center><span style=\"color: rgb(185,179,166);\">An</span> <span style=\"color: rgb(194,94,43);\">underground labyrinth</span> <span style=\"color: rgb(185,179,166);\">of winding, twisting corridors. The air is foul, and all year long the crypt reeks of decay</span> ''<span style=\"color: rgb(142,138,130);\">under the moon in the night sky.</span>''</center>",
+          "descriptionTruncated": false,
+          "media": [
+            {
+              "file": "EmbercryptCollection.gif",
+              "caption": "Collection",
+              "url": "https://static.wikia.nocookie.net/sol-rng/images/2/23/EmbercryptCollection.gif/revision/latest?cb=20261101013222",
+              "source": "https://sol-rng.fandom.com/wiki/File:EmbercryptCollection.gif",
+              "width": 640,
+              "height": 560,
+              "mime": "image/gif",
+              "timestamp": "2026-11-01T01:32:22Z"
+            },
+            {
+              "file": "EmbercryptIngame.gif",
+              "caption": "In-game",
+              "url": "https://static.wikia.nocookie.net/sol-rng/images/b/b7/EmbercryptIngame.gif/revision/latest?cb=20261101013249",
+              "source": "https://sol-rng.fandom.com/wiki/File:EmbercryptIngame.gif",
+              "width": 640,
+              "height": 560,
+              "mime": "image/gif",
+              "timestamp": "2026-11-01T01:32:49Z"
+            }
+          ],
+          "facts": {
+            "rarity": "N/A (Unobtainable outside of Pumpkin Moon or Glitched)",
+            "nativeRarity": "1 in 9,700,000",
+            "tier": "",
+            "required": "Pumpkin Moon or Glitched",
+            "obtainment": "",
+            "music": "xi, Sakuzyo - Lunar Mare",
+            "creator": "[CA] By @MrInsano80, @the_sillywolfy"
+          },
+          "revisionId": 155134,
+          "source": "https://sol-rng.fandom.com/wiki/Embercrypt",
+          "timestamp": "2026-11-03T08:11:23Z",
+          "soundtracks": [
+            {
+              "file": "Xi, Sakuzyo - Lunar Mare.mp3",
+              "url": "https://static.wikia.nocookie.net/sol-rng/images/f/f5/Xi%2C_Sakuzyo_-_Lunar_Mare.mp3/revision/latest?cb=20261031184852",
+              "source": "https://sol-rng.fandom.com/wiki/File:Xi,_Sakuzyo_-_Lunar_Mare.mp3",
+              "mime": "audio/mpeg"
+            }
+          ],
+          "showcases": [
+            {
+              "file": "EmbercryptCutscene.mp4",
+              "kind": "cutscene",
+              "label": "Opening Cutscene",
+              "url": "https://static.wikia.nocookie.net/sol-rng/images/f/f3/EmbercryptCutscene.mp4/revision/latest?cb=20261103081104",
+              "source": "https://sol-rng.fandom.com/wiki/File:EmbercryptCutscene.mp4",
+              "mime": "video/mp4",
+              "timestamp": "2026-11-03T08:11:04Z",
+              "articleSource": "https://sol-rng.fandom.com/wiki/Embercrypt?oldid=155134"
+            }
+          ]
+        }
+      ]
+    },
+    "Cruor": {
+      "source": "https://sol-rng.fandom.com/wiki/Cruor",
+      "revisionId": 154923,
+      "mutationOf": "",
+      "relatedAuras": [],
+      "versions": [
+        {
+          "id": "current",
+          "label": "Current",
+          "description": "\"Once a Safe Haven of Sanctity. Now nothing more than a Cursed Shrine where Ruin and decay dwell.\" \"Ravaged by An Unknown Monster who sought to destroy everything and corrupt it. Heavenly Waters were corrupted by the Bloodshed it caused, soon turning into cursed blood, beneath which monsters dwell.\" \"Bathed in a Crimson Light under the Rain of Sorrow and Decay. Once you enter, thy fate is sealed Forever.\"",
+          "descriptionMarkup": "<center>\"Once a <b><span style=\"color: rgb(217, 209, 143); -webkit-text-stroke: 1px rgb(217, 209, 143);\">Safe Haven of Sanctity.</span></b> Now nothing more than a <b><span style=\"color: rgb(166, 10, 28); -webkit-text-stroke: 1px rgb(166, 10, 28);\">Cursed Shrine</span></b> where <b><span style=\"color: rgb(87, 68, 58); -webkit-text-stroke: 1px rgb(87, 68, 58);\">Ruin and decay</span></b> dwell.\"\n\n\n\"Ravaged by <b><span style=\"color: rgb(255, 219, 219); -webkit-text-stroke: 1px rgb(255, 219, 219);\">An Unknown Monster</span></b> who sought to destroy everything and corrupt it. <b><span style=\"color: rgb(179, 225, 245); -webkit-text-stroke: 1px rgb(179, 225, 245);\">Heavenly Waters</span></b> were corrupted by the <b><span style=\"color: rgb(166, 10, 28); -webkit-text-stroke: 1px rgb(166, 10, 28);\">Bloodshed</span></b> it caused, soon turning into <b><span style=\"color: rgb(166, 10, 28); -webkit-text-stroke: 1px rgb(166, 10, 28);\">cursed blood</span></b>, beneath which monsters dwell.\"\n\n\"Bathed in a <b><span style=\"color: rgb(166, 10, 28); -webkit-text-stroke: 1px rgb(166, 10, 28);\">Crimson Light</span></b> under the <b><span style=\"color: rgb(103, 133, 145); -webkit-text-stroke: 1px rgb(103, 133, 145);\">Rain of Sorrow and Decay</span></b>. Once you enter, <b><span style=\"color: rgb(166, 10, 28); -webkit-text-stroke: 1px rgb(166, 10, 28);\">thy fate is sealed Forever.</span></b>\" <center>",
+          "descriptionTruncated": false,
+          "media": [
+            {
+              "file": "CruorCollection.gif",
+              "caption": "Collection",
+              "url": "https://static.wikia.nocookie.net/sol-rng/images/a/a1/CruorCollection.gif/revision/latest/scale-to-width-down/640?cb=20261101090833",
+              "originalUrl": "https://static.wikia.nocookie.net/sol-rng/images/a/a1/CruorCollection.gif/revision/latest?cb=20261101090833",
+              "source": "https://sol-rng.fandom.com/wiki/File:CruorCollection.gif",
+              "width": 640,
+              "height": 343,
+              "mime": "image/gif",
+              "timestamp": "2026-11-01T09:08:33Z"
+            },
+            {
+              "file": "CruorIngame.gif",
+              "caption": "In-game",
+              "url": "https://static.wikia.nocookie.net/sol-rng/images/c/c2/CruorIngame.gif/revision/latest/scale-to-width-down/640?cb=20261101090906",
+              "originalUrl": "https://static.wikia.nocookie.net/sol-rng/images/c/c2/CruorIngame.gif/revision/latest?cb=20261101090906",
+              "source": "https://sol-rng.fandom.com/wiki/File:CruorIngame.gif",
+              "width": 640,
+              "height": 457,
+              "mime": "image/gif",
+              "timestamp": "2026-11-01T09:09:06Z"
+            }
+          ],
+          "facts": {
+            "rarity": "Bought from Jack The Pumpkin for 15,000 Hallow Points.",
+            "nativeRarity": "",
+            "tier": "Event",
+            "required": "",
+            "obtainment": "",
+            "music": "finnnn751 - Sandstorm Highway",
+            "creator": "TBA"
+          },
+          "revisionId": 154923,
+          "source": "https://sol-rng.fandom.com/wiki/Cruor",
+          "timestamp": "2026-11-01T09:50:55Z",
+          "soundtracks": [
+            {
+              "file": "Finnnn751 - Sandstorm Highway.mp3",
+              "url": "https://static.wikia.nocookie.net/sol-rng/images/f/fc/Finnnn751_-_Sandstorm_Highway.mp3/revision/latest?cb=20261101043021",
+              "source": "https://sol-rng.fandom.com/wiki/File:Finnnn751_-_Sandstorm_Highway.mp3",
+              "mime": "audio/mpeg"
+            }
+          ],
+          "showcases": []
+        }
+      ]
+    },
+    "Enchanted": {
+      "source": "https://sol-rng.fandom.com/wiki/Enchanted",
+      "revisionId": 155138,
+      "mutationOf": "",
+      "relatedAuras": [],
+      "versions": [
+        {
+          "id": "current",
+          "label": "Current",
+          "description": "A being channeling forbidden magic as reality itself bends to its spells.",
+          "descriptionMarkup": "<center>A being channeling forbidden magic as reality itself bends to its spells.</center>",
+          "descriptionTruncated": false,
+          "media": [
+            {
+              "file": "Enchanted collect.gif",
+              "caption": "Collection",
+              "url": "https://static.wikia.nocookie.net/sol-rng/images/d/d4/Enchanted_collect.gif/revision/latest?cb=20261031125553",
+              "source": "https://sol-rng.fandom.com/wiki/File:Enchanted_collect.gif",
+              "width": 515,
+              "height": 395,
+              "mime": "image/gif",
+              "timestamp": "2026-10-31T12:55:53Z"
+            },
+            {
+              "file": "Enchanted ingame.gif",
+              "caption": "In-game",
+              "url": "https://static.wikia.nocookie.net/sol-rng/images/8/84/Enchanted_ingame.gif/revision/latest?cb=20261031125613",
+              "source": "https://sol-rng.fandom.com/wiki/File:Enchanted_ingame.gif",
+              "width": 515,
+              "height": 395,
+              "mime": "image/gif",
+              "timestamp": "2026-10-31T12:56:13Z"
+            }
+          ],
+          "facts": {
+            "rarity": "N/A (Unobtainable outside of Pumpkin Moon or Glitched)",
+            "nativeRarity": "1 in 445,000",
+            "tier": "Event",
+            "required": "Pumpkin Moon or Glitched",
+            "obtainment": "",
+            "music": "ああああ - 水の追憶",
+            "creator": "[CA] By @justr_ndx, @Abysmxlity, @CoolJamesTheAwesome1, @omnivoore"
+          },
+          "revisionId": 155138,
+          "source": "https://sol-rng.fandom.com/wiki/Enchanted",
+          "timestamp": "2026-11-03T08:18:26Z",
+          "soundtracks": [
+            {
+              "file": "ああああ - 水の追憶.mp3",
+              "url": "https://static.wikia.nocookie.net/sol-rng/images/e/e3/%E3%81%82%E3%81%82%E3%81%82%E3%81%82_-_%E6%B0%B4%E3%81%AE%E8%BF%BD%E6%86%B6.mp3/revision/latest?cb=20261031131104",
+              "source": "https://sol-rng.fandom.com/wiki/File:%E3%81%82%E3%81%82%E3%81%82%E3%81%82_-_%E6%B0%B4%E3%81%AE%E8%BF%BD%E6%86%B6.mp3",
+              "mime": "audio/mpeg"
+            }
+          ],
+          "showcases": [
+            {
+              "file": "EnchantedCutscene.mp4",
+              "kind": "cutscene",
+              "label": "Opening Cutscene",
+              "url": "https://static.wikia.nocookie.net/sol-rng/images/4/4a/EnchantedCutscene.mp4/revision/latest?cb=20261103081806",
+              "source": "https://sol-rng.fandom.com/wiki/File:EnchantedCutscene.mp4",
+              "mime": "video/mp4",
+              "timestamp": "2026-11-03T08:18:06Z",
+              "articleSource": "https://sol-rng.fandom.com/wiki/Enchanted?oldid=155138"
+            }
+          ]
+        }
+      ]
+    },
+    "Acropolis": {
+      "source": "https://sol-rng.fandom.com/wiki/Acropolis",
+      "revisionId": 155193,
+      "mutationOf": "",
+      "relatedAuras": [],
+      "versions": [
+        {
+          "id": "current",
+          "label": "Current",
+          "description": "Long ago, a Knight had sworn an oath to protect the baron's castle, Acropolis, standing watch over its towering walls and guarding its gates against all who dared threaten those within. But centuries passed, kingdoms fell, and the boron's bloodline faded into forgotten history. Still, every night, he continued his eternal vigil, patrolling empty corridors and watching the winding road that led to Acropolis atop the hill, his trusty axe forever held at his side, ready to strike down any who dare trespass upon the forgotten grounds. Travelers whispered that his ghost could still be seen beneath the moonlight, his weathered armor clinging to a hollow silhouette, the edge of his axe glinting in the darkness. And though the world had long since forgotten his lord, the Knight remained faithful to a castle that no longer remembered its own masters.",
+          "descriptionMarkup": "<center><span style=\"color: rgb(185,179,166);\">Long ago,</span> ''<b><span style=\"color: rgb(189,228,253); -webkit-text-stroke: 1px rgb(39,80,109);\">a Knight</span></b>'' <span style=\"color: rgb(185,179,166);\">had sworn an oath to protect the baron's castle,</span> <span style=\"color: rgb(225,190,101);\">Acropolis</span><span style=\"color: rgb(185,179,166);\">, standing watch over its towering walls and guarding its gates against all who dared threaten those within. But centuries passed, kingdoms fell, and the boron's bloodline</span> <span style=\"color: rgb(200,69,59);\">faded into forgotten history.</span><br><br><span style=\"color: rgb(185,179,166);\">Still, every night, he continued his eternal vigil, patrolling empty corridors and watching the winding road that led to</span> <span style=\"color: rgb(225,190,101);\">Acropolis</span> <span style=\"color: rgb(185,179,166);\">atop the hill, his trusty axe forever held at his side, ready to strike down</span> ''<span style=\"color: rgb(142,138,130);\">any who dare trespass</span>'' <span style=\"color: rgb(185,179,166);\">upon the forgotten grounds.<br><br>Travelers whispered that his ghost could still be seen beneath the moonlight, his weathered armor clinging to a hollow silhouette, the edge of his axe glinting in the darkness.<br>And though the world had long since forgotten his lord,</span> ''<b><span style=\"color: rgb(189,228,253); -webkit-text-stroke: 1px rgb(39,80,109);\">the Knight</span></b>'' <span style=\"color: rgb(185,179,166);\">remained faithful to a castle that</span> <span style=\"color: rgb(243,227,176);\">no longer remembered its own masters.</span></center>",
+          "descriptionTruncated": false,
+          "media": [
+            {
+              "file": "AcropolisCollection.gif",
+              "caption": "Collection",
+              "url": "https://static.wikia.nocookie.net/sol-rng/images/0/07/AcropolisCollection.gif/revision/latest?cb=20261103145337",
+              "source": "https://sol-rng.fandom.com/wiki/File:AcropolisCollection.gif",
+              "width": 600,
+              "height": 600,
+              "mime": "image/gif",
+              "timestamp": "2026-11-03T14:53:37Z"
+            },
+            {
+              "file": "AcropolisIngame.gif",
+              "caption": "In-game",
+              "url": "https://static.wikia.nocookie.net/sol-rng/images/2/24/AcropolisIngame.gif/revision/latest/scale-to-width-down/640?cb=20261103145414",
+              "originalUrl": "https://static.wikia.nocookie.net/sol-rng/images/2/24/AcropolisIngame.gif/revision/latest?cb=20261103145414",
+              "source": "https://sol-rng.fandom.com/wiki/File:AcropolisIngame.gif",
+              "width": 640,
+              "height": 640,
+              "mime": "image/gif",
+              "timestamp": "2026-11-03T14:54:14Z"
+            }
+          ],
+          "facts": {
+            "rarity": "Bought from Jack The Pumpkin for 20,000 Hallow Points.",
+            "nativeRarity": "",
+            "tier": "Event",
+            "required": "Graveyard",
+            "obtainment": "",
+            "music": "Waterflame - Final Battle",
+            "creator": "[CA] By @geru_man Concept By @pedan0417, @LotusYELLA, @Genesi3037"
+          },
+          "revisionId": 155193,
+          "source": "https://sol-rng.fandom.com/wiki/Acropolis",
+          "timestamp": "2026-11-04T00:59:52Z",
+          "soundtracks": [
+            {
+              "file": "Waterflame - Final Battle.mp3",
+              "url": "https://static.wikia.nocookie.net/sol-rng/images/f/f3/Waterflame_-_Final_Battle.mp3/revision/latest?cb=20261031182716",
+              "source": "https://sol-rng.fandom.com/wiki/File:Waterflame_-_Final_Battle.mp3",
+              "mime": "audio/mpeg"
+            }
+          ],
+          "showcases": []
+        }
+      ]
+    },
+    "Former Gardens": {
+      "source": "https://sol-rng.fandom.com/wiki/Former_Gardens",
+      "revisionId": 155172,
+      "mutationOf": "",
+      "relatedAuras": [],
+      "versions": [
+        {
+          "id": "current",
+          "label": "Current",
+          "description": "... HELP ME The Gardens endure, where an eternal flame refuses to die. Yet even its undying light cannot halt the relentless passage of time. Once thriving, the land slowly decays, its former beauty withering into a wasteland of ash, rot and dying embers. Across this damned planet, the earth burns endlessly, and the last remnants of hope have long since faded. The remains of countless mortals litter the scorched landscape, their decaying flesh sustaining those condemned to wander in an endless cycle of survival. Swarms of pests feast upon what little life remains, while death itself seems to have abandoned the land. IT BURNS IT ALL BURNS The cries of the unfortunate echoes through the ruins of a world forgotten by time. Yet somewhere beneath the ashes, the eternal flame still burns; And so does your passion. WHEN WILL I EVER FIND MY FLAME?? Does it really end here?.",
+          "descriptionMarkup": "<center>...<br><br><nowiki>[[</nowiki>HELP ME<nowiki>]]</nowiki><br><br>The Gardens endure, where an eternal flame refuses to die. Yet even its undying light cannot halt the relentless passage of time. Once thriving, the land slowly decays, its former beauty withering into a wasteland of ash, rot and dying embers.<br><br>Across this damned planet, the earth burns endlessly, and the last remnants of hope have long since faded. The remains of countless mortals litter the scorched landscape, their decaying flesh sustaining those condemned to wander in an endless cycle of survival. Swarms of pests feast upon what little life remains, while death itself seems to have abandoned the land.<br><br><nowiki>[[</nowiki>IT BURNS<nowiki>]]</nowiki><br><br><nowiki>[[</nowiki>IT ALL BURNS<nowiki>]]</nowiki><br><br>The cries of the unfortunate echoes through the ruins of a world forgotten by time.<br><br>Yet somewhere beneath the ashes, the eternal flame still burns;<br><br>And so does your passion.<br><br><nowiki>[[</nowiki>WHEN WILL I EVER FIND MY FLAME??<nowiki>]]</nowiki><br><br>Does it really end here?.",
+          "descriptionTruncated": false,
+          "media": [
+            {
+              "file": "FormerGardensCollection.gif",
+              "caption": "Collection",
+              "url": "https://static.wikia.nocookie.net/sol-rng/images/5/56/FormerGardensCollection.gif/revision/latest/scale-to-width-down/640?cb=20261101170209",
+              "originalUrl": "https://static.wikia.nocookie.net/sol-rng/images/5/56/FormerGardensCollection.gif/revision/latest?cb=20261101170209",
+              "source": "https://sol-rng.fandom.com/wiki/File:FormerGardensCollection.gif",
+              "width": 640,
+              "height": 640,
+              "mime": "image/gif",
+              "timestamp": "2026-11-01T17:02:09Z"
+            },
+            {
+              "file": "FormerGInGame.gif",
+              "caption": "In-game",
+              "url": "https://static.wikia.nocookie.net/sol-rng/images/a/ae/FormerGInGame.gif/revision/latest/scale-to-width-down/640?cb=20261031181937",
+              "originalUrl": "https://static.wikia.nocookie.net/sol-rng/images/a/ae/FormerGInGame.gif/revision/latest?cb=20261031181937",
+              "source": "https://sol-rng.fandom.com/wiki/File:FormerGInGame.gif",
+              "width": 640,
+              "height": 484,
+              "mime": "image/gif",
+              "timestamp": "2026-10-31T18:19:37Z"
+            }
+          ],
+          "facts": {
+            "rarity": "N/A (Unobtainable outside of Blood Rain or Glitched)",
+            "nativeRarity": "1 in 63,000,000",
+            "tier": "Event",
+            "required": "Blood Rain or Glitched",
+            "obtainment": "",
+            "music": "The Socket Snatcher - All Things in Balance, All Things in Moderation",
+            "creator": "[CA] By @MilitaryDucky, @BigGPugMan"
+          },
+          "revisionId": 155172,
+          "source": "https://sol-rng.fandom.com/wiki/Former_Gardens",
+          "timestamp": "2026-11-03T15:19:56Z",
+          "soundtracks": [
+            {
+              "file": "The Socket Snatcher - All Things in Balance, All Things in Moderation.mp3",
+              "url": "https://static.wikia.nocookie.net/sol-rng/images/6/65/The_Socket_Snatcher_-_All_Things_in_Balance%2C_All_Things_in_Moderation.mp3/revision/latest?cb=20261031181413",
+              "source": "https://sol-rng.fandom.com/wiki/File:The_Socket_Snatcher_-_All_Things_in_Balance,_All_Things_in_Moderation.mp3",
+              "mime": "audio/mpeg"
+            }
+          ],
+          "showcases": []
+        }
+      ]
+    },
+    "Deathkeeper": {
+      "source": "https://sol-rng.fandom.com/wiki/Deathkeeper",
+      "revisionId": 155156,
+      "mutationOf": "",
+      "relatedAuras": [],
+      "versions": [
+        {
+          "id": "current",
+          "label": "Current",
+          "description": "A being that departs the soul from the human self, harvesting their very being towards the afterlife, guiding them through peace and rest.",
+          "descriptionMarkup": "<center> A being that departs the soul from the human self, harvesting their very being towards the afterlife, guiding them through peace and rest. </center>",
+          "descriptionTruncated": false,
+          "media": [
+            {
+              "file": "Deathkeeper collect.gif",
+              "caption": "Collection",
+              "url": "https://static.wikia.nocookie.net/sol-rng/images/5/50/Deathkeeper_collect.gif/revision/latest/scale-to-width-down/640?cb=20261103053944",
+              "originalUrl": "https://static.wikia.nocookie.net/sol-rng/images/5/50/Deathkeeper_collect.gif/revision/latest?cb=20261103053944",
+              "source": "https://sol-rng.fandom.com/wiki/File:Deathkeeper_collect.gif",
+              "width": 640,
+              "height": 640,
+              "mime": "image/gif",
+              "timestamp": "2026-11-03T05:39:44Z"
+            },
+            {
+              "file": "Deathkeeper ingame.gif",
+              "caption": "In-game",
+              "url": "https://static.wikia.nocookie.net/sol-rng/images/c/cd/Deathkeeper_ingame.gif/revision/latest/scale-to-width-down/640?cb=20261103110135",
+              "originalUrl": "https://static.wikia.nocookie.net/sol-rng/images/c/cd/Deathkeeper_ingame.gif/revision/latest?cb=20261103110135",
+              "source": "https://sol-rng.fandom.com/wiki/File:Deathkeeper_ingame.gif",
+              "width": 640,
+              "height": 507,
+              "mime": "image/gif",
+              "timestamp": "2026-11-03T11:01:35Z"
+            }
+          ],
+          "facts": {
+            "rarity": "Bought from Jack The Pumpkin for 22,500 Hallow Points.",
+            "nativeRarity": "",
+            "tier": "Event",
+            "required": "",
+            "obtainment": "",
+            "music": "",
+            "creator": "[CA] By @Falunyx"
+          },
+          "revisionId": 155156,
+          "source": "https://sol-rng.fandom.com/wiki/Deathkeeper",
+          "timestamp": "2026-11-03T12:54:53Z",
+          "soundtracks": [],
+          "showcases": []
+        }
+      ]
+    },
+    "Cataclysmic": {
+      "source": "https://sol-rng.fandom.com/wiki/Cataclysmic",
+      "revisionId": 155131,
+      "mutationOf": "",
+      "relatedAuras": [],
+      "versions": [
+        {
+          "id": "current",
+          "label": "Current",
+          "description": "",
+          "descriptionMarkup": "",
+          "descriptionTruncated": false,
+          "media": [
+            {
+              "file": "CataclysmicCollection.gif",
+              "caption": "Collection",
+              "url": "https://static.wikia.nocookie.net/sol-rng/images/5/59/CataclysmicCollection.gif/revision/latest?cb=20261101081452",
+              "source": "https://sol-rng.fandom.com/wiki/File:CataclysmicCollection.gif",
+              "width": 396,
+              "height": 352,
+              "mime": "image/gif",
+              "timestamp": "2026-11-01T08:14:52Z"
+            },
+            {
+              "file": "CataclysmicInGame.gif",
+              "caption": "In-game",
+              "url": "https://static.wikia.nocookie.net/sol-rng/images/5/5b/CataclysmicInGame.gif/revision/latest?cb=20261101081504",
+              "source": "https://sol-rng.fandom.com/wiki/File:CataclysmicInGame.gif",
+              "width": 494,
+              "height": 394,
+              "mime": "image/gif",
+              "timestamp": "2026-11-01T08:15:04Z"
+            }
+          ],
+          "facts": {
+            "rarity": "Bought from Jack The Pumpkin for 17,250 Hallow Points.",
+            "nativeRarity": "",
+            "tier": "Event",
+            "required": "",
+            "obtainment": "",
+            "music": "Devel Sullivan - Dream Pursuer",
+            "creator": "TBA"
+          },
+          "revisionId": 155131,
+          "source": "https://sol-rng.fandom.com/wiki/Cataclysmic",
+          "timestamp": "2026-11-03T07:37:01Z",
+          "soundtracks": [
+            {
+              "file": "Devel Sullivan - Dream Pursuer.mp3",
+              "url": "https://static.wikia.nocookie.net/sol-rng/images/e/e1/Devel_Sullivan_-_Dream_Pursuer.mp3/revision/latest?cb=20260314124011",
+              "source": "https://sol-rng.fandom.com/wiki/File:Devel_Sullivan_-_Dream_Pursuer.mp3",
+              "mime": "audio/mpeg"
+            }
+          ],
+          "showcases": []
+        }
+      ]
     }
   },
   "audit": [
@@ -47548,6 +48524,111 @@
       "revisionId": 153740,
       "status": "current-only",
       "versionCount": 1,
+      "reworkDates": []
+    },
+    {
+      "title": "Acropolis",
+      "revisionId": 155193,
+      "status": "no-documented-older-version",
+      "versionCount": 0,
+      "reworkDates": []
+    },
+    {
+      "title": "Cauldron",
+      "revisionId": 155167,
+      "status": "no-documented-older-version",
+      "versionCount": 0,
+      "reworkDates": []
+    },
+    {
+      "title": "Cruor",
+      "revisionId": 154923,
+      "status": "no-documented-older-version",
+      "versionCount": 0,
+      "reworkDates": []
+    },
+    {
+      "title": "Embercrypt",
+      "revisionId": 155134,
+      "status": "no-documented-older-version",
+      "versionCount": 0,
+      "reworkDates": []
+    },
+    {
+      "title": "Enchanted",
+      "revisionId": 155138,
+      "status": "no-documented-older-version",
+      "versionCount": 0,
+      "reworkDates": []
+    },
+    {
+      "title": "Flushed : Pumpkinity",
+      "revisionId": 155140,
+      "status": "no-documented-older-version",
+      "versionCount": 0,
+      "reworkDates": []
+    },
+    {
+      "title": "Former Gardens",
+      "revisionId": 155172,
+      "status": "no-documented-older-version",
+      "versionCount": 0,
+      "reworkDates": []
+    },
+    {
+      "title": "Gaze",
+      "revisionId": 154994,
+      "status": "no-documented-older-version",
+      "versionCount": 0,
+      "reworkDates": []
+    },
+    {
+      "title": "Ghost",
+      "revisionId": 155048,
+      "status": "no-documented-older-version",
+      "versionCount": 0,
+      "reworkDates": []
+    },
+    {
+      "title": "Hanahaki",
+      "revisionId": 155159,
+      "status": "no-documented-older-version",
+      "versionCount": 0,
+      "reworkDates": []
+    },
+    {
+      "title": "Harvester : Necromancy",
+      "revisionId": 155154,
+      "status": "no-documented-older-version",
+      "versionCount": 0,
+      "reworkDates": []
+    },
+    {
+      "title": "Lost Soul : Styx",
+      "revisionId": 155136,
+      "status": "no-documented-older-version",
+      "versionCount": 0,
+      "reworkDates": []
+    },
+    {
+      "title": "Rejoice",
+      "revisionId": 155123,
+      "status": "no-documented-older-version",
+      "versionCount": 0,
+      "reworkDates": []
+    },
+    {
+      "title": "Deathkeeper",
+      "revisionId": 155156,
+      "status": "no-documented-older-version",
+      "versionCount": 0,
+      "reworkDates": []
+    },
+    {
+      "title": "Cataclysmic",
+      "revisionId": 155131,
+      "status": "no-documented-older-version",
+      "versionCount": 0,
       "reworkDates": []
     }
   ]

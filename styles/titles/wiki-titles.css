@@ -116,6 +116,7 @@ body.quality-simple-auras .wiki-title--aura .wiki-title__art *::after { animatio
 }
 .quality-settings__aura-switch[aria-checked="true"] .quality-settings__switch-track { background: #267558; border-color: #69ecae; }
 .quality-settings__aura-switch[aria-checked="true"] .quality-settings__switch-track::after { left: 21px; }
+.wiki-title .wiki-ref-GradientedTextStroke { position: absolute; pointer-events: none; }
 .wiki-title .wiki-ref-GradientedTextStroke::before { content: attr(data-textstroke); }
 .wiki-title .wiki-ref-A-t-l-a-s-Title { width: max-content !important; }
 .wiki-item-label {
