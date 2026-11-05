@@ -5066,5 +5066,138 @@
     "source": "https://sol-rng.fandom.com/wiki/File:PumpkinityCutscene.mp4",
     "mime": "video/mp4",
     "timestamp": "2026-11-03T08:20:40Z"
+  },
+  "ArtifactCutscene.mp4": {
+    "file": "ArtifactCutscene.mp4",
+    "url": "https://static.wikia.nocookie.net/sol-rng/images/5/50/ArtifactCutscene.mp4/revision/latest?cb=20261017091852",
+    "source": "https://sol-rng.fandom.com/wiki/File:ArtifactCutscene.mp4",
+    "mime": "video/mp4",
+    "timestamp": "2026-10-17T09:18:52Z"
+  },
+  "ContentDeletedCutscene.mp4": {
+    "file": "ContentDeletedCutscene.mp4",
+    "url": "https://static.wikia.nocookie.net/sol-rng/images/c/ca/ContentDeletedCutscene.mp4/revision/latest?cb=20261005095552",
+    "source": "https://sol-rng.fandom.com/wiki/File:ContentDeletedCutscene.mp4",
+    "mime": "video/mp4",
+    "timestamp": "2026-10-05T09:55:52Z"
+  },
+  "HasuenCutscene.mp4": {
+    "file": "HasuenCutscene.mp4",
+    "url": "https://static.wikia.nocookie.net/sol-rng/images/1/15/HasuenCutscene.mp4/revision/latest?cb=20261017100415",
+    "source": "https://sol-rng.fandom.com/wiki/File:HasuenCutscene.mp4",
+    "mime": "video/mp4",
+    "timestamp": "2026-10-17T10:04:15Z"
+  },
+  "GraffitiAbility.mp4": {
+    "file": "GraffitiAbility.mp4",
+    "url": "https://static.wikia.nocookie.net/sol-rng/images/9/92/GraffitiAbility.mp4/revision/latest?cb=20261101112908",
+    "source": "https://sol-rng.fandom.com/wiki/File:GraffitiAbility.mp4",
+    "mime": "video/mp4",
+    "timestamp": "2026-11-01T11:29:08Z"
+  },
+  "VeyluneCutscene.mp4": {
+    "file": "VeyluneCutscene.mp4",
+    "url": "https://static.wikia.nocookie.net/sol-rng/images/5/54/VeyluneCutscene.mp4/revision/latest?cb=20261017093034",
+    "source": "https://sol-rng.fandom.com/wiki/File:VeyluneCutscene.mp4",
+    "mime": "video/mp4",
+    "timestamp": "2026-10-17T09:30:34Z"
+  },
+  "TreeHouseCutscene.mp4": {
+    "file": "TreeHouseCutscene.mp4",
+    "url": "https://static.wikia.nocookie.net/sol-rng/images/3/33/TreeHouseCutscene.mp4/revision/latest?cb=20261017094645",
+    "source": "https://sol-rng.fandom.com/wiki/File:TreeHouseCutscene.mp4",
+    "mime": "video/mp4",
+    "timestamp": "2026-10-17T09:46:45Z"
+  },
+  "Tomorrow Cutscene.mp4": {
+    "file": "Tomorrow Cutscene.mp4",
+    "url": "https://static.wikia.nocookie.net/sol-rng/images/f/fb/Tomorrow_Cutscene.mp4/revision/latest?cb=20261017212546",
+    "source": "https://sol-rng.fandom.com/wiki/File:Tomorrow_Cutscene.mp4",
+    "mime": "video/mp4",
+    "timestamp": "2026-10-17T21:25:46Z"
+  },
+  "MoonchildCutscene.mp4": {
+    "file": "MoonchildCutscene.mp4",
+    "url": "https://static.wikia.nocookie.net/sol-rng/images/4/4f/MoonchildCutscene.mp4/revision/latest?cb=20261018044216",
+    "source": "https://sol-rng.fandom.com/wiki/File:MoonchildCutscene.mp4",
+    "mime": "video/mp4",
+    "timestamp": "2026-10-18T04:42:16Z"
+  },
+  "WatcherCutscene.mp4": {
+    "file": "WatcherCutscene.mp4",
+    "url": "https://static.wikia.nocookie.net/sol-rng/images/d/d6/WatcherCutscene.mp4/revision/latest?cb=20261018044536",
+    "source": "https://sol-rng.fandom.com/wiki/File:WatcherCutscene.mp4",
+    "mime": "video/mp4",
+    "timestamp": "2026-10-18T04:45:36Z"
+  },
+  "RekindleCutscene.mp4": {
+    "file": "RekindleCutscene.mp4",
+    "url": "https://static.wikia.nocookie.net/sol-rng/images/a/af/RekindleCutscene.mp4/revision/latest?cb=20261018044813",
+    "source": "https://sol-rng.fandom.com/wiki/File:RekindleCutscene.mp4",
+    "mime": "video/mp4",
+    "timestamp": "2026-10-18T04:48:13Z"
+  },
+  "ZilchE.mp4": {
+    "file": "ZilchE.mp4",
+    "url": "https://static.wikia.nocookie.net/sol-rng/images/b/b1/ZilchE.mp4/revision/latest?cb=20261031093905",
+    "source": "https://sol-rng.fandom.com/wiki/File:ZilchE.mp4",
+    "mime": "video/mp4",
+    "timestamp": "2026-10-31T09:39:05Z"
+  },
+  "ZilchQ.mp4": {
+    "file": "ZilchQ.mp4",
+    "url": "https://static.wikia.nocookie.net/sol-rng/images/6/60/ZilchQ.mp4/revision/latest?cb=20261031093954",
+    "source": "https://sol-rng.fandom.com/wiki/File:ZilchQ.mp4",
+    "mime": "video/mp4",
+    "timestamp": "2026-10-31T09:39:54Z"
+  },
+  "ZilchR.mp4": {
+    "file": "ZilchR.mp4",
+    "url": "https://static.wikia.nocookie.net/sol-rng/images/9/9b/ZilchR.mp4/revision/latest?cb=20261031094033",
+    "source": "https://sol-rng.fandom.com/wiki/File:ZilchR.mp4",
+    "mime": "video/mp4",
+    "timestamp": "2026-10-31T09:40:33Z"
+  },
+  "ZilchF.mp4": {
+    "file": "ZilchF.mp4",
+    "url": "https://static.wikia.nocookie.net/sol-rng/images/5/51/ZilchF.mp4/revision/latest?cb=20261031094127",
+    "source": "https://sol-rng.fandom.com/wiki/File:ZilchF.mp4",
+    "mime": "video/mp4",
+    "timestamp": "2026-10-31T09:41:27Z"
+  },
+  "TrueJadeCutscene.mp4": {
+    "file": "TrueJadeCutscene.mp4",
+    "url": "https://static.wikia.nocookie.net/sol-rng/images/1/1f/TrueJadeCutscene.mp4/revision/latest?cb=20261017223655",
+    "source": "https://sol-rng.fandom.com/wiki/File:TrueJadeCutscene.mp4",
+    "mime": "video/mp4",
+    "timestamp": "2026-10-17T22:36:55Z"
+  },
+  "TrueTwilightCutscene.mp4": {
+    "file": "TrueTwilightCutscene.mp4",
+    "url": "https://static.wikia.nocookie.net/sol-rng/images/9/9c/TrueTwilightCutscene.mp4/revision/latest?cb=20261017223712",
+    "source": "https://sol-rng.fandom.com/wiki/File:TrueTwilightCutscene.mp4",
+    "mime": "video/mp4",
+    "timestamp": "2026-10-17T22:37:12Z"
+  },
+  "TrueKyawthuiteCutscene.mp4": {
+    "file": "TrueKyawthuiteCutscene.mp4",
+    "url": "https://static.wikia.nocookie.net/sol-rng/images/3/3d/TrueKyawthuiteCutscene.mp4/revision/latest?cb=20261017223734",
+    "source": "https://sol-rng.fandom.com/wiki/File:TrueKyawthuiteCutscene.mp4",
+    "mime": "video/mp4",
+    "timestamp": "2026-10-17T22:37:34Z"
+  },
+  "CorLunaeCutscene.mp4": {
+    "file": "CorLunaeCutscene.mp4",
+    "url": "https://static.wikia.nocookie.net/sol-rng/images/3/3c/CorLunaeCutscene.mp4/revision/latest?cb=20261018043917",
+    "source": "https://sol-rng.fandom.com/wiki/File:CorLunaeCutscene.mp4",
+    "mime": "video/mp4",
+    "timestamp": "2026-10-18T04:39:17Z"
+  },
+  "WitheredHalloweenCutscene.mp4": {
+    "file": "WitheredHalloweenCutscene.mp4",
+    "url": "https://static.wikia.nocookie.net/sol-rng/images/9/9b/WitheredHalloweenCutscene.mp4/revision/latest?cb=20261102102054",
+    "source": "https://sol-rng.fandom.com/wiki/File:WitheredHalloweenCutscene.mp4",
+    "mime": "video/mp4",
+    "timestamp": "2026-11-02T10:20:54Z"
   }
 }

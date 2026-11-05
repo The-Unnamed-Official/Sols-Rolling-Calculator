@@ -18,6 +18,7 @@ const canonical = title => {
     return key;
 };
 const styled = new Set(Object.values(context.WikiTitleData.auras).filter(art => art.source && !art.pending).map(art => canonical(decodeURIComponent(new URL(art.source).pathname.slice(6)))));
+const fallbacks = new Set(Object.values(context.WikiTitleData.auras).filter(art => art.source && art.pending).map(art => canonical(decodeURIComponent(new URL(art.source).pathname.slice(6)))));
 const missing = reference.pages.filter(page => !styled.has(normalize(page.title)));
 const allowedTags = new Set(['span', 'b', 'i', 'big', 'small', 'br']);
 const allowedAttributes = new Set(['style', 'class', 'data-text', 'data-textstroke', 'data-gradient', 'data-colors', 'data-width', 'data-color']);
@@ -60,6 +61,8 @@ function sanitize(markup) {
         batch.forEach((page, position) => {
             const art = $(`[data-aura-index="${position}"]`);
             if (!art.length || !art.text().trim()) throw new Error('Missing title artwork: ' + page.title);
+            // Keep a reviewed local design until the wiki actually publishes styled artwork.
+            if (fallbacks.has(normalize(page.title)) && !art.find('[style], [class]').length) return;
             titles[page.title] = { source: page.source, markup: sanitize(art.html()) };
         });
     }
@@ -101,6 +104,6 @@ function sanitize(markup) {
     const imports = fonts.map(font => `@import url('https://fonts.googleapis.com/css2?family=${encodeURIComponent(font).replace(/%20/g, '+')}&display=swap');`).join('\n');
     fs.writeFileSync(path.join(root, 'styles/titles/directory-title-fonts.css'), imports + '\n');
     extracted.walkComments(comment => comment.remove());
-    fs.writeFileSync(path.join(root, 'styles/titles/directory-title-effects.css'), extracted.toString() + '\n');
+    fs.writeFileSync(path.join(root, 'styles/titles/directory-title-effects.css'), extracted.toString().replace(/[ \t]+$/gm, '') + '\n');
     console.log('Saved additional title effects and fonts:', fonts);
 })().catch(error => { console.error(error); process.exitCode = 1; });

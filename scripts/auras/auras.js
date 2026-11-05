@@ -40,7 +40,7 @@
         if (globalThis.AuraPageLayout) globalThis.AuraPageLayout.titlesReady = globalThis.AuraTitleLayout?.preload(document);
         return;
     }
-    const rows = [...list.querySelectorAll('[data-aura-row]')];
+    let rows = [...list.querySelectorAll('[data-aura-row]')];
     const titlePreload = document.createElement('ol');
     titlePreload.className = `${list.className} aura-title-preload`;
     titlePreload.dataset.auraTitlePreload = '';
@@ -82,6 +82,8 @@
     const collator = new Intl.Collator('en', { sensitivity: 'base', numeric: true, ignorePunctuation: true });
     const alphabetical = (a, b) => collator.compare(a.dataset.name, b.dataset.name);
     const rarity = row => row.dataset.rarity ? Number(row.dataset.rarity) : -1;
+    const orderCache = new Map();
+    let searchFrame = null;
     function syncURL(scroll = 0) {
         const url = new URL(location.href);
         url.pathname = url.pathname.replace(/\/index(?:\.html)?$/i, '/').replace(/\/?$/, '/');
@@ -98,6 +100,8 @@
         return url.pathname+url.search;
     }
     function update({restore=false} = {}) {
+        if (searchFrame !== null) cancelAnimationFrame(searchFrame);
+        searchFrame = null;
         const selections = new Map(filters.map(select => [select.id, [...select.selectedOptions].map(option => option.value).filter(Boolean)]));
         const biomes = [...document.getElementById('aura-biome').selectedOptions].filter(option => option.value);
         const timeOptions = biomes.filter(option => /^(?:Daytime|Nighttime)$/i.test(option.value));
@@ -107,7 +111,7 @@
         const time = backgroundOption?.value === 'The Radiant Forest' ? 'night'
             : timeOptions.length === 1 ? (/^Nighttime$/i.test(timeOptions[0].value) ? 'night' : 'day') : '';
         globalThis.AuraBackground?.show(backgroundOption?.dataset.background || '', backgroundOption?.dataset.music || '', time);
-        rows.sort((a, b) => {
+        if (!orderCache.has(sort.value)) orderCache.set(sort.value, rows.slice().sort((a, b) => {
             if (sort.value === 'alphabetical') return alphabetical(a, b);
             if (sort.value === 'alphabetical-descending') return alphabetical(b, a);
             const groupDifference = Number(a.dataset.sortGroup) - Number(b.dataset.sortGroup);
@@ -115,7 +119,8 @@
             if (!a.dataset.rarity || !b.dataset.rarity) return Boolean(b.dataset.rarity) - Boolean(a.dataset.rarity) || alphabetical(a, b);
             const difference = sort.value === 'rarity-ascending' ? rarity(a) - rarity(b) : rarity(b) - rarity(a);
             return difference || alphabetical(a, b);
-        });
+        }));
+        rows = orderCache.get(sort.value);
         const terms = search.value.trim().toLowerCase().split(/\s+/).filter(Boolean);
         const matches = rows.filter(row => {
             const info = metadata.get(row);
@@ -135,20 +140,29 @@
         const visible = matches.slice(offset, offset + pageSize);
         const neighbors = matches.slice(Math.max(0, offset - pageSize), offset + 2 * pageSize).filter(row => !visible.includes(row));
         titlePreload.style.width = `${list.getBoundingClientRect().width}px`;
-        titlePreload.replaceChildren(...neighbors);
+        titlePreload.replaceChildren();
         visible.forEach((row, index) => {
             row.querySelector('.aura-row__index').textContent = String(offset + index + 1).padStart(3, '0');
         });
         list.replaceChildren(...visible);
         list.start = offset + 1;
         styleTitles(list);
-        styleTitles(titlePreload);
         const ticket = ++preloadRequest;
         const currentReady = globalThis.AuraTitleLayout?.preload(list);
         if (globalThis.AuraPageLayout) globalThis.AuraPageLayout.titlesReady = currentReady;
         titlePreload.dataset.preloadState = 'loading';
-        Promise.all([currentReady, globalThis.AuraTitleLayout?.preload(titlePreload)]).then(() => {
-            if (ticket === preloadRequest) titlePreload.dataset.preloadState = 'ready';
+        Promise.resolve(currentReady).then(() => {
+            const warmNeighbors = async () => {
+                if (ticket !== preloadRequest) return;
+                titlePreload.replaceChildren(...neighbors);
+                styleTitles(titlePreload);
+                await globalThis.AuraTitleLayout?.preload(titlePreload);
+                if (ticket === preloadRequest) titlePreload.dataset.preloadState = 'ready';
+            };
+            // Finish the visible page first; only warm neighboring pages when
+            // the browser has spare time. Stale searches never warm old results.
+            if (typeof requestIdleCallback === 'function') requestIdleCallback(warmNeighbors, { timeout: 500 });
+            else setTimeout(warmNeighbors, 0);
         });
         count.textContent = matches.length ? `Showing ${offset + 1}–${offset + visible.length} of ${matches.length} auras${matches.length < rows.length ? ` (${rows.length} total)` : ''}` : `0 of ${rows.length} auras`;
         empty.hidden = matches.length !== 0;
@@ -181,7 +195,9 @@
     }
     function resetPage() { page = 1; update(); }
     sort.addEventListener('change', resetPage);
-    search.addEventListener('input', resetPage);
+    search.addEventListener('input', () => {
+        if (searchFrame === null) searchFrame = requestAnimationFrame(resetPage);
+    });
     filters.forEach(select => select.addEventListener('change', resetPage));
     pagination.forEach(nav => nav.addEventListener('click', event => {
         const button = event.target.closest('button');

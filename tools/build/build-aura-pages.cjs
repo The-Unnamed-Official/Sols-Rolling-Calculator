@@ -114,7 +114,7 @@ function slugFor(title) {
 }
 const entries = pages.map(page => {
     const aura = simulator.get(page.title);
-    page = { ...page, required: canonicalBiomeLabel(page.required) };
+    page = { ...page, required: canonicalBiomeLabel(page.required), exclusive: page.exclusive || Boolean(aura?.nativeBiomes?.length) };
     const event = aura && eventForAura.get(normalize(aura.name));
     if (event?.status === 'active') {
         const required = [...(aura.nativeBiomes || [])].sort((a, b) => Number(a === 'glitch') - Number(b === 'glitch')).map(biomeLabel).join(' / ');
@@ -133,7 +133,7 @@ const entries = pages.map(page => {
     const name = styles.get(page.title) || page.title;
     const slug = slugFor(page.title);
     const events = [...new Set((page.events.length ? page.events : (auraEvents.get(page.title) || [])).map(event => event.replace(/April[ '\u2019]*fool(?:[ '\u2019]*s)?/i, 'April Fools')))];
-    const hasEvent = events.length && (page.tier === 'Event' || page.categories.some(category => /Event|Limited/i.test(category)) || auraEvents.has(page.title));
+    const hasEvent = page.tier === 'Event' || (events.length && (page.categories.some(category => /Event|Limited/i.test(category)) || auraEvents.has(page.title)));
     const rarity = aura?.requiresRadiantMoons ? null : denominator(page.rarity) || denominator(page.nativeRarity) || (aura?.chance ?? null);
     const rarityText = denominator(page.rarity) ? referenceOdds(page.rarity)
         : denominator(page.nativeRarity) ? referenceOdds(page.nativeRarity)

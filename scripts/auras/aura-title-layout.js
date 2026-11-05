@@ -29,28 +29,10 @@
             scheduled = false;
             const batch = [...pending];
             pending.clear();
-            batch.forEach(title => fit(title));
+            fitTitles(batch);
         });
     }
-    function fit(title, eager = false) {
-        if (!title.isConnected) {
-            titles.delete(title);
-            const formerContainer = title.closest(containerSelector);
-            const formerTitles = formerContainer && containerTitles.get(formerContainer);
-            formerTitles?.delete(title);
-            if (formerTitles && !formerTitles.size) {
-                resize.unobserve(formerContainer);
-                visibility.unobserve(formerContainer);
-                containerTitles.delete(formerContainer);
-            }
-            return;
-        }
-        const frame = title.parentElement;
-        const container = title.closest(containerSelector);
-        if (!container || (!eager && !visible.has(container) && !container.closest('[data-aura-title-preload]')) || !container.getBoundingClientRect().width) return;
-        title.style.transform = 'none';
-        title.style.left = '0px';
-        title.style.top = '0px';
+    function measure(title, container) {
         const origin = title.getBoundingClientRect();
         const zoom = origin.width / title.offsetWidth || 1;
         let left = 0, top = 0, right = origin.width / zoom, bottom = origin.height / zoom;
@@ -67,11 +49,43 @@
         const height = bottom - top + padding * 2;
         const available = container.getBoundingClientRect().width / zoom;
         const scale = Math.min(1, available / width);
-        frame.style.width = `${width * scale}px`;
-        frame.style.height = `${height * scale}px`;
-        title.style.left = `${(padding - left) * scale}px`;
-        title.style.top = `${(padding - top) * scale}px`;
-        title.style.transform = `scale(${scale})`;
+        return { title, width, height, padding, left, top, scale };
+    }
+    function fittingContainer(title, eager) {
+        if (!title.isConnected) {
+            titles.delete(title);
+            const formerContainer = title.closest(containerSelector);
+            const formerTitles = formerContainer && containerTitles.get(formerContainer);
+            formerTitles?.delete(title);
+            if (formerTitles && !formerTitles.size) {
+                resize.unobserve(formerContainer);
+                visibility.unobserve(formerContainer);
+                containerTitles.delete(formerContainer);
+            }
+            return null;
+        }
+        const container = title.closest(containerSelector);
+        return container && (eager || visible.has(container) || container.closest('[data-aura-title-preload]')) ? container : null;
+    }
+    function fitTitles(batch, eager = false) {
+        const entries = batch.map(title => ({ title, container: fittingContainer(title, eager) }))
+            .filter(({ container }) => container && container.getBoundingClientRect().width);
+        // Reset all titles, read all bounds, then commit all frames. Alternating
+        // these writes and reads per title forced a full layout for every card.
+        entries.forEach(({ title }) => {
+            title.style.transform = 'none';
+            title.style.left = '0px';
+            title.style.top = '0px';
+        });
+        const measurements = entries.map(({ title, container }) => measure(title, container));
+        measurements.forEach(({ title, width, height, padding, left, top, scale }) => {
+            const frame = title.parentElement;
+            frame.style.width = `${width * scale}px`;
+            frame.style.height = `${height * scale}px`;
+            title.style.left = `${(padding - left) * scale}px`;
+            title.style.top = `${(padding - top) * scale}px`;
+            title.style.transform = `scale(${scale})`;
+        });
     }
     function initialize(root = document) {
         globalThis.WikiTitles?.syncVisibility(root);
@@ -95,7 +109,9 @@
     }
     function prepare(root) {
         initialize(root);
-        root.querySelectorAll('.wiki-title--aura').forEach(title => fit(title, true));
+        const batch = [...root.querySelectorAll('.wiki-title--aura')];
+        batch.forEach(title => pending.delete(title));
+        fitTitles(batch, true);
     }
     async function preload(root = document) {
         prepare(root);

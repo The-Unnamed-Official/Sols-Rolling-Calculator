@@ -33,10 +33,10 @@ function candidates(text='') {
     }
     return results.sort((a,b)=>a.kind.localeCompare(b.kind));
 }
-function showcases(a,{historical=false}={}) {
+function showcases(a,{historical=false,assets=uploads}={}) {
     return candidates(a.text).map(item=>{
         const key=fileKey(item.file);
-        const media=(historical&&uploads[key+'|'+a.timestamp])||uploads[key];
+        const media=(historical&&assets[key+'|'+a.timestamp])||assets[key];
         if(historical&&(!media?.timestamp||media.timestamp>a.timestamp)) return null;
         return media?{...item,...media,articleSource:a.source+'?oldid='+a.revisionId}:null;
     }).filter(Boolean);

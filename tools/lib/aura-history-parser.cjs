@@ -76,7 +76,7 @@ function article(page) {
     const infobox = fields(templates(text,'(?:New)?Aura[ _]?Infobox')[0]||'');
     const media = gallery(infobox.image1||'');
     if (!media.length) {
-        const file = /^\s*(?:\[\[(?:File:|Image:))?([^|\[\]<>]+\.(?:gif|png|jpe?g|webp|mp4|webm))(?:\|[^\]]*)?(?:\]\])?\s*$/i.exec(infobox.image1||'')?.[1];
+        const file = /^\s*(?:\[\[)?(?:File:|Image:)?([^|\[\]<>]+\.(?:gif|png|jpe?g|webp|mp4|webm))(?:\|[^\]]*)?(?:\]\])?\s*$/i.exec(infobox.image1||'')?.[1];
         if (file && !/^Placeholder\./i.test(file)) media.push({file:file.trim().replace(/_/g,' '),caption:'Aura preview',originalCaption:''});
     }
     if (!media.length && /submission/i.test(infobox.image1||'')) {

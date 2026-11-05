@@ -1,0 +1,32 @@
+/* Use the regular simulator's layout, typography, controls and responsive rules.
+   This file only removes visual effects; it must not redefine UI geometry. */
+html[data-simulator-mode="minimal"],
+html[data-simulator-mode="minimal"] *,
+html[data-simulator-mode="minimal"] *::before,
+html[data-simulator-mode="minimal"] *::after {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+    box-shadow: none !important;
+    text-shadow: none !important;
+    filter: none !important;
+    backdrop-filter: none !important;
+    will-change: auto !important;
+}
+
+/* Keep the biome image and panel corners, without atmosphere or scanlines.
+   These layers don't affect layout. */
+html[data-simulator-mode="minimal"] body::before,
+html[data-simulator-mode="minimal"] body::after,
+html[data-simulator-mode="minimal"] .surface::after,
+html[data-simulator-mode="minimal"] .glitch-signal,
+html[data-simulator-mode="minimal"] .glitch-entry-errors,
+html[data-simulator-mode="minimal"] .event-atmosphere,
+html[data-simulator-mode="minimal"] .snow-field,
+html[data-simulator-mode="minimal"] .interface-backdrop__video {
+    display: none !important;
+}
+
+html[data-simulator-mode="minimal"] .interface-backdrop__veil {
+    background: rgba(1, 5, 12, .5);
+}
