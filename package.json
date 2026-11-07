@@ -8,9 +8,12 @@
     "playwright": "1.62.1"
   },
   "scripts": {
+    "refresh:auras": "node tools/fetch/refresh-aura-directory.cjs",
     "build:events": "node tools/build/build-event-data.cjs",
     "build:auras": "node tools/build/build-aura-pages.cjs",
-    "build": "node tools/build/build-event-data.cjs && node tools/build/build-aura-pages.cjs",
-    "test": "node --test tools/tests/*.test.cjs"
+    "build:potato": "node tools/build/build-potato-page.cjs",
+    "build": "node tools/build/build-event-data.cjs && node tools/build/build-aura-pages.cjs && node tools/build/build-potato-page.cjs",
+    "test": "node --test tools/tests/*.test.cjs",
+    "test:browser": "node --test tools/tests/simulator-browser.cjs"
   }
 }

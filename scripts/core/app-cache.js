@@ -39,7 +39,9 @@
         };
 
 
-        const latestHtml = await reloadAsset(new URL('index.html', root).href, true);
+        const entrypoint = document.documentElement.dataset.simulatorMode === 'minimal'
+            ? 'rotatosimulator/index.html' : 'index.html';
+        const latestHtml = await reloadAsset(new URL(entrypoint, root).href, true);
         const latestDocument = new DOMParser().parseFromString(latestHtml, 'text/html');
         const latestBuild = latestDocument.querySelector('meta[name="app-build"]')?.content;
         const assetSelector = 'script[src], link[rel="stylesheet"][href]';

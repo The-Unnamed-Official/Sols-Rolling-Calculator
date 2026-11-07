@@ -1,4 +1,5 @@
 let feedContainer = document.getElementById('simulation-feed');
+const MINIMAL_SIMULATOR = document.documentElement.dataset.simulatorMode === 'minimal';
 let luckField = document.getElementById('luck-total');
 const pageBody = document.body;
 const reduceMotionToggleButton = document.getElementById('reduceMotionToggle');
@@ -74,7 +75,8 @@ const CHANGELOG_VERSION_STORAGE_KEY = 'solsRollingCalculator:lastSeenChangelogVe
 const BACKGROUND_ROLLING_STORAGE_KEY = 'solsRollingCalculator:backgroundRollingPreference';
 const AUDIO_SETTINGS_STORAGE_KEY = 'solsRollingCalculator:audioSettings';
 const AURA_FILTERS_STORAGE_KEY = 'solsRollingCalculator:auraFilters';
-const VISUAL_SETTINGS_STORAGE_KEY = 'solsRollingCalculator:visualSettings';
+const VISUAL_SETTINGS_STORAGE_KEY = MINIMAL_SIMULATOR
+    ? 'solsRollingCalculator:potatoVisualSettings' : 'solsRollingCalculator:visualSettings';
 const PERFORMANCE_DEFAULTS_STORAGE_KEY = 'solsRollingCalculator:performanceDefaults:v2';
 const AURA_TIER_FILTERS_STORAGE_KEY = 'solsRollingCalculator:auraTierFilters';
 const ROLLING_SETTINGS_STORAGE_KEY = 'solsRollingCalculator:rollingSettings:v1';
@@ -205,10 +207,18 @@ function ensureQualityPreferences() {
     }
 
     QUALITY_PREFERENCE_KEYS.forEach(key => {
+        if (MINIMAL_SIMULATOR && key !== 'disableWikiAuraStyles') {
+            appState.qualityPreferences[key] = key !== 'reduceGlitchEffects';
+            return;
+        }
         if (typeof appState.qualityPreferences[key] !== 'boolean') {
             appState.qualityPreferences[key] = Boolean(PERFORMANCE_FIRST_QUALITY_DEFAULTS[key]);
         }
     });
+    if (MINIMAL_SIMULATOR) {
+        appState.reduceMotion = true;
+        appState.glitch = false;
+    }
 }
 
 function applyLatestUpdateBadgeToChangelogTabs(tabs) {
@@ -557,6 +567,10 @@ function hydrateVisualSettings() {
                 appState.qualityPreferences.disableUiAnimations = storedQualityPreferences.disableButtonAnimations;
             }
         }
+        if (MINIMAL_SIMULATOR && parsed.potatoPresentationVersion !== 2) {
+            appState.qualityPreferences.disableWikiAuraStyles = false;
+            appState.stickyRollButton = true;
+        }
     } catch (error) {
     } finally {
         if (FORCE_CUTSCENES_ALWAYS_ON) {
@@ -628,7 +642,8 @@ function persistVisualSettings() {
                 reduceMotion: appState.reduceMotion,
                 selectiveTrueChanceDisplay: Boolean(appState.selectiveTrueChanceDisplay),
                 stickyRollButton: appState.stickyRollButton !== false,
-                qualityPreferences: appState.qualityPreferences
+                qualityPreferences: appState.qualityPreferences,
+                ...(MINIMAL_SIMULATOR ? { potatoPresentationVersion: 2 } : {})
             })
         );
     } catch (error) {
@@ -641,6 +656,7 @@ function applyPerformanceFirstDefaults() {
     }
 
     ensureQualityPreferences();
+    if (MINIMAL_SIMULATOR) return;
 
     let storage = null;
     try {
@@ -798,22 +814,29 @@ const EVENT_BUFF_TOGGLES = Object.freeze({
 });
 let radiantForestState = SimulationCore.createRadiantState();
 let radiantMoonSoundMask = 0;
-const radiantMoonSoundQueue = [];
-let stopRadiantMoonSound = null;
+const radiantMoonSoundTimers = new Set();
+const activeRadiantMoonSounds = new Set();
+const radiantMoonRevealStarts = new Map();
+const RADIANT_MOON_REVEAL_INTERVAL_MS = 500;
+let radiantMoonRevealNextAt = 0;
+let radiantMoonRevealEndsAt = 0;
+let radiantRememberReadyAt = 0;
+let rememberCooldownTimer = null;
+let rememberClaimInProgress = false;
 
 function resetRadiantMoonSounds(moons = 0) {
+    radiantMoonRevealNextAt = 0;
+    radiantMoonRevealEndsAt = 0;
     radiantMoonSoundMask = Number(moons) & 127;
-    radiantMoonSoundQueue.length = 0;
-    stopRadiantMoonSound?.();
+    radiantMoonRevealStarts.clear();
+    radiantMoonSoundTimers.forEach(clearTimeout);
+    radiantMoonSoundTimers.clear();
+    activeRadiantMoonSounds.forEach(stop => stop());
+    activeRadiantMoonSounds.clear();
 }
 
-function playNextRadiantMoonSound() {
-    if (stopRadiantMoonSound || !radiantMoonSoundQueue.length) return;
-    const ordinal = radiantMoonSoundQueue.shift();
-    if (!isSoundChannelActive('effects')) {
-        radiantMoonSoundQueue.length = 0;
-        return;
-    }
+function playRadiantMoonSound(ordinal) {
+    if (!isSoundChannelActive('effects')) return;
     const audio = document.getElementById(`radiantMoonSound${ordinal}`);
     if (!audio) return;
     let finished = false;
@@ -825,10 +848,9 @@ function playNextRadiantMoonSound() {
         audio.removeEventListener('ended', finish);
         audio.removeEventListener('error', finish);
         audio.pause();
-        stopRadiantMoonSound = null;
-        queueMicrotask(playNextRadiantMoonSound);
+        activeRadiantMoonSounds.delete(finish);
     };
-    stopRadiantMoonSound = finish;
+    activeRadiantMoonSounds.add(finish);
     audio.addEventListener('ended', finish);
     audio.addEventListener('error', finish);
     timeout = setTimeout(finish, 30000);
@@ -848,12 +870,23 @@ function syncRadiantMoonSounds(state, active) {
         return;
     }
     const count = mask => mask.toString(2).replaceAll('0', '').length;
-    const previousCount = count(radiantMoonSoundMask);
+    let ordinal = count(radiantMoonSoundMask);
+    const newMoons = moons & ~radiantMoonSoundMask;
     radiantMoonSoundMask = moons;
-    for (let ordinal = previousCount + 1; ordinal <= count(moons); ordinal++) {
-        radiantMoonSoundQueue.push(ordinal);
+    const now = performance.now();
+    for (let moon = 0; moon < 7; moon++) {
+        if (!(newMoons & (1 << moon))) continue;
+        ordinal++;
+        const startsAt = Math.max(now, radiantMoonRevealNextAt);
+        radiantMoonRevealNextAt = startsAt + RADIANT_MOON_REVEAL_INTERVAL_MS;
+        radiantMoonRevealStarts.set(moon, startsAt);
+        const soundOrdinal = ordinal;
+        const timer = setTimeout(() => {
+            radiantMoonSoundTimers.delete(timer);
+            playRadiantMoonSound(soundOrdinal);
+        }, Math.max(0, startsAt - now));
+        radiantMoonSoundTimers.add(timer);
     }
-    playNextRadiantMoonSound();
 }
 
 let rememberControlsActive = false;
@@ -895,16 +928,39 @@ function syncRadiantRollLabel() {
     const button = document.querySelector('.roll-trigger');
     if (!button) return;
     const remember = isRememberRoll();
+    if (remember && !radiantRememberReadyAt) radiantRememberReadyAt = Date.now() + 5000;
+    if (!remember && (radiantForestState.moons !== 127 || radiantForestState.rewardClaimed)) radiantRememberReadyAt = 0;
     const label = remember ? 'Remember' : isSolsLikeSimulationMethod() ? 'Roll' : 'Start Rolling';
     if (button.textContent !== label || (remember && !button.querySelector('.roll-trigger__memory'))) {
         if (remember) button.innerHTML = '<span class="roll-trigger__memory">Remember</span>';
         else button.textContent = label;
     }
     button.classList.toggle('roll-trigger--remember', remember);
-    if (simulationActive) button.style.opacity = remember ? '1' : '0.5';
+    const remaining = remember ? Math.max(0, radiantRememberReadyAt - Date.now()) : 0;
+    let cooldown = button.querySelector('.roll-trigger__remember-cooldown');
+    if (remaining && !cooldown) {
+        cooldown = document.createElement('span');
+        cooldown.className = 'roll-trigger__remember-cooldown';
+        cooldown.setAttribute('aria-hidden', 'true');
+        button.append(cooldown);
+    }
+    if (cooldown) {
+        cooldown.hidden = remaining === 0;
+        cooldown.style.transform = `scaleX(${remaining / 5000})`;
+    }
+    button.disabled = simulationActive || rememberClaimInProgress || remaining > 0;
+    if (remember) button.setAttribute('aria-label', remaining ? `Remember available in ${Math.ceil(remaining / 1000)} seconds` : 'Remember');
+    else button.removeAttribute('aria-label');
+    if (remaining && rememberCooldownTimer === null) rememberCooldownTimer = setTimeout(() => {
+        rememberCooldownTimer = null;
+        syncRadiantRollLabel();
+    }, MINIMAL_SIMULATOR ? 100 : 50);
+    if (remember) button.style.opacity = '1';
+    else if (simulationActive) button.style.opacity = '0.5';
 }
 
 function syncBiomeBuffs(state = radiantForestState) {
+    syncLuckToggleAvailability();
     syncRememberRollControls();
     syncRadiantRollLabel();
     const panel = document.getElementById('biomeBuffs');
@@ -970,6 +1026,18 @@ function syncBiomeBuffs(state = radiantForestState) {
     sky?.querySelectorAll('[data-moon-index]').forEach(element => {
         const index = Number(element.dataset.moonIndex);
         const collected = Boolean(state.moons & (1 << index));
+        const newlyCollected = collected && !element.classList.contains('radiant-moons__moon--collected');
+        if (newlyCollected && !isFeatureBootMotionReduced() && !appState.qualityPreferences.disableRollAndSigilAnimations) {
+            const now = performance.now();
+            const startsAt = radiantMoonRevealStarts.get(index) ?? Math.max(now, radiantMoonRevealNextAt);
+            const phase = element.querySelector('.radiant-moons__phase');
+            const durationMs = Number.parseFloat(getComputedStyle(phase).transitionDuration) * 1000 || 0;
+            element.style.setProperty('--moon-reveal-delay', `${Math.max(0, startsAt - now)}ms`);
+            radiantMoonRevealNextAt = Math.max(radiantMoonRevealNextAt, startsAt + RADIANT_MOON_REVEAL_INTERVAL_MS);
+            radiantMoonRevealEndsAt = Math.max(radiantMoonRevealEndsAt, startsAt + durationMs);
+        } else if (!collected || newlyCollected) {
+            element.style.setProperty('--moon-reveal-delay', '0ms');
+        }
         element.classList.toggle('radiant-moons__moon--collected', collected);
         const label = `${moons[index]}: ${collected ? 'collected' : 'not yet rolled'}`;
         element.setAttribute('aria-label', label);
@@ -987,6 +1055,24 @@ function syncBiomeBuffs(state = radiantForestState) {
         : `${moons.filter((_, index) => state.moons & (1 << index)).length} / 7 moons collected. Collect them in any order.`;
     const expanded = panel.querySelector('[data-biome-buff][aria-expanded="true"]');
     if (expanded?.hidden) panel.dispatchEvent(new Event('biome-buffs-reset'));
+}
+
+async function waitForRadiantMoonReveals() {
+    const sky = document.getElementById('radiantMoons');
+    if (!sky || sky.hidden || isFeatureBootMotionReduced() || appState.qualityPreferences.disableRollAndSigilAnimations) return;
+    if (typeof sky.getAnimations !== 'function') {
+        const remaining = radiantMoonRevealEndsAt - performance.now();
+        if (remaining > 0) await new Promise(resolve => setTimeout(resolve, remaining));
+        return;
+    }
+    while (!sky.hidden) {
+        sky.getBoundingClientRect();
+        const pending = sky.getAnimations({ subtree: true }).filter(animation =>
+            animation.playState !== 'finished' && animation.playState !== 'idle'
+            && Number.isFinite(animation.effect?.getComputedTiming().endTime));
+        if (!pending.length) return;
+        await Promise.all(pending.map(animation => animation.finished.catch(() => {})));
+    }
 }
 
 function setupBiomeBuffs() {
@@ -3039,7 +3125,7 @@ function normalizeMediaSource(element) {
     const rawSrc = element.getAttribute('src') || element.currentSrc || element.dataset?.src;
     if (!rawSrc) return null;
     try {
-        return new URL(rawSrc, window.location.href).href;
+        return new URL(rawSrc, document.baseURI).href;
     } catch (error) {
         return rawSrc;
     }
@@ -3048,7 +3134,7 @@ function normalizeMediaSource(element) {
 function canFetchAudioBufferSource(sourceUrl) {
     if (!sourceUrl) return false;
     try {
-        const protocol = new URL(sourceUrl, window.location.href).protocol;
+        const protocol = new URL(sourceUrl, document.baseURI).protocol;
         return protocol === 'http:'
             || protocol === 'https:'
             || protocol === 'data:'
@@ -3069,7 +3155,7 @@ function mediaSourceMatches(element, sourceUrl) {
     }
 
     try {
-        return new URL(currentSource, window.location.href).href === new URL(sourceUrl, window.location.href).href;
+        return new URL(currentSource, document.baseURI).href === new URL(sourceUrl, document.baseURI).href;
     } catch (error) {
         return currentSource === sourceUrl;
     }
@@ -3701,6 +3787,7 @@ function toggleGlitchEffects() {
 }
 
 function applyReducedMotionState(enabled) {
+    if (MINIMAL_SIMULATOR) enabled = appState.reduceMotion = true;
     if (pageBody) {
         pageBody.classList.toggle('reduce-motion', enabled);
     }
@@ -3819,6 +3906,10 @@ function syncQualityPreferenceButtons() {
             : Boolean(appState.qualityPreferences[key]);
         button.setAttribute('aria-checked', enabled ? 'true' : 'false');
         button.classList.toggle('quality-settings__item--active', enabled);
+        if (MINIMAL_SIMULATOR && key !== 'disableWikiAuraStyles') {
+            button.disabled = true;
+            button.title = 'Visual effects stay off in Potato Land.';
+        }
     });
 }
 
@@ -4308,7 +4399,6 @@ function scheduleGlitchWarbleCycle(bgMusic, chain) {
     const baseGain = computeEffectiveBackgroundVolume(bgMusic);
     const cycleDuration = Math.floor(reducedGlitch ? randomDecimalBetween(55, 85) : randomDecimalBetween(24, 40));
     const previousTarget = glitchUiState.pitchTargetRate ?? bgMusic.playbackRate;
-    // Alternate below and above the original pitch; keep the track moving forward.
     const pitchSteps = reducedGlitch
         ? (previousTarget >= 1 ? [-4, -2] : [2, 4])
         : (previousTarget >= 1 ? [-24, -17, -12] : [12, 17, 24]);
@@ -4985,7 +5075,9 @@ function applyBiomeTheme(biome, selectionState = null) {
     const night = selection.timeBiome === 'night' || selection.activeBiomes?.includes('night') || assetKey === 'night';
     const request = ++biomeBackgroundRequestId;
     BiomeBackground.setTime(night ? 'night' : 'day');
-    BiomeBackground.resolve(assets.image, { night }).then(image => {
+    const backgroundImage = MINIMAL_SIMULATOR && BiomeBackground.isVideo(assets.image)
+        ? 'files/images/backgrounds/minimal/glitchBiomeImage.webp' : assets.image;
+    BiomeBackground.resolve(backgroundImage, { night }).then(image => {
         if (request === biomeBackgroundRequestId) applyBiomeBackdrop(image);
     });
 
@@ -5073,6 +5165,35 @@ const ASTRALD_BLESSING_BLOCKING_EVENT_IDS = Object.freeze([
     'yg-blessing-toggle',
     'dorcelessness-luck-toggle'
 ]);
+
+const BLESSING_TOGGLE_BLOCKERS = Object.freeze({
+    'yg-blessing-toggle': YG_BLESSING_BLOCKING_EVENT_IDS,
+    'astrald-blessing-toggle': ASTRALD_BLESSING_BLOCKING_EVENT_IDS
+});
+
+function syncLuckToggleAvailability() {
+    const controls = Object.fromEntries(Object.values(EVENT_BUFF_TOGGLES).map(id => [id, document.getElementById(id)]));
+    const devBiome = isCurrentDevAdminAbuseActive();
+    for (const [id, control] of Object.entries(controls)) {
+        if (!control) continue;
+        const blockingIds = new Set();
+        for (const [blessing, blockers] of Object.entries(BLESSING_TOGGLE_BLOCKERS)) {
+            if (id === blessing) blockers.forEach(blocker => { if (controls[blocker]?.checked) blockingIds.add(blocker); });
+            else if (blockers.includes(id) && controls[blessing]?.checked) blockingIds.add(blessing);
+        }
+        const blockedByBiome = devBiome && Object.hasOwn(BLESSING_TOGGLE_BLOCKERS, id);
+        const disabled = !control.checked && (blockedByBiome || blockingIds.size > 0);
+        control.disabled = disabled;
+        const wrapper = control.closest('.form-field');
+        if (!wrapper) continue;
+        wrapper.classList.toggle('form-field--buff-disabled', disabled);
+        if (disabled) {
+            const names = [...blockingIds].map(blocker => controls[blocker].closest('.form-field')
+                .querySelector('.form-field__label').textContent.trim().replace(/\s+\([^)]*\)$/, ''));
+            wrapper.title = blockedByBiome ? 'Unavailable in this Admin Abuse biome.' : `Turn off ${names.join(' and ')} to enable this buff.`;
+        } else wrapper.removeAttribute('title');
+    }
+}
 
 const YG_BLESSING_EVENT_BLOCK_MESSAGE = "YG blessing has not been obtainable while these events have been occurring in Sol's RNG (yet).";
 const ASTRALD_BLESSING_EVENT_BLOCK_MESSAGE = "Astrald blessing has not been obtainable while these events have been occurring in Sol's RNG (yet).";
@@ -5709,6 +5830,7 @@ function setSimulationMethod(method, { playAudio = true } = {}) {
 }
 
 function setupWikiResourceHubSpin() {
+    if (MINIMAL_SIMULATOR) return;
     const card = document.querySelector('.resource-link--wiki');
     const icon = card?.querySelector('.resource-link__image--solswiki');
 
@@ -6769,6 +6891,7 @@ function hasCutsceneMediaSource(videoId) {
 }
 
 function getAuraCutsceneFadeDuration(videoId) {
+    if (MINIMAL_SIMULATOR) return 0;
     if (videoId === 'tomorrow-cutscene') return 2000;
     if (videoId === 'breakthrough-cutscene') return 5000;
     return 1000;
@@ -7180,18 +7303,22 @@ function playAuraVideo(videoId, options = {}) {
 
         void (async () => {
             try {
-                fadeAnimation = overlay.animate([{ opacity: 0 }, { opacity: 1 }], {
-                    duration: fadeDuration, easing: 'ease-in-out', fill: 'forwards'
-                });
-                const fade = fadeAnimation.finished.then(() => {
-                    if (cleanedUp) return;
-
-
+                let fade = Promise.resolve();
+                if (MINIMAL_SIMULATOR) {
                     overlay.style.opacity = '1';
-                    fadeAnimation.cancel();
-                    fadeAnimation = null;
                     overlay.classList.remove('cinematic-overlay--fading');
-                });
+                } else {
+                    fadeAnimation = overlay.animate([{ opacity: 0 }, { opacity: 1 }], {
+                        duration: fadeDuration, easing: 'ease-in-out', fill: 'forwards'
+                    });
+                    fade = fadeAnimation.finished.then(() => {
+                        if (cleanedUp) return;
+                        overlay.style.opacity = '1';
+                        fadeAnimation.cancel();
+                        fadeAnimation = null;
+                        overlay.classList.remove('cinematic-overlay--fading');
+                    });
+                }
                 await Promise.all([prepareCutsceneVideo(video), fade]);
                 if (cleanedUp) return;
 
@@ -8348,8 +8475,9 @@ function updateLayeredSigilText(container = document) {
 function observeLayeredSigilText() {
     initializeChangelogAuraSigils();
     updateLayeredSigilText();
-    registerGlitchSigils(document);
     WikiTitles.initializeItems();
+    if (MINIMAL_SIMULATOR) return;
+    registerGlitchSigils(document);
     WikiTitles.initializeEffects();
     if (!document.body) return;
     const pendingRoots = new Set();
@@ -8511,6 +8639,7 @@ function getGlitchSigilTextNodes(element) {
 }
 
 function scheduleGlitchSigilFlicker(delay = 10 + Math.random() * 5) {
+    if (MINIMAL_SIMULATOR) return;
     if (glitchSigilFlickerTimeoutId !== null) {
         clearTimeout(glitchSigilFlickerTimeoutId);
     }
@@ -9946,7 +10075,7 @@ function setupChangelogTabs() {
                 });
 
                 card.addEventListener('keydown', event => {
-                    if (event.key !== 'Enter' && event.key !== ' ') {
+                    if (event.target !== card || (event.key !== 'Enter' && event.key !== ' ')) {
                         return;
                     }
                     event.preventDefault();
@@ -10275,6 +10404,7 @@ function setupVersionChangelogOverlay() {
 }
 
 function setupNodeShiftAnimation() {
+    if (MINIMAL_SIMULATOR) return;
     const nodeShiftLink = document.querySelector('.resource-link--nodeshift');
     const nodeShiftImage = document.querySelector('.resource-link__image--nodeshift');
 
@@ -13196,7 +13326,7 @@ function resetLiveRollFeed() {
 
 function ensureRollFeedVisibilityObserver() {
     if (
-        rollFeedVisibilityObserver
+        MINIMAL_SIMULATOR || rollFeedVisibilityObserver
         || !feedContainer
         || typeof IntersectionObserver !== 'function'
     ) {
@@ -13420,6 +13550,8 @@ function isRarityFeedSort(mode) {
 }
 
 function sortRollFeedEntries(records, mode) {
+    const tomorrow = records.filter(record => record.auraName === RADIANT_REWARD_AURA_NAME);
+    if (tomorrow.length) return [...tomorrow, ...sortRollFeedEntries(records.filter(record => record.auraName !== RADIANT_REWARD_AURA_NAME), mode)];
     if (isRarityFeedSort(mode)) {
         const ordered = sortEntriesInUnnamedResultOrder(records);
         return mode === ROLL_FEED_SORT_MODE.RARITY_ASCENDING ? ordered.reverse() : ordered;
@@ -13537,7 +13669,7 @@ function buildResultEntries(
     biome,
     breakthroughStatsMap,
     luckValue,
-    { allowTrueChance = true, potionBatch = null, winCounts = null } = {}
+    { allowTrueChance = true, potionBatch = null, winCounts = null, includeFiltered = false } = {}
 ) {
     let entries = [];
     const safeWinCounts = Array.isArray(winCounts) || ArrayBuffer.isView(winCounts)
@@ -13550,7 +13682,7 @@ function buildResultEntries(
         ? formatMultiplePotionBatchResultText(potionBatch)
         : '';
     for (const aura of registry) {
-        if (shouldHideAuraFromRollFeed(aura, biome)) {
+        if (!includeFiltered && shouldHideAuraFromRollFeed(aura, biome)) {
             continue;
         }
         const auraIndex = getAuraIndex(aura);
@@ -13808,6 +13940,7 @@ function clearHarvesterCurseLayer() {
 }
 
 function renderHarvesterCurseLayer(count) {
+    if (MINIMAL_SIMULATOR) return;
     if (typeof document === 'undefined') return;
     clearHarvesterCurseLayer();
 
@@ -13859,6 +13992,7 @@ function clearFlushedTrollSignatureLayer() {
 }
 
 function renderFlushedTrollSignatureLayer(count) {
+    if (MINIMAL_SIMULATOR) return;
     if (typeof document === 'undefined') return;
     clearFlushedTrollSignatureLayer();
 
@@ -14247,6 +14381,54 @@ function prepareEquipmentSimulation(definitions, selectionState, eventContext, m
     return { batches, sequencePlan, rewardBatchIndex };
 }
 
+async function claimTomorrowReward() {
+    if (!isRememberRoll() || simulationActive || rememberClaimInProgress || Date.now() < radiantRememberReadyAt) return;
+    const state = radiantForestState;
+    rememberClaimInProgress = true;
+    syncRadiantRollLabel();
+    try {
+        await waitForRadiantMoonReveals();
+        if (state !== radiantForestState || !isRememberRoll()) return;
+        const aura = AURA_BY_NAME.get(RADIANT_REWARD_AURA_NAME);
+        await playAuraSequence([aura.cutscene], { force: true });
+        state.rewardClaimed = true;
+        auraWinCounts[aura.index]++;
+        const entries = buildResultEntries([aura], 'radiantForest', new Map(), 1, { winCounts: auraWinCounts, includeFiltered: true });
+        const record = entries.feedRecords[0];
+        if (record) {
+            const element = document.createElement('span');
+            element.className = 'roll-feed__result-entry';
+            element.dataset.rollFeedEntry = '';
+            element.dataset.auraName = encodeURIComponent(aura.name);
+            element.dataset.auraSortName = encodeURIComponent(record.alphabeticalName);
+            element.dataset.auraTier = record.tierKey;
+            element.dataset.auraPriority = Number.MAX_SAFE_INTEGER;
+            element.dataset.resultOrder = '-1';
+            element.innerHTML = record.markup;
+            (feedContainer.querySelector('.roll-feed__results-list') || feedContainer).prepend(element);
+        }
+        if (lastSimulationSummary) {
+            lastSimulationSummary.rolls++;
+            lastSimulationSummary.shareRecords = [...entries.shareRecords, ...(lastSimulationSummary.shareRecords || [])];
+            lastSimulationSummary.shareVisuals = [...entries.shareVisualRecords, ...(lastSimulationSummary.shareVisuals || [])];
+            const xp = summarizeXpRewards(AURA_REGISTRY);
+            lastSimulationSummary.xpTotal = xp.totalXp;
+            lastSimulationSummary.xpLines = xp.lines;
+            const summary = feedContainer.querySelector('[data-result-summary]');
+            if (summary) summary.outerHTML = ResultSummary.render(lastSimulationSummary);
+            ResultSummary.attachFeedNavigation(feedContainer);
+        }
+        observeRollFeedEntries(feedContainer);
+        applyRollFeedSearchFilter();
+        feedContainer.scrollTop = 0;
+        syncBiomeBuffs();
+        globalThis.SessionReturn?.save();
+    } finally {
+        rememberClaimInProgress = false;
+        syncSimulationMethodControls();
+    }
+}
+
 async function runRollSimulation(options = {}) {
     try {
 
@@ -14262,7 +14444,12 @@ async function runRollSimulation(options = {}) {
 }
 
 function startRollSimulation(options = {}) {
-    if (simulationActive || isAuraCutscenePlaybackActive()) return;
+    if (simulationActive || rememberClaimInProgress || isAuraCutscenePlaybackActive()) return;
+    if (isRememberRoll()) {
+        syncRadiantRollLabel();
+        if (Date.now() >= radiantRememberReadyAt) void claimTomorrowReward();
+        return;
+    }
 
     if (!feedContainer) {
         feedContainer = document.getElementById('simulation-feed');
@@ -14455,8 +14642,9 @@ function startRollSimulation(options = {}) {
     const runeValue = selectionState.runeValue;
     const timeBiome = selectionState.timeBiome;
 
+    const radiantDisplayState = radiantForestState;
     const radiantRun = primaryBiome === 'radiantForest'
-        ? { config: RADIANT_FOREST_CONFIG, state: radiantForestState, checkpoints: true }
+        ? { config: RADIANT_FOREST_CONFIG, state: solsLikeRun ? radiantForestState : { ...radiantForestState }, checkpoints: solsLikeRun, deferReward: true }
         : null;
     const initialRadiantState = radiantRun ? { ...radiantRun.state } : null;
     const updateRadiantProgress = () => {
@@ -14532,6 +14720,8 @@ function startRollSimulation(options = {}) {
     const playTomorrowCutscene = async () => {
         if (tomorrowCutsceneHandled) return;
         tomorrowCutsceneHandled = true;
+        await waitForRadiantMoonReveals();
+        if (runFinished || cancelRollRequested) return;
         const aura = AURA_BY_NAME.get(RADIANT_REWARD_AURA_NAME);
         await playAuraSequence([aura.cutscene], { force: true });
     };
@@ -14775,6 +14965,11 @@ function startRollSimulation(options = {}) {
             clearFlushedTrollSignatureLayer();
         }
 
+        if (radiantRun && !solsLikeRun && radiantForestState === radiantDisplayState
+            && document.getElementById(BIOME_PRIMARY_SELECT_ID)?.value === 'radiantForest') {
+            Object.assign(radiantForestState, radiantRun.state);
+            syncBiomeBuffs();
+        }
         globalThis.SessionReturn?.save();
     };
 
@@ -14824,7 +15019,7 @@ function startRollSimulation(options = {}) {
         );
         const maxFrameDuration = shouldScheduleBackgroundWork() ? 20 : 12;
         const liveCursor = SimulationCore.createRollCursor(simulationBatches, sequencePlan);
-        const radiantSelect = radiantRun ? SimulationCore.createRadiantSelector(radiantRun.config, radiantRun.state, sampleEntropy) : null;
+        const radiantSelect = radiantRun ? SimulationCore.createRadiantSelector(radiantRun.config, radiantRun.state, sampleEntropy, radiantRun) : null;
         let currentBatchIndex = 0;
         let manualPaused = false;
         let cutsceneActive = false;
@@ -14886,7 +15081,7 @@ function startRollSimulation(options = {}) {
 
         const performSingleLiveRoll = () => {
             currentBatchIndex = liveCursor.next(sampleEntropy);
-            if (radiantRun?.state.moons === 127 && !radiantRun.state.rewardClaimed) {
+            if (radiantRun && !radiantRun.deferReward && radiantRun.state.moons === 127 && !radiantRun.state.rewardClaimed) {
                 currentBatchIndex = radiantRun.rewardBatchIndex;
             }
             const activeBatch = simulationBatches[currentBatchIndex];
@@ -15046,7 +15241,7 @@ function startRollSimulation(options = {}) {
                     }
                 }
 
-                if (radiantRun?.state.moons === 127 && !radiantRun.state.rewardClaimed) break;
+                if (radiantRun && !radiantRun.deferReward && radiantRun.state.moons === 127 && !radiantRun.state.rewardClaimed) break;
                 if ((processedThisFrame & 63) === 0 && performance.now() >= frameDeadline) {
                     break;
                 }

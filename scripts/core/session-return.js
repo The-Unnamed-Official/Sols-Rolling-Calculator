@@ -54,7 +54,7 @@
                 presets: { oblivion: oblivionPresetEnabled, pumpkin: pumpKingsBloodPresetEnabled,
                     tutorial: tutorialPotionPresetEnabled, dune: dunePresetEnabled, blood: activeBloodPresetIdentifier },
                 devVariants: { ...devAdminAbuseVariantSelections }, blessing: corLunaeBlessingMultiplier,
-                radiant: { ...radiantForestState }
+                radiant: { ...radiantForestState }, rememberReadyAt: radiantRememberReadyAt
             },
             results: {
                 html: feed?.innerHTML.length <= 1200000 ? feed.innerHTML : '',
@@ -85,7 +85,7 @@
         template.innerHTML = typeof value === 'string' ? value.slice(0, 1200000) : '';
         const allowed = new Set(['SPAN', 'DIV', 'P', 'BR', 'STRONG', 'B', 'I', 'EM', 'SMALL',
             'A', 'IMG', 'UL', 'OL', 'LI', 'H2', 'H3', 'DL', 'DT', 'DD']);
-        const root = new URL('./', location.href);
+        const root = new URL('./', document.baseURI);
         for (const element of [...template.content.querySelectorAll('*')]) {
             if (!allowed.has(element.tagName)) { element.remove(); continue; }
             for (const attribute of [...element.attributes]) {
@@ -112,6 +112,29 @@
             }
         }
         return template;
+    }
+    function restoreAuraArtwork(root, biome) {
+        root.querySelectorAll('.wiki-title--aura').forEach(title => {
+            const name = WikiTitles.resolveAuraName(title.getAttribute('aria-label'));
+            if (!name) return;
+            const tier = [...(title.querySelector('.wiki-title__plain')?.classList || [])]
+                .find(value => value.startsWith('rarity-tier-')) || 'rarity-tier-basic';
+            const template = document.createElement('template');
+            template.innerHTML = WikiTitles.aura(name, '', tier);
+            title.replaceWith(template.content);
+        });
+        root.querySelectorAll('.aura-link-title').forEach(title => {
+            if (title.querySelector('.wiki-title--aura')) return;
+            let name;
+            try { name = decodeURIComponent(title.closest('[data-aura-name]')?.dataset.auraName || ''); }
+            catch { return; }
+            const aura = AURA_BY_NAME.get(name);
+            if (aura) {
+                const label = title.cloneNode(true);
+                label.querySelectorAll('.sigil-subtitle').forEach(subtitle => subtitle.remove());
+                title.innerHTML = formatAuraNameMarkup(aura, label.textContent.trim(), biome);
+            }
+        });
     }
     function cleanSummary(value, depth = 0) {
         if (depth > 8) return null;
@@ -187,6 +210,7 @@
             if (document.getElementById(BIOME_PRIMARY_SELECT_ID).value === 'radiantForest') {
                 const moons = Math.floor(finite(setup.radiant?.moons, 0, 127));
                 radiantForestState = { moons, rewardClaimed: moons === 127 && setup.radiant?.rewardClaimed === true };
+                radiantRememberReadyAt = Math.min(Date.now() + 5000, finite(setup.rememberReadyAt));
                 resetRadiantMoonSounds(moons);
             }
             recomputeLuckValue();
@@ -198,6 +222,7 @@
             }
             const feed = document.getElementById('simulation-feed');
             feed.replaceChildren(safeMarkup(snapshot.results?.html).content);
+            restoreAuraArtwork(feed, collectBiomeSelectionState().canonicalBiome);
             if (!feed.textContent.trim() && auraWinCounts.some(count => count > 0)) {
                 const biome = collectBiomeSelectionState().canonicalBiome;
                 const entries = buildResultEntries(AURA_REGISTRY, biome, new Map(), currentLuck,

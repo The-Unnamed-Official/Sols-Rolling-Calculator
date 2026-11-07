@@ -1,11 +1,3 @@
-const fs = require('node:fs');
-const path = require('node:path');
-const vm = require('node:vm');
-const root = path.resolve(__dirname, '../..');
-const context = {};
-vm.runInNewContext(fs.readFileSync(path.join(root, 'scripts/titles/wiki-title-data.js'), 'utf8'), context);
-const normalize = value => value.replace(/_/g, ' ').trim().toLowerCase();
-
 function templateBody(text, start) {
     let depth = 0;
     for (let index = start; index < text.length - 1; index++) {
@@ -83,6 +75,7 @@ function extract(page, { fullDescription = false } = {}) {
     const categories = [...text.matchAll(/\[\[Category:([^\]|]+)/gi)].map(match => match[1].trim());
     const notices = templates(text, 'Aura Notice').map(body => fields(body));
     const rarity = plainText(infobox.aura_rarity || infobox.chance);
+    const prerequisite = /^(?:Obtainable|Obtained)\s+after\s+(.+?)(?=\s+1\s*(?:in|\/)|$)/i.exec(rarity)?.[1];
     const biomeTemplates = [infobox.required || '', infobox.aura_rarity || ''].flatMap(value => templates(value, 'Biome').map(body => plainText(fields(body)[1] || ''))).filter(Boolean);
     const required = biomeTemplates.length ? [...new Set(biomeTemplates)].join(' or ') : plainText(infobox.required || infobox.biome);
     const eventText = (profile || text.slice(0, 5000)) + ' ' + notices.map(notice => notice.reason || '').join(' ') + ' ' + categories.join(' ');
@@ -104,7 +97,7 @@ function extract(page, { fullDescription = false } = {}) {
         nativeRarity: plainText(infobox.native_rarity),
         tier: plainText(infobox.rarity_name),
         required,
-        obtainment: plainText(infobox.obtainment),
+        obtainment: plainText(infobox.obtainment) || (prerequisite ? 'After ' + prerequisite : ''),
         categories,
         notice: plainText(notices[0]?.reason || ''),
         status: notices[0]?.type || '',
@@ -112,42 +105,8 @@ function extract(page, { fullDescription = false } = {}) {
         events
     };
 }
-async function query(titles) {
-    const params = new URLSearchParams({ action: 'query', prop: 'revisions', rvprop: 'ids|content', rvslots: 'main', titles: titles.join('|'), redirects: '1', format: 'json', formatversion: '2' });
-    const response = await fetch('https://sol-rng.fandom.com/api.php?' + params);
-    if (!response.ok) throw new Error('Wiki API returned ' + response.status);
-    const data = await response.json();
-    if (data.error) throw new Error(data.error.info);
-    return data.query;
-}
-async function refresh() {
-    const navigation = await query(['Template:Auras']);
-    const markup = navigation.pages[0].revisions[0].slots.main.content;
-    const titles = new Set([...markup.matchAll(/\[\[([^|\]]+)\|\s*\{\{Aura\|/g)].map(match => match[1].replace(/^:/, '')));
-    for (const title of Object.values(context.WikiTitleData.auras)) if (title.source && !title.pending) titles.add(decodeURIComponent(new URL(title.source).pathname.slice('/wiki/'.length)).replace(/_/g, ' '));
-    titles.add('Solar');
-    const batches = [];
-    const all = [...titles];
-    for (let index = 0; index < all.length; index += 50) batches.push(all.slice(index, index + 50));
-    const pages = new Map(), aliases = {};
-    for (let index = 0; index < batches.length; index += 3) {
-        const results = await Promise.all(batches.slice(index, index + 3).map(query));
-        for (const result of results) {
-            for (const alias of [...(result.normalized || []), ...(result.redirects || [])]) aliases[normalize(alias.from)] = normalize(alias.to);
-            for (const page of result.pages) {
-                if (page.missing) throw new Error('Missing wiki page: ' + page.title);
-                pages.set(normalize(page.title), extract(page));
-            }
-        }
-        console.log('Retrieved ' + pages.size + ' wiki aura articles');
-    }
-    const directory = path.join(root, 'data/auras');
-    fs.mkdirSync(directory, { recursive: true });
-    fs.writeFileSync(path.join(directory, 'wiki-reference.json'), JSON.stringify({
-        source: 'https://sol-rng.fandom.com/wiki/Template:Auras', reviewedOn: '2026-10-03', aliases,
-        pages: [...pages.values()].sort((a, b) => a.title.localeCompare(b.title))
-    }, null, 2) + '\n');
-    console.log('Saved ' + pages.size + ' attributed aura references (' + [...pages.values()].filter(page => page.description).length + ' descriptions).');
-}
 module.exports = { templates, fields, plainText, extract };
-if (require.main === module) refresh().catch(error => { console.error(error); process.exitCode = 1; });
+if (require.main === module) require('./refresh-aura-directory.cjs').refreshDirectory({
+    reviewedOn: process.argv.find(argument => argument.startsWith('--reviewed-on='))?.slice(14),
+    fromCache: process.argv.includes('--from-cache')
+}).catch(error => { console.error(error); process.exitCode = 1; });

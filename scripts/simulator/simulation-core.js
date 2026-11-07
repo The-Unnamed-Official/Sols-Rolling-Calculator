@@ -134,17 +134,23 @@ function createRollCursor(batches, sequencePlan = null) {
     let randomBlock = -1;
     let heldChoice = 0;
     const total = plan.reduce((sum, group) => sum + group.count, 0);
+    let group = plan[0];
+    let prefix = group?.prefix || [];
+    let pattern = group?.pattern;
     return {
         get currentRoll() { return currentRoll; },
         get total() { return total; },
         get done() { return currentRoll >= total; },
         next(sampleEntropy) {
-            while (groupIndex < plan.length && groupRoll >= plan[groupIndex].count) { groupIndex++; groupRoll = 0; }
-            const group = plan[groupIndex];
+            while (group && groupRoll >= group.count) {
+                group = plan[++groupIndex];
+                groupRoll = 0;
+                prefix = group?.prefix || [];
+                pattern = group?.pattern;
+            }
             if (!group) return -1;
             const roll = (group.startRoll || 0) + groupRoll;
-            const prefix = group.prefix || [];
-            const entry = roll < prefix.length ? prefix[roll] : group.pattern[(roll - prefix.length) % group.pattern.length];
+            const entry = roll < prefix.length ? prefix[roll] : pattern[(roll - prefix.length) % pattern.length];
             groupRoll++;
             currentRoll++;
             if (!Array.isArray(entry)) return entry;
@@ -172,10 +178,10 @@ function radiantUnlockMask(state) {
         | ((moons & 112) === 112 ? 4 : 0);
 }
 
-function createRadiantSelector(config, state, sampleEntropy) {
+function createRadiantSelector(config, state, sampleEntropy, { deferReward = false } = {}) {
     const moonBits = new Map(config.moonIndices.map((index, moon) => [index, 1 << moon]));
     return batch => {
-        if (state.moons === 127 && !state.rewardClaimed) {
+        if (!deferReward && state.moons === 127 && !state.rewardClaimed) {
             state.rewardClaimed = true;
             return { auraIndex: config.rewardIndex, breakthroughIndex: -1 };
         }
@@ -189,67 +195,116 @@ function createRadiantSelector(config, state, sampleEntropy) {
 
 function createRunner(batches, winCounts, sampleEntropy, breakthroughCounts = null, sequencePlan = null, radiant = null) {
     const cursor = createRollCursor(batches, sequencePlan);
-    const radiantSelect = radiant ? createRadiantSelector(radiant.config, radiant.state, sampleEntropy) : null;
+    const total = cursor.total;
+    let currentRoll = 0;
+    const radiantSelect = radiant ? createRadiantSelector(radiant.config, radiant.state, sampleEntropy, radiant) : null;
     let checkpoint = null;
     const mappings = batches.map(batch => {
         const validIndex = index => Number.isInteger(index) && index >= 0 && index < winCounts.length ? index : -1;
         return {
+            selection: batch.combinedSelection.selection,
+            wins: batch.winCounts,
+            breakthroughs: batch.breakthroughCounts,
             aura: Int32Array.from(batch.combinedSelection.auraIndices, validIndex),
             breakthrough: Int32Array.from(batch.combinedSelection.breakthroughIndices, validIndex)
         };
     });
+    const plan = sequencePlan || batches.map((batch, index) => ({ count: batch.count, pattern: [index] }));
+    const deterministic = !radiant && plan.every(group => !group.count
+        || [...(group.prefix || []), ...group.pattern].every(Number.isInteger));
+    const segments = [];
+    if (deterministic) plan.forEach(group => {
+        const prefix = group.prefix || [];
+        const start = group.startRoll || 0;
+        const prefixCount = Math.min(group.count, Math.max(0, prefix.length - start));
+        if (prefixCount) segments.push({ count: prefixCount, position: start, pattern: prefix.map(index => mappings[index]) });
+        if (group.count > prefixCount) {
+            const pattern = group.pattern.map(index => mappings[index]);
+            if (pattern.every(entry => entry === pattern[0])) pattern.length = 1;
+            segments.push({ count: group.count - prefixCount,
+                position: Math.max(0, start - prefix.length) % pattern.length, pattern });
+        }
+    });
+    let segmentIndex = 0;
+    let segmentRoll = 0;
+    let position = segments[0]?.position || 0;
+    let mapping = null;
+    let previousBatch = -1;
     return {
-        get currentRoll() { return cursor.currentRoll; },
-        get done() { return cursor.done; },
+        get currentRoll() { return currentRoll; },
+        get done() { return currentRoll >= total; },
         get checkpoint() { return checkpoint; },
         runSlice(budgetMs, now) {
             checkpoint = null;
             const deadline = now() + budgetMs;
             do {
-                const count = Math.min(4096, cursor.total - cursor.currentRoll);
+                let count = Math.min(4096, total - currentRoll);
+                if (!radiantSelect) {
+                    const segment = segments[segmentIndex];
+                    if (deterministic) count = Math.min(count, segment?.count - segmentRoll || 0);
+                    const pattern = segment?.pattern;
+                    for (let roll = 0; roll < count; roll++) {
+                        if (deterministic) {
+                            mapping = pattern[position];
+                            if (++position === pattern.length) position = 0;
+                        } else {
+                            const batchIndex = cursor.next(sampleEntropy);
+                            if (batchIndex !== previousBatch) {
+                                previousBatch = batchIndex;
+                                mapping = mappings[batchIndex];
+                            }
+                        }
+                        const selected = selectWeightedIndex(mapping.selection, sampleEntropy());
+                        if (selected < 0) continue;
+                        const auraIndex = mapping.aura[selected];
+                        if (auraIndex >= 0) {
+                            winCounts[auraIndex]++;
+                            mapping.wins[auraIndex]++;
+                        }
+                        const btIndex = mapping.breakthrough[selected];
+                        if (btIndex >= 0) {
+                            mapping.breakthroughs[btIndex]++;
+                            if (breakthroughCounts) breakthroughCounts[btIndex]++;
+                        }
+                    }
+                    currentRoll += count;
+                    if (deterministic) {
+                        segmentRoll += count;
+                        if (segmentRoll === segment?.count) {
+                            segmentIndex++;
+                            segmentRoll = 0;
+                            position = segments[segmentIndex]?.position || 0;
+                        }
+                    }
+                    continue;
+                }
                 for (let roll = 0; roll < count; roll++) {
                     let batchIndex = cursor.next(sampleEntropy);
-                    if (radiant?.state.moons === 127 && !radiant.state.rewardClaimed
+                    currentRoll++;
+                    if (!radiant.deferReward && radiant.state.moons === 127 && !radiant.state.rewardClaimed
                         && Number.isInteger(radiant.rewardBatchIndex)) {
                         batchIndex = radiant.rewardBatchIndex;
                     }
                     const batch = batches[batchIndex];
-                    if (radiantSelect) {
-                        const previousMoons = radiant.state.moons;
-                        const previousReward = radiant.state.rewardClaimed;
-                        const { auraIndex, breakthroughIndex } = radiantSelect(batch);
-                        if (auraIndex >= 0) {
-                            winCounts[auraIndex]++;
-                            batch.winCounts[auraIndex]++;
-                        }
-                        if (breakthroughIndex >= 0) {
-                            batch.breakthroughCounts[breakthroughIndex]++;
-                            if (breakthroughCounts) breakthroughCounts[breakthroughIndex]++;
-                        }
-                        if (radiant.checkpoints) {
-                            if (!previousReward && radiant.state.rewardClaimed) checkpoint = 'radiant-reward';
-                            else if (previousMoons !== 127 && radiant.state.moons === 127) checkpoint = 'radiant-ready';
-                            if (checkpoint) return cursor.currentRoll;
-                        }
-                        continue;
-                    }
-                    const selection = batch.combinedSelection.selection;
-                    const mapping = mappings[batchIndex];
-                    const selected = selectWeightedIndex(selection, sampleEntropy());
-                    if (selected < 0) continue;
-                    const auraIndex = mapping.aura[selected];
+                    const previousMoons = radiant.state.moons;
+                    const previousReward = radiant.state.rewardClaimed;
+                    const { auraIndex, breakthroughIndex } = radiantSelect(batch);
                     if (auraIndex >= 0) {
                         winCounts[auraIndex]++;
                         batch.winCounts[auraIndex]++;
                     }
-                    const btIndex = mapping.breakthrough[selected];
-                    if (btIndex >= 0) {
-                        batch.breakthroughCounts[btIndex]++;
-                        if (breakthroughCounts) breakthroughCounts[btIndex]++;
+                    if (breakthroughIndex >= 0) {
+                        batch.breakthroughCounts[breakthroughIndex]++;
+                        if (breakthroughCounts) breakthroughCounts[breakthroughIndex]++;
+                    }
+                    if (radiant.checkpoints) {
+                        if (!previousReward && radiant.state.rewardClaimed) checkpoint = 'radiant-reward';
+                        else if (previousMoons !== 127 && radiant.state.moons === 127) checkpoint = 'radiant-ready';
+                        if (checkpoint) return currentRoll;
                     }
                 }
-            } while (!cursor.done && now() < deadline);
-            return cursor.currentRoll;
+            } while (currentRoll < total && now() < deadline);
+            return currentRoll;
         }
     };
 }

@@ -136,3 +136,10 @@ body.quality-no-roll-sigil-animations .wiki-title *::after {
     animation: none !important;
     transition: none !important;
 }
+.aura-tier-detail:is(.rarity-tier-challenged, .rarity-tier-challenged-plus):has(.wiki-title--aura) {
+    background: none;
+    background-clip: border-box;
+    -webkit-background-clip: border-box;
+    color: var(--text-primary, #f5f8ff);
+    animation: none;
+}

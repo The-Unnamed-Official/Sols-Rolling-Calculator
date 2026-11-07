@@ -5,11 +5,11 @@ const target=path.join(__dirname, '../../data/auras/soundtracks.json');
 const uploads=fs.existsSync(target)?JSON.parse(fs.readFileSync(target,'utf8')):{};
 function currentMusic(raw='') {
     const tabs=tabbers(raw);
-    if(tabs.length) raw=(tabs.find(tab=>/^(?:current|new|main)$/i.test(tab.label))||tabs[0]).content;
+    if(tabs.length) raw=(tabs.find(tab=>/^(?:current|new|main)\b/i.test(tab.label))||tabs[0]).content;
     return raw;
 }
-function soundtracks(raw='') {
+function soundtracks(raw='', assets=uploads) {
     raw=currentMusic(raw);
-    return [...raw.matchAll(/\[\[(?:File|Image):([^|\]]+\.(?:mp3|ogg|wav|m4a|opus))(?=[|\]])/gi)].map(match=>uploads[fileKey(match[1])]).filter(Boolean).filter((track,index,all)=>all.findIndex(other=>other.url===track.url)===index);
+    return [...raw.matchAll(/\[\[(?:File|Image):([^|\]]+\.(?:mp3|ogg|wav|m4a|opus))(?=[|\]])/gi)].map(match=>assets[fileKey(match[1])]).filter(Boolean).filter((track,index,all)=>all.findIndex(other=>other.url===track.url)===index);
 }
 module.exports={soundtracks,currentMusic};
