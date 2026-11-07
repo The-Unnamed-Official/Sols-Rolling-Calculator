@@ -4,8 +4,6 @@
     const randomToolkit = (() => {
         const toUint = value => (value >>> 0) & 0xffffffff;
         const sfc32 = (a, b, c, d) => {
-            // All state transitions below already produce signed 32-bit words.
-            // Coerce the seed once, avoiding four redundant state writes per draw.
             a |= 0;
             b |= 0;
             c |= 0;

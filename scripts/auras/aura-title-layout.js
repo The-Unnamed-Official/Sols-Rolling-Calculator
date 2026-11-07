@@ -70,8 +70,6 @@
     function fitTitles(batch, eager = false) {
         const entries = batch.map(title => ({ title, container: fittingContainer(title, eager) }))
             .filter(({ container }) => container && container.getBoundingClientRect().width);
-        // Reset all titles, read all bounds, then commit all frames. Alternating
-        // these writes and reads per title forced a full layout for every card.
         entries.forEach(({ title }) => {
             title.style.transform = 'none';
             title.style.left = '0px';

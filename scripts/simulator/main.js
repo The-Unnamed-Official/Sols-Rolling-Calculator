@@ -960,6 +960,7 @@ function syncRadiantRollLabel() {
 }
 
 function syncBiomeBuffs(state = radiantForestState) {
+    syncLuckToggleAvailability();
     syncRememberRollControls();
     syncRadiantRollLabel();
     const panel = document.getElementById('biomeBuffs');
@@ -1065,8 +1066,6 @@ async function waitForRadiantMoonReveals() {
         return;
     }
     while (!sky.hidden) {
-        // Flush new collection classes before looking for transitions, including
-        // their queued 500ms delays. The endless sway/color loops are excluded.
         sky.getBoundingClientRect();
         const pending = sky.getAnimations({ subtree: true }).filter(animation =>
             animation.playState !== 'finished' && animation.playState !== 'idle'
@@ -4400,7 +4399,6 @@ function scheduleGlitchWarbleCycle(bgMusic, chain) {
     const baseGain = computeEffectiveBackgroundVolume(bgMusic);
     const cycleDuration = Math.floor(reducedGlitch ? randomDecimalBetween(55, 85) : randomDecimalBetween(24, 40));
     const previousTarget = glitchUiState.pitchTargetRate ?? bgMusic.playbackRate;
-    // Alternate below and above the original pitch; keep the track moving forward.
     const pitchSteps = reducedGlitch
         ? (previousTarget >= 1 ? [-4, -2] : [2, 4])
         : (previousTarget >= 1 ? [-24, -17, -12] : [12, 17, 24]);
@@ -5167,6 +5165,35 @@ const ASTRALD_BLESSING_BLOCKING_EVENT_IDS = Object.freeze([
     'yg-blessing-toggle',
     'dorcelessness-luck-toggle'
 ]);
+
+const BLESSING_TOGGLE_BLOCKERS = Object.freeze({
+    'yg-blessing-toggle': YG_BLESSING_BLOCKING_EVENT_IDS,
+    'astrald-blessing-toggle': ASTRALD_BLESSING_BLOCKING_EVENT_IDS
+});
+
+function syncLuckToggleAvailability() {
+    const controls = Object.fromEntries(Object.values(EVENT_BUFF_TOGGLES).map(id => [id, document.getElementById(id)]));
+    const devBiome = isCurrentDevAdminAbuseActive();
+    for (const [id, control] of Object.entries(controls)) {
+        if (!control) continue;
+        const blockingIds = new Set();
+        for (const [blessing, blockers] of Object.entries(BLESSING_TOGGLE_BLOCKERS)) {
+            if (id === blessing) blockers.forEach(blocker => { if (controls[blocker]?.checked) blockingIds.add(blocker); });
+            else if (blockers.includes(id) && controls[blessing]?.checked) blockingIds.add(blessing);
+        }
+        const blockedByBiome = devBiome && Object.hasOwn(BLESSING_TOGGLE_BLOCKERS, id);
+        const disabled = !control.checked && (blockedByBiome || blockingIds.size > 0);
+        control.disabled = disabled;
+        const wrapper = control.closest('.form-field');
+        if (!wrapper) continue;
+        wrapper.classList.toggle('form-field--buff-disabled', disabled);
+        if (disabled) {
+            const names = [...blockingIds].map(blocker => controls[blocker].closest('.form-field')
+                .querySelector('.form-field__label').textContent.trim().replace(/\s+\([^)]*\)$/, ''));
+            wrapper.title = blockedByBiome ? 'Unavailable in this Admin Abuse biome.' : `Turn off ${names.join(' and ')} to enable this buff.`;
+        } else wrapper.removeAttribute('title');
+    }
+}
 
 const YG_BLESSING_EVENT_BLOCK_MESSAGE = "YG blessing has not been obtainable while these events have been occurring in Sol's RNG (yet).";
 const ASTRALD_BLESSING_EVENT_BLOCK_MESSAGE = "Astrald blessing has not been obtainable while these events have been occurring in Sol's RNG (yet).";
@@ -10048,7 +10075,7 @@ function setupChangelogTabs() {
                 });
 
                 card.addEventListener('keydown', event => {
-                    if (event.key !== 'Enter' && event.key !== ' ') {
+                    if (event.target !== card || (event.key !== 'Enter' && event.key !== ' ')) {
                         return;
                     }
                     event.preventDefault();

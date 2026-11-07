@@ -1,6 +1,17 @@
 (() => {
     'use strict';
-    if (document.documentElement.dataset.simulatorMode === 'minimal') return;
+    const minimalMode = document.documentElement.dataset.simulatorMode === 'minimal';
+    const syncSwitches = () => document.querySelectorAll('[data-potato-switch]').forEach(control => {
+        control.checked = minimalMode;
+    });
+    syncSwitches();
+    window.addEventListener('pageshow', syncSwitches);
+    document.addEventListener('change', event => {
+        const control = event.target.closest('[data-potato-switch]');
+        if (!control || control.checked === minimalMode) return;
+        window.location.assign(new URL(control.dataset.potatoTarget, document.baseURI).href);
+    });
+    if (minimalMode) return;
     const root = new URL('../../', document.currentScript.src);
     let preview, frame, active = null, ticket = 0, cleanupTimer, loading = null;
 
@@ -17,7 +28,7 @@
             preview.setAttribute('aria-hidden', 'true');
             frame = document.createElement('iframe');
             frame.className = 'potato-preview__frame';
-            frame.title = 'Potato Land appearance preview';
+            frame.title = 'Rotato Simulator appearance preview';
             frame.setAttribute('sandbox', 'allow-same-origin');
             frame.setAttribute('inert', '');
             frame.tabIndex = -1;
@@ -98,18 +109,21 @@
         preview?.classList.remove('potato-preview--visible');
         cleanupTimer = setTimeout(() => { preview?.remove(); preview = frame = loading = null; }, 1000);
     }
-    document.addEventListener('pointerover', event => {
+    document.addEventListener('pointermove', event => {
         if (event.pointerType === 'touch') return;
         const button = event.target.closest('[data-potato-portal]');
         if (button && button !== active) void show(button, event);
+        else if (!button) hide();
     });
-    document.addEventListener('pointerout', event => { if (active && !active.contains(event.relatedTarget)) hide(); });
+    document.addEventListener('pointerout', event => { if (active && !event.relatedTarget) hide(); });
     document.addEventListener('focusin', event => {
         const button = event.target.closest('[data-potato-portal]');
-        if (button?.matches(':focus-visible')) void show(button);
+        if (button && event.target.matches(':focus-visible')) void show(button);
     });
-    document.addEventListener('focusout', event => { if (event.target === active) hide(); });
-    window.addEventListener('scroll', hide, { passive: true });
+    document.addEventListener('focusout', event => { if (active && !active.contains(event.relatedTarget)) hide(); });
+    window.addEventListener('scroll', () => {
+        if (active && frame?.isConnected) frame.contentWindow?.scrollTo(window.scrollX, window.scrollY);
+    }, { passive: true });
     window.addEventListener('resize', hide, { passive: true });
     window.addEventListener('blur', hide);
 })();

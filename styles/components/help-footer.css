@@ -124,16 +124,17 @@
     .interface-footer .footer-credits__list { grid-template-columns: minmax(0, 1fr); }
     .interface-footer .footer-credits__filters { flex-wrap: wrap; }
 }
-.potato-portal,
-.potato-portal:link,
-.potato-portal:visited {
+.potato-portal {
     display: inline-flex;
     align-items: center;
-    justify-content: center;
-    min-height: 38px;
-    padding: 9px 16px;
+    justify-content: space-between;
+    gap: 12px;
+    box-sizing: border-box;
+    min-width: min(100%, 280px);
+    max-width: 100%;
+    padding: 12px 14px;
     border: 1px dashed rgba(198, 213, 226, .48);
-    border-radius: 6px;
+    border-radius: 0;
     background: rgba(22, 28, 36, .88);
     color: #d6dce3;
     font-family: 'Sarpanch', sans-serif;
@@ -141,11 +142,25 @@
     font-weight: 600;
     line-height: 1.4;
     letter-spacing: .045em;
-    text-decoration: none !important;
-    cursor: pointer;
 }
-.potato-portal:hover { color: #f6f8ff; border-color: #c7d1db; text-decoration: none !important; }
-.potato-portal:focus-visible { outline: 2px solid #c7d1db; outline-offset: 4px; }
+.potato-portal:hover,
+.potato-portal:focus-within { border-color: #c7d1db; }
+.potato-portal__label { min-width: 0; white-space: nowrap; }
+.potato-portal__description { display: block; margin-top: 2px; color: #9ca9b7; font-size: 11px; font-weight: 400; }
+.potato-portal .potato-portal__switch {
+    --button-background: #161c24;
+    --button-accent: rgba(198, 213, 226, .45);
+    --button-corner-size: 8px;
+    --toggle-thumb-size: 18px;
+    width: 48px;
+    flex: 0 0 auto;
+    border-color: #7e8a99;
+    box-shadow: none;
+}
+.potato-portal .potato-portal__switch .toggle__track { background: #242d39; border-color: #7e8a99; box-shadow: none; }
+.potato-portal .potato-portal__switch .toggle__thumb { background: #aebbc8; box-shadow: none; }
+.potato-portal .potato-portal__switch .toggle__input:checked + .toggle__track { background: #34444a; border-color: #c7d1db; }
+.potato-portal .potato-portal__switch .toggle__input:checked + .toggle__track + .toggle__thumb { background: #d9e7ea; }
 @property --potato-preview-radius { syntax: '<length>'; inherits: true; initial-value: 0px; }
 .potato-preview {
     position: fixed;
@@ -166,4 +181,4 @@
 .potato-preview--visible { opacity: 1; --potato-preview-radius: var(--potato-preview-target); }
 .potato-preview__frame { display: block; width: 100%; height: 100%; border: 0; pointer-events: none; }
 @media (prefers-reduced-motion: reduce) { .potato-preview { transition: none; } }
-.resource-panel > .potato-portal-row { display: flex; justify-content: center; }
+.potato-portal-row { display: flex; justify-content: center; }

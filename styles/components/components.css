@@ -903,6 +903,20 @@ select.form-field__input option {
     flex-shrink: 0;
 }
 
+.control-section--luck > .form-field--buff-disabled,
+.control-section--luck > .form-field--buff-disabled:hover,
+.control-section--luck > .form-field--buff-disabled:focus-within {
+    opacity: .45;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+.form-field--buff-disabled .toggle,
+.form-field--buff-disabled .toggle__input { cursor: not-allowed; box-shadow: none; }
+.form-field--buff-disabled .toggle { --button-accent: #667080; border-color: #526074; }
+.form-field--buff-disabled .toggle .toggle__track { background: #18202c; border-color: #526074; box-shadow: none; }
+.form-field--buff-disabled .toggle .toggle__thumb { background: #8a94a3; transform: none; box-shadow: none; }
+
 .control-section--run-dev,
 .control-section--run-main {
     gap: 10px;

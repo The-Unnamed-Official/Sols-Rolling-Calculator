@@ -114,8 +114,6 @@
         return template;
     }
     function restoreAuraArtwork(root, biome) {
-        // Saved HTML is sanitized above. Recreate trusted title art from the
-        // current catalog so sanitizing old inline styles can't break it.
         root.querySelectorAll('.wiki-title--aura').forEach(title => {
             const name = WikiTitles.resolveAuraName(title.getAttribute('aria-label'));
             if (!name) return;
@@ -125,7 +123,6 @@
             template.innerHTML = WikiTitles.aura(name, '', tier);
             title.replaceWith(template.content);
         });
-        // Repair sessions saved by the earlier text-only Potato Land page too.
         root.querySelectorAll('.aura-link-title').forEach(title => {
             if (title.querySelector('.wiki-title--aura')) return;
             let name;

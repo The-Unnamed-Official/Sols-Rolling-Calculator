@@ -209,8 +209,6 @@ function createRunner(batches, winCounts, sampleEntropy, breakthroughCounts = nu
             breakthrough: Int32Array.from(batch.combinedSelection.breakthroughIndices, validIndex)
         };
     });
-    // Prepare deterministic schedules once instead of decoding equipment timing
-    // per roll. Random/held schedules retain their interleaved entropy draws.
     const plan = sequencePlan || batches.map((batch, index) => ({ count: batch.count, pattern: [index] }));
     const deterministic = !radiant && plan.every(group => !group.count
         || [...(group.prefix || []), ...group.pattern].every(Number.isInteger));
@@ -222,7 +220,6 @@ function createRunner(batches, winCounts, sampleEntropy, breakthroughCounts = nu
         if (prefixCount) segments.push({ count: prefixCount, position: start, pattern: prefix.map(index => mappings[index]) });
         if (group.count > prefixCount) {
             const pattern = group.pattern.map(index => mappings[index]);
-            // Collapse uniform patterns, including the common normal-roll case.
             if (pattern.every(entry => entry === pattern[0])) pattern.length = 1;
             segments.push({ count: group.count - prefixCount,
                 position: Math.max(0, start - prefix.length) % pattern.length, pattern });

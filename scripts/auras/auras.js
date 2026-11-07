@@ -159,8 +159,6 @@
                 await globalThis.AuraTitleLayout?.preload(titlePreload);
                 if (ticket === preloadRequest) titlePreload.dataset.preloadState = 'ready';
             };
-            // Finish the visible page first; only warm neighboring pages when
-            // the browser has spare time. Stale searches never warm old results.
             if (typeof requestIdleCallback === 'function') requestIdleCallback(warmNeighbors, { timeout: 500 });
             else setTimeout(warmNeighbors, 0);
         });

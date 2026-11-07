@@ -2985,6 +2985,43 @@ body.quality-no-ui-animations .audio-slider__input::-moz-range-thumb {
     margin-top: 0.45em;
 }
 
+.changelog-modal__list.changelog-update-groups {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+    padding: 0;
+    list-style: none;
+}
+.changelog-subupdate-card--open .changelog-update-groups { max-height: none; }
+.changelog-update-groups > .changelog-update-group {
+    margin: 0;
+    padding: 16px;
+    border: 1px solid rgb(var(--accent-rgb) / .18);
+    background: rgba(4, 10, 22, .35);
+}
+.changelog-update-group > h4 {
+    margin: 0 0 10px;
+    color: var(--accent-strong);
+    font-family: 'Sarpanch', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+}
+.changelog-update-group > ul {
+    display: grid;
+    gap: 8px;
+    margin: 0;
+    padding-left: 18px;
+    list-style: disc;
+    color: var(--text-secondary);
+    font-size: 14px;
+    line-height: 1.65;
+}
+@media (max-width: 680px) {
+    .changelog-modal__list.changelog-update-groups { grid-template-columns: minmax(0, 1fr); }
+}
+
 
 .changelog-modal__panel--eon128-hell {
     --accent-rgb: 255 91 48;
