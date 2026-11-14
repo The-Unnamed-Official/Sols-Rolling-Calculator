@@ -1701,6 +1701,81 @@ globalThis.WikiTitleData = {
       "source": "https://sol-rng.fandom.com/wiki/Cataclysmic",
       "pending": true,
       "markup": "<span style=\"display:inline-block;font-family:'Cinzel';font-weight:700;letter-spacing:.12em;background:linear-gradient(180deg,#fff3cf 8%,#f0b174 30%,#cd5438 52%,#5d1223 76%,#b75466);background-clip:text;-webkit-background-clip:text!important;-webkit-text-fill-color:transparent;-webkit-text-stroke:.01em #e0a17d\">CATACLYSMIC</span>"
+    },
+    "Sinister : S": {
+      "source": "https://sol-rng.fandom.com/wiki/Sinister_:_S",
+      "markup": "<span style=\"background: linear-gradient(180deg, #3e41b5 70%, #fbfdfd 20%); -webkit-background-clip:text !important; -webkit-text-fill-color:transparent; font-family: Dancing Script; font-size: 115%; -webkit-text-stroke: .2px #bdc3fb;\">Sinister&#160;: S</span>"
+    },
+    "Entropy": {
+      "source": "https://sol-rng.fandom.com/wiki/Entropy",
+      "pending": true,
+      "markup": "<span style=\"display:inline-block;font-family:&#39;Merriweather&#39;;font-weight:700;letter-spacing:.06em;background:linear-gradient(180deg,#dcdfa1 20%,#65723f 75%);background-clip:text;-webkit-background-clip:text!important;-webkit-text-fill-color:transparent;-webkit-text-stroke:.01em #dcdfa1\">Entropy</span>"
+    },
+    "Exanimatus": {
+      "source": "https://sol-rng.fandom.com/wiki/Exanimatus",
+      "pending": true,
+      "markup": "<span style=\"display:inline-block;font-family:&#39;Grenze Gotisch&#39;;font-weight:700;letter-spacing:.06em;background:linear-gradient(180deg,#dbd0e8 20%,#79466f 75%);background-clip:text;-webkit-background-clip:text!important;-webkit-text-fill-color:transparent;-webkit-text-stroke:.01em #dbd0e8\">Exanimatus</span>"
+    },
+    "Devotee": {
+      "source": "https://sol-rng.fandom.com/wiki/Devotee",
+      "pending": true,
+      "markup": "<span style=\"display:inline-block;font-family:&#39;Grenze Gotisch&#39;;font-weight:700;letter-spacing:.06em;background:linear-gradient(180deg,#ffe6ba 20%,#9b3e44 75%);background-clip:text;-webkit-background-clip:text!important;-webkit-text-fill-color:transparent;-webkit-text-stroke:.01em #ffe6ba\">Devotee</span>"
+    },
+    "Nightlight": {
+      "source": "https://sol-rng.fandom.com/wiki/Nightlight",
+      "markup": "<span style=\"background: linear-gradient(180deg, #ffbfa6 50%, #fffab1 50%); -webkit-background-clip:text !important; -webkit-text-fill-color:transparent; font-family: Mukta; -webkit-text-stroke: .3px #f34621;\">Nightlight</span>"
+    },
+    "Hollow": {
+      "source": "https://sol-rng.fandom.com/wiki/Hollow",
+      "pending": true,
+      "markup": "<span style=\"display:inline-block;font-family:&#39;Grenze Gotisch&#39;;font-weight:700;letter-spacing:.06em;background:linear-gradient(180deg,#e0d2ff 20%,#6f4194 75%);background-clip:text;-webkit-background-clip:text!important;-webkit-text-fill-color:transparent;-webkit-text-stroke:.01em #e0d2ff\">Hollow</span>"
+    },
+    "Ashraem": {
+      "source": "https://sol-rng.fandom.com/wiki/Ashraem",
+      "pending": true,
+      "markup": "<span style=\"display:inline-block;font-family:&#39;Grenze Gotisch&#39;;font-weight:700;letter-spacing:.06em;background:linear-gradient(180deg,#ffd5bf 20%,#7c2b3a 75%);background-clip:text;-webkit-background-clip:text!important;-webkit-text-fill-color:transparent;-webkit-text-stroke:.01em #ffd5bf\">Ashraem</span>"
+    },
+    "Death": {
+      "source": "https://sol-rng.fandom.com/wiki/Death",
+      "pending": true,
+      "markup": "<span style=\"display:inline-block;font-family:&#39;Grenze Gotisch&#39;;font-weight:700;letter-spacing:.06em;background:linear-gradient(180deg,#f3eeee 20%,#762a40 75%);background-clip:text;-webkit-background-clip:text!important;-webkit-text-fill-color:transparent;-webkit-text-stroke:.01em #f3eeee\">Death</span>"
+    },
+    "Hellhound": {
+      "source": "https://sol-rng.fandom.com/wiki/Hellhound",
+      "pending": true,
+      "markup": "<span style=\"display:inline-block;font-family:&#39;Grenze Gotisch&#39;;font-weight:700;letter-spacing:.06em;background:linear-gradient(180deg,#ffd1a2 20%,#b12b19 75%);background-clip:text;-webkit-background-clip:text!important;-webkit-text-fill-color:transparent;-webkit-text-stroke:.01em #ffd1a2\">Hellhound</span>"
+    },
+    "Hylophobia": {
+      "source": "https://sol-rng.fandom.com/wiki/Hylophobia",
+      "pending": true,
+      "markup": "<span style=\"display:inline-block;font-family:&#39;Grenze Gotisch&#39;;font-weight:700;letter-spacing:.06em;background:linear-gradient(180deg,#c4eac2 20%,#45643d 75%);background-clip:text;-webkit-background-clip:text!important;-webkit-text-fill-color:transparent;-webkit-text-stroke:.01em #c4eac2\">Hylophobia</span>"
+    },
+    "Memphis": {
+      "source": "https://sol-rng.fandom.com/wiki/Memphis",
+      "pending": true,
+      "markup": "<span style=\"display:inline-block;font-family:&#39;Merriweather&#39;;font-weight:700;letter-spacing:.06em;background:linear-gradient(180deg,#ffe0ae 20%,#bb592b 75%);background-clip:text;-webkit-background-clip:text!important;-webkit-text-fill-color:transparent;-webkit-text-stroke:.01em #ffe0ae\">Memphis</span>"
+    },
+    "GraftShifter": {
+      "source": "https://sol-rng.fandom.com/wiki/GraftShifter",
+      "pending": true,
+      "markup": "<span style=\"display:inline-block;font-family:&#39;Grenze Gotisch&#39;;font-weight:700;letter-spacing:.06em;background:linear-gradient(180deg,#d6ffad 20%,#426d46 75%);background-clip:text;-webkit-background-clip:text!important;-webkit-text-fill-color:transparent;-webkit-text-stroke:.01em #d6ffad\">GraftShifter</span>"
+    },
+    "Hallow Treat": {
+      "source": "https://sol-rng.fandom.com/wiki/Hallow_Treat",
+      "markup": "<span style=\"background: linear-gradient(175deg, #ffffea, #ff7a0c); -webkit-background-clip:text !important; -webkit-text-fill-color:transparent; font-family: Nothing You Could Do; -webkit-text-stroke: .2px #ff7f1b;\">Hallow Treat</span>"
+    },
+    "Wraith : Phasmophobia": {
+      "source": "https://sol-rng.fandom.com/wiki/Wraith_:_Phasmophobia",
+      "markup": "<span style=\"background: linear-gradient(180deg, #f4ffff 45%, #68a5a6 50%, #061318 65%); -webkit-background-clip:text !important; -webkit-text-fill-color:transparent; font-family: Builder Extended; font-style: italic; -webkit-text-stroke: .1px #538c8c;\">Phasmophobia</span>"
+    },
+    "Dementor": {
+      "source": "https://sol-rng.fandom.com/wiki/Dementor",
+      "pending": true,
+      "markup": "<span style=\"display:inline-block;font-family:&#39;Grenze Gotisch&#39;;font-weight:700;letter-spacing:.06em;background:linear-gradient(180deg,#d7ece9 20%,#3b696d 75%);background-clip:text;-webkit-background-clip:text!important;-webkit-text-fill-color:transparent;-webkit-text-stroke:.01em #d7ece9\">Dementor</span>"
+    },
+    "Sinister : P": {
+      "source": "https://sol-rng.fandom.com/wiki/Sinister_:_P",
+      "markup": "<span style=\"background: linear-gradient(180deg, #fa4903 70%, #fbfdfd 20%); -webkit-background-clip:text !important; -webkit-text-fill-color:transparent; font-family: Dancing Script; font-size: 115%; -webkit-text-stroke: .2px #dd9c76;\">Sinister&#160;: P</span>"
     }
   },
   "items": {

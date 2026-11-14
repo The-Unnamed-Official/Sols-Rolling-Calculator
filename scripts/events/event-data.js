@@ -1009,6 +1009,9 @@ globalThis.EventData = Object.freeze({
     "auraDiscoveryTerms": [
       "Hallow Point"
     ],
+    "additionalAuraNames": [
+      "Sinister : P"
+    ],
     "auras": [
       {
         "name": "Ghost - 10,414,606",
@@ -1096,6 +1099,98 @@ globalThis.EventData = Object.freeze({
         "nativeBiomes": [
           "glitch",
           "graveyard"
+        ]
+      },
+      {
+        "name": "Nightlight - 2,666,666",
+        "chance": 2666666,
+        "nativeBiomes": [
+          "glitch",
+          "pumpkinMoon"
+        ]
+      },
+      {
+        "name": "GraftShifter - 1,134,903,170",
+        "chance": 1134903170,
+        "cutscene": "graftshifter-cutscene",
+        "nativeBiomes": [
+          "glitch",
+          "graveyard"
+        ]
+      },
+      {
+        "name": "Hallow Treat - 70,000,000",
+        "chance": 70000000,
+        "nativeBiomes": [
+          "glitch",
+          "pumpkinMoon"
+        ]
+      },
+      {
+        "name": "Wraith : Phasmophobia - 6,620,000",
+        "chance": 6620000,
+        "nativeBiomes": [
+          "glitch",
+          "graveyard"
+        ]
+      },
+      {
+        "name": "Dementor - 69,000,000",
+        "chance": 69000000,
+        "nativeBiomes": [
+          "glitch",
+          "graveyard"
+        ]
+      },
+      {
+        "name": "Ashraem - 2,000,000,000",
+        "chance": 2000000000,
+        "cutscene": "ashraem-cutscene",
+        "nativeBiomes": [
+          "glitch",
+          "bloodRain"
+        ]
+      },
+      {
+        "name": "Death - 1,400,000,000",
+        "chance": 1400000000,
+        "cutscene": "death-cutscene",
+        "nativeBiomes": [
+          "glitch",
+          "bloodRain"
+        ]
+      },
+      {
+        "name": "Hollow - 2,666,666,666",
+        "chance": 2666666666,
+        "cutscene": "hollow-cutscene",
+        "nativeBiomes": [
+          "glitch",
+          "graveyard"
+        ]
+      },
+      {
+        "name": "Hellhound - 800,000,000",
+        "chance": 800000000,
+        "nativeBiomes": [
+          "glitch",
+          "bloodRain"
+        ]
+      },
+      {
+        "name": "Memphis - 98,000,000",
+        "chance": 98000000,
+        "nativeBiomes": [
+          "glitch",
+          "pumpkinMoon"
+        ]
+      },
+      {
+        "name": "Hylophobia - 66,363,166",
+        "chance": 66363166,
+        "nativeBiomes": [
+          "glitch",
+          "pumpkinMoon"
         ]
       }
     ],

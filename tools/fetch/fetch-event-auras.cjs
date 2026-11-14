@@ -15,9 +15,10 @@ async function api(parameters) {
     return result;
 }
 async function discoverEventPages(event, reference, request = api) {
+    const knownTitles = [...event.auras.map(aura => baseName(aura.name)), ...(event.additionalAuraNames || [])];
     const existing = new Set(reference.pages.map(page => normalize(page.title)));
-    const known = new Set([...event.auras.map(aura => normalize(aura.name)), ...reference.pages.filter(page => page.events.includes(event.label)).map(page => normalize(page.title))]);
-    const titles = new Set(event.auras.map(aura => baseName(aura.name)));
+    const known = new Set([...knownTitles.map(normalize), ...reference.pages.filter(page => page.events.includes(event.label)).map(page => normalize(page.title))]);
+    const titles = new Set(knownTitles);
     reference.pages.filter(page => page.events.includes(event.label)).forEach(page => titles.add(page.title));
     let continuation;
     do {
@@ -55,7 +56,7 @@ async function discoverEventPages(event, reference, request = api) {
             found.set(normalize(entry.title), entry);
         }
     }
-    return { pages: [...found.values()], aliases, pending: event.auras.map(aura => baseName(aura.name)).filter(name => !found.has(canonical(name))) };
+    return { pages: [...found.values()], aliases, pending: knownTitles.filter(name => !found.has(canonical(name))) };
 }
 function prepareTitles(event, pages) {
     const titlePath = path.join(root, 'scripts/titles/wiki-title-data.js');
