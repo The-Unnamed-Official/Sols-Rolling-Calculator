@@ -6525,6 +6525,45 @@
     "ignoreLuck": false
   },
   {
+    "title": "Entropy",
+    "source": "https://sol-rng.fandom.com/wiki/Entropy",
+    "revisionId": 155671,
+    "description": "‘‘Even the oldest trees cannot escape the passage of time; their branches reach toward the sky, their leaves fall and return to the earth, and",
+    "descriptionTruncated": true,
+    "rarity": "1 in 30,000,000",
+    "nativeRarity": "1 in 15,000,000",
+    "tier": "Exalted",
+    "required": "The Lost Forest",
+    "obtainment": "",
+    "categories": [
+      "Auras",
+      "Biome-Native",
+      "​Exalted"
+    ],
+    "notice": "",
+    "status": "",
+    "exclusive": false,
+    "events": [],
+    "reviewedOn": "2026-11-14",
+    "name": "Entropy",
+    "slug": "entropy",
+    "rarityValue": 30000000,
+    "rarityText": "1 in 30,000,000",
+    "tierKey": "exalted",
+    "kind": "Biome native",
+    "location": "The Lost Forest",
+    "nativeBiomes": [
+      "The Lost Forest"
+    ],
+    "biomes": [
+      "The Lost Forest"
+    ],
+    "background": "files/images/backgrounds/lostForestBiomeImage.png",
+    "simulatorName": "Entropy - 30,000,000",
+    "simulatorChance": 30000000,
+    "ignoreLuck": false
+  },
+  {
     "title": "Flora : Florest",
     "source": "https://sol-rng.fandom.com/wiki/Flora_:_Florest",
     "revisionId": 153647,
@@ -11220,7 +11259,7 @@
   {
     "title": "Flushed : Pumpkinity",
     "source": "https://sol-rng.fandom.com/wiki/Flushed_:_Pumpkinity",
-    "revisionId": 155250,
+    "revisionId": 155326,
     "description": "no stop its not pumpkinity hey! its me! pumpkinity! spooking everything!",
     "descriptionTruncated": false,
     "rarity": "1 in 69,000",
@@ -11241,7 +11280,7 @@
     "events": [
       "Halloween 2026"
     ],
-    "reviewedOn": "2026-11-05",
+    "reviewedOn": "2026-11-14",
     "name": "Flushed : Pumpkinity",
     "slug": "flushed-pumpkinity",
     "rarityValue": 69000,
@@ -11640,7 +11679,7 @@
   {
     "title": "Enchanted",
     "source": "https://sol-rng.fandom.com/wiki/Enchanted",
-    "revisionId": 155252,
+    "revisionId": 155316,
     "description": "A being channeling forbidden magic as reality itself bends to its spells.",
     "descriptionTruncated": false,
     "rarity": "1 in 445,000",
@@ -11652,7 +11691,8 @@
       "Auras",
       "Event",
       "Event (Tier)",
-      "Biome-Exclusive"
+      "Biome-Exclusive",
+      "Halloween 2026"
     ],
     "notice": "",
     "status": "",
@@ -11660,7 +11700,7 @@
     "events": [
       "Halloween 2026"
     ],
-    "reviewedOn": "2026-11-05",
+    "reviewedOn": "2026-11-14",
     "name": "Enchanted",
     "slug": "enchanted",
     "rarityValue": 445000,
@@ -12204,7 +12244,7 @@
     "events": [
       "Halloween 2026"
     ],
-    "reviewedOn": "2026-11-05",
+    "reviewedOn": "2026-11-14",
     "name": "Lost Soul : Styx",
     "slug": "lost-soul-styx",
     "rarityValue": 2000000,
@@ -12312,6 +12352,51 @@
     "background": "files/images/backgrounds/nullBiomeImage.jpg",
     "simulatorName": "Undefined : Defined - 2,222,000",
     "simulatorChance": 2222000,
+    "ignoreLuck": false
+  },
+  {
+    "title": "Nightlight",
+    "source": "https://sol-rng.fandom.com/wiki/Nightlight",
+    "revisionId": 155692,
+    "description": "The frightening light of a lamppost during Halloween night.",
+    "descriptionTruncated": false,
+    "rarity": "1 in 2,666,666",
+    "nativeRarity": "",
+    "tier": "Event",
+    "required": "Pumpkin Moon / Glitched",
+    "obtainment": "Enable Halloween 2026 in the simulator",
+    "categories": [
+      "Auras",
+      "Event",
+      "Event (Tier)",
+      "Biome-Exclusive",
+      "Halloween 2026"
+    ],
+    "notice": "",
+    "status": "",
+    "exclusive": true,
+    "events": [
+      "Halloween 2026"
+    ],
+    "reviewedOn": "2026-11-14",
+    "name": "Nightlight",
+    "slug": "nightlight",
+    "rarityValue": 2666666,
+    "rarityText": "1 in 2,666,666",
+    "tierKey": "event",
+    "kind": "Event",
+    "location": "Enable Halloween 2026 in the simulator · Pumpkin Moon / Glitched",
+    "nativeBiomes": [
+      "Glitched",
+      "Pumpkin Moon"
+    ],
+    "biomes": [
+      "Glitch",
+      "Pumpkin Moon"
+    ],
+    "background": "files/images/backgrounds/pumpkinMoonBiomeImage.png",
+    "simulatorName": "Nightlight - 2,666,666",
+    "simulatorChance": 2666666,
     "ignoreLuck": false
   },
   {
@@ -12669,6 +12754,51 @@
     "ignoreLuck": false
   },
   {
+    "title": "Wraith : Phasmophobia",
+    "source": "https://sol-rng.fandom.com/wiki/Wraith_:_Phasmophobia",
+    "revisionId": 155700,
+    "description": "The fear of ghosts...",
+    "descriptionTruncated": false,
+    "rarity": "1 in 6,620,000",
+    "nativeRarity": "",
+    "tier": "Event",
+    "required": "Graveyard / Glitched",
+    "obtainment": "Enable Halloween 2026 in the simulator",
+    "categories": [
+      "Auras",
+      "Event",
+      "Event (Tier)",
+      "Biome-Exclusive",
+      "Halloween 2026"
+    ],
+    "notice": "",
+    "status": "",
+    "exclusive": true,
+    "events": [
+      "Halloween 2026"
+    ],
+    "reviewedOn": "2026-11-14",
+    "name": "Wraith : Phasmophobia",
+    "slug": "wraith-phasmophobia",
+    "rarityValue": 6620000,
+    "rarityText": "1 in 6,620,000",
+    "tierKey": "event",
+    "kind": "Event",
+    "location": "Enable Halloween 2026 in the simulator · Graveyard / Glitched",
+    "nativeBiomes": [
+      "Glitched",
+      "Graveyard"
+    ],
+    "biomes": [
+      "Glitch",
+      "Graveyard"
+    ],
+    "background": "files/images/backgrounds/graveyardBiomeImage.png",
+    "simulatorName": "Wraith : Phasmophobia - 6,620,000",
+    "simulatorChance": 6620000,
+    "ignoreLuck": false
+  },
+  {
     "title": "Oni",
     "source": "https://sol-rng.fandom.com/wiki/Oni",
     "revisionId": 147456,
@@ -12796,7 +12926,7 @@
   {
     "title": "Embercrypt",
     "source": "https://sol-rng.fandom.com/wiki/Embercrypt",
-    "revisionId": 155254,
+    "revisionId": 155639,
     "description": "An underground labyrinth of winding, twisting corridors. The air is foul, and all year long the crypt reeks of decay under the moon in the",
     "descriptionTruncated": true,
     "rarity": "1 in 9,700,000",
@@ -12808,7 +12938,8 @@
       "Auras",
       "Event",
       "Event (Tier)",
-      "Biome-Exclusive"
+      "Biome-Exclusive",
+      "Halloween 2026"
     ],
     "notice": "",
     "status": "",
@@ -12816,7 +12947,7 @@
     "events": [
       "Halloween 2026"
     ],
-    "reviewedOn": "2026-11-05",
+    "reviewedOn": "2026-11-14",
     "name": "Embercrypt",
     "slug": "embercrypt",
     "rarityValue": 9700000,
@@ -12883,7 +13014,7 @@
   {
     "title": "Ghost",
     "source": "https://sol-rng.fandom.com/wiki/Ghost",
-    "revisionId": 155256,
+    "revisionId": 155314,
     "description": "”Long ago, a restless soul was bound to an ancient lantern, with its spirit forever trapped behind the flickering flame.” “Those who carried it swore",
     "descriptionTruncated": true,
     "rarity": "1 in 10,414,606",
@@ -12895,7 +13026,8 @@
       "Auras",
       "Event",
       "Event (Tier)",
-      "Biome-Exclusive"
+      "Biome-Exclusive",
+      "Halloween 2026"
     ],
     "notice": "",
     "status": "",
@@ -12903,7 +13035,7 @@
     "events": [
       "Halloween 2026"
     ],
-    "reviewedOn": "2026-11-05",
+    "reviewedOn": "2026-11-14",
     "name": "Ghost",
     "slug": "ghost",
     "rarityValue": 10414606,
@@ -13185,8 +13317,8 @@
   {
     "title": "Cauldron",
     "source": "https://sol-rng.fandom.com/wiki/Cauldron",
-    "revisionId": 155257,
-    "description": "Empty",
+    "revisionId": 155356,
+    "description": "",
     "descriptionTruncated": false,
     "rarity": "1 in 24,000,000",
     "nativeRarity": "",
@@ -13205,7 +13337,7 @@
     "events": [
       "Halloween 2026"
     ],
-    "reviewedOn": "2026-11-05",
+    "reviewedOn": "2026-11-14",
     "name": "Cauldron",
     "slug": "cauldron",
     "rarityValue": 24000000,
@@ -13905,7 +14037,7 @@
   {
     "title": "Former Gardens",
     "source": "https://sol-rng.fandom.com/wiki/Former_Gardens",
-    "revisionId": 155259,
+    "revisionId": 155441,
     "description": "... HELP ME The Gardens endure, where an eternal flame refuses to die. Yet even its undying light cannot halt the relentless passage of time.",
     "descriptionTruncated": true,
     "rarity": "1 in 63,000,000",
@@ -13925,7 +14057,7 @@
     "events": [
       "Halloween 2026"
     ],
-    "reviewedOn": "2026-11-05",
+    "reviewedOn": "2026-11-14",
     "name": "Former Gardens",
     "slug": "former-gardens",
     "rarityValue": 63000000,
@@ -13949,7 +14081,7 @@
   {
     "title": "Hanahaki",
     "source": "https://sol-rng.fandom.com/wiki/Hanahaki",
-    "revisionId": 155159,
+    "revisionId": 155642,
     "description": "Throughout countless stories of love and heartbreak, many have suffered from unrequited love, but few curses were as cruel as Hanahaki disease. The moment someone",
     "descriptionTruncated": true,
     "rarity": "1 in 66,000,000",
@@ -13962,7 +14094,8 @@
       "Event",
       "Event (Tier)",
       "Biome-Exclusive",
-      "Stubs"
+      "Stubs",
+      "Halloween 2026"
     ],
     "notice": "",
     "status": "",
@@ -13970,7 +14103,7 @@
     "events": [
       "Halloween 2026"
     ],
-    "reviewedOn": "2026-11-05",
+    "reviewedOn": "2026-11-14",
     "name": "Hanahaki",
     "slug": "hanahaki",
     "rarityValue": 66000000,
@@ -14037,6 +14170,51 @@
     "ignoreLuck": false
   },
   {
+    "title": "Hylophobia",
+    "source": "https://sol-rng.fandom.com/wiki/Hylophobia",
+    "revisionId": 155683,
+    "description": "",
+    "descriptionTruncated": false,
+    "rarity": "1 in 66,363,166",
+    "nativeRarity": "",
+    "tier": "Event",
+    "required": "Pumpkin Moon / Glitched",
+    "obtainment": "Enable Halloween 2026 in the simulator",
+    "categories": [
+      "Auras",
+      "Event",
+      "Event (Tier)",
+      "Biome-Exclusive",
+      "Halloween 2026"
+    ],
+    "notice": "",
+    "status": "",
+    "exclusive": true,
+    "events": [
+      "Halloween 2026"
+    ],
+    "reviewedOn": "2026-11-14",
+    "name": "Hylophobia",
+    "slug": "hylophobia",
+    "rarityValue": 66363166,
+    "rarityText": "1 in 66,363,166",
+    "tierKey": "event",
+    "kind": "Event",
+    "location": "Enable Halloween 2026 in the simulator · Pumpkin Moon / Glitched",
+    "nativeBiomes": [
+      "Glitched",
+      "Pumpkin Moon"
+    ],
+    "biomes": [
+      "Glitch",
+      "Pumpkin Moon"
+    ],
+    "background": "files/images/backgrounds/pumpkinMoonBiomeImage.png",
+    "simulatorName": "Hylophobia - 66,363,166",
+    "simulatorChance": 66363166,
+    "ignoreLuck": false
+  },
+  {
     "title": "Bloated.exe",
     "source": "https://sol-rng.fandom.com/wiki/Bloated.exe",
     "revisionId": 155040,
@@ -14072,6 +14250,96 @@
     "background": "",
     "simulatorName": "Bloated.exe - 67,676,767",
     "simulatorChance": 67676767,
+    "ignoreLuck": false
+  },
+  {
+    "title": "Dementor",
+    "source": "https://sol-rng.fandom.com/wiki/Dementor",
+    "revisionId": 155702,
+    "description": "",
+    "descriptionTruncated": false,
+    "rarity": "1 in 69,000,000",
+    "nativeRarity": "",
+    "tier": "Event",
+    "required": "Graveyard / Glitched",
+    "obtainment": "Enable Halloween 2026 in the simulator",
+    "categories": [
+      "Auras",
+      "Event",
+      "Event (Tier)",
+      "Biome-Exclusive",
+      "Halloween 2026"
+    ],
+    "notice": "",
+    "status": "",
+    "exclusive": true,
+    "events": [
+      "Halloween 2026"
+    ],
+    "reviewedOn": "2026-11-14",
+    "name": "Dementor",
+    "slug": "dementor",
+    "rarityValue": 69000000,
+    "rarityText": "1 in 69,000,000",
+    "tierKey": "event",
+    "kind": "Event",
+    "location": "Enable Halloween 2026 in the simulator · Graveyard / Glitched",
+    "nativeBiomes": [
+      "Glitched",
+      "Graveyard"
+    ],
+    "biomes": [
+      "Glitch",
+      "Graveyard"
+    ],
+    "background": "files/images/backgrounds/graveyardBiomeImage.png",
+    "simulatorName": "Dementor - 69,000,000",
+    "simulatorChance": 69000000,
+    "ignoreLuck": false
+  },
+  {
+    "title": "Hallow Treat",
+    "source": "https://sol-rng.fandom.com/wiki/Hallow_Treat",
+    "revisionId": 155706,
+    "description": "",
+    "descriptionTruncated": false,
+    "rarity": "1 in 70,000,000",
+    "nativeRarity": "",
+    "tier": "Event",
+    "required": "Pumpkin Moon / Glitched",
+    "obtainment": "Enable Halloween 2026 in the simulator",
+    "categories": [
+      "Auras",
+      "Event",
+      "Event (Tier)",
+      "Biome-Exclusive",
+      "Halloween 2026"
+    ],
+    "notice": "",
+    "status": "",
+    "exclusive": true,
+    "events": [
+      "Halloween 2026"
+    ],
+    "reviewedOn": "2026-11-14",
+    "name": "Hallow Treat",
+    "slug": "hallow-treat",
+    "rarityValue": 70000000,
+    "rarityText": "1 in 70,000,000",
+    "tierKey": "event",
+    "kind": "Event",
+    "location": "Enable Halloween 2026 in the simulator · Pumpkin Moon / Glitched",
+    "nativeBiomes": [
+      "Glitched",
+      "Pumpkin Moon"
+    ],
+    "biomes": [
+      "Glitch",
+      "Pumpkin Moon"
+    ],
+    "background": "files/images/backgrounds/pumpkinMoonBiomeImage.png",
+    "simulatorName": "Hallow Treat - 70,000,000",
+    "simulatorChance": 70000000,
     "ignoreLuck": false
   },
   {
@@ -14378,6 +14646,51 @@
     "ignoreLuck": false
   },
   {
+    "title": "Memphis",
+    "source": "https://sol-rng.fandom.com/wiki/Memphis",
+    "revisionId": 155685,
+    "description": "",
+    "descriptionTruncated": false,
+    "rarity": "1 in 98,000,000",
+    "nativeRarity": "",
+    "tier": "Event",
+    "required": "Pumpkin Moon / Glitched",
+    "obtainment": "Enable Halloween 2026 in the simulator",
+    "categories": [
+      "Auras",
+      "Event",
+      "Event (Tier)",
+      "Biome-Exclusive",
+      "Halloween 2026"
+    ],
+    "notice": "",
+    "status": "",
+    "exclusive": true,
+    "events": [
+      "Halloween 2026"
+    ],
+    "reviewedOn": "2026-11-14",
+    "name": "Memphis",
+    "slug": "memphis",
+    "rarityValue": 98000000,
+    "rarityText": "1 in 98,000,000",
+    "tierKey": "event",
+    "kind": "Event",
+    "location": "Enable Halloween 2026 in the simulator · Pumpkin Moon / Glitched",
+    "nativeBiomes": [
+      "Glitched",
+      "Pumpkin Moon"
+    ],
+    "biomes": [
+      "Glitch",
+      "Pumpkin Moon"
+    ],
+    "background": "files/images/backgrounds/pumpkinMoonBiomeImage.png",
+    "simulatorName": "Memphis - 98,000,000",
+    "simulatorChance": 98000000,
+    "ignoreLuck": false
+  },
+  {
     "title": "Bubble : Cascade",
     "source": "https://sol-rng.fandom.com/wiki/Bubble_:_Cascade",
     "revisionId": 152902,
@@ -14596,9 +14909,9 @@
   {
     "title": "Harvester : Necromancy",
     "source": "https://sol-rng.fandom.com/wiki/Harvester_:_Necromancy",
-    "revisionId": 155275,
-    "description": "TBA",
-    "descriptionTruncated": false,
+    "revisionId": 155679,
+    "description": "\"The calling of a name upon his tongue, spoken softly in the dark, that the soil, however, had never preserved.\" \"Grave by grave, row by",
+    "descriptionTruncated": true,
     "rarity": "1 in 225,000,000",
     "nativeRarity": "",
     "tier": "Event",
@@ -14608,7 +14921,8 @@
       "Auras",
       "Event",
       "Event (Tier)",
-      "Biome-Exclusive"
+      "Biome-Exclusive",
+      "Has Abilities"
     ],
     "notice": "",
     "status": "",
@@ -14616,7 +14930,7 @@
     "events": [
       "Halloween 2026"
     ],
-    "reviewedOn": "2026-11-05",
+    "reviewedOn": "2026-11-14",
     "name": "Harvester : Necromancy",
     "slug": "harvester-necromancy",
     "rarityValue": 225000000,
@@ -15692,7 +16006,7 @@
   {
     "title": "Rejoice",
     "source": "https://sol-rng.fandom.com/wiki/Rejoice",
-    "revisionId": 155274,
+    "revisionId": 155459,
     "description": "A soldier's tale TO BE EXALTED A MAN, A BOY A WOMAN, A GOD THE FOUR SHARE NOTHING IN COMMON TO BE AMONGST THE GODDESS",
     "descriptionTruncated": true,
     "rarity": "1 in 700,000,000",
@@ -15704,7 +16018,8 @@
       "Auras",
       "Event",
       "Event (Tier)",
-      "Biome-Exclusive"
+      "Biome-Exclusive",
+      "Halloween 2026"
     ],
     "notice": "",
     "status": "",
@@ -15712,7 +16027,7 @@
     "events": [
       "Halloween 2026"
     ],
-    "reviewedOn": "2026-11-05",
+    "reviewedOn": "2026-11-14",
     "name": "Rejoice",
     "slug": "rejoice",
     "rarityValue": 700000000,
@@ -15999,6 +16314,52 @@
     "ignoreLuck": false
   },
   {
+    "title": "Hellhound",
+    "source": "https://sol-rng.fandom.com/wiki/Hellhound",
+    "revisionId": 155662,
+    "description": "",
+    "descriptionTruncated": false,
+    "rarity": "1 in 800,000,000",
+    "nativeRarity": "",
+    "tier": "Event",
+    "required": "Blood Rain / Glitched",
+    "obtainment": "Enable Halloween 2026 in the simulator",
+    "categories": [
+      "Auras",
+      "Event",
+      "Event (Tier)",
+      "Biome-Exclusive",
+      "Stubs",
+      "Halloween 2026"
+    ],
+    "notice": "",
+    "status": "",
+    "exclusive": true,
+    "events": [
+      "Halloween 2026"
+    ],
+    "reviewedOn": "2026-11-14",
+    "name": "Hellhound",
+    "slug": "hellhound",
+    "rarityValue": 800000000,
+    "rarityText": "1 in 800,000,000",
+    "tierKey": "event",
+    "kind": "Event",
+    "location": "Enable Halloween 2026 in the simulator · Blood Rain / Glitched",
+    "nativeBiomes": [
+      "Glitched",
+      "Blood Rain"
+    ],
+    "biomes": [
+      "Glitch",
+      "Blood Rain"
+    ],
+    "background": "files/images/backgrounds/bloodRainBiomeImage.png",
+    "simulatorName": "Hellhound - 800,000,000",
+    "simulatorChance": 800000000,
+    "ignoreLuck": false
+  },
+  {
     "title": "Aegis : Watergun",
     "source": "https://sol-rng.fandom.com/wiki/Aegis_:_Watergun",
     "revisionId": 151017,
@@ -16180,7 +16541,7 @@
   {
     "title": "Gaze",
     "source": "https://sol-rng.fandom.com/wiki/Gaze",
-    "revisionId": 154994,
+    "revisionId": 155515,
     "description": "We were once the same thing. It was torn apart, and the fragments fell into the human world, becoming us. Time wore away our memories.",
     "descriptionTruncated": true,
     "rarity": "1 in 977,000,000",
@@ -16202,7 +16563,7 @@
     "events": [
       "Halloween 2026"
     ],
-    "reviewedOn": "2026-11-05",
+    "reviewedOn": "2026-11-14",
     "name": "Gaze",
     "slug": "gaze",
     "rarityValue": 977000000,
@@ -16428,6 +16789,52 @@
     "ignoreLuck": false
   },
   {
+    "title": "GraftShifter",
+    "source": "https://sol-rng.fandom.com/wiki/GraftShifter",
+    "revisionId": 155695,
+    "description": "",
+    "descriptionTruncated": false,
+    "rarity": "1 in 1,134,903,170",
+    "nativeRarity": "",
+    "tier": "Event",
+    "required": "Graveyard / Glitched",
+    "obtainment": "Enable Halloween 2026 in the simulator",
+    "categories": [
+      "Auras",
+      "Event",
+      "Event (Tier)",
+      "Biome-Exclusive",
+      "Has Abilities",
+      "Halloween 2026"
+    ],
+    "notice": "",
+    "status": "",
+    "exclusive": true,
+    "events": [
+      "Halloween 2026"
+    ],
+    "reviewedOn": "2026-11-14",
+    "name": "GraftShifter",
+    "slug": "graftshifter",
+    "rarityValue": 1134903170,
+    "rarityText": "1 in 1,134,903,170",
+    "tierKey": "event",
+    "kind": "Event",
+    "location": "Enable Halloween 2026 in the simulator · Graveyard / Glitched",
+    "nativeBiomes": [
+      "Glitched",
+      "Graveyard"
+    ],
+    "biomes": [
+      "Glitch",
+      "Graveyard"
+    ],
+    "background": "files/images/backgrounds/graveyardBiomeImage.png",
+    "simulatorName": "GraftShifter - 1,134,903,170",
+    "simulatorChance": 1134903170,
+    "ignoreLuck": false
+  },
+  {
     "title": "Eggis",
     "source": "https://sol-rng.fandom.com/wiki/Eggis",
     "revisionId": 151970,
@@ -16561,6 +16968,52 @@
     "ignoreLuck": false
   },
   {
+    "title": "Death",
+    "source": "https://sol-rng.fandom.com/wiki/Death",
+    "revisionId": 155660,
+    "description": "",
+    "descriptionTruncated": false,
+    "rarity": "1 in 1,400,000,000",
+    "nativeRarity": "",
+    "tier": "Event",
+    "required": "Blood Rain / Glitched",
+    "obtainment": "Enable Halloween 2026 in the simulator",
+    "categories": [
+      "Auras",
+      "Event",
+      "Event (Tier)",
+      "Biome-Exclusive",
+      "Stubs",
+      "Halloween 2026"
+    ],
+    "notice": "",
+    "status": "",
+    "exclusive": true,
+    "events": [
+      "Halloween 2026"
+    ],
+    "reviewedOn": "2026-11-14",
+    "name": "Death",
+    "slug": "death",
+    "rarityValue": 1400000000,
+    "rarityText": "1 in 1,400,000,000",
+    "tierKey": "event",
+    "kind": "Event",
+    "location": "Enable Halloween 2026 in the simulator · Blood Rain / Glitched",
+    "nativeBiomes": [
+      "Glitched",
+      "Blood Rain"
+    ],
+    "biomes": [
+      "Glitch",
+      "Blood Rain"
+    ],
+    "background": "files/images/backgrounds/bloodRainBiomeImage.png",
+    "simulatorName": "Death - 1,400,000,000",
+    "simulatorChance": 1400000000,
+    "ignoreLuck": false
+  },
+  {
     "title": "Osteria",
     "source": "https://sol-rng.fandom.com/wiki/Osteria",
     "revisionId": 153421,
@@ -16687,6 +17140,52 @@
     "ignoreLuck": false
   },
   {
+    "title": "Ashraem",
+    "source": "https://sol-rng.fandom.com/wiki/Ashraem",
+    "revisionId": 155658,
+    "description": "",
+    "descriptionTruncated": false,
+    "rarity": "1 in 2,000,000,000",
+    "nativeRarity": "",
+    "tier": "Event",
+    "required": "Blood Rain / Glitched",
+    "obtainment": "Enable Halloween 2026 in the simulator",
+    "categories": [
+      "Auras",
+      "Event",
+      "Event (Tier)",
+      "Biome-Exclusive",
+      "Stubs",
+      "Halloween 2026"
+    ],
+    "notice": "",
+    "status": "",
+    "exclusive": true,
+    "events": [
+      "Halloween 2026"
+    ],
+    "reviewedOn": "2026-11-14",
+    "name": "Ashraem",
+    "slug": "ashraem",
+    "rarityValue": 2000000000,
+    "rarityText": "1 in 2,000,000,000",
+    "tierKey": "event",
+    "kind": "Event",
+    "location": "Enable Halloween 2026 in the simulator · Blood Rain / Glitched",
+    "nativeBiomes": [
+      "Glitched",
+      "Blood Rain"
+    ],
+    "biomes": [
+      "Glitch",
+      "Blood Rain"
+    ],
+    "background": "files/images/backgrounds/bloodRainBiomeImage.png",
+    "simulatorName": "Ashraem - 2,000,000,000",
+    "simulatorChance": 2000000000,
+    "ignoreLuck": false
+  },
+  {
     "title": "Sky Festival",
     "source": "https://sol-rng.fandom.com/wiki/Sky_Festival",
     "revisionId": 151101,
@@ -16805,6 +17304,52 @@
     "ignoreLuck": false
   },
   {
+    "title": "Hollow",
+    "source": "https://sol-rng.fandom.com/wiki/Hollow",
+    "revisionId": 155667,
+    "description": "",
+    "descriptionTruncated": false,
+    "rarity": "1 in 2,666,666,666",
+    "nativeRarity": "",
+    "tier": "Event",
+    "required": "Graveyard / Glitched",
+    "obtainment": "Enable Halloween 2026 in the simulator",
+    "categories": [
+      "Auras",
+      "Event",
+      "Event (Tier)",
+      "Biome-Exclusive",
+      "Stubs",
+      "Halloween 2026"
+    ],
+    "notice": "",
+    "status": "",
+    "exclusive": true,
+    "events": [
+      "Halloween 2026"
+    ],
+    "reviewedOn": "2026-11-14",
+    "name": "Hollow",
+    "slug": "hollow",
+    "rarityValue": 2666666666,
+    "rarityText": "1 in 2,666,666,666",
+    "tierKey": "event",
+    "kind": "Event",
+    "location": "Enable Halloween 2026 in the simulator · Graveyard / Glitched",
+    "nativeBiomes": [
+      "Glitched",
+      "Graveyard"
+    ],
+    "biomes": [
+      "Glitch",
+      "Graveyard"
+    ],
+    "background": "files/images/backgrounds/graveyardBiomeImage.png",
+    "simulatorName": "Hollow - 2,666,666,666",
+    "simulatorChance": 2666666666,
+    "ignoreLuck": false
+  },
+  {
     "title": "Centaurus",
     "source": "https://sol-rng.fandom.com/wiki/Centaurus",
     "revisionId": 153422,
@@ -16871,7 +17416,7 @@
     "events": [
       "Halloween 2026"
     ],
-    "reviewedOn": "2026-11-05",
+    "reviewedOn": "2026-11-14",
     "name": "Acropolis",
     "slug": "acropolis",
     "rarityValue": null,
@@ -17230,7 +17775,7 @@
   {
     "title": "Cataclysmic",
     "source": "https://sol-rng.fandom.com/wiki/Cataclysmic",
-    "revisionId": 155287,
+    "revisionId": 155318,
     "description": "",
     "descriptionTruncated": false,
     "rarity": "Bought from Jack The Pumpkin for 17,250 Hallow Points.",
@@ -17242,7 +17787,8 @@
       "Auras",
       "Event",
       "Event (Tier)",
-      "Purchasable"
+      "Purchasable",
+      "Halloween 2026"
     ],
     "notice": "",
     "status": "",
@@ -17250,7 +17796,7 @@
     "events": [
       "Halloween 2026"
     ],
-    "reviewedOn": "2026-11-05",
+    "reviewedOn": "2026-11-14",
     "name": "Cataclysmic",
     "slug": "cataclysmic",
     "rarityValue": null,
@@ -17382,7 +17928,7 @@
   {
     "title": "Cruor",
     "source": "https://sol-rng.fandom.com/wiki/Cruor",
-    "revisionId": 154923,
+    "revisionId": 155353,
     "description": "\"Once a Safe Haven of Sanctity. Now nothing more than a Cursed Shrine where Ruin and decay dwell.\" \"Ravaged by An Unknown Monster who sought",
     "descriptionTruncated": true,
     "rarity": "Bought from Jack The Pumpkin for 15,000 Hallow Points.",
@@ -17402,7 +17948,7 @@
     "events": [
       "Halloween 2026"
     ],
-    "reviewedOn": "2026-11-05",
+    "reviewedOn": "2026-11-14",
     "name": "Cruor",
     "slug": "cruor",
     "rarityValue": null,
@@ -17420,7 +17966,7 @@
   {
     "title": "Deathkeeper",
     "source": "https://sol-rng.fandom.com/wiki/Deathkeeper",
-    "revisionId": 155156,
+    "revisionId": 155647,
     "description": "A being that departs the soul from the human self, harvesting their very being towards the afterlife, guiding them through peace and rest.",
     "descriptionTruncated": false,
     "rarity": "Bought from Jack The Pumpkin for 22,500 Hallow Points.",
@@ -17432,7 +17978,8 @@
       "Auras",
       "Event",
       "Event (Tier)",
-      "Purchasable"
+      "Purchasable",
+      "Halloween 2026"
     ],
     "notice": "",
     "status": "",
@@ -17440,7 +17987,7 @@
     "events": [
       "Halloween 2026"
     ],
-    "reviewedOn": "2026-11-05",
+    "reviewedOn": "2026-11-14",
     "name": "Deathkeeper",
     "slug": "deathkeeper",
     "rarityValue": null,
@@ -17448,6 +17995,46 @@
     "tierKey": "event",
     "kind": "Event",
     "location": "Bought from Jack The Pumpkin for 22,500 Hallow Points.",
+    "nativeBiomes": [],
+    "biomes": [],
+    "background": "",
+    "simulatorName": null,
+    "simulatorChance": null,
+    "ignoreLuck": false
+  },
+  {
+    "title": "Devotee",
+    "source": "https://sol-rng.fandom.com/wiki/Devotee",
+    "revisionId": 155690,
+    "description": "",
+    "descriptionTruncated": false,
+    "rarity": "Bought from Jack The Pumpkin for 30,000 Hallow Points.",
+    "nativeRarity": "",
+    "tier": "Event",
+    "required": "",
+    "obtainment": "Bought from Jack The Pumpkin for 30,000 Hallow Points.",
+    "categories": [
+      "Auras",
+      "Event",
+      "Event (Tier)",
+      "Purchasable",
+      "Has Abilities",
+      "Halloween 2026"
+    ],
+    "notice": "",
+    "status": "",
+    "exclusive": false,
+    "events": [
+      "Halloween 2026"
+    ],
+    "reviewedOn": "2026-11-14",
+    "name": "Devotee",
+    "slug": "devotee",
+    "rarityValue": null,
+    "rarityText": "Bought from Jack The Pumpkin for 30,000 Hallow Points.",
+    "tierKey": "event",
+    "kind": "Event",
+    "location": "Bought from Jack The Pumpkin for 30,000 Hallow Points.",
     "nativeBiomes": [],
     "biomes": [],
     "background": "",
@@ -17600,6 +18187,45 @@
     "tierKey": "event",
     "kind": "Event",
     "location": "Not currently rollable",
+    "nativeBiomes": [],
+    "biomes": [],
+    "background": "",
+    "simulatorName": null,
+    "simulatorChance": null,
+    "ignoreLuck": false
+  },
+  {
+    "title": "Exanimatus",
+    "source": "https://sol-rng.fandom.com/wiki/Exanimatus",
+    "revisionId": 155687,
+    "description": "",
+    "descriptionTruncated": false,
+    "rarity": "Bought from Jack The Pumpkin for 20,000 Hallow Points.",
+    "nativeRarity": "",
+    "tier": "Event",
+    "required": "",
+    "obtainment": "Bought from Jack The Pumpkin for 20,000 Hallow Points.",
+    "categories": [
+      "Auras",
+      "Event",
+      "Event (Tier)",
+      "Purchasable",
+      "Halloween 2026"
+    ],
+    "notice": "",
+    "status": "",
+    "exclusive": false,
+    "events": [
+      "Halloween 2026"
+    ],
+    "reviewedOn": "2026-11-14",
+    "name": "Exanimatus",
+    "slug": "exanimatus",
+    "rarityValue": null,
+    "rarityText": "Bought from Jack The Pumpkin for 20,000 Hallow Points.",
+    "tierKey": "event",
+    "kind": "Event",
+    "location": "Bought from Jack The Pumpkin for 20,000 Hallow Points.",
     "nativeBiomes": [],
     "biomes": [],
     "background": "",
@@ -18216,6 +18842,81 @@
     "tierKey": "event",
     "kind": "Event",
     "location": "Reach tier 100 in the Season Pass Season II",
+    "nativeBiomes": [],
+    "biomes": [],
+    "background": "",
+    "simulatorName": null,
+    "simulatorChance": null,
+    "ignoreLuck": false
+  },
+  {
+    "title": "Sinister : P",
+    "source": "https://sol-rng.fandom.com/wiki/Sinister_:_P",
+    "revisionId": 155643,
+    "description": "",
+    "descriptionTruncated": false,
+    "rarity": "Not yet documented",
+    "nativeRarity": "",
+    "tier": "Event",
+    "required": "",
+    "obtainment": "Obtainment details are awaiting documentation.",
+    "categories": [],
+    "notice": "",
+    "status": "",
+    "exclusive": false,
+    "events": [
+      "Halloween 2026"
+    ],
+    "reviewedOn": "2026-11-14",
+    "wikiPending": true,
+    "detailsContext": "Halloween 2026 Part 2",
+    "mediaPending": true,
+    "name": "Sinister : P",
+    "slug": "sinister-p",
+    "rarityValue": null,
+    "rarityText": "Not yet documented",
+    "tierKey": "event",
+    "kind": "Event",
+    "location": "Obtainment details are awaiting documentation.",
+    "nativeBiomes": [],
+    "biomes": [],
+    "background": "",
+    "simulatorName": null,
+    "simulatorChance": null,
+    "ignoreLuck": false
+  },
+  {
+    "title": "Sinister : S",
+    "source": "https://sol-rng.fandom.com/wiki/Sinister_:_S",
+    "revisionId": 155674,
+    "description": "",
+    "descriptionTruncated": false,
+    "rarity": "Use Soul-Scooping Shovel",
+    "nativeRarity": "",
+    "tier": "Event",
+    "required": "",
+    "obtainment": "",
+    "categories": [
+      "Auras",
+      "Event",
+      "Event (Tier)",
+      "Has Abilities",
+      "Halloween 2026"
+    ],
+    "notice": "",
+    "status": "",
+    "exclusive": false,
+    "events": [
+      "Halloween 2026"
+    ],
+    "reviewedOn": "2026-11-14",
+    "name": "Sinister : S",
+    "slug": "sinister-s",
+    "rarityValue": null,
+    "rarityText": "Use Soul-Scooping Shovel",
+    "tierKey": "event",
+    "kind": "Event",
+    "location": "Any biome",
     "nativeBiomes": [],
     "biomes": [],
     "background": "",

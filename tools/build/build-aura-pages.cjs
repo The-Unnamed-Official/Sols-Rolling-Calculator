@@ -293,7 +293,7 @@ ${profileTitle(entry)}
         ${renderHistory(entry,currentContent,history.profiles[entry.title],history.reviewedOn,version => version.label === 'Current' ? entry.background : backgroundFor(version.facts?.required) || entry.background,background => musicForBackground.get(background)||'')}
         <footer data-aura-fragment="navigation"><a href="../">← All auras</a><a href="../../">Open simulator ↗</a></footer>
     </article>
-    <p class="aura-reference">${entry.wikiPending ? `Wiki details in progress. ${escape(entry.detailsContext || 'Eon 1-30')} roll details are available in the simulator.` : `Wiki reference reviewed ${entry.reviewedOn || reference.reviewedOn}. ${entry.simulatorName ? 'Roll details also reflect the simulator’s current aura registry.' : ''} <a href="${escape(entry.source)}?oldid=${entry.revisionId}" target="_blank" rel="noopener">Source revision ↗</a>`}</p>
+    <p class="aura-reference">${entry.wikiPending ? `Wiki details in progress. ${entry.simulatorName ? `${escape(entry.detailsContext || 'Eon 1-30')} roll details are available in the simulator.` : 'Obtainment details are awaiting documentation.'}` : `Wiki reference reviewed ${entry.reviewedOn || reference.reviewedOn}. ${entry.simulatorName ? 'Roll details also reflect the simulator’s current aura registry.' : ''} <a href="${escape(entry.source)}?oldid=${entry.revisionId}" target="_blank" rel="noopener">Source revision ↗</a>`}</p>
 </main>
 <footer data-aura-fragment="footer"><a href="../../data/auras/README.md">Attribution</a></footer>
 </div>

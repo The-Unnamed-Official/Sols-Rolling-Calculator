@@ -59,7 +59,7 @@
         });
         const minimal = target.createElement('link');
         minimal.rel = 'stylesheet';
-        minimal.href = new URL('styles/core/minimal.css?v=2.218.layout2', root).href;
+        minimal.href = new URL('styles/core/minimal.css?v=2.220.layout2', root).href;
         loads.push(new Promise(resolve => { minimal.onload = minimal.onerror = resolve; }));
         target.head.append(minimal);
         const body = document.body.cloneNode(true);

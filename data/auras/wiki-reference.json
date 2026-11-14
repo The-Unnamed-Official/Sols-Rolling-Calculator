@@ -19,7 +19,10 @@
     "equinox : youareanidiot": "equinox : you are an idiot",
     "gravitational : point zero": "point : zero",
     "aegis : eggis": "eggis",
-    "fruitpunch": "fruitpunch"
+    "fruitpunch": "fruitpunch",
+    "phasmophobia": "wraith : phasmophobia",
+    "sinister p.": "sinister : p",
+    "sinister p": "sinister : p"
   },
   "pages": [
     {
@@ -260,7 +263,7 @@
       "events": [
         "Halloween 2026"
       ],
-      "reviewedOn": "2026-11-05"
+      "reviewedOn": "2026-11-14"
     },
     {
       "title": "Aegis",
@@ -968,6 +971,33 @@
       "exclusive": false,
       "events": [],
       "reviewedOn": "2026-11-05"
+    },
+    {
+      "title": "Ashraem",
+      "source": "https://sol-rng.fandom.com/wiki/Ashraem",
+      "revisionId": 155658,
+      "description": "",
+      "descriptionTruncated": false,
+      "rarity": "N/A (Unobtainable outside of Blood Rain or Glitched)",
+      "nativeRarity": "1 in 2,000,000,000",
+      "tier": "Event",
+      "required": "Blood Rain or Glitched",
+      "obtainment": "",
+      "categories": [
+        "Auras",
+        "Event",
+        "Event (Tier)",
+        "Biome-Exclusive",
+        "Stubs",
+        "Halloween 2026"
+      ],
+      "notice": "",
+      "status": "",
+      "exclusive": true,
+      "events": [
+        "Halloween 2026"
+      ],
+      "reviewedOn": "2026-11-14"
     },
     {
       "title": "Astraios",
@@ -1937,7 +1967,7 @@
     {
       "title": "Cataclysmic",
       "source": "https://sol-rng.fandom.com/wiki/Cataclysmic",
-      "revisionId": 155287,
+      "revisionId": 155318,
       "description": "",
       "descriptionTruncated": false,
       "rarity": "Bought from Jack The Pumpkin for 17,250 Hallow Points.",
@@ -1949,7 +1979,8 @@
         "Auras",
         "Event",
         "Event (Tier)",
-        "Purchasable"
+        "Purchasable",
+        "Halloween 2026"
       ],
       "notice": "",
       "status": "",
@@ -1957,13 +1988,13 @@
       "events": [
         "Halloween 2026"
       ],
-      "reviewedOn": "2026-11-05"
+      "reviewedOn": "2026-11-14"
     },
     {
       "title": "Cauldron",
       "source": "https://sol-rng.fandom.com/wiki/Cauldron",
-      "revisionId": 155257,
-      "description": "Empty",
+      "revisionId": 155356,
+      "description": "",
       "descriptionTruncated": false,
       "rarity": "N/A (Unobtainable outside of Pumpkin Moon or Glitched)",
       "nativeRarity": "1 in 24,000,000",
@@ -1982,7 +2013,7 @@
       "events": [
         "Halloween 2026"
       ],
-      "reviewedOn": "2026-11-05"
+      "reviewedOn": "2026-11-14"
     },
     {
       "title": "Celestial",
@@ -2768,7 +2799,7 @@
     {
       "title": "Cruor",
       "source": "https://sol-rng.fandom.com/wiki/Cruor",
-      "revisionId": 154923,
+      "revisionId": 155353,
       "description": "\"Once a Safe Haven of Sanctity. Now nothing more than a Cursed Shrine where Ruin and decay dwell.\" \"Ravaged by An Unknown Monster who sought",
       "descriptionTruncated": true,
       "rarity": "Bought from Jack The Pumpkin for 15,000 Hallow Points.",
@@ -2788,7 +2819,7 @@
       "events": [
         "Halloween 2026"
       ],
-      "reviewedOn": "2026-11-05"
+      "reviewedOn": "2026-11-14"
     },
     {
       "title": "CryoFang",
@@ -2935,9 +2966,36 @@
       "reviewedOn": "2026-11-05"
     },
     {
+      "title": "Death",
+      "source": "https://sol-rng.fandom.com/wiki/Death",
+      "revisionId": 155660,
+      "description": "",
+      "descriptionTruncated": false,
+      "rarity": "N/A (Unobtainable outside of Blood Rain or Glitched)",
+      "nativeRarity": "1 in 1,400,000,000",
+      "tier": "Event",
+      "required": "Blood Rain or Glitched",
+      "obtainment": "",
+      "categories": [
+        "Auras",
+        "Event",
+        "Event (Tier)",
+        "Biome-Exclusive",
+        "Stubs",
+        "Halloween 2026"
+      ],
+      "notice": "",
+      "status": "",
+      "exclusive": true,
+      "events": [
+        "Halloween 2026"
+      ],
+      "reviewedOn": "2026-11-14"
+    },
+    {
       "title": "Deathkeeper",
       "source": "https://sol-rng.fandom.com/wiki/Deathkeeper",
-      "revisionId": 155156,
+      "revisionId": 155647,
       "description": "A being that departs the soul from the human self, harvesting their very being towards the afterlife, guiding them through peace and rest.",
       "descriptionTruncated": false,
       "rarity": "Bought from Jack The Pumpkin for 22,500 Hallow Points.",
@@ -2949,7 +3007,8 @@
         "Auras",
         "Event",
         "Event (Tier)",
-        "Purchasable"
+        "Purchasable",
+        "Halloween 2026"
       ],
       "notice": "",
       "status": "",
@@ -2957,7 +3016,7 @@
       "events": [
         "Halloween 2026"
       ],
-      "reviewedOn": "2026-11-05"
+      "reviewedOn": "2026-11-14"
     },
     {
       "title": "Deepwoken",
@@ -2980,6 +3039,59 @@
       "exclusive": false,
       "events": [],
       "reviewedOn": "2026-11-05"
+    },
+    {
+      "title": "Dementor",
+      "source": "https://sol-rng.fandom.com/wiki/Dementor",
+      "revisionId": 155702,
+      "description": "",
+      "descriptionTruncated": false,
+      "rarity": "N/A (Unobtainable outside of Graveyard or Glitched)",
+      "nativeRarity": "1 in 69,000,000",
+      "tier": "Event",
+      "required": "Graveyard or Glitched",
+      "obtainment": "",
+      "categories": [
+        "Auras",
+        "Event",
+        "Event (Tier)",
+        "Biome-Exclusive",
+        "Halloween 2026"
+      ],
+      "notice": "",
+      "status": "",
+      "exclusive": true,
+      "events": [
+        "Halloween 2026"
+      ],
+      "reviewedOn": "2026-11-14"
+    },
+    {
+      "title": "Devotee",
+      "source": "https://sol-rng.fandom.com/wiki/Devotee",
+      "revisionId": 155690,
+      "description": "",
+      "descriptionTruncated": false,
+      "rarity": "Bought from Jack The Pumpkin for 30,000 Hallow Points.",
+      "nativeRarity": "",
+      "tier": "Event",
+      "required": "",
+      "obtainment": "",
+      "categories": [
+        "Auras",
+        "Event",
+        "Event (Tier)",
+        "Purchasable",
+        "Has Abilities",
+        "Halloween 2026"
+      ],
+      "notice": "",
+      "status": "",
+      "exclusive": false,
+      "events": [
+        "Halloween 2026"
+      ],
+      "reviewedOn": "2026-11-14"
     },
     {
       "title": "Diaboli",
@@ -3658,7 +3770,7 @@
     {
       "title": "Embercrypt",
       "source": "https://sol-rng.fandom.com/wiki/Embercrypt",
-      "revisionId": 155254,
+      "revisionId": 155639,
       "description": "An underground labyrinth of winding, twisting corridors. The air is foul, and all year long the crypt reeks of decay under the moon in the",
       "descriptionTruncated": true,
       "rarity": "N/A (Unobtainable outside of Pumpkin Moon or Glitched)",
@@ -3670,7 +3782,8 @@
         "Auras",
         "Event",
         "Event (Tier)",
-        "Biome-Exclusive"
+        "Biome-Exclusive",
+        "Halloween 2026"
       ],
       "notice": "",
       "status": "",
@@ -3678,7 +3791,7 @@
       "events": [
         "Halloween 2026"
       ],
-      "reviewedOn": "2026-11-05"
+      "reviewedOn": "2026-11-14"
     },
     {
       "title": "Emerald",
@@ -3777,7 +3890,7 @@
     {
       "title": "Enchanted",
       "source": "https://sol-rng.fandom.com/wiki/Enchanted",
-      "revisionId": 155252,
+      "revisionId": 155316,
       "description": "A being channeling forbidden magic as reality itself bends to its spells.",
       "descriptionTruncated": false,
       "rarity": "N/A (Unobtainable outside of Pumpkin Moon or Glitched)",
@@ -3789,7 +3902,8 @@
         "Auras",
         "Event",
         "Event (Tier)",
-        "Biome-Exclusive"
+        "Biome-Exclusive",
+        "Halloween 2026"
       ],
       "notice": "",
       "status": "",
@@ -3797,7 +3911,29 @@
       "events": [
         "Halloween 2026"
       ],
-      "reviewedOn": "2026-11-05"
+      "reviewedOn": "2026-11-14"
+    },
+    {
+      "title": "Entropy",
+      "source": "https://sol-rng.fandom.com/wiki/Entropy",
+      "revisionId": 155671,
+      "description": "‘‘Even the oldest trees cannot escape the passage of time; their branches reach toward the sky, their leaves fall and return to the earth, and",
+      "descriptionTruncated": true,
+      "rarity": "1 in 30,000,000",
+      "nativeRarity": "1 in 15,000,000",
+      "tier": "Exalted",
+      "required": "Lost Forest",
+      "obtainment": "",
+      "categories": [
+        "Auras",
+        "Biome-Native",
+        "​Exalted"
+      ],
+      "notice": "",
+      "status": "",
+      "exclusive": false,
+      "events": [],
+      "reviewedOn": "2026-11-14"
     },
     {
       "title": "Eostre",
@@ -3965,6 +4101,32 @@
         "Christmas 2025"
       ],
       "reviewedOn": "2026-11-05"
+    },
+    {
+      "title": "Exanimatus",
+      "source": "https://sol-rng.fandom.com/wiki/Exanimatus",
+      "revisionId": 155687,
+      "description": "",
+      "descriptionTruncated": false,
+      "rarity": "Bought from Jack The Pumpkin for 20,000 Hallow Points.",
+      "nativeRarity": "",
+      "tier": "Event",
+      "required": "",
+      "obtainment": "",
+      "categories": [
+        "Auras",
+        "Event",
+        "Event (Tier)",
+        "Purchasable",
+        "Halloween 2026"
+      ],
+      "notice": "",
+      "status": "",
+      "exclusive": false,
+      "events": [
+        "Halloween 2026"
+      ],
+      "reviewedOn": "2026-11-14"
     },
     {
       "title": "Exotic",
@@ -4351,7 +4513,7 @@
     {
       "title": "Flushed : Pumpkinity",
       "source": "https://sol-rng.fandom.com/wiki/Flushed_:_Pumpkinity",
-      "revisionId": 155250,
+      "revisionId": 155326,
       "description": "no stop its not pumpkinity hey! its me! pumpkinity! spooking everything!",
       "descriptionTruncated": false,
       "rarity": "N/A (Unobtainable outside of Pumpkin Moon or Glitched)",
@@ -4372,7 +4534,7 @@
       "events": [
         "Halloween 2026"
       ],
-      "reviewedOn": "2026-11-05"
+      "reviewedOn": "2026-11-14"
     },
     {
       "title": "Flushed : Troll",
@@ -4469,7 +4631,7 @@
     {
       "title": "Former Gardens",
       "source": "https://sol-rng.fandom.com/wiki/Former_Gardens",
-      "revisionId": 155259,
+      "revisionId": 155441,
       "description": "... HELP ME The Gardens endure, where an eternal flame refuses to die. Yet even its undying light cannot halt the relentless passage of time.",
       "descriptionTruncated": true,
       "rarity": "N/A (Unobtainable outside of Blood Rain or Glitched)",
@@ -4489,7 +4651,7 @@
       "events": [
         "Halloween 2026"
       ],
-      "reviewedOn": "2026-11-05"
+      "reviewedOn": "2026-11-14"
     },
     {
       "title": "Fragments of the Crimson Moon",
@@ -4661,7 +4823,7 @@
     {
       "title": "Gaze",
       "source": "https://sol-rng.fandom.com/wiki/Gaze",
-      "revisionId": 154994,
+      "revisionId": 155515,
       "description": "We were once the same thing. It was torn apart, and the fragments fell into the human world, becoming us. Time wore away our memories.",
       "descriptionTruncated": true,
       "rarity": "N/A (Unobtainable outside of Graveyard or Glitched)",
@@ -4683,12 +4845,12 @@
       "events": [
         "Halloween 2026"
       ],
-      "reviewedOn": "2026-11-05"
+      "reviewedOn": "2026-11-14"
     },
     {
       "title": "Ghost",
       "source": "https://sol-rng.fandom.com/wiki/Ghost",
-      "revisionId": 155256,
+      "revisionId": 155314,
       "description": "”Long ago, a restless soul was bound to an ancient lantern, with its spirit forever trapped behind the flickering flame.” “Those who carried it swore",
       "descriptionTruncated": true,
       "rarity": "N/A (Unobtainable outside of Graveyard or Glitched)",
@@ -4700,7 +4862,8 @@
         "Auras",
         "Event",
         "Event (Tier)",
-        "Biome-Exclusive"
+        "Biome-Exclusive",
+        "Halloween 2026"
       ],
       "notice": "",
       "status": "",
@@ -4708,7 +4871,7 @@
       "events": [
         "Halloween 2026"
       ],
-      "reviewedOn": "2026-11-05"
+      "reviewedOn": "2026-11-14"
     },
     {
       "title": "Gilded",
@@ -5012,6 +5175,33 @@
       "reviewedOn": "2026-11-05"
     },
     {
+      "title": "GraftShifter",
+      "source": "https://sol-rng.fandom.com/wiki/GraftShifter",
+      "revisionId": 155695,
+      "description": "",
+      "descriptionTruncated": false,
+      "rarity": "N/A (Unobtainable outside of Graveyard or Glitched)",
+      "nativeRarity": "1 in 1,134,903,170",
+      "tier": "Event",
+      "required": "Graveyard or Glitched",
+      "obtainment": "",
+      "categories": [
+        "Auras",
+        "Event",
+        "Event (Tier)",
+        "Biome-Exclusive",
+        "Has Abilities",
+        "Halloween 2026"
+      ],
+      "notice": "",
+      "status": "",
+      "exclusive": true,
+      "events": [
+        "Halloween 2026"
+      ],
+      "reviewedOn": "2026-11-14"
+    },
+    {
       "title": "Graveborn",
       "source": "https://sol-rng.fandom.com/wiki/Graveborn",
       "revisionId": 153363,
@@ -5129,6 +5319,32 @@
       "reviewedOn": "2026-11-05"
     },
     {
+      "title": "Hallow Treat",
+      "source": "https://sol-rng.fandom.com/wiki/Hallow_Treat",
+      "revisionId": 155706,
+      "description": "",
+      "descriptionTruncated": false,
+      "rarity": "N/A (Unobtainable outside of Pumpkin Moon or Glitched)",
+      "nativeRarity": "1 in 70,000,000",
+      "tier": "",
+      "required": "Pumpkin Moon or Glitched",
+      "obtainment": "",
+      "categories": [
+        "Auras",
+        "Event",
+        "Event (Tier)",
+        "Biome-Exclusive",
+        "Halloween 2026"
+      ],
+      "notice": "",
+      "status": "",
+      "exclusive": true,
+      "events": [
+        "Halloween 2026"
+      ],
+      "reviewedOn": "2026-11-14"
+    },
+    {
       "title": "Hallucination",
       "source": "https://sol-rng.fandom.com/wiki/Hallucination",
       "revisionId": 150392,
@@ -5153,7 +5369,7 @@
     {
       "title": "Hanahaki",
       "source": "https://sol-rng.fandom.com/wiki/Hanahaki",
-      "revisionId": 155159,
+      "revisionId": 155642,
       "description": "Throughout countless stories of love and heartbreak, many have suffered from unrequited love, but few curses were as cruel as Hanahaki disease. The moment someone",
       "descriptionTruncated": true,
       "rarity": "N/A (Unobtainable outside of Blood Rain or Glitched)",
@@ -5166,7 +5382,8 @@
         "Event",
         "Event (Tier)",
         "Biome-Exclusive",
-        "Stubs"
+        "Stubs",
+        "Halloween 2026"
       ],
       "notice": "",
       "status": "",
@@ -5174,7 +5391,7 @@
       "events": [
         "Halloween 2026"
       ],
-      "reviewedOn": "2026-11-05"
+      "reviewedOn": "2026-11-14"
     },
     {
       "title": "Harnessed",
@@ -5248,9 +5465,9 @@
     {
       "title": "Harvester : Necromancy",
       "source": "https://sol-rng.fandom.com/wiki/Harvester_:_Necromancy",
-      "revisionId": 155275,
-      "description": "TBA",
-      "descriptionTruncated": false,
+      "revisionId": 155679,
+      "description": "\"The calling of a name upon his tongue, spoken softly in the dark, that the soil, however, had never preserved.\" \"Grave by grave, row by",
+      "descriptionTruncated": true,
       "rarity": "N/A (Unobtainable outside of Graveyard or Glitched)",
       "nativeRarity": "1 in 225,000,000",
       "tier": "Event",
@@ -5260,7 +5477,8 @@
         "Auras",
         "Event",
         "Event (Tier)",
-        "Biome-Exclusive"
+        "Biome-Exclusive",
+        "Has Abilities"
       ],
       "notice": "",
       "status": "",
@@ -5268,7 +5486,7 @@
       "events": [
         "Halloween 2026"
       ],
-      "reviewedOn": "2026-11-05"
+      "reviewedOn": "2026-11-14"
     },
     {
       "title": "Hasuen",
@@ -5551,6 +5769,60 @@
       "reviewedOn": "2026-11-05"
     },
     {
+      "title": "Hellhound",
+      "source": "https://sol-rng.fandom.com/wiki/Hellhound",
+      "revisionId": 155662,
+      "description": "",
+      "descriptionTruncated": false,
+      "rarity": "N/A (Unobtainable outside of Blood Rain or Glitched)",
+      "nativeRarity": "1 in 800,000,000",
+      "tier": "Event",
+      "required": "Blood Rain or Glitched",
+      "obtainment": "",
+      "categories": [
+        "Auras",
+        "Event",
+        "Event (Tier)",
+        "Biome-Exclusive",
+        "Stubs",
+        "Halloween 2026"
+      ],
+      "notice": "",
+      "status": "",
+      "exclusive": true,
+      "events": [
+        "Halloween 2026"
+      ],
+      "reviewedOn": "2026-11-14"
+    },
+    {
+      "title": "Hollow",
+      "source": "https://sol-rng.fandom.com/wiki/Hollow",
+      "revisionId": 155667,
+      "description": "",
+      "descriptionTruncated": false,
+      "rarity": "N/A (Unobtainable outside of Graveyard or Glitched)",
+      "nativeRarity": "1 in 2,666,666,666",
+      "tier": "Event",
+      "required": "Graveyard or Glitched",
+      "obtainment": "",
+      "categories": [
+        "Auras",
+        "Event",
+        "Event (Tier)",
+        "Biome-Exclusive",
+        "Stubs",
+        "Halloween 2026"
+      ],
+      "notice": "",
+      "status": "",
+      "exclusive": true,
+      "events": [
+        "Halloween 2026"
+      ],
+      "reviewedOn": "2026-11-14"
+    },
+    {
       "title": "Honey",
       "source": "https://sol-rng.fandom.com/wiki/Honey",
       "revisionId": 153305,
@@ -5613,6 +5885,32 @@
       "exclusive": false,
       "events": [],
       "reviewedOn": "2026-11-05"
+    },
+    {
+      "title": "Hylophobia",
+      "source": "https://sol-rng.fandom.com/wiki/Hylophobia",
+      "revisionId": 155683,
+      "description": "",
+      "descriptionTruncated": false,
+      "rarity": "N/A (Unobtainable outside of Pumpkin Moon or Glitched)",
+      "nativeRarity": "1 in 66,363,166",
+      "tier": "",
+      "required": "Pumpkin Moon or Glitched",
+      "obtainment": "",
+      "categories": [
+        "Auras",
+        "Event",
+        "Event (Tier)",
+        "Biome-Exclusive",
+        "Halloween 2026"
+      ],
+      "notice": "",
+      "status": "",
+      "exclusive": true,
+      "events": [
+        "Halloween 2026"
+      ],
+      "reviewedOn": "2026-11-14"
     },
     {
       "title": "Hyper-Volt",
@@ -6418,7 +6716,7 @@
       "events": [
         "Halloween 2026"
       ],
-      "reviewedOn": "2026-11-05"
+      "reviewedOn": "2026-11-14"
     },
     {
       "title": "Lost Soul : Wander",
@@ -7040,6 +7338,32 @@
       "reviewedOn": "2026-11-05"
     },
     {
+      "title": "Memphis",
+      "source": "https://sol-rng.fandom.com/wiki/Memphis",
+      "revisionId": 155685,
+      "description": "",
+      "descriptionTruncated": false,
+      "rarity": "N/A (Unobtainable outside of Pumpkin Moon or Glitched)",
+      "nativeRarity": "1 in 98,000,000",
+      "tier": "",
+      "required": "Pumpkin Moon or Glitched",
+      "obtainment": "",
+      "categories": [
+        "Auras",
+        "Event",
+        "Event (Tier)",
+        "Biome-Exclusive",
+        "Halloween 2026"
+      ],
+      "notice": "",
+      "status": "",
+      "exclusive": true,
+      "events": [
+        "Halloween 2026"
+      ],
+      "reviewedOn": "2026-11-14"
+    },
+    {
       "title": "Meta",
       "source": "https://sol-rng.fandom.com/wiki/Meta",
       "revisionId": 152886,
@@ -7267,6 +7591,32 @@
       "exclusive": false,
       "events": [],
       "reviewedOn": "2026-11-05"
+    },
+    {
+      "title": "Nightlight",
+      "source": "https://sol-rng.fandom.com/wiki/Nightlight",
+      "revisionId": 155692,
+      "description": "The frightening light of a lamppost during Halloween night.",
+      "descriptionTruncated": false,
+      "rarity": "N/A (Unobtainable outside of Pumpkin Moon or Glitched)",
+      "nativeRarity": "1 in 2,666,666",
+      "tier": "",
+      "required": "Pumpkin Moon or Glitched",
+      "obtainment": "",
+      "categories": [
+        "Auras",
+        "Event",
+        "Event (Tier)",
+        "Biome-Exclusive",
+        "Halloween 2026"
+      ],
+      "notice": "",
+      "status": "",
+      "exclusive": true,
+      "events": [
+        "Halloween 2026"
+      ],
+      "reviewedOn": "2026-11-14"
     },
     {
       "title": "Nightmare Sky",
@@ -8881,7 +9231,7 @@
     {
       "title": "Rejoice",
       "source": "https://sol-rng.fandom.com/wiki/Rejoice",
-      "revisionId": 155274,
+      "revisionId": 155459,
       "description": "A soldier's tale TO BE EXALTED A MAN, A BOY A WOMAN, A GOD THE FOUR SHARE NOTHING IN COMMON TO BE AMONGST THE GODDESS",
       "descriptionTruncated": true,
       "rarity": "N/A (Unobtainable outside of Blood Rain or Glitched)",
@@ -8893,7 +9243,8 @@
         "Auras",
         "Event",
         "Event (Tier)",
-        "Biome-Exclusive"
+        "Biome-Exclusive",
+        "Halloween 2026"
       ],
       "notice": "",
       "status": "",
@@ -8901,7 +9252,7 @@
       "events": [
         "Halloween 2026"
       ],
-      "reviewedOn": "2026-11-05"
+      "reviewedOn": "2026-11-14"
     },
     {
       "title": "Rekindle",
@@ -9597,6 +9948,54 @@
         "Halloween 2025"
       ],
       "reviewedOn": "2026-11-05"
+    },
+    {
+      "title": "Sinister : P",
+      "source": "https://sol-rng.fandom.com/wiki/Sinister_:_P",
+      "revisionId": 155643,
+      "description": "",
+      "descriptionTruncated": false,
+      "rarity": "Not yet documented",
+      "nativeRarity": "",
+      "tier": "Event",
+      "required": "",
+      "obtainment": "Obtainment details are awaiting documentation.",
+      "categories": [],
+      "notice": "",
+      "status": "",
+      "exclusive": false,
+      "events": [
+        "Halloween 2026"
+      ],
+      "reviewedOn": "2026-11-14",
+      "wikiPending": true,
+      "detailsContext": "Halloween 2026 Part 2"
+    },
+    {
+      "title": "Sinister : S",
+      "source": "https://sol-rng.fandom.com/wiki/Sinister_:_S",
+      "revisionId": 155674,
+      "description": "",
+      "descriptionTruncated": false,
+      "rarity": "Use Soul-Scooping Shovel",
+      "nativeRarity": "",
+      "tier": "Event",
+      "required": "",
+      "obtainment": "",
+      "categories": [
+        "Auras",
+        "Event",
+        "Event (Tier)",
+        "Has Abilities",
+        "Halloween 2026"
+      ],
+      "notice": "",
+      "status": "",
+      "exclusive": false,
+      "events": [
+        "Halloween 2026"
+      ],
+      "reviewedOn": "2026-11-14"
     },
     {
       "title": "Sirius",
@@ -11906,6 +12305,32 @@
       "reviewedOn": "2026-11-05"
     },
     {
+      "title": "Wraith : Phasmophobia",
+      "source": "https://sol-rng.fandom.com/wiki/Wraith_:_Phasmophobia",
+      "revisionId": 155700,
+      "description": "The fear of ghosts...",
+      "descriptionTruncated": false,
+      "rarity": "N/A (Unobtainable outside of Graveyard or Glitched)",
+      "nativeRarity": "1 in 6,620,000",
+      "tier": "Event",
+      "required": "Graveyard or Glitched",
+      "obtainment": "",
+      "categories": [
+        "Auras",
+        "Event",
+        "Event (Tier)",
+        "Biome-Exclusive",
+        "Halloween 2026"
+      ],
+      "notice": "",
+      "status": "",
+      "exclusive": true,
+      "events": [
+        "Halloween 2026"
+      ],
+      "reviewedOn": "2026-11-14"
+    },
+    {
       "title": "Wraithlight",
       "source": "https://sol-rng.fandom.com/wiki/Wraithlight",
       "revisionId": 150539,
@@ -12028,32 +12453,52 @@
   ],
   "eventReviews": {
     "halloween26": {
-      "reviewedOn": "2026-11-04",
+      "reviewedOn": "2026-11-14",
       "source": "https://sol-rng.fandom.com/wiki/Category:Auras",
       "publishedArticles": [
-        "Harvester : Necromancy",
-        "Flushed : Pumpkinity",
-        "Ghost",
-        "Hanahaki",
-        "Gaze",
-        "Lost Soul : Styx",
-        "Cauldron",
-        "Rejoice",
-        "Embercrypt",
-        "Cruor",
-        "Enchanted",
         "Acropolis",
-        "Former Gardens",
+        "Ashraem",
+        "Cataclysmic",
+        "Cauldron",
+        "Cruor",
+        "Death",
         "Deathkeeper",
-        "Cataclysmic"
+        "Dementor",
+        "Devotee",
+        "Embercrypt",
+        "Enchanted",
+        "Exanimatus",
+        "Flushed : Pumpkinity",
+        "Former Gardens",
+        "Gaze",
+        "Ghost",
+        "GraftShifter",
+        "Hallow Treat",
+        "Hanahaki",
+        "Harvester : Necromancy",
+        "Hellhound",
+        "Hollow",
+        "Hylophobia",
+        "Lost Soul : Styx",
+        "Memphis",
+        "Nightlight",
+        "Rejoice",
+        "Sinister : S",
+        "Wraith : Phasmophobia"
       ],
       "catalogueOnly": [
-        "Cruor",
         "Acropolis",
+        "Cataclysmic",
+        "Cruor",
         "Deathkeeper",
-        "Cataclysmic"
+        "Devotee",
+        "Exanimatus",
+        "Sinister : P",
+        "Sinister : S"
       ],
-      "pendingKnownArticles": []
+      "pendingKnownArticles": [
+        "Sinister : P"
+      ]
     }
   }
 }

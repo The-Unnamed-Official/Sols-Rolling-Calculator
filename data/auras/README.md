@@ -42,7 +42,25 @@ Simulator auras missing from the wiki snapshot receive profiles with their
 confirmed rarity, biome restrictions, and event details. Descriptions and media
 remain pending until references are available. Rebuilding after a snapshot refresh
 automatically replaces those temporary profiles with the wiki records.
-Halloween 2026 profiles and title templates were refreshed on November 4, 2026.
+Halloween 2026 Part 2 profiles and title templates were refreshed on November 14,
+2026 for simulator v2.220. The eleven new event rolls use their native biome and
+Glitched, including Hollow at 1 in 2,666,666,666. Phasmophobia is published as
+`Wraith : Phasmophobia`; its short name resolves to that same profile.
+Exanimatus (20,000 Hallow Points), Devotee (30,000 Hallow Points), and
+Sinister : S (use a Soul-Scooping Shovel) are directory-only rewards. Entropy is
+also rollable as a normal aura at 1 in 30,000,000, with 2× native odds in Lost
+Forest (1 in 15,000,000), outside the Halloween rolling pool.
+Sinister : P has a directory-only profile with its obtainment marked as pending;
+the wiki article is still a stub without an aura infobox. Its name is registered
+in `additionalAuraNames` so event refreshes keep checking for a complete article.
+Nightlight, Hallow Treat, Wraith : Phasmophobia, Sinister : P, and Sinister : S use their
+published title artwork. Other new titles use themed fallbacks marked `pending`.
+
+The four Part 2 simulator cutscenes are registered and awaiting the supplied
+WebM files in `files/videos/cutscenes/`: `graftshifterCutscene.webm`,
+`ashraemCutscene.webm`, `deathCutscene.webm`, and `hollowCutscene.webm`.
+
+The earlier Halloween 2026 profiles were refreshed on November 4, 2026.
 Cruor and Acropolis are shop purchases from Jack The Pumpkin for 15,000 and
 20,000 Hallow Points. Cataclysmic costs 17,250 and Deathkeeper costs 22,500.
 All four remain in the directory and are excluded from
@@ -76,7 +94,7 @@ Edit these partials once; the directory and all profiles use the changes on
 their next load without rebuilding or editing any aura HTML files:
 
 - `partials/shared/header.html`: top bar, simulator version, and game build (currently
-  Eon 1-30). The `data-version-id` also supplies the asset cache version and
+  Eon 1-31). The `data-version-id` also supplies the asset cache version and
   footer version; update it together with the visible simulator version.
 - `partials/auras/aura-header-controls.html`: Home and Settings controls.
 - `partials/auras/aura-body.html`: body classes, shell classes, and backdrop.

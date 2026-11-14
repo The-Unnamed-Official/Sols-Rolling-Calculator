@@ -8856,6 +8856,7 @@ const AURA_BLUEPRINT_SOURCE = Object.freeze([
     { name: "Ethereal - 35,000,000", chance: 35000000 },
     { name: "Flora : Florest - 32,800,000", chance: 32800000, breakthroughs: nativeBreakthroughs("lostForest") },
     { name: "Arcane : Dark - 30,000,000", chance: 30000000 },
+    { name: "Entropy - 30,000,000", chance: 30000000, breakthroughs: nativeBreakthroughs("lostForest") },
     { name: "Blizzard - 27,315,000", chance: 27315000, breakthroughs: nativeBreakthroughs("snowy") },
     { name: "Centurion - 25,000,000", chance:  25000000, nativeBiomes: ["singularity"] },
     { name: "Apotheosis - 24,649,430", chance: 24649430 },
@@ -9427,6 +9428,7 @@ function getAuraEventId(aura, { preferEnabled = false, enabledSet = null } = {})
 
 const CUTSCENE_PRIORITY_SEQUENCE = [
             "trolled-cutscene",
+            "hollow-cutscene", "ashraem-cutscene", "death-cutscene", "graftshifter-cutscene",
             'tomorrow-cutscene', "illusionary-cutscene", "dreammetric-cutscene", "oppression-cutscene", "oblivion-cutscene",
             "memory-cutscene", "neferkhaf-cutscene", "blood-cutscene",
             'tree-house-cutscene', "monarch-cutscene", "centaurus-cutscene", "hellborn-cutscene", "idiot-cutscene", "equinox-cutscene", "catcher-cutscene",

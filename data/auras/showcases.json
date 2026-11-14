@@ -5199,5 +5199,68 @@
     "source": "https://sol-rng.fandom.com/wiki/File:WitheredHalloweenCutscene.mp4",
     "mime": "video/mp4",
     "timestamp": "2026-11-02T10:20:54Z"
+  },
+  "CauldronCutscene.mp4": {
+    "file": "CauldronCutscene.mp4",
+    "url": "https://static.wikia.nocookie.net/sol-rng/images/1/16/CauldronCutscene.mp4/revision/latest?cb=20261107150649",
+    "source": "https://sol-rng.fandom.com/wiki/File:CauldronCutscene.mp4",
+    "mime": "video/mp4",
+    "timestamp": "2026-11-07T15:06:49Z"
+  },
+  "HarvesterNecromancyAbility1.mp4": {
+    "file": "HarvesterNecromancyAbility1.mp4",
+    "url": "https://static.wikia.nocookie.net/sol-rng/images/c/c9/HarvesterNecromancyAbility1.mp4/revision/latest?cb=20261114152231",
+    "source": "https://sol-rng.fandom.com/wiki/File:HarvesterNecromancyAbility1.mp4",
+    "mime": "video/mp4",
+    "timestamp": "2026-11-14T15:22:31Z"
+  },
+  "HarvesterNecromancyAbility2.mp4": {
+    "file": "HarvesterNecromancyAbility2.mp4",
+    "url": "https://static.wikia.nocookie.net/sol-rng/images/0/02/HarvesterNecromancyAbility2.mp4/revision/latest?cb=20261114152307",
+    "source": "https://sol-rng.fandom.com/wiki/File:HarvesterNecromancyAbility2.mp4",
+    "mime": "video/mp4",
+    "timestamp": "2026-11-14T15:23:07Z"
+  },
+  "HarvesterNecromancyAbility3.mp4": {
+    "file": "HarvesterNecromancyAbility3.mp4",
+    "url": "https://static.wikia.nocookie.net/sol-rng/images/f/fd/HarvesterNecromancyAbility3.mp4/revision/latest?cb=20261114152330",
+    "source": "https://sol-rng.fandom.com/wiki/File:HarvesterNecromancyAbility3.mp4",
+    "mime": "video/mp4",
+    "timestamp": "2026-11-14T15:23:30Z"
+  },
+  "FormerGardensCutscene.mp4": {
+    "file": "FormerGardensCutscene.mp4",
+    "url": "https://static.wikia.nocookie.net/sol-rng/images/1/1c/FormerGardensCutscene.mp4/revision/latest?cb=20261109172655",
+    "source": "https://sol-rng.fandom.com/wiki/File:FormerGardensCutscene.mp4",
+    "mime": "video/mp4",
+    "timestamp": "2026-11-09T17:26:55Z"
+  },
+  "SinistersAbility1.mp4": {
+    "file": "SinistersAbility1.mp4",
+    "url": "https://static.wikia.nocookie.net/sol-rng/images/2/20/SinistersAbility1.mp4/revision/latest?cb=20261114135015",
+    "source": "https://sol-rng.fandom.com/wiki/File:SinistersAbility1.mp4",
+    "mime": "video/mp4",
+    "timestamp": "2026-11-14T13:50:15Z"
+  },
+  "SinistersAbility2.mp4": {
+    "file": "SinistersAbility2.mp4",
+    "url": "https://static.wikia.nocookie.net/sol-rng/images/4/43/SinistersAbility2.mp4/revision/latest?cb=20261114135048",
+    "source": "https://sol-rng.fandom.com/wiki/File:SinistersAbility2.mp4",
+    "mime": "video/mp4",
+    "timestamp": "2026-11-14T13:50:48Z"
+  },
+  "SinistersAbility3.mp4": {
+    "file": "SinistersAbility3.mp4",
+    "url": "https://static.wikia.nocookie.net/sol-rng/images/e/ea/SinistersAbility3.mp4/revision/latest?cb=20261114135120",
+    "source": "https://sol-rng.fandom.com/wiki/File:SinistersAbility3.mp4",
+    "mime": "video/mp4",
+    "timestamp": "2026-11-14T13:51:20Z"
+  },
+  "EntropyCutscene.mp4": {
+    "file": "EntropyCutscene.mp4",
+    "url": "https://static.wikia.nocookie.net/sol-rng/images/7/75/EntropyCutscene.mp4/revision/latest?cb=20261114144407",
+    "source": "https://sol-rng.fandom.com/wiki/File:EntropyCutscene.mp4",
+    "mime": "video/mp4",
+    "timestamp": "2026-11-14T14:44:07Z"
   }
 }

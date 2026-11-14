@@ -45320,15 +45320,15 @@
     },
     "Harvester : Necromancy": {
       "source": "https://sol-rng.fandom.com/wiki/Harvester_:_Necromancy",
-      "revisionId": 155275,
+      "revisionId": 155679,
       "mutationOf": "Harvester",
       "relatedAuras": [],
       "versions": [
         {
           "id": "current",
           "label": "Current",
-          "description": "TBA",
-          "descriptionMarkup": "<center> TBA </center>",
+          "description": "\"The calling of a name upon his tongue, spoken softly in the dark, that the soil, however, had never preserved.\" \"Grave by grave, row by row, his whispers awakened many others, yet each were a stranger. All that effort, all that labour, just for dawn to reach, with only him laying alive among the graves.\" \"Fooled by the very art he had learnt to wield, only those he had woken from their rest remained, bound to watch his staff pass through flesh.\"",
+          "descriptionMarkup": "<center> ''<span style=\"color:#b9b3a6\">\"The calling of a name upon <span style=\"color:#1f6f6b; -webkit-text-stroke: 1px #0f2a29\">his </span>tongue, spoken softly in the dark, that the soil, however, <span style=\"color:#896568\">had never preserved.</span>\"<br><br>\"Grave by grave, row by row, his whispers awakened many others, yet each were a <span style=\"color:#6f7f8c\">stranger. </span>All that effort, all that labour, just for dawn to reach,  with only <span style=\"color:#896568\">him laying alive among the graves.</span>\"<br><br>\"Fooled by the very art he had learnt to wield, only those he had woken from their rest remained, bound to watch his staff pass through <span style=\"color:#8b1025\">flesh.</span>\"</span>'' </center>",
           "descriptionTruncated": false,
           "media": [
             {
@@ -45369,11 +45369,11 @@
             "required": "Graveyard or Glitched",
             "obtainment": "",
             "music": "Silver_xx30 - REVENANT",
-            "creator": "[CA] By @ZzeriBlox, @Sliver_xx30, @vortexgaming2024, @Davidkenze, @geckopro2682, @24_Stealth, @TBA"
+            "creator": "[CA] By @ZzeriBlox, @Sliver_xx30, @vortexgaming2024, @Davidkenze, @geckopro2682, @24_Stealth"
           },
-          "revisionId": 155275,
+          "revisionId": 155679,
           "source": "https://sol-rng.fandom.com/wiki/Harvester_:_Necromancy",
-          "timestamp": "2026-11-05T02:35:07Z",
+          "timestamp": "2026-11-14T15:23:43Z",
           "soundtracks": [
             {
               "file": "Silver xx30 - REVENANT.mp3",
@@ -45383,13 +45383,44 @@
               "timestamp": "2026-10-31T18:08:02Z"
             }
           ],
-          "showcases": []
+          "showcases": [
+            {
+              "file": "HarvesterNecromancyAbility1.mp4",
+              "kind": "ability",
+              "label": "Summon Arms (F)",
+              "url": "https://static.wikia.nocookie.net/sol-rng/images/c/c9/HarvesterNecromancyAbility1.mp4/revision/latest?cb=20261114152231",
+              "source": "https://sol-rng.fandom.com/wiki/File:HarvesterNecromancyAbility1.mp4",
+              "mime": "video/mp4",
+              "timestamp": "2026-11-14T15:22:31Z",
+              "articleSource": "https://sol-rng.fandom.com/wiki/Harvester_:_Necromancy?oldid=155679"
+            },
+            {
+              "file": "HarvesterNecromancyAbility2.mp4",
+              "kind": "ability",
+              "label": "Moon Burst (R)",
+              "url": "https://static.wikia.nocookie.net/sol-rng/images/0/02/HarvesterNecromancyAbility2.mp4/revision/latest?cb=20261114152307",
+              "source": "https://sol-rng.fandom.com/wiki/File:HarvesterNecromancyAbility2.mp4",
+              "mime": "video/mp4",
+              "timestamp": "2026-11-14T15:23:07Z",
+              "articleSource": "https://sol-rng.fandom.com/wiki/Harvester_:_Necromancy?oldid=155679"
+            },
+            {
+              "file": "HarvesterNecromancyAbility3.mp4",
+              "kind": "ability",
+              "label": "Graves Burst (E)",
+              "url": "https://static.wikia.nocookie.net/sol-rng/images/f/fd/HarvesterNecromancyAbility3.mp4/revision/latest?cb=20261114152330",
+              "source": "https://sol-rng.fandom.com/wiki/File:HarvesterNecromancyAbility3.mp4",
+              "mime": "video/mp4",
+              "timestamp": "2026-11-14T15:23:30Z",
+              "articleSource": "https://sol-rng.fandom.com/wiki/Harvester_:_Necromancy?oldid=155679"
+            }
+          ]
         }
       ]
     },
     "Flushed : Pumpkinity": {
       "source": "https://sol-rng.fandom.com/wiki/Flushed_:_Pumpkinity",
-      "revisionId": 155250,
+      "revisionId": 155326,
       "mutationOf": ":Flushed:",
       "relatedAuras": [],
       "versions": [
@@ -45432,16 +45463,16 @@
             "music": "aakairo - Lord pumpkinity, master of halloweenity",
             "creator": "[OA] By @khxlla, @pokedex5643"
           },
-          "revisionId": 155250,
+          "revisionId": 155326,
           "source": "https://sol-rng.fandom.com/wiki/Flushed_:_Pumpkinity",
-          "timestamp": "2026-11-04T16:23:05Z",
+          "timestamp": "2026-11-07T00:11:07Z",
           "soundtracks": [
             {
               "file": "Lord pumpkinity, master of halloweenity.mp3",
-              "url": "https://static.wikia.nocookie.net/sol-rng/images/4/4b/Lord_pumpkinity%2C_master_of_halloweenity.mp3/revision/latest?cb=20261104100105",
+              "url": "https://static.wikia.nocookie.net/sol-rng/images/4/4b/Lord_pumpkinity%2C_master_of_halloweenity.mp3/revision/latest?cb=20261109110455",
               "source": "https://sol-rng.fandom.com/wiki/File:Lord_pumpkinity,_master_of_halloweenity.mp3",
               "mime": "audio/mpeg",
-              "timestamp": "2026-11-04T10:01:05Z"
+              "timestamp": "2026-11-09T11:04:55Z"
             }
           ],
           "showcases": [
@@ -45453,7 +45484,7 @@
               "source": "https://sol-rng.fandom.com/wiki/File:PumpkinityCutscene.mp4",
               "mime": "video/mp4",
               "timestamp": "2026-11-03T08:20:40Z",
-              "articleSource": "https://sol-rng.fandom.com/wiki/Flushed_:_Pumpkinity?oldid=155250"
+              "articleSource": "https://sol-rng.fandom.com/wiki/Flushed_:_Pumpkinity?oldid=155326"
             }
           ]
         }
@@ -45461,7 +45492,7 @@
     },
     "Ghost": {
       "source": "https://sol-rng.fandom.com/wiki/Ghost",
-      "revisionId": 155256,
+      "revisionId": 155314,
       "mutationOf": "",
       "relatedAuras": [],
       "versions": [
@@ -45502,9 +45533,9 @@
             "music": "GØDA - Liminal space aesthetic Roblox ID:86481683367589",
             "creator": "[CA] By @justr_ndx, @Abysmxlity, @CoolJamesTheAwesome1, @omnivoore"
           },
-          "revisionId": 155256,
+          "revisionId": 155314,
           "source": "https://sol-rng.fandom.com/wiki/Ghost",
-          "timestamp": "2026-11-04T16:34:09Z",
+          "timestamp": "2026-11-06T11:41:29Z",
           "soundtracks": [],
           "showcases": [
             {
@@ -45515,7 +45546,7 @@
               "source": "https://sol-rng.fandom.com/wiki/File:GhostCutscene.mp4",
               "mime": "video/mp4",
               "timestamp": "2026-11-02T10:27:06Z",
-              "articleSource": "https://sol-rng.fandom.com/wiki/Ghost?oldid=155256"
+              "articleSource": "https://sol-rng.fandom.com/wiki/Ghost?oldid=155314"
             }
           ]
         }
@@ -45523,7 +45554,7 @@
     },
     "Hanahaki": {
       "source": "https://sol-rng.fandom.com/wiki/Hanahaki",
-      "revisionId": 155159,
+      "revisionId": 155642,
       "mutationOf": "",
       "relatedAuras": [],
       "versions": [
@@ -45563,12 +45594,32 @@
             "tier": "Event",
             "required": "Blood Rain or Glitched",
             "obtainment": "",
-            "music": "VirtuaLIkimono - mechanical psychosis",
+            "music": "VirtuaLIkimono - Forget The Code, Get In To Your Emotions",
             "creator": "[CA] By @Lynoxiouszxcs, @Oxiseee"
           },
-          "revisionId": 155159,
+          "revisionId": 155642,
           "source": "https://sol-rng.fandom.com/wiki/Hanahaki",
-          "timestamp": "2026-11-03T13:27:21Z",
+          "timestamp": "2026-11-14T13:12:20Z",
+          "soundtracks": [
+            {
+              "file": "VirtuaLIkimono - Forget The Code, Get In To Your Emotions.mp3",
+              "url": "https://static.wikia.nocookie.net/sol-rng/images/8/8a/VirtuaLIkimono_-_Forget_The_Code%2C_Get_In_To_Your_Emotions.mp3/revision/latest?cb=20261114131158",
+              "source": "https://sol-rng.fandom.com/wiki/File:VirtuaLIkimono_-_Forget_The_Code,_Get_In_To_Your_Emotions.mp3",
+              "mime": "audio/mpeg",
+              "timestamp": "2026-11-14T13:11:58Z"
+            }
+          ],
+          "showcases": []
+        },
+        {
+          "label": "Previous soundtrack",
+          "media": [],
+          "description": "",
+          "descriptionMarkup": "",
+          "descriptionTruncated": false,
+          "facts": {
+            "music": "VirtuaLIkimono - mechanical psychosis"
+          },
           "soundtracks": [
             {
               "file": "VirtuaLIkimono - mechanical psychosis.mp3",
@@ -45578,13 +45629,18 @@
               "timestamp": "2026-10-31T11:25:47Z"
             }
           ],
-          "showcases": []
+          "showcases": [],
+          "revisionId": 155642,
+          "source": "https://sol-rng.fandom.com/wiki/Hanahaki",
+          "timestamp": null,
+          "sourceKind": "documented-soundtrack",
+          "id": "version-1"
         }
       ]
     },
     "Gaze": {
       "source": "https://sol-rng.fandom.com/wiki/Gaze",
-      "revisionId": 154994,
+      "revisionId": 155515,
       "mutationOf": "",
       "relatedAuras": [],
       "versions": [
@@ -45638,9 +45694,9 @@
             "music": "Magical Bit Boy - DREAMCORE (Fever Dream) Roblox:86247184974274",
             "creator": "[CA] By @H2OArea, @Niko_matthew"
           },
-          "revisionId": 154994,
+          "revisionId": 155515,
           "source": "https://sol-rng.fandom.com/wiki/Gaze",
-          "timestamp": "2026-11-01T16:54:15Z",
+          "timestamp": "2026-11-11T04:53:57Z",
           "soundtracks": [],
           "showcases": [
             {
@@ -45651,7 +45707,7 @@
               "source": "https://sol-rng.fandom.com/wiki/File:GazeAbility1.mp4",
               "mime": "video/mp4",
               "timestamp": "2026-11-01T16:46:14Z",
-              "articleSource": "https://sol-rng.fandom.com/wiki/Gaze?oldid=154994"
+              "articleSource": "https://sol-rng.fandom.com/wiki/Gaze?oldid=155515"
             },
             {
               "file": "GazeAbility2.mp4",
@@ -45661,7 +45717,7 @@
               "source": "https://sol-rng.fandom.com/wiki/File:GazeAbility2.mp4",
               "mime": "video/mp4",
               "timestamp": "2026-11-01T16:46:52Z",
-              "articleSource": "https://sol-rng.fandom.com/wiki/Gaze?oldid=154994"
+              "articleSource": "https://sol-rng.fandom.com/wiki/Gaze?oldid=155515"
             },
             {
               "file": "GazeAbility3.mp4",
@@ -45671,7 +45727,7 @@
               "source": "https://sol-rng.fandom.com/wiki/File:GazeAbility3.mp4",
               "mime": "video/mp4",
               "timestamp": "2026-11-01T16:47:22Z",
-              "articleSource": "https://sol-rng.fandom.com/wiki/Gaze?oldid=154994"
+              "articleSource": "https://sol-rng.fandom.com/wiki/Gaze?oldid=155515"
             },
             {
               "file": "GazeAbility3 (Behold.).mp4",
@@ -45681,7 +45737,7 @@
               "source": "https://sol-rng.fandom.com/wiki/File:GazeAbility3_(Behold.).mp4",
               "mime": "video/mp4",
               "timestamp": "2026-11-01T16:47:41Z",
-              "articleSource": "https://sol-rng.fandom.com/wiki/Gaze?oldid=154994"
+              "articleSource": "https://sol-rng.fandom.com/wiki/Gaze?oldid=155515"
             },
             {
               "file": "GazeCutscene.mp4",
@@ -45691,7 +45747,7 @@
               "source": "https://sol-rng.fandom.com/wiki/File:GazeCutscene.mp4",
               "mime": "video/mp4",
               "timestamp": "2026-11-01T16:54:11Z",
-              "articleSource": "https://sol-rng.fandom.com/wiki/Gaze?oldid=154994"
+              "articleSource": "https://sol-rng.fandom.com/wiki/Gaze?oldid=155515"
             }
           ]
         }
@@ -45771,15 +45827,15 @@
     },
     "Cauldron": {
       "source": "https://sol-rng.fandom.com/wiki/Cauldron",
-      "revisionId": 155257,
+      "revisionId": 155356,
       "mutationOf": "",
       "relatedAuras": [],
       "versions": [
         {
           "id": "current",
           "label": "Current",
-          "description": "Empty",
-          "descriptionMarkup": "<center>Empty</center>",
+          "description": "",
+          "descriptionMarkup": "",
           "descriptionTruncated": false,
           "media": [
             {
@@ -45814,9 +45870,9 @@
             "music": "PeriTune - Spook2",
             "creator": "[CA] By @Angel_CrepUltra, @Abysmxlity, @Flopsteri"
           },
-          "revisionId": 155257,
+          "revisionId": 155356,
           "source": "https://sol-rng.fandom.com/wiki/Cauldron",
-          "timestamp": "2026-11-04T16:35:34Z",
+          "timestamp": "2026-11-07T15:07:09Z",
           "soundtracks": [
             {
               "file": "PeriTune - Spook2.mp3",
@@ -45826,13 +45882,24 @@
               "timestamp": "2026-11-01T08:34:35Z"
             }
           ],
-          "showcases": []
+          "showcases": [
+            {
+              "file": "CauldronCutscene.mp4",
+              "kind": "cutscene",
+              "label": "Opening Cutscene",
+              "url": "https://static.wikia.nocookie.net/sol-rng/images/1/16/CauldronCutscene.mp4/revision/latest?cb=20261107150649",
+              "source": "https://sol-rng.fandom.com/wiki/File:CauldronCutscene.mp4",
+              "mime": "video/mp4",
+              "timestamp": "2026-11-07T15:06:49Z",
+              "articleSource": "https://sol-rng.fandom.com/wiki/Cauldron?oldid=155356"
+            }
+          ]
         }
       ]
     },
     "Rejoice": {
       "source": "https://sol-rng.fandom.com/wiki/Rejoice",
-      "revisionId": 155274,
+      "revisionId": 155459,
       "mutationOf": "",
       "relatedAuras": [],
       "versions": [
@@ -45852,9 +45919,9 @@
             "music": "aakairo - HEAVEN SAYS (Rejoice!)",
             "creator": "[OA] By @reeseyhi. @cloudssradar, @saturnalorbit"
           },
-          "revisionId": 155274,
+          "revisionId": 155459,
           "source": "https://sol-rng.fandom.com/wiki/Rejoice",
-          "timestamp": "2026-11-04T18:51:27Z",
+          "timestamp": "2026-11-09T20:12:38Z",
           "soundtracks": [
             {
               "file": "Aakairo - HEAVEN SAYS (Rejoice!).mp3",
@@ -45873,7 +45940,7 @@
               "source": "https://sol-rng.fandom.com/wiki/File:RejoiceCutscene.mp4",
               "mime": "video/mp4",
               "timestamp": "2026-11-02T10:13:59Z",
-              "articleSource": "https://sol-rng.fandom.com/wiki/Rejoice?oldid=155274"
+              "articleSource": "https://sol-rng.fandom.com/wiki/Rejoice?oldid=155459"
             }
           ]
         }
@@ -45881,7 +45948,7 @@
     },
     "Embercrypt": {
       "source": "https://sol-rng.fandom.com/wiki/Embercrypt",
-      "revisionId": 155254,
+      "revisionId": 155639,
       "mutationOf": "",
       "relatedAuras": [],
       "versions": [
@@ -45919,21 +45986,13 @@
             "tier": "",
             "required": "Pumpkin Moon or Glitched",
             "obtainment": "",
-            "music": "xi, Sakuzyo - Lunar Mare",
+            "music": "Lowifer - Shrapnel Roblox ID:119462512800310",
             "creator": "[CA] By @MrInsano80, @the_sillywolfy"
           },
-          "revisionId": 155254,
+          "revisionId": 155639,
           "source": "https://sol-rng.fandom.com/wiki/Embercrypt",
-          "timestamp": "2026-11-04T16:32:06Z",
-          "soundtracks": [
-            {
-              "file": "Xi, Sakuzyo - Lunar Mare.mp3",
-              "url": "https://static.wikia.nocookie.net/sol-rng/images/f/f5/Xi%2C_Sakuzyo_-_Lunar_Mare.mp3/revision/latest?cb=20261031184852",
-              "source": "https://sol-rng.fandom.com/wiki/File:Xi,_Sakuzyo_-_Lunar_Mare.mp3",
-              "mime": "audio/mpeg",
-              "timestamp": "2026-10-31T18:48:52Z"
-            }
-          ],
+          "timestamp": "2026-11-14T12:59:21Z",
+          "soundtracks": [],
           "showcases": [
             {
               "file": "EmbercryptCutscene.mp4",
@@ -45943,15 +46002,40 @@
               "source": "https://sol-rng.fandom.com/wiki/File:EmbercryptCutscene.mp4",
               "mime": "video/mp4",
               "timestamp": "2026-11-03T08:11:04Z",
-              "articleSource": "https://sol-rng.fandom.com/wiki/Embercrypt?oldid=155254"
+              "articleSource": "https://sol-rng.fandom.com/wiki/Embercrypt?oldid=155639"
             }
           ]
+        },
+        {
+          "label": "Previous soundtrack",
+          "media": [],
+          "description": "",
+          "descriptionMarkup": "",
+          "descriptionTruncated": false,
+          "facts": {
+            "music": "xi, Sakuzyo - Lunar Mare"
+          },
+          "soundtracks": [
+            {
+              "file": "Xi, Sakuzyo - Lunar Mare.mp3",
+              "url": "https://static.wikia.nocookie.net/sol-rng/images/f/f5/Xi%2C_Sakuzyo_-_Lunar_Mare.mp3/revision/latest?cb=20261031184852",
+              "source": "https://sol-rng.fandom.com/wiki/File:Xi,_Sakuzyo_-_Lunar_Mare.mp3",
+              "mime": "audio/mpeg",
+              "timestamp": "2026-10-31T18:48:52Z"
+            }
+          ],
+          "showcases": [],
+          "revisionId": 155639,
+          "source": "https://sol-rng.fandom.com/wiki/Embercrypt",
+          "timestamp": null,
+          "sourceKind": "documented-soundtrack",
+          "id": "version-1"
         }
       ]
     },
     "Cruor": {
       "source": "https://sol-rng.fandom.com/wiki/Cruor",
-      "revisionId": 154923,
+      "revisionId": 155353,
       "mutationOf": "",
       "relatedAuras": [],
       "versions": [
@@ -45992,11 +46076,11 @@
             "required": "",
             "obtainment": "",
             "music": "finnnn751 - Sandstorm Highway",
-            "creator": "TBA"
+            "creator": "[CA] By @Accur_Known"
           },
-          "revisionId": 154923,
+          "revisionId": 155353,
           "source": "https://sol-rng.fandom.com/wiki/Cruor",
-          "timestamp": "2026-11-01T09:50:55Z",
+          "timestamp": "2026-11-07T13:49:29Z",
           "soundtracks": [
             {
               "file": "Finnnn751 - Sandstorm Highway.mp3",
@@ -46012,7 +46096,7 @@
     },
     "Enchanted": {
       "source": "https://sol-rng.fandom.com/wiki/Enchanted",
-      "revisionId": 155252,
+      "revisionId": 155316,
       "mutationOf": "",
       "relatedAuras": [],
       "versions": [
@@ -46053,9 +46137,9 @@
             "music": "ああああ - 水の追憶",
             "creator": "[CA] By @justr_ndx, @Abysmxlity, @CoolJamesTheAwesome1, @omnivoore"
           },
-          "revisionId": 155252,
+          "revisionId": 155316,
           "source": "https://sol-rng.fandom.com/wiki/Enchanted",
-          "timestamp": "2026-11-04T16:26:17Z",
+          "timestamp": "2026-11-06T13:22:20Z",
           "soundtracks": [
             {
               "file": "ああああ - 水の追憶.mp3",
@@ -46074,7 +46158,7 @@
               "source": "https://sol-rng.fandom.com/wiki/File:EnchantedCutscene.mp4",
               "mime": "video/mp4",
               "timestamp": "2026-11-03T08:18:06Z",
-              "articleSource": "https://sol-rng.fandom.com/wiki/Enchanted?oldid=155252"
+              "articleSource": "https://sol-rng.fandom.com/wiki/Enchanted?oldid=155316"
             }
           ]
         }
@@ -46142,7 +46226,7 @@
     },
     "Former Gardens": {
       "source": "https://sol-rng.fandom.com/wiki/Former_Gardens",
-      "revisionId": 155259,
+      "revisionId": 155441,
       "mutationOf": "",
       "relatedAuras": [],
       "versions": [
@@ -46185,9 +46269,9 @@
             "music": "The Socket Snatcher - All Things in Balance, All Things in Moderation",
             "creator": "[CA] By @MilitaryDucky, @BigGPugMan"
           },
-          "revisionId": 155259,
+          "revisionId": 155441,
           "source": "https://sol-rng.fandom.com/wiki/Former_Gardens",
-          "timestamp": "2026-11-04T16:39:40Z",
+          "timestamp": "2026-11-09T17:27:34Z",
           "soundtracks": [
             {
               "file": "The Socket Snatcher - All Things in Balance, All Things in Moderation.mp3",
@@ -46197,13 +46281,24 @@
               "timestamp": "2026-10-31T18:14:13Z"
             }
           ],
-          "showcases": []
+          "showcases": [
+            {
+              "file": "FormerGardensCutscene.mp4",
+              "kind": "cutscene",
+              "label": "Opening Cutscene",
+              "url": "https://static.wikia.nocookie.net/sol-rng/images/1/1c/FormerGardensCutscene.mp4/revision/latest?cb=20261109172655",
+              "source": "https://sol-rng.fandom.com/wiki/File:FormerGardensCutscene.mp4",
+              "mime": "video/mp4",
+              "timestamp": "2026-11-09T17:26:55Z",
+              "articleSource": "https://sol-rng.fandom.com/wiki/Former_Gardens?oldid=155441"
+            }
+          ]
         }
       ]
     },
     "Deathkeeper": {
       "source": "https://sol-rng.fandom.com/wiki/Deathkeeper",
-      "revisionId": 155156,
+      "revisionId": 155647,
       "mutationOf": "",
       "relatedAuras": [],
       "versions": [
@@ -46217,24 +46312,23 @@
             {
               "file": "Deathkeeper collect.gif",
               "caption": "Collection",
-              "url": "https://static.wikia.nocookie.net/sol-rng/images/5/50/Deathkeeper_collect.gif/revision/latest/scale-to-width-down/640?cb=20261103053944",
-              "originalUrl": "https://static.wikia.nocookie.net/sol-rng/images/5/50/Deathkeeper_collect.gif/revision/latest?cb=20261103053944",
+              "url": "https://static.wikia.nocookie.net/sol-rng/images/5/50/Deathkeeper_collect.gif/revision/latest?cb=20261107034942",
               "source": "https://sol-rng.fandom.com/wiki/File:Deathkeeper_collect.gif",
-              "width": 640,
-              "height": 640,
+              "width": 625,
+              "height": 530,
               "mime": "image/gif",
-              "timestamp": "2026-11-03T05:39:44Z"
+              "timestamp": "2026-11-07T03:49:42Z"
             },
             {
               "file": "Deathkeeper ingame.gif",
               "caption": "In-game",
-              "url": "https://static.wikia.nocookie.net/sol-rng/images/c/cd/Deathkeeper_ingame.gif/revision/latest/scale-to-width-down/640?cb=20261103110135",
-              "originalUrl": "https://static.wikia.nocookie.net/sol-rng/images/c/cd/Deathkeeper_ingame.gif/revision/latest?cb=20261103110135",
+              "url": "https://static.wikia.nocookie.net/sol-rng/images/c/cd/Deathkeeper_ingame.gif/revision/latest/scale-to-width-down/640?cb=20261107035025",
+              "originalUrl": "https://static.wikia.nocookie.net/sol-rng/images/c/cd/Deathkeeper_ingame.gif/revision/latest?cb=20261107035025",
               "source": "https://sol-rng.fandom.com/wiki/File:Deathkeeper_ingame.gif",
               "width": 640,
-              "height": 507,
+              "height": 542,
               "mime": "image/gif",
-              "timestamp": "2026-11-03T11:01:35Z"
+              "timestamp": "2026-11-07T03:50:25Z"
             }
           ],
           "facts": {
@@ -46243,20 +46337,28 @@
             "tier": "Event",
             "required": "",
             "obtainment": "",
-            "music": "",
+            "music": "Masato Kouda - Proof of a Hero",
             "creator": "[CA] By @Falunyx"
           },
-          "revisionId": 155156,
+          "revisionId": 155647,
           "source": "https://sol-rng.fandom.com/wiki/Deathkeeper",
-          "timestamp": "2026-11-03T12:54:53Z",
-          "soundtracks": [],
+          "timestamp": "2026-11-14T13:34:53Z",
+          "soundtracks": [
+            {
+              "file": "Proof of a Hero In the Style of Dark Souls-Bloodborne.mp3",
+              "url": "https://static.wikia.nocookie.net/sol-rng/images/4/4a/Proof_of_a_Hero_In_the_Style_of_Dark_Souls-Bloodborne.mp3/revision/latest?cb=20261106102259",
+              "source": "https://sol-rng.fandom.com/wiki/File:Proof_of_a_Hero_In_the_Style_of_Dark_Souls-Bloodborne.mp3",
+              "mime": "audio/mpeg",
+              "timestamp": "2026-11-06T10:22:59Z"
+            }
+          ],
           "showcases": []
         }
       ]
     },
     "Cataclysmic": {
       "source": "https://sol-rng.fandom.com/wiki/Cataclysmic",
-      "revisionId": 155287,
+      "revisionId": 155318,
       "mutationOf": "",
       "relatedAuras": [],
       "versions": [
@@ -46297,9 +46399,9 @@
             "music": "Devel Sullivan - Dream Pursuer",
             "creator": "[OA] By @khxlla, @onlyyxyyz, @Vk5278 Concept By @idkaple"
           },
-          "revisionId": 155287,
+          "revisionId": 155318,
           "source": "https://sol-rng.fandom.com/wiki/Cataclysmic",
-          "timestamp": "2026-11-05T10:47:58Z",
+          "timestamp": "2026-11-06T13:29:22Z",
           "soundtracks": [
             {
               "file": "Devel Sullivan - Dream Pursuer.mp3",
@@ -47068,6 +47170,662 @@
           "source": "https://sol-rng.fandom.com/wiki/Butcher",
           "timestamp": "2026-11-01T08:17:40Z",
           "soundtracks": [],
+          "showcases": []
+        }
+      ]
+    },
+    "Sinister : S": {
+      "source": "https://sol-rng.fandom.com/wiki/Sinister_:_S",
+      "revisionId": 155674,
+      "mutationOf": "Sinister",
+      "relatedAuras": [],
+      "versions": [
+        {
+          "id": "current",
+          "label": "Current",
+          "description": "",
+          "descriptionMarkup": "",
+          "descriptionTruncated": false,
+          "media": [
+            {
+              "file": "SinistersCollection.gif",
+              "caption": "Collection",
+              "url": "https://static.wikia.nocookie.net/sol-rng/images/5/51/SinistersCollection.gif/revision/latest/scale-to-width-down/640?cb=20261114150006",
+              "originalUrl": "https://static.wikia.nocookie.net/sol-rng/images/5/51/SinistersCollection.gif/revision/latest?cb=20261114150006",
+              "source": "https://sol-rng.fandom.com/wiki/File:SinistersCollection.gif",
+              "width": 640,
+              "height": 640,
+              "mime": "image/gif",
+              "timestamp": "2026-11-14T15:00:06Z"
+            },
+            {
+              "file": "SinistersIngame.gif",
+              "caption": "In-game",
+              "url": "https://static.wikia.nocookie.net/sol-rng/images/9/92/SinistersIngame.gif/revision/latest/scale-to-width-down/640?cb=20261114133756",
+              "originalUrl": "https://static.wikia.nocookie.net/sol-rng/images/9/92/SinistersIngame.gif/revision/latest?cb=20261114133756",
+              "source": "https://sol-rng.fandom.com/wiki/File:SinistersIngame.gif",
+              "width": 640,
+              "height": 640,
+              "mime": "image/gif",
+              "timestamp": "2026-11-14T13:37:56Z"
+            }
+          ],
+          "facts": {
+            "rarity": "Use Soul-Scooping Shovel",
+            "nativeRarity": "",
+            "tier": "Event",
+            "required": "",
+            "obtainment": "",
+            "music": "Synthwave Zone - Neon Phantom Highway Roblox ID:87934967375576",
+            "creator": "[OA] By @kirpeyas, @khxlla, @L_O2L Concept By @kirpeyas"
+          },
+          "revisionId": 155674,
+          "source": "https://sol-rng.fandom.com/wiki/Sinister_:_S",
+          "timestamp": "2026-11-14T15:03:45Z",
+          "soundtracks": [],
+          "showcases": [
+            {
+              "file": "SinistersAbility1.mp4",
+              "kind": "ability",
+              "label": "Slam (E)",
+              "url": "https://static.wikia.nocookie.net/sol-rng/images/2/20/SinistersAbility1.mp4/revision/latest?cb=20261114135015",
+              "source": "https://sol-rng.fandom.com/wiki/File:SinistersAbility1.mp4",
+              "mime": "video/mp4",
+              "timestamp": "2026-11-14T13:50:15Z",
+              "articleSource": "https://sol-rng.fandom.com/wiki/Sinister_:_S?oldid=155674"
+            },
+            {
+              "file": "SinistersAbility2.mp4",
+              "kind": "ability",
+              "label": "Dig (F)",
+              "url": "https://static.wikia.nocookie.net/sol-rng/images/4/43/SinistersAbility2.mp4/revision/latest?cb=20261114135048",
+              "source": "https://sol-rng.fandom.com/wiki/File:SinistersAbility2.mp4",
+              "mime": "video/mp4",
+              "timestamp": "2026-11-14T13:50:48Z",
+              "articleSource": "https://sol-rng.fandom.com/wiki/Sinister_:_S?oldid=155674"
+            },
+            {
+              "file": "SinistersAbility3.mp4",
+              "kind": "ability",
+              "label": "Roar (X)",
+              "url": "https://static.wikia.nocookie.net/sol-rng/images/e/ea/SinistersAbility3.mp4/revision/latest?cb=20261114135120",
+              "source": "https://sol-rng.fandom.com/wiki/File:SinistersAbility3.mp4",
+              "mime": "video/mp4",
+              "timestamp": "2026-11-14T13:51:20Z",
+              "articleSource": "https://sol-rng.fandom.com/wiki/Sinister_:_S?oldid=155674"
+            }
+          ]
+        }
+      ]
+    },
+    "Entropy": {
+      "source": "https://sol-rng.fandom.com/wiki/Entropy",
+      "revisionId": 155671,
+      "mutationOf": "",
+      "relatedAuras": [],
+      "versions": [
+        {
+          "id": "current",
+          "label": "Current",
+          "description": "‘‘Even the oldest trees cannot escape the passage of time; their branches reach toward the sky, their leaves fall and return to the earth, and new life grows where something else once stood. Entropy, where nature follows an endless path of change, where beauty, decay and mere randomness exists side by side. Nothing remains untouched forever, yet nothing is truly wasted, and every ending becomes port of something greater, as the world continues to transform in ways no one can fully predict.’’ -『The Encyclopedia of Life』By [???]",
+          "descriptionMarkup": "<center> ‘‘Even the oldest trees cannot escape the passage of time; their branches reach toward the sky, their leaves fall and return to the earth, and new life grows where something else once stood.<br><b><span style=\"color: rgb(0,0,0); -webkit-text-stroke: 1px rgb(255,255,255);\">Entropy</span></b>, where nature follows an endless path of change, where beauty, decay and mere randomness exists side by side.<br>Nothing remains untouched forever, yet nothing is truly wasted, and every ending becomes port of something greater, as the world continues to transform in ways no one can fully predict.’’<br>-『The Encyclopedia of Life』By <b><span style=\"color: rgb(31,36,130); -webkit-text-stroke: 1px rgb(140,137,255);\">[???]</span></b></center>",
+          "descriptionTruncated": false,
+          "media": [
+            {
+              "file": "EntropyCollection.gif",
+              "caption": "Collection",
+              "url": "https://static.wikia.nocookie.net/sol-rng/images/c/c5/EntropyCollection.gif/revision/latest/scale-to-width-down/640?cb=20261114143310",
+              "originalUrl": "https://static.wikia.nocookie.net/sol-rng/images/c/c5/EntropyCollection.gif/revision/latest?cb=20261114143310",
+              "source": "https://sol-rng.fandom.com/wiki/File:EntropyCollection.gif",
+              "width": 640,
+              "height": 542,
+              "mime": "image/gif",
+              "timestamp": "2026-11-14T14:33:10Z"
+            },
+            {
+              "file": "EntropyIngame.gif",
+              "caption": "In-Game",
+              "url": "https://static.wikia.nocookie.net/sol-rng/images/2/22/EntropyIngame.gif/revision/latest?cb=20261114143416",
+              "source": "https://sol-rng.fandom.com/wiki/File:EntropyIngame.gif",
+              "width": 590,
+              "height": 500,
+              "mime": "image/gif",
+              "timestamp": "2026-11-14T14:34:16Z"
+            }
+          ],
+          "facts": {
+            "rarity": "30,000,000",
+            "nativeRarity": "1 in 15,000,000",
+            "tier": "Exalted",
+            "required": "Lost Forest",
+            "obtainment": "",
+            "music": "Kataruma - There Was Madness Going on in My Head",
+            "creator": "[OA] By @skyddren, @FarTooMysterious"
+          },
+          "revisionId": 155671,
+          "source": "https://sol-rng.fandom.com/wiki/Entropy",
+          "timestamp": "2026-11-14T14:59:04Z",
+          "soundtracks": [
+            {
+              "file": "Kataruma - There Was Madness Going on in My Head.mp3",
+              "url": "https://static.wikia.nocookie.net/sol-rng/images/7/77/Kataruma_-_There_Was_Madness_Going_on_in_My_Head.mp3/revision/latest?cb=20261114143217",
+              "source": "https://sol-rng.fandom.com/wiki/File:Kataruma_-_There_Was_Madness_Going_on_in_My_Head.mp3",
+              "mime": "audio/mpeg",
+              "timestamp": "2026-11-14T14:32:17Z"
+            }
+          ],
+          "showcases": [
+            {
+              "file": "EntropyCutscene.mp4",
+              "kind": "cutscene",
+              "label": "Opening Cutscene",
+              "url": "https://static.wikia.nocookie.net/sol-rng/images/7/75/EntropyCutscene.mp4/revision/latest?cb=20261114144407",
+              "source": "https://sol-rng.fandom.com/wiki/File:EntropyCutscene.mp4",
+              "mime": "video/mp4",
+              "timestamp": "2026-11-14T14:44:07Z",
+              "articleSource": "https://sol-rng.fandom.com/wiki/Entropy?oldid=155671"
+            }
+          ]
+        }
+      ]
+    },
+    "Exanimatus": {
+      "source": "https://sol-rng.fandom.com/wiki/Exanimatus",
+      "revisionId": 155687,
+      "mutationOf": "",
+      "relatedAuras": [],
+      "versions": [
+        {
+          "id": "current",
+          "label": "Current",
+          "description": "",
+          "descriptionMarkup": "",
+          "descriptionTruncated": false,
+          "media": [],
+          "facts": {
+            "rarity": "Bought from Jack The Pumpkin for 20,000 Hallow Points.",
+            "nativeRarity": "",
+            "tier": "Event",
+            "required": "",
+            "obtainment": "",
+            "music": "62Q2 - Exanimatus",
+            "creator": "[CA] By @62Q2"
+          },
+          "revisionId": 155687,
+          "source": "https://sol-rng.fandom.com/wiki/Exanimatus",
+          "timestamp": "2026-11-14T16:07:22Z",
+          "soundtracks": [
+            {
+              "file": "62Q2 - Exanimatus.mp3",
+              "url": "https://static.wikia.nocookie.net/sol-rng/images/9/9d/62Q2_-_Exanimatus.mp3/revision/latest?cb=20261114160638",
+              "source": "https://sol-rng.fandom.com/wiki/File:62Q2_-_Exanimatus.mp3",
+              "mime": "audio/mpeg",
+              "timestamp": "2026-11-14T16:06:38Z"
+            }
+          ],
+          "showcases": []
+        }
+      ]
+    },
+    "Devotee": {
+      "source": "https://sol-rng.fandom.com/wiki/Devotee",
+      "revisionId": 155690,
+      "mutationOf": "",
+      "relatedAuras": [],
+      "versions": [
+        {
+          "id": "current",
+          "label": "Current",
+          "description": "",
+          "descriptionMarkup": "",
+          "descriptionTruncated": false,
+          "media": [],
+          "facts": {
+            "rarity": "Bought from Jack The Pumpkin for 30,000 Hallow Points.",
+            "nativeRarity": "",
+            "tier": "Event",
+            "required": "",
+            "obtainment": "",
+            "music": "Alon Mor - Insomnia Fuel",
+            "creator": "[CA] By @H2Oarea"
+          },
+          "revisionId": 155690,
+          "source": "https://sol-rng.fandom.com/wiki/Devotee",
+          "timestamp": "2026-11-14T16:18:43Z",
+          "soundtracks": [
+            {
+              "file": "Alon Mor - Insomnia Fuel.mp3",
+              "url": "https://static.wikia.nocookie.net/sol-rng/images/0/08/Alon_Mor_-_Insomnia_Fuel.mp3/revision/latest?cb=20261114161822",
+              "source": "https://sol-rng.fandom.com/wiki/File:Alon_Mor_-_Insomnia_Fuel.mp3",
+              "mime": "audio/mpeg",
+              "timestamp": "2026-11-14T16:18:22Z"
+            }
+          ],
+          "showcases": []
+        }
+      ]
+    },
+    "Nightlight": {
+      "source": "https://sol-rng.fandom.com/wiki/Nightlight",
+      "revisionId": 155692,
+      "mutationOf": "",
+      "relatedAuras": [],
+      "versions": [
+        {
+          "id": "current",
+          "label": "Current",
+          "description": "The frightening light of a lamppost during Halloween night.",
+          "descriptionMarkup": "<center>The frightening light of a lamppost during Halloween night.</center>",
+          "descriptionTruncated": false,
+          "media": [
+            {
+              "file": "NightlightCollection.gif",
+              "caption": "Collection",
+              "url": "https://static.wikia.nocookie.net/sol-rng/images/e/e6/NightlightCollection.gif/revision/latest/scale-to-width-down/640?cb=20261114125636",
+              "originalUrl": "https://static.wikia.nocookie.net/sol-rng/images/e/e6/NightlightCollection.gif/revision/latest?cb=20261114125636",
+              "source": "https://sol-rng.fandom.com/wiki/File:NightlightCollection.gif",
+              "width": 640,
+              "height": 512,
+              "mime": "image/gif",
+              "timestamp": "2026-11-14T12:56:36Z"
+            },
+            {
+              "file": "NightlightInGame.gif",
+              "caption": "In-game",
+              "url": "https://static.wikia.nocookie.net/sol-rng/images/7/72/NightlightInGame.gif/revision/latest/scale-to-width-down/640?cb=20261114125808",
+              "originalUrl": "https://static.wikia.nocookie.net/sol-rng/images/7/72/NightlightInGame.gif/revision/latest?cb=20261114125808",
+              "source": "https://sol-rng.fandom.com/wiki/File:NightlightInGame.gif",
+              "width": 640,
+              "height": 469,
+              "mime": "image/gif",
+              "timestamp": "2026-11-14T12:58:08Z"
+            }
+          ],
+          "facts": {
+            "rarity": "N/A (Unobtainable outside of Pumpkin Moon or Glitched)",
+            "nativeRarity": "1 in 2,666,666",
+            "tier": "",
+            "required": "Pumpkin Moon or Glitched",
+            "obtainment": "",
+            "music": "Tanger - a million ghosts",
+            "creator": "TBA"
+          },
+          "revisionId": 155692,
+          "source": "https://sol-rng.fandom.com/wiki/Nightlight",
+          "timestamp": "2026-11-14T16:24:04Z",
+          "soundtracks": [
+            {
+              "file": "Tanger - a million ghosts.mp3",
+              "url": "https://static.wikia.nocookie.net/sol-rng/images/8/8a/Tanger_-_a_million_ghosts.mp3/revision/latest?cb=20261114162351",
+              "source": "https://sol-rng.fandom.com/wiki/File:Tanger_-_a_million_ghosts.mp3",
+              "mime": "audio/mpeg",
+              "timestamp": "2026-11-14T16:23:51Z"
+            }
+          ],
+          "showcases": []
+        }
+      ]
+    },
+    "Hollow": {
+      "source": "https://sol-rng.fandom.com/wiki/Hollow",
+      "revisionId": 155667,
+      "mutationOf": "",
+      "relatedAuras": [],
+      "versions": [
+        {
+          "id": "current",
+          "label": "Current",
+          "description": "",
+          "descriptionMarkup": "",
+          "descriptionTruncated": false,
+          "media": [],
+          "facts": {
+            "rarity": "N/A (Unobtainable outside of Graveyard or Glitched)",
+            "nativeRarity": "1 in 2,666,666,666",
+            "tier": "Event",
+            "required": "Graveyard or Glitched",
+            "obtainment": "",
+            "music": "",
+            "creator": "TBA"
+          },
+          "revisionId": 155667,
+          "source": "https://sol-rng.fandom.com/wiki/Hollow",
+          "timestamp": "2026-11-14T14:43:35Z",
+          "soundtracks": [],
+          "showcases": []
+        }
+      ]
+    },
+    "Ashraem": {
+      "source": "https://sol-rng.fandom.com/wiki/Ashraem",
+      "revisionId": 155658,
+      "mutationOf": "",
+      "relatedAuras": [],
+      "versions": [
+        {
+          "id": "current",
+          "label": "Current",
+          "description": "",
+          "descriptionMarkup": "",
+          "descriptionTruncated": false,
+          "media": [],
+          "facts": {
+            "rarity": "N/A (Unobtainable outside of Blood Rain or Glitched)",
+            "nativeRarity": "1 in 2,000,000,000",
+            "tier": "Event",
+            "required": "Blood Rain or Glitched",
+            "obtainment": "",
+            "music": "GGalactigal - the way things were",
+            "creator": "[OA] By @SuperWhyFly, @TowerBattlesGuys164, @vlar_q, @khxlla"
+          },
+          "revisionId": 155658,
+          "source": "https://sol-rng.fandom.com/wiki/Ashraem",
+          "timestamp": "2026-11-14T14:10:10Z",
+          "soundtracks": [
+            {
+              "file": "GGalactigal - the way things were.mp3",
+              "url": "https://static.wikia.nocookie.net/sol-rng/images/2/26/GGalactigal_-_the_way_things_were.mp3/revision/latest?cb=20261114140605",
+              "source": "https://sol-rng.fandom.com/wiki/File:GGalactigal_-_the_way_things_were.mp3",
+              "mime": "audio/mpeg",
+              "timestamp": "2026-11-14T14:06:05Z"
+            }
+          ],
+          "showcases": []
+        }
+      ]
+    },
+    "Death": {
+      "source": "https://sol-rng.fandom.com/wiki/Death",
+      "revisionId": 155660,
+      "mutationOf": "",
+      "relatedAuras": [],
+      "versions": [
+        {
+          "id": "current",
+          "label": "Current",
+          "description": "",
+          "descriptionMarkup": "",
+          "descriptionTruncated": false,
+          "media": [],
+          "facts": {
+            "rarity": "N/A (Unobtainable outside of Blood Rain or Glitched)",
+            "nativeRarity": "1 in 1,400,000,000",
+            "tier": "Event",
+            "required": "Blood Rain or Glitched",
+            "obtainment": "",
+            "music": "MONGOPSY - GODEATER",
+            "creator": "TBA"
+          },
+          "revisionId": 155660,
+          "source": "https://sol-rng.fandom.com/wiki/Death",
+          "timestamp": "2026-11-14T14:13:25Z",
+          "soundtracks": [
+            {
+              "file": "MONGOPSY - GODEATER.mp3",
+              "url": "https://static.wikia.nocookie.net/sol-rng/images/c/c1/MONGOPSY_-_GODEATER.mp3/revision/latest?cb=20261114141240",
+              "source": "https://sol-rng.fandom.com/wiki/File:MONGOPSY_-_GODEATER.mp3",
+              "mime": "audio/mpeg",
+              "timestamp": "2026-11-14T14:12:40Z"
+            }
+          ],
+          "showcases": []
+        }
+      ]
+    },
+    "Hellhound": {
+      "source": "https://sol-rng.fandom.com/wiki/Hellhound",
+      "revisionId": 155662,
+      "mutationOf": "",
+      "relatedAuras": [],
+      "versions": [
+        {
+          "id": "current",
+          "label": "Current",
+          "description": "",
+          "descriptionMarkup": "",
+          "descriptionTruncated": false,
+          "media": [],
+          "facts": {
+            "rarity": "N/A (Unobtainable outside of Blood Rain or Glitched)",
+            "nativeRarity": "1 in 800,000,000",
+            "tier": "Event",
+            "required": "Blood Rain or Glitched",
+            "obtainment": "",
+            "music": "MONGOPSY - ATONEMENT",
+            "creator": "TBA"
+          },
+          "revisionId": 155662,
+          "source": "https://sol-rng.fandom.com/wiki/Hellhound",
+          "timestamp": "2026-11-14T14:19:47Z",
+          "soundtracks": [
+            {
+              "file": "MONGOPSY - ATONEMENT.mp3",
+              "url": "https://static.wikia.nocookie.net/sol-rng/images/d/d7/MONGOPSY_-_ATONEMENT.mp3/revision/latest?cb=20261114141932",
+              "source": "https://sol-rng.fandom.com/wiki/File:MONGOPSY_-_ATONEMENT.mp3",
+              "mime": "audio/mpeg",
+              "timestamp": "2026-11-14T14:19:32Z"
+            }
+          ],
+          "showcases": []
+        }
+      ]
+    },
+    "Hylophobia": {
+      "source": "https://sol-rng.fandom.com/wiki/Hylophobia",
+      "revisionId": 155683,
+      "mutationOf": "",
+      "relatedAuras": [],
+      "versions": [
+        {
+          "id": "current",
+          "label": "Current",
+          "description": "",
+          "descriptionMarkup": "",
+          "descriptionTruncated": false,
+          "media": [],
+          "facts": {
+            "rarity": "N/A (Unobtainable outside of Pumpkin Moon or Glitched)",
+            "nativeRarity": "1 in 66,363,166",
+            "tier": "",
+            "required": "Pumpkin Moon or Glitched",
+            "obtainment": "",
+            "music": "TBA",
+            "creator": "TBA"
+          },
+          "revisionId": 155683,
+          "source": "https://sol-rng.fandom.com/wiki/Hylophobia",
+          "timestamp": "2026-11-14T15:54:41Z",
+          "soundtracks": [],
+          "showcases": []
+        }
+      ]
+    },
+    "Memphis": {
+      "source": "https://sol-rng.fandom.com/wiki/Memphis",
+      "revisionId": 155685,
+      "mutationOf": "",
+      "relatedAuras": [],
+      "versions": [
+        {
+          "id": "current",
+          "label": "Current",
+          "description": "",
+          "descriptionMarkup": "",
+          "descriptionTruncated": false,
+          "media": [],
+          "facts": {
+            "rarity": "N/A (Unobtainable outside of Pumpkin Moon or Glitched)",
+            "nativeRarity": "1 in 98,000,000",
+            "tier": "",
+            "required": "Pumpkin Moon or Glitched",
+            "obtainment": "",
+            "music": "Rexonyz - Lonely",
+            "creator": "TBA"
+          },
+          "revisionId": 155685,
+          "source": "https://sol-rng.fandom.com/wiki/Memphis",
+          "timestamp": "2026-11-14T16:01:43Z",
+          "soundtracks": [
+            {
+              "file": "Rexonyz - Lonely.mp3",
+              "url": "https://static.wikia.nocookie.net/sol-rng/images/d/d3/Rexonyz_-_Lonely.mp3/revision/latest?cb=20261114160122",
+              "source": "https://sol-rng.fandom.com/wiki/File:Rexonyz_-_Lonely.mp3",
+              "mime": "audio/mpeg",
+              "timestamp": "2026-11-14T16:01:22Z"
+            }
+          ],
+          "showcases": []
+        }
+      ]
+    },
+    "GraftShifter": {
+      "source": "https://sol-rng.fandom.com/wiki/GraftShifter",
+      "revisionId": 155695,
+      "mutationOf": "",
+      "relatedAuras": [],
+      "versions": [
+        {
+          "id": "current",
+          "label": "Current",
+          "description": "",
+          "descriptionMarkup": "",
+          "descriptionTruncated": false,
+          "media": [],
+          "facts": {
+            "rarity": "N/A (Unobtainable outside of Graveyard or Glitched)",
+            "nativeRarity": "1 in 1,134,903,170",
+            "tier": "Event",
+            "required": "Graveyard or Glitched",
+            "obtainment": "",
+            "music": "MONGOPSY - JACK OF THE LANTERN",
+            "creator": "TBA"
+          },
+          "revisionId": 155695,
+          "source": "https://sol-rng.fandom.com/wiki/GraftShifter",
+          "timestamp": "2026-11-14T16:32:29Z",
+          "soundtracks": [
+            {
+              "file": "MONGOPSY - JACK OF THE LANTERN.mp3",
+              "url": "https://static.wikia.nocookie.net/sol-rng/images/d/d8/MONGOPSY_-_JACK_OF_THE_LANTERN.mp3/revision/latest?cb=20261114163136",
+              "source": "https://sol-rng.fandom.com/wiki/File:MONGOPSY_-_JACK_OF_THE_LANTERN.mp3",
+              "mime": "audio/mpeg",
+              "timestamp": "2026-11-14T16:31:36Z"
+            }
+          ],
+          "showcases": []
+        }
+      ]
+    },
+    "Hallow Treat": {
+      "source": "https://sol-rng.fandom.com/wiki/Hallow_Treat",
+      "revisionId": 155706,
+      "mutationOf": "",
+      "relatedAuras": [],
+      "versions": [
+        {
+          "id": "current",
+          "label": "Current",
+          "description": "",
+          "descriptionMarkup": "",
+          "descriptionTruncated": false,
+          "media": [],
+          "facts": {
+            "rarity": "N/A (Unobtainable outside of Pumpkin Moon or Glitched)",
+            "nativeRarity": "1 in 70,000,000",
+            "tier": "",
+            "required": "Pumpkin Moon or Glitched",
+            "obtainment": "",
+            "music": "MONGOPSY - THE REALLY SCARY ICE TOWN",
+            "creator": "TBA"
+          },
+          "revisionId": 155706,
+          "source": "https://sol-rng.fandom.com/wiki/Hallow_Treat",
+          "timestamp": "2026-11-14T17:22:47Z",
+          "soundtracks": [
+            {
+              "file": "MONGOPSY - THE REALLY SCARY ICE TOWN.mp3",
+              "url": "https://static.wikia.nocookie.net/sol-rng/images/6/6c/MONGOPSY_-_THE_REALLY_SCARY_ICE_TOWN.mp3/revision/latest?cb=20261114163625",
+              "source": "https://sol-rng.fandom.com/wiki/File:MONGOPSY_-_THE_REALLY_SCARY_ICE_TOWN.mp3",
+              "mime": "audio/mpeg",
+              "timestamp": "2026-11-14T16:36:25Z"
+            }
+          ],
+          "showcases": []
+        }
+      ]
+    },
+    "Wraith : Phasmophobia": {
+      "source": "https://sol-rng.fandom.com/wiki/Wraith_:_Phasmophobia",
+      "revisionId": 155700,
+      "mutationOf": "Wraith",
+      "relatedAuras": [],
+      "versions": [
+        {
+          "id": "current",
+          "label": "Current",
+          "description": "The fear of ghosts...",
+          "descriptionMarkup": "<center>The fear of ghosts...</center>",
+          "descriptionTruncated": false,
+          "media": [],
+          "facts": {
+            "rarity": "N/A (Unobtainable outside of Graveyard or Glitched)",
+            "nativeRarity": "1 in 6,620,000",
+            "tier": "Event",
+            "required": "Graveyard or Glitched",
+            "obtainment": "",
+            "music": "Heaven Pierce Her - Spiral Out (Keep Going)",
+            "creator": "TBA"
+          },
+          "revisionId": 155700,
+          "source": "https://sol-rng.fandom.com/wiki/Wraith_:_Phasmophobia",
+          "timestamp": "2026-11-14T16:46:27Z",
+          "soundtracks": [
+            {
+              "file": "Heaven Pierce Her - Spiral Out (Keep Going).mp3",
+              "url": "https://static.wikia.nocookie.net/sol-rng/images/8/8a/Heaven_Pierce_Her_-_Spiral_Out_%28Keep_Going%29.mp3/revision/latest?cb=20261114164349",
+              "source": "https://sol-rng.fandom.com/wiki/File:Heaven_Pierce_Her_-_Spiral_Out_(Keep_Going).mp3",
+              "mime": "audio/mpeg",
+              "timestamp": "2026-11-14T16:43:49Z"
+            }
+          ],
+          "showcases": []
+        }
+      ]
+    },
+    "Dementor": {
+      "source": "https://sol-rng.fandom.com/wiki/Dementor",
+      "revisionId": 155702,
+      "mutationOf": "",
+      "relatedAuras": [],
+      "versions": [
+        {
+          "id": "current",
+          "label": "Current",
+          "description": "",
+          "descriptionMarkup": "",
+          "descriptionTruncated": false,
+          "media": [],
+          "facts": {
+            "rarity": "N/A (Unobtainable outside of Graveyard or Glitched)",
+            "nativeRarity": "1 in 69,000,000",
+            "tier": "Event",
+            "required": "Graveyard or Glitched",
+            "obtainment": "",
+            "music": "Cight - ｉｎｊｕｒｙ",
+            "creator": "TBA"
+          },
+          "revisionId": 155702,
+          "source": "https://sol-rng.fandom.com/wiki/Dementor",
+          "timestamp": "2026-11-14T16:52:05Z",
+          "soundtracks": [
+            {
+              "file": "Cight - ｉｎｊｕｒｙ.mp3",
+              "url": "https://static.wikia.nocookie.net/sol-rng/images/3/34/Cight_-_%EF%BD%89%EF%BD%8E%EF%BD%8A%EF%BD%95%EF%BD%92%EF%BD%99.mp3/revision/latest?cb=20261114165145",
+              "source": "https://sol-rng.fandom.com/wiki/File:Cight_-_%EF%BD%89%EF%BD%8E%EF%BD%8A%EF%BD%95%EF%BD%92%EF%BD%99.mp3",
+              "mime": "audio/mpeg",
+              "timestamp": "2026-11-14T16:51:45Z"
+            }
+          ],
           "showcases": []
         }
       ]
