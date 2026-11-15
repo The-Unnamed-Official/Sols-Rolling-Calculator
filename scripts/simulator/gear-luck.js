@@ -37,7 +37,7 @@
         gear('genesis', 'Genesis Drive', 12),
         gear('heavenly', 'Heavenly Device', 15),
         gear('singularity', 'Singularity Device', 22),
-        gear('vampire-hunter', 'Vampire Hunter', 2.4, '+2.4 luck; Halloween aura rarities reduced by 20% in Halloween 2025/2026 biomes and Glitched.', true),
+        gear('vampire-hunter', 'Vampire Hunter', 2.4, '+2.4 luck; Halloween aura rarities reduced by 20% wherever they are rollable.', true),
         gear('snow-rider', 'Snow Rider', 3, '', true),
         gear('pump-punch', 'Pump Punch', 8, '', true)
     ]);

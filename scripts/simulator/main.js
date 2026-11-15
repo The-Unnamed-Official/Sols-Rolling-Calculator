@@ -6094,7 +6094,10 @@ function formatRollEffect(batch, styled = false) {
 function formatRollResultDetails(trueChanceValue, batch, { styled = false, aura = null } = {}) {
     if (isFixedLuckResultAura(aura)) return '1 Luck';
     const chance = trueChanceValue ? `True Chance: 1 in ${trueChanceValue}` : '';
-    const details = [chance, formatRollEffect(batch, styled)].filter(Boolean).join(' ');
+    const reduction = isVampireHunterAura(aura, batch)
+        ? (styled ? '<span class="roll-effect roll-effect--vampire-hunter">(20%)</span>' : '(20%)')
+        : '';
+    const details = [formatRollEffect(batch, styled), reduction, chance].filter(Boolean).join(' ');
     const luck = Number.isFinite(batch?.luckValue)
         ? `${details ? ' · ' : ''}${formatWithCommas(batch.luckValue)} Luck` : '';
     const gemstone = batch?.gemstoneLuck ? ` (+${batch.gemstoneLuck} Gemstone)` : '';
@@ -8350,7 +8353,7 @@ function splitAuraDisplaySuffix(baseName) {
         return { suffix: '' };
     }
     const possibleChance = baseName.slice(separatorIndex + 3).trim();
-    return /^\d[\d,]*$/.test(possibleChance)
+    return /^\d[\d,]*(?:\.\d+)?$/.test(possibleChance)
         ? { suffix: baseName.slice(separatorIndex) }
         : { suffix: '' };
 }
@@ -9351,10 +9354,17 @@ const GLITCH_EVENT_WHITELIST = new Set(EVENT_LIST.filter(event => event.glitchEl
 
 const EVENT_AURA_BIOME_CONSTRAINTS = Object.freeze(Object.fromEntries(EVENT_LIST.filter(event => event.auraBiomes).map(event => [event.id, event.auraBiomes])));
 
+function allowsHalloweenFullMoonAccess(eventIds, context) {
+    if (context?.biome !== 'fullMoon' && context?.primaryBiome !== 'fullMoon') return false;
+    const eventState = context.enabledEventsSet instanceof Set ? context.enabledEventsSet : enabledEvents;
+    return eventIds.some(eventId => HALLOWEEN_EVENT_IDS.includes(eventId) && eventState.has(eventId));
+}
+
 function eventAuraBiomeRequirementsMet(eventIds, context) {
     if (!Array.isArray(eventIds) || eventIds.length === 0) {
         return true;
     }
+    if (allowsHalloweenFullMoonAccess(eventIds, context)) return true;
 
     const eventState = context?.enabledEventsSet instanceof Set
         ? context.enabledEventsSet
@@ -12871,7 +12881,8 @@ function computeStandardEffectiveChance(aura, context) {
             ? inCyberspace
             : true;
 
-        if (!isAuraNativeTo(aura, 'limbo-null') && !resolvedActiveMatch && !allowEventGlitchAccess) {
+        if (!isAuraNativeTo(aura, 'limbo-null') && !resolvedActiveMatch && !allowEventGlitchAccess
+            && !allowsHalloweenFullMoonAccess(eventIds, context)) {
             return Infinity;
         }
     }
@@ -12920,10 +12931,14 @@ function computeStandardEffectiveChance(aura, context) {
         const rainyMultiplier = readBreakthroughMultiplier(aura, 'rainy');
         if (rainyMultiplier) effectiveChance = Math.min(effectiveChance, Math.floor(aura.chance / rainyMultiplier));
     }
-    if (context.vampireHunter && eventIds.some(id => HALLOWEEN_EVENT_IDS.includes(id))) {
+    if (isVampireHunterAura(aura, context)) {
         effectiveChance *= 0.8;
     }
     return Math.max(1, effectiveChance);
+}
+
+function isVampireHunterAura(aura, context) {
+    return Boolean(context?.vampireHunter && getAuraEventIds(aura).some(id => HALLOWEEN_EVENT_IDS.includes(id)));
 }
 
 function determineAuraEffectiveChance(aura, context) {
@@ -13759,17 +13774,19 @@ function buildResultEntries(
 
         if (breakthroughStats && breakthroughStats.count > 0) {
             const btName = aura.name.replace(/-\s*[\d,]+/, `- ${formatWithCommas(breakthroughStats.btChance)}`);
+            const nativePrefix = isVampireHunterAura(aura, potionBatch) ? '' : '[Native]';
+            const nativePrefixMarkup = nativePrefix ? `<span class="aura-native ${nativeClass}">${nativePrefix}</span> ` : '';
             const nativeLabel = isBreakthrough
                 ? formatBreakthroughMarkupWithCount(btName, breakthroughStats.count)
                 : formatRollFeedAuraNameMarkup(aura, btName, biome);
             const nativeShareName = formatAuraNameText(aura, btName);
             pushVisualEntry(
                 isBreakthrough
-                    ? `<span class="${classAttr}"><span class="aura-native ${nativeClass}">[Native]</span> ${nativeLabel}</span>`
-                    : `<span class="${classAttr}"><span class="aura-native ${nativeClass}">[Native]</span> ${nativeLabel}<span class="aura-count ${countClass}"> | Times Rolled: ${formatWithCommas(breakthroughStats.count)}</span></span>`,
-                `[Native] ${nativeShareName} | Times Rolled: ${formatWithCommas(breakthroughStats.count)}`,
+                    ? `<span class="${classAttr}">${nativePrefixMarkup}${nativeLabel}</span>`
+                    : `<span class="${classAttr}">${nativePrefixMarkup}${nativeLabel}<span class="aura-count ${countClass}"> | Times Rolled: ${formatWithCommas(breakthroughStats.count)}</span></span>`,
+                `${nativePrefix ? nativePrefix + ' ' : ''}${nativeShareName} | Times Rolled: ${formatWithCommas(breakthroughStats.count)}`,
                 determineResultPriority(aura, breakthroughStats.btChance),
-                createShareVisualRecord(btName, breakthroughStats.count, { prefix: '[Native]', variant: 'native' }),
+                createShareVisualRecord(btName, breakthroughStats.count, { prefix: nativePrefix, variant: nativePrefix ? 'native' : 'standard' }),
                 aura.name,
                 breakthroughStats.btChance
             );
@@ -13887,7 +13904,8 @@ function buildLiveRollMarkup(
     const displayName = isNativeRoll && breakthroughStats
         ? aura.name.replace(/-\s*[\d,]+/, `- ${formatWithCommas(breakthroughStats.btChance)}`)
         : aura.name;
-    const prefix = isNativeRoll ? `<span class="aura-native ${nativeClass}">[Native]</span> ` : '';
+    const prefix = isNativeRoll && !isVampireHunterAura(aura, potionBatch)
+        ? `<span class="aura-native ${nativeClass}">[Native]</span> ` : '';
     const formattedName = formatRollFeedAuraNameMarkup(aura, displayName, biome);
     const trueChanceValue = allowTrueChance
         && appState.selectiveTrueChanceDisplay
@@ -14315,6 +14333,7 @@ function prepareSimulationBatch(batch, selectionState, eventContext) {
         rollLabel: batch.rollLabel || '',
         rollMultiplier: batch.rollMultiplier || 1,
         bonusRollApplied: Boolean(batch.bonusRollApplied),
+        vampireHunter: Boolean(batch.vampireHunter),
         rollEffect: batch.rollEffect || null,
         gemstoneLuck: batch.gemstoneLuck || 0,
         variantKey: batch.variantKey,
@@ -14342,8 +14361,7 @@ function prepareEquipmentSimulation(definitions, selectionState, eventContext, m
     const sequencePlan = [];
     let startRoll = 0;
     const actualBiome = selectionState.primaryBiome || selectionState.canonicalBiome;
-    const vampireHunter = equippedGear.right === 'vampire-hunter'
-        && ['graveyard', 'pumpkinMoon', 'bloodRain', 'glitch'].includes(actualBiome);
+    const vampireHunter = equippedGear.right === 'vampire-hunter';
     definitions.forEach(definition => {
         const stateIndices = new Map();
         GearLuck.statesInRange(timing, startRoll, definition.count).forEach(stateIndex => {
